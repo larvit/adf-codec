@@ -1,69 +1,125 @@
 # Working in this repo
 
-Decisions that a reader would otherwise relitigate. Everything about *using* the library is in
-`README.md`; what is still to build, and what is still undecided, is in `todo.md`.
+Decisions a reader would otherwise relitigate, and the rules for every collaborator, human or
+agent. Using the library: `README.md`. What is still to build: `todo.md`.
 
-## 1. Two formats, never three
+## 1. Three formats, ADF is the hub
 
-ADF and one markdown flavour. **No HTML** — not as an output, not as an intermediate, not as a
-convenience export. A consumer that wants HTML renders the markdown itself, with its own escaping
-and its own stylesheet; a consumer that wants neither shows the markdown verbatim, which is what the
-first one does.
-
-Three formats would mean six directions to keep lossless instead of two.
+ADF, one markdown flavour, one HTML dialect. Six directions exposed, but markdown↔HTML compose
+through ADF: four conversions exist to keep correct — never write a fifth. No fourth format, ever;
+each one doubles the directions.
 
 ## 2. The round-trip is the product
 
-`markdownToAdf(adfToMarkdown(doc))` must equal `doc`. Anything less and a consumer that lets someone
-edit a ticket destroys what it could not represent — a panel, a mention, an attachment — in a
-document it did not author.
+`markdownToAdf(adfToMarkdown(doc))` and `htmlToAdf(adfToHtml(doc))` must equal `doc` — anything
+less silently destroys content an editor could not represent, in a document it did not author.
+When losslessness and readability conflict, losslessness wins.
 
-That is why the flavour is *extended*: markdown has no syntax for most of what ADF holds, so the
-flavour invents it. Designing that syntax is the first real task, and it is open (`todo.md`).
+The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
+back yields the library's canonical spelling, and that spelling round-trips byte-identically.
 
-Two consequences to settle before any node is implemented, not after:
+Round-trip equality is a property tested over a corpus, not a claim made in prose.
 
-- **What happens to a node the library does not know.** The documented ADF node set is not the whole
-  schema, and Atlassian adds to it. Whether an unknown node is carried opaquely, refused, or dropped
-  is a correctness decision for the whole library, and it decides the return shape of both functions.
-- **Whether a lossless document must stay readable to a plain markdown reader.** Anything the flavour
-  invents is noise to a reader that does not know it. How much noise is acceptable bounds the syntax.
+## 3. Unknown input policy
 
-Round-trip equality is a property to test over a corpus, not a claim to make in prose.
+- Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats, restored
+  byte-for-byte. The round-trip holds for documents newer than the library.
+- Unmappable foreign HTML element: error result naming the element — never a silent drop.
+- Bare `@name` / `:smile:` in typed text: stays a text node. Only directives produce
+  mention/emoji/media nodes; resolving names to ids needs I/O, which is the consumer's job.
 
-## 3. Zero runtime dependencies
+## 4. The flavour
 
-Nothing in `dependencies`, ever. TypeScript and whatever the tests need are `devDependencies`, and
-they never reach a consumer. A markdown parser is exactly the dependency this rule exists to refuse:
-the flavour is not CommonMark, so a general parser would have to be extended into one anyway.
+- Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
+  `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
+- Plain CommonMark is a subset: the flavour adds syntax, never changes CommonMark meaning.
+- Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
+- Identity-bearing nodes carry their ids in attributes; a document is only portable within its
+  site — accepted.
+- The HTML dialect mirrors this: semantic elements, stable `adf-*` classes, `data-*` for what HTML
+  cannot express, text always escaped. No stylesheet ships.
 
-## 4. The package contract
+## 5. Dependencies
 
-- **ESM only.** No CommonJS build, no dual-package hazard.
-- **Two entrypoints.** The built JavaScript for ordinary consumers, and the TypeScript source for
-  consumers that run TypeScript directly through Node's type stripping — the first consumer is one,
-  which is why this exists.
-- **Types for both.** The JavaScript entrypoint ships `.d.ts` beside it; the TypeScript entrypoint is
-  its own types.
-- **Published to public npmjs as `@larvit/atlassian-adf-converter`**, matching `@larvit/log`. Public
-  means the source is public: the Gitea repo starts private, and going public — with the LICENSE in
-  place — is a step before the first publish, not after it.
-- **Exact versions.** `save-exact=true` in `.npmrc`, as in every other repo here.
+`dependencies` is empty. A runtime dependency enters only through a decision entry here stating
+why ~20 lines of own code cannot do the job, who maintains it, and what auditing it costs. So the
+CommonMark and HTML parsers are written in this repo. `devDependencies`: few, each earning its
+keep; they never reach a consumer.
 
-## 5. Nothing about any consumer
+## 6. The package contract
 
-No Jira, no HTTP, no REST response shapes, no plainpages, no issue keys. The library takes a document
-tree and returns a string, or the reverse. A consumer's concern that leaks in here is a seam nobody
-declared — and the reason this is a library at all rather than a file in the client that needed it.
+- ESM only — no CommonJS build, no dual-package hazard.
+- Two entrypoints: built JavaScript, and TypeScript source for Node's type stripping. Types for
+  both (`.d.ts` beside the JavaScript).
+- Published to public npmjs as `@larvit/atlassian-adf-converter`. Public source: the Gitea repo
+  goes public, LICENSE in place, before the first publish.
+- Exact versions: `save-exact=true` in `.npmrc`.
 
-## 6. Tests first, in Docker
+## 7. Nothing about any consumer
 
-Write the test for the behaviour wanted, then implement until it passes. `node --test`, beside the
-code. Node, tsc and npm never run on the host — a compose service or a `docker run` against a
-**full patch version** image tag (`node:24.19.0-alpine3.24`, never `node:24`), so the same commit
-builds the same thing on a different day.
+No Jira client, no HTTP, no REST shapes, no issue keys, no actual consumer named anywhere. Design
+against the README's personas.
 
-## 7. Style
+## 8. Semver: the formats are API
 
-Two-space indent, alphabetically sorted object keys, strict TypeScript. Failures are values, not
-exceptions: a function that both returns a result and throws for some inputs has two error channels.
+The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
+differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
+Pre-1.0, normal 0.x rules.
+
+## 9. Release automation
+
+- `package.json` version on `main` is the source of truth. CI on `main`: tests green and version
+  differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
+  deliberate semver judgment.
+- Renovate watches devDependencies, Docker pins and action tags; automerges everything on green CI.
+- Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`); actions
+  pin semver tags.
+
+## 10. Tests first, in Docker
+
+Test for the behaviour wanted first, then implement until green. `node --test`, beside the code.
+Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
+coverage does not decline, containers are torn down after a run.
+
+The corpus, all checked in: hand-built fixtures per node and combination; real sanitized ADF from
+live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite against
+`markdownToAdf` and `markdownToHtml`.
+
+## 11. Code rules
+
+- Two-space indent, strict TypeScript, English everywhere. Alphabetical order wherever order
+  carries no meaning.
+- Failures are values: everything returns
+  `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
+  `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
+  the spot.
+- No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
+  fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
+  unrepresentable.
+- Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`).
+- Reuse before adding; the smallest sufficient diff is the benchmark; no speculative generality —
+  a second consumer, or it goes.
+
+## 12. Prose to a minimum
+
+Applies everywhere: comments, every markdown file in this repo (this one included), PR text.
+
+- Default is no comment. One earns its single line only by naming an invariant, footgun or
+  external constraint the code cannot show — never restatement, history, absence or arrangement.
+  A second line belongs in the commit message or a decision entry here.
+- Every prose comment in a diff is a review question; the default answer is delete.
+- A doc paragraph says what the repo cannot say for itself, or it goes. The fix for a redundant
+  one is deletion, not trimming. A false claim in any doc is a bug, fixed where found.
+- Published text — npm README, error messages, API docs — never references internal systems,
+  tickets or repos.
+
+## 13. Commits and PRs
+
+One-line commit messages and PR titles; short PR summaries. No AI-attribution markers, ever.
+
+## 14. Non-goals
+
+No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
+validation or exported validator, no shipped CSS (§4), no streaming APIs, no performance budget —
+conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
+non-goal.

@@ -1,49 +1,38 @@
 # Todo
 
-The plan, in order. Nothing here is built yet.
-
-## Open design questions — settle these first
-
-None of them have an answer yet, and each one changes what every later milestone implements.
-
-- [ ] **The flavour's syntax.** Markdown has no syntax for most of ADF. Every node in the inventory
-      below that is not plain markdown needs one, and the set has to be internally consistent rather
-      than invented node by node. Prior art worth reading before choosing: CommonMark's generic
-      directives proposal, MDX, Obsidian's and Pandoc's extensions, and what Atlassian's own
-      `editor-markdown-transformer` does (it is lossy — read it for the failure modes, not the design).
-- [ ] **The unknown-node policy** (AGENTS.md §2). Carried opaquely, refused, or dropped — it decides
-      the return shape of both functions, so it cannot be retrofitted.
-- [ ] **How readable a converted document must stay** to a reader that does not know the flavour.
-- [ ] **Whether plain CommonMark is valid input** to `markdownToAdf`. A human typing ordinary
-      markdown into a comment box is the second consumer's whole write path.
-- [ ] **Table fidelity.** ADF tables carry column widths, colspan, rowspan, header rows and cell
-      background colours; markdown tables carry none of it.
-- [ ] **Identity-bearing nodes.** `mention` holds an account id, `media` an attachment id, `emoji` a
-      shortcode plus an id. The rendered text is not enough to reconstruct them, so the syntax has to
-      carry the id — and then a document is only portable within the site it came from.
+The plan, in order. Nothing is built. Design questions are settled in `AGENTS.md`; remaining spec
+detail is settled at its own milestone.
 
 ## Milestones
 
-- [ ] **0 — Scaffold.** `package.json` with the §4 contract, `tsconfig.json`, `.npmrc`, LICENSE (MIT,
-      Larv IT AB), the Docker tooling setup, and `.gitea/workflows/ci.yml` gating branches. Mirror
-      `plainpages` for the workflow shape: `runs-on: docker-host`, actions pinned to semver tags.
-- [ ] **1 — Settle the flavour.** Write the syntax down as this repo's specification before
-      implementing it, and make the round-trip corpus from it.
-- [ ] **2 — `adfToMarkdown`.** The direction the first consumer needs. Ships `0.1.0`.
-- [ ] **3 — `markdownToAdf`.**
-- [ ] **4 — Round-trip property tests** over a corpus of real Jira documents, both ways. Not a
-      milestone that follows 2 and 3 so much as the thing that proves them.
-- [ ] **5 — Release pipeline.** Tag-triggered publish to public npmjs, `NPM_TOKEN` secret, the repo
-      made public with the LICENSE in place first (AGENTS.md §4).
+- [ ] **0 — Scaffold.** `package.json` per §6, `tsconfig.json`, `.npmrc` (`save-exact=true`), the
+      Docker tooling, `renovate.json` (§9), and `.gitea/workflows/ci.yml` gating branches:
+      `runs-on: docker-host`, actions pinned to semver tags.
+- [ ] **1 — The flavour spec.** The markdown flavour written as this repo's specification before
+      any implementation: the directive grammar (attributes, escaping, nesting), each node's
+      syntax from the inventory below, the opaque-carry spelling, the pipe-vs-directive table
+      rule, and what CommonMark's raw-HTML constructs become in ADF, which has no raw-HTML node —
+      likely the §3 element mapping, error otherwise. Start the corpus (§10) from this spec.
+- [ ] **2 — `adfToMarkdown`.**
+- [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component.
+- [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
+- [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
+      the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
+      directions, the types, `isAdfDocument`.
+- [ ] **6 — The HTML dialect spec.** Element-by-element mapping, the `data-*` fidelity scheme, the
+      opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
+- [ ] **7 — HTML, ship `0.2.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
+      `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10).
+- [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 
 ## The ADF inventory to cover
 
 From Atlassian's [structure
-reference](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/). **It is
-not the whole schema** — real payloads also carry `taskList`/`taskItem`, `decisionList`/`decisionItem`,
+reference](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) — not the
+whole schema: real payloads also carry `taskList`/`taskItem`, `decisionList`/`decisionItem`,
 `layoutSection`/`layoutColumn`, `blockCard`/`embedCard`, `extension`/`bodiedExtension`/`inlineExtension`
-and `placeholder`, none of which are documented there. Treat the documented set as the floor, not the
-ceiling, and see the unknown-node policy above.
+and `placeholder`, none documented there. The documented set is the floor: the floor gets designed
+syntax, the rest rides the opaque carry (§3) until it does too.
 
 | | |
 | --- | --- |
@@ -52,6 +41,6 @@ ceiling, and see the unknown-node policy above.
 | Inline | `date` `emoji` `hardBreak` `inlineCard` `mediaInline` `mention` `status` `text` |
 | Marks | `border` `code` `em` `link` `strike` `strong` `subsup` `textColor` `underline` |
 
-Plain markdown already covers `blockquote`, `bulletList`, `codeBlock`, `heading`, `orderedList`,
+Plain markdown covers `blockquote`, `bulletList`, `codeBlock`, `heading`, `orderedList`,
 `paragraph`, `rule`, `listItem`, `hardBreak`, `text`, and the `code`, `em`, `link`, `strike` and
 `strong` marks. Everything else is what the flavour is for.
