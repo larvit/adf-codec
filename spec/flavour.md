@@ -65,8 +65,9 @@ colon run inside a code fence or opaque carry is content. Canonical form uses mi
 **Attributes**: `{key=value key2="two words"}`. A bare value matches `[A-Za-z0-9_-]+`; any other
 value is double-quoted with JSON string escaping (`\"` `\\` `\n` `\t` `\uXXXX`, …) — total over
 Unicode, and raw newlines never appear inside quotes. All values are strings at the grammar
-level; each node's section assigns types. Canonical form orders keys alphabetically and spells
-values bare wherever allowed.
+level; each node's section assigns types. Canonical form orders keys alphabetically, spells
+values bare wherever allowed, and inside quotes escapes only what it must, using the shortest
+escape form.
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — the leading `:` of a would-be directive, `]` inside content; a backslash
