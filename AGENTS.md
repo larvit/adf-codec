@@ -124,3 +124,28 @@ No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3
 validation or exported validator, no shipped CSS (§4), no streaming APIs, no performance budget —
 conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
 non-goal.
+
+## 15. The working loop
+
+One unchecked `todo.md` item per session, in the smallest PR-able chunk — split a big milestone
+into sub-items in `todo.md` before starting it. Per chunk:
+
+1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
+2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest
+   gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
+   result for the commit under review already exists — re-run only what its own findings or
+   fixes invalidate.
+3. Merge the PR (standing authorization, this repo only), check the box in `todo.md`, report,
+   stop. The next chunk gets a fresh session.
+
+Ask, don't guess: any choice where what the maintainer would pick is not near-certain gets asked,
+and the answer lands as a decision in this file. The confidence bar is very high — asking too
+often is the accepted cost, guessing wrong is not.
+
+Reserved for the maintainer, never the agent: changing `version` in `package.json` (a bump on
+`main` publishes, §9 — every release including `0.1.0` is the maintainer's), making the repo
+public, and creating the `NPM_TOKEN` secret.
+
+A continuous loop session (`/loop`) counts as a chain of sessions: one chunk per iteration, each
+iteration starting by re-reading `AGENTS.md` and `todo.md` and trusting them over anything
+remembered from earlier iterations. The loop stops when only maintainer-reserved acts remain.
