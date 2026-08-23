@@ -1,7 +1,8 @@
 # Working in this repo
 
-Decisions a reader would otherwise relitigate. Everything about *using* the library is in
-`README.md`; what is still to build is in `todo.md`.
+Decisions a reader would otherwise relitigate, and the rules every collaborator — human or agent —
+works under. Everything about *using* the library is in `README.md`; what is still to build is in
+`todo.md`.
 
 ## 1. Three formats, ADF is the hub
 
@@ -52,11 +53,15 @@ The HTML dialect mirrors this: semantic elements, stable `adf-*` class names, `d
 for what HTML cannot express, text content always escaped. No stylesheet ships — styling is the
 consumer's.
 
-## 5. Zero runtime dependencies
+## 5. Dependencies
 
-Nothing in `dependencies`, ever. TypeScript and whatever the tests need are `devDependencies`, and
-they never reach a consumer. This means the CommonMark parser and the (well-formed) HTML parser are
-written in this repo — a general parser would have to be extended into the flavour anyway.
+`dependencies` is empty. A runtime dependency may enter only through a decision entry here stating
+why ~20 lines of our own code cannot do the job, who maintains it, and what auditing it costs;
+until that entry exists the answer is no. So the CommonMark and HTML parsers are written in this
+repo — a general parser would have to be extended into the flavour anyway.
+
+`devDependencies`: few, each earning its keep. Tooling that genuinely helps (a property-test
+generator) is welcome; it never reaches a consumer.
 
 ## 6. The package contract
 
@@ -90,26 +95,61 @@ cached, mid-edit — survive upgrades. Pre-1.0, normal 0.x rules apply.
   CI, dep bumps) deploys nothing; the bump in each shipping PR is a deliberate semver judgment.
 - **Renovate** watches npm devDependencies, Docker image pins and action tags, and automerges
   every update — majors included — when CI is green.
+- Docker images pin the **full patch version** (`node:24.19.0-alpine3.24`, never `node:24`);
+  actions pin semver tags. Renovate raises the bumps as reviewable PRs.
 
 ## 10. Tests first, in Docker
 
 Write the test for the behaviour wanted, then implement until it passes. `node --test`, beside the
-code. Node, tsc and npm never run on the host — a compose service or `docker run` against a
-**full patch version** image tag (`node:24.19.0-alpine3.24`, never `node:24`).
+code. Node, tsc and npm never run on the host — a compose service or `docker run` against a pinned
+image (§9). Tests are independent: none passes because another ran first. Coverage does not
+decline. Tear down test containers after a run.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real (sanitized) ADF
 captured from live Atlassian APIs, including undocumented nodes; property-based generated ADF trees
 (generator is a devDependency); the official CommonMark spec suite, run against `markdownToAdf`
 (mapped) and `markdownToHtml`.
 
-## 11. Style
+## 11. Code rules
 
-Two-space indent, alphabetically sorted object keys, strict TypeScript. Failures are values:
-every conversion returns `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` —
-and nothing throws. Input validation is structural only: what the walk needs (a node is an object
-with a string `type`, known nodes have the attrs read from them), nothing more.
+- Two-space indent, strict TypeScript, English everywhere. Alphabetical order for object keys,
+  lists and file lists wherever order carries no meaning.
+- **Failures are values.** Every conversion returns
+  `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — and nothing throws.
+  `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
+  the spot; never for control flow.
+- **No casts.** `as`, `as unknown as` and non-null `!` are banned — they silence the compiler
+  exactly where it is needed. A boundary owes a type guard validating the fields it claims (that
+  is what `isAdfDocument` is); past it everything is typed. Make invalid states unrepresentable:
+  encode "one of these, never both" in the types, not in checks.
+- Explicit over implicit. Descriptive names (`panelDirectiveParser`, not `helper`); no catch-all
+  files or folders (`utils`, `helpers`, `misc`, `common`, `lib`).
+- **Reuse before adding.** Extend an existing test or function before writing a new one; the
+  smallest sufficient diff is the benchmark. No speculative generality: an interface with one
+  implementation, an option with one used value, or a wrapper that only forwards waits for its
+  second consumer — or goes.
 
-## 12. Non-goals
+## 12. Prose to a minimum
+
+Stricter here than most repos. Applies to comments, docs and PR text alike.
+
+- **Default is no comment.** One earns its single line only by naming an invariant, footgun or
+  external constraint the code cannot show. Never a restatement, never history ("we used to…"),
+  never why something is absent, never how a file is arranged. A second line means it belongs in
+  the commit message or a decision entry here.
+- Every prose comment in a diff is a review question, and the reviewer's default answer is delete.
+- A doc paragraph clears the same bar: it says what the repo cannot say for itself, or it goes —
+  and the fix for a redundant one is deletion, not trimming. A false claim in any doc is a bug,
+  fixed in the change that finds it.
+- Published text — the npm README, exported error messages, API docs — never references internal
+  systems, tickets or repos.
+
+## 13. Commits and PRs
+
+One-line commit messages and PR titles; short PR summaries. No AI-attribution markers —
+`Co-Authored-By` bots, "Generated with …" footers — in commits, PRs or comments, ever.
+
+## 14. Non-goals
 
 Stated so nobody builds them in: no wiki markup (§1), no network or filesystem I/O, no name→id
 resolution (§3), no ADF schema validation or exported validator — whether Atlassian accepts a tree
