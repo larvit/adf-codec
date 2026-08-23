@@ -3,7 +3,8 @@
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
 
-**Status: scaffold only, no conversion code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`.
+**Status: scaffold only, no conversion code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`. The
+flavour's grammar: [`spec/flavour.md`](spec/flavour.md).
 
 ## What it is for
 

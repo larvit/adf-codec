@@ -8,11 +8,16 @@ detail is settled at its own milestone.
 - [x] **0 — Scaffold.** `package.json` per §6, `tsconfig.json`, `.npmrc` (`save-exact=true`), the
       Docker tooling, `renovate.json` (§9), and `.gitea/workflows/ci.yml` gating branches:
       `runs-on: docker-host`, actions pinned to semver tags.
-- [ ] **1 — The flavour spec.** The markdown flavour written as this repo's specification before
-      any implementation: the directive grammar (attributes, escaping, nesting), each node's
-      syntax from the inventory below, the opaque-carry spelling, the pipe-vs-directive table
-      rule, and what CommonMark's raw-HTML constructs become in ADF, which has no raw-HTML node —
-      likely the §3 element mapping, error otherwise. Start the corpus (§10) from this spec.
+- [x] **1a — The directive grammar** (`spec/flavour.md`): inline/block/leaf directive forms,
+      attributes, escaping, nesting, canonical form, the opaque-carry spelling, the raw-HTML
+      input policy.
+- [ ] **1b — Block node syntaxes** in `spec/flavour.md`: panel, expand/nestedExpand, the media
+      family, the pipe-vs-directive table rule and the directive table form, task and decision
+      lists, layout, extensions, syncBlock.
+- [ ] **1c — Inline node syntaxes and marks** in `spec/flavour.md`: mention, emoji, status, date,
+      inlineCard, mediaInline; underline, subsup, textColor, border.
+- [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
+      node.
 - [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
