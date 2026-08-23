@@ -87,8 +87,8 @@ before `:` in input always yields a literal colon.
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
 fence line of the container's length or longer, a bare colon-run line outside any container or
 shorter than the fence it would close, an inline `[content]` or `{attrs}` left unclosed at end of
-line, unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent literal-text fallback — a typo that
-reparses as prose is the silent loss §2 refuses.
+line, unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent
+literal-text fallback — a typo that reparses as prose is the silent loss §2 refuses.
 
 ## The opaque carry (AGENTS.md §3)
 
