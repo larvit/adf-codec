@@ -13,13 +13,16 @@ detail is settled at its own milestone.
       syntax from the inventory below, the opaque-carry spelling, the pipe-vs-directive table
       rule, and what CommonMark's raw-HTML constructs become in ADF, which has no raw-HTML node —
       likely the §3 element mapping, error otherwise. Start the corpus (§10) from this spec.
-- [ ] **2 — `adfToMarkdown`.**
+- [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
-      directions, the types, `isAdfDocument`. The maintainer's bump PR also removes
-      `private: true`, the guard against any earlier publish.
+      directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS
+      and `.d.ts` to `dist/` (the dev config's `allowImportingTsExtensions` forces `noEmit`, so
+      the build config needs `rewriteRelativeImportExtensions`), plus `exports`/`files` in
+      `package.json`. The maintainer's bump PR also removes `private: true`, the guard against any
+      earlier publish.
 - [ ] **6 — The HTML dialect spec.** Element-by-element mapping, the `data-*` fidelity scheme, the
       opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.2.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
