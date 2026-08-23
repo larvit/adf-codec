@@ -76,17 +76,18 @@ valid — no attributes. A bare value matches `[A-Za-z0-9_-]+`; any other value 
 with JSON string escaping (`\"` `\\` `\n` `\t` `\uXXXX`, …) — total over
 Unicode, and raw newlines never appear inside quotes. All values are strings at the grammar
 level; each node's section assigns types. Canonical form orders keys alphabetically, spells
-values bare wherever allowed, and inside quotes escapes only what it must, using the shortest
-escape form.
+values bare wherever allowed, inside quotes escapes only what it must using the shortest escape
+form, and omits empty `{attrs}` except where the `{` itself claims the directive
+(`:hardBreak{}`).
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — the leading `:` of a would-be directive, `]` inside content; a backslash
 before `:` in input always yields a literal colon.
 
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
-fence line of the container's length or longer, a bare colon-run line outside any container, an
-inline `[content]` or `{attrs}` left unclosed at end of line, unparseable or duplicate-keyed
-attrs, invalid JSON in an opaque carry. Never a silent literal-text fallback — a typo that
+fence line of the container's length or longer, a bare colon-run line outside any container or
+shorter than the fence it would close, an inline `[content]` or `{attrs}` left unclosed at end of
+line, unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent literal-text fallback — a typo that
 reparses as prose is the silent loss §2 refuses.
 
 ## The opaque carry (AGENTS.md §3)

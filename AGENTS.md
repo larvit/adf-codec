@@ -137,8 +137,8 @@ into sub-items in `todo.md` before starting it. Per chunk:
 1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
 2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest
    gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
-   result for the commit under review already exists — re-run only what its own findings or
-   fixes invalidate.
+   result exists for the commit under review, or when the diff since that result cannot affect
+   it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only), check the box in `todo.md`, report,
    stop. The next chunk gets a fresh session.
 
