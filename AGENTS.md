@@ -22,8 +22,8 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 ## 3. Unknown input policy
 
-- Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats, restored
-  byte-for-byte. The round-trip holds for documents newer than the library.
+- Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats and
+  restores to a deep-equal node. The round-trip holds for documents newer than the library.
 - Unmappable foreign HTML element: error result naming the element — never a silent drop.
 - Bare `@name` / `:smile:` in typed text: stays a text node. Only directives produce
   mention/emoji/media nodes; resolving names to ids needs I/O, which is the consumer's job.

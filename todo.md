@@ -19,7 +19,9 @@ detail is settled at its own milestone.
 - [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
       node.
 - [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
-- [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component.
+- [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component. The raw-HTML
+      element mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input
+      is an error result.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
