@@ -5,7 +5,7 @@ detail is settled at its own milestone.
 
 ## Milestones
 
-- [ ] **0 — Scaffold.** `package.json` per §6, `tsconfig.json`, `.npmrc` (`save-exact=true`), the
+- [x] **0 — Scaffold.** `package.json` per §6, `tsconfig.json`, `.npmrc` (`save-exact=true`), the
       Docker tooling, `renovate.json` (§9), and `.gitea/workflows/ci.yml` gating branches:
       `runs-on: docker-host`, actions pinned to semver tags.
 - [ ] **1 — The flavour spec.** The markdown flavour written as this repo's specification before
@@ -18,7 +18,8 @@ detail is settled at its own milestone.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
-      directions, the types, `isAdfDocument`.
+      directions, the types, `isAdfDocument`. The maintainer's bump PR also removes
+      `private: true`, the guard against any earlier publish.
 - [ ] **6 — The HTML dialect spec.** Element-by-element mapping, the `data-*` fidelity scheme, the
       opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.2.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
