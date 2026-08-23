@@ -8,14 +8,23 @@ detail is settled at its own milestone.
 - [x] **0 — Scaffold.** `package.json` per §6, `tsconfig.json`, `.npmrc` (`save-exact=true`), the
       Docker tooling, `renovate.json` (§9), and `.gitea/workflows/ci.yml` gating branches:
       `runs-on: docker-host`, actions pinned to semver tags.
-- [ ] **1 — The flavour spec.** The markdown flavour written as this repo's specification before
-      any implementation: the directive grammar (attributes, escaping, nesting), each node's
-      syntax from the inventory below, the opaque-carry spelling, the pipe-vs-directive table
-      rule, and what CommonMark's raw-HTML constructs become in ADF, which has no raw-HTML node —
-      likely the §3 element mapping, error otherwise. Start the corpus (§10) from this spec.
+- [x] **1a — The directive grammar** (`spec/flavour.md`): inline/block/leaf directive forms,
+      attributes, escaping, nesting, canonical form, the opaque-carry spelling, the raw-HTML
+      input policy.
+- [ ] **1b — Block node syntaxes** in `spec/flavour.md`: panel, expand/nestedExpand, the media
+      family, the pipe-vs-directive table rule and the directive table form, task and decision
+      lists, layout, extensions, syncBlock.
+- [ ] **1c — Inline node syntaxes and marks** in `spec/flavour.md`: mention, emoji, status, date,
+      inlineCard, mediaInline; underline, subsup, textColor, border; the spelling for text nodes
+      whose whitespace CommonMark cannot hold (literal newlines, leading or trailing spaces).
+- [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
+      node.
 - [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
-- [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component.
-- [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
+- [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component. The raw-HTML
+      element mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input
+      is an error result.
+- [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
+      3. Generators emit editor-normal ADF (§2).
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
       directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS

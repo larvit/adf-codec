@@ -3,7 +3,8 @@
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
 
-**Status: scaffold only, no conversion code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`.
+**Status: scaffold only, no conversion code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`. The
+flavour's grammar: [`spec/flavour.md`](spec/flavour.md).
 
 ## What it is for
 
@@ -37,8 +38,9 @@ isAdfDocument(v: unknown): v is AdfDocument
   (AGENTS.md §3).
 - `htmlToAdf(adfToHtml(doc))` equals `doc` — fidelity HTML cannot express rides `data-*`
   attributes.
-- Plain CommonMark is valid input to `markdownToAdf`; converting back yields the library's
-  canonical spelling, which round-trips byte-identically.
+- Plain CommonMark is valid input to `markdownToAdf`, with one carve-out: literal text matching
+  directive syntax is claimed (escapable — `spec/flavour.md`). Converting back yields the
+  library's canonical spelling, which round-trips byte-identically.
 - Foreign HTML maps a documented element set; an unmappable element is an error, never a silent
   drop. Well-formed HTML only — no tag-soup recovery.
 - The emitted formats are semver surface (AGENTS.md §8).

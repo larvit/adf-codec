@@ -18,12 +18,15 @@ When losslessness and readability conflict, losslessness wins.
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
 back yields the library's canonical spelling, and that spelling round-trips byte-identically.
 
+"Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
+merged, JSON number semantics — the only domain markdown can restore.
+
 Round-trip equality is a property tested over a corpus, not a claim made in prose.
 
 ## 3. Unknown input policy
 
-- Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats, restored
-  byte-for-byte. The round-trip holds for documents newer than the library.
+- Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats and
+  restores to a deep-equal node. The round-trip holds for documents newer than the library.
 - Unmappable foreign HTML element: error result naming the element — never a silent drop.
 - Bare `@name` / `:smile:` in typed text: stays a text node. Only directives produce
   mention/emoji/media nodes; resolving names to ids needs I/O, which is the consumer's job.
@@ -32,7 +35,8 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 - Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
   `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
-- Plain CommonMark is a subset: the flavour adds syntax, never changes CommonMark meaning.
+- Plain CommonMark is a subset, with one carve-out (`spec/flavour.md`): directive-shaped literal
+  text is claimed.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.
@@ -124,3 +128,28 @@ No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3
 validation or exported validator, no shipped CSS (§4), no streaming APIs, no performance budget —
 conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
 non-goal.
+
+## 15. The working loop
+
+One unchecked `todo.md` item per session, in the smallest PR-able chunk — split a big milestone
+into sub-items in `todo.md` before starting it. Per chunk:
+
+1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
+2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest
+   gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
+   result exists for the commit under review, or when the diff since that result cannot affect
+   it (docs-only) — re-run only what its own findings or fixes invalidate.
+3. Merge the PR (standing authorization, this repo only, granted through the `0.1.0` release —
+   PR #3), check the box in `todo.md`, report, stop. The next chunk gets a fresh session.
+
+Ask, don't guess: any choice where what the maintainer would pick is not near-certain gets asked,
+and the answer lands as a decision in this file. The confidence bar is very high — asking too
+often is the accepted cost, guessing wrong is not.
+
+Reserved for the maintainer, never the agent: changing `version` in `package.json` (a bump on
+`main` publishes, §9 — every release including `0.1.0` is the maintainer's), making the repo
+public, and creating the `NPM_TOKEN` secret.
+
+A continuous loop session (`/loop`) counts as a chain of sessions: one chunk per iteration, each
+iteration starting by re-reading `AGENTS.md` and `todo.md` and trusting them over anything
+remembered from earlier iterations. The loop stops when only maintainer-reserved acts remain.
