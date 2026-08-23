@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "automerge": true,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "node",
+      "description": "Pin the node image ci.sh runs",
+      "managerFilePatterns": ["ci.sh"],
+      "matchStrings": ["node:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "renovate/renovate",
+      "description": "Pin the Renovate image the Renovate workflow runs",
+      "managerFilePatterns": [".gitea/workflows/renovate.yml"],
+      "matchStrings": ["renovate/renovate:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
+    }
+  ],
+  "extends": ["config:recommended"]
+}

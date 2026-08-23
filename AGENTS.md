@@ -49,8 +49,9 @@ keep; they never reach a consumer.
 ## 6. The package contract
 
 - ESM only — no CommonJS build, no dual-package hazard.
-- Two entrypoints: built JavaScript, and TypeScript source for Node's type stripping. Types for
-  both (`.d.ts` beside the JavaScript).
+- One entrypoint: built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint —
+  Node refuses to type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`),
+  so it cannot serve an npm consumer.
 - Published to public npmjs as `@larvit/atlassian-adf-converter`. Public source: the Gitea repo
   goes public, LICENSE in place, before the first publish.
 - Exact versions: `save-exact=true` in `.npmrc`.

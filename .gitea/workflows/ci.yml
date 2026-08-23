@@ -1,0 +1,9 @@
+name: CI
+on: push
+
+jobs:
+  gate:
+    runs-on: docker-host
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: bash ci.sh

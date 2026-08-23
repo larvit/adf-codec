@@ -1,0 +1,23 @@
+{
+  "name": "@larvit/atlassian-adf-converter",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Lossless conversion between Atlassian Document Format, extended markdown and HTML",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitea.larvit.se/larvit/atlassian-adf-converter.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "typescript": "7.0.2"
+  }
+}

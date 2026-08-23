@@ -3,7 +3,7 @@
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
 
-**Status: specification only, no code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`.
+**Status: scaffold only, no conversion code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`.
 
 ## What it is for
 
@@ -55,5 +55,5 @@ Personas, never named consumers (AGENTS.md §7):
 
 ## The package
 
-ESM only, no runtime dependencies, public npmjs. Two entrypoints — built JavaScript, and
-TypeScript source for Node's type stripping — with types either way. Contract: `AGENTS.md` §5–6.
+ESM only, no runtime dependencies, public npmjs. Built JavaScript with `.d.ts` beside it.
+Contract: `AGENTS.md` §5–6.
