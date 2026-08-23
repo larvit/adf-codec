@@ -14,18 +14,20 @@ normalizes to it through the round-trip.
   (intra-word).
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number taken from the
   node's `order` attribute. Continuation lines align with the first character after the marker
-  (two spaces for `- `, three for `1. `). Lists are tight — blank lines between items normalize
-  away; ADF does not record tightness.
-- Blockquotes prefix every line with `> `.
+  (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines. Lists are
+  tight — blank lines between items normalize away; ADF does not record tightness.
+- Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
   run in the content; indented-code input normalizes to fences.
 - Thematic break `---`.
-- Hard break: backslash at end of line (survives editors that trim trailing spaces).
+- Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
+  CommonMark admits no spelling — the end of a block, inside a heading — it is `:hardBreak{}`.
+- An empty paragraph — real payloads carry them — is `::paragraph`.
 - Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes.
   `<url>` autolink form only when the text equals the destination and the destination is a valid
   CommonMark autolink (absolute URI).
-- Paragraphs on one line — no soft wrapping; soft line breaks in input collapse per CommonMark.
+- Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax.
 - Blocks separated by one blank line, no trailing whitespace, single trailing newline.
@@ -59,11 +61,19 @@ defines (e.g. the panel type). The body is block markdown. The closing fence is 
 least the opening's length, and a container's fence is longer than every directive fence line in
 its body — counting only lines that parse as directive fences in the body's block structure; a
 colon run inside a code fence or opaque carry is content. Canonical form uses minimal lengths.
+Directive fence lines follow code-fence indentation (up to three spaces relative to their
+container); trailing whitespace on a fence line is tolerated in input, never emitted.
 
 **Leaf block**: `::name {attrs}` — a block-position node with no body.
 
-**Attributes**: `{key=value key2="two words"}`. A bare value matches `[A-Za-z0-9_-]+`; any other
-value is double-quoted with JSON string escaping (`\"` `\\` `\n` `\t` `\uXXXX`, …) — total over
+**Claiming at block level**, symmetric with inline: a line whose leading run of two or more
+colons is followed immediately by a name character is claimed and must parse fully as a container
+opening or a leaf, else it is a named error. A bare colon-run line is a closing fence while a
+container is open, a named error otherwise.
+
+**Attributes**: `{key=value key2="two words"}`. `{attrs}` is optional in every form, and `{}` is
+valid — no attributes. A bare value matches `[A-Za-z0-9_-]+`; any other value is double-quoted
+with JSON string escaping (`\"` `\\` `\n` `\t` `\uXXXX`, …) — total over
 Unicode, and raw newlines never appear inside quotes. All values are strings at the grammar
 level; each node's section assigns types. Canonical form orders keys alphabetically, spells
 values bare wherever allowed, and inside quotes escapes only what it must, using the shortest
@@ -74,9 +84,10 @@ directive syntax — the leading `:` of a would-be directive, `]` inside content
 before `:` in input always yields a literal colon.
 
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
-fence line of the container's length or longer, unparseable or duplicate-keyed attrs, invalid
-JSON in an opaque carry. Never a silent literal-text fallback — a typo that reparses as prose is
-the silent loss §2 refuses.
+fence line of the container's length or longer, a bare colon-run line outside any container, an
+inline `[content]` or `{attrs}` left unclosed at end of line, unparseable or duplicate-keyed
+attrs, invalid JSON in an opaque carry. Never a silent literal-text fallback — a typo that
+reparses as prose is the silent loss §2 refuses.
 
 ## The opaque carry (AGENTS.md §3)
 
@@ -90,6 +101,8 @@ Block and inline positions canonicalize differently, each fitting where it sits:
 
 The info string `adf` is reserved: a genuine `codeBlock` whose `language` is exactly `adf` is
 itself emitted through the opaque carry, so the reservation stays absolute and stays lossless.
+In block-directive positions (`::adf`, `:::adf`) the reserved name is a named error — the
+carry's block form is the fence.
 
 ## Raw HTML in input
 

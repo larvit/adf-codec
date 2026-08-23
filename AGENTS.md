@@ -18,6 +18,9 @@ When losslessness and readability conflict, losslessness wins.
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
 back yields the library's canonical spelling, and that spelling round-trips byte-identically.
 
+"Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
+merged, JSON number semantics — the only domain markdown can restore.
+
 Round-trip equality is a property tested over a corpus, not a claim made in prose.
 
 ## 3. Unknown input policy
@@ -32,7 +35,8 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 - Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
   `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
-- Plain CommonMark is a subset: the flavour adds syntax, never changes CommonMark meaning.
+- Plain CommonMark is a subset, with one carve-out (`spec/flavour.md`): directive-shaped literal
+  text is claimed.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.

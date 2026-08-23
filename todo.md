@@ -15,14 +15,16 @@ detail is settled at its own milestone.
       family, the pipe-vs-directive table rule and the directive table form, task and decision
       lists, layout, extensions, syncBlock.
 - [ ] **1c — Inline node syntaxes and marks** in `spec/flavour.md`: mention, emoji, status, date,
-      inlineCard, mediaInline; underline, subsup, textColor, border.
+      inlineCard, mediaInline; underline, subsup, textColor, border; the spelling for text nodes
+      whose whitespace CommonMark cannot hold (literal newlines, leading or trailing spaces).
 - [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
       node.
 - [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component. The raw-HTML
       element mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input
       is an error result.
-- [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and 3.
+- [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
+      3. Generators emit editor-normal ADF (§2).
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
       directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS
