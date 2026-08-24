@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "language": "sql"
+      },
+      "content": [
+        {
+          "text": "SELECT id\nFROM part\nWHERE qty > 0;",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

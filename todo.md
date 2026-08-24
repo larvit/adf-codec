@@ -21,7 +21,25 @@ detail is settled at its own milestone.
       payloads for external-URL support — if it exists, revisit the media section's
       mid-text-image error and its "no slot" ground.
 - [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
-      node.
+      node, in `corpus/`, one directory per `spec/flavour.md` section.
+  - [ ] **1d1 — Canonical form**: the plain-CommonMark subset — blockquote, bulletList,
+        codeBlock, heading, orderedList, paragraph, rule, listItem, hardBreak, text, code spans,
+        and the `code`, `em`, `link`, `strike` and `strong` marks.
+  - [ ] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
+        image shape, both table forms, task and decision lists, layout, extensions, syncBlock —
+        with the reserved `marks` attribute and the fence lengths nesting forces.
+  - [ ] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
+        border, subsup, textColor, underline; the content slot's `text` attribute and the
+        `:text{text="…"}` whitespace spelling.
+  - [ ] **1d4 — Opaque carry** (§3): an unknown node in both positions, the reserved `adf` info
+        string, and the `codeBlock` whose language is `adf`.
+  - [ ] **1d5 — Carve-outs and combinations**: the three carve-outs and their escapes, mark
+        nesting order and the runs a carry breaks, attribute canonicalization, and documents
+        combining nodes rather than isolating one.
+  - [ ] **1d6 — Input normalization**: one-way markdown→ADF fixtures, not pairs — setext
+        headings, indented code, loose lists, `*`/`+` bullets, entity references, soft wraps.
+  - [ ] **1d7 — Error input**: also one-way, a markdown input per named error. Waits on milestone
+        3 naming them; 1d's pairs are valid documents only.
 - [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component. The raw-HTML
       element mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input
