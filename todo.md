@@ -45,7 +45,7 @@ detail is settled at its own milestone.
       pick here.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
-        `strike` and `strong` marks — one mark per text node; nesting is 1d5's.
+        `strike` and `strong` marks — one mark per text node; nesting is 1d3's.
   - [x] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
         image shape, both table forms, task and decision lists, layout, extensions, syncBlock —
         with the reserved `marks` attribute and the fence lengths nesting forces.
@@ -54,10 +54,12 @@ detail is settled at its own milestone.
         `:text{text="…"}` whitespace spelling.
   - [ ] **1d4 — Opaque carry** (§3): an unknown node in both positions, the reserved `adf` info
         string, and the `codeBlock` whose language is `adf`.
-  - [ ] **1d5 — Carve-outs and combinations**: the three carve-outs and their escapes, mark
-        nesting order and the runs a carry breaks, attribute canonicalization, documents
-        combining nodes rather than isolating one, and a paragraph line inside a container body
-        shaped like a closing fence (`:::`, `::: x`).
+  - [ ] **1d5 — Carve-outs and combinations**: the three carve-outs and their escapes, mark runs —
+        the longest-run rule, attributes included — and the runs a carry breaks, a mark spelling
+        that cannot open where it sits (`un**-real**istic`; the spec owes the carry a trigger),
+        attribute canonicalization, a pipe cell's whitespace edges and `\u007c` for a `|` inside a
+        quoted attribute value, documents combining nodes rather than isolating one, and a paragraph
+        line inside a container body shaped like a closing fence (`:::`, `::: x`).
   - [ ] **1d6 — Input normalization**: one-way markdown→ADF fixtures, not pairs — setext
         headings, indented code, loose lists, `*`/`+` bullets, entity references, soft wraps.
   - [ ] **1d7 — Error input**: also one-way, a markdown input per named error, asserting only

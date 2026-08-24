@@ -1,0 +1,28 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "The rebuild is ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "yellow",
+            "localId": "01a033a7-d68a-71a9-a58a-edf5757ad176",
+            "style": "bold",
+            "text": "In review"
+          },
+          "type": "status"
+        },
+        {
+          "text": " until Friday.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

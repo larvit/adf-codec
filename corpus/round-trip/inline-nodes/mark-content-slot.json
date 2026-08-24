@@ -1,0 +1,27 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "id": "01a032c3-7a7c-775f-a730-2d79351338b4",
+            "text": "@Mikael"
+          },
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "type": "mention"
+        },
+        {
+          "text": " owns the rebuild.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

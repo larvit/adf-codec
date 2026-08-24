@@ -1,0 +1,36 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Due ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "timestamp": "1756080000000"
+          },
+          "type": "date"
+        },
+        {
+          "text": ", reviewed ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "01a033ab-781c-7f79-9c8a-fb63356c1cad",
+            "timestamp": "1735689600000"
+          },
+          "type": "date"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

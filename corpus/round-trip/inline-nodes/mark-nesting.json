@@ -1,0 +1,48 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "underline"
+            }
+          ],
+          "text": "Rewired",
+          "type": "text"
+        },
+        {
+          "text": " at the mains.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "type": "em"
+            }
+          ],
+          "text": "Rewound",
+          "type": "text"
+        },
+        {
+          "text": " by hand.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
