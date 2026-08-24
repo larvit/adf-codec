@@ -1,19 +1,19 @@
 # The markdown flavour
 
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
-CommonMark is a subset with two carve-outs: literal text that matches directive syntax below or
-opens a pipe table is claimed by the flavour (escape the `:` or `|` to keep it literal) — and
-one gap: a CommonMark image fits only as its own title-less paragraph — mid-text and titled
-images are named errors. The emitted form is contract (AGENTS.md §8). Per-node syntaxes build on
-this grammar in the sections below (inline nodes and marks: todo.md 1c).
+CommonMark is a subset with three carve-outs: literal text that matches directive syntax below,
+opens a pipe table or runs `~~` is claimed by the flavour (escape the `:`, `|` or `~` to keep
+it literal) — and one gap: a CommonMark image fits only as its own title-less paragraph —
+mid-text and titled images are named errors. The emitted form is contract (AGENTS.md §8).
+Per-node syntaxes build on this grammar in the sections below.
 
 ## Canonical form
 
 `adfToMarkdown` emits exactly one spelling; every CommonMark variant of the same document
 normalizes to it through the round-trip.
 
-- Emphasis `_em_`, strong `**strong**`; `*` replaces `_` only where `_` cannot parse
-  (intra-word).
+- Emphasis `_em_`, strong `**strong**`, strike `~~strike~~`; `*` replaces `_` only where `_`
+  cannot parse (intra-word).
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number taken from the
   node's `order` attribute. Continuation lines align with the first character after the marker
   (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines. Lists are
@@ -37,15 +37,15 @@ normalizes to it through the round-trip.
 ## Directives
 
 One grammar for everything CommonMark lacks. A directive name is `[a-z][A-Za-z0-9]*` — the ADF
-node names. Recognition is syntactic and name-set-independent: anything matching the forms below
-parses as a directive regardless of whether the name is known, and an unknown name is an error
-result naming it — so output an old emitter escaped stays escaped, and erroring input gaining
-meaning later is MINOR, never a reparse (§8). The name `adf` is reserved for the opaque carry, as
-both directive name and fence info string.
+node and mark names. Recognition is syntactic and name-set-independent: anything matching the
+forms below parses as a directive regardless of whether the name is known, and an unknown name is
+an error result naming it — so output an old emitter escaped stays escaped, and erroring input
+gaining meaning later is MINOR, never a reparse (§8). The name `adf` is reserved for the opaque
+carry, as both directive name and fence info string.
 
 **Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.
 `[content]` is inline markdown; brackets inside balance as in CommonMark link text, `\]` for a
-literal bracket. Each node's section says whether content and attrs are required. `:` opens a
+literal bracket. Each section below says whether content and attrs are required. `:` opens a
 directive only when the name is followed immediately by `[` or `{`, and `{attrs}` must follow
 `]` (or the name) with no gap — anything else (`10:30`, `:smile:`, a stray `{…}` in text) is
 literal text.
@@ -184,9 +184,10 @@ The moon, at night.
 
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
-from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown` emits the image
-form for exactly that shape — those attrs and no others, no marks, no caption. An image amid
-other text, or one carrying a title, is a named error (ADF has a slot for neither).
+from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown`
+emits the image form for exactly that shape — those attrs and no others, no marks, no caption. An
+image amid other text, or one carrying a title, is a named error: `mediaInline` carries a media
+`collection` + `id`, never a URL, and no media node carries a title.
 
 ### Tables
 
@@ -299,4 +300,69 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 
 ```
 ::syncBlock {localId=0198f3a2-af74-7e91-b26c-70b15f4d9ec3 resourceId="ari:cloud:confluence:site/page/123"}
+```
+
+## Inline nodes
+
+Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
+the six nodes below, those with a `text` attribute spell it in the content slot as plain text:
+content parsing to anything but one unmarked text node is a named error, absent content is the
+absent attribute, and a `text` key in `{attrs}` is a named error. The rest take no content.
+
+- `date` — `localId` (string), `timestamp` (string, epoch milliseconds).
+- `emoji` — `id` (string), `localId` (string), `shortName` (string, `:name:`), `text` (string).
+- `inlineCard` — `data` (json), `localId` (string), `url` (string); a card carries one or the
+  other, never both.
+- `mediaInline` — `alt` (string), `collection` (string), `data` (json), `height` (number), `id`
+  (string), `localId` (string), `occurrenceKey` (string), `type` (`file` `image` `link`), `width`
+  (number).
+- `mention` — `accessLevel` (`APPLICATION` `CONTAINER` `NONE` `SITE`), `id` (string), `localId`
+  (string), `text` (string), `userType` (`APP` `DEFAULT` `SPECIAL`).
+- `status` — `color` (`blue` `green` `neutral` `purple` `red` `yellow`), `localId` (string),
+  `style` (string), `text` (string); content required.
+
+```
+:status[In review]{color=yellow} — :mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4}
+
+Shipped :emoji[🎉]{shortName=":tada:"} on :date{timestamp=1756080000000}.
+```
+
+**Whitespace CommonMark cannot hold.** A newline inside a text node, and a space or tab where
+CommonMark strips or refuses one — a block's inline content edges, either side of a line break,
+a mark spelling's inner edges, a pipe cell's edges — is spelled `:text{text="…"}`, the reserved
+key carrying the node's text, escaped by the attribute grammar and never literal: pipe cells trim
+and pad. The emitter wraps the whitespace run alone and leaves the rest plain text;
+`markdownToAdf` merges adjacent text nodes carrying identical marks (AGENTS.md §2).
+
+```
+:text{text="  "}Two leading spaces held, and one text node split:text{text="\n"}over two lines.
+```
+
+## Marks
+
+An inline node's marks and a text node's ride the spelling wrapped around them, never the block
+sections' reserved `marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown
+spellings, which hold no attributes beyond `link`'s `href` and `title`. The other four are inline
+directives, content required:
+
+- `border` — `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
+- `subsup` — `type` (`sub` `sup`).
+- `textColor` — `color` (string, `#rrggbb`).
+- `underline` — no attributes.
+
+A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
+outermost first: `_:underline[x]_` gives marks `[em, underline]`, `:underline[_x_]` the reverse.
+`adfToMarkdown` nests in the order the array holds rather than sorting it — §2's equality
+restores the array, not a set — and opens each spelling once over the longest run of adjacent
+inline nodes carrying that mark at that depth.
+
+A text node whose marks no nesting spells — a mark type not listed here, an attribute no
+spelling holds, or an order putting a code span outside another mark — rides the inline carry
+whole. An opaque carry inside a mark spelling is a named error: the carry restores its node
+exactly, marks included (AGENTS.md §3).
+
+```
+:textColor[**Overdue**]{color="#ae2e24"}, H:subsup[2]{type=sub}O, :underline[signed].
+
+:border[:mediaInline{collection=contentId-98237 id=01a032c3-7a90-70c9-88f6-c60f710eda07}]{color="#091e42" size=2}
 ```
