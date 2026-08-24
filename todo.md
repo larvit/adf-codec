@@ -46,7 +46,7 @@ detail is settled at its own milestone.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d5's.
-  - [ ] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
+  - [x] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
         image shape, both table forms, task and decision lists, layout, extensions, syncBlock —
         with the reserved `marks` attribute and the fence lengths nesting forces.
   - [ ] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
