@@ -39,7 +39,7 @@ detail is settled at its own milestone.
       `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
       brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves the
       pick here.
-  - [ ] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
+  - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d5's.
   - [ ] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
