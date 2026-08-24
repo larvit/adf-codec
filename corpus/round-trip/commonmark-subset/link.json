@@ -1,0 +1,116 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "See ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/changelog"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the changelog",
+          "type": "text"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://example.com/",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Read ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/guide",
+                "title": "Setup guide"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the guide",
+          "type": "text"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Open ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/the plan.pdf"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the plan",
+          "type": "text"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "/parts/m8"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "/parts/m8",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

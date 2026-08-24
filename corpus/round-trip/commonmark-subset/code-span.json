@@ -1,0 +1,118 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Run ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "npm ci",
+          "type": "text"
+        },
+        {
+          "text": " first.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Nested backticks: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "run `date` twice",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "A span holding ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "`code`",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Held: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": " spaced ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Three: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "   ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Literal: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "~~not strike~~",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

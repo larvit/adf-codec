@@ -23,7 +23,8 @@ normalizes to it through the round-trip.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
-  run in the content; indented-code input normalizes to fences.
+  run in the content — the longest run anywhere plus one, at least three, counting mid-line runs
+  no closing fence could match; indented-code input normalizes to fences.
 - Code spans: a backtick string one longer than the longest backtick run in the text, the text
   padded with one space on each side where it begins or ends with a backtick, or begins and ends
   with a space without being all spaces. The content is literal — inline parsing does not see
@@ -37,8 +38,12 @@ normalizes to it through the round-trip.
   CommonMark autolink (absolute URI).
 - Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
-  would otherwise parse as syntax.
-- Blocks separated by one blank line, no trailing whitespace, single trailing newline.
+  would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
+  the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat —
+  with the opener literal the closer parses as text, so `*not emphasis*` is `\*not emphasis*`, one
+  backslash.
+- Blocks separated by one blank line, no trailing whitespace outside a code block's content,
+  single trailing newline; a document with no blocks is the empty string.
 
 ## Directives
 

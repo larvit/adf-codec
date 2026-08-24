@@ -1,0 +1,27 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Before.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "content": [
+        {
+          "text": "After.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

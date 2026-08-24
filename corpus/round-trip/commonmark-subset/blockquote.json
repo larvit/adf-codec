@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Ship it.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "text": "Then tell them.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "blockquote"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

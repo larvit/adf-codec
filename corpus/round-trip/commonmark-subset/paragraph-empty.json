@@ -1,0 +1,27 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "First.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Second.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

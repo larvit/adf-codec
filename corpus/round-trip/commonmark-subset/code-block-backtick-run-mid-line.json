@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "language": "bash"
+      },
+      "content": [
+        {
+          "text": "echo \"```\" >> notes.md",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -20,14 +20,57 @@ detail is settled at its own milestone.
       escape-based, never literal, since pipe cells trim and pad. At `mediaInline`, check real
       payloads for external-URL support — if it exists, revisit the media section's
       mid-text-image error and its "no slot" ground.
-- [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
-      node.
-- [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.
+- [ ] **1d — Corpus start** (§10): checked-in fixtures per spec'd node, in `corpus/`, one
+      directory per contract kind (`corpus/README.md`).
+      **Blocked on the maintainer** (§15), not to be guessed: Canonical form has no totality
+      guard. Per `@atlaskit/adf-schema` 57.1.0 every block node it spells — `blockquote`,
+      `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` —
+      carries a `localId` with no spelling, `codeBlock` also `hideLineNumbers`, `uniqueId` and
+      `wrap`, `blockquote` also marks, and `hardBreak` `text` and `localId` with no section for
+      the carry fallback to reach. Picking one (directive sections for those nodes, or the opaque
+      carry) is a permanent format decision (§8). Three collision sites are held out of the corpus
+      meanwhile, each a choice between the absent attribute and the empty value: a `codeBlock`
+      whose info string is empty and `media` with an empty `alt`, which one "exactly that shape"
+      rule — as the CommonMark image already uses — could settle together, and an `orderedList`
+      starting at 1, independent of the totality answer since `order: 9` keeps the markdown form
+      either way. **Also blocked**: the link rule covers destination spaces only, so two shapes
+      break §2 silently — href `https://example.com/a)b` emits `[t](https://example.com/a)b)`,
+      read back as href `…/a` plus literal `b)`; title `He said "hi"` emits
+      `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
+      brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves the
+      pick here.
+  - [ ] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
+        paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
+        `strike` and `strong` marks — one mark per text node; nesting is 1d5's.
+  - [ ] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
+        image shape, both table forms, task and decision lists, layout, extensions, syncBlock —
+        with the reserved `marks` attribute and the fence lengths nesting forces.
+  - [ ] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
+        border, subsup, textColor, underline; the content slot's `text` attribute and the
+        `:text{text="…"}` whitespace spelling.
+  - [ ] **1d4 — Opaque carry** (§3): an unknown node in both positions, the reserved `adf` info
+        string, and the `codeBlock` whose language is `adf`.
+  - [ ] **1d5 — Carve-outs and combinations**: the three carve-outs and their escapes, mark
+        nesting order and the runs a carry breaks, attribute canonicalization, and documents
+        combining nodes rather than isolating one.
+  - [ ] **1d6 — Input normalization**: one-way markdown→ADF fixtures, not pairs — setext
+        headings, indented code, loose lists, `*`/`+` bullets, entity references, soft wraps.
+  - [ ] **1d7 — Error input**: also one-way, a markdown input per named error, asserting only
+        that conversion fails — malformed directives, the image gap, a claimed pipe-table line
+        that does not parse, the content slot, raw HTML with no mapping. Which error each returns
+        is pinned at milestone 3, where they are named.
+- [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives, and
+      gate that every `corpus/**/*.json` re-serializes to itself under the library's own canonical
+      serializer: one implementation, keys sorted, two spellings — two-space indent for the corpus
+      files and the block carry's body, compact for the inline carry.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component. The raw-HTML
       element mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input
-      is an error result.
+      is an error result. The CommonMark spec suite runs against it from here (§10), and
+      `corpus/errors/` gains the error each fixture must return (1d7).
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
-      3. Generators emit editor-normal ADF (§2).
+      3. Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
+      here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
+      markdown, the payloads supplied by the maintainer.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
       directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS

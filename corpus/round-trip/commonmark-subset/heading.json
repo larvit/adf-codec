@@ -1,0 +1,78 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "text": "Assembly",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Parts",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Fasteners",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 4
+      },
+      "content": [
+        {
+          "text": "Bolts",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 5
+      },
+      "content": [
+        {
+          "text": "Sizes",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 6
+      },
+      "content": [
+        {
+          "text": "M8",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
