@@ -3,7 +3,8 @@
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
 CommonMark is a subset with two carve-outs: literal text that matches directive syntax below or
 opens a pipe table is claimed by the flavour (escape the `:` or `|` to keep it literal) — and
-one gap: an image title has no ADF home (a named error). The emitted form is contract
+one gap: a CommonMark image fits only as its own title-less paragraph — mid-text and titled
+images are named errors (ADF has a slot for neither). The emitted form is contract
 (AGENTS.md §8). Per-node syntaxes build on this grammar in the sections below (inline nodes and
 marks: todo.md 1c).
 
@@ -125,8 +126,8 @@ payloads hold; the type stays string and any value round-trips verbatim. Values 
 type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
 (`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys
 sorted), quoted. `markdownToAdf` emits `attrs`, `content` and `marks` keys only when non-empty;
-editor-normal ADF (AGENTS.md §2) also reads an empty attrs object, marks array or content array
-as the absent key — the grammar's empty-`{attrs}` omission already collapses the two spellings.
+editor-normal ADF reads an empty attrs object, marks array or content array as the absent key
+(AGENTS.md §2) — the grammar's empty-`{attrs}` omission already collapses the two spellings.
 
 Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
 `json` value: `::::layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
@@ -194,8 +195,9 @@ One header row plus plain inline cells is a pipe table; anything richer is the d
 (AGENTS.md §4). Precisely: a table emits as a pipe table exactly when the `table`, every row
 and every cell carry no attrs and no marks, the first row is all `tableHeader` and the rest all
 `tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
-mark-less paragraph — an empty cell holds one empty paragraph. A pipe table parses back to
-exactly that shape.
+mark-less paragraph — an empty cell holds one empty paragraph — with no `|` in a code span:
+backslash escapes are inert there, so pipe form cannot spell that pipe and the table takes the
+directive form. A pipe table parses back to exactly that shape.
 
 ```
 | Part | Qty |
@@ -207,8 +209,9 @@ Claiming at block level, symmetric with directives: a line opening with an unesc
 claimed and must parse as part of a pipe table, else it is a named error — escape the pipe
 (`\|`) to keep it literal text. A pipe table is a header row, a delimiter row whose cells are
 runs of one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
-Cells split on unescaped `|` before inline parsing; each cell is the inline content of one
-paragraph, trimmed; canonical form pads cells with single spaces and ends rows with `|`
+Cells split on unescaped `|` before inline parsing — `\|` stays in the cell text, and the
+inline layer's ordinary CommonMark escaping yields the pipe; each cell is the inline content of
+one paragraph, trimmed; canonical form pads cells with single spaces and ends rows with `|`
 (optional in input). Named errors: a delimiter or body row whose cell count differs from the
 header's, and an alignment colon in the delimiter row — ADF holds no column alignment. In a
 pipe cell a hard break is `:hardBreak{}`, a literal `|` is `\|`, and `|` inside a quoted

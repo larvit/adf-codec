@@ -19,7 +19,8 @@ The other direction is a canonical fixpoint, not byte-identity: human markdown n
 back yields the library's canonical spelling, and that spelling round-trips byte-identically.
 
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
-merged, JSON number semantics — the only domain markdown can restore.
+merged, JSON number semantics, an empty attrs object, marks array or content array the absent
+key — the only domain markdown can restore.
 
 Round-trip equality is a property tested over a corpus, not a claim made in prose.
 
@@ -36,7 +37,7 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 - Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
   `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
 - Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
-  directive or a pipe table is claimed.
+  directive or a pipe table is claimed — plus one image gap.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.
