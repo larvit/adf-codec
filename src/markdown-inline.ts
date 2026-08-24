@@ -1,5 +1,6 @@
 import type { AdfMark, AdfNode } from './adf-document.ts'
-import { assembleInlineLine, lineOpensBlock, type InlineSegment, type LineContainer } from './markdown-escaping.ts'
+import { assembleInlineLine, type InlineSegment, type LineContainer } from './markdown-escaping.ts'
+import { claimsLine, holdsEntityReference } from './commonmark-grammar.ts'
 import { failure, success, type Result } from './result.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
@@ -10,20 +11,21 @@ type InlineContext = {
   inLinkText: boolean
 }
 
+type InlineRun = { kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { kind: 'plain'; node: AdfNode }
+
 const autolink = /^[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\s<>\u0000-\u001f\u007f]*$/
 const controlCharacter = /[\u0000-\u001f\u007f]/
-const entityReference = /&(?:[A-Za-z][A-Za-z0-9]{1,31}|#\d{1,7}|#[Xx][A-Fa-f0-9]{1,6});/
 const linkAttributes = ['href', 'title']
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer): Result<string> {
   const segments = emitRun(nodes, 0, { atBlockEnd: true, container, inLinkText: false })
   if (!segments.ok) return segments
   const line = assembleInlineLine(segments.value, container)
-  for (const single of line.split('\n')) {
+  for (const [index, single] of line.split('\n').entries()) {
     if (/^[ \t]|[ \t]$/.test(single)) {
       return failure('unspellable-whitespace', 'a line begins or ends with whitespace CommonMark strips')
     }
-    if (container === 'paragraph' && lineOpensBlock(single)) {
+    if (container === 'paragraph' && claimsLine(single, index === 0 ? 'first' : 'later')) {
       return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(single)}`)
     }
   }
@@ -31,27 +33,30 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
 }
 
 function emitRun(nodes: readonly AdfNode[], depth: number, context: InlineContext): Result<InlineSegment[]> {
+  const runs = inlineRuns(nodes, depth)
   const segments: InlineSegment[] = []
-  let index = 0
-  while (index < nodes.length) {
-    const node = nodes[index]
-    if (node === undefined) return failure('unsupported-node-shape', 'the inline content holds a hole')
-    const mark = (node.marks ?? [])[depth]
-    if (mark === undefined) {
-      const leaf = emitLeaf(node, { ...context, atBlockEnd: context.atBlockEnd && index === nodes.length - 1 })
-      if (!leaf.ok) return leaf
-      segments.push(...leaf.value)
-      index += 1
-      continue
-    }
-    let end = index + 1
-    while (end < nodes.length && sameMark((nodes[end]?.marks ?? [])[depth], mark)) end += 1
-    const wrapped = emitMarkedRun(nodes.slice(index, end), mark, depth, { ...context, atBlockEnd: context.atBlockEnd && end === nodes.length })
-    if (!wrapped.ok) return wrapped
-    segments.push(...wrapped.value)
-    index = end
+  for (const [index, run] of runs.entries()) {
+    const runContext = { ...context, atBlockEnd: context.atBlockEnd && index === runs.length - 1 }
+    const emitted = run.kind === 'plain' ? emitLeaf(run.node, runContext) : emitMarkedRun(run.nodes, run.mark, depth, runContext)
+    if (!emitted.ok) return emitted
+    segments.push(...emitted.value)
   }
   return success(segments)
+}
+
+function inlineRuns(nodes: readonly AdfNode[], depth: number): InlineRun[] {
+  const runs: InlineRun[] = []
+  for (const node of nodes) {
+    const mark = (node.marks ?? [])[depth]
+    if (mark === undefined) {
+      runs.push({ kind: 'plain', node })
+      continue
+    }
+    const previous = runs[runs.length - 1]
+    if (previous?.kind === 'marked' && sameMark(previous.mark, mark)) previous.nodes.push(node)
+    else runs.push({ kind: 'marked', mark, nodes: [node] })
+  }
+  return runs
 }
 
 function emitLeaf(node: AdfNode, context: InlineContext): Result<InlineSegment[]> {
@@ -127,7 +132,7 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, conte
 function spellDestination(href: string): Result<string> {
   if (controlCharacter.test(href)) return failure('unspellable-link-destination', 'a link destination holds a control character')
   if (href.includes('\\')) return failure('unspellable-link-destination', 'no canonical escape spells a backslash in a link destination')
-  if (entityReference.test(href)) {
+  if (holdsEntityReference(href)) {
     return failure('unspellable-link-destination', 'a link destination shaped like an entity reference decodes on the way back')
   }
   if (href.includes(' ')) {
@@ -143,7 +148,7 @@ function spellDestination(href: string): Result<string> {
 
 function spellTitle(title: string): Result<string> {
   if (/["\n\r\\]/.test(title)) return failure('unspellable-link-title', 'no canonical escape spells a quote, backslash or newline in a link title')
-  if (entityReference.test(title)) return failure('unspellable-link-title', 'a link title shaped like an entity reference decodes on the way back')
+  if (holdsEntityReference(title)) return failure('unspellable-link-title', 'a link title shaped like an entity reference decodes on the way back')
   return success(` "${title}"`)
 }
 
@@ -157,7 +162,7 @@ function balanced(href: string): boolean {
   return depth === 0
 }
 
-function sameMark(candidate: AdfMark | undefined, mark: AdfMark): boolean {
-  if (candidate === undefined || candidate.type !== mark.type) return false
+function sameMark(candidate: AdfMark, mark: AdfMark): boolean {
+  if (candidate.type !== mark.type) return false
   return serializeCanonicalJson(candidate.attrs ?? {}, 'compact') === serializeCanonicalJson(mark.attrs ?? {}, 'compact')
 }

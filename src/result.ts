@@ -8,6 +8,7 @@ export type ConvertErrorCode =
   | 'unspellable-line-start'
   | 'unspellable-link-destination'
   | 'unspellable-link-title'
+  | 'unspellable-list-marker'
   | 'unspellable-mark'
   | 'unspellable-whitespace'
   | 'unspelled-block-marks'

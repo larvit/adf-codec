@@ -60,8 +60,15 @@ detail is settled at its own milestone.
         itself under the library's own canonical serializer — one implementation, keys sorted, two
         spellings: two-space indent for the corpus files and the block carry's body, compact for
         the inline carry. `commonmark-subset/` green.
-  - [ ] **2b — Block nodes.** `block-nodes/` green.
-  - [ ] **2c — Inline nodes and marks.** `inline-nodes/` green.
+  - [ ] **2b — Block nodes.** `block-nodes/` green. Block separation becomes
+        `separationBetween(previous, next, container)` here — a boolean cannot hold the third case
+        `spec/flavour.md` states for two directive blocks in a container body, and the maintainer's
+        answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give
+        the emitter's refusals a corpus home while the directories grow: `corpus/unspellable/`,
+        a `.json` beside the `ConvertErrorCode` it must return, the emitter half of `corpus/errors/`.
+  - [ ] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment.kind` splits into
+        its two axes here — escapability (`attribute` for `:text{text="…"}`, `backslash`, `none`)
+        and the emphasis role — rather than gaining a third value that means one of each.
   - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
         info string, and the `codeBlock` whose language is `adf`.
@@ -80,9 +87,14 @@ detail is settled at its own milestone.
       line that does not parse, the content slot, raw HTML with no mapping — each with the error
       it must return). The raw-HTML element mapping is empty until milestone 6, so at `0.1.0`
       every raw-HTML construct in input is an error result. The CommonMark spec suite runs
-      against it from here (§10).
+      against it from here (§10). `src/` gets its hierarchy at the same split — `adf/`,
+      `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
+      still mechanical.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
-      3. Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
+      3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality
+      the round-trip asserts, which over normalized input is the canonical serializer's compact
+      spelling — rather than staying spelled inline as `?? []` at every reader.
+      Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
       here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
       markdown, the payloads supplied by the maintainer.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,

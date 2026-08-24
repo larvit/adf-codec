@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url'
 
 import { adfToMarkdown } from './adf-to-markdown.ts'
 import { isAdfDocument } from './adf-document.ts'
-import { isJsonValue, serializeCanonicalJson } from './canonical-json.ts'
+import { isJsonValue } from './json-value.ts'
+import { serializeCanonicalJson } from './canonical-json.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const roundTripRoot = join(corpusRoot, 'round-trip')

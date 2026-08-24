@@ -1,15 +1,6 @@
-export type JsonValue = JsonValue[] | boolean | null | number | string | { [key: string]: JsonValue }
+import type { JsonValue } from './json-value.ts'
 
 export type JsonSpelling = 'compact' | 'two-space'
-
-export function isJsonValue(value: unknown): value is JsonValue {
-  if (value === null) return true
-  if (typeof value === 'boolean' || typeof value === 'string') return true
-  if (typeof value === 'number') return Number.isFinite(value)
-  if (Array.isArray(value)) return value.every(isJsonValue)
-  if (typeof value === 'object') return Object.values(value).every(isJsonValue)
-  return false
-}
 
 export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling): string {
   return serialize(value, spelling === 'compact' ? '' : '  ', 0)

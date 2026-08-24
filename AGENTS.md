@@ -87,6 +87,11 @@ Test for the behaviour wanted first, then implement until green. `node --test`, 
 Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
 coverage does not decline, containers are torn down after a run.
 
+The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
+functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
+`noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index
+compared against `undefined` — have a half no valid document reaches.
+
 The corpus, all checked in: hand-built fixtures per node and combination; real sanitized ADF from
 live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite against
 `markdownToAdf` and `markdownToHtml`.

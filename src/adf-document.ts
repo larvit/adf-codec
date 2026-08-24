@@ -1,4 +1,4 @@
-import { isJsonValue, type JsonValue } from './canonical-json.ts'
+import { isJsonValue, type JsonValue } from './json-value.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
 
@@ -48,7 +48,7 @@ function isAdfNode(value: unknown): value is AdfNode {
 }
 
 function isArrayOf<T>(value: unknown, guard: (item: unknown) => item is T): value is T[] {
-  return Array.isArray(value) && value.every(guard)
+  return Array.isArray(value) && [...value].every(guard)
 }
 
 function isAttributes(value: unknown): value is AdfAttributes {

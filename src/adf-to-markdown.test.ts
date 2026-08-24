@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfDocument, AdfNode } from './adf-document.ts'
+import type { AdfDocument, AdfMark, AdfNode } from './adf-document.ts'
 import type { Result } from './result.ts'
 import { adfToMarkdown } from './index.ts'
 
@@ -109,11 +109,17 @@ test('refuses a node whose content model the canonical form cannot emit', () => 
   assert.equal(code(adfToMarkdown(document({ type: 'listItem' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ type: 'bulletList' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), 'unsupported-node-shape')
 })
 
-test('refuses an ordered list start no marker spells', () => {
-  const items: AdfNode[] = [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }]
-  assert.equal(code(adfToMarkdown(document({ attrs: { order: 1.5 }, content: items, type: 'orderedList' }))), 'unsupported-node-shape')
+test('refuses an ordered list no marker spells', () => {
+  const item: AdfNode = { content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }
+  const list = (order: number, items: number): AdfDocument =>
+    document({ attrs: { order }, content: Array.from({ length: items }, () => item), type: 'orderedList' })
+  assert.equal(code(adfToMarkdown(list(1.5, 1))), 'unsupported-node-shape')
+  assert.equal(markdown(adfToMarkdown(list(999999999, 1))), '999999999. x\n')
+  assert.equal(code(adfToMarkdown(list(999999999, 2))), 'unspellable-list-marker')
 })
 
 test('refuses a code span over anything but one text node', () => {
@@ -148,6 +154,15 @@ test('escapes a heading closing sequence', () => {
   const heading = (text: string): string => markdown(adfToMarkdown(document({ attrs: { level: 2 }, content: [{ text, type: 'text' }], type: 'heading' })))
   assert.equal(heading('done #'), '## done \\#\n')
   assert.equal(heading('#tag first'), '## #tag first\n')
+})
+
+test('wraps adjacent nodes carrying one mark once, and a differing mark twice', () => {
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
+  assert.equal(emitted(marked('a', { type: 'strong' }), marked('b', { type: 'strong' }, { type: 'em' })), '**a*b***\n')
+  assert.equal(emitted(marked('a', { type: 'strong' }), marked('b', { type: 'em' })), '**a**_b_\n')
+  const link = (href: string): AdfMark => ({ attrs: { href }, type: 'link' })
+  assert.equal(emitted(marked('a', link('http://x')), marked('b', link('http://y'))), '[a](http://x)[b](http://y)\n')
 })
 
 test('emits an empty list item without trailing whitespace', () => {

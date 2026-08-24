@@ -1,3 +1,5 @@
+import { escapesLineClaim, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
+
 export type InlineSegment = {
   kind: 'emphasis-close' | 'emphasis-open' | 'link-text' | 'literal' | 'syntax'
   text: string
@@ -6,33 +8,19 @@ export type InlineSegment = {
 export type LineContainer = 'heading' | 'paragraph'
 
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
-const entityReference = /^&(?:[A-Za-z][A-Za-z0-9]{1,31}|#\d{1,7}|#[Xx][A-Fa-f0-9]{1,6});/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\s<>]*>/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const inlineDirective = /^:[a-z][A-Za-z0-9]*[[{]/
 const linkOpener = /\](?=[([:])/
-const orderedListMarker = /^\d{1,9}$/
-const setextUnderline = /^=+$/
-const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/
 const unicodePunctuation = /[\p{P}\p{S}]/u
 const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u
-
-const escapableOpeners = [/^#{1,6}(?:[ \t]|$)/, /^>/, /^[*+-](?:[ \t]|$)/, /^`{3,}/, /^~{3,}/, /^:{2,}/, /^\|/]
-const blockOpeners = [...escapableOpeners, /^\d{1,9}[.)](?:[ \t]|$)/]
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): string {
   return escape(resolveEmphasis(segments), container)
 }
 
-export function lineOpensBlock(line: string): boolean {
-  return blockOpeners.some((opener) => opener.test(line)) || thematicBreak.test(line)
-}
-
-export function isWordCharacter(character: string): boolean {
-  return character !== '' && !unicodeWhitespace.test(character) && !unicodePunctuation.test(character)
-}
-
 function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
   const resolved = segments.map((segment) => ({ ...segment }))
+  // Offsets index the pre-swap text: every emphasis spelling this swaps between is one character wide.
   const scan = resolved.map((segment) => segment.text).join('')
   const offsets: number[] = []
   let offset = 0
@@ -77,32 +65,35 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): s
 }
 
 function opensConstruct(scan: string, index: number, inLinkText: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
+  const claimsLine = container === 'heading' ? closesHeading(scan, index) : claimsLineStart(scan, index)
+  return claimsLine || claimsCharacter(scan, index, inLinkText, escaped)
+}
+
+function claimsLineStart(scan: string, index: number): boolean {
+  const start = scan.lastIndexOf('\n', index - 1) + 1
+  const end = scan.indexOf('\n', index)
+  const line = scan.slice(start, end === -1 ? undefined : end)
+  const position: LinePosition = start === 0 ? 'first' : 'later'
+  return escapesLineClaim(line, index - start, position)
+}
+
+function closesHeading(scan: string, index: number): boolean {
+  if (scan.charAt(index) !== '#' || !/^#+$/.test(scan.slice(index))) return false
+  return index === 0 || /[ \t]/.test(scan.charAt(index - 1))
+}
+
+function claimsCharacter(scan: string, index: number, inLinkText: boolean, escaped: ReadonlySet<number>): boolean {
   const character = scan.charAt(index)
   const rest = scan.slice(index)
-  const line = rest.split('\n')[0] ?? ''
-  if (container === 'paragraph' && (index === 0 || scan.charAt(index - 1) === '\n')) {
-    if (escapableOpeners.some((opener) => opener.test(rest))) return true
-    if (thematicBreak.test(line)) return true
-    if (index > 0 && setextUnderline.test(line)) return true
-  }
-  if (container === 'paragraph' && (character === '.' || character === ')') && closesOrderedListMarker(scan, index)) return true
-  if (container === 'heading' && character === '#' && /^#+$/.test(rest) && (index === 0 || /[ \t]/.test(scan.charAt(index - 1)))) return true
   if (inLinkText && (character === '[' || character === ']')) return true
   if (character === '\\') return asciiPunctuation.test(scan.charAt(index + 1))
-  if (character === '&') return entityReference.test(rest)
+  if (character === '&') return startsEntityReference(rest)
   if (character === '<') return htmlConstructs.some((construct) => construct.test(rest))
   if (character === ':') return inlineDirective.test(rest)
   if (character === '[') return linkOpener.test(rest)
   if (character === '`') return opensCodeSpan(scan, index, escaped)
   if (character === '*' || character === '_' || character === '~') return opensEmphasis(scan, index, escaped)
   return false
-}
-
-function closesOrderedListMarker(scan: string, index: number): boolean {
-  const lineStart = scan.lastIndexOf('\n', index - 1) + 1
-  if (!orderedListMarker.test(scan.slice(lineStart, index))) return false
-  const following = scan.charAt(index + 1)
-  return following === '' || following === ' ' || following === '\t' || following === '\n'
 }
 
 function opensCodeSpan(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
@@ -153,6 +144,10 @@ function isPunctuation(character: string): boolean {
 
 function isWhitespace(character: string): boolean {
   return character === '' || unicodeWhitespace.test(character)
+}
+
+function isWordCharacter(character: string): boolean {
+  return character !== '' && !unicodeWhitespace.test(character) && !unicodePunctuation.test(character)
 }
 
 function charAt(text: string, index: number): string {
