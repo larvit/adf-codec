@@ -23,12 +23,22 @@ detail is settled at its own milestone.
 - [ ] **1d — Corpus start** (§10): checked-in fixtures per spec'd node, in `corpus/`, one
       directory per contract kind (`corpus/README.md`).
       **Blocked on the maintainer** (§15), not to be guessed: Canonical form has no totality
-      guard — a `paragraph`, `heading`, `blockquote` or `codeBlock` carrying a `localId`, or a
-      `blockquote` carrying marks, has no spelling that keeps it, and picking one (directive
-      sections for the six CommonMark block nodes, or the opaque carry) is a permanent format
-      decision (§8). Its three collision sites stay out of the corpus until then: an `orderedList`
-      starting at 1, a `codeBlock` whose info string is empty, and `media` with an empty `alt` —
-      each a choice between the absent attribute and the empty value.
+      guard. Per `@atlaskit/adf-schema` 57.1.0 every block node it spells — `blockquote`,
+      `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` —
+      carries a `localId` with no spelling, `codeBlock` also `hideLineNumbers`, `uniqueId` and
+      `wrap`, `blockquote` also marks, and `hardBreak` `text` and `localId` with no section for
+      the carry fallback to reach. Picking one (directive sections for those nodes, or the opaque
+      carry) is a permanent format decision (§8). Three collision sites are held out of the corpus
+      meanwhile, each a choice between the absent attribute and the empty value: a `codeBlock`
+      whose info string is empty and `media` with an empty `alt`, which one "exactly that shape"
+      rule — as the CommonMark image already uses — could settle together, and an `orderedList`
+      starting at 1, independent of the totality answer since `order: 9` keeps the markdown form
+      either way. **Also blocked**: the link rule covers destination spaces only, so two shapes
+      break §2 silently — href `https://example.com/a)b` emits `[t](https://example.com/a)b)`,
+      read back as href `…/a` plus literal `b)`; title `He said "hi"` emits
+      `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
+      brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves the
+      pick here.
   - [ ] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d5's.

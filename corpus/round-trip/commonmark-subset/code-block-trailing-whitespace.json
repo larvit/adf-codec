@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "language": "markdown"
+      },
+      "content": [
+        {
+          "text": "Line one  \nLine two",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
