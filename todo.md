@@ -11,7 +11,7 @@ detail is settled at its own milestone.
 - [x] **1a — The directive grammar** (`spec/flavour.md`): inline/block/leaf directive forms,
       attributes, escaping, nesting, canonical form, the opaque-carry spelling, the raw-HTML
       input policy.
-- [ ] **1b — Block node syntaxes** in `spec/flavour.md`: panel, expand/nestedExpand, the media
+- [x] **1b — Block node syntaxes** in `spec/flavour.md`: panel, expand/nestedExpand, the media
       family, the pipe-vs-directive table rule and the directive table form, task and decision
       lists, layout, extensions, syncBlock.
 - [ ] **1c — Inline node syntaxes and marks** in `spec/flavour.md`: mention, emoji, status, date,

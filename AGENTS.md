@@ -35,8 +35,8 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 - Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
   `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
-- Plain CommonMark is a subset, with one carve-out (`spec/flavour.md`): directive-shaped literal
-  text is claimed.
+- Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
+  directive or a pipe table is claimed.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.
@@ -152,4 +152,7 @@ public, and creating the `NPM_TOKEN` secret.
 
 A continuous loop session (`/loop`) counts as a chain of sessions: one chunk per iteration, each
 iteration starting by re-reading `AGENTS.md` and `todo.md` and trusting them over anything
-remembered from earlier iterations. The loop stops when only maintainer-reserved acts remain.
+remembered from earlier iterations. The loop session is a thin driver: each chunk's work runs in
+a fresh-context subagent holding this file as its charter, and the driver only relays maintainer
+questions, runs the review flow, merges, and cleans up. The loop stops when only
+maintainer-reserved acts remain.
