@@ -53,8 +53,8 @@ string.
 **Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.
 `[content]` is inline markdown; brackets inside balance as in CommonMark link text, `\]` for a
 literal bracket. Whitespace at either edge of `[content]`, space or tab, is part of it and
-survives inline parsing. Each section below says whether content and attrs are required. `:` opens
-a directive only when the name is followed immediately by `[` or `{`, and `{attrs}` must follow
+survives inline parsing. Each section below says whether content is required. `:` opens a
+directive only when the name is followed immediately by `[` or `{`, and `{attrs}` must follow
 `]` (or the name) with no gap — anything else (`10:30`, `:smile:`, a stray `{…}` in text) is
 literal text.
 
@@ -313,11 +313,12 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 ## Inline nodes
 
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
-the six nodes below, those with a `text` attribute spell it in the content slot as plain text:
-`[]` is the empty string, absent content is the absent attribute, non-empty content parsing to
-anything but one unmarked text node — adjacent identical-mark text nodes merged first — is a
-named error, and so is a `text` key in `{attrs}`. The rest take no content, `:text` included;
-content on a node that takes none is a named error.
+the nodes below, those with a `text` attribute spell it in the content slot as plain text: `[]` is
+the empty string, absent content is the absent attribute, non-empty content parsing to anything
+but one unmarked text node — adjacent identical-mark text nodes merged first — is a named
+error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the
+slot. The rest take no content, `:text` included; content on a node that takes none is a named
+error.
 
 - `date` — `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — `id` (string), `localId` (string), `shortName` (string, `:name:`), `text` (string).
@@ -351,10 +352,10 @@ the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identic
 
 ## Marks
 
-An inline node's marks and a text node's ride the spelling wrapped around them, never the block
-sections' reserved `marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown
-spellings, which hold no attributes beyond `link`'s `href` and `title`, and are not directive
-names: `:em[x]` is a named error. The other four are inline directives, content required:
+An inline node's marks ride the spelling wrapped around them, never the block sections' reserved
+`marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown spellings, which hold
+no attributes beyond `link`'s `href` and `title`, and are not directive names: `:em[x]` is a named
+error. The other four are inline directives, content required non-empty:
 
 - `border` — `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `subsup` — `type` (`sub` `sup`).
