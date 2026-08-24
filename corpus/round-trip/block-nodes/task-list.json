@@ -1,0 +1,88 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "0198f3a2-7c41-7f2e-9b3a-4d8e2c1a6b90"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "0198f3a2-8d52-70b1-8c4f-5e9f3d2b7ca1",
+            "state": "DONE"
+          },
+          "content": [
+            {
+              "text": "Write the spec",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "0198f3a2-9e63-7d80-a15b-6fa04e3c8db2",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "text": "Ship it",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "01a033b2-95c8-7d62-9b9c-dee7ad510982",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Check the torque.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Then sign off.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "blockTaskItem"
+        },
+        {
+          "attrs": {
+            "localId": "01a033b3-d1fa-7489-8c9f-f5846d2c249d"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "01a033bd-a22d-7fb5-be9d-89d1aa261112",
+                "state": "TODO"
+              },
+              "content": [
+                {
+                  "text": "Nested step",
+                  "type": "text"
+                }
+              ],
+              "type": "taskItem"
+            }
+          ],
+          "type": "taskList"
+        }
+      ],
+      "type": "taskList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

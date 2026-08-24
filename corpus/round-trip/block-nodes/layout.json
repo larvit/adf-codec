@@ -1,0 +1,49 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "01a033cc-4b60-7b5e-85f4-34f27f039e9a"
+      },
+      "content": [
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Left.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "valign": "top",
+            "width": 50
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Right.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

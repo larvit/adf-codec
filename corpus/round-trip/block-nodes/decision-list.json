@@ -1,0 +1,40 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "01a033c4-7aa0-723f-bd4b-018e0aa0103f"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "01a033c8-0df4-74df-a9f4-c2c4aa3cc2c1",
+            "state": "DECIDED"
+          },
+          "content": [
+            {
+              "text": "Ship on Friday.",
+              "type": "text"
+            }
+          ],
+          "type": "decisionItem"
+        },
+        {
+          "attrs": {
+            "localId": "01a033cb-e13c-79b2-933f-b3cedd57e33e",
+            "state": "DECIDED"
+          },
+          "content": [
+            {
+              "text": "Keep the old endpoint for one release.",
+              "type": "text"
+            }
+          ],
+          "type": "decisionItem"
+        }
+      ],
+      "type": "decisionList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

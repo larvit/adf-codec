@@ -1,0 +1,52 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "layout": "center",
+        "width": 50
+      },
+      "content": [
+        {
+          "attrs": {
+            "collection": "MediaServicesSample",
+            "id": "4478e39c-cf9b-41d1-ba92-68589487cd75",
+            "type": "file"
+          },
+          "type": "media"
+        },
+        {
+          "content": [
+            {
+              "text": "The moon, at night.",
+              "type": "text"
+            }
+          ],
+          "type": "caption"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "wrap-right",
+        "width": 33.33,
+        "widthType": "percentage"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "Torque chart",
+            "height": 480,
+            "type": "external",
+            "url": "https://example.com/torque.png",
+            "width": 640
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

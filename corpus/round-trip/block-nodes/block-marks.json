@@ -1,0 +1,39 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "01a033d0-1393-790b-9d44-c572033ea4aa"
+      },
+      "content": [
+        {
+          "attrs": {
+            "width": 100
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Full width.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "marks": [
+        {
+          "attrs": {
+            "mode": "wide"
+          },
+          "type": "breakout"
+        }
+      ],
+      "type": "layoutSection"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,31 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "0198f3a2-af74-7e91-b26c-70b15f4d9ec3",
+        "resourceId": "ari:cloud:confluence:site/page/123"
+      },
+      "type": "syncBlock"
+    },
+    {
+      "attrs": {
+        "localId": "01a033df-0dee-7251-a710-98e76dc285e4",
+        "resourceId": "ari:cloud:confluence:site/page/456"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Shared release notes.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "bodiedSyncBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
