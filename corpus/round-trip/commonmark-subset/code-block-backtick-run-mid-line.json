@@ -1,9 +1,12 @@
 {
   "content": [
     {
+      "attrs": {
+        "language": "bash"
+      },
       "content": [
         {
-          "text": "```\ncode\n```",
+          "text": "echo \"```\" >> notes.md",
           "type": "text"
         }
       ],

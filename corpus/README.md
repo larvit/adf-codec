@@ -1,8 +1,15 @@
 # The corpus
 
-`<name>.json` is an ADF document; `<name>.md` is the markdown `adfToMarkdown` must emit for it,
-byte for byte including the trailing newline, and that `markdownToAdf` must read back to that same
-document (AGENTS.md §2). Directories mirror `spec/flavour.md`'s sections.
+One directory per contract kind:
 
-The JSON is editor-normal — empty `attrs`, `marks` and `content` as the absent key, adjacent
-identical-mark text nodes merged — two-space indent, keys sorted.
+- `round-trip/` — `<name>.json` + `<name>.md`: the markdown `adfToMarkdown` must emit for that
+  document, byte for byte, and that `markdownToAdf` must read back to it (AGENTS.md §2). Grouped
+  by node family: `commonmark-subset/`, `block-nodes/`, `inline-nodes/`, `opaque-carry/`,
+  `combinations/`.
+- `normalization/` — `<name>.md` + `<name>.json`: markdown input, and the document
+  `markdownToAdf` must build from it. One-way; the markdown is not canonical.
+- `errors/` — `<name>.md` + `<name>.error`: markdown input that must not convert.
+- `real-payloads/` — `<name>.json`: sanitized live ADF, round-tripped ADF→markdown→ADF. No
+  expected markdown.
+
+JSON is editor-normal (AGENTS.md §2), two-space indent, keys sorted.
