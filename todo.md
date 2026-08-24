@@ -49,7 +49,7 @@ detail is settled at its own milestone.
   - [x] **1d2 — Block nodes**: panel, expand/nestedExpand, the media family and the CommonMark
         image shape, both table forms, task and decision lists, layout, extensions, syncBlock —
         with the reserved `marks` attribute and the fence lengths nesting forces.
-  - [ ] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
+  - [x] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
         border, subsup, textColor, underline; the content slot's `text` attribute and the
         `:text{text="…"}` whitespace spelling.
   - [ ] **1d4 — Opaque carry** (§3): an unknown node in both positions, the reserved `adf` info
