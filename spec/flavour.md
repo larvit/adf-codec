@@ -26,7 +26,8 @@ normalizes to it through the round-trip.
   run in the content; indented-code input normalizes to fences.
 - Code spans: a backtick string one longer than the longest backtick run in the text, the text
   padded with one space on each side where it begins or ends with a backtick, or begins and ends
-  with a space without being all spaces.
+  with a space without being all spaces. The content is literal — inline parsing does not see
+  inside it, directive syntax and `~~` included.
 - Thematic break `---`.
 - Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
   CommonMark admits no spelling — the end of a block, inside a heading — it is `:hardBreak{}`.
@@ -51,10 +52,11 @@ string.
 
 **Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.
 `[content]` is inline markdown; brackets inside balance as in CommonMark link text, `\]` for a
-literal bracket. A space at either edge of `[content]` is part of it. Each section below says
-whether content and attrs are required. `:` opens a directive only when the name is followed
-immediately by `[` or `{`, and `{attrs}` must follow `]` (or the name) with no gap — anything
-else (`10:30`, `:smile:`, a stray `{…}` in text) is literal text.
+literal bracket. Whitespace at either edge of `[content]`, space or tab, is part of it and
+survives inline parsing. Each section below says whether content and attrs are required. `:` opens
+a directive only when the name is followed immediately by `[` or `{`, and `{attrs}` must follow
+`]` (or the name) with no gap — anything else (`10:30`, `:smile:`, a stray `{…}` in text) is
+literal text.
 
 **Container block**:
 
@@ -89,8 +91,8 @@ form, and omits empty `{attrs}` except where the `{` itself claims the directive
 (`:hardBreak{}`).
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
-directive syntax — the leading `:` of a would-be directive, `]` inside content; a backslash
-before `:` in input always yields a literal colon.
+directive syntax — the leading `:` of a would-be directive, `]` inside content; outside code
+spans and code blocks, a backslash before `:` in input yields a literal colon.
 
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
 fence line of the container's length or longer, a bare colon-run line outside any container or
@@ -313,20 +315,21 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
 the six nodes below, those with a `text` attribute spell it in the content slot as plain text:
 `[]` is the empty string, absent content is the absent attribute, non-empty content parsing to
-anything but one unmarked text node is a named error, and so is a `text` key in `{attrs}`. The
-rest take no content.
+anything but one unmarked text node — adjacent identical-mark text nodes merged first — is a
+named error, and so is a `text` key in `{attrs}`. The rest take no content, `:text` included;
+content on a node that takes none is a named error.
 
 - `date` — `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — `id` (string), `localId` (string), `shortName` (string, `:name:`), `text` (string).
-- `inlineCard` — `data` (json), `localId` (string), `url` (string); a card carries one or the
-  other, never both.
+- `inlineCard` — `data` (json), `localId` (string), `url` (string); real payloads carry one or
+  the other.
 - `mediaInline` — `alt` (string), `collection` (string), `data` (json), `height` (number), `id`
   (string), `localId` (string), `occurrenceKey` (string), `type` (`file` `image` `link`), `width`
   (number).
 - `mention` — `accessLevel` (`APPLICATION` `CONTAINER` `NONE` `SITE`), `id` (string), `localId`
   (string), `text` (string), `userType` (`APP` `DEFAULT` `SPECIAL`).
 - `status` — `color` (`blue` `green` `neutral` `purple` `red` `yellow`), `localId` (string),
-  `style` (string), `text` (string); content required.
+  `style` (string), `text` (string).
 
 ```
 :status[In review]{color=yellow} — :mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4}
@@ -362,8 +365,8 @@ A spelling adds its mark to every inline node it wraps, and nesting is the marks
 outermost first: `_:underline[x]_` gives marks `[em, underline]`, `:underline[_x_]` the reverse.
 `adfToMarkdown` nests in the order the array holds rather than sorting it — §2's equality
 restores the array, not a set — and opens each spelling once over the longest run of adjacent
-inline nodes carrying that mark at that depth. A run breaks at every node the emitter carries, so
-no emitted carry sits inside a mark spelling.
+inline nodes carrying an identical mark, attributes included, at that depth. A run breaks at every
+node the emitter carries, so no emitted carry sits inside a mark spelling.
 
 An inline node whose marks no nesting spells — a mark type not listed here, an attribute no
 spelling holds, an order putting a code span outside another mark, or `code` on text holding a
