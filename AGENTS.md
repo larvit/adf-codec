@@ -37,7 +37,7 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 - Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
   `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
 - Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
-  directive or a pipe table is claimed — plus one image gap.
+  directive, a pipe table or a `~~` pair is claimed — plus one image gap.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.

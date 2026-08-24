@@ -58,5 +58,5 @@ syntax, the rest rides the opaque carry (§3) until it does too.
 | Marks | `border` `code` `em` `link` `strike` `strong` `subsup` `textColor` `underline` |
 
 Plain markdown covers `blockquote`, `bulletList`, `codeBlock`, `heading`, `orderedList`,
-`paragraph`, `rule`, `listItem`, `hardBreak`, `text`, and the `code`, `em`, `link`, `strike` and
-`strong` marks. Everything else is what the flavour is for.
+`paragraph`, `rule`, `listItem`, `hardBreak`, `text`, and the `code`, `em`, `link` and `strong`
+marks; `strike` is the flavour's `~~` carve-out. Everything else is what the flavour is for.
