@@ -38,6 +38,10 @@ detail is settled at its own milestone.
       read back as href `…/a` plus literal `b)`; title `He said "hi"` emits
       `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
       brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves the
+      pick here. **Also blocked**: block separation is unstated for a CommonMark block beside a
+      directive block in a container body — an `expand` whose content is `paragraph` "A" then a
+      `panel` (`panelType` `warning`) holding "B" spells `A` and `:::panel warning` either on
+      consecutive lines or with a blank line between. Two defensible spellings, so §8 leaves the
       pick here.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
@@ -51,8 +55,9 @@ detail is settled at its own milestone.
   - [ ] **1d4 — Opaque carry** (§3): an unknown node in both positions, the reserved `adf` info
         string, and the `codeBlock` whose language is `adf`.
   - [ ] **1d5 — Carve-outs and combinations**: the three carve-outs and their escapes, mark
-        nesting order and the runs a carry breaks, attribute canonicalization, and documents
-        combining nodes rather than isolating one.
+        nesting order and the runs a carry breaks, attribute canonicalization, documents
+        combining nodes rather than isolating one, and a paragraph line inside a container body
+        shaped like a closing fence (`:::`, `::: x`).
   - [ ] **1d6 — Input normalization**: one-way markdown→ADF fixtures, not pairs — setext
         headings, indented code, loose lists, `*`/`+` bullets, entity references, soft wraps.
   - [ ] **1d7 — Error input**: also one-way, a markdown input per named error, asserting only

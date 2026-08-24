@@ -1,0 +1,31 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Taken from the roof last night.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "The moon, at night.",
+            "type": "external",
+            "url": "https://example.com/moon.png"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,89 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "The moon, at night.",
+            "type": "external",
+            "url": "https://example.com/moon.png"
+          },
+          "type": "media"
+        },
+        {
+          "content": [
+            {
+              "text": "Taken from Kiruna.",
+              "type": "text"
+            }
+          ],
+          "type": "caption"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center",
+        "localId": "01a03394-6721-7075-bd6e-fd9a57b64b56"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "Torque chart",
+            "type": "external",
+            "url": "https://example.com/torque.png"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "height": 480,
+            "type": "external",
+            "url": "https://example.com/plan.png",
+            "width": 640
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "The assembly drawing",
+            "type": "external",
+            "url": "https://example.com/assembly.png"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/assembly"
+              },
+              "type": "link"
+            }
+          ],
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

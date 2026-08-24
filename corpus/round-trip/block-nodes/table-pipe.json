@@ -1,0 +1,186 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Part",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Note",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Bolt M8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Grade ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "code"
+                        }
+                      ],
+                      "text": "8.8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Nut | washer",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Sold as a pair",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Washer M8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "100 pcs",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "text": "zinc-plated",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Spare",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

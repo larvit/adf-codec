@@ -1,0 +1,50 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "title": "Full build log"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "The build ran for 11 minutes.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "text": "Warnings: 3.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "expand"
+    },
+    {
+      "attrs": {
+        "localId": "01a03382-2ca7-745c-b85d-49b84d32cf99",
+        "title": "Torque values"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Bolt M8: 25 Nm.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "nestedExpand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
