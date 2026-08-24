@@ -1,0 +1,53 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "color": "yellow",
+            "text": "In review"
+          },
+          "type": "status"
+        },
+        {
+          "text": " carries the text in the slot.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "color": "neutral"
+          },
+          "type": "status"
+        },
+        {
+          "text": " carries no text attribute.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "color": "neutral",
+            "text": ""
+          },
+          "type": "status"
+        },
+        {
+          "text": " carries the empty string.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

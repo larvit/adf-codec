@@ -1,0 +1,41 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Tracking ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "url": "https://example.com/browse/ABC-123"
+          },
+          "type": "inlineCard"
+        },
+        {
+          "text": " this week.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "data": {
+              "@type": "Link",
+              "name": "Torque spec",
+              "url": "https://example.com/torque"
+            },
+            "localId": "01a033ad-1fa5-76fa-aad0-2e56a17d76aa"
+          },
+          "type": "inlineCard"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

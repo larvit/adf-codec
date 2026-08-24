@@ -1,0 +1,93 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#ae2e24"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Overdue",
+          "type": "text"
+        },
+        {
+          "text": " since the H",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "type": "sub"
+              },
+              "type": "subsup"
+            }
+          ],
+          "text": "2",
+          "type": "text"
+        },
+        {
+          "text": "O test, ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "underline"
+            }
+          ],
+          "text": "signed",
+          "type": "text"
+        },
+        {
+          "text": " on the 2",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "type": "sup"
+              },
+              "type": "subsup"
+            }
+          ],
+          "text": "nd",
+          "type": "text"
+        },
+        {
+          "text": " of May.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "collection": "contentId-98237",
+            "id": "01a032c3-7a90-70c9-88f6-c60f710eda07"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "color": "#091e42",
+                "size": 2
+              },
+              "type": "border"
+            }
+          ],
+          "type": "mediaInline"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
