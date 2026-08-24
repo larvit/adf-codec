@@ -11,7 +11,19 @@
               "type": "textColor"
             }
           ],
-          "text": "Overdue",
+          "text": "Over",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#a54800"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "due",
           "type": "text"
         },
         {
@@ -40,8 +52,20 @@
               "type": "underline"
             }
           ],
-          "text": "signed",
+          "text": "signed by ",
           "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "01a032c3-7a7c-775f-a730-2d79351338b4",
+            "text": "@Mikael"
+          },
+          "marks": [
+            {
+              "type": "underline"
+            }
+          ],
+          "type": "mention"
         },
         {
           "text": " on the 2",
