@@ -42,8 +42,9 @@ normalizes to it through the round-trip.
   the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat —
   with the opener literal the closer parses as text, so `*not emphasis*` is `\*not emphasis*`, one
   backslash.
-- Blocks separated by one blank line, no trailing whitespace outside a code block's content,
-  single trailing newline; a document with no blocks is the empty string.
+- Blocks separated by one blank line — at document level, and between CommonMark blocks; two
+  directive blocks inside a container take none. No trailing whitespace outside a code block's
+  content, single trailing newline; a document with no blocks is the empty string.
 
 ## Directives
 
@@ -198,9 +199,10 @@ The moon, at night.
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
 from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown`
-emits the image form for exactly that shape — those attrs and no others, no marks, no caption.
-An image amid other text, or one carrying a title, is a named error: `mediaInline` carries a
-media `collection` + `id`, never a URL, and no media node carries a title.
+emits the image form for exactly that shape — those attrs and no others, no marks, no caption,
+and a `media` carrying nothing beyond `alt`, `type` and `url`. An image amid other text, or one
+carrying a title, is a named error: `mediaInline` carries a media `collection` + `id`, never a
+URL, and no media node carries a title.
 
 ### Tables
 

@@ -56,7 +56,16 @@
                 {
                   "content": [
                     {
-                      "text": "Grade 8.8",
+                      "text": "Grade ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "code"
+                        }
+                      ],
+                      "text": "8.8",
                       "type": "text"
                     }
                   ],

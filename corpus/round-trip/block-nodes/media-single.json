@@ -15,6 +15,9 @@
           "type": "media"
         },
         {
+          "attrs": {
+            "localId": "01a03389-670b-7331-ae60-0446747ace7a"
+          },
           "content": [
             {
               "text": "The moon, at night.",
@@ -37,6 +40,7 @@
           "attrs": {
             "alt": "Torque chart",
             "height": 480,
+            "localId": "01a03389-8683-7c05-bfbb-457bcdb0ced3",
             "type": "external",
             "url": "https://example.com/torque.png",
             "width": 640

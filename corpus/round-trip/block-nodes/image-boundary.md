@@ -12,3 +12,7 @@ Taken from Kiruna.
 :::mediaSingle {layout=center}
 ::media {height=480 type=external url="https://example.com/plan.png" width=640}
 :::
+
+:::mediaSingle {layout=center}
+::media {collection=contentId-98237 id=01a03389-e4eb-76a1-9eae-e8b7a01f4787 type=file}
+:::

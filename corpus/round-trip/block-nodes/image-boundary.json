@@ -58,6 +58,22 @@
         }
       ],
       "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "collection": "contentId-98237",
+            "id": "01a03389-e4eb-76a1-9eae-e8b7a01f4787",
+            "type": "file"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
     }
   ],
   "type": "doc",

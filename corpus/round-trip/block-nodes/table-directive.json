@@ -2,6 +2,7 @@
   "content": [
     {
       "attrs": {
+        "displayMode": "fixed",
         "isNumberColumnEnabled": true,
         "layout": "default",
         "localId": "01a0339e-c34f-7658-9d98-eb059401b7ab",
@@ -41,7 +42,9 @@
           "content": [
             {
               "attrs": {
-                "background": "#deebff"
+                "background": "#deebff",
+                "localId": "01a03389-c573-72a6-a036-6cd9c6865301",
+                "rowspan": 2
               },
               "content": [
                 {
