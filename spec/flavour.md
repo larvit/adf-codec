@@ -4,9 +4,8 @@ The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` p
 CommonMark is a subset with two carve-outs: literal text that matches directive syntax below or
 opens a pipe table is claimed by the flavour (escape the `:` or `|` to keep it literal) — and
 one gap: a CommonMark image fits only as its own title-less paragraph — mid-text and titled
-images are named errors (ADF has a slot for neither). The emitted form is contract
-(AGENTS.md §8). Per-node syntaxes build on this grammar in the sections below (inline nodes and
-marks: todo.md 1c).
+images are named errors. The emitted form is contract (AGENTS.md §8). Per-node syntaxes build on
+this grammar in the sections below (inline nodes and marks: todo.md 1c).
 
 ## Canonical form
 
@@ -142,8 +141,8 @@ markdown input the same mismatch is a named error.
 ### Panel
 
 Container; the arg is `panelType` (`custom` `error` `info` `note` `success` `tip` `warning`).
-Attributes: `localId` (string), plus `custom` styling `panelColor` (string), `panelIcon`
-(string), `panelIconId` (string), `panelIconText` (string).
+Attributes: `localId` (string), `panelColor` (string), `panelIcon` (string), `panelIconId`
+(string), `panelIconText` (string) — the editor writes the last four for `custom` panels.
 
 ```
 :::panel warning
@@ -185,7 +184,7 @@ The moon, at night.
 
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
-from the destination, `alt` from the image text when non-empty. `adfToMarkdown` emits the image
+from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown` emits the image
 form for exactly that shape — those attrs and no others, no marks, no caption. An image amid
 other text, or one carrying a title, is a named error (ADF has a slot for neither).
 
@@ -290,7 +289,7 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 (`default` `full-width` `wide`), `localId` (string), `parameters` (json), `text` (string).
 
 ```
-::extension {extensionKey=toc extensionType=com.atlassian.confluence.macro.core parameters="{\"maxLevel\":2}"}
+::extension {extensionKey=toc extensionType="com.atlassian.confluence.macro.core" parameters="{\"maxLevel\":2}"}
 ```
 
 ### Sync blocks
