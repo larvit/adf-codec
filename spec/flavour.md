@@ -39,9 +39,9 @@ normalizes to it through the round-trip.
 - Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
-  the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat —
-  with the opener literal the closer parses as text, so `*not emphasis*` is `\*not emphasis*`, one
-  backslash.
+  the leading delimiter of a construct that would otherwise open, re-scan from there, and
+  repeat — with the opener literal the closer parses as text, so `*not emphasis*` is
+  `\*not emphasis*`, one backslash.
 - Blocks separated by one blank line at document level and between CommonMark blocks; two
   directive blocks inside a container take none. No trailing whitespace outside a code block's
   content, single trailing newline; a document with no blocks is the empty string.
