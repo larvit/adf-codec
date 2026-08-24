@@ -38,9 +38,11 @@ isAdfDocument(v: unknown): v is AdfDocument
   (AGENTS.md §3).
 - `htmlToAdf(adfToHtml(doc))` equals `doc` — fidelity HTML cannot express rides `data-*`
   attributes.
-- Plain CommonMark is valid input to `markdownToAdf`, with one carve-out: literal text matching
-  directive syntax is claimed (escapable — `spec/flavour.md`). Converting back yields the
-  library's canonical spelling, which round-trips byte-identically.
+- Plain CommonMark is valid input to `markdownToAdf`, with two carve-outs — literal text
+  matching directive or pipe-table syntax is claimed (escapable — `spec/flavour.md`) — and one
+  gap: a CommonMark image fits only as its own title-less paragraph; mid-text and titled images
+  are error results. Converting back yields the library's canonical spelling, which round-trips
+  byte-identically.
 - Foreign HTML maps a documented element set; an unmappable element is an error, never a silent
   drop. Well-formed HTML only — no tag-soup recovery.
 - The emitted formats are semver surface (AGENTS.md §8).

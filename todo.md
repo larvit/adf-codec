@@ -11,12 +11,15 @@ detail is settled at its own milestone.
 - [x] **1a — The directive grammar** (`spec/flavour.md`): inline/block/leaf directive forms,
       attributes, escaping, nesting, canonical form, the opaque-carry spelling, the raw-HTML
       input policy.
-- [ ] **1b — Block node syntaxes** in `spec/flavour.md`: panel, expand/nestedExpand, the media
+- [x] **1b — Block node syntaxes** in `spec/flavour.md`: panel, expand/nestedExpand, the media
       family, the pipe-vs-directive table rule and the directive table form, task and decision
       lists, layout, extensions, syncBlock.
 - [ ] **1c — Inline node syntaxes and marks** in `spec/flavour.md`: mention, emoji, status, date,
       inlineCard, mediaInline; underline, subsup, textColor, border; the spelling for text nodes
-      whose whitespace CommonMark cannot hold (literal newlines, leading or trailing spaces).
+      whose whitespace CommonMark cannot hold (literal newlines, leading or trailing spaces) —
+      escape-based, never literal, since pipe cells trim and pad. At `mediaInline`, check real
+      payloads for external-URL support — if it exists, revisit the media section's
+      mid-text-image error and its "no slot" ground.
 - [ ] **1d — Corpus start** (§10): checked-in ADF ↔ canonical-markdown fixture pairs per spec'd
       node.
 - [ ] **2 — `adfToMarkdown`.** First real code — decide here where §10's coverage check lives.

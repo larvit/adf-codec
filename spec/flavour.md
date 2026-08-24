@@ -1,9 +1,11 @@
 # The markdown flavour
 
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
-CommonMark is a subset with one carve-out: literal text that matches directive syntax below is
-claimed by the flavour (escape the `:` to keep it literal). The emitted form is contract
-(AGENTS.md §8). Per-node syntaxes build on this grammar in sections that follow (todo.md 1b–1c).
+CommonMark is a subset with two carve-outs: literal text that matches directive syntax below or
+opens a pipe table is claimed by the flavour (escape the `:` or `|` to keep it literal) — and
+one gap: a CommonMark image fits only as its own title-less paragraph — mid-text and titled
+images are named errors. The emitted form is contract (AGENTS.md §8). Per-node syntaxes build on
+this grammar in the sections below (inline nodes and marks: todo.md 1c).
 
 ## Canonical form
 
@@ -111,3 +113,190 @@ CommonMark input may contain raw HTML. `markdownToAdf` routes each construct thr
 HTML element mapping (AGENTS.md §3; specified with the HTML dialect, todo.md milestone 6) — ADF
 has no raw-HTML node, so a construct without a mapping, comments and processing instructions
 included, is an error result naming it. The flavour never emits raw HTML.
+
+## Block nodes
+
+The directive name is always the ADF node type. A container's body is the node's `content`; a
+leaf has none. Every directive parses in any position — `markdownToAdf` builds exactly what is
+written; validity against ADF's content models stays the author's business (AGENTS.md §14).
+
+Each section lists attributes as `name (type)`. A parenthesized value set documents what real
+payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
+type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
+(`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys
+sorted), quoted. `markdownToAdf` emits `attrs`, `content` and `marks` keys only when non-empty;
+editor-normal ADF reads an empty attrs object, marks array or content array as the absent key
+(AGENTS.md §2) — the grammar's empty-`{attrs}` omission already collapses the two spellings.
+
+Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
+`json` value: `::::layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
+Three child nodes hold inline content rather than blocks (`caption`, `decisionItem`,
+`taskItem`): their body is at most one paragraph, whose inline content becomes the node's
+`content`; any other body is a named error.
+
+A node the sections cannot spell rides the opaque carry: an attrs key its section does not
+list, a value that is not the section's type, or an arg-slot value that is no bare token. In
+markdown input the same mismatch is a named error.
+
+### Panel
+
+Container; the arg is `panelType` (`custom` `error` `info` `note` `success` `tip` `warning`).
+Attributes: `localId` (string), `panelColor` (string), `panelIcon` (string), `panelIconId`
+(string), `panelIconText` (string) — the editor writes the last four for `custom` panels.
+
+```
+:::panel warning
+Check the collation before importing.
+:::
+```
+
+### Expand
+
+`expand` and `nestedExpand`: containers, no arg — same syntax, two node types, the name picks
+which. Attributes: `localId` (string), `title` (string).
+
+```
+:::expand {title="Full build log"}
+…
+:::
+```
+
+### The media family
+
+- `media` — leaf. Attributes: `alt` (string), `collection` (string), `height` (number), `id`
+  (string), `localId` (string), `occurrenceKey` (string), `type` (`external` `file` `link`),
+  `url` (string), `width` (number). `file` and `link` media carry `collection` + `id`;
+  `external` media carry `url`.
+- `mediaSingle` — container: one `::media`, then optionally one `:::caption`. Attributes:
+  `layout` (`align-end` `align-start` `center` `full-width` `wide` `wrap-left` `wrap-right`),
+  `localId` (string), `width` (number), `widthType` (`percentage` `pixel`).
+- `caption` — container, inline body. Attributes: `localId` (string).
+- `mediaGroup` — container of `::media` leaves, no attributes.
+
+```
+::::mediaSingle {layout=center width=50}
+::media {collection=MediaServicesSample id=4478e39c-cf9b-41d1-ba92-68589487cd75 type=file}
+:::caption
+The moon, at night.
+:::
+::::
+```
+
+**The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
+a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
+from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown` emits the image
+form for exactly that shape — those attrs and no others, no marks, no caption. An image amid
+other text, or one carrying a title, is a named error (ADF has a slot for neither).
+
+### Tables
+
+One header row plus plain inline cells is a pipe table; anything richer is the directive form
+(AGENTS.md §4). Precisely: a table emits as a pipe table exactly when the `table`, every row
+and every cell carry no attrs and no marks, the first row is all `tableHeader` and the rest all
+`tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
+mark-less paragraph — an empty cell holds one empty paragraph — with no `|` in a code span:
+backslash escapes are inert there, so pipe form cannot spell that pipe and the table takes the
+directive form. A pipe table parses back to exactly that shape.
+
+```
+| Part | Qty |
+| --- | --- |
+| Bolt M8 | 40 |
+```
+
+Claiming at block level, symmetric with directives: a line opening with an unescaped `|` is
+claimed and must parse as part of a pipe table, else it is a named error — escape the pipe
+(`\|`) to keep it literal text. A pipe table is a header row, a delimiter row whose cells are
+runs of one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
+Cells split on unescaped `|` before inline parsing — `\|` stays in the cell text, and the
+inline layer's ordinary CommonMark escaping yields the pipe; each cell is the inline content of
+one paragraph, trimmed; canonical form pads cells with single spaces and ends rows with `|`
+(optional in input). Named errors: a delimiter or body row whose cell count differs from the
+header's, and an alignment colon in the delimiter row — ADF holds no column alignment. In a
+pipe cell a hard break is `:hardBreak{}`, a literal `|` is `\|`, and `|` inside a quoted
+attribute value is `\u007c` (JSON has no `\|`).
+
+The directive form nests cells as containers of block content inside `tableRow` containers:
+
+```
+:::::table {isNumberColumnEnabled=true width=760}
+::::tableRow
+:::tableHeader {colspan=2 colwidth="[340,420]"}
+Assembly
+:::
+::::
+::::tableRow
+:::tableCell {background="#deebff"}
+Bolt M8
+:::
+:::tableCell {valign=top}
+40
+:::
+::::
+:::::
+```
+
+Attributes — `table`: `displayMode` (`default` `fixed`), `isNumberColumnEnabled` (boolean),
+`layout` (`align-end` `align-start` `center` `default` `full-width` `wide`), `localId`
+(string), `width` (number, pixels). `tableRow`: `localId` (string). `tableCell` and
+`tableHeader`: `background` (string), `colspan` (number), `colwidth` (json, one pixel width per
+spanned column), `localId` (string), `rowspan` (number), `valign` (`bottom` `middle` `top`).
+
+### Task and decision lists
+
+- `taskList` — container of `taskItem`, `blockTaskItem` and nested `taskList` directives.
+  Attributes: `localId` (string).
+- `taskItem` — container, inline body; the arg is the state (`DONE` `TODO`). Attributes:
+  `localId` (string).
+- `blockTaskItem` — container, block body; arg and attributes as `taskItem`.
+- `decisionList` — container of `decisionItem` directives. Attributes: `localId` (string).
+- `decisionItem` — container, inline body. Attributes: `localId` (string), `state` (string —
+  free-form; the editor writes `DECIDED`).
+
+```
+::::taskList {localId=0198f3a2-7c41-7f2e-9b3a-4d8e2c1a6b90}
+:::taskItem DONE {localId=0198f3a2-8d52-70b1-8c4f-5e9f3d2b7ca1}
+Write the spec
+:::
+:::taskItem TODO {localId=0198f3a2-9e63-7d80-a15b-6fa04e3c8db2}
+Ship it
+:::
+::::
+```
+
+### Layout
+
+`layoutSection` — container of `layoutColumn` containers; attributes: `localId` (string).
+`layoutColumn` — container, block body; attributes: `localId` (string), `valign` (`bottom`
+`middle` `top`), `width` (number — percent).
+
+```
+::::layoutSection
+:::layoutColumn {width=50}
+Left.
+:::
+:::layoutColumn {width=50}
+Right.
+:::
+::::
+```
+
+### Extensions
+
+`extension` — leaf. `bodiedExtension` — container, block body. `multiBodiedExtension` —
+container of `extensionFrame` containers; `extensionFrame` — container, block body, no
+attributes. The other three share: `extensionKey` (string), `extensionType` (string), `layout`
+(`default` `full-width` `wide`), `localId` (string), `parameters` (json), `text` (string).
+
+```
+::extension {extensionKey=toc extensionType="com.atlassian.confluence.macro.core" parameters="{\"maxLevel\":2}"}
+```
+
+### Sync blocks
+
+`syncBlock` — leaf. `bodiedSyncBlock` — container, block body. Attributes: `localId` (string),
+`resourceId` (string).
+
+```
+::syncBlock {localId=0198f3a2-af74-7e91-b26c-70b15f4d9ec3 resourceId="ari:cloud:confluence:site/page/123"}
+```
