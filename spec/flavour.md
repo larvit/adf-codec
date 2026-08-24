@@ -24,9 +24,9 @@ normalizes to it through the round-trip.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
   run in the content; indented-code input normalizes to fences.
-- Code spans: a backtick string one longer than the longest backtick run in the text, padded with
-  one space on each side where the text begins or ends with a backtick, or begins and ends with a
-  space without being all spaces.
+- Code spans: a backtick string one longer than the longest backtick run in the text, the text
+  padded with one space on each side where it begins or ends with a backtick, or begins and ends
+  with a space without being all spaces.
 - Thematic break `---`.
 - Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
   CommonMark admits no spelling — the end of a block, inside a heading — it is `:hardBreak{}`.
@@ -191,9 +191,9 @@ The moon, at night.
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
 from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown`
-emits the image form for exactly that shape — those attrs and no others, no marks, no caption. An
-image amid other text, or one carrying a title, is a named error: `mediaInline` carries a media
-`collection` + `id`, never a URL, and no media node carries a title.
+emits the image form for exactly that shape — those attrs and no others, no marks, no caption.
+An image amid other text, or one carrying a title, is a named error: `mediaInline` carries a
+media `collection` + `id`, never a URL, and no media node carries a title.
 
 ### Tables
 
