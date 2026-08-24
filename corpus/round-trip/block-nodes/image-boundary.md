@@ -14,5 +14,5 @@ Taken from Kiruna.
 :::
 
 :::mediaSingle {layout=center}
-::media {collection=contentId-98237 id=01a03389-e4eb-76a1-9eae-e8b7a01f4787 type=file}
+::media {alt="The assembly drawing" marks="[{\"attrs\":{\"href\":\"https://example.com/assembly\"},\"type\":\"link\"}]" type=external url="https://example.com/assembly.png"}
 :::

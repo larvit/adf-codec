@@ -12,4 +12,9 @@ Bolt M8
 40
 :::
 ::::
+::::tableRow
+:::tableCell
+60
+:::
+::::
 :::::

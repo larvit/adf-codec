@@ -39,10 +39,10 @@ detail is settled at its own milestone.
       `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
       brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves the
       pick here. **Also blocked**: block separation is unstated for a CommonMark block beside a
-      directive block in a container body — a `panel` (`panelType` `info`) whose content is
-      `paragraph` "A" then a `panel` (`panelType` `warning`) holding "B" spells `A` and
-      `:::panel warning` either on consecutive lines or with a blank line between. Two defensible
-      spellings, so §8 leaves the pick here.
+      directive block in a container body — an `expand` whose content is `paragraph` "A" then a
+      `panel` (`panelType` `warning`) holding "B" spells `A` and `:::panel warning` either on
+      consecutive lines or with a blank line between. Two defensible spellings, so §8 leaves the
+      pick here.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d5's.
