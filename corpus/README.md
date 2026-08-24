@@ -8,7 +8,8 @@ One directory per contract kind:
   `combinations/`.
 - `normalization/` — `<name>.md` + `<name>.json`: markdown input, and the document
   `markdownToAdf` must build from it. One-way; the markdown is not canonical.
-- `errors/` — `<name>.md` + `<name>.error`: markdown input that must not convert.
+- `errors/` — `<name>.md`: markdown input that must not convert. A `<name>.error` beside it
+  pins which error.
 - `real-payloads/` — `<name>.json`: sanitized live ADF, round-tripped ADF→markdown→ADF. No
   expected markdown.
 
