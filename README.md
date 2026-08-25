@@ -3,8 +3,9 @@
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
 
-**Status: scaffold only, no conversion code yet.** Plan: `todo.md`. Decisions: `AGENTS.md`. The
-flavour's grammar: [`spec/flavour.md`](spec/flavour.md).
+**Status: pre-release — `adfToMarkdown` emits the CommonMark subset, nothing else is built.**
+Plan: `todo.md`. Decisions: `AGENTS.md`. The flavour's grammar:
+[`spec/flavour.md`](spec/flavour.md).
 
 ## What it is for
 
@@ -31,6 +32,8 @@ isAdfDocument(v: unknown): v is AdfDocument
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
+`ConvertError` is `{ code, message, path }`: a code from a closed set, and the path of the node it
+names, from the document root.
 
 ## The guarantees
 
@@ -45,6 +48,7 @@ isAdfDocument(v: unknown): v is AdfDocument
   spelling, which round-trips byte-identically.
 - Foreign HTML maps a documented element set; an unmappable element is an error, never a silent
   drop. Well-formed HTML only — no tag-soup recovery.
+- A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
 
 ## Who it is for

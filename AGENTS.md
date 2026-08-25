@@ -72,6 +72,11 @@ The emitted markdown and HTML are contracts. After 1.0: previously-emitted outpu
 differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
 Pre-1.0, normal 0.x rules.
 
+The error surface is a contract too. `ConvertError` is `{ code, message, path }` — the code from a
+closed list a consumer may switch exhaustively, the message free text, the path the node's position
+from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
+new failure cause reuses a code where one fits; the list is complete at `0.1.0`.
+
 ## 9. Release automation
 
 - `package.json` version on `main` is the source of truth. CI on `main`: tests green and version
@@ -87,6 +92,11 @@ Test for the behaviour wanted first, then implement until green. `node --test`, 
 Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
 coverage does not decline, containers are torn down after a run.
 
+The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
+functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
+`noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index
+compared against `undefined` — have a half no valid document reaches.
+
 The corpus, all checked in: hand-built fixtures per node and combination; real sanitized ADF from
 live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite against
 `markdownToAdf` and `markdownToHtml`.
@@ -99,6 +109,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
   `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
   the spot.
+- Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and attribute values
+  are all held to 500 levels, so a deep document is a `Result` rather than the stack overflow that
+  waits near 2000.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
@@ -126,7 +139,8 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 ## 14. Non-goals
 
 No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
-validation or exported validator, no shipped CSS (§4), no streaming APIs, no performance budget —
+validation or exported validator — a refusal that keeps the round-trip is not schema validation,
+so the one a node carrying the same mark type twice earns stays, no shipped CSS (§4), no streaming APIs, no performance budget —
 conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
 non-goal.
 
