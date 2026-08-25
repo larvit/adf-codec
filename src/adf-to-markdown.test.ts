@@ -177,6 +177,66 @@ test('wraps adjacent nodes carrying one mark once, and a differing mark twice', 
   assert.equal(emitted(marked('a', link('http://x')), marked('b', link('http://y'))), '[a](http://x)[b](http://y)\n')
 })
 
+test('escapes a literal delimiter that would merge with an emitted one', () => {
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
+  assert.equal(emitted(marked('a_', { type: 'em' })), '_a\\__\n')
+  assert.equal(emitted(marked('_a', { type: 'em' })), '_\\_a_\n')
+  assert.equal(emitted(marked('a*', { type: 'strong' })), '**a\\***\n')
+  assert.equal(emitted({ text: 'x', type: 'text' }, marked('~a', { type: 'strike' })), 'x~~\\~a~~\n')
+  assert.equal(emitted({ text: '`', type: 'text' }, marked('x', { type: 'code' })), '\\``x`\n')
+  assert.equal(emitted(marked('x', { type: 'code' }), { text: '`', type: 'text' }), '`x`\\`\n')
+  assert.equal(emitted({ text: '!', type: 'text' }, marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' })), '\\![x](https://example.com/)\n')
+})
+
+test('escapes a hyphen underline a hard break would expose', () => {
+  const line = (text: string): string => markdown(adfToMarkdown(document(paragraph({ text: 'foo', type: 'text' }, { type: 'hardBreak' }, { text, type: 'text' }))))
+  assert.equal(line('--'), 'foo\\\n\\--\n')
+  assert.equal(line('=='), 'foo\\\n\\==\n')
+})
+
+test('refuses a list item whose marker completes a thematic break', () => {
+  const item = (...content: AdfNode[]): AdfNode => ({ content, type: 'listItem' })
+  assert.equal(code(adfToMarkdown(document({ content: [item({ type: 'rule' })], type: 'bulletList' }))), 'unspellable-line-start')
+  const nested: AdfNode = { content: [item({ content: [item()], type: 'bulletList' })], type: 'bulletList' }
+  assert.equal(markdown(adfToMarkdown(document(nested))), '- -\n')
+  assert.equal(code(adfToMarkdown(document({ content: [item(nested)], type: 'bulletList' }))), 'unspellable-line-start')
+})
+
+test('refuses the characters CommonMark rewrites', () => {
+  assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' }))), 'unspellable-whitespace')
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\u0000b', type: 'text' })))), 'unspellable-character')
+  assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))), 'unspellable-character')
+})
+
+test('refuses a text node carrying no text at all', () => {
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: '', type: 'text' })))), 'unsupported-node-shape')
+})
+
+test('refuses a mark run whose edge holds whitespace CommonMark flanking counts', () => {
+  const em = { type: 'em' }
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em], text: 'a', type: 'text' }, { marks: [em], type: 'hardBreak' }, { text: 'b', type: 'text' })))), 'unspellable-whitespace')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em], text: '\u00a0a', type: 'text' })))), 'unspellable-whitespace')
+})
+
+test('pads a code span whose edges CommonMark would strip', () => {
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: ' \t ', type: 'text' })))), '`  \t  `\n')
+})
+
+test('spells one code span over a run of code-marked nodes', () => {
+  const code_ = { type: 'code' }
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ marks: [code_], text: 'a', type: 'text' }, { marks: [code_], text: 'b', type: 'text' })))),
+    '`ab`\n',
+  )
+})
+
+test('refuses a document nested deeper than the emitter carries', () => {
+  let node: AdfNode = paragraph({ text: 'x', type: 'text' })
+  for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockquote' }
+  assert.equal(code(adfToMarkdown(document(node))), 'unsupported-node-shape')
+})
+
 test('emits an empty list item without trailing whitespace', () => {
   assert.equal(markdown(adfToMarkdown(document({ content: [{ type: 'listItem' }], type: 'bulletList' }))), '-\n')
 })

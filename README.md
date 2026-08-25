@@ -48,6 +48,7 @@ names, from the document root.
   spelling, which round-trips byte-identically.
 - Foreign HTML maps a documented element set; an unmappable element is an error, never a silent
   drop. Well-formed HTML only — no tag-soup recovery.
+- A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
 
 ## Who it is for

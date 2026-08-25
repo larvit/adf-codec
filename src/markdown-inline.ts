@@ -1,6 +1,6 @@
 import type { AdfMark, AdfNode } from './adf-document.ts'
 import { assembleInlineLine, type InlineSegment, type LineContainer } from './markdown-escaping.ts'
-import { claimsLine, holdsControlCharacter, holdsEntityReference, isAutolink } from './commonmark-grammar.ts'
+import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink, isUnicodeWhitespace } from './commonmark-grammar.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
@@ -76,9 +76,10 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
     if (context.container === 'heading' || context.atBlockEnd) return success([{ kind: 'syntax', text: ':hardBreak{}' }])
     return success([{ kind: 'syntax', text: '\\\n' }])
   }
-  if (typeof node.text !== 'string') return failure('unsupported-node-shape', 'a text node carries no text', path)
+  if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node carries no text', path)
   if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node carries content', path)
   if (/[\n\r]/.test(node.text)) return failure('unspellable-whitespace', 'a text node holds a newline CommonMark cannot spell', path)
+  if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
   return success([{ kind: context.inLinkText ? 'link-text' : 'literal', text: node.text }])
 }
 
@@ -92,7 +93,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   const inner = emitRun(nodes, depth + 1, index, context)
   if (!inner.ok) return inner
   const text = inner.value.map((segment) => segment.text).join('')
-  if (/^[ \t]|[ \t]$/.test(text)) return failure('unspellable-whitespace', `the ${mark.type} spelling cannot open or close beside whitespace`, path)
+  if (holdsEdgeWhitespace(text)) return failure('unspellable-whitespace', `the ${mark.type} spelling cannot open or close beside whitespace`, path)
   if (mark.type === 'em') {
     return success([{ kind: 'emphasis-open', text: spelling }, ...inner.value, { kind: 'emphasis-close', text: spelling }])
   }
@@ -100,20 +101,26 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
 }
 
 function emitCodeSpan(nodes: readonly AdfNode[], depth: number, path: ConvertErrorPath): Result<InlineSegment[]> {
-  const node = nodes[0]
-  if (nodes.length !== 1 || node === undefined || node.type !== 'text' || typeof node.text !== 'string') {
-    return failure('unspellable-mark', 'a code span holds exactly one text node', path)
+  let text = ''
+  for (const node of nodes) {
+    if (node.type !== 'text' || typeof node.text !== 'string' || node.text === '') return failure('unspellable-mark', 'a code span holds text nodes only', path)
+    if ((node.marks ?? []).length !== depth + 1) return failure('unspellable-mark', 'a code span cannot sit inside the marks it carries', path)
+    text += node.text
   }
-  if ((node.marks ?? []).length !== depth + 1) return failure('unspellable-mark', 'a code span cannot sit inside the marks it carries', path)
-  if (/[\n\r]/.test(node.text)) return failure('unspellable-mark', 'a code span holds no newline', path)
-  const fence = '`'.repeat(longestBacktickRun(node.text) + 1)
-  const padded = needsPadding(node.text) ? ` ${node.text} ` : node.text
+  if (/[\n\r]/.test(text)) return failure('unspellable-mark', 'a code span holds no newline', path)
+  if (holdsNullCharacter(text)) return failure('unspellable-character', 'a code span holds a null character CommonMark replaces', path)
+  const fence = '`'.repeat(longestBacktickRun(text) + 1)
+  const padded = needsPadding(text) ? ` ${text} ` : text
   return success([{ kind: 'syntax', text: `${fence}${padded}${fence}` }])
+}
+
+function holdsEdgeWhitespace(text: string): boolean {
+  return text !== '' && (isUnicodeWhitespace(text.charAt(0)) || isUnicodeWhitespace(text.charAt(text.length - 1)))
 }
 
 function needsPadding(text: string): boolean {
   if (text.startsWith('`') || text.endsWith('`')) return true
-  return text.startsWith(' ') && text.endsWith(' ') && text.trim() !== ''
+  return text.startsWith(' ') && text.endsWith(' ') && /[^ ]/.test(text)
 }
 
 function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<InlineSegment[]> {
@@ -126,7 +133,7 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index
   if (title !== undefined && typeof title !== 'string') return failure('unsupported-node-shape', 'a link title is no string', path)
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && (node.marks ?? []).length === depth + 1
-  if (bare && title === undefined && isAutolink(href)) return success([{ kind: 'syntax', text: `<${href}>` }])
+  if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success([{ kind: 'syntax', text: `<${href}>` }])
   const destination = spellDestination(href, path)
   if (!destination.ok) return destination
   const spelledTitle = title === undefined ? success('') : spellTitle(title, path)

@@ -2,21 +2,24 @@ import type { AdfDocument, AdfNode } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
 import { emitInlineLine } from './markdown-inline.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
+import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 
 const largestListMarker = 999999999
+const largestNesting = 500
 const listTypes = ['bulletList', 'orderedList']
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
   if (!isAdfDocument(document)) return failure('not-an-adf-document', 'the value is not an ADF document', [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  const blocks = emitBlocks(document.content ?? [], false, [])
+  const blocks = emitBlocks(document.content ?? [], false, [], 0)
   if (!blocks.ok) return blocks
   return success(blocks.value === '' ? '' : `${blocks.value}\n`)
 }
 
-function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: ConvertErrorPath): Result<string> {
+function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: ConvertErrorPath, depth: number): Result<string> {
+  if (depth > largestNesting) return failure('unsupported-node-shape', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   let output = ''
   let previous: AdfNode | undefined
   for (const [index, node] of nodes.entries()) {
@@ -27,7 +30,7 @@ function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: Conver
       }
       output += inListItem && listTypes.includes(node.type) ? '\n' : '\n\n'
     }
-    const block = emitBlock(node, nodePath)
+    const block = emitBlock(node, nodePath, depth)
     if (!block.ok) return block
     output += block.value
     previous = node
@@ -35,9 +38,9 @@ function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: Conver
   return success(output)
 }
 
-function emitBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
-  if (node.type === 'blockquote') return emitBlockquote(node, path)
-  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path)
+function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
+  if (node.type === 'blockquote') return emitBlockquote(node, path, depth)
+  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path, depth)
   if (node.type === 'codeBlock') return emitCodeBlock(node, path)
   if (node.type === 'heading') return emitHeading(node, path)
   if (node.type === 'paragraph') return emitParagraph(node, path)
@@ -48,10 +51,10 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
   return failure('unsupported-node-type', `the canonical form spells no block node of type ${node.type}`, path)
 }
 
-function emitBlockquote(node: AdfNode, path: ConvertErrorPath): Result<string> {
+function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
   const validation = validateBlockNode(node, [], path)
   if (!validation.ok) return validation
-  const inner = emitBlocks(node.content ?? [], false, path)
+  const inner = emitBlocks(node.content ?? [], false, path, depth + 1)
   if (!inner.ok) return inner
   return success(
     inner.value
@@ -67,10 +70,13 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
   const info = spellCodeFenceInfo(node.attrs?.['language'], path)
   if (!info.ok) return info
   let text = ''
-  for (const child of node.content ?? []) {
+  for (const [index, child] of (node.content ?? []).entries()) {
+    const childPath = [...path, 'content', index]
     if (child.type !== 'text' || typeof child.text !== 'string' || (child.marks ?? []).length > 0 || Object.keys(child.attrs ?? {}).length > 0) {
-      return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only', path)
+      return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only', childPath)
     }
+    if (/\r/.test(child.text)) return failure('unspellable-whitespace', 'a codeBlock holds no carriage return CommonMark keeps', childPath)
+    if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
     text += child.text
   }
   const fence = '`'.repeat(Math.max(3, longestBacktickRun(text) + 1))
@@ -106,7 +112,7 @@ function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<string> {
   return success(`${hashes} ${line.value}`)
 }
 
-function emitList(node: AdfNode, path: ConvertErrorPath): Result<string> {
+function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
   const ordered = node.type === 'orderedList'
   const validation = validateBlockNode(node, ordered ? ['order'] : [], path)
   if (!validation.ok) return validation
@@ -126,26 +132,26 @@ function emitList(node: AdfNode, path: ConvertErrorPath): Result<string> {
   for (const [offset, item] of items.entries()) {
     const itemPath = [...path, 'content', offset]
     if (item.type !== 'listItem') return failure('unsupported-node-shape', `a ${node.type} holds listItem nodes only`, itemPath)
-    const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ', itemPath)
+    const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ', itemPath, depth)
     if (!emitted.ok) return emitted
     lines.push(emitted.value)
   }
   return success(lines.join('\n'))
 }
 
-function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath): Result<string> {
+function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath, depth: number): Result<string> {
   const validation = validateBlockNode(item, [], path)
   if (!validation.ok) return validation
-  const inner = emitBlocks(item.content ?? [], true, path)
+  const inner = emitBlocks(item.content ?? [], true, path, depth + 1)
   if (!inner.ok) return inner
   if (inner.value === '') return success(marker.trimEnd())
   const indent = ' '.repeat(marker.length)
-  return success(
-    inner.value
-      .split('\n')
-      .map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
-      .join('\n'),
-  )
+  const lines = inner.value.split('\n').map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
+  const first = lines[0] ?? ''
+  if (isThematicBreak(first)) {
+    return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(first)}`, path)
+  }
+  return success(lines.join('\n'))
 }
 
 function emitParagraph(node: AdfNode, path: ConvertErrorPath): Result<string> {

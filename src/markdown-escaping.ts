@@ -1,4 +1,4 @@
-import { escapesLineClaim, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
+import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
 
 export type InlineSegment = {
   kind: 'emphasis-close' | 'emphasis-open' | 'link-text' | 'literal' | 'syntax'
@@ -7,12 +7,13 @@ export type InlineSegment = {
 
 export type LineContainer = 'heading' | 'paragraph'
 
+const delimiters = ['`', '*', '_', '~']
+
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const inlineDirective = /^:[a-z][A-Za-z0-9]*[[{]/
 const linkOpener = /\](?=[([:])/
 const unicodePunctuation = /[\p{P}\p{S}]/u
-const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): string {
   return escape(resolveEmphasis(segments), container)
@@ -55,13 +56,31 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): s
   for (let index = 0; index < scan.length; index += 1) {
     const kind = kinds[index]
     const escapable = kind === 'literal' || kind === 'link-text'
-    if (escapable && opensConstruct(scan, index, kind === 'link-text', container, escaped)) {
+    if (escapable && (mergesWithSyntax(scan, kinds, index) || opensConstruct(scan, index, kind === 'link-text', container, escaped))) {
       output += '\\'
       escaped.add(index)
     }
     output += scan.charAt(index)
   }
   return output
+}
+
+function mergesWithSyntax(scan: string, kinds: readonly (InlineSegment['kind'] | undefined)[], index: number): boolean {
+  const character = scan.charAt(index)
+  if (character === '!') return scan.charAt(index + 1) === '[' && isSyntax(kinds[index + 1])
+  if (!delimiters.includes(character)) return false
+  return touchesSyntax(scan, kinds, index, -1) || touchesSyntax(scan, kinds, index, 1)
+}
+
+function touchesSyntax(scan: string, kinds: readonly (InlineSegment['kind'] | undefined)[], index: number, step: number): boolean {
+  const character = scan.charAt(index)
+  let cursor = index + step
+  while (scan.charAt(cursor) === character && !isSyntax(kinds[cursor])) cursor += step
+  return scan.charAt(cursor) === character && isSyntax(kinds[cursor])
+}
+
+function isSyntax(kind: InlineSegment['kind'] | undefined): boolean {
+  return kind === 'emphasis-close' || kind === 'emphasis-open' || kind === 'syntax'
 }
 
 function opensConstruct(scan: string, index: number, inLinkText: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
@@ -143,11 +162,11 @@ function isPunctuation(character: string): boolean {
 }
 
 function isWhitespace(character: string): boolean {
-  return character === '' || unicodeWhitespace.test(character)
+  return character === '' || isUnicodeWhitespace(character)
 }
 
 function isWordCharacter(character: string): boolean {
-  return character !== '' && !unicodeWhitespace.test(character) && !unicodePunctuation.test(character)
+  return character !== '' && !isUnicodeWhitespace(character) && !unicodePunctuation.test(character)
 }
 
 function charAt(text: string, index: number): string {

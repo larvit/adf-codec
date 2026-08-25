@@ -79,6 +79,9 @@ detail is settled at its own milestone.
         attribute canonicalization, a pipe cell's whitespace edges and `\u007c` for a `|` inside a
         quoted attribute value, documents combining nodes rather than isolating one, and a
         paragraph line inside a container body shaped like a closing fence (`:::`, `::: x`).
+        The gate gains the collision property here: no two corpus documents may emit the same
+        bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
+        provable without one.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
       into sub-items before starting (§15). Fixtures land with the code that reads them:
       `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity

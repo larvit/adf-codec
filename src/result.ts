@@ -4,6 +4,7 @@ export type ConvertErrorCode =
   | 'not-an-adf-document'
   | 'reserved-adf-language'
   | 'unspellable-adjacent-lists'
+  | 'unspellable-character'
   | 'unspellable-code-block-language'
   | 'unspellable-line-start'
   | 'unspellable-link-destination'

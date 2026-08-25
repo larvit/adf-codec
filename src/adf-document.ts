@@ -29,7 +29,7 @@ export function isAdfDocument(value: unknown): value is AdfDocument {
   if (!isRecord(value) || !holdsOnly(value, documentKeys)) return false
   if (value['type'] !== 'doc') return false
   if (typeof value['version'] !== 'number' || !Number.isFinite(value['version'])) return false
-  return !('content' in value) || isArrayOf(value['content'], isAdfNode)
+  return !('content' in value) || isNodeArray(value['content'])
 }
 
 function isAdfMark(value: unknown): value is AdfMark {
@@ -38,13 +38,23 @@ function isAdfMark(value: unknown): value is AdfMark {
   return !('attrs' in value) || isAttributes(value['attrs'])
 }
 
-function isAdfNode(value: unknown): value is AdfNode {
-  if (!isRecord(value) || !holdsOnly(value, nodeKeys)) return false
-  if (typeof value['type'] !== 'string') return false
-  if ('attrs' in value && !isAttributes(value['attrs'])) return false
-  if ('content' in value && !isArrayOf(value['content'], isAdfNode)) return false
-  if ('marks' in value && !isArrayOf(value['marks'], isAdfMark)) return false
-  return !('text' in value) || typeof value['text'] === 'string'
+function isNodeArray(value: unknown): value is AdfNode[] {
+  if (!Array.isArray(value)) return false
+  const pending: unknown[] = [...value]
+  while (pending.length > 0) {
+    const node = pending.pop()
+    if (!isRecord(node) || !holdsOnly(node, nodeKeys)) return false
+    if (typeof node['type'] !== 'string') return false
+    if ('attrs' in node && !isAttributes(node['attrs'])) return false
+    if ('marks' in node && !isArrayOf(node['marks'], isAdfMark)) return false
+    if ('text' in node && typeof node['text'] !== 'string') return false
+    if ('content' in node) {
+      const content = node['content']
+      if (!Array.isArray(content)) return false
+      pending.push(...content)
+    }
+  }
+  return true
 }
 
 function isArrayOf<T>(value: unknown, guard: (item: unknown) => item is T): value is T[] {
