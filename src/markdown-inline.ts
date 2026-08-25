@@ -20,7 +20,22 @@ const linkAttributes = ['href', 'title']
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const segments = emitRun(nodes, 0, 0, { atBlockEnd: true, container, inLinkText: false, path })
   if (!segments.ok) return segments
-  const assembled = assembleInlineLine(segments.value, container)
+  return finishLine(segments.value, container, path)
+}
+
+export function emitImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): Result<string> {
+  if (alt !== undefined && /^[ \t]|[ \t]$|[\n\r]/.test(alt)) {
+    return failure('unspellable-whitespace', 'a media alt holds whitespace no image description spells', path)
+  }
+  if (alt !== undefined && holdsNullCharacter(alt)) return failure('unspellable-character', 'a media alt holds a null character CommonMark replaces', path)
+  const destination = spellDestination(href, path)
+  if (!destination.ok) return destination
+  const description: InlineSegment[] = alt === undefined ? [] : [{ kind: 'link-text', text: alt }]
+  return finishLine([{ kind: 'syntax', text: '![' }, ...description, { kind: 'syntax', text: `](${destination.value})` }], 'paragraph', path)
+}
+
+function finishLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath): Result<string> {
+  const assembled = assembleInlineLine(segments, container)
   if (assembled.unspellableMark !== undefined) {
     return failure('unspellable-mark', `the ${assembled.unspellableMark} spelling cannot open or close where it sits`, path)
   }
@@ -83,8 +98,8 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   const types = (node.marks ?? []).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   if (node.type === 'hardBreak') {
-    if (context.container === 'heading' || context.atBlockEnd) return success([{ kind: 'syntax', text: ':hardBreak{}' }])
-    return success([{ kind: 'syntax', text: '\\\n' }])
+    if (context.container === 'paragraph' && !context.atBlockEnd) return success([{ kind: 'syntax', text: '\\\n' }])
+    return success([{ kind: 'syntax', text: ':hardBreak{}' }])
   }
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node carries no text', path)
   if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node carries content', path)

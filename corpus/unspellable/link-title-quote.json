@@ -1,0 +1,24 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/torque",
+                "title": "He said \"hi\""
+              },
+              "type": "link"
+            }
+          ],
+          "text": "The torque table",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

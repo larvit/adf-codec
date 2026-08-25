@@ -16,3 +16,11 @@ Taken from Kiruna.
 :::mediaSingle {layout=center}
 ::media {alt="The assembly drawing" marks="[{\"attrs\":{\"href\":\"https://example.com/assembly\"},\"type\":\"link\"}]" type=external url="https://example.com/assembly.png"}
 :::
+
+:::mediaSingle {layout=center}
+::media {alt="" type=external url="https://example.com/moon.png"}
+:::
+
+:::mediaSingle {layout=center}
+::media {type=external url="https://example.com/plan.png?a=1&amp;b=2"}
+:::

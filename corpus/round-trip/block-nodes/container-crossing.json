@@ -1,0 +1,112 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "panelType": "warning"
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Check the torque before signing off.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "panel"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "title": "Deeper still"
+                          },
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": "Two list levels down.",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "expand"
+                        }
+                      ],
+                      "type": "listItem"
+                    }
+                  ],
+                  "type": "bulletList"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "title": "Full build log"
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "The build ran for 11 minutes.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "expand"
+            },
+            {
+              "attrs": {
+                "panelType": "note"
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Superseded by the next run.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "panel"
+            }
+          ],
+          "type": "blockquote"
+        }
+      ],
+      "type": "panel"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

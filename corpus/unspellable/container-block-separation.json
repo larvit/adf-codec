@@ -1,0 +1,40 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "title": "Full build log"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "The build ran for 11 minutes.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "panelType": "warning"
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Three warnings went unread.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "panel"
+        }
+      ],
+      "type": "expand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,6 +1,5 @@
 export type ConvertErrorCode =
-  | 'ambiguous-empty-code-block-language'
-  | 'ambiguous-ordered-list-start'
+  | 'ambiguous-attribute-spelling'
   | 'not-an-adf-document'
   | 'reserved-adf-language'
   | 'unspellable-adjacent-lists'
@@ -13,6 +12,7 @@ export type ConvertErrorCode =
   | 'unspellable-mark'
   | 'unspellable-whitespace'
   | 'unspelled-block-marks'
+  | 'unspelled-block-separation'
   | 'unspelled-node-attribute'
   | 'unsupported-document-version'
   | 'unsupported-heading-level'
