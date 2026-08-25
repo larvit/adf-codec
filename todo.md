@@ -33,7 +33,8 @@ detail is settled at its own milestone.
       value: a `codeBlock` whose info string is empty, and an `orderedList` starting at 1,
       independent of the totality answer since `order: 9` keeps the markdown form either way.
       Neither has a second spelling to fall back to, which is what settled the third — a `media`
-      with an empty `alt` takes the directive form (`spec/flavour.md`, the CommonMark image). **Also blocked**: the link rule covers destination spaces only, so two shapes
+      with an empty `alt` takes the directive form (`spec/flavour.md`, the CommonMark image).
+      **Also blocked**: the link rule covers destination spaces only, so two shapes
       have no spelling and are refused meanwhile — href `https://example.com/a)b` and title
       `He said "hi"`, both in `corpus/unspellable/`. Two defensible spellings each — angle
       brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves
@@ -42,7 +43,9 @@ detail is settled at its own milestone.
       `panel` (`panelType` `warning`) holding "B" spells `A` and `:::panel warning` either on
       consecutive lines or with a blank line between. Two defensible spellings, so §8 leaves the
       pick here; `unspelled-block-separation` refuses the pair meanwhile, an empty paragraph's
-      `::paragraph` beside a CommonMark block included.
+      `::paragraph` beside a CommonMark block included — and, since a `mediaSingle`'s spelling now
+      follows whether CommonMark can spell its URL, two sibling images differing only by an
+      `&amp;` land in the same refusal.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d3's.
@@ -72,7 +75,9 @@ detail is settled at its own milestone.
         its two axes here — escapability (`attribute` for `:text{text="…"}`, `backslash`, `none`)
         and the emphasis role — rather than gaining a third value that means one of each. A lone
         surrogate in a text node emits verbatim and becomes U+FFFD on any UTF-8 encode, a §2 break
-        plain text still holds open — attribute values already escape it.
+        plain text still holds open — attribute values already escape it. The inline directives
+        arriving here emit their attribute values as syntax, so `spellsPipeAsSyntax` grows with
+        them alongside the `|` escaping `spec/flavour.md` already mandates in a pipe cell.
   - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
         info string, and the `codeBlock` whose language is `adf`.
@@ -105,7 +110,8 @@ detail is settled at its own milestone.
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
       still mechanical. `block-directives.ts` is the one file that does not move whole: the node
       table is ADF knowledge milestones 6-7 need too and belongs in `adf/`, `spellDirectiveHeader`
-      in `markdown/`. The table is a second copy of `spec/flavour.md`'s prose with no drift guard,
+      in `markdown/`. `AttributeKind` stays above both — it is the vocabulary a string-typed
+      attribute grammar needs, which is why HTML will want it too, not a markdown spelling. The table is a second copy of `spec/flavour.md`'s prose with no drift guard,
       and a mistyped attribute name degrades into a false refusal no test catches.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality

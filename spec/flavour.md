@@ -43,7 +43,8 @@ normalizes to it through the round-trip.
   repeat — with the opener literal the closer parses as text, so `*not emphasis*` is
   `\*not emphasis*`, one backslash.
 - Blocks separated by one blank line at document level, inside a blockquote and between CommonMark
-  blocks; two directive blocks inside a container take none. No trailing whitespace outside a code block's
+  blocks; two directive blocks inside a container take none. No trailing whitespace outside a code
+  block's
   content, single trailing newline; a document with no blocks is the empty string.
 
 ## Directives
@@ -215,7 +216,8 @@ and every cell carry no attrs and no marks, the first row is all `tableHeader` a
 `tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
 mark-less paragraph — an empty cell holds one empty paragraph — with no `|` in a code span,
 link destination or link title: backslash escapes are inert in everything the inline layer spells
-as syntax, so pipe form cannot spell that pipe and the table takes the directive form. A pipe table parses back to exactly that shape.
+as syntax, so pipe form cannot spell that pipe and the table takes the directive form. A pipe table
+parses back to exactly that shape.
 
 ```
 | Part | Qty |
