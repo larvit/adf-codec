@@ -54,7 +54,7 @@ detail is settled at its own milestone.
         `:text{text="…"}` whitespace spelling.
 - [ ] **2 — `adfToMarkdown`.** First real code. Each sub-item turns one corpus directory green;
       the two that have no fixtures yet write them in the same chunk, tests first (§10).
-  - [ ] **2a — The runner and the CommonMark subset.** The corpus runner: walk
+  - [x] **2a — The runner and the CommonMark subset.** The corpus runner: walk
         `corpus/round-trip/`, assert `adfToMarkdown` emits each `.md` byte for byte. Decide here
         where §10's coverage check lives, and gate that every `corpus/**/*.json` re-serializes to
         itself under the library's own canonical serializer — one implementation, keys sorted, two
