@@ -21,8 +21,8 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
   const segments = emitRun(nodes, 0, 0, { atBlockEnd: true, container, inLinkText: false, path })
   if (!segments.ok) return segments
   const assembled = assembleInlineLine(segments.value, container)
-  if (assembled.unspellableDelimiter !== undefined) {
-    return failure('unspellable-mark', `the ${assembled.unspellableDelimiter} spelling cannot open or close where it sits`, path)
+  if (assembled.unspellableMark !== undefined) {
+    return failure('unspellable-mark', `the ${assembled.unspellableMark} spelling cannot open or close where it sits`, path)
   }
   const line = assembled.line
   for (const [index, single] of line.split('\n').entries()) {
@@ -80,6 +80,8 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   if (unspelled !== undefined) {
     return failure('unspelled-node-attribute', `the ${node.type} attribute ${unspelled} has no canonical markdown spelling`, path)
   }
+  const types = (node.marks ?? []).map((mark) => mark.type)
+  if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   if (node.type === 'hardBreak') {
     if (context.container === 'heading' || context.atBlockEnd) return success([{ kind: 'syntax', text: ':hardBreak{}' }])
     return success([{ kind: 'syntax', text: '\\\n' }])
@@ -102,7 +104,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (!inner.ok) return inner
   const text = inner.value.map((segment) => segment.text).join('')
   if (holdsEdgeWhitespace(text)) return failure('unspellable-whitespace', `the ${mark.type} spelling cannot open or close beside whitespace`, path)
-  return success([{ kind: 'emphasis-open', text: spelling }, ...inner.value, { kind: 'emphasis-close', text: spelling }])
+  return success([{ kind: 'emphasis-open', mark: mark.type, text: spelling }, ...inner.value, { kind: 'emphasis-close', mark: mark.type, text: spelling }])
 }
 
 function emitCodeSpan(nodes: readonly AdfNode[], depth: number, path: ConvertErrorPath): Result<InlineSegment[]> {

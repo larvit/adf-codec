@@ -2,12 +2,15 @@ import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEn
 
 export type InlineSegment = {
   kind: 'emphasis-close' | 'emphasis-open' | 'link-text' | 'literal' | 'syntax'
+  mark?: string
   text: string
 }
 
-export type AssembledLine = { line: string; unspellableDelimiter: string | undefined }
+export type AssembledLine = { line: string; unspellableMark: string | undefined }
 
 export type LineContainer = 'heading' | 'paragraph'
+
+type DelimiterRun = { character: string; closes: boolean; end: number; mark: string; opens: boolean; start: number }
 
 const delimiters = ['*', '_', '`', '~']
 
@@ -67,21 +70,39 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
     placements.push(output.length)
     output += scan.charAt(index)
   }
-  return { line: output, unspellableDelimiter: unspellableDelimiter(segments, output, placements) }
+  return { line: output, unspellableMark: unspellableMark(segments, output, placements) }
 }
 
-function unspellableDelimiter(segments: readonly InlineSegment[], output: string, placements: readonly number[]): string | undefined {
+function unspellableMark(segments: readonly InlineSegment[], output: string, placements: readonly number[]): string | undefined {
+  for (const run of delimiterRuns(segments, placements)) {
+    const before = charAt(output, run.start - 1)
+    const after = output.charAt(run.end)
+    if (run.opens && !isLeftFlanking(before, after)) return run.mark
+    if (run.closes && !isRightFlanking(before, after)) return run.mark
+  }
+  return undefined
+}
+
+function delimiterRuns(segments: readonly InlineSegment[], placements: readonly number[]): DelimiterRun[] {
+  const runs: DelimiterRun[] = []
   let cursor = 0
   for (const segment of segments) {
     const start = placements[cursor] ?? 0
     cursor += segment.text.length
     if (segment.kind !== 'emphasis-close' && segment.kind !== 'emphasis-open') continue
-    const before = charAt(output, start - 1)
-    const after = output.charAt(start + segment.text.length)
-    const spellable = segment.kind === 'emphasis-open' ? isLeftFlanking(before, after) : isRightFlanking(before, after)
-    if (!spellable) return segment.text
+    const closes = segment.kind === 'emphasis-close'
+    const end = start + segment.text.length
+    const mark = segment.mark ?? segment.text
+    const previous = runs[runs.length - 1]
+    if (previous !== undefined && previous.end === start && previous.character === segment.text.charAt(0)) {
+      previous.closes = previous.closes || closes
+      previous.end = end
+      previous.opens = previous.opens || !closes
+      continue
+    }
+    runs.push({ character: segment.text.charAt(0), closes, end, mark, opens: !closes, start })
   }
-  return undefined
+  return runs
 }
 
 function mergesWithSyntax(scan: string, kinds: readonly (InlineSegment['kind'] | undefined)[], index: number): boolean {

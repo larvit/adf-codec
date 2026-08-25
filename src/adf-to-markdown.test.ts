@@ -190,6 +190,10 @@ test('refuses a mark spelling that cannot open or close where it sits', () => {
   assert.equal(emitted({ text: 'un ', type: 'text' }, marked('-real', strong), { text: ' istic', type: 'text' }), 'un **-real** istic\n')
   assert.equal(emitted(marked('a.', strong)), '**a.**\n')
   assert.equal(emitted({ text: 'x', type: 'text' }, marked('a', strong), { text: 'y', type: 'text' }), 'x**a**y\n')
+  const em: AdfMark = { type: 'em' }
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('a.', em), marked('b', strong))))), 'unspellable-mark')
+  assert.equal(emitted({ text: 'x', type: 'text' }, marked('ab', em, strong), { text: 'y', type: 'text' }), 'x***ab***y\n')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em, em], text: 'x', type: 'text' })))), 'unsupported-node-shape')
 })
 
 test('refuses marks and attributes nested deeper than the emitter carries', () => {
