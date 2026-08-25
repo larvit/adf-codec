@@ -82,6 +82,8 @@ detail is settled at its own milestone.
         attribute canonicalization, a pipe cell's whitespace edges and `\u007c` for a `|` inside a
         quoted attribute value, documents combining nodes rather than isolating one, and a
         paragraph line inside a container body shaped like a closing fence (`:::`, `::: x`).
+        Guard `fenceNestingFault`'s bare-run pop here too — a run shorter than the open fence is a
+        fault, not a close — which today's emitter cannot reach.
         The gate gains the collision property here: no two corpus documents may emit the same
         bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
         provable without one. It also settles the emitter's one known approximation: delimiter
@@ -114,7 +116,9 @@ detail is settled at its own milestone.
       here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
       markdown, the payloads supplied by the maintainer.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
-      the repo made public first (§6). `0.1.0` is the markdown round-trip: both markdown
+      the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
+      `corpus/unspellable/` document is one of 1d's decisions, so the directory empties as they land
+      and whatever survives is permanent. `0.1.0` is the markdown round-trip: both markdown
       directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS
       and `.d.ts` to `dist/` (the dev config's `allowImportingTsExtensions` forces `noEmit`, so
       the build config needs `rewriteRelativeImportExtensions`), plus `exports`/`files` in

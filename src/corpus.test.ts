@@ -72,8 +72,7 @@ for (const directory of emittingDirectories) {
   }
 }
 
-// The rule spec/flavour.md states as "a container's fence is longer than every directive fence line
-// in its body", checked against the emitted bytes: a hand-written fixture cannot be its own witness.
+// spec/flavour.md, Directives: the container fence rule, checked against the emitted bytes.
 function fenceNestingFault(markdown: string): string | undefined {
   const open: number[] = []
   let codeFence: string | undefined
