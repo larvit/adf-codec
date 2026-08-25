@@ -10,7 +10,7 @@ export function emitImage(node: AdfNode, path: ConvertErrorPath): Result<string>
   const image = imageShape(node)
   if (image === undefined) return undefined
   const mediaPath = [...path, 'content', 0]
-  if (image.alt === '') return failure('ambiguous-empty-media-alt', 'an empty media alt and an absent one share one image spelling', mediaPath)
+  if (image.alt === '') return failure('ambiguous-attribute-spelling', 'an empty media alt and an absent one share one image spelling', mediaPath)
   return emitImageLine(image.alt, image.url, mediaPath)
 }
 

@@ -178,7 +178,7 @@ function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorP
   if (language === undefined) return success('')
   if (typeof language !== 'string') return failure('unsupported-node-shape', 'a codeBlock language is no string', path)
   if (language === '') {
-    return failure('ambiguous-empty-code-block-language', 'an empty codeBlock language and an absent one share one markdown spelling', path)
+    return failure('ambiguous-attribute-spelling', 'an empty codeBlock language and an absent one share one markdown spelling', path)
   }
   if (language === 'adf') return failure('reserved-adf-language', 'the adf info string is reserved for the opaque carry', path)
   if (/[`\n\r]/.test(language) || language !== language.trim()) {
@@ -227,7 +227,7 @@ function listStart(node: AdfNode, items: number, path: ConvertErrorPath): Result
   if (node.type !== 'orderedList') return success(0)
   const start = node.attrs?.['order']
   if (start === undefined || start === 1) {
-    return failure('ambiguous-ordered-list-start', 'an orderedList starting at 1 and one with no order share one markdown spelling', path)
+    return failure('ambiguous-attribute-spelling', 'an orderedList starting at 1 and one with no order share one markdown spelling', path)
   }
   if (typeof start !== 'number' || !Number.isInteger(start) || start < 0 || start > largestListMarker) {
     return failure('unsupported-node-shape', `no list marker spells the order ${JSON.stringify(start)}`, path)

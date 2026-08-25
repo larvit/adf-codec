@@ -75,7 +75,8 @@ Pre-1.0, normal 0.x rules.
 The error surface is a contract too. `ConvertError` is `{ code, message, path }` — the code from a
 closed list a consumer may switch exhaustively, the message free text, the path the node's position
 from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
-new failure cause reuses a code where one fits; the list is complete at `0.1.0`.
+new failure cause reuses a code where one fits; the list is complete at `0.1.0`. A code names the
+cause, never the node — `path` and `message` carry that.
 
 ## 9. Release automation
 

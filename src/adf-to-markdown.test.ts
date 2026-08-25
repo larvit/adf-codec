@@ -53,13 +53,13 @@ test('refuses marks on a block node', () => {
 
 test('refuses an ordered list whose markdown start is ambiguous', () => {
   const items: AdfNode[] = [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }]
-  assert.equal(code(adfToMarkdown(document({ content: items, type: 'orderedList' }))), 'ambiguous-ordered-list-start')
-  assert.equal(code(adfToMarkdown(document({ attrs: { order: 1 }, content: items, type: 'orderedList' }))), 'ambiguous-ordered-list-start')
+  assert.equal(code(adfToMarkdown(document({ content: items, type: 'orderedList' }))), 'ambiguous-attribute-spelling')
+  assert.equal(code(adfToMarkdown(document({ attrs: { order: 1 }, content: items, type: 'orderedList' }))), 'ambiguous-attribute-spelling')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 2 }, content: items, type: 'orderedList' }))), '2. x\n')
 })
 
 test('refuses the code block info strings the fence cannot hold', () => {
-  assert.equal(code(adfToMarkdown(document({ attrs: { language: '' }, type: 'codeBlock' }))), 'ambiguous-empty-code-block-language')
+  assert.equal(code(adfToMarkdown(document({ attrs: { language: '' }, type: 'codeBlock' }))), 'ambiguous-attribute-spelling')
   assert.equal(code(adfToMarkdown(document({ attrs: { language: 'adf' }, type: 'codeBlock' }))), 'reserved-adf-language')
   assert.equal(code(adfToMarkdown(document({ attrs: { language: 'a`b' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
   assert.equal(code(adfToMarkdown(document({ attrs: { language: ' sql' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
@@ -334,7 +334,7 @@ test('spells the image form for exactly the centered external media shape', () =
   assert.equal(markdown(adfToMarkdown(single({ alt: 'The moon', type: 'external', url }))), `![The moon](${url})\n`)
   assert.equal(markdown(adfToMarkdown(single({ type: 'external', url }))), `![](${url})\n`)
   assert.equal(markdown(adfToMarkdown(single({ alt: 'a [b] c', type: 'external', url }))), `![a \\[b\\] c](${url})\n`)
-  assert.equal(code(adfToMarkdown(single({ alt: '', type: 'external', url }))), 'ambiguous-empty-media-alt')
+  assert.equal(code(adfToMarkdown(single({ alt: '', type: 'external', url }))), 'ambiguous-attribute-spelling')
   assert.equal(code(adfToMarkdown(single({ alt: 'a\nb', type: 'external', url }))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(single({ alt: 'a\u0000b', type: 'external', url }))), 'unspellable-character')
   assert.equal(code(adfToMarkdown(single({ type: 'external', url: 'https://example.com/a b>c' }))), 'unspellable-link-destination')

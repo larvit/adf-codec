@@ -74,9 +74,9 @@ block content
 
 The fence is three or more colons. `arg` is one optional bare token whose meaning each node
 defines (e.g. the panel type). The body is block markdown. The closing fence is a line of at
-least the opening's length, and a container's fence is longer than every directive fence line in
-its body — counting only lines that parse as directive fences in the body's block structure; a
-colon run inside a code fence or opaque carry is content. Canonical form uses minimal lengths.
+least the opening's length, and a container's fence is longer than every directive fence line
+anywhere in its body, however deeply a list item or blockquote nests it; a colon run inside a code
+fence or opaque carry is content. Canonical form uses minimal lengths.
 Directive fence lines follow code-fence indentation (up to three spaces relative to their
 container); trailing whitespace on a fence line is tolerated in input, never emitted.
 

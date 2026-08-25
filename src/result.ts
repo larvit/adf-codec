@@ -1,7 +1,5 @@
 export type ConvertErrorCode =
-  | 'ambiguous-empty-code-block-language'
-  | 'ambiguous-empty-media-alt'
-  | 'ambiguous-ordered-list-start'
+  | 'ambiguous-attribute-spelling'
   | 'not-an-adf-document'
   | 'reserved-adf-language'
   | 'unspellable-adjacent-lists'
