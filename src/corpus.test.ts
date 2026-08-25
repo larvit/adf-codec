@@ -72,6 +72,50 @@ for (const directory of emittingDirectories) {
   }
 }
 
+// The rule spec/flavour.md states as "a container's fence is longer than every directive fence line
+// in its body", checked against the emitted bytes: a hand-written fixture cannot be its own witness.
+function fenceNestingFault(markdown: string): string | undefined {
+  const open: number[] = []
+  let codeFence: string | undefined
+  for (const line of markdown.split('\n')) {
+    const content = line.replace(/^ {0,3}(?:(?:> ?|[-*+] |\d{1,9}[.)] ) {0,3})*/, '')
+    const backticks = /^(`{3,}|~{3,})/.exec(content)?.[1]
+    if (codeFence !== undefined) {
+      if (backticks !== undefined && backticks[0] === codeFence[0] && backticks.length >= codeFence.length) codeFence = undefined
+      continue
+    }
+    if (backticks !== undefined) {
+      codeFence = backticks
+      continue
+    }
+    const colons = /^(:{2,})(.*)$/.exec(content)
+    if (colons === null) continue
+    const run = colons[1]?.length ?? 0
+    const enclosing = open[open.length - 1]
+    if (colons[2] === '') {
+      open.pop()
+      continue
+    }
+    if (enclosing !== undefined && run >= enclosing) return `${JSON.stringify(line)} sits in a container fenced with ${enclosing} colons`
+    if (run > 2) open.push(run)
+  }
+  return undefined
+}
+
+test('the fence nesting check catches a fence a container cannot hold', () => {
+  assert.equal(fenceNestingFault(':::panel info\n- :::panel warning\n  B\n  :::\n:::'), '"- :::panel warning" sits in a container fenced with 3 colons')
+  assert.equal(fenceNestingFault('::::panel info\n- :::panel warning\n  B\n  :::\n::::'), undefined)
+  assert.equal(fenceNestingFault(':::tableCell\n```text\n:::::::panel warning\n:::\n```\n:::'), undefined)
+})
+
+for (const directory of emittingDirectories) {
+  for (const name of fixtureNames(directory, '.md')) {
+    test(`${directory}/${name} fences every container longer than its body`, () => {
+      assert.equal(fenceNestingFault(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8')), undefined)
+    })
+  }
+}
+
 test('unspellable pairs every .json with an .error', () => {
   assert.deepEqual(names(unspellableRoot, '.json'), names(unspellableRoot, '.error'))
 })

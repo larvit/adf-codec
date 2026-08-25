@@ -1,7 +1,6 @@
+import type { AttributeKind } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
-
-export type AttributeKind = 'boolean' | 'json' | 'number' | 'string'
 
 const bareToken = /^[A-Za-z0-9_-]+$/
 

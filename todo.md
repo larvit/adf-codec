@@ -100,11 +100,16 @@ detail is settled at its own milestone.
       assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin.
       `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
-      still mechanical.
+      still mechanical. `block-directives.ts` is the one file that does not move whole: the node
+      table is ADF knowledge milestones 6-7 need too and belongs in `adf/`, `spellDirectiveHeader`
+      in `markdown/`. The table is a second copy of `spec/flavour.md`'s prose with no drift guard,
+      and a mistyped attribute name degrades into a false refusal no test catches.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality
       the round-trip asserts, which over normalized input is the canonical serializer's compact
-      spelling — rather than staying spelled inline as `?? []` at every reader.
+      spelling — rather than staying spelled inline as `?? []` at every reader. The reading half is
+      `nodeContent`/`nodeAttrs`/`nodeMarks` over the ~28 sites spelling it inline today, which also
+      lifts the branch floor §10 keeps below 100 for exactly those halves.
       Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
       here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
       markdown, the payloads supplied by the maintainer.

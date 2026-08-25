@@ -1,5 +1,4 @@
-import type { AdfMark, AdfNode } from './adf-document.ts'
-import type { AttributeKind } from './directive-attributes.ts'
+import type { AdfMark, AdfNode, AttributeKind } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { isBareToken, spellAttributeValue, spellAttributes, spellJsonAttribute } from './directive-attributes.ts'
