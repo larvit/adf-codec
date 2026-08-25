@@ -8,7 +8,10 @@ in_node() { docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/app" -
 in_node npm ci
 in_node npm run typecheck
 
-test_output=$(in_node npm test)
+if ! test_output=$(in_node npm test 2>&1); then
+  printf '%s\n' "$test_output"
+  exit 1
+fi
 printf '%s\n' "$test_output"
 if printf '%s' "$test_output" | grep -q 'ℹ tests 0'; then
   echo 'the gate ran zero tests — failing instead of a vacuous green'

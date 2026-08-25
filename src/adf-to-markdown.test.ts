@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfDocument, AdfMark, AdfNode } from './adf-document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './adf-document.ts'
 import type { Result } from './result.ts'
 import { adfToMarkdown } from './index.ts'
 
@@ -116,7 +116,8 @@ test('refuses two adjacent lists of the same kind', () => {
 })
 
 test('refuses a node type the canonical form does not cover', () => {
-  assert.equal(code(adfToMarkdown(document({ type: 'panel' }))), 'unsupported-node-type')
+  assert.equal(code(adfToMarkdown(document({ type: 'blockCard' }))), 'unsupported-node-type')
+  assert.equal(code(adfToMarkdown(document({ type: 'toString' }))), 'unsupported-node-type')
   assert.equal(code(adfToMarkdown(document(paragraph({ type: 'mention' })))), 'unsupported-node-type')
 })
 
@@ -282,4 +283,93 @@ test('refuses a document nested deeper than the emitter carries', () => {
 
 test('emits an empty list item without trailing whitespace', () => {
   assert.equal(markdown(adfToMarkdown(document({ content: [{ type: 'listItem' }], type: 'bulletList' }))), '-\n')
+})
+
+test('spells a block directive as its node type, arg and attributes', () => {
+  const panel = (attrs: AdfAttributes): AdfDocument => document({ attrs, content: [paragraph({ text: 'x', type: 'text' })], type: 'panel' })
+  assert.equal(markdown(adfToMarkdown(panel({ panelType: 'warning' }))), ':::panel warning\nx\n:::\n')
+  assert.equal(markdown(adfToMarkdown(panel({}))), ':::panel\nx\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'caption' }))), ':::caption\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { localId: 'a' }, type: 'syncBlock' }))), '::syncBlock {localId=a}\n')
+})
+
+test('refuses a directive attribute no section spells', () => {
+  assert.equal(code(adfToMarkdown(document({ attrs: { rounded: true }, type: 'panel' }))), 'unspelled-node-attribute')
+  assert.equal(code(adfToMarkdown(document({ attrs: { toString: 'x' }, type: 'panel' }))), 'unspelled-node-attribute')
+  assert.equal(code(adfToMarkdown(document({ attrs: { localId: 4 }, type: 'panel' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ attrs: { width: '50' }, type: 'layoutColumn' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ attrs: { isNumberColumnEnabled: 'true' }, type: 'table' }))), 'unsupported-node-shape')
+})
+
+test('refuses an arg slot value no bare token spells', () => {
+  assert.equal(code(adfToMarkdown(document({ attrs: { panelType: 'extra info' }, type: 'panel' }))), 'unspelled-node-attribute')
+  assert.equal(code(adfToMarkdown(document({ attrs: { state: 2 }, type: 'taskItem' }))), 'unspelled-node-attribute')
+})
+
+test('carries a block node mark in the reserved attribute', () => {
+  const section = (...marks: AdfMark[]): AdfDocument => document({ marks, type: 'layoutSection' })
+  assert.equal(markdown(adfToMarkdown(section({ type: 'breakout' }))), ':::layoutSection {marks="[{\\"type\\":\\"breakout\\"}]"}\n:::\n')
+  assert.equal(markdown(adfToMarkdown(section({ attrs: {}, type: 'breakout' }))), ':::layoutSection {marks="[{\\"type\\":\\"breakout\\"}]"}\n:::\n')
+})
+
+test('refuses the content a directive body has no room for', () => {
+  assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'media' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ text: 'x', type: 'panel' }))), 'unsupported-node-shape')
+})
+
+test('separates two directive blocks in a container body by one line, two CommonMark blocks by a blank one', () => {
+  const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
+  const panel = (...content: AdfNode[]): AdfDocument => document({ attrs: { panelType: 'info' }, content, type: 'panel' })
+  assert.equal(markdown(adfToMarkdown(panel(text('a'), text('b')))), ':::panel info\na\n\nb\n:::\n')
+  assert.equal(markdown(adfToMarkdown(panel({ type: 'caption' }, { type: 'caption' }))), '::::panel info\n:::caption\n:::\n:::caption\n:::\n::::\n')
+  assert.equal(code(adfToMarkdown(panel(text('a'), { type: 'caption' }))), 'unspelled-block-separation')
+  assert.equal(code(adfToMarkdown(panel({ type: 'caption' }, text('a')))), 'unspelled-block-separation')
+  assert.equal(code(adfToMarkdown(panel(paragraph(), text('a')))), 'unspelled-block-separation')
+})
+
+test('spells the image form for exactly the centered external media shape', () => {
+  const url = 'https://example.com/moon.png'
+  const single = (attrs: AdfAttributes, ...content: AdfNode[]): AdfDocument =>
+    document({ attrs: { layout: 'center' }, content: [{ attrs, content, type: 'media' }], type: 'mediaSingle' })
+  assert.equal(markdown(adfToMarkdown(single({ alt: 'The moon', type: 'external', url }))), `![The moon](${url})\n`)
+  assert.equal(markdown(adfToMarkdown(single({ type: 'external', url }))), `![](${url})\n`)
+  assert.equal(markdown(adfToMarkdown(single({ alt: 'a [b] c', type: 'external', url }))), `![a \\[b\\] c](${url})\n`)
+  assert.equal(code(adfToMarkdown(single({ alt: '', type: 'external', url }))), 'ambiguous-empty-media-alt')
+  assert.equal(code(adfToMarkdown(single({ alt: 'a\nb', type: 'external', url }))), 'unspellable-whitespace')
+  assert.equal(code(adfToMarkdown(single({ alt: 'a\u0000b', type: 'external', url }))), 'unspellable-character')
+  assert.equal(code(adfToMarkdown(single({ type: 'external', url: 'https://example.com/a b>c' }))), 'unspellable-link-destination')
+  assert.equal(code(adfToMarkdown(single({ alt: 4, type: 'external', url }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(single({ type: 'external', url: 4 }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(single({ type: 'external', url }, paragraph()))), 'unsupported-node-shape')
+})
+
+test('spells a mediaSingle the image form does not fit as a directive', () => {
+  const media: AdfNode = { attrs: { type: 'external', url: 'https://example.com/moon.png' }, type: 'media' }
+  const single: AdfNode = { attrs: { layout: 'center' }, content: [media], marks: [{ type: 'border' }], type: 'mediaSingle' }
+  assert.equal(
+    markdown(adfToMarkdown(document(single))),
+    ':::mediaSingle {layout=center marks="[{\\"type\\":\\"border\\"}]"}\n::media {type=external url="https://example.com/moon.png"}\n:::\n',
+  )
+})
+
+test('spells a table as a pipe table only where every row and cell is plain', () => {
+  const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
+  const cell = (type: string, ...content: AdfNode[]): AdfNode => ({ content, type })
+  const row = (...cells: AdfNode[]): AdfNode => ({ content: cells, type: 'tableRow' })
+  const table = (...rows: AdfNode[]): AdfDocument => document({ content: rows, type: 'table' })
+  const directive = (result: Result<string>): boolean => markdown(result).startsWith(':')
+  const header = row(cell('tableHeader', text('Part')))
+  assert.equal(markdown(adfToMarkdown(table(header, row(cell('tableCell', text('Bolt M8')))))), '| Part |\n| --- |\n| Bolt M8 |\n')
+  assert.equal(markdown(adfToMarkdown(table(row(cell('tableHeader', text('a|b')))))), '| a\\|b |\n| --- |\n')
+  assert.ok(directive(adfToMarkdown(table())))
+  assert.ok(directive(adfToMarkdown(table(row()))))
+  assert.ok(directive(adfToMarkdown(table({ type: 'tableRow' }))))
+  assert.ok(directive(adfToMarkdown(table(header, row()))))
+  assert.ok(directive(adfToMarkdown(table(row(cell('tableCell', text('Bolt M8')))))))
+  assert.ok(directive(adfToMarkdown(table(cell('tableHeader', text('Part'))))))
+  assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader'))))))
+  assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', text('a'), text('b')))))))
+  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { attrs: { localId: 'a' }, type: 'paragraph' }))))), 'unspelled-node-attribute')
+  assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', { attrs: { level: 1 }, type: 'heading' }))))))
+  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: ' a', type: 'text' }], type: 'paragraph' }))))), 'unspellable-whitespace')
 })

@@ -11,9 +11,10 @@ import { serializeCanonicalJson } from './canonical-json.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const roundTripRoot = join(corpusRoot, 'round-trip')
+const unspellableRoot = join(corpusRoot, 'unspellable')
 
-const emittingDirectories = ['commonmark-subset']
-const pendingDirectories = ['block-nodes', 'inline-nodes']
+const emittingDirectories = ['block-nodes', 'commonmark-subset']
+const pendingDirectories = ['inline-nodes']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -23,7 +24,11 @@ function directoryNames(root: string): string[] {
 }
 
 function fixtureNames(directory: string, extension: string): string[] {
-  return readdirSync(join(roundTripRoot, directory))
+  return names(join(roundTripRoot, directory), extension)
+}
+
+function names(root: string, extension: string): string[] {
+  return readdirSync(root)
     .filter((name) => name.endsWith(extension))
     .map((name) => name.slice(0, -extension.length))
     .sort()
@@ -65,6 +70,24 @@ for (const directory of emittingDirectories) {
       assert.ok(emitted.equals(expected))
     })
   }
+}
+
+test('unspellable pairs every .json with an .error', () => {
+  assert.deepEqual(names(unspellableRoot, '.json'), names(unspellableRoot, '.error'))
+})
+
+test('unspellable holds fixtures', () => {
+  assert.ok(names(unspellableRoot, '.json').length > 0)
+})
+
+for (const name of names(unspellableRoot, '.json')) {
+  test(`unspellable/${name} is refused with the error it names`, () => {
+    const parsed: unknown = JSON.parse(readFileSync(join(unspellableRoot, `${name}.json`), 'utf8'))
+    assert.ok(isAdfDocument(parsed), `${name}.json is not an ADF document`)
+    const result = adfToMarkdown(parsed)
+    assert.ok(!result.ok, result.ok ? `emitted ${JSON.stringify(result.value)}` : '')
+    assert.equal(result.error.code, readFileSync(join(unspellableRoot, `${name}.error`), 'utf8').trimEnd())
+  })
 }
 
 test('the corpus holds JSON to gate', () => {

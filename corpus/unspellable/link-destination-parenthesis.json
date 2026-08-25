@@ -1,0 +1,23 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/a)b"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "The torque table",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -6,7 +6,7 @@ export type InlineSegment =
 
 export type AssembledLine = { line: string; unspellableMark: string | undefined }
 
-export type LineContainer = 'heading' | 'paragraph'
+export type LineContainer = 'heading' | 'paragraph' | 'table-cell'
 
 type DelimiterRun = { character: string; closeMark: string | undefined; end: number; openMark: string | undefined; start: number }
 
@@ -127,8 +127,9 @@ function isSyntax(kind: InlineSegment['kind'] | undefined): boolean {
 }
 
 function opensConstruct(scan: string, index: number, inLinkText: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
-  const claimsLine = container === 'heading' ? closesHeading(scan, index) : claimsLineStart(scan, index)
-  return claimsLine || claimsCharacter(scan, index, inLinkText, escaped)
+  if (container === 'heading' && closesHeading(scan, index)) return true
+  if (container === 'paragraph' && claimsLineStart(scan, index)) return true
+  return claimsCharacter(scan, index, inLinkText, container, escaped)
 }
 
 function claimsLineStart(scan: string, index: number): boolean {
@@ -144,10 +145,11 @@ function closesHeading(scan: string, index: number): boolean {
   return index === 0 || /[ \t]/.test(scan.charAt(index - 1))
 }
 
-function claimsCharacter(scan: string, index: number, inLinkText: boolean, escaped: ReadonlySet<number>): boolean {
+function claimsCharacter(scan: string, index: number, inLinkText: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
   const character = scan.charAt(index)
   const rest = scan.slice(index)
   if (inLinkText && (character === '[' || character === ']')) return true
+  if (character === '|') return container === 'table-cell'
   if (character === '\\') return asciiPunctuation.test(scan.charAt(index + 1))
   if (character === '&') return startsEntityReference(rest)
   if (character === '<') return opensBracketedAutolink(rest) || htmlConstructs.some((construct) => construct.test(rest))

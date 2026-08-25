@@ -1,5 +1,6 @@
 export type ConvertErrorCode =
   | 'ambiguous-empty-code-block-language'
+  | 'ambiguous-empty-media-alt'
   | 'ambiguous-ordered-list-start'
   | 'not-an-adf-document'
   | 'reserved-adf-language'
@@ -13,6 +14,7 @@ export type ConvertErrorCode =
   | 'unspellable-mark'
   | 'unspellable-whitespace'
   | 'unspelled-block-marks'
+  | 'unspelled-block-separation'
   | 'unspelled-node-attribute'
   | 'unsupported-document-version'
   | 'unsupported-heading-level'

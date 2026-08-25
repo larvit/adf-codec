@@ -9,6 +9,9 @@ One directory per contract kind:
   `markdownToAdf` must build from it. One-way; the markdown is not canonical.
 - `errors/` — `<name>.md`: markdown input that must not convert. A `<name>.error` beside it
   pins which error.
+- `unspellable/` — `<name>.json`: ADF `adfToMarkdown` must refuse, the `ConvertErrorCode` in the
+  `<name>.error` beside it. A maintainer decision (`todo.md`) moves a document from here to
+  `round-trip/`.
 - `real-payloads/` — `<name>.json`: sanitized live ADF, round-tripped ADF→markdown→ADF. No
   expected markdown.
 

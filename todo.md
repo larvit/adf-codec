@@ -28,12 +28,12 @@ detail is settled at its own milestone.
       carries a `localId` with no spelling, `codeBlock` also `hideLineNumbers`, `uniqueId` and
       `wrap`, `blockquote` also marks, and `hardBreak` `text` and `localId` with no section for
       the carry fallback to reach. Picking one (directive sections for those nodes, or the opaque
-      carry) is a permanent format decision (§8). Three collision sites are held out of the corpus
-      meanwhile, each a choice between the absent attribute and the empty value: a `codeBlock`
-      whose info string is empty and `media` with an empty `alt`, which one "exactly that shape"
-      rule — as the CommonMark image already uses — could settle together, and an `orderedList`
-      starting at 1, independent of the totality answer since `order: 9` keeps the markdown form
-      either way. **Also blocked**: the link rule covers destination spaces only, so two shapes
+      carry) is a permanent format decision (§8). Three collision sites wait in
+      `corpus/unspellable/` meanwhile, each a choice between the absent attribute and the empty
+      value: a `codeBlock` whose info string is empty and `media` with an empty `alt`, which one
+      "exactly that shape" rule — as the CommonMark image already uses — could settle together,
+      and an `orderedList` starting at 1, independent of the totality answer since `order: 9`
+      keeps the markdown form either way. **Also blocked**: the link rule covers destination spaces only, so two shapes
       break §2 silently — href `https://example.com/a)b` emits `[t](https://example.com/a)b)`,
       read back as href `…/a` plus literal `b)`; title `He said "hi"` emits
       `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
@@ -42,7 +42,8 @@ detail is settled at its own milestone.
       directive block in a container body — an `expand` whose content is `paragraph` "A" then a
       `panel` (`panelType` `warning`) holding "B" spells `A` and `:::panel warning` either on
       consecutive lines or with a blank line between. Two defensible spellings, so §8 leaves the
-      pick here.
+      pick here; `unspelled-block-separation` refuses the pair meanwhile, an empty paragraph's
+      `::paragraph` beside a CommonMark block included.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d3's.
