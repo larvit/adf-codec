@@ -4,10 +4,10 @@ import { emitInlineLine } from './markdown-inline.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
+import { largestNesting } from './nesting.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 
 const largestListMarker = 999999999
-const largestNesting = 500
 const listTypes = ['bulletList', 'orderedList']
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
@@ -72,7 +72,7 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
   let text = ''
   for (const [index, child] of (node.content ?? []).entries()) {
     const childPath = [...path, 'content', index]
-    if (child.type !== 'text' || typeof child.text !== 'string' || (child.marks ?? []).length > 0 || Object.keys(child.attrs ?? {}).length > 0) {
+    if (child.type !== 'text' || typeof child.text !== 'string' || child.text === '' || (child.marks ?? []).length > 0 || Object.keys(child.attrs ?? {}).length > 0) {
       return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only', childPath)
     }
     if (/\r/.test(child.text)) return failure('unspellable-whitespace', 'a codeBlock holds no carriage return CommonMark keeps', childPath)

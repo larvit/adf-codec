@@ -109,9 +109,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
   `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
   the spot.
-- Nothing recurses unbounded: the document guard walks iteratively and block emission refuses past
-  500 nesting levels, so a deep document is a `Result` rather than the stack overflow that waits
-  near 3000.
+- Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and attribute values
+  are all held to 500 levels, so a deep document is a `Result` rather than the stack overflow that
+  waits near 2000.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.

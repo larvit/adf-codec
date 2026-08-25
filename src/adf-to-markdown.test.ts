@@ -73,6 +73,8 @@ test('refuses a link destination CommonMark cannot spell', () => {
   assert.equal(code(adfToMarkdown(link('https://example.com/a\\b'))), 'unspellable-link-destination')
   assert.equal(code(adfToMarkdown(link('https://example.com/?a=1&amp;b=2'))), 'unspellable-link-destination')
   assert.equal(code(adfToMarkdown(link('https://example.com/a\nb'))), 'unspellable-link-destination')
+  const entity = 'https://example.com/?a=1&amp;b=2'
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: entity }, type: 'link' }], text: entity, type: 'text' })))), 'unspellable-link-destination')
   assert.equal(markdown(adfToMarkdown(link('https://en.example.com/a_(b)'))), '[t](https://en.example.com/a_(b))\n')
 })
 
@@ -100,6 +102,7 @@ test('refuses whitespace CommonMark cannot hold', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ text: '  lead', type: 'text' })))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'trail ', type: 'text' })))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\nb', type: 'text' })))), 'unspellable-whitespace')
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: '\fa', type: 'text' })))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'em' }], text: 'x ', type: 'text' }, { text: 'y', type: 'text' })))), 'unspellable-whitespace')
 })
 
@@ -177,13 +180,34 @@ test('wraps adjacent nodes carrying one mark once, and a differing mark twice', 
   assert.equal(emitted(marked('a', link('http://x')), marked('b', link('http://y'))), '[a](http://x)[b](http://y)\n')
 })
 
+test('refuses a mark spelling that cannot open or close where it sits', () => {
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
+  const strong: AdfMark = { type: 'strong' }
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'un', type: 'text' }, marked('-real', strong), { text: 'istic', type: 'text' })))), 'unspellable-mark')
+  assert.equal(code(adfToMarkdown(document(paragraph(marked('C++', { type: 'em' }), { text: 'ish', type: 'text' })))), 'unspellable-mark')
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('.a', strong))))), 'unspellable-mark')
+  assert.equal(emitted({ text: 'un ', type: 'text' }, marked('-real', strong), { text: ' istic', type: 'text' }), 'un **-real** istic\n')
+  assert.equal(emitted(marked('a.', strong)), '**a.**\n')
+  assert.equal(emitted({ text: 'x', type: 'text' }, marked('a', strong), { text: 'y', type: 'text' }), 'x**a**y\n')
+})
+
+test('refuses marks and attributes nested deeper than the emitter carries', () => {
+  const marks: AdfMark[] = Array.from({ length: 600 }, (_, index) => ({ type: index % 2 === 0 ? 'em' : 'strong' }))
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-node-shape')
+  let attrs: AdfMark['attrs'] = { depth: 'x' }
+  for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), 'not-an-adf-document')
+})
+
 test('escapes a literal delimiter that would merge with an emitted one', () => {
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
   assert.equal(emitted(marked('a_', { type: 'em' })), '_a\\__\n')
   assert.equal(emitted(marked('_a', { type: 'em' })), '_\\_a_\n')
   assert.equal(emitted(marked('a*', { type: 'strong' })), '**a\\***\n')
-  assert.equal(emitted({ text: 'x', type: 'text' }, marked('~a', { type: 'strike' })), 'x~~\\~a~~\n')
+  assert.equal(emitted(marked('~a', { type: 'strike' })), '~~\\~a~~\n')
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('~a', { type: 'strike' }))))), 'unspellable-mark')
   assert.equal(emitted({ text: '`', type: 'text' }, marked('x', { type: 'code' })), '\\``x`\n')
   assert.equal(emitted(marked('x', { type: 'code' }), { text: '`', type: 'text' }), '`x`\\`\n')
   assert.equal(emitted({ text: '!', type: 'text' }, marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' })), '\\![x](https://example.com/)\n')
@@ -207,6 +231,7 @@ test('refuses the characters CommonMark rewrites', () => {
   assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' }))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\u0000b', type: 'text' })))), 'unspellable-character')
   assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))), 'unspellable-character')
+  assert.equal(code(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
 })
 
 test('refuses a text node carrying no text at all', () => {

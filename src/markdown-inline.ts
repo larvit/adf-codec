@@ -1,5 +1,6 @@
 import type { AdfMark, AdfNode } from './adf-document.ts'
 import { assembleInlineLine, type InlineSegment, type LineContainer } from './markdown-escaping.ts'
+import { largestNesting } from './nesting.ts'
 import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink, isUnicodeWhitespace } from './commonmark-grammar.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
@@ -19,9 +20,13 @@ const linkAttributes = ['href', 'title']
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const segments = emitRun(nodes, 0, 0, { atBlockEnd: true, container, inLinkText: false, path })
   if (!segments.ok) return segments
-  const line = assembleInlineLine(segments.value, container)
+  const assembled = assembleInlineLine(segments.value, container)
+  if (assembled.unspellableDelimiter !== undefined) {
+    return failure('unspellable-mark', `the ${assembled.unspellableDelimiter} spelling cannot open or close where it sits`, path)
+  }
+  const line = assembled.line
   for (const [index, single] of line.split('\n').entries()) {
-    if (/^[ \t]|[ \t]$/.test(single)) {
+    if (/^[ \t\v\f]|[ \t\v\f]$/.test(single)) {
       return failure('unspellable-whitespace', 'a line begins or ends with whitespace CommonMark strips', path)
     }
     if (container === 'paragraph' && claimsLine(single, index === 0 ? 'first' : 'later')) {
@@ -32,6 +37,9 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
 }
 
 function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, context: InlineContext): Result<InlineSegment[]> {
+  if (depth > largestNesting) {
+    return failure('unsupported-node-shape', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
+  }
   const runs = inlineRuns(nodes, depth, firstIndex)
   const segments: InlineSegment[] = []
   for (const [offset, run] of runs.entries()) {
@@ -94,10 +102,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (!inner.ok) return inner
   const text = inner.value.map((segment) => segment.text).join('')
   if (holdsEdgeWhitespace(text)) return failure('unspellable-whitespace', `the ${mark.type} spelling cannot open or close beside whitespace`, path)
-  if (mark.type === 'em') {
-    return success([{ kind: 'emphasis-open', text: spelling }, ...inner.value, { kind: 'emphasis-close', text: spelling }])
-  }
-  return success([{ kind: 'syntax', text: spelling }, ...inner.value, { kind: 'syntax', text: spelling }])
+  return success([{ kind: 'emphasis-open', text: spelling }, ...inner.value, { kind: 'emphasis-close', text: spelling }])
 }
 
 function emitCodeSpan(nodes: readonly AdfNode[], depth: number, path: ConvertErrorPath): Result<InlineSegment[]> {
@@ -115,7 +120,7 @@ function emitCodeSpan(nodes: readonly AdfNode[], depth: number, path: ConvertErr
 }
 
 function holdsEdgeWhitespace(text: string): boolean {
-  return text !== '' && (isUnicodeWhitespace(text.charAt(0)) || isUnicodeWhitespace(text.charAt(text.length - 1)))
+  return isUnicodeWhitespace(text.charAt(0)) || isUnicodeWhitespace(text.charAt(text.length - 1))
 }
 
 function needsPadding(text: string): boolean {

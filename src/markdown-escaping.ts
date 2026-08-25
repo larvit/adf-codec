@@ -5,9 +5,11 @@ export type InlineSegment = {
   text: string
 }
 
+export type AssembledLine = { line: string; unspellableDelimiter: string | undefined }
+
 export type LineContainer = 'heading' | 'paragraph'
 
-const delimiters = ['`', '*', '_', '~']
+const delimiters = ['*', '_', '`', '~']
 
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
@@ -15,7 +17,7 @@ const inlineDirective = /^:[a-z][A-Za-z0-9]*[[{]/
 const linkOpener = /\](?=[([:])/
 const unicodePunctuation = /[\p{P}\p{S}]/u
 
-export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): string {
+export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
   return escape(resolveEmphasis(segments), container)
 }
 
@@ -40,6 +42,7 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
     if (openerIndex === undefined || opener === undefined) continue
     const openOffset = offsets[openerIndex] ?? 0
     const closeOffset = offsets[index] ?? 0
+    if (opener.text !== '_') continue
     if (!isWordCharacter(charAt(scan, openOffset - 1)) && !isWordCharacter(charAt(scan, closeOffset + 1))) continue
     opener.text = '*'
     segment.text = '*'
@@ -47,11 +50,12 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
   return resolved
 }
 
-function escape(segments: readonly InlineSegment[], container: LineContainer): string {
+function escape(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
   const scan = segments.map((segment) => segment.text).join('')
   const kinds: InlineSegment['kind'][] = []
   for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) kinds.push(segment.kind)
   const escaped = new Set<number>()
+  const placements: number[] = []
   let output = ''
   for (let index = 0; index < scan.length; index += 1) {
     const kind = kinds[index]
@@ -60,9 +64,24 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): s
       output += '\\'
       escaped.add(index)
     }
+    placements.push(output.length)
     output += scan.charAt(index)
   }
-  return output
+  return { line: output, unspellableDelimiter: unspellableDelimiter(segments, output, placements) }
+}
+
+function unspellableDelimiter(segments: readonly InlineSegment[], output: string, placements: readonly number[]): string | undefined {
+  let cursor = 0
+  for (const segment of segments) {
+    const start = placements[cursor] ?? 0
+    cursor += segment.text.length
+    if (segment.kind !== 'emphasis-close' && segment.kind !== 'emphasis-open') continue
+    const before = charAt(output, start - 1)
+    const after = output.charAt(start + segment.text.length)
+    const spellable = segment.kind === 'emphasis-open' ? isLeftFlanking(before, after) : isRightFlanking(before, after)
+    if (!spellable) return segment.text
+  }
+  return undefined
 }
 
 function mergesWithSyntax(scan: string, kinds: readonly (InlineSegment['kind'] | undefined)[], index: number): boolean {
