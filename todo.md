@@ -63,7 +63,7 @@ detail is settled at its own milestone.
         itself under the library's own canonical serializer — one implementation, keys sorted, two
         spellings: two-space indent for the corpus files and the block carry's body, compact for
         the inline carry. `commonmark-subset/` green.
-  - [ ] **2b — Block nodes.** `block-nodes/` green. A nested list that cannot interrupt the block
+  - [x] **2b — Block nodes.** `block-nodes/` green. A nested list that cannot interrupt the block
         above it is refused meanwhile, not spelled: the maintainer's answer on tight-versus-blank
         separation turns that refusal into an emission. Block separation becomes
         `separationBetween(previous, next, container)` here — a boolean cannot hold the third case
