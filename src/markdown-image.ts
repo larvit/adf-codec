@@ -1,6 +1,6 @@
 import type { AdfNode } from './adf-document.ts'
+import type { ConvertErrorPath, Result } from './result.ts'
 import { emitImageLine } from './markdown-inline.ts'
-import { failure, type ConvertErrorPath, type Result } from './result.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 
 const centeredMediaSingle = '{"layout":"center"}'
@@ -9,9 +9,8 @@ const imageAttributes = ['alt', 'type', 'url']
 export function emitImage(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
   const image = imageShape(node)
   if (image === undefined) return undefined
-  const mediaPath = [...path, 'content', 0]
-  if (image.alt === '') return failure('ambiguous-attribute-spelling', 'an empty media alt and an absent one share one image spelling', mediaPath)
-  return emitImageLine(image.alt, image.url, mediaPath)
+  const line = emitImageLine(image.alt, image.url, [...path, 'content', 0])
+  return line.ok ? line : undefined
 }
 
 function imageShape(node: AdfNode): { alt: string | undefined; url: string } | undefined {
@@ -22,7 +21,7 @@ function imageShape(node: AdfNode): { alt: string | undefined; url: string } | u
   const attrs = media.attrs ?? {}
   const alt = attrs['alt']
   const url = attrs['url']
-  if (Object.keys(attrs).some((key) => !imageAttributes.includes(key)) || attrs['type'] !== 'external') return undefined
-  if (typeof url !== 'string' || (alt !== undefined && typeof alt !== 'string')) return undefined
+  if (Object.keys(attrs).some((key) => !imageAttributes.includes(key)) || attrs['type'] !== 'external' || typeof url !== 'string') return undefined
+  if (alt !== undefined && (typeof alt !== 'string' || alt === '')) return undefined
   return { alt, url }
 }

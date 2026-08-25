@@ -24,7 +24,9 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
 }
 
 export function emitImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): Result<string> {
-  if (alt !== undefined && /[\n\r]/.test(alt)) return failure('unspellable-whitespace', 'a media alt holds a newline no image description spells', path)
+  if (alt !== undefined && /^[ \t]|[ \t]$|[\n\r]/.test(alt)) {
+    return failure('unspellable-whitespace', 'a media alt holds whitespace no image description spells', path)
+  }
   if (alt !== undefined && holdsNullCharacter(alt)) return failure('unspellable-character', 'a media alt holds a null character CommonMark replaces', path)
   const destination = spellDestination(href, path)
   if (!destination.ok) return destination

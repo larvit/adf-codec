@@ -28,15 +28,14 @@ detail is settled at its own milestone.
       carries a `localId` with no spelling, `codeBlock` also `hideLineNumbers`, `uniqueId` and
       `wrap`, `blockquote` also marks, and `hardBreak` `text` and `localId` with no section for
       the carry fallback to reach. Picking one (directive sections for those nodes, or the opaque
-      carry) is a permanent format decision (§8). Three collision sites wait in
+      carry) is a permanent format decision (§8). Two collision sites wait in
       `corpus/unspellable/` meanwhile, each a choice between the absent attribute and the empty
-      value: a `codeBlock` whose info string is empty and `media` with an empty `alt`, which one
-      "exactly that shape" rule — as the CommonMark image already uses — could settle together,
-      and an `orderedList` starting at 1, independent of the totality answer since `order: 9`
-      keeps the markdown form either way. **Also blocked**: the link rule covers destination spaces only, so two shapes
-      break §2 silently — href `https://example.com/a)b` emits `[t](https://example.com/a)b)`,
-      read back as href `…/a` plus literal `b)`; title `He said "hi"` emits
-      `[t](u "He said "hi"")`, which holds no title. Two defensible spellings each — angle
+      value: a `codeBlock` whose info string is empty, and an `orderedList` starting at 1,
+      independent of the totality answer since `order: 9` keeps the markdown form either way.
+      Neither has a second spelling to fall back to, which is what settled the third — a `media`
+      with an empty `alt` takes the directive form (`spec/flavour.md`, the CommonMark image). **Also blocked**: the link rule covers destination spaces only, so two shapes
+      have no spelling and are refused meanwhile — href `https://example.com/a)b` and title
+      `He said "hi"`, both in `corpus/unspellable/`. Two defensible spellings each — angle
       brackets or a backslash escape, and for titles `'…'` or `(…)` besides — so §8 leaves
       the pick here. **Also blocked**: block separation is unstated for a CommonMark block beside a
       directive block in a container body — an `expand` whose content is `paragraph` "A" then a
@@ -71,7 +70,9 @@ detail is settled at its own milestone.
         a `.json` beside the `ConvertErrorCode` it must return, the emitter half of `corpus/errors/`.
   - [ ] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment.kind` splits into
         its two axes here — escapability (`attribute` for `:text{text="…"}`, `backslash`, `none`)
-        and the emphasis role — rather than gaining a third value that means one of each.
+        and the emphasis role — rather than gaining a third value that means one of each. A lone
+        surrogate in a text node emits verbatim and becomes U+FFFD on any UTF-8 encode, a §2 break
+        plain text still holds open — attribute values already escape it.
   - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
         info string, and the `codeBlock` whose language is `adf`.

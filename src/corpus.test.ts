@@ -77,7 +77,7 @@ function fenceNestingFault(markdown: string): string | undefined {
   const open: number[] = []
   let codeFence: string | undefined
   for (const line of markdown.split('\n')) {
-    const content = line.replace(/^ {0,3}(?:(?:> ?|[-*+] |\d{1,9}[.)] ) {0,3})*/, '')
+    const content = line.replace(/^[ \t]*(?:(?:> ?|[-*+] |\d{1,9}[.)] )[ \t]*)*/, '')
     const backticks = /^(`{3,}|~{3,})/.exec(content)?.[1]
     if (codeFence !== undefined) {
       if (backticks !== undefined && backticks[0] === codeFence[0] && backticks.length >= codeFence.length) codeFence = undefined
@@ -103,7 +103,9 @@ function fenceNestingFault(markdown: string): string | undefined {
 
 test('the fence nesting check catches a fence a container cannot hold', () => {
   assert.equal(fenceNestingFault(':::panel info\n- :::panel warning\n  B\n  :::\n:::'), '"- :::panel warning" sits in a container fenced with 3 colons')
-  assert.equal(fenceNestingFault('::::panel info\n- :::panel warning\n  B\n  :::\n::::'), undefined)
+  assert.equal(fenceNestingFault(':::panel info\n- - :::panel warning\n    B\n    :::\n:::'), '"- - :::panel warning" sits in a container fenced with 3 colons')
+  assert.equal(fenceNestingFault(':::panel info\n10. :::panel warning\n    B\n    :::\n:::'), '"10. :::panel warning" sits in a container fenced with 3 colons')
+  assert.equal(fenceNestingFault('::::panel info\n- - :::panel warning\n    B\n    :::\n::::'), undefined)
   assert.equal(fenceNestingFault(':::tableCell\n```text\n:::::::panel warning\n:::\n```\n:::'), undefined)
 })
 

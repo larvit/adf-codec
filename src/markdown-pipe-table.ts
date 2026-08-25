@@ -1,4 +1,5 @@
 import type { AdfNode } from './adf-document.ts'
+import type { JsonValue } from './json-value.ts'
 import { emitInlineLine } from './markdown-inline.ts'
 import { success, type ConvertErrorPath, type Result } from './result.ts'
 
@@ -48,6 +49,18 @@ function plainParagraph(cell: AdfNode): AdfNode | undefined {
   const content = cell.content ?? []
   const paragraph = content[0]
   if (paragraph === undefined || content.length !== 1 || paragraph.type !== 'paragraph' || !isPlain(paragraph)) return undefined
-  const pipedCode = (paragraph.content ?? []).some((child) => (child.marks ?? []).some((mark) => mark.type === 'code') && (child.text ?? '').includes('|'))
-  return pipedCode ? undefined : paragraph
+  return (paragraph.content ?? []).some(spellsPipeAsSyntax) ? undefined : paragraph
+}
+
+// A pipe the inline layer emits as syntax takes no backslash, so the cell has no pipe spelling.
+function spellsPipeAsSyntax(child: AdfNode): boolean {
+  return (child.marks ?? []).some((mark) => {
+    if (mark.type === 'code') return (child.text ?? '').includes('|')
+    if (mark.type !== 'link') return false
+    return holdsPipe(mark.attrs?.['href']) || holdsPipe(mark.attrs?.['title'])
+  })
+}
+
+function holdsPipe(value: JsonValue | undefined): boolean {
+  return typeof value === 'string' && value.includes('|')
 }

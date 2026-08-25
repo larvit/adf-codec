@@ -34,11 +34,29 @@
                 {
                   "content": [
                     {
-                      "text": "Plain item.",
-                      "type": "text"
+                      "content": [
+                        {
+                          "attrs": {
+                            "title": "Deeper still"
+                          },
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": "Two list levels down.",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "expand"
+                        }
+                      ],
+                      "type": "listItem"
                     }
                   ],
-                  "type": "paragraph"
+                  "type": "bulletList"
                 }
               ],
               "type": "listItem"
@@ -64,6 +82,23 @@
                 }
               ],
               "type": "expand"
+            },
+            {
+              "attrs": {
+                "panelType": "note"
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Superseded by the next run.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "panel"
             }
           ],
           "type": "blockquote"

@@ -42,8 +42,8 @@ normalizes to it through the round-trip.
   the leading delimiter of a construct that would otherwise open, re-scan from there, and
   repeat — with the opener literal the closer parses as text, so `*not emphasis*` is
   `\*not emphasis*`, one backslash.
-- Blocks separated by one blank line at document level and between CommonMark blocks; two
-  directive blocks inside a container take none. No trailing whitespace outside a code block's
+- Blocks separated by one blank line at document level, inside a blockquote and between CommonMark
+  blocks; two directive blocks inside a container take none. No trailing whitespace outside a code block's
   content, single trailing newline; a document with no blocks is the empty string.
 
 ## Directives
@@ -90,7 +90,8 @@ container is open, a named error otherwise.
 **Attributes**: `{key=value key2="two words"}`. `{attrs}` is optional in every form, and `{}` is
 valid — no attributes. A bare value matches `[A-Za-z0-9_-]+`; any other value is double-quoted
 with JSON string escaping (`\"` `\\` `\n` `\t` `\uXXXX`, …) — total over
-Unicode, and raw newlines never appear inside quotes. All values are strings at the grammar
+Unicode, and raw newlines never appear inside quotes. The closing `}` is the first one outside
+quotes, since a quoted value holds `}` unescaped. All values are strings at the grammar
 level; each node's section assigns types. Canonical form orders keys alphabetically, spells
 values bare wherever allowed, inside quotes escapes only what it must using the shortest escape
 form, and omits empty `{attrs}` except where the `{` itself claims the directive
@@ -200,7 +201,9 @@ The moon, at night.
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
 from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown`
 emits the image form for exactly that shape — those attrs and no others, no marks on either
-node, no caption, and a `media` carrying nothing beyond `alt`, `type` and `url`. An image amid
+node, no caption, and a `media` carrying nothing beyond `alt`, `type` and `url` — and only where
+CommonMark spells the pair: a destination or a description the image form cannot hold, an empty
+`alt` included, takes the directive form instead. An image amid
 other text, or one carrying a title, is a named error: `mediaInline` carries a media
 `collection` + `id`, never a URL, and no media node carries a title.
 
@@ -210,9 +213,9 @@ One header row plus plain inline cells is a pipe table; anything richer is the d
 (AGENTS.md §4). Precisely: a table emits as a pipe table exactly when the `table`, every row
 and every cell carry no attrs and no marks, the first row is all `tableHeader` and the rest all
 `tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
-mark-less paragraph — an empty cell holds one empty paragraph — with no `|` in a code span:
-backslash escapes are inert there, so pipe form cannot spell that pipe and the table takes the
-directive form. A pipe table parses back to exactly that shape.
+mark-less paragraph — an empty cell holds one empty paragraph — with no `|` in a code span,
+link destination or link title: backslash escapes are inert in everything the inline layer spells
+as syntax, so pipe form cannot spell that pipe and the table takes the directive form. A pipe table parses back to exactly that shape.
 
 ```
 | Part | Qty |

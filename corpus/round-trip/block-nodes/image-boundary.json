@@ -82,6 +82,37 @@
         }
       ],
       "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "",
+            "type": "external",
+            "url": "https://example.com/moon.png"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "type": "external",
+            "url": "https://example.com/plan.png?a=1&amp;b=2"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
     }
   ],
   "type": "doc",

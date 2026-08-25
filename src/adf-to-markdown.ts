@@ -67,7 +67,7 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
   if (previous.spelling === 'directive' && next.spelling === 'directive') return success('\n')
   return failure(
     'unspelled-block-separation',
-    `the canonical form leaves the separation between a ${previous.node.type} and a ${next.node.type} in a container body unspelled`,
+    `the canonical form leaves the separation between a ${previous.spelling} and a ${next.spelling} block in a container body unspelled`,
     next.path,
   )
 }
