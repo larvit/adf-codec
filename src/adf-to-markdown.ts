@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
 import { emitInlineLine } from './markdown-inline.ts'
-import { failure, success, type Result } from './result.ts'
+import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { isAdfDocument } from './adf-document.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 
@@ -9,24 +9,25 @@ const largestListMarker = 999999999
 const listTypes = ['bulletList', 'orderedList']
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
-  if (!isAdfDocument(document)) return failure('not-an-adf-document', 'the value is not an ADF document')
-  if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`)
-  const blocks = emitBlocks(document.content ?? [], false)
+  if (!isAdfDocument(document)) return failure('not-an-adf-document', 'the value is not an ADF document', [])
+  if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
+  const blocks = emitBlocks(document.content ?? [], false, [])
   if (!blocks.ok) return blocks
   return success(blocks.value === '' ? '' : `${blocks.value}\n`)
 }
 
-function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean): Result<string> {
+function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: ConvertErrorPath): Result<string> {
   let output = ''
   let previous: AdfNode | undefined
-  for (const node of nodes) {
+  for (const [index, node] of nodes.entries()) {
+    const nodePath = [...path, 'content', index]
     if (previous !== undefined) {
       if (listTypes.includes(node.type) && previous.type === node.type) {
-        return failure('unspellable-adjacent-lists', `two adjacent ${node.type} nodes read back as one list`)
+        return failure('unspellable-adjacent-lists', `two adjacent ${node.type} nodes read back as one list`, nodePath)
       }
       output += inListItem && listTypes.includes(node.type) ? '\n' : '\n\n'
     }
-    const block = emitBlock(node)
+    const block = emitBlock(node, nodePath)
     if (!block.ok) return block
     output += block.value
     previous = node
@@ -34,23 +35,23 @@ function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean): Result<stri
   return success(output)
 }
 
-function emitBlock(node: AdfNode): Result<string> {
-  if (node.type === 'blockquote') return emitBlockquote(node)
-  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node)
-  if (node.type === 'codeBlock') return emitCodeBlock(node)
-  if (node.type === 'heading') return emitHeading(node)
-  if (node.type === 'paragraph') return emitParagraph(node)
-  if (node.type === 'rule') return emitRule(node)
+function emitBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  if (node.type === 'blockquote') return emitBlockquote(node, path)
+  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path)
+  if (node.type === 'codeBlock') return emitCodeBlock(node, path)
+  if (node.type === 'heading') return emitHeading(node, path)
+  if (node.type === 'paragraph') return emitParagraph(node, path)
+  if (node.type === 'rule') return emitRule(node, path)
   if (node.type === 'hardBreak' || node.type === 'listItem' || node.type === 'text') {
-    return failure('unsupported-node-shape', `a ${node.type} node cannot stand where a block belongs`)
+    return failure('unsupported-node-shape', `a ${node.type} node cannot stand where a block belongs`, path)
   }
-  return failure('unsupported-node-type', `the canonical form spells no block node of type ${node.type}`)
+  return failure('unsupported-node-type', `the canonical form spells no block node of type ${node.type}`, path)
 }
 
-function emitBlockquote(node: AdfNode): Result<string> {
-  const validation = validateBlockNode(node, [])
+function emitBlockquote(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  const validation = validateBlockNode(node, [], path)
   if (!validation.ok) return validation
-  const inner = emitBlocks(node.content ?? [], false)
+  const inner = emitBlocks(node.content ?? [], false, path)
   if (!inner.ok) return inner
   return success(
     inner.value
@@ -60,15 +61,15 @@ function emitBlockquote(node: AdfNode): Result<string> {
   )
 }
 
-function emitCodeBlock(node: AdfNode): Result<string> {
-  const validation = validateBlockNode(node, ['language'])
+function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  const validation = validateBlockNode(node, ['language'], path)
   if (!validation.ok) return validation
-  const info = spellCodeFenceInfo(node.attrs?.['language'])
+  const info = spellCodeFenceInfo(node.attrs?.['language'], path)
   if (!info.ok) return info
   let text = ''
   for (const child of node.content ?? []) {
     if (child.type !== 'text' || typeof child.text !== 'string' || (child.marks ?? []).length > 0 || Object.keys(child.attrs ?? {}).length > 0) {
-      return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only')
+      return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only', path)
     }
     text += child.text
   }
@@ -77,62 +78,65 @@ function emitCodeBlock(node: AdfNode): Result<string> {
   return success(text === '' ? `${opening}\n${fence}` : `${opening}\n${text}\n${fence}`)
 }
 
-function spellCodeFenceInfo(language: JsonValue | undefined): Result<string> {
+function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorPath): Result<string> {
   if (language === undefined) return success('')
-  if (typeof language !== 'string') return failure('unsupported-node-shape', 'a codeBlock language is no string')
-  if (language === '') return failure('ambiguous-empty-code-block-language', 'an empty codeBlock language and an absent one share one markdown spelling')
-  if (language === 'adf') return failure('reserved-adf-language', 'the adf info string is reserved for the opaque carry')
+  if (typeof language !== 'string') return failure('unsupported-node-shape', 'a codeBlock language is no string', path)
+  if (language === '') {
+    return failure('ambiguous-empty-code-block-language', 'an empty codeBlock language and an absent one share one markdown spelling', path)
+  }
+  if (language === 'adf') return failure('reserved-adf-language', 'the adf info string is reserved for the opaque carry', path)
   if (/[`\n\r]/.test(language) || language !== language.trim()) {
-    return failure('unspellable-code-block-language', 'a fence info string holds no backtick and no edge whitespace')
+    return failure('unspellable-code-block-language', 'a fence info string holds no backtick and no edge whitespace', path)
   }
   return success(language)
 }
 
-function emitHeading(node: AdfNode): Result<string> {
-  const validation = validateBlockNode(node, ['level'])
+function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  const validation = validateBlockNode(node, ['level'], path)
   if (!validation.ok) return validation
   const level = node.attrs?.['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) {
-    return failure('unsupported-heading-level', `no ATX heading spells level ${JSON.stringify(level ?? null)}`)
+    return failure('unsupported-heading-level', `no ATX heading spells level ${JSON.stringify(level ?? null)}`, path)
   }
   const hashes = '#'.repeat(level)
   const content = node.content ?? []
   if (content.length === 0) return success(hashes)
-  const line = emitInlineLine(content, 'heading')
+  const line = emitInlineLine(content, 'heading', path)
   if (!line.ok) return line
   return success(`${hashes} ${line.value}`)
 }
 
-function emitList(node: AdfNode): Result<string> {
+function emitList(node: AdfNode, path: ConvertErrorPath): Result<string> {
   const ordered = node.type === 'orderedList'
-  const validation = validateBlockNode(node, ordered ? ['order'] : [])
+  const validation = validateBlockNode(node, ordered ? ['order'] : [], path)
   if (!validation.ok) return validation
   const items = node.content ?? []
-  if (items.length === 0) return failure('unsupported-node-shape', `a ${node.type} holds at least one listItem`)
+  if (items.length === 0) return failure('unsupported-node-shape', `a ${node.type} holds at least one listItem`, path)
   const start = ordered ? node.attrs?.['order'] : 0
   if (ordered && (start === undefined || start === 1)) {
-    return failure('ambiguous-ordered-list-start', 'an orderedList starting at 1 and one with no order share one markdown spelling')
+    return failure('ambiguous-ordered-list-start', 'an orderedList starting at 1 and one with no order share one markdown spelling', path)
   }
   if (typeof start !== 'number' || !Number.isInteger(start) || start < 0 || start > largestListMarker) {
-    return failure('unsupported-node-shape', `no list marker spells the order ${JSON.stringify(start ?? null)}`)
+    return failure('unsupported-node-shape', `no list marker spells the order ${JSON.stringify(start ?? null)}`, path)
   }
   if (start + items.length - 1 > largestListMarker) {
-    return failure('unspellable-list-marker', `no list marker spells the ${items.length} items an orderedList starting at ${start} needs`)
+    return failure('unspellable-list-marker', `no list marker spells the ${items.length} items a list starting at ${start} needs`, path)
   }
   const lines: string[] = []
   for (const [offset, item] of items.entries()) {
-    if (item.type !== 'listItem') return failure('unsupported-node-shape', `a ${node.type} holds listItem nodes only`)
-    const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ')
+    const itemPath = [...path, 'content', offset]
+    if (item.type !== 'listItem') return failure('unsupported-node-shape', `a ${node.type} holds listItem nodes only`, itemPath)
+    const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ', itemPath)
     if (!emitted.ok) return emitted
     lines.push(emitted.value)
   }
   return success(lines.join('\n'))
 }
 
-function emitListItem(item: AdfNode, marker: string): Result<string> {
-  const validation = validateBlockNode(item, [])
+function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath): Result<string> {
+  const validation = validateBlockNode(item, [], path)
   if (!validation.ok) return validation
-  const inner = emitBlocks(item.content ?? [], true)
+  const inner = emitBlocks(item.content ?? [], true, path)
   if (!inner.ok) return inner
   if (inner.value === '') return success(marker.trimEnd())
   const indent = ' '.repeat(marker.length)
@@ -144,29 +148,29 @@ function emitListItem(item: AdfNode, marker: string): Result<string> {
   )
 }
 
-function emitParagraph(node: AdfNode): Result<string> {
-  const validation = validateBlockNode(node, [])
+function emitParagraph(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  const validation = validateBlockNode(node, [], path)
   if (!validation.ok) return validation
   const content = node.content ?? []
   if (content.length === 0) return success('::paragraph')
-  return emitInlineLine(content, 'paragraph')
+  return emitInlineLine(content, 'paragraph', path)
 }
 
-function emitRule(node: AdfNode): Result<string> {
-  const validation = validateBlockNode(node, [])
+function emitRule(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  const validation = validateBlockNode(node, [], path)
   if (!validation.ok) return validation
-  if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a rule holds no content')
+  if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a rule holds no content', path)
   return success('---')
 }
 
-function validateBlockNode(node: AdfNode, spelled: readonly string[]): Result<null> {
+function validateBlockNode(node: AdfNode, spelled: readonly string[], path: ConvertErrorPath): Result<null> {
   if ((node.marks ?? []).length > 0) {
-    return failure('unspelled-block-marks', `the canonical form has no place for the marks a ${node.type} carries`)
+    return failure('unspelled-block-marks', `the canonical form has no place for the marks a ${node.type} carries`, path)
   }
-  if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text`)
+  if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text`, path)
   const unspelled = Object.keys(node.attrs ?? {}).find((key) => !spelled.includes(key))
   if (unspelled !== undefined) {
-    return failure('unspelled-node-attribute', `the ${node.type} attribute ${unspelled} has no canonical markdown spelling`)
+    return failure('unspelled-node-attribute', `the ${node.type} attribute ${unspelled} has no canonical markdown spelling`, path)
   }
   return success(null)
 }

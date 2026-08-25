@@ -21,6 +21,18 @@ function markdown(result: Result<string>): string {
   return result.ok ? result.value : `${result.error.code}: ${result.error.message}`
 }
 
+function path(result: Result<string>): readonly (number | string)[] {
+  return result.ok ? ['emitted'] : result.error.path
+}
+
+test('names the node a refusal came from', () => {
+  const unspellable: AdfNode = { attrs: { localId: 'a' }, type: 'paragraph' }
+  const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [unspellable], type: 'listItem' }], type: 'bulletList' }
+  assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), ['content', 1, 'content', 1, 'content', 0])
+  assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { type: 'mention' })))), ['content', 0, 'content', 1])
+  assert.deepEqual(path(adfToMarkdown({ type: 'doc', version: 2 })), [])
+})
+
 test('refuses a value that is not an ADF document', () => {
   assert.equal(code(adfToMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document')
 })

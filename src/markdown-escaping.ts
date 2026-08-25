@@ -1,4 +1,4 @@
-import { escapesLineClaim, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
+import { escapesLineClaim, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
 
 export type InlineSegment = {
   kind: 'emphasis-close' | 'emphasis-open' | 'link-text' | 'literal' | 'syntax'
@@ -8,7 +8,7 @@ export type InlineSegment = {
 export type LineContainer = 'heading' | 'paragraph'
 
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
-const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\s<>]*>/, /^<[^\s<>@]+@[^\s<>@]+>/]
+const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const inlineDirective = /^:[a-z][A-Za-z0-9]*[[{]/
 const linkOpener = /\](?=[([:])/
 const unicodePunctuation = /[\p{P}\p{S}]/u
@@ -88,7 +88,7 @@ function claimsCharacter(scan: string, index: number, inLinkText: boolean, escap
   if (inLinkText && (character === '[' || character === ']')) return true
   if (character === '\\') return asciiPunctuation.test(scan.charAt(index + 1))
   if (character === '&') return startsEntityReference(rest)
-  if (character === '<') return htmlConstructs.some((construct) => construct.test(rest))
+  if (character === '<') return opensBracketedAutolink(rest) || htmlConstructs.some((construct) => construct.test(rest))
   if (character === ':') return inlineDirective.test(rest)
   if (character === '[') return linkOpener.test(rest)
   if (character === '`') return opensCodeSpan(scan, index, escaped)

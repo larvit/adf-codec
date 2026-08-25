@@ -1,8 +1,13 @@
 export type LinePosition = 'first' | 'later'
 
+const controlCharacterRange = '\\u0000-\\u001f\\u007f'
+const autolinkSource = `[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\\s<>${controlCharacterRange}]*`
 const entityReferenceSource = '&(?:[A-Za-z][A-Za-z0-9]{1,31}|#\\d{1,7}|#[Xx][A-Fa-f0-9]{1,6});'
 
 const anchoredEntityReference = new RegExp(`^(?:${entityReferenceSource})`)
+const autolink = new RegExp(`^(?:${autolinkSource})$`)
+const bracketedAutolink = new RegExp(`^<(?:${autolinkSource})>`)
+const controlCharacter = new RegExp(`[${controlCharacterRange}]`)
 const entityReference = new RegExp(entityReferenceSource)
 const firstCharacterOpeners = [/^#{1,6}(?:[ \t]|$)/, /^>/, /^[*+-](?:[ \t]|$)/, /^`{3,}/, /^~{3,}/, /^:{2,}/, /^\|/]
 const orderedListOpener = /^(\d{1,9})[.)](?:[ \t]|$)/
@@ -22,8 +27,20 @@ export function escapesLineClaim(line: string, offset: number, position: LinePos
   return digits !== undefined && offset === digits.length
 }
 
+export function holdsControlCharacter(text: string): boolean {
+  return controlCharacter.test(text)
+}
+
 export function holdsEntityReference(text: string): boolean {
   return entityReference.test(text)
+}
+
+export function isAutolink(text: string): boolean {
+  return autolink.test(text)
+}
+
+export function opensBracketedAutolink(text: string): boolean {
+  return bracketedAutolink.test(text)
 }
 
 export function startsEntityReference(text: string): boolean {

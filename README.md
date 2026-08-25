@@ -32,6 +32,8 @@ isAdfDocument(v: unknown): v is AdfDocument
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
+`ConvertError` is `{ code, message, path }`: a code from a closed set, and the path of the node it
+names, from the document root.
 
 ## The guarantees
 
