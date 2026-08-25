@@ -60,7 +60,9 @@ detail is settled at its own milestone.
         itself under the library's own canonical serializer — one implementation, keys sorted, two
         spellings: two-space indent for the corpus files and the block carry's body, compact for
         the inline carry. `commonmark-subset/` green.
-  - [ ] **2b — Block nodes.** `block-nodes/` green. Block separation becomes
+  - [ ] **2b — Block nodes.** `block-nodes/` green. A nested list that cannot interrupt the block
+        above it is refused meanwhile, not spelled: the maintainer's answer on tight-versus-blank
+        separation turns that refusal into an emission. Block separation becomes
         `separationBetween(previous, next, container)` here — a boolean cannot hold the third case
         `spec/flavour.md` states for two directive blocks in a container body, and the maintainer's
         answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give
@@ -81,7 +83,10 @@ detail is settled at its own milestone.
         paragraph line inside a container body shaped like a closing fence (`:::`, `::: x`).
         The gate gains the collision property here: no two corpus documents may emit the same
         bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
-        provable without one.
+        provable without one. It also settles the emitter's one known approximation: delimiter
+        flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the way a run
+        splits across several openers — is not modelled. No reachable violation has been found by
+        hand; the property test is what decides it.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
       into sub-items before starting (§15). Fixtures land with the code that reads them:
       `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity
@@ -90,7 +95,9 @@ detail is settled at its own milestone.
       line that does not parse, the content slot, raw HTML with no mapping — each with the error
       it must return). The raw-HTML element mapping is empty until milestone 6, so at `0.1.0`
       every raw-HTML construct in input is an error result. The CommonMark spec suite runs
-      against it from here (§10). `src/` gets its hierarchy at the same split — `adf/`,
+      against it from here (§10). The parser owes `~` the same `can_open`/`can_close` the emitter
+      assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin.
+      `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
       still mechanical.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and

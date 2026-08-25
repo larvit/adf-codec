@@ -193,7 +193,21 @@ test('refuses a mark spelling that cannot open or close where it sits', () => {
   const em: AdfMark = { type: 'em' }
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('a.', em), marked('b', strong))))), 'unspellable-mark')
   assert.equal(emitted({ text: 'x', type: 'text' }, marked('ab', em, strong), { text: 'y', type: 'text' }), 'x***ab***y\n')
+})
+
+test('refuses a node carrying one mark type twice', () => {
+  const em: AdfMark = { type: 'em' }
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em, em], text: 'x', type: 'text' })))), 'unsupported-node-shape')
+})
+
+test('refuses a nested list the tight spelling would swallow', () => {
+  const item = (...content: AdfNode[]): AdfNode => ({ content, type: 'listItem' })
+  const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
+  const outer = (...content: AdfNode[]): AdfDocument => document({ content: [item(...content)], type: 'bulletList' })
+  const ordered: AdfNode = { attrs: { order: 2 }, content: [item(text('b'))], type: 'orderedList' }
+  assert.equal(code(adfToMarkdown(outer(text('a'), ordered))), 'unspellable-line-start')
+  assert.equal(code(adfToMarkdown(outer(text('a'), { content: [item()], type: 'bulletList' }))), 'unspellable-line-start')
+  assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item(text('b'))], type: 'bulletList' }))), '- a\n  - b\n')
 })
 
 test('refuses marks and attributes nested deeper than the emitter carries', () => {

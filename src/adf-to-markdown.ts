@@ -28,7 +28,12 @@ function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: Conver
       if (listTypes.includes(node.type) && previous.type === node.type) {
         return failure('unspellable-adjacent-lists', `two adjacent ${node.type} nodes read back as one list`, nodePath)
       }
-      output += inListItem && listTypes.includes(node.type) ? '\n' : '\n\n'
+      if (inListItem && listTypes.includes(node.type)) {
+        if (!interruptsParagraph(node)) {
+          return failure('unspellable-line-start', `a ${node.type} that cannot interrupt the block above it has no tight spelling`, nodePath)
+        }
+        output += '\n'
+      } else output += '\n\n'
     }
     const block = emitBlock(node, nodePath, depth)
     if (!block.ok) return block
@@ -36,6 +41,11 @@ function emitBlocks(nodes: readonly AdfNode[], inListItem: boolean, path: Conver
     previous = node
   }
   return success(output)
+}
+
+function interruptsParagraph(node: AdfNode): boolean {
+  if (node.type === 'orderedList') return false
+  return ((node.content ?? [])[0]?.content ?? []).length > 0
 }
 
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {

@@ -1,16 +1,14 @@
 import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
 
-export type InlineSegment = {
-  kind: 'emphasis-close' | 'emphasis-open' | 'link-text' | 'literal' | 'syntax'
-  mark?: string
-  text: string
-}
+export type InlineSegment =
+  | { kind: 'emphasis-close' | 'emphasis-open'; mark: string; text: string }
+  | { kind: 'link-text' | 'literal' | 'syntax'; text: string }
 
 export type AssembledLine = { line: string; unspellableMark: string | undefined }
 
 export type LineContainer = 'heading' | 'paragraph'
 
-type DelimiterRun = { character: string; closes: boolean; end: number; mark: string; opens: boolean; start: number }
+type DelimiterRun = { character: string; closeMark: string | undefined; end: number; openMark: string | undefined; start: number }
 
 const delimiters = ['*', '_', '`', '~']
 
@@ -77,8 +75,8 @@ function unspellableMark(segments: readonly InlineSegment[], output: string, pla
   for (const run of delimiterRuns(segments, placements)) {
     const before = charAt(output, run.start - 1)
     const after = output.charAt(run.end)
-    if (run.opens && !isLeftFlanking(before, after)) return run.mark
-    if (run.closes && !isRightFlanking(before, after)) return run.mark
+    if (run.openMark !== undefined && !isLeftFlanking(before, after)) return run.openMark
+    if (run.closeMark !== undefined && !isRightFlanking(before, after)) return run.closeMark
   }
   return undefined
 }
@@ -92,15 +90,20 @@ function delimiterRuns(segments: readonly InlineSegment[], placements: readonly 
     if (segment.kind !== 'emphasis-close' && segment.kind !== 'emphasis-open') continue
     const closes = segment.kind === 'emphasis-close'
     const end = start + segment.text.length
-    const mark = segment.mark ?? segment.text
     const previous = runs[runs.length - 1]
     if (previous !== undefined && previous.end === start && previous.character === segment.text.charAt(0)) {
-      previous.closes = previous.closes || closes
+      previous.closeMark = previous.closeMark ?? (closes ? segment.mark : undefined)
       previous.end = end
-      previous.opens = previous.opens || !closes
+      previous.openMark = previous.openMark ?? (closes ? undefined : segment.mark)
       continue
     }
-    runs.push({ character: segment.text.charAt(0), closes, end, mark, opens: !closes, start })
+    runs.push({
+      character: segment.text.charAt(0),
+      closeMark: closes ? segment.mark : undefined,
+      end,
+      openMark: closes ? undefined : segment.mark,
+      start,
+    })
   }
   return runs
 }

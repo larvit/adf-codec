@@ -139,7 +139,8 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 ## 14. Non-goals
 
 No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
-validation or exported validator, no shipped CSS (§4), no streaming APIs, no performance budget —
+validation or exported validator — a refusal that keeps the round-trip is not schema validation,
+so the one a node carrying the same mark type twice earns stays, no shipped CSS (§4), no streaming APIs, no performance budget —
 conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
 non-goal.
 
