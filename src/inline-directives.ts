@@ -8,6 +8,10 @@ export type InlineDirective = {
   slot?: string
 }
 
+export type MarkSpelling =
+  | { attributes: AttributeVocabulary; kind: 'code' | 'directive' | 'link'; spelling?: undefined }
+  | { attributes: AttributeVocabulary; kind: 'emphasis'; spelling: string }
+
 const inlineDirectives: Readonly<Record<string, InlineDirective>> = {
   date: { attributes: { localId: 'string', timestamp: 'string' } },
   emoji: { attributes: { id: 'string', localId: 'string', shortName: 'string' }, slot: 'text' },
@@ -29,19 +33,24 @@ const inlineDirectives: Readonly<Record<string, InlineDirective>> = {
   status: { attributes: { color: 'string', localId: 'string', style: 'string' }, slot: 'text' },
 }
 
-const markDirectives: Readonly<Record<string, AttributeVocabulary>> = {
-  border: { color: 'string', size: 'number' },
-  subsup: { type: 'string' },
-  textColor: { color: 'string' },
-  underline: {},
+const markSpellings: Readonly<Record<string, MarkSpelling>> = {
+  border: { attributes: { color: 'string', size: 'number' }, kind: 'directive' },
+  code: { attributes: {}, kind: 'code' },
+  em: { attributes: {}, kind: 'emphasis', spelling: '_' },
+  link: { attributes: { href: 'string', title: 'string' }, kind: 'link' },
+  strike: { attributes: {}, kind: 'emphasis', spelling: '~~' },
+  strong: { attributes: {}, kind: 'emphasis', spelling: '**' },
+  subsup: { attributes: { type: 'string' }, kind: 'directive' },
+  textColor: { attributes: { color: 'string' }, kind: 'directive' },
+  underline: { attributes: {}, kind: 'directive' },
 }
 
 export function inlineDirective(type: string): InlineDirective | undefined {
   return Object.hasOwn(inlineDirectives, type) ? inlineDirectives[type] : undefined
 }
 
-export function markDirective(type: string): AttributeVocabulary | undefined {
-  return Object.hasOwn(markDirectives, type) ? markDirectives[type] : undefined
+export function markSpelling(type: string): MarkSpelling | undefined {
+  return Object.hasOwn(markSpellings, type) ? markSpellings[type] : undefined
 }
 
 export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective, path: ConvertErrorPath): Result<string> {

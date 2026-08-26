@@ -1,0 +1,28 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "un",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "-real",
+          "type": "text"
+        },
+        {
+          "text": "istic",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

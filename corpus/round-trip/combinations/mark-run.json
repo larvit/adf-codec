@@ -1,0 +1,129 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#ae2e24"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Overdue since ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "red",
+            "text": "Blocked"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "color": "#ae2e24"
+              },
+              "type": "textColor"
+            }
+          ],
+          "type": "status"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#ae2e24"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " on Tuesday",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            }
+          ],
+          "text": "Torque the ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "M8 bolt",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            }
+          ],
+          "text": " to ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "25 Nm",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/release"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Release notes ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "shortName": ":rocket:",
+            "text": "🚀"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/release"
+              },
+              "type": "link"
+            }
+          ],
+          "type": "emoji"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

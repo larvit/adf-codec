@@ -110,7 +110,10 @@ detail is settled at its own milestone.
           arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
           which leaves the refusals a container's own spelling owns. The carry spells
           `escaping: 'none'`, which is what makes `tryPipeCell` refuse the pipe form for a carry
-          whose JSON holds a pipe.
+          whose JSON holds a pipe. The flanking trigger 2e2 added to that list is the odd one out:
+          `unspellableMark` finds it after assembly and names a mark type against the line's path,
+          so the failing run needs identifying before the carry can replace the refusal
+          `corpus/unspellable/mark-inside-word` pins.
     - [ ] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
           than isolating one, and the gate's collision property: no two corpus documents may emit
           the same bytes — one spelling for two documents is a round-trip break no parser can undo,
@@ -169,8 +172,8 @@ detail is settled at its own milestone.
       markdown, the payloads supplied by the maintainer.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
-      `corpus/unspellable/` document is one of 1d's decisions, so the directory empties as they land
-      and whatever survives is permanent. `0.1.0` is the markdown round-trip: both markdown
+      `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the
+      directory empties as they land and whatever survives is permanent. `0.1.0` is the markdown round-trip: both markdown
       directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS
       and `.d.ts` to `dist/` (the dev config's `allowImportingTsExtensions` forces `noEmit`, so
       the build config needs `rewriteRelativeImportExtensions`), plus `exports`/`files` in
