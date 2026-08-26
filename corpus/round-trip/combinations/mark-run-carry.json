@@ -1,0 +1,50 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Ready",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "extensionKey": "status-lozenge",
+            "extensionType": "com.atlassian.confluence.macro.core"
+          },
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "type": "inlineExtension"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "to ship",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

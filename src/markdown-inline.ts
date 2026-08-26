@@ -1,7 +1,7 @@
 import type { AdfMark, AdfNode } from './adf-document.ts'
 import type { InlineDirective } from './inline-directives.ts'
 import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer } from './markdown-escaping.ts'
-import { inlineDirective, markDirective, spellInlineNodeAttributes, spellMarkAttributes } from './inline-directives.ts'
+import { inlineDirective, markSpelling, spellInlineNodeAttributes, spellMarkAttributes } from './inline-directives.ts'
 import { largestNesting } from './nesting.ts'
 import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink, isUnicodeWhitespace } from './commonmark-grammar.ts'
 import { carriedInline } from './opaque-carry.ts'
@@ -18,9 +18,6 @@ type InlineContext = {
 }
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
-
-const emphasisSpellings: Readonly<Record<string, string>> = { em: '_', strike: '~~', strong: '**' }
-const linkAttributes = ['href', 'title']
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const segments = lineSegments(nodes, container, path)
@@ -204,15 +201,14 @@ function emitText(node: AdfNode, context: InlineContext, path: ConvertErrorPath)
 }
 
 function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<InlineSegment[]> {
-  if (mark.type === 'code') return emitCodeSpan(nodes, depth, nodePath(context, index))
-  if (mark.type === 'link') return emitLink(nodes, mark, depth, index, context)
   const path = nodePath(context, index)
-  const spelling = Object.hasOwn(emphasisSpellings, mark.type) ? emphasisSpellings[mark.type] : undefined
-  if (spelling !== undefined) return emitEmphasis(nodes, mark, spelling, depth, index, context, path)
-  const vocabulary = markDirective(mark.type)
-  if (vocabulary === undefined) return failure('unspellable-mark', `no markdown spelling holds the ${mark.type} mark`, path)
-  const attributes = spellMarkAttributes(mark, vocabulary, path)
+  const spelling = markSpelling(mark.type)
+  if (spelling === undefined) return failure('unspellable-mark', `no markdown spelling holds the ${mark.type} mark`, path)
+  const attributes = spellMarkAttributes(mark, spelling.attributes, path)
   if (!attributes.ok) return attributes
+  if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, path)
+  if (spelling.kind === 'emphasis') return emitEmphasis(nodes, mark, spelling.spelling, depth, index, context, path)
+  if (spelling.kind === 'link') return emitLink(nodes, mark, depth, index, context, path)
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
   return success([syntax(`:${mark.type}[`), ...inner.value, syntax(`]${attributes.value}`)])
@@ -227,7 +223,6 @@ function emitEmphasis(
   context: InlineContext,
   path: ConvertErrorPath,
 ): Result<InlineSegment[]> {
-  if (Object.keys(mark.attrs ?? {}).length > 0) return failure('unspellable-mark', `the ${mark.type} spelling holds no attributes`, path)
   const inner = emitRun(nodes, depth + 1, index, context)
   if (!inner.ok) return inner
   const carried = carryStrippedWhitespace(inner.value)
@@ -263,20 +258,16 @@ function needsPadding(text: string): boolean {
   return text.startsWith(' ') && text.endsWith(' ') && /[^ ]/.test(text)
 }
 
-function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<InlineSegment[]> {
-  const path = nodePath(context, index)
-  const unspelled = Object.keys(mark.attrs ?? {}).find((key) => !linkAttributes.includes(key))
-  if (unspelled !== undefined) return failure('unspellable-mark', `the link spelling holds no ${unspelled} attribute`, path)
+function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {
   const href = mark.attrs?.['href']
   const title = mark.attrs?.['title']
   if (typeof href !== 'string') return failure('unsupported-node-shape', 'a link mark carries no href', path)
-  if (title !== undefined && typeof title !== 'string') return failure('unsupported-node-shape', 'a link title is no string', path)
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && (node.marks ?? []).length === depth + 1
   if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success([syntax(`<${href}>`)])
   const destination = spellDestination(href, path)
   if (!destination.ok) return destination
-  const spelledTitle = title === undefined ? success('') : spellTitle(title, path)
+  const spelledTitle = typeof title === 'string' ? spellTitle(title, path) : success('')
   if (!spelledTitle.ok) return spelledTitle
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true })
   if (!inner.ok) return inner

@@ -96,6 +96,7 @@ test('refuses a mark the canonical spellings cannot nest', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'annotation' }], text: 'x', type: 'text' })))), 'unspellable-mark')
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }, { type: 'strong' }], text: 'x', type: 'text' })))), 'unspellable-mark')
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { colour: 'red' }, type: 'em' }], text: 'x', type: 'text' })))), 'unspellable-mark')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { localId: 'x' }, type: 'code' }], text: 'x', type: 'text' })))), 'unspellable-mark')
 })
 
 test('refuses whitespace CommonMark cannot hold', () => {
