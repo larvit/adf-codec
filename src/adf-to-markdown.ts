@@ -5,6 +5,7 @@ import { blockDirective, spellDirectiveHeader } from './block-directives.ts'
 import { tryImage } from './markdown-image.ts'
 import { emitInlineLine } from './markdown-inline.ts'
 import { tryPipeTable } from './markdown-pipe-table.ts'
+import { carriedBlock, carryName } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
@@ -80,7 +81,7 @@ function interruptsParagraph(node: AdfNode): boolean {
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   if (node.type === 'blockquote') return commonMarkContainer(emitBlockquote(node, path, depth))
   if (node.type === 'bulletList' || node.type === 'orderedList') return commonMarkContainer(emitList(node, path, depth))
-  if (node.type === 'codeBlock') return commonMarkLine(emitCodeBlock(node, path))
+  if (node.type === 'codeBlock') return commonMarkLine(node.attrs?.['language'] === carryName ? carriedBlock(node, path) : emitCodeBlock(node, path))
   if (node.type === 'heading') return commonMarkLine(emitHeading(node, path))
   if (node.type === 'paragraph') return emitParagraph(node, path)
   if (node.type === 'rule') return commonMarkLine(emitRule(node, path))
@@ -93,7 +94,7 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result
   if (node.type === 'hardBreak' || node.type === 'listItem' || node.type === 'text') {
     return failure('unsupported-node-shape', `a ${node.type} node cannot stand where a block belongs`, path)
   }
-  return failure('unsupported-node-type', `the canonical form spells no block node of type ${node.type}`, path)
+  return commonMarkLine(carriedBlock(node, path))
 }
 
 function commonMarkLine(text: Result<string>): Result<EmittedBlock> {
@@ -184,7 +185,6 @@ function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorP
   if (language === '') {
     return failure('ambiguous-attribute-spelling', 'an empty codeBlock language and an absent one share one markdown spelling', path)
   }
-  if (language === 'adf') return failure('reserved-adf-language', 'the adf info string is reserved for the opaque carry', path)
   if (/[`\n\r]/.test(language) || language !== language.trim()) {
     return failure('unspellable-code-block-language', 'a fence info string holds no backtick and no edge whitespace', path)
   }

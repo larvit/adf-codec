@@ -97,6 +97,12 @@ detail is settled at its own milestone.
         error `spec/flavour.md` promises. And `escaping: 'attribute'` earns its keep at the
         `\u007c` rule or collapses into `none`: nothing the escaper does tells the two apart
         today, since a carried segment holds only spaces, tabs and newlines.
+        The carry's fallback triggers land here too: `spec/flavour.md` carries a node its section
+        cannot spell — an attrs key no section lists, a value that is not the section's type, an
+        arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
+        which leaves 1d's blocked CommonMark nodes as the only refusal. The `\u007c` rule covers
+        the inline carry's `json` value with them: the carry spells `escaping: 'none'` today so
+        that `tryPipeCell` refuses the pipe form for a carry whose JSON holds a `|`.
         The gate gains the collision property here: no two corpus documents may emit the same
         bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
         provable without one. It also settles the emitter's one known approximation: delimiter

@@ -1,7 +1,6 @@
 export type ConvertErrorCode =
   | 'ambiguous-attribute-spelling'
   | 'not-an-adf-document'
-  | 'reserved-adf-language'
   | 'unspellable-adjacent-lists'
   | 'unspellable-character'
   | 'unspellable-code-block-language'
@@ -17,7 +16,6 @@ export type ConvertErrorCode =
   | 'unsupported-document-version'
   | 'unsupported-heading-level'
   | 'unsupported-node-shape'
-  | 'unsupported-node-type'
 
 export type ConvertErrorPath = readonly (number | string)[]
 
