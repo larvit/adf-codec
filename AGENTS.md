@@ -159,7 +159,8 @@ non-goal.
 ## 15. The working loop
 
 One unchecked `todo.md` item per session, in the smallest PR-able chunk — split a big milestone
-into sub-items in `todo.md` before starting it. Per chunk:
+into sub-items in `todo.md` before starting it. A chunk running a little over or under that is not
+worth deliberating; what matters is that nothing is left undone in the end. Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
 2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest

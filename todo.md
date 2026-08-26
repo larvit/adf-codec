@@ -22,18 +22,16 @@ detail is settled at its own milestone.
       mid-text-image error and its "no slot" ground.
 - [x] **1d — Corpus start** (§10): checked-in fixtures per spec'd node, in `corpus/`, one
       directory per contract kind (`corpus/README.md`).
-      **Blocked on the maintainer** (§15), not to be guessed: Canonical form has no totality
-      guard. Per `@atlaskit/adf-schema` 57.1.0 every block node it spells — `blockquote`,
-      `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` —
-      carries a `localId` with no spelling, `codeBlock` also `hideLineNumbers`, `uniqueId` and
-      `wrap`, `blockquote` also marks, and `hardBreak` `text` and `localId` with no section for
-      the carry fallback to reach. Picking one (directive sections for those nodes, or the opaque
-      carry) is a permanent format decision (§8). Two collision sites wait in
-      `corpus/unspellable/` meanwhile, each a choice between the absent attribute and the empty
-      value: a `codeBlock` whose info string is empty, and an `orderedList` starting at 1,
-      independent of the totality answer since `order: 9` keeps the markdown form either way.
-      Neither has a second spelling to fall back to, which is what settled the third — a `media`
-      with an empty `alt` takes the directive form (`spec/flavour.md`, the CommonMark image).
+      **Settled** (the maintainer, 2026-08-26): the nodes CommonMark spells get directive sections
+      of their own, rather than riding the opaque carry. Per `@atlaskit/adf-schema` 57.1.0 every
+      block node it spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
+      `orderedList`, `paragraph`, `rule` — carries a `localId` with no spelling, `codeBlock` also
+      `hideLineNumbers`, `uniqueId` and `wrap`, `blockquote` also marks, and `hardBreak` `text`
+      and `localId`; 2f gives each a place, and the plain spelling stays wherever the attributes
+      are absent. That hands the two collision sites in `corpus/unspellable/` the second spelling
+      they lacked, so each takes the directive form as a `media` with an empty `alt` already does
+      (`spec/flavour.md`, the CommonMark image): a `codeBlock` whose info string is empty, and an
+      `orderedList` starting at 1.
       **Also blocked**: the link rule covers destination spaces only, so two shapes
       have no spelling and are refused meanwhile — href `https://example.com/a)b` and title
       `He said "hi"`, both in `corpus/unspellable/`. Two defensible spellings each — angle
@@ -48,6 +46,11 @@ detail is settled at its own milestone.
       `::paragraph` beside a CommonMark block included — and, since a `mediaSingle`'s spelling now
       follows whether CommonMark can spell its URL, two sibling images differing only by an
       `&amp;` land in the same refusal.
+      **Also blocked**: whether `hardBreak`, `listItem` and `text` where a block belongs carry too,
+      rather than the shape error §3 records. The prior art splits — a markdown serializer spells a
+      node by type without checking the position it stands in (`mdast-util-to-markdown`,
+      `prosemirror-markdown`), while Atlassian's own validator calls it `INVALID_CONTENT` or wraps
+      it in `unsupportedBlock`/`unsupportedInline` — so §8 leaves the pick here.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d3's.
@@ -117,6 +120,16 @@ detail is settled at its own milestone.
         flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the way a run
         splits across several openers — is not modelled. No reachable violation has been found by
         hand; the property test is what decides it.
+  - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
+        CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
+        `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying
+        `localId`, `codeBlock`'s `hideLineNumbers`, `uniqueId` and `wrap`, and `blockquote`'s
+        marks, while `hardBreak`'s `text` and `localId` join the inline directive it already has.
+        The plain spelling stays wherever those attributes are absent, so only a node that carries
+        one takes the directive form — which is what keeps a real payload readable rather than a
+        page of carried JSON. Fixtures and emitter together, and the three documents the answer
+        settles leave `corpus/unspellable/` as round-trip pairs: `block-local-id`,
+        `code-block-empty-language`, `ordered-list-start-one`.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
       into sub-items before starting (§15). Fixtures land with the code that reads them:
       `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity
