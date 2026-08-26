@@ -72,12 +72,11 @@ detail is settled at its own milestone.
         the emitter's refusals a corpus home while the directories grow: `corpus/unspellable/`,
         a `.json` beside the `ConvertErrorCode` it must return, the emitter half of `corpus/errors/`.
   - [x] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment` splits into its
-        two axes — escapability (`attribute` for `:text{text="…"}`, `backslash`, `bracketed`,
-        `none`) and the emphasis role. A lone surrogate in a text node emits verbatim and becomes
-        U+FFFD on any UTF-8 encode, a §2 break plain text still holds open — attribute values
-        already escape it. The pipe form's fallback reads the emitted segments rather than naming
-        the nodes whose attribute values spell a pipe as syntax, so 2e's `\u007c` narrows it in
-        one place.
+        two axes — escapability (`backslash`, `bracketed`, `none`) and the emphasis role. A lone
+        surrogate in a text node emits verbatim and becomes U+FFFD on any UTF-8 encode, a §2 break
+        plain text still holds open — attribute values already escape it. The pipe form's fallback
+        reads the emitted segments rather than naming the nodes whose attribute values spell a pipe
+        as syntax, so 2e's `\u007c` narrows it in one place.
   - [x] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
         info string, and the `codeBlock` whose language is `adf` — carried whole ahead of the
