@@ -7,7 +7,7 @@ import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullChara
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
-import { spellStringAttribute } from './directive-attributes.ts'
+import { spellAttributes, spellStringAttribute } from './directive-attributes.ts'
 
 type Brackets = 'directive' | 'link' | 'none'
 
@@ -29,23 +29,21 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
   return finishLine(segments.value, container, path)
 }
 
-// undefined where the cell holds a pipe no backslash reaches, leaving the table its directive form.
-export function emitPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<string> | undefined {
+export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): string | undefined {
   const segments = lineSegments(nodes, 'table-cell', path)
-  if (!segments.ok) return segments
+  if (!segments.ok) return undefined
   if (segments.value.some((segment) => segment.escaping === 'none' && segment.text.includes('|'))) return undefined
-  return finishLine(segments.value, 'table-cell', path)
+  const line = finishLine(segments.value, 'table-cell', path)
+  return line.ok ? line.value : undefined
 }
 
-export function emitImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): Result<string> {
-  if (alt !== undefined && /^[ \t]|[ \t]$|[\n\r]/.test(alt)) {
-    return failure('unspellable-whitespace', 'a media alt holds whitespace no image description spells', path)
-  }
-  if (alt !== undefined && holdsNullCharacter(alt)) return failure('unspellable-character', 'a media alt holds a null character CommonMark replaces', path)
+export function tryImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): string | undefined {
+  if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
   const destination = spellDestination(href, path)
-  if (!destination.ok) return destination
+  if (!destination.ok) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
-  return finishLine([syntax('!['), ...description, syntax(`](${destination.value})`)], 'paragraph', path)
+  const line = finishLine([syntax('!['), ...description, syntax(`](${destination.value})`)], 'paragraph', path)
+  return line.ok ? line.value : undefined
 }
 
 function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<InlineSegment[]> {
@@ -71,7 +69,7 @@ function finishLine(segments: readonly InlineSegment[], container: LineContainer
   return success(line)
 }
 
-// spec/flavour.md, Inline nodes: whitespace CommonMark strips at a line edge rides the reserved text directive.
+// spec/flavour.md, Inline nodes: whitespace CommonMark strips.
 function carryStrippedWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
   const carried: InlineSegment[] = []
   for (const [index, segment] of segments.entries()) {
@@ -98,7 +96,11 @@ function carryEdges(segment: InlineSegment, leading: boolean, trailing: boolean)
 }
 
 function carriedText(text: string): InlineSegment {
-  return { escaping: 'attribute', text: `:text{text=${spellStringAttribute(text)}}` }
+  return { escaping: 'attribute', text: spellLeafDirective('text', spellAttributes([['text', spellStringAttribute(text)]])) }
+}
+
+function spellLeafDirective(name: string, attributes: string): string {
+  return `:${name}${attributes === '' ? '{}' : attributes}`
 }
 
 function syntax(text: string): InlineSegment {
@@ -164,7 +166,7 @@ function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertError
   const empty = refuseContentAndText(node, path)
   if (!empty.ok) return empty
   if (context.container === 'paragraph' && !context.atBlockEnd && context.brackets !== 'directive') return success([syntax('\\\n')])
-  return success([syntax(':hardBreak{}')])
+  return success([syntax(spellLeafDirective('hardBreak', ''))])
 }
 
 function emitInlineDirective(node: AdfNode, directive: InlineDirective, path: ConvertErrorPath): Result<InlineSegment[]> {
@@ -173,7 +175,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, path: Co
   const attributes = spellInlineNodeAttributes(node, directive, path)
   if (!attributes.ok) return attributes
   const slot = directive.slot === undefined ? undefined : node.attrs?.[directive.slot]
-  if (slot === undefined) return success([syntax(`:${node.type}${attributes.value === '' ? '{}' : attributes.value}`)])
+  if (slot === undefined) return success([syntax(spellLeafDirective(node.type, attributes.value))])
   if (typeof slot !== 'string') return failure('unsupported-node-shape', `the ${node.type} attribute ${directive.slot} holds no string`, path)
   if (/[\n\r]/.test(slot)) return failure('unspellable-whitespace', `a ${node.type} content slot holds a newline no inline directive spans`, path)
   if (holdsNullCharacter(slot)) return failure('unspellable-character', `a ${node.type} content slot holds a null character CommonMark replaces`, path)

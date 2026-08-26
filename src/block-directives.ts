@@ -1,5 +1,4 @@
-import type { AdfMark, AdfNode } from './adf-document.ts'
-import type { AttributeVocabulary } from './directive-attributes.ts'
+import type { AdfMark, AdfNode, AttributeVocabulary } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { attributeFailure, isBareToken, spellAttributes, spellJsonAttribute, vocabularyPairs } from './directive-attributes.ts'
@@ -84,11 +83,11 @@ export function blockDirective(type: string): BlockDirective | undefined {
 export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<string> {
   const argument = spellArgument(node, directive, path)
   if (!argument.ok) return argument
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.argument)
-  if (!Array.isArray(pairs)) return attributeFailure(node.type, pairs, path)
+  const spelled = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.argument)
+  if (spelled.fault !== undefined) return attributeFailure(node.type, spelled.fault, path)
   const marks = node.marks ?? []
-  if (marks.length > 0) pairs.push(['marks', spellJsonAttribute(markValues(marks))])
-  const attributes = spellAttributes(pairs)
+  if (marks.length > 0) spelled.pairs.push(['marks', spellJsonAttribute(markValues(marks))])
+  const attributes = spellAttributes(spelled.pairs)
   return success(`${node.type}${argument.value}${attributes === '' ? '' : ` ${attributes}`}`)
 }
 

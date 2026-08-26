@@ -111,6 +111,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
   `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
   the spot.
+- A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
+  returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
+  general form owns the refusal. Refusing there refuses a document the general form spells.
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and attribute values
   are all held to 500 levels, so a deep document is a `Result` rather than the stack overflow that
   waits near 2000.

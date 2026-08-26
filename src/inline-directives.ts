@@ -1,5 +1,5 @@
-import type { AdfMark, AdfNode } from './adf-document.ts'
-import type { AttributeVocabulary } from './directive-attributes.ts'
+import type { AdfMark, AdfNode, AttributeVocabulary } from './adf-document.ts'
+import type { AttributeFault } from './directive-attributes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { attributeFailure, spellAttributes, vocabularyPairs } from './directive-attributes.ts'
 
@@ -45,16 +45,18 @@ export function markDirective(type: string): AttributeVocabulary | undefined {
 }
 
 export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective, path: ConvertErrorPath): Result<string> {
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot)
-  if (!Array.isArray(pairs)) return attributeFailure(node.type, pairs, path)
-  return success(spellAttributes(pairs))
+  const spelled = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot)
+  if (spelled.fault !== undefined) return attributeFailure(node.type, spelled.fault, path)
+  return success(spellAttributes(spelled.pairs))
 }
 
 export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary, path: ConvertErrorPath): Result<string> {
-  const pairs = vocabularyPairs(mark.attrs ?? {}, vocabulary, undefined)
-  if (!Array.isArray(pairs)) {
-    if (pairs.kind === undefined) return failure('unspellable-mark', `the ${mark.type} spelling holds no ${pairs.key} attribute`, path)
-    return failure('unspellable-mark', `the ${mark.type} attribute ${pairs.key} holds no ${pairs.kind}`, path)
-  }
-  return success(spellAttributes(pairs))
+  const spelled = vocabularyPairs(mark.attrs ?? {}, vocabulary, undefined)
+  if (spelled.fault !== undefined) return markFailure(mark.type, spelled.fault, path)
+  return success(spellAttributes(spelled.pairs))
+}
+
+function markFailure<T>(type: string, fault: AttributeFault, path: ConvertErrorPath): Result<T> {
+  if (fault.kind === undefined) return failure('unspellable-mark', `the ${type} spelling holds no ${fault.key} attribute`, path)
+  return failure('unspellable-mark', `the ${type} attribute ${fault.key} holds no ${fault.kind}`, path)
 }

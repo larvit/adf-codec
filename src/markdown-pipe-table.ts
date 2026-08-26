@@ -1,8 +1,8 @@
 import type { AdfNode } from './adf-document.ts'
-import { emitPipeCell } from './markdown-inline.ts'
-import { success, type ConvertErrorPath, type Result } from './result.ts'
+import { tryPipeCell } from './markdown-inline.ts'
+import type { ConvertErrorPath } from './result.ts'
 
-export function emitPipeTable(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
+export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | undefined {
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
   const lines: string[] = []
@@ -10,15 +10,14 @@ export function emitPipeTable(node: AdfNode, path: ConvertErrorPath): Result<str
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
       const content = paragraph.content ?? []
-      const line = content.length === 0 ? success('') : emitPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
+      const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
       if (line === undefined) return undefined
-      if (!line.ok) return line
-      cells.push(line.value)
+      cells.push(line)
     }
     lines.push(`| ${cells.join(' | ')} |`)
     if (rowIndex === 0) lines.push(`| ${cells.map(() => '---').join(' | ')} |`)
   }
-  return success(lines.join('\n'))
+  return lines.join('\n')
 }
 
 function pipeRows(node: AdfNode): AdfNode[][] | undefined {
