@@ -402,8 +402,8 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', text('a'), text('b')))))))
   assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { attrs: { localId: 'a' }, type: 'paragraph' }))))), 'unspelled-node-attribute')
   assert.equal(
-    markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ type: 'blockCard' }], type: 'paragraph' }))))),
-    '| :adf{json="{\\"type\\":\\"blockCard\\"}"} |\n| --- |\n',
+    markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ attrs: { url: 'a|b' }, type: 'blockCard' }], type: 'paragraph' }))))),
+    '| :adf{json="{\\"attrs\\":{\\"url\\":\\"a\\u007cb\\"},\\"type\\":\\"blockCard\\"}"} |\n| --- |\n',
   )
   assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: '\fa', type: 'text' }], type: 'paragraph' }))))), 'unspellable-whitespace')
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', { attrs: { level: 1 }, type: 'heading' }))))))
@@ -411,10 +411,8 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
   const marked = (mark: AdfMark): AdfDocument => table(row(cell('tableHeader', { content: [{ marks: [mark], text: 'l', type: 'text' }], type: 'paragraph' })))
   assert.ok(directive(adfToMarkdown(marked({ attrs: { href: 'https://example.com/?x|y' }, type: 'link' }))))
   assert.ok(directive(adfToMarkdown(marked({ attrs: { href: 'https://example.com/', title: 'a|b' }, type: 'link' }))))
-  const fallsBack = (node: AdfNode): boolean => directive(adfToMarkdown(table(row(cell('tableHeader', { content: [node], type: 'paragraph' })))))
-  assert.ok(fallsBack({ marks: [{ type: 'code' }], text: 'a|b', type: 'text' }))
-  assert.ok(fallsBack({ attrs: { style: 'a|b' }, type: 'status' }))
-  assert.ok(fallsBack({ attrs: { url: 'https://example.com/?a|b' }, type: 'blockCard' }))
+  const codeSpan: AdfNode = { marks: [{ type: 'code' }], text: 'a|b', type: 'text' }
+  assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', { content: [codeSpan], type: 'paragraph' }))))))
   assert.equal(markdown(adfToMarkdown(marked({ attrs: { href: 'https://example.com/x' }, type: 'link' }))), '| [l](https://example.com/x) |\n| --- |\n')
 })
 
@@ -427,6 +425,7 @@ test('spells an inline node as a directive with its content slot and attributes'
   assert.equal(emitted({ attrs: { id: '1f389', text: 'a]b' }, type: 'emoji' }), ':emoji[a\\]b]{id=1f389}\n')
   assert.equal(emitted({ attrs: { data: { url: 'https://example.com/' } }, type: 'inlineCard' }), ':inlineCard{data="{\\"url\\":\\"https://example.com/\\"}"}\n')
   assert.equal(emitted({ attrs: { height: 24 }, type: 'mediaInline' }), ':mediaInline{height=24}\n')
+  assert.equal(emitted({ attrs: { url: 'a`b&c<d|e' }, type: 'inlineCard' }), ':inlineCard{url="a\\u0060b\\u0026c\\u003cd\\u007ce"}\n')
 })
 
 test('refuses an inline node attribute no section spells', () => {

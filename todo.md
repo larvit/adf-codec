@@ -96,24 +96,20 @@ detail is settled at its own milestone.
           `inline-directives.ts`, which holds four of the nine marks while the rest are branch
           literals in the emitter — and the parser (3) needs every name to make `:em[x]` the named
           error `spec/flavour.md` promises.
-    - [ ] **2e3 — Attribute canonicalization and the quoted value's escape.** Attribute
-          canonicalization, a pipe cell's whitespace edges, and `\u007c` for a `|` inside a quoted
-          attribute value. The rule is wider than the pipe: a quoted value spells `` ` ``, `&` and
-          `<` raw today, so a backtick pair in an `inlineCard`'s `data`, a `status`'s `style` or the
-          inline carry's `json` reads back as a code span, an entity or raw HTML inside the value.
-          One escape settles all four, and the pick decides whether a directive or a code span wins
-          where they overlap (3). `escaping: 'attribute'` earns its keep at that rule or collapses
-          into `none`: nothing the escaper does tells the two apart today, since a carried segment
-          holds only spaces, tabs and newlines.
+    - [x] **2e3 — Attribute canonicalization and the quoted value's escape.**
+          **Settled** (the maintainer, 2026-08-26): a quoted attribute value escapes `` ` ``, `&`,
+          `<` and `|` as `\u0060`, `\u0026`, `\u003c` and `\u007c`, in every directive, block and
+          inline alike — the constructs those four open all bind at or before a directive does, and
+          nothing else reaches into `{attrs}`. Emitted attributes being inert leaves 3 free to keep
+          CommonMark's own precedence between a directive and a code span, and collapsed
+          `escaping: 'attribute'` into `none`.
     - [ ] **2e4 — The carry's fallback triggers.** `spec/flavour.md` carries a node its section
           cannot spell — an attrs key no section lists, a value that is not the section's type, an
           arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
-          which leaves the refusals a container's own spelling owns. The carry spells
-          `escaping: 'none'`, which is what makes `tryPipeCell` refuse the pipe form for a carry
-          whose JSON holds a pipe. The flanking trigger 2e2 added to that list is the odd one out:
-          `unspellableMark` finds it after assembly and names a mark type against the line's path,
-          so the failing run needs identifying before the carry can replace the refusal
-          `corpus/unspellable/mark-inside-word` pins.
+          which leaves the refusals a container's own spelling owns. The flanking trigger 2e2
+          added to that list is the odd one out: `unspellableMark` finds it after assembly and
+          names a mark type against the line's path, so the failing run needs identifying before
+          the carry can replace the refusal `corpus/unspellable/mark-inside-word` pins.
     - [ ] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
           than isolating one, and the gate's collision property: no two corpus documents may emit
           the same bytes — one spelling for two documents is a round-trip break no parser can undo,
@@ -142,14 +138,14 @@ detail is settled at its own milestone.
       every raw-HTML construct in input is an error result. The CommonMark spec suite runs
       against it from here (§10). The parser owes `~` the same `can_open`/`can_close` the emitter
       assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin, and
-      the precedence between a directive and the constructs a raw attribute value opens inside it —
-      a code span, an entity, raw HTML — which one directive alone already reaches until 2e's
-      escape lands. Whether a claimed line interrupts a paragraph is pinned for the plain case and
-      unstated for the lazy one: a closing fence on the line after a blockquote's open paragraph is
-      lazy continuation in CommonMark, which would swallow the fence and leave the container
-      unclosed. 2e1's `closing-fence-line` orders its blockquote away from that edge meanwhile.
-      `src/` gets its hierarchy at the same split — `adf/`,
-      `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
+      the precedence in input between a directive and a code span, an entity or raw HTML written
+      raw inside its attributes — 2e3's escape keeps emitted output clear of that collision, so the
+      pick binds input alone. Whether a claimed line interrupts a paragraph is pinned for the plain
+      case and unstated for the lazy one: a closing fence on the line after a blockquote's open
+      paragraph is lazy continuation in CommonMark, which would swallow the fence and leave the
+      container unclosed. 2e1's `closing-fence-line` orders its blockquote away from that edge
+      meanwhile. `src/` gets its hierarchy at the same split — `adf/`, `markdown/`, `html/`, the
+      grammar module shared inside `markdown/` — while the rename is
       still mechanical. Three files do not move whole: `block-directives.ts` and
       `inline-directives.ts` each hold a node table milestones 6-7 need in `adf/` beside a
       markdown spelling that belongs in `markdown/`, and `directive-attributes.ts` fuses the

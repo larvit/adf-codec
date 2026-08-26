@@ -2,7 +2,7 @@ import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEn
 
 export type EmphasisRole = 'close' | 'open'
 
-export type InlineEscaping = 'attribute' | 'backslash' | 'bracketed' | 'none'
+export type InlineEscaping = 'backslash' | 'bracketed' | 'none'
 
 export type InlineSegment =
   | { emphasis: EmphasisRole; escaping: 'none'; mark: string; text: string }
@@ -128,7 +128,7 @@ function touchesSyntax(scan: string, escapings: readonly (InlineEscaping | undef
 }
 
 function isSyntax(escaping: InlineEscaping | undefined): boolean {
-  return escaping === 'attribute' || escaping === 'none'
+  return escaping === 'none'
 }
 
 function opensConstruct(scan: string, index: number, inBrackets: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
