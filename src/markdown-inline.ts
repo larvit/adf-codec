@@ -132,6 +132,7 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
   const runs: InlineRun[] = []
   for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
+    // spec/flavour.md, Marks.
     const mark = carries(node) ? undefined : (node.marks ?? [])[depth]
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
@@ -148,7 +149,6 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
-// spec/flavour.md, Marks.
 function carries(node: AdfNode): boolean {
   return node.type !== 'hardBreak' && node.type !== 'text' && inlineDirective(node.type) === undefined
 }

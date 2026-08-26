@@ -62,6 +62,7 @@ test('refuses the code block info strings the fence cannot hold', () => {
   assert.equal(code(adfToMarkdown(document({ attrs: { language: '' }, type: 'codeBlock' }))), 'ambiguous-attribute-spelling')
   assert.equal(code(adfToMarkdown(document({ attrs: { language: 'a`b' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
   assert.equal(code(adfToMarkdown(document({ attrs: { language: ' sql' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
+  assert.equal(code(adfToMarkdown(document({ attrs: { language: '&#97;df' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
 })
 
 test('refuses a link destination CommonMark cannot spell', () => {

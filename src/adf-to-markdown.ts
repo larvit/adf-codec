@@ -7,7 +7,7 @@ import { emitInlineLine } from './markdown-inline.ts'
 import { tryPipeTable } from './markdown-pipe-table.ts'
 import { carriedBlock, carryName } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
+import { holdsEntityReference, holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
 import { largestNesting } from './nesting.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
@@ -186,6 +186,9 @@ function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorP
   }
   if (/[`\n\r]/.test(language) || language !== language.trim()) {
     return failure('unspellable-code-block-language', 'a fence info string holds no backtick and no edge whitespace', path)
+  }
+  if (holdsEntityReference(language)) {
+    return failure('unspellable-code-block-language', 'a fence info string shaped like an entity reference decodes on the way back', path)
   }
   return success(language)
 }
