@@ -89,7 +89,7 @@ detail is settled at its own milestone.
           and their escapes, and a paragraph line inside a container body shaped like a closing
           fence (`:::`, `::: x`). Guard `fenceNestingFault`'s bare-run pop here too — a run shorter
           than the open fence is a fault, not a close — which today's emitter cannot reach.
-    - [ ] **2e2 — Mark runs and the runs a carry breaks.** The longest-run rule, attributes
+    - [x] **2e2 — Mark runs and the runs a carry breaks.** The longest-run rule, attributes
           included, and a mark spelling that cannot open where it sits (`un**-real**istic`; the spec
           owes the carry a trigger). One mark vocabulary lands here, before 2e3 changes the
           attribute spelling: `emphasisSpellings`, `linkAttributes` and the `code`/`link` names join
