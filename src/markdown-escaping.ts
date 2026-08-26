@@ -2,7 +2,7 @@ import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEn
 
 export type EmphasisRole = 'close' | 'open'
 
-export type InlineEscaping = 'attribute' | 'backslash' | 'bracketed' | 'none'
+export type InlineEscaping = 'backslash' | 'bracketed' | 'none'
 
 export type InlineSegment =
   | { emphasis: EmphasisRole; escaping: 'none'; mark: string; text: string }
@@ -19,7 +19,7 @@ const delimiters = ['*', '_', '`', '~']
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
-const linkOpener = /\](?=[([:])/
+const followsLinkText = /[([:]/
 const unicodePunctuation = /[\p{P}\p{S}]/u
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
@@ -65,7 +65,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
   for (let index = 0; index < scan.length; index += 1) {
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
-    if (escapable && (mergesWithSyntax(scan, escapings, index) || opensConstruct(scan, index, escaping === 'bracketed', container, escaped))) {
+    if (escapable && (mergesWithSyntax(scan, escapings, index) || opensConstruct(scan, escapings, index, escaping === 'bracketed', container, escaped))) {
       output += '\\'
       escaped.add(index)
     }
@@ -128,13 +128,20 @@ function touchesSyntax(scan: string, escapings: readonly (InlineEscaping | undef
 }
 
 function isSyntax(escaping: InlineEscaping | undefined): boolean {
-  return escaping === 'attribute' || escaping === 'none'
+  return escaping === 'none'
 }
 
-function opensConstruct(scan: string, index: number, inBrackets: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
+function opensConstruct(
+  scan: string,
+  escapings: readonly (InlineEscaping | undefined)[],
+  index: number,
+  inBrackets: boolean,
+  container: LineContainer,
+  escaped: ReadonlySet<number>,
+): boolean {
   if (container === 'heading' && closesHeading(scan, index)) return true
   if (container === 'paragraph' && claimsLineStart(scan, index)) return true
-  return claimsCharacter(scan, index, inBrackets, container, escaped)
+  return claimsCharacter(scan, escapings, index, inBrackets, container, escaped)
 }
 
 function claimsLineStart(scan: string, index: number): boolean {
@@ -150,7 +157,14 @@ function closesHeading(scan: string, index: number): boolean {
   return index === 0 || /[ \t]/.test(scan.charAt(index - 1))
 }
 
-function claimsCharacter(scan: string, index: number, inBrackets: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
+function claimsCharacter(
+  scan: string,
+  escapings: readonly (InlineEscaping | undefined)[],
+  index: number,
+  inBrackets: boolean,
+  container: LineContainer,
+  escaped: ReadonlySet<number>,
+): boolean {
   const character = scan.charAt(index)
   const rest = scan.slice(index)
   if (inBrackets && (character === '[' || character === ']')) return true
@@ -159,9 +173,18 @@ function claimsCharacter(scan: string, index: number, inBrackets: boolean, conta
   if (character === '&') return startsEntityReference(rest)
   if (character === '<') return opensBracketedAutolink(rest) || htmlConstructs.some((construct) => construct.test(rest))
   if (character === ':') return inlineDirectiveOpener.test(rest)
-  if (character === '[') return linkOpener.test(rest)
+  if (character === '[') return opensLink(scan, escapings, index)
   if (character === '`') return opensCodeSpan(scan, index, escaped)
   if (character === '*' || character === '_' || character === '~') return opensEmphasis(scan, index, escaped)
+  return false
+}
+
+// A `]` the emitter spelled sits inside a construct that binds before link text does.
+function opensLink(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
+  for (let cursor = index + 1; cursor < scan.length; cursor += 1) {
+    if (scan.charAt(cursor) !== ']' || isSyntax(escapings[cursor])) continue
+    if (followsLinkText.test(scan.charAt(cursor + 1))) return true
+  }
   return false
 }
 

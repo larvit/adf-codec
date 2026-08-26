@@ -1,0 +1,56 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "a `b ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "url": "c`d"
+          },
+          "type": "inlineCard"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "url": "https://example.com/s?q=a&amp;b<c"
+          },
+          "type": "inlineCard"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "extensionKey": "jira",
+        "parameters": {
+          "jql": "a|b `c` & d < e"
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "content": [
+        {
+          "text": "[a",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "url": "b](c)"
+          },
+          "type": "inlineCard"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -92,7 +92,7 @@ function carryEdges(segment: InlineSegment, leading: boolean, trailing: boolean)
 }
 
 function carriedText(text: string): InlineSegment {
-  return { escaping: 'attribute', text: spellLeafDirective('text', spellAttributes([['text', spellStringAttribute(text)]])) }
+  return syntax(spellLeafDirective('text', spellAttributes([['text', spellStringAttribute(text)]])))
 }
 
 function spellLeafDirective(name: string, attributes: string): string {

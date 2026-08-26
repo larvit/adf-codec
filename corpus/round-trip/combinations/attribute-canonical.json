@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "isNumberColumnEnabled": true,
+        "layout": "wide",
+        "width": 760.5
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 2,
+                "colwidth": [
+                  340,
+                  420
+                ]
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Assembly",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "localId": "01a0-33_z",
+        "title": "a\nb\tc\"d\\e"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Notes.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "expand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

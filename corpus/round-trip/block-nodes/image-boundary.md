@@ -22,5 +22,5 @@ Taken from Kiruna.
 :::
 
 :::mediaSingle {layout=center}
-::media {type=external url="https://example.com/plan.png?a=1&amp;b=2"}
+::media {type=external url="https://example.com/plan.png?a=1\u0026amp;b=2"}
 :::

@@ -9,6 +9,9 @@ export type SpelledPairs = { fault: AttributeFault; pairs?: undefined } | { faul
 
 const bareToken = /^[A-Za-z0-9_-]+$/
 
+// spec/flavour.md, Attributes.
+const quotedEscapes = /[&<`|]/g
+
 export function isBareToken(text: string): boolean {
   return bareToken.test(text)
 }
@@ -53,5 +56,5 @@ export function spellStringAttribute(text: string): string {
 }
 
 function quote(text: string): string {
-  return JSON.stringify(text)
+  return JSON.stringify(text).replace(quotedEscapes, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`)
 }
