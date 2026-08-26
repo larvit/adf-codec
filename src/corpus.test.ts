@@ -86,7 +86,8 @@ function fenceNestingFault(markdown: string): string | undefined {
     const run = colons[1]?.length ?? 0
     const enclosing = open[open.length - 1]
     if (colons[2] === '') {
-      if (enclosing !== undefined && run < enclosing) return `${JSON.stringify(line)} is shorter than the ${enclosing} colons it would close`
+      if (enclosing === undefined) return `${JSON.stringify(line)} closes no open container`
+      if (run < enclosing) return `${JSON.stringify(line)} is shorter than the ${enclosing} colons it would close`
       open.pop()
       continue
     }
@@ -101,6 +102,7 @@ test('the fence nesting check catches a fence a container cannot hold', () => {
   assert.equal(fenceNestingFault(':::panel info\n- - :::panel warning\n    B\n    :::\n:::'), '"- - :::panel warning" sits in a container fenced with 3 colons')
   assert.equal(fenceNestingFault(':::panel info\n10. :::panel warning\n    B\n    :::\n:::'), '"10. :::panel warning" sits in a container fenced with 3 colons')
   assert.equal(fenceNestingFault('::::panel info\n:::\n::::'), '":::" is shorter than the 4 colons it would close')
+  assert.equal(fenceNestingFault('Text\n:::\n'), '":::" closes no open container')
   assert.equal(fenceNestingFault('::::panel info\n- - :::panel warning\n    B\n    :::\n::::'), undefined)
   assert.equal(fenceNestingFault(':::tableCell\n```text\n:::::::panel warning\n:::\n```\n:::'), undefined)
 })

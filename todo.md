@@ -84,8 +84,8 @@ detail is settled at its own milestone.
         attribute fallback 2e owes, since the reservation leaves that node no other spelling
         whatever 1d decides for its `localId`.
   - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
-        `corpus/round-trip/combinations/` — the documents that cross what 2a–2d isolated.
-    - [ ] **2e1 — The carve-outs and the claimed line.** The directory opens: the three carve-outs
+        `corpus/round-trip/combinations/`.
+    - [ ] **2e1 — The carve-outs and the claimed line.** The three carve-outs
           and their escapes, and a paragraph line inside a container body shaped like a closing
           fence (`:::`, `::: x`). Guard `fenceNestingFault`'s bare-run pop here too — a run shorter
           than the open fence is a fault, not a close — which today's emitter cannot reach.
@@ -117,7 +117,8 @@ detail is settled at its own milestone.
           and it is provable without one. It also settles the emitter's one known approximation:
           delimiter flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the
           way a run splits across several openers — is not modelled. No reachable violation has been
-          found by hand; the property test is what decides it.
+          found by hand; the property test is what decides it, and 2e1's `carve-out-strike` pins a
+          second backslash only flanking-without-matching emits.
   - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
         CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
         `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying
@@ -140,7 +141,10 @@ detail is settled at its own milestone.
       assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin, and
       the precedence between a directive and the constructs a raw attribute value opens inside it —
       a code span, an entity, raw HTML — which one directive alone already reaches until 2e's
-      escape lands.
+      escape lands. Whether a claimed line interrupts a paragraph is pinned for the plain case and
+      unstated for the lazy one: a closing fence on the line after a blockquote's open paragraph is
+      lazy continuation in CommonMark, which would swallow the fence and leave the container
+      unclosed. 2e1's `closing-fence-line` orders its blockquote away from that edge meanwhile.
       `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
       still mechanical. Three files do not move whole: `block-directives.ts` and
