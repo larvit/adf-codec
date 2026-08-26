@@ -80,7 +80,7 @@ detail is settled at its own milestone.
         already escape it. The pipe form's fallback reads the emitted segments rather than naming
         the nodes whose attribute values spell a pipe as syntax, so 2e's `\u007c` narrows it in
         one place.
-  - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
+  - [x] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
         info string, and the `codeBlock` whose language is `adf` — carried whole ahead of the
         attribute fallback 2e owes, since the reservation leaves that node no other spelling
