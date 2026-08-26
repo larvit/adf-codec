@@ -228,6 +228,9 @@ test('escapes a literal delimiter that would merge with an emitted one', () => {
   assert.equal(emitted({ text: '`', type: 'text' }, marked('x', { type: 'code' })), '\\``x`\n')
   assert.equal(emitted(marked('x', { type: 'code' }), { text: '`', type: 'text' }), '`x`\\`\n')
   assert.equal(emitted({ text: '!', type: 'text' }, marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' })), '\\![x](https://example.com/)\n')
+  assert.equal(emitted(marked('x', { type: 'underline' }), { text: '{}', type: 'text' }), ':underline[x]\\{}\n')
+  assert.equal(emitted({ attrs: { text: '' }, type: 'status' }, { text: '{color=red}', type: 'text' }), ':status[]\\{color=red}\n')
+  assert.equal(emitted(marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' }), { text: '{}', type: 'text' }), '[x](https://example.com/){}\n')
 })
 
 test('escapes a hyphen underline a hard break would expose', () => {
@@ -377,9 +380,9 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
   const marked = (mark: AdfMark): AdfDocument => table(row(cell('tableHeader', { content: [{ marks: [mark], text: 'l', type: 'text' }], type: 'paragraph' })))
   assert.ok(directive(adfToMarkdown(marked({ attrs: { href: 'https://example.com/?x|y' }, type: 'link' }))))
   assert.ok(directive(adfToMarkdown(marked({ attrs: { href: 'https://example.com/', title: 'a|b' }, type: 'link' }))))
-  const piped = (node: AdfNode): boolean => directive(adfToMarkdown(table(row(cell('tableHeader', { content: [node], type: 'paragraph' })))))
-  assert.ok(piped({ marks: [{ type: 'code' }], text: 'a|b', type: 'text' }))
-  assert.ok(piped({ attrs: { style: 'a|b' }, type: 'status' }))
+  const fallsBack = (node: AdfNode): boolean => directive(adfToMarkdown(table(row(cell('tableHeader', { content: [node], type: 'paragraph' })))))
+  assert.ok(fallsBack({ marks: [{ type: 'code' }], text: 'a|b', type: 'text' }))
+  assert.ok(fallsBack({ attrs: { style: 'a|b' }, type: 'status' }))
   assert.equal(markdown(adfToMarkdown(marked({ attrs: { href: 'https://example.com/x' }, type: 'link' }))), '| [l](https://example.com/x) |\n| --- |\n')
 })
 
@@ -425,6 +428,15 @@ test('spells the directive marks around the longest run they cover', () => {
   assert.equal(emitted(marked('x', { type: 'em' }, underline)), '_:underline[x]_\n')
   assert.equal(emitted(marked('x', underline, { type: 'em' })), ':underline[_x_]\n')
   assert.equal(emitted(marked('a', underline), { marks: [underline], type: 'hardBreak' }, marked('b', underline)), ':underline[a:hardBreak{}b]\n')
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(
+    emitted(marked('a', underline, link), { marks: [underline, link], type: 'hardBreak' }, marked('b', underline, link)),
+    ':underline[[a:hardBreak{}b](https://example.com/)]\n',
+  )
+  assert.equal(
+    emitted(marked('a', link), { marks: [link], type: 'hardBreak' }, marked('b', link)),
+    '[a\\\nb](https://example.com/)\n',
+  )
 })
 
 test('refuses a mark directive attribute no spelling holds', () => {

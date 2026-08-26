@@ -9,13 +9,11 @@ import { longestBacktickRun } from './backtick-runs.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 import { spellAttributes, spellStringAttribute } from './directive-attributes.ts'
 
-type Brackets = 'directive' | 'link' | 'none'
-
 type InlineContext = {
   atBlockEnd: boolean
-  brackets: Brackets
-  container: LineContainer
+  bracketed: boolean
   path: ConvertErrorPath
+  spansLines: boolean
 }
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
@@ -47,7 +45,7 @@ export function tryImageLine(alt: string | undefined, href: string, path: Conver
 }
 
 function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<InlineSegment[]> {
-  const segments = emitRun(nodes, 0, 0, { atBlockEnd: true, brackets: 'none', container, path })
+  const segments = emitRun(nodes, 0, 0, { atBlockEnd: true, bracketed: false, path, spansLines: container === 'paragraph' })
   if (!segments.ok) return segments
   return success(carryStrippedWhitespace(segments.value))
 }
@@ -69,7 +67,7 @@ function finishLine(segments: readonly InlineSegment[], container: LineContainer
   return success(line)
 }
 
-// spec/flavour.md, Inline nodes: whitespace CommonMark strips.
+// spec/flavour.md, Inline nodes.
 function carryStrippedWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
   const carried: InlineSegment[] = []
   for (const [index, segment] of segments.entries()) {
@@ -109,7 +107,7 @@ function syntax(text: string): InlineSegment {
 
 function refuseContentAndText(node: AdfNode, path: ConvertErrorPath): Result<null> {
   if ((node.content ?? []).length > 0 || node.text !== undefined) {
-    return failure('unsupported-node-shape', `a ${node.type} node carries neither content nor text`, path)
+    return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text`, path)
   }
   return success(null)
 }
@@ -165,7 +163,7 @@ function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertError
   if (unspelled !== undefined) return failure('unspelled-node-attribute', `the hardBreak attribute ${unspelled} has no canonical markdown spelling`, path)
   const empty = refuseContentAndText(node, path)
   if (!empty.ok) return empty
-  if (context.container === 'paragraph' && !context.atBlockEnd && context.brackets !== 'directive') return success([syntax('\\\n')])
+  if (context.spansLines && !context.atBlockEnd) return success([syntax('\\\n')])
   return success([syntax(spellLeafDirective('hardBreak', ''))])
 }
 
@@ -186,11 +184,11 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, path: Co
 function emitText(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {
   const unspelled = Object.keys(node.attrs ?? {})[0]
   if (unspelled !== undefined) return failure('unspelled-node-attribute', `the text attribute ${unspelled} has no canonical markdown spelling`, path)
-  if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node carries no text', path)
-  if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node carries no content', path)
+  if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text', path)
+  if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node holds no content', path)
   if (/\r/.test(node.text)) return failure('unspellable-whitespace', 'a text node holds a carriage return CommonMark rewrites', path)
   if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
-  const escaping: InlineEscaping = context.brackets === 'none' ? 'backslash' : 'bracketed'
+  const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
   const parts = node.text.split(/(\n+)/).filter((part) => part !== '')
   return success(parts.map((part) => (part.startsWith('\n') ? carriedText(part) : { escaping, text: part })))
 }
@@ -205,7 +203,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (vocabulary === undefined) return failure('unspellable-mark', `no markdown spelling holds the ${mark.type} mark`, path)
   const attributes = spellMarkAttributes(mark, vocabulary, path)
   if (!attributes.ok) return attributes
-  const inner = emitRun(nodes, depth + 1, index, { ...context, brackets: 'directive' })
+  const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
   return success([syntax(`:${mark.type}[`), ...inner.value, syntax(`]${attributes.value}`)])
 }
@@ -270,7 +268,7 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index
   if (!destination.ok) return destination
   const spelledTitle = title === undefined ? success('') : spellTitle(title, path)
   if (!spelledTitle.ok) return spelledTitle
-  const inner = emitRun(nodes, depth + 1, index, { ...context, brackets: 'link' })
+  const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true })
   if (!inner.ok) return inner
   return success([syntax('['), ...inner.value, syntax(`](${destination.value}${spelledTitle.value})`)])
 }

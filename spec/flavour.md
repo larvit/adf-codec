@@ -63,7 +63,8 @@ literal bracket. Whitespace at either edge of `[content]`, space or tab, is part
 survives inline parsing. Each section below says whether content is required. `:` opens a
 directive only when the name is followed immediately by `[` or `{`, and `{attrs}` must follow
 `]` (or the name) with no gap — anything else (`10:30`, `:smile:`, a stray `{…}` in text) is
-literal text.
+literal text. An inline directive binds as a unit before bracket matching, the way a code span
+does: a `]` or `(` inside its `{attrs}` is the directive's, never the enclosing content's.
 
 **Container block**:
 
@@ -99,7 +100,8 @@ form, and omits empty `{attrs}` except where the `{` itself claims the directive
 (`:hardBreak{}`).
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
-directive syntax — the leading `:` of a would-be directive, `]` inside content; outside code
+directive syntax — the leading `:` of a would-be directive, `]` inside content, a `{` right after
+a directive's closing `]`, which would otherwise be read as the attributes it has none of; outside code
 spans and code blocks, a backslash before `:` in input yields a literal colon.
 
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
@@ -214,9 +216,10 @@ One header row plus plain inline cells is a pipe table; anything richer is the d
 (AGENTS.md §4). Precisely: a table emits as a pipe table exactly when the `table`, every row
 and every cell carry no attrs and no marks, the first row is all `tableHeader` and the rest all
 `tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
-mark-less paragraph — an empty cell holds one empty paragraph — with no `|` in a code span,
-link destination or link title: backslash escapes are inert in everything the inline layer spells
-as syntax, so pipe form cannot spell that pipe and the table takes the directive form. A pipe table
+mark-less paragraph — an empty cell holds one empty paragraph — with no `|` anywhere the inline
+layer spells as syntax — a code span, a link destination or title, an inline directive's
+attributes: backslash escapes are inert there, so pipe form cannot spell that pipe and the table
+takes the directive form. A pipe table
 parses back to exactly that shape.
 
 ```

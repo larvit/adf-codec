@@ -18,7 +18,7 @@ const delimiters = ['*', '_', '`', '~']
 
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
-const inlineDirective = /^:[a-z][A-Za-z0-9]*[[{]/
+const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
 const linkOpener = /\](?=[([:])/
 const unicodePunctuation = /[\p{P}\p{S}]/u
 
@@ -115,6 +115,7 @@ function delimiterRuns(segments: readonly InlineSegment[], placements: readonly 
 function mergesWithSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
   const character = scan.charAt(index)
   if (character === '!') return scan.charAt(index + 1) === '[' && isSyntax(escapings[index + 1])
+  if (character === '{') return scan.charAt(index - 1) === ']' && isSyntax(escapings[index - 1])
   if (!delimiters.includes(character)) return false
   return touchesSyntax(scan, escapings, index, -1) || touchesSyntax(scan, escapings, index, 1)
 }
@@ -157,7 +158,7 @@ function claimsCharacter(scan: string, index: number, inBrackets: boolean, conta
   if (character === '\\') return asciiPunctuation.test(scan.charAt(index + 1))
   if (character === '&') return startsEntityReference(rest)
   if (character === '<') return opensBracketedAutolink(rest) || htmlConstructs.some((construct) => construct.test(rest))
-  if (character === ':') return inlineDirective.test(rest)
+  if (character === ':') return inlineDirectiveOpener.test(rest)
   if (character === '[') return linkOpener.test(rest)
   if (character === '`') return opensCodeSpan(scan, index, escaped)
   if (character === '*' || character === '_' || character === '~') return opensEmphasis(scan, index, escaped)

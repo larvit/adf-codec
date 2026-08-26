@@ -111,6 +111,8 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
   `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
   the spot.
+- Only the hard break's inline segment holds a raw newline — every other spelling escapes one or
+  refuses it — which is how the whitespace carry finds a line edge.
 - A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
   returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
   general form owns the refusal. Refusing there refuses a document the general form spells.
