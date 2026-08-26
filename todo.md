@@ -104,9 +104,13 @@ detail is settled at its own milestone.
         The carry's fallback triggers land here too: `spec/flavour.md` carries a node its section
         cannot spell — an attrs key no section lists, a value that is not the section's type, an
         arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
-        which leaves 1d's blocked CommonMark nodes as the only refusal. The `\u007c` rule covers
-        the inline carry's `json` value with them: the carry spells `escaping: 'none'` today so
-        that `tryPipeCell` refuses the pipe form for a carry whose JSON holds a `|`.
+        which leaves the refusals a container's own spelling owns. The `\u007c` rule is wider than
+        the pipe: a quoted attribute value spells `` ` ``, `&` and `<` raw today, so a backtick
+        pair in an `inlineCard`'s `data`, a `status`'s `style` or the inline carry's `json` reads
+        back as a code span, an entity or raw HTML inside the value. One escape settles all four,
+        and the pick decides whether a directive or a code span wins where they overlap (3). The
+        carry spells `escaping: 'none'` meanwhile, which is what makes `tryPipeCell` refuse the
+        pipe form for a carry whose JSON holds a pipe.
         The gate gains the collision property here: no two corpus documents may emit the same
         bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
         provable without one. It also settles the emitter's one known approximation: delimiter
@@ -123,8 +127,9 @@ detail is settled at its own milestone.
       every raw-HTML construct in input is an error result. The CommonMark spec suite runs
       against it from here (§10). The parser owes `~` the same `can_open`/`can_close` the emitter
       assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin, and
-      the precedence between a directive and a code span that overlap, which the emitter already
-      spells leftmost-first (`` `a`:adf{json="…`…"}`b` ``).
+      the precedence between a directive and the constructs a raw attribute value opens inside it —
+      a code span, an entity, raw HTML — which one directive alone already reaches until 2e's
+      escape lands.
       `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
       still mechanical. Three files do not move whole: `block-directives.ts` and

@@ -113,8 +113,11 @@ literal-text fallback — a typo that reparses as prose is the silent loss §2 r
 
 ## The opaque carry (AGENTS.md §3)
 
-A node type the library does not know rides as its raw JSON and restores to a deep-equal node.
-Block and inline positions canonicalize differently, each fitting where it sits:
+A node no section spells where it stands — an unknown type, or a known one whose spelling belongs
+to the other position — rides as its raw JSON and restores to a deep-equal node. `hardBreak`,
+`listItem` and `text` where a block belongs are the exception: their spelling lives inside another
+node's body, so the misplacement is a named error. Block and inline positions canonicalize
+differently, each fitting where it sits:
 
 - **Block position**: a fenced code block with info string `adf`, body = the node's JSON —
   two-space indent, object keys sorted.
