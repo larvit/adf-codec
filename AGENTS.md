@@ -27,9 +27,11 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 ## 3. Unknown input policy
 
 - Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats and
-  restores to a deep-equal node. The round-trip holds for documents newer than the library. It is
-  the node *type* that is unknown: a known type standing where its content model forbids stays an
-  error result, never a carry.
+  restores to a deep-equal node. The round-trip holds for documents newer than the library. A
+  known node the position leaves unspelled carries the same way — validity against ADF's content
+  models is not the library's business (§14) — except `hardBreak`, `listItem` and `text` where a
+  block belongs: their spelling lives inside another node's body, so the misplacement is an error
+  result naming it.
 - Unmappable foreign HTML element: error result naming the element — never a silent drop.
 - Bare `@name` / `:smile:` in typed text: stays a text node. Only directives produce
   mention/emoji/media nodes; resolving names to ids needs I/O, which is the consumer's job.
@@ -118,8 +120,8 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
   returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
   general form owns the refusal. Refusing there refuses a document the general form spells.
-- Nothing recurses unbounded: the guards walk iteratively, and blocks, marks, attribute values and
-  a carried node's JSON are all held to 500 levels, so a deep document is a `Result` rather than the stack overflow that
+- Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
+  attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a `Result` rather than the stack overflow that
   waits near 2000.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states

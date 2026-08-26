@@ -148,7 +148,7 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
-// spec/flavour.md, Marks: a run breaks at every carried node, so no emitted carry sits inside a mark spelling.
+// spec/flavour.md, Marks.
 function carries(node: AdfNode): boolean {
   return node.type !== 'hardBreak' && node.type !== 'text' && inlineDirective(node.type) === undefined
 }
@@ -164,8 +164,8 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   const directive = inlineDirective(node.type)
   if (directive !== undefined) return emitInlineDirective(node, directive, path)
-  if (node.type === 'text') return emitText(node, context, path)
-  return emitHardBreak(node, context, path)
+  if (node.type === 'hardBreak') return emitHardBreak(node, context, path)
+  return emitText(node, context, path)
 }
 
 function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {

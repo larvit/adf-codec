@@ -82,7 +82,9 @@ detail is settled at its own milestone.
         one place.
   - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
-        info string, and the `codeBlock` whose language is `adf`.
+        info string, and the `codeBlock` whose language is `adf` — carried whole ahead of the
+        attribute fallback 2e owes, since the reservation leaves that node no other spelling
+        whatever 1d decides for its `localId`.
   - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
         `corpus/round-trip/combinations/`: the three carve-outs and their escapes, mark runs — the
         longest-run rule, attributes included — and the runs a carry breaks, a mark spelling that
@@ -120,7 +122,9 @@ detail is settled at its own milestone.
       it must return). The raw-HTML element mapping is empty until milestone 6, so at `0.1.0`
       every raw-HTML construct in input is an error result. The CommonMark spec suite runs
       against it from here (§10). The parser owes `~` the same `can_open`/`can_close` the emitter
-      assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin.
+      assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin, and
+      the precedence between a directive and a code span that overlap, which the emitter already
+      spells leftmost-first (`` `a`:adf{json="…`…"}`b` ``).
       `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
       still mechanical. Three files do not move whole: `block-directives.ts` and

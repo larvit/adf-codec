@@ -1,0 +1,33 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "url": "https://example.com/quoted"
+          },
+          "type": "blockCard"
+        }
+      ],
+      "type": "blockquote"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "url": "https://example.com/listed"
+              },
+              "type": "blockCard"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
