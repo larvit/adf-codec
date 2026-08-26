@@ -84,37 +84,40 @@ detail is settled at its own milestone.
         attribute fallback 2e owes, since the reservation leaves that node no other spelling
         whatever 1d decides for its `localId`.
   - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
-        `corpus/round-trip/combinations/`: the three carve-outs and their escapes, mark runs — the
-        longest-run rule, attributes included — and the runs a carry breaks, a mark spelling that
-        cannot open where it sits (`un**-real**istic`; the spec owes the carry a trigger),
-        attribute canonicalization, a pipe cell's whitespace edges and `\u007c` for a `|` inside a
-        quoted attribute value, documents combining nodes rather than isolating one, and a
-        paragraph line inside a container body shaped like a closing fence (`:::`, `::: x`).
-        Guard `fenceNestingFault`'s bare-run pop here too — a run shorter than the open fence is a
-        fault, not a close — which today's emitter cannot reach.
-        Two moves land before the attribute spelling changes. One mark vocabulary:
-        `emphasisSpellings`, `linkAttributes` and the `code`/`link` names join
-        `inline-directives.ts`, which holds four of the nine marks while the rest are branch
-        literals in the emitter — and the parser (3) needs every name to make `:em[x]` the named
-        error `spec/flavour.md` promises. And `escaping: 'attribute'` earns its keep at the
-        `\u007c` rule or collapses into `none`: nothing the escaper does tells the two apart
-        today, since a carried segment holds only spaces, tabs and newlines.
-        The carry's fallback triggers land here too: `spec/flavour.md` carries a node its section
-        cannot spell — an attrs key no section lists, a value that is not the section's type, an
-        arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
-        which leaves the refusals a container's own spelling owns. The `\u007c` rule is wider than
-        the pipe: a quoted attribute value spells `` ` ``, `&` and `<` raw today, so a backtick
-        pair in an `inlineCard`'s `data`, a `status`'s `style` or the inline carry's `json` reads
-        back as a code span, an entity or raw HTML inside the value. One escape settles all four,
-        and the pick decides whether a directive or a code span wins where they overlap (3). The
-        carry spells `escaping: 'none'` meanwhile, which is what makes `tryPipeCell` refuse the
-        pipe form for a carry whose JSON holds a pipe.
-        The gate gains the collision property here: no two corpus documents may emit the same
-        bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
-        provable without one. It also settles the emitter's one known approximation: delimiter
-        flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the way a run
-        splits across several openers — is not modelled. No reachable violation has been found by
-        hand; the property test is what decides it.
+        `corpus/round-trip/combinations/` — the documents that cross what 2a–2d isolated.
+    - [ ] **2e1 — The carve-outs and the claimed line.** The directory opens: the three carve-outs
+          and their escapes, and a paragraph line inside a container body shaped like a closing
+          fence (`:::`, `::: x`). Guard `fenceNestingFault`'s bare-run pop here too — a run shorter
+          than the open fence is a fault, not a close — which today's emitter cannot reach.
+    - [ ] **2e2 — Mark runs and the runs a carry breaks.** The longest-run rule, attributes
+          included, and a mark spelling that cannot open where it sits (`un**-real**istic`; the spec
+          owes the carry a trigger). One mark vocabulary lands here, before 2e3 changes the
+          attribute spelling: `emphasisSpellings`, `linkAttributes` and the `code`/`link` names join
+          `inline-directives.ts`, which holds four of the nine marks while the rest are branch
+          literals in the emitter — and the parser (3) needs every name to make `:em[x]` the named
+          error `spec/flavour.md` promises.
+    - [ ] **2e3 — Attribute canonicalization and the quoted value's escape.** Attribute
+          canonicalization, a pipe cell's whitespace edges, and `\u007c` for a `|` inside a quoted
+          attribute value. The rule is wider than the pipe: a quoted value spells `` ` ``, `&` and
+          `<` raw today, so a backtick pair in an `inlineCard`'s `data`, a `status`'s `style` or the
+          inline carry's `json` reads back as a code span, an entity or raw HTML inside the value.
+          One escape settles all four, and the pick decides whether a directive or a code span wins
+          where they overlap (3). `escaping: 'attribute'` earns its keep at that rule or collapses
+          into `none`: nothing the escaper does tells the two apart today, since a carried segment
+          holds only spaces, tabs and newlines.
+    - [ ] **2e4 — The carry's fallback triggers.** `spec/flavour.md` carries a node its section
+          cannot spell — an attrs key no section lists, a value that is not the section's type, an
+          arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
+          which leaves the refusals a container's own spelling owns. The carry spells
+          `escaping: 'none'`, which is what makes `tryPipeCell` refuse the pipe form for a carry
+          whose JSON holds a pipe.
+    - [ ] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
+          than isolating one, and the gate's collision property: no two corpus documents may emit
+          the same bytes — one spelling for two documents is a round-trip break no parser can undo,
+          and it is provable without one. It also settles the emitter's one known approximation:
+          delimiter flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the
+          way a run splits across several openers — is not modelled. No reachable violation has been
+          found by hand; the property test is what decides it.
   - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
         CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
         `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying
