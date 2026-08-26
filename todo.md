@@ -71,7 +71,7 @@ detail is settled at its own milestone.
         answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give
         the emitter's refusals a corpus home while the directories grow: `corpus/unspellable/`,
         a `.json` beside the `ConvertErrorCode` it must return, the emitter half of `corpus/errors/`.
-  - [ ] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment` splits into its
+  - [x] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment` splits into its
         two axes — escapability (`attribute` for `:text{text="…"}`, `backslash`, `bracketed`,
         `none`) and the emphasis role. A lone surrogate in a text node emits verbatim and becomes
         U+FFFD on any UTF-8 encode, a §2 break plain text still holds open — attribute values
