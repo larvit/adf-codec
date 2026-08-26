@@ -2,9 +2,9 @@ import type { AdfDocument, AdfNode } from './adf-document.ts'
 import type { BlockDirective } from './block-directives.ts'
 import type { JsonValue } from './json-value.ts'
 import { blockDirective, spellDirectiveHeader } from './block-directives.ts'
-import { emitImage } from './markdown-image.ts'
+import { tryImage } from './markdown-image.ts'
 import { emitInlineLine } from './markdown-inline.ts'
-import { emitPipeTable } from './markdown-pipe-table.ts'
+import { tryPipeTable } from './markdown-pipe-table.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
@@ -98,7 +98,11 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result
 
 function commonMarkLine(text: Result<string>): Result<EmittedBlock> {
   if (!text.ok) return text
-  return success({ fenceColons: 0, spelling: 'commonmark', text: text.value })
+  return success(commonMarkText(text.value))
+}
+
+function commonMarkText(text: string): EmittedBlock {
+  return { fenceColons: 0, spelling: 'commonmark', text }
 }
 
 function commonMarkContainer(body: Result<EmittedBody>): Result<EmittedBlock> {
@@ -131,15 +135,15 @@ function emitInlineBody(content: readonly AdfNode[], path: ConvertErrorPath): Re
 }
 
 function emitMediaSingle(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
-  const image = emitImage(node, path)
+  const image = tryImage(node, path)
   if (image === undefined) return emitDirectiveBlock(node, directive, path, depth)
-  return commonMarkLine(image)
+  return success(commonMarkText(image))
 }
 
 function emitTable(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
-  const pipe = emitPipeTable(node, path)
+  const pipe = tryPipeTable(node, path)
   if (pipe === undefined) return emitDirectiveBlock(node, directive, path, depth)
-  return commonMarkLine(pipe)
+  return success(commonMarkText(pipe))
 }
 
 function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBody> {

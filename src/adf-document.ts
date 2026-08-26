@@ -4,6 +4,8 @@ export type AdfAttributes = { [key: string]: JsonValue }
 
 export type AttributeKind = 'boolean' | 'json' | 'number' | 'string'
 
+export type AttributeVocabulary = Readonly<Record<string, AttributeKind>>
+
 export type AdfMark = {
   attrs?: AdfAttributes
   type: string

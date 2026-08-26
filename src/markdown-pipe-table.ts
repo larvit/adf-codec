@@ -1,9 +1,8 @@
 import type { AdfNode } from './adf-document.ts'
-import type { JsonValue } from './json-value.ts'
-import { emitInlineLine } from './markdown-inline.ts'
-import { success, type ConvertErrorPath, type Result } from './result.ts'
+import { tryPipeCell } from './markdown-inline.ts'
+import type { ConvertErrorPath } from './result.ts'
 
-export function emitPipeTable(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
+export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | undefined {
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
   const lines: string[] = []
@@ -11,14 +10,14 @@ export function emitPipeTable(node: AdfNode, path: ConvertErrorPath): Result<str
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
       const content = paragraph.content ?? []
-      const line = content.length === 0 ? success('') : emitInlineLine(content, 'table-cell', [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
-      if (!line.ok) return line
-      cells.push(line.value)
+      const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
+      if (line === undefined) return undefined
+      cells.push(line)
     }
     lines.push(`| ${cells.join(' | ')} |`)
     if (rowIndex === 0) lines.push(`| ${cells.map(() => '---').join(' | ')} |`)
   }
-  return success(lines.join('\n'))
+  return lines.join('\n')
 }
 
 function pipeRows(node: AdfNode): AdfNode[][] | undefined {
@@ -49,18 +48,5 @@ function plainParagraph(cell: AdfNode): AdfNode | undefined {
   const content = cell.content ?? []
   const paragraph = content[0]
   if (paragraph === undefined || content.length !== 1 || paragraph.type !== 'paragraph' || !isPlain(paragraph)) return undefined
-  return (paragraph.content ?? []).some(spellsPipeAsSyntax) ? undefined : paragraph
-}
-
-// A pipe the inline layer emits as syntax takes no backslash, so the cell has no pipe spelling.
-function spellsPipeAsSyntax(child: AdfNode): boolean {
-  return (child.marks ?? []).some((mark) => {
-    if (mark.type === 'code') return (child.text ?? '').includes('|')
-    if (mark.type !== 'link') return false
-    return holdsPipe(mark.attrs?.['href']) || holdsPipe(mark.attrs?.['title'])
-  })
-}
-
-function holdsPipe(value: JsonValue | undefined): boolean {
-  return typeof value === 'string' && value.includes('|')
+  return paragraph
 }

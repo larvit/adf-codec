@@ -3,8 +3,8 @@
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
 
-**Status: pre-release — `adfToMarkdown` emits the CommonMark subset and the block nodes, nothing
-else is built.**
+**Status: pre-release — `adfToMarkdown` emits every node the flavour spells but the opaque carry,
+nothing else is built.**
 Plan: `todo.md`. Decisions: `AGENTS.md`. The flavour's grammar:
 [`spec/flavour.md`](spec/flavour.md).
 

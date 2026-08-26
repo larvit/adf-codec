@@ -29,7 +29,7 @@ test('names the node a refusal came from', () => {
   const unspellable: AdfNode = { attrs: { localId: 'a' }, type: 'paragraph' }
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [unspellable], type: 'listItem' }], type: 'bulletList' }
   assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), ['content', 1, 'content', 1, 'content', 0])
-  assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { type: 'mention' })))), ['content', 0, 'content', 1])
+  assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { type: 'blockCard' })))), ['content', 0, 'content', 1])
   assert.deepEqual(path(adfToMarkdown({ type: 'doc', version: 2 })), [])
 })
 
@@ -93,17 +93,15 @@ test('refuses a link attribute no markdown spelling holds', () => {
 })
 
 test('refuses a mark the canonical spellings cannot nest', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'underline' }], text: 'x', type: 'text' })))), 'unspellable-mark')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'annotation' }], text: 'x', type: 'text' })))), 'unspellable-mark')
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }, { type: 'strong' }], text: 'x', type: 'text' })))), 'unspellable-mark')
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { colour: 'red' }, type: 'em' }], text: 'x', type: 'text' })))), 'unspellable-mark')
 })
 
 test('refuses whitespace CommonMark cannot hold', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: '  lead', type: 'text' })))), 'unspellable-whitespace')
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'trail ', type: 'text' })))), 'unspellable-whitespace')
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\nb', type: 'text' })))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ text: '\fa', type: 'text' })))), 'unspellable-whitespace')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'em' }], text: 'x ', type: 'text' }, { text: 'y', type: 'text' })))), 'unspellable-whitespace')
+  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\rb', type: 'text' })))), 'unspellable-whitespace')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'em' }], text: 'x ', type: 'text' }, { text: 'y', type: 'text' })))), 'unspellable-mark')
 })
 
 test('refuses a line whose start block parsing would claim', () => {
@@ -118,7 +116,7 @@ test('refuses two adjacent lists of the same kind', () => {
 test('refuses a node type the canonical form does not cover', () => {
   assert.equal(code(adfToMarkdown(document({ type: 'blockCard' }))), 'unsupported-node-type')
   assert.equal(code(adfToMarkdown(document({ type: 'toString' }))), 'unsupported-node-type')
-  assert.equal(code(adfToMarkdown(document(paragraph({ type: 'mention' })))), 'unsupported-node-type')
+  assert.equal(code(adfToMarkdown(document(paragraph({ type: 'blockCard' })))), 'unsupported-node-type')
 })
 
 test('refuses a node whose content model the canonical form cannot emit', () => {
@@ -230,6 +228,9 @@ test('escapes a literal delimiter that would merge with an emitted one', () => {
   assert.equal(emitted({ text: '`', type: 'text' }, marked('x', { type: 'code' })), '\\``x`\n')
   assert.equal(emitted(marked('x', { type: 'code' }), { text: '`', type: 'text' }), '`x`\\`\n')
   assert.equal(emitted({ text: '!', type: 'text' }, marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' })), '\\![x](https://example.com/)\n')
+  assert.equal(emitted(marked('x', { type: 'underline' }), { text: '{}', type: 'text' }), ':underline[x]\\{}\n')
+  assert.equal(emitted({ attrs: { text: '' }, type: 'status' }, { text: '{color=red}', type: 'text' }), ':status[]\\{color=red}\n')
+  assert.equal(emitted(marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' }), { text: '{}', type: 'text' }), '[x](https://example.com/){}\n')
 })
 
 test('escapes a hyphen underline a hard break would expose', () => {
@@ -372,10 +373,85 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader'))))))
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', text('a'), text('b')))))))
   assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { attrs: { localId: 'a' }, type: 'paragraph' }))))), 'unspelled-node-attribute')
+  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { content: [{ type: 'blockCard' }], type: 'paragraph' }))))), 'unsupported-node-type')
+  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: '\fa', type: 'text' }], type: 'paragraph' }))))), 'unspellable-whitespace')
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', { attrs: { level: 1 }, type: 'heading' }))))))
-  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: ' a', type: 'text' }], type: 'paragraph' }))))), 'unspellable-whitespace')
+  assert.equal(markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: ' a', type: 'text' }], type: 'paragraph' }))))), '| :text{text=" "}a |\n| --- |\n')
   const marked = (mark: AdfMark): AdfDocument => table(row(cell('tableHeader', { content: [{ marks: [mark], text: 'l', type: 'text' }], type: 'paragraph' })))
   assert.ok(directive(adfToMarkdown(marked({ attrs: { href: 'https://example.com/?x|y' }, type: 'link' }))))
   assert.ok(directive(adfToMarkdown(marked({ attrs: { href: 'https://example.com/', title: 'a|b' }, type: 'link' }))))
+  const fallsBack = (node: AdfNode): boolean => directive(adfToMarkdown(table(row(cell('tableHeader', { content: [node], type: 'paragraph' })))))
+  assert.ok(fallsBack({ marks: [{ type: 'code' }], text: 'a|b', type: 'text' }))
+  assert.ok(fallsBack({ attrs: { style: 'a|b' }, type: 'status' }))
   assert.equal(markdown(adfToMarkdown(marked({ attrs: { href: 'https://example.com/x' }, type: 'link' }))), '| [l](https://example.com/x) |\n| --- |\n')
+})
+
+test('spells an inline node as a directive with its content slot and attributes', () => {
+  const emitted = (node: AdfNode): string => markdown(adfToMarkdown(document(paragraph(node))))
+  assert.equal(emitted({ attrs: { timestamp: '1756080000000' }, type: 'date' }), ':date{timestamp=1756080000000}\n')
+  assert.equal(emitted({ type: 'mention' }), ':mention{}\n')
+  assert.equal(emitted({ attrs: { text: '' }, type: 'status' }), ':status[]\n')
+  assert.equal(emitted({ attrs: { color: 'yellow', text: 'In review' }, type: 'status' }), ':status[In review]{color=yellow}\n')
+  assert.equal(emitted({ attrs: { id: '1f389', text: 'a]b' }, type: 'emoji' }), ':emoji[a\\]b]{id=1f389}\n')
+  assert.equal(emitted({ attrs: { data: { url: 'https://example.com/' } }, type: 'inlineCard' }), ':inlineCard{data="{\\"url\\":\\"https://example.com/\\"}"}\n')
+  assert.equal(emitted({ attrs: { height: 24 }, type: 'mediaInline' }), ':mediaInline{height=24}\n')
+})
+
+test('refuses an inline node attribute no section spells', () => {
+  const refused = (node: AdfNode): string => code(adfToMarkdown(document(paragraph(node))))
+  assert.equal(refused({ attrs: { rounded: true }, type: 'status' }), 'unspelled-node-attribute')
+  assert.equal(refused({ attrs: { toString: 'x' }, type: 'status' }), 'unspelled-node-attribute')
+  assert.equal(refused({ attrs: { color: 4 }, type: 'status' }), 'unsupported-node-shape')
+  assert.equal(refused({ attrs: { width: '2' }, type: 'mediaInline' }), 'unsupported-node-shape')
+})
+
+test('refuses the content and slot an inline directive has no room for', () => {
+  const refused = (node: AdfNode): string => code(adfToMarkdown(document(paragraph(node, { text: 'y', type: 'text' }))))
+  assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'status' }), 'unsupported-node-shape')
+  assert.equal(refused({ text: 'x', type: 'status' }), 'unsupported-node-shape')
+  assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'hardBreak' }), 'unsupported-node-shape')
+  assert.equal(refused({ text: 'x', type: 'hardBreak' }), 'unsupported-node-shape')
+  assert.equal(refused({ attrs: { text: 4 }, type: 'status' }), 'unsupported-node-shape')
+  assert.equal(refused({ attrs: { text: 'a\nb' }, type: 'status' }), 'unspellable-whitespace')
+  assert.equal(refused({ attrs: { text: 'a\u0000b' }, type: 'status' }), 'unspellable-character')
+})
+
+test('spells the directive marks around the longest run they cover', () => {
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
+  const underline: AdfMark = { type: 'underline' }
+  assert.equal(emitted(marked('x', underline)), ':underline[x]\n')
+  assert.equal(emitted(marked('a', underline), marked('b', underline)), ':underline[ab]\n')
+  assert.equal(emitted(marked('x', { attrs: { type: 'sub' }, type: 'subsup' })), ':subsup[x]{type=sub}\n')
+  assert.equal(emitted(marked('x', { attrs: { color: '#ae2e24' }, type: 'textColor' })), ':textColor[x]{color="#ae2e24"}\n')
+  assert.equal(emitted(marked('x', { attrs: { color: '#091e42', size: 2 }, type: 'border' })), ':border[x]{color="#091e42" size=2}\n')
+  assert.equal(emitted(marked('x', { type: 'em' }, underline)), '_:underline[x]_\n')
+  assert.equal(emitted(marked('x', underline, { type: 'em' })), ':underline[_x_]\n')
+  assert.equal(emitted(marked('a', underline), { marks: [underline], type: 'hardBreak' }, marked('b', underline)), ':underline[a:hardBreak{}b]\n')
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(
+    emitted(marked('a', underline, link), { marks: [underline, link], type: 'hardBreak' }, marked('b', underline, link)),
+    ':underline[[a:hardBreak{}b](https://example.com/)]\n',
+  )
+  assert.equal(
+    emitted(marked('a', link), { marks: [link], type: 'hardBreak' }, marked('b', link)),
+    '[a\\\nb](https://example.com/)\n',
+  )
+})
+
+test('refuses a mark directive attribute no spelling holds', () => {
+  const refused = (mark: AdfMark): string => code(adfToMarkdown(document(paragraph({ marks: [mark], text: 'x', type: 'text' }))))
+  assert.equal(refused({ attrs: { width: 2 }, type: 'border' }), 'unspellable-mark')
+  assert.equal(refused({ attrs: { size: '2' }, type: 'border' }), 'unspellable-mark')
+})
+
+test('carries whitespace CommonMark strips in the reserved text directive', () => {
+  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
+  assert.equal(emitted({ text: '  lead', type: 'text' }), ':text{text="  "}lead\n')
+  assert.equal(emitted({ text: 'trail ', type: 'text' }), 'trail:text{text=" "}\n')
+  assert.equal(emitted({ text: 'a\nb', type: 'text' }), 'a:text{text="\\n"}b\n')
+  assert.equal(emitted({ text: '\t', type: 'text' }), ':text{text="\\t"}\n')
+  assert.equal(emitted({ text: 'a ', type: 'text' }, { type: 'hardBreak' }, { text: ' b', type: 'text' }), 'a:text{text=" "}\\\n:text{text=" "}b\n')
+  assert.equal(emitted({ marks: [{ type: 'em' }], text: ' a ', type: 'text' }), '_:text{text=" "}a:text{text=" "}_\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { level: 1 }, content: [{ text: 'x ', type: 'text' }], type: 'heading' }))), '# x:text{text=" "}\n')
 })

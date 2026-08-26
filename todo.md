@@ -71,13 +71,13 @@ detail is settled at its own milestone.
         answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give
         the emitter's refusals a corpus home while the directories grow: `corpus/unspellable/`,
         a `.json` beside the `ConvertErrorCode` it must return, the emitter half of `corpus/errors/`.
-  - [ ] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment.kind` splits into
-        its two axes here — escapability (`attribute` for `:text{text="…"}`, `backslash`, `none`)
-        and the emphasis role — rather than gaining a third value that means one of each. A lone
-        surrogate in a text node emits verbatim and becomes U+FFFD on any UTF-8 encode, a §2 break
-        plain text still holds open — attribute values already escape it. The inline directives
-        arriving here emit their attribute values as syntax, so `spellsPipeAsSyntax` grows with
-        them alongside the `|` escaping `spec/flavour.md` already mandates in a pipe cell.
+  - [ ] **2c — Inline nodes and marks.** `inline-nodes/` green. `InlineSegment` splits into its
+        two axes — escapability (`attribute` for `:text{text="…"}`, `backslash`, `bracketed`,
+        `none`) and the emphasis role. A lone surrogate in a text node emits verbatim and becomes
+        U+FFFD on any UTF-8 encode, a §2 break plain text still holds open — attribute values
+        already escape it. The pipe form's fallback reads the emitted segments rather than naming
+        the nodes whose attribute values spell a pipe as syntax, so 2e's `\u007c` narrows it in
+        one place.
   - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
         info string, and the `codeBlock` whose language is `adf`.
@@ -90,6 +90,13 @@ detail is settled at its own milestone.
         paragraph line inside a container body shaped like a closing fence (`:::`, `::: x`).
         Guard `fenceNestingFault`'s bare-run pop here too — a run shorter than the open fence is a
         fault, not a close — which today's emitter cannot reach.
+        Two moves land before the attribute spelling changes. One mark vocabulary:
+        `emphasisSpellings`, `linkAttributes` and the `code`/`link` names join
+        `inline-directives.ts`, which holds four of the nine marks while the rest are branch
+        literals in the emitter — and the parser (3) needs every name to make `:em[x]` the named
+        error `spec/flavour.md` promises. And `escaping: 'attribute'` earns its keep at the
+        `\u007c` rule or collapses into `none`: nothing the escaper does tells the two apart
+        today, since a carried segment holds only spaces, tabs and newlines.
         The gate gains the collision property here: no two corpus documents may emit the same
         bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
         provable without one. It also settles the emitter's one known approximation: delimiter
@@ -108,11 +115,17 @@ detail is settled at its own milestone.
       assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin.
       `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
-      still mechanical. `block-directives.ts` is the one file that does not move whole: the node
-      table is ADF knowledge milestones 6-7 need too and belongs in `adf/`, `spellDirectiveHeader`
-      in `markdown/`. `AttributeKind` stays above both — it is the vocabulary a string-typed
-      attribute grammar needs, which is why HTML will want it too, not a markdown spelling. The table is a second copy of `spec/flavour.md`'s prose with no drift guard,
-      and a mistyped attribute name degrades into a false refusal no test catches.
+      still mechanical. Three files do not move whole: `block-directives.ts` and
+      `inline-directives.ts` each hold a node table milestones 6-7 need in `adf/` beside a
+      markdown spelling that belongs in `markdown/`, and `directive-attributes.ts` fuses the
+      format-neutral conformance walk (`vocabularyPairs`) with the markdown value spelling HTML
+      has no use for. `spellDestination`, `spellTitle` and `balanced` leave `markdown-inline.ts`
+      here too — CommonMark destination spelling `emitLink` and `tryImageLine` share, and the six
+      concerns that file carries are one fewer for it. `AttributeKind` and `AttributeVocabulary`
+      stay above all of it — the vocabulary a string-typed attribute grammar needs, which is why
+      HTML will want them too, not a markdown spelling. Both node tables are a second copy of
+      `spec/flavour.md`'s prose with no drift guard, and a mistyped attribute name degrades into a
+      false refusal no test catches.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality
       the round-trip asserts, which over normalized input is the canonical serializer's compact

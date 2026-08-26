@@ -1,16 +1,15 @@
 import type { AdfNode } from './adf-document.ts'
-import type { ConvertErrorPath, Result } from './result.ts'
-import { emitImageLine } from './markdown-inline.ts'
+import type { ConvertErrorPath } from './result.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
+import { tryImageLine } from './markdown-inline.ts'
 
 const centeredMediaSingle = '{"layout":"center"}'
 const imageAttributes = ['alt', 'type', 'url']
 
-export function emitImage(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
+export function tryImage(node: AdfNode, path: ConvertErrorPath): string | undefined {
   const image = imageShape(node)
   if (image === undefined) return undefined
-  const line = emitImageLine(image.alt, image.url, [...path, 'content', 0])
-  return line.ok ? line : undefined
+  return tryImageLine(image.alt, image.url, [...path, 'content', 0])
 }
 
 function imageShape(node: AdfNode): { alt: string | undefined; url: string } | undefined {

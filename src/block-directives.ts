@@ -1,15 +1,15 @@
-import type { AdfMark, AdfNode, AttributeKind } from './adf-document.ts'
+import type { AdfMark, AdfNode, AttributeVocabulary } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { isBareToken, spellAttributeValue, spellAttributes, spellJsonAttribute } from './directive-attributes.ts'
+import { attributeFailure, isBareToken, spellAttributes, spellJsonAttribute, vocabularyPairs } from './directive-attributes.ts'
 
 export type BlockDirective = {
   argument?: string
-  attributes: Readonly<Record<string, AttributeKind>>
+  attributes: AttributeVocabulary
   body: 'block' | 'inline' | 'none'
 }
 
-const cellAttributes: Readonly<Record<string, AttributeKind>> = {
+const cellAttributes: AttributeVocabulary = {
   background: 'string',
   colspan: 'number',
   colwidth: 'json',
@@ -18,9 +18,9 @@ const cellAttributes: Readonly<Record<string, AttributeKind>> = {
   valign: 'string',
 }
 
-const expandAttributes: Readonly<Record<string, AttributeKind>> = { localId: 'string', title: 'string' }
+const expandAttributes: AttributeVocabulary = { localId: 'string', title: 'string' }
 
-const extensionAttributes: Readonly<Record<string, AttributeKind>> = {
+const extensionAttributes: AttributeVocabulary = {
   extensionKey: 'string',
   extensionType: 'string',
   layout: 'string',
@@ -29,9 +29,9 @@ const extensionAttributes: Readonly<Record<string, AttributeKind>> = {
   text: 'string',
 }
 
-const itemAttributes: Readonly<Record<string, AttributeKind>> = { localId: 'string' }
+const itemAttributes: AttributeVocabulary = { localId: 'string' }
 
-const mediaAttributes: Readonly<Record<string, AttributeKind>> = {
+const mediaAttributes: AttributeVocabulary = {
   alt: 'string',
   collection: 'string',
   height: 'number',
@@ -43,7 +43,7 @@ const mediaAttributes: Readonly<Record<string, AttributeKind>> = {
   width: 'number',
 }
 
-const syncBlockAttributes: Readonly<Record<string, AttributeKind>> = { localId: 'string', resourceId: 'string' }
+const syncBlockAttributes: AttributeVocabulary = { localId: 'string', resourceId: 'string' }
 
 const blockDirectives: Readonly<Record<string, BlockDirective>> = {
   blockTaskItem: { argument: 'state', attributes: itemAttributes, body: 'block' },
@@ -81,30 +81,23 @@ export function blockDirective(type: string): BlockDirective | undefined {
 }
 
 export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<string> {
-  const pairs: [string, string][] = []
-  let argument = ''
-  for (const [key, value] of Object.entries(node.attrs ?? {})) {
-    if (key === directive.argument) {
-      if (typeof value !== 'string' || !isBareToken(value)) {
-        return failure('unspelled-node-attribute', `the ${node.type} attribute ${key} holds no bare token the arg slot spells`, path)
-      }
-      argument = ` ${value}`
-      continue
-    }
-    const kind = attributeKind(directive, key)
-    if (kind === undefined) return failure('unspelled-node-attribute', `the ${node.type} attribute ${key} has no canonical markdown spelling`, path)
-    const spelled = spellAttributeValue(value, kind)
-    if (spelled === undefined) return failure('unsupported-node-shape', `the ${node.type} attribute ${key} holds no ${kind}`, path)
-    pairs.push([key, spelled])
-  }
+  const argument = spellArgument(node, directive, path)
+  if (!argument.ok) return argument
+  const spelled = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.argument)
+  if (spelled.fault !== undefined) return attributeFailure(node.type, spelled.fault, path)
   const marks = node.marks ?? []
-  if (marks.length > 0) pairs.push(['marks', spellJsonAttribute(markValues(marks))])
-  const attributes = spellAttributes(pairs)
-  return success(`${node.type}${argument}${attributes === '' ? '' : ` ${attributes}`}`)
+  if (marks.length > 0) spelled.pairs.push(['marks', spellJsonAttribute(markValues(marks))])
+  const attributes = spellAttributes(spelled.pairs)
+  return success(`${node.type}${argument.value}${attributes === '' ? '' : ` ${attributes}`}`)
 }
 
-function attributeKind(directive: BlockDirective, key: string): AttributeKind | undefined {
-  return Object.hasOwn(directive.attributes, key) ? directive.attributes[key] : undefined
+function spellArgument(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<string> {
+  const value = directive.argument === undefined ? undefined : node.attrs?.[directive.argument]
+  if (value === undefined) return success('')
+  if (typeof value !== 'string' || !isBareToken(value)) {
+    return failure('unspelled-node-attribute', `the ${node.type} attribute ${directive.argument} holds no bare token the arg slot spells`, path)
+  }
+  return success(` ${value}`)
 }
 
 function markValues(marks: readonly AdfMark[]): JsonValue {
