@@ -28,8 +28,9 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 - Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats and
   restores to a deep-equal node. The round-trip holds for documents newer than the library. So
-  does a known node no section spells where it stands, `hardBreak`, `listItem` and `text` where a
-  block belongs excepted. Where a container's own spelling cannot hold the child it has — a
+  does a known node no section spells where it stands: a markdown serializer spells a node by type
+  without checking its position, and refusing loses a document ADF itself keeps in an
+  `unsupportedBlock`. Where a container's own spelling cannot hold the child it has — a
   `bulletList` outside `listItem`, a `codeBlock` outside text — the error result names that
   instead.
 - Unmappable foreign HTML element: error result naming the element — never a silent drop.

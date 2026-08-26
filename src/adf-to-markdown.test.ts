@@ -117,6 +117,9 @@ test('carries a node type no section spells', () => {
   assert.equal(markdown(adfToMarkdown(document({ type: 'blockCard' }))), '```adf\n{\n  "type": "blockCard"\n}\n```\n')
   assert.equal(markdown(adfToMarkdown(document({ type: 'toString' }))), '```adf\n{\n  "type": "toString"\n}\n```\n')
   assert.equal(markdown(adfToMarkdown(document(paragraph({ type: 'blockCard' })))), ':adf{json="{\\"type\\":\\"blockCard\\"}"}\n')
+  assert.equal(markdown(adfToMarkdown(document({ text: 'x', type: 'text' }))), '```adf\n{\n  "text": "x",\n  "type": "text"\n}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'listItem' }))), '```adf\n{\n  "type": "listItem"\n}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'hardBreak' }))), '```adf\n{\n  "type": "hardBreak"\n}\n```\n')
 })
 
 test('carries the code block whose language is the reserved info string', () => {
@@ -143,7 +146,6 @@ test('refuses a carried node nested deeper than the emitter carries', () => {
 })
 
 test('refuses a node whose content model the canonical form cannot emit', () => {
-  assert.equal(code(adfToMarkdown(document({ type: 'listItem' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ type: 'bulletList' }))), 'unsupported-node-shape')

@@ -91,9 +91,6 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result
     if (node.type === 'table') return emitTable(node, directive, path, depth)
     return emitDirectiveBlock(node, directive, path, depth)
   }
-  if (node.type === 'hardBreak' || node.type === 'listItem' || node.type === 'text') {
-    return failure('unsupported-node-shape', `a ${node.type} node cannot stand where a block belongs`, path)
-  }
   return commonMarkLine(carriedBlock(node, path))
 }
 
