@@ -1,0 +1,73 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Write :mention[@Mikael]{id=5b10a2} to tag someone.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "::syncBlock {localId=x}",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": ":::panel warning",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Stand-up at 10:30, shipped :tada:, {maxLevel} deep, a ::syncBlock mid-line.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "text": "In review"
+          },
+          "type": "status"
+        },
+        {
+          "text": "{color} decides.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": ":status[nope]{color=red} vs ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "red",
+            "text": "yep"
+          },
+          "type": "status"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

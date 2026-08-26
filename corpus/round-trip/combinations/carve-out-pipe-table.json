@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "| Part | Qty |",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Pass a | b to the shell.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "| --- | --- |",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "| a | b |",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
