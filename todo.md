@@ -85,7 +85,7 @@ detail is settled at its own milestone.
         whatever 1d decides for its `localId`.
   - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
         `corpus/round-trip/combinations/`.
-    - [ ] **2e1 — The carve-outs and the claimed line.** The three carve-outs
+    - [x] **2e1 — The carve-outs and the claimed line.** The three carve-outs
           and their escapes, and a paragraph line inside a container body shaped like a closing
           fence (`:::`, `::: x`). Guard `fenceNestingFault`'s bare-run pop here too — a run shorter
           than the open fence is a fault, not a close — which today's emitter cannot reach.
