@@ -10,7 +10,7 @@ import { failure, success, type ConvertErrorPath, type Result } from './result.t
 import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
 import { largestNesting } from './nesting.ts'
-import { longestBacktickRun } from './backtick-runs.ts'
+import { fencedCodeBlock } from './backtick-runs.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive'
@@ -81,7 +81,7 @@ function interruptsParagraph(node: AdfNode): boolean {
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   if (node.type === 'blockquote') return commonMarkContainer(emitBlockquote(node, path, depth))
   if (node.type === 'bulletList' || node.type === 'orderedList') return commonMarkContainer(emitList(node, path, depth))
-  if (node.type === 'codeBlock') return commonMarkLine(node.attrs?.['language'] === carryName ? carriedBlock(node, path) : emitCodeBlock(node, path))
+  if (node.type === 'codeBlock') return commonMarkLine(emitCodeBlock(node, path))
   if (node.type === 'heading') return commonMarkLine(emitHeading(node, path))
   if (node.type === 'paragraph') return emitParagraph(node, path)
   if (node.type === 'rule') return commonMarkLine(emitRule(node, path))
@@ -160,6 +160,7 @@ function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): R
 }
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  if (node.attrs?.['language'] === carryName) return carriedBlock(node, path)
   const validation = validateBlockNode(node, ['language'], path)
   if (!validation.ok) return validation
   const info = spellCodeFenceInfo(node.attrs?.['language'], path)
@@ -174,9 +175,7 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
     if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
     text += child.text
   }
-  const fence = '`'.repeat(Math.max(3, longestBacktickRun(text) + 1))
-  const opening = `${fence}${info.value}`
-  return success(text === '' ? `${opening}\n${fence}` : `${opening}\n${text}\n${fence}`)
+  return success(fencedCodeBlock(info.value, text))
 }
 
 function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorPath): Result<string> {

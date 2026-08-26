@@ -42,7 +42,9 @@ detail is settled at its own milestone.
       directive block in a container body — an `expand` whose content is `paragraph` "A" then a
       `panel` (`panelType` `warning`) holding "B" spells `A` and `:::panel warning` either on
       consecutive lines or with a blank line between. Two defensible spellings, so §8 leaves the
-      pick here; `unspelled-block-separation` refuses the pair meanwhile, an empty paragraph's
+      pick here; the answer governs every unknown node type too, the block carry counting as a
+      CommonMark block since its spelling is a fenced code block.
+      `unspelled-block-separation` refuses the pair meanwhile, an empty paragraph's
       `::paragraph` beside a CommonMark block included — and, since a `mediaSingle`'s spelling now
       follows whether CommonMark can spell its URL, two sibling images differing only by an
       `&amp;` land in the same refusal.
