@@ -13,7 +13,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-branches=94 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
+    "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-branches=95 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

@@ -13,8 +13,7 @@ const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 const unspellableRoot = join(corpusRoot, 'unspellable')
 
-const emittingDirectories = ['block-nodes', 'commonmark-subset']
-const pendingDirectories = ['inline-nodes']
+const emittingDirectories = ['block-nodes', 'commonmark-subset', 'inline-nodes']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -41,21 +40,16 @@ function corpusJsonPaths(): string[] {
     .sort()
 }
 
-test('every round-trip directory is either emitting or explicitly pending', () => {
-  assert.deepEqual(directoryNames(roundTripRoot), [...emittingDirectories, ...pendingDirectories].sort())
+test('every round-trip directory emits', () => {
+  assert.deepEqual(directoryNames(roundTripRoot), [...emittingDirectories].sort())
 })
-
-for (const directory of [...emittingDirectories, ...pendingDirectories].sort()) {
-  test(`${directory} pairs every .json with a .md`, () => {
-    assert.deepEqual(fixtureNames(directory, '.json'), fixtureNames(directory, '.md'))
-  })
-}
 
 for (const directory of emittingDirectories) {
   const names = [...new Set([...fixtureNames(directory, '.json'), ...fixtureNames(directory, '.md')])].sort()
 
-  test(`${directory} holds fixtures`, () => {
+  test(`${directory} pairs every .json with a .md`, () => {
     assert.ok(names.length > 0, `${directory} is expected to emit but holds no fixture pairs`)
+    assert.deepEqual(fixtureNames(directory, '.json'), fixtureNames(directory, '.md'))
   })
 
   for (const name of names) {

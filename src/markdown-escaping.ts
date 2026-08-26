@@ -1,8 +1,12 @@
 import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
 
+export type EmphasisRole = 'close' | 'open'
+
+export type InlineEscaping = 'attribute' | 'backslash' | 'bracketed' | 'none'
+
 export type InlineSegment =
-  | { kind: 'emphasis-close' | 'emphasis-open'; mark: string; text: string }
-  | { kind: 'link-text' | 'literal' | 'syntax'; text: string }
+  | { emphasis: EmphasisRole; escaping: 'none'; mark: string; text: string }
+  | { emphasis?: undefined; escaping: InlineEscaping; text: string }
 
 export type AssembledLine = { line: string; unspellableMark: string | undefined }
 
@@ -36,8 +40,8 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
   for (let index = 0; index < resolved.length; index += 1) {
     const segment = resolved[index]
     if (segment === undefined) continue
-    if (segment.kind === 'emphasis-open') open.push(index)
-    if (segment.kind !== 'emphasis-close') continue
+    if (segment.emphasis === 'open') open.push(index)
+    if (segment.emphasis !== 'close') continue
     const openerIndex = open.pop()
     const opener = openerIndex === undefined ? undefined : resolved[openerIndex]
     if (openerIndex === undefined || opener === undefined) continue
@@ -53,15 +57,15 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
 
 function escape(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
   const scan = segments.map((segment) => segment.text).join('')
-  const kinds: InlineSegment['kind'][] = []
-  for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) kinds.push(segment.kind)
+  const escapings: InlineEscaping[] = []
+  for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) escapings.push(segment.escaping)
   const escaped = new Set<number>()
   const placements: number[] = []
   let output = ''
   for (let index = 0; index < scan.length; index += 1) {
-    const kind = kinds[index]
-    const escapable = kind === 'literal' || kind === 'link-text'
-    if (escapable && (mergesWithSyntax(scan, kinds, index) || opensConstruct(scan, index, kind === 'link-text', container, escaped))) {
+    const escaping = escapings[index]
+    const escapable = escaping === 'backslash' || escaping === 'bracketed'
+    if (escapable && (mergesWithSyntax(scan, escapings, index) || opensConstruct(scan, index, escaping === 'bracketed', container, escaped))) {
       output += '\\'
       escaped.add(index)
     }
@@ -87,8 +91,8 @@ function delimiterRuns(segments: readonly InlineSegment[], placements: readonly 
   for (const segment of segments) {
     const start = placements[cursor] ?? 0
     cursor += segment.text.length
-    if (segment.kind !== 'emphasis-close' && segment.kind !== 'emphasis-open') continue
-    const closes = segment.kind === 'emphasis-close'
+    if (segment.emphasis === undefined) continue
+    const closes = segment.emphasis === 'close'
     const end = start + segment.text.length
     const previous = runs[runs.length - 1]
     if (previous !== undefined && previous.end === start && previous.character === segment.text.charAt(0)) {
@@ -108,28 +112,28 @@ function delimiterRuns(segments: readonly InlineSegment[], placements: readonly 
   return runs
 }
 
-function mergesWithSyntax(scan: string, kinds: readonly (InlineSegment['kind'] | undefined)[], index: number): boolean {
+function mergesWithSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
   const character = scan.charAt(index)
-  if (character === '!') return scan.charAt(index + 1) === '[' && isSyntax(kinds[index + 1])
+  if (character === '!') return scan.charAt(index + 1) === '[' && isSyntax(escapings[index + 1])
   if (!delimiters.includes(character)) return false
-  return touchesSyntax(scan, kinds, index, -1) || touchesSyntax(scan, kinds, index, 1)
+  return touchesSyntax(scan, escapings, index, -1) || touchesSyntax(scan, escapings, index, 1)
 }
 
-function touchesSyntax(scan: string, kinds: readonly (InlineSegment['kind'] | undefined)[], index: number, step: number): boolean {
+function touchesSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number, step: number): boolean {
   const character = scan.charAt(index)
   let cursor = index + step
-  while (scan.charAt(cursor) === character && !isSyntax(kinds[cursor])) cursor += step
-  return scan.charAt(cursor) === character && isSyntax(kinds[cursor])
+  while (scan.charAt(cursor) === character && !isSyntax(escapings[cursor])) cursor += step
+  return scan.charAt(cursor) === character && isSyntax(escapings[cursor])
 }
 
-function isSyntax(kind: InlineSegment['kind'] | undefined): boolean {
-  return kind === 'emphasis-close' || kind === 'emphasis-open' || kind === 'syntax'
+function isSyntax(escaping: InlineEscaping | undefined): boolean {
+  return escaping === 'attribute' || escaping === 'none'
 }
 
-function opensConstruct(scan: string, index: number, inLinkText: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
+function opensConstruct(scan: string, index: number, inBrackets: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
   if (container === 'heading' && closesHeading(scan, index)) return true
   if (container === 'paragraph' && claimsLineStart(scan, index)) return true
-  return claimsCharacter(scan, index, inLinkText, container, escaped)
+  return claimsCharacter(scan, index, inBrackets, container, escaped)
 }
 
 function claimsLineStart(scan: string, index: number): boolean {
@@ -145,10 +149,10 @@ function closesHeading(scan: string, index: number): boolean {
   return index === 0 || /[ \t]/.test(scan.charAt(index - 1))
 }
 
-function claimsCharacter(scan: string, index: number, inLinkText: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
+function claimsCharacter(scan: string, index: number, inBrackets: boolean, container: LineContainer, escaped: ReadonlySet<number>): boolean {
   const character = scan.charAt(index)
   const rest = scan.slice(index)
-  if (inLinkText && (character === '[' || character === ']')) return true
+  if (inBrackets && (character === '[' || character === ']')) return true
   if (character === '|') return container === 'table-cell'
   if (character === '\\') return asciiPunctuation.test(scan.charAt(index + 1))
   if (character === '&') return startsEntityReference(rest)
