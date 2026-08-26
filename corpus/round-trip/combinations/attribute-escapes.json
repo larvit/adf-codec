@@ -34,6 +34,21 @@
         }
       },
       "type": "extension"
+    },
+    {
+      "content": [
+        {
+          "text": "[a",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "url": "b](c"
+          },
+          "type": "inlineCard"
+        }
+      ],
+      "type": "paragraph"
     }
   ],
   "type": "doc",

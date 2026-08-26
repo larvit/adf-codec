@@ -101,7 +101,8 @@ detail is settled at its own milestone.
           inline alike — the constructs those four open all bind at or before a directive does, and
           nothing else reaches into `{attrs}`. Emitted attributes being inert leaves 3 free to keep
           CommonMark's own precedence between a directive and a code span, and collapsed
-          `escaping: 'attribute'` into `none`.
+          `escaping: 'attribute'` into `none`. The escaper's link-opener scan skips emitted syntax
+          to match: a `](` inside a directive escapes no text `[`.
     - [ ] **2e4 — The carry's fallback triggers.** `spec/flavour.md` carries a node its section
           cannot spell — an attrs key no section lists, a value that is not the section's type, an
           arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
