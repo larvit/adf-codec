@@ -46,11 +46,6 @@ detail is settled at its own milestone.
       `::paragraph` beside a CommonMark block included — and, since a `mediaSingle`'s spelling now
       follows whether CommonMark can spell its URL, two sibling images differing only by an
       `&amp;` land in the same refusal.
-      **Also blocked**: whether `hardBreak`, `listItem` and `text` where a block belongs carry too,
-      rather than the shape error §3 records. The prior art splits — a markdown serializer spells a
-      node by type without checking the position it stands in (`mdast-util-to-markdown`,
-      `prosemirror-markdown`), while Atlassian's own validator calls it `INVALID_CONTENT` or wraps
-      it in `unsupportedBlock`/`unsupportedInline` — so §8 leaves the pick here.
   - [x] **1d1 — The CommonMark subset**: blockquote, bulletList, codeBlock, heading, orderedList,
         paragraph, rule, listItem, hardBreak, text, code spans, and the `code`, `em`, `link`,
         `strike` and `strong` marks — one mark per text node; nesting is 1d3's.
