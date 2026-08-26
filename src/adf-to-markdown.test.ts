@@ -90,6 +90,8 @@ test('refuses a link attribute no markdown spelling holds', () => {
     code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: 'https://example.com/', id: 'x' }, type: 'link' }], text: 't', type: 'text' })))),
     'unspellable-mark',
   )
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: 4 }, type: 'link' }], text: 't', type: 'text' })))), 'unspellable-mark')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'link' }], text: 't', type: 'text' })))), 'unsupported-node-shape')
 })
 
 test('refuses a mark the canonical spellings cannot nest', () => {
