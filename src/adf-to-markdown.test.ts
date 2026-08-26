@@ -255,6 +255,11 @@ test('escapes a literal delimiter that would merge with an emitted one', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('~a', { type: 'strike' }))))), 'unspellable-mark')
   assert.equal(emitted({ text: '`', type: 'text' }, marked('x', { type: 'code' })), '\\``x`\n')
   assert.equal(emitted(marked('x', { type: 'code' }), { text: '`', type: 'text' }), '`x`\\`\n')
+  assert.equal(emitted({ text: '`a', type: 'text' }, marked('b', { type: 'code' })), '\\`a`b`\n')
+  assert.equal(
+    emitted({ text: '<https://example.com/', type: 'text' }, { attrs: { url: 'x>' }, type: 'inlineCard' }),
+    '\\<https://example.com/:inlineCard{url="x>"}\n',
+  )
   assert.equal(emitted({ text: '!', type: 'text' }, marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' })), '\\![x](https://example.com/)\n')
   assert.equal(emitted({ text: '[a', type: 'text' }, marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' })), '[a[x](https://example.com/)\n')
   assert.equal(emitted({ text: '[a](b)', type: 'text' }), '\\[a](b)\n')

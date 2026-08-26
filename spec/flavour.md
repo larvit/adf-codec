@@ -94,9 +94,10 @@ container is open, a named error otherwise.
 valid — no attributes. A bare value matches `[A-Za-z0-9_-]+`; any other value is double-quoted
 with JSON string escaping (`\"` `\\` `\n` `\t` `\uXXXX`, …) — total over
 Unicode, and raw newlines never appear inside quotes. A quoted value also escapes `` ` ``, `&`,
-`<` and `|` as `\u0060`, `\u0026`, `\u003c` and `\u007c`; `*`, `_`, `~`, `[` and `(` resolve after a
-directive binds and stay raw. The closing `}` is the first one outside quotes, since a quoted value
-holds `}` unescaped. All values are strings at the grammar level; each node's section assigns types.
+`<` and `|` as `\u0060`, `\u0026`, `\u003c` and `\u007c`; `*`, `_`, `~`, `[`, `]` and `(` resolve
+after a directive binds and stay raw. The closing `}` is the first one outside quotes, since a
+quoted value holds `}` unescaped. All values are strings at the grammar level; each node's section
+assigns types.
 Canonical form orders keys alphabetically, spells values bare wherever allowed, escapes inside
 quotes in the shortest form each escape has, and omits empty `{attrs}` except where the `{` itself
 claims the directive (`:hardBreak{}`).
@@ -220,8 +221,8 @@ One header row plus plain inline cells is a pipe table; anything richer is the d
 and every cell carry no attrs and no marks, the first row is all `tableHeader` and the rest all
 `tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
 mark-less paragraph — an empty cell holds one empty paragraph — with no `|` anywhere the
-inline layer spells as syntax — a code span, a link destination or title: pipe form cannot spell
-that pipe and the table takes the directive form. A pipe table parses back to exactly that shape.
+inline layer spells as syntax: a code span, an autolink, a link destination or title. A `|` there
+takes the directive form instead. A pipe table parses back to exactly that shape.
 
 ```
 | Part | Qty |

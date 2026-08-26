@@ -4,4 +4,4 @@ a `b :inlineCard{url="c\u0060d"}
 
 ::extension {extensionKey=jira parameters="{\"jql\":\"a\u007cb \u0060c\u0060 \u0026 d \u003c e\"}"}
 
-[a:inlineCard{url="b](c"}
+[a:inlineCard{url="b](c)"}

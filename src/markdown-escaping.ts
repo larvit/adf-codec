@@ -19,7 +19,7 @@ const delimiters = ['*', '_', '`', '~']
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
-const linkTextCloser = /[([:]/
+const followsLinkText = /[([:]/
 const unicodePunctuation = /[\p{P}\p{S}]/u
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
@@ -179,11 +179,11 @@ function claimsCharacter(
   return false
 }
 
-// A `]` the emitter spelled closes the construct it belongs to, which binds first — never link text.
+// A `]` the emitter spelled sits inside a construct that binds before link text does.
 function opensLink(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
   for (let cursor = index + 1; cursor < scan.length; cursor += 1) {
     if (scan.charAt(cursor) !== ']' || isSyntax(escapings[cursor])) continue
-    if (linkTextCloser.test(scan.charAt(cursor + 1))) return true
+    if (followsLinkText.test(scan.charAt(cursor + 1))) return true
   }
   return false
 }
