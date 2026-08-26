@@ -42,7 +42,9 @@ detail is settled at its own milestone.
       directive block in a container body — an `expand` whose content is `paragraph` "A" then a
       `panel` (`panelType` `warning`) holding "B" spells `A` and `:::panel warning` either on
       consecutive lines or with a blank line between. Two defensible spellings, so §8 leaves the
-      pick here; `unspelled-block-separation` refuses the pair meanwhile, an empty paragraph's
+      pick here; the answer governs every unknown node type too, the block carry counting as a
+      CommonMark block since its spelling is a fenced code block.
+      `unspelled-block-separation` refuses the pair meanwhile, an empty paragraph's
       `::paragraph` beside a CommonMark block included — and, since a `mediaSingle`'s spelling now
       follows whether CommonMark can spell its URL, two sibling images differing only by an
       `&amp;` land in the same refusal.
@@ -80,7 +82,9 @@ detail is settled at its own milestone.
         one place.
   - [ ] **2d — The opaque carry** (§3). Fixtures and emitter together, into
         `corpus/round-trip/opaque-carry/`: an unknown node in both positions, the reserved `adf`
-        info string, and the `codeBlock` whose language is `adf`.
+        info string, and the `codeBlock` whose language is `adf` — carried whole ahead of the
+        attribute fallback 2e owes, since the reservation leaves that node no other spelling
+        whatever 1d decides for its `localId`.
   - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
         `corpus/round-trip/combinations/`: the three carve-outs and their escapes, mark runs — the
         longest-run rule, attributes included — and the runs a carry breaks, a mark spelling that
@@ -97,6 +101,16 @@ detail is settled at its own milestone.
         error `spec/flavour.md` promises. And `escaping: 'attribute'` earns its keep at the
         `\u007c` rule or collapses into `none`: nothing the escaper does tells the two apart
         today, since a carried segment holds only spaces, tabs and newlines.
+        The carry's fallback triggers land here too: `spec/flavour.md` carries a node its section
+        cannot spell — an attrs key no section lists, a value that is not the section's type, an
+        arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
+        which leaves the refusals a container's own spelling owns. The `\u007c` rule is wider than
+        the pipe: a quoted attribute value spells `` ` ``, `&` and `<` raw today, so a backtick
+        pair in an `inlineCard`'s `data`, a `status`'s `style` or the inline carry's `json` reads
+        back as a code span, an entity or raw HTML inside the value. One escape settles all four,
+        and the pick decides whether a directive or a code span wins where they overlap (3). The
+        carry spells `escaping: 'none'` meanwhile, which is what makes `tryPipeCell` refuse the
+        pipe form for a carry whose JSON holds a pipe.
         The gate gains the collision property here: no two corpus documents may emit the same
         bytes — one spelling for two documents is a round-trip break no parser can undo, and it is
         provable without one. It also settles the emitter's one known approximation: delimiter
@@ -112,7 +126,10 @@ detail is settled at its own milestone.
       it must return). The raw-HTML element mapping is empty until milestone 6, so at `0.1.0`
       every raw-HTML construct in input is an error result. The CommonMark spec suite runs
       against it from here (§10). The parser owes `~` the same `can_open`/`can_close` the emitter
-      assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin.
+      assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin, and
+      the precedence between a directive and the constructs a raw attribute value opens inside it —
+      a code span, an entity, raw HTML — which one directive alone already reaches until 2e's
+      escape lands.
       `src/` gets its hierarchy at the same split — `adf/`,
       `markdown/`, `html/`, the grammar module shared inside `markdown/` — while the rename is
       still mechanical. Three files do not move whole: `block-directives.ts` and

@@ -27,7 +27,11 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 ## 3. Unknown input policy
 
 - Unknown ADF node: carried opaquely — raw JSON rides a dedicated syntax in both formats and
-  restores to a deep-equal node. The round-trip holds for documents newer than the library.
+  restores to a deep-equal node. The round-trip holds for documents newer than the library. So
+  does a known node no section spells where it stands, `hardBreak`, `listItem` and `text` where a
+  block belongs excepted. Where a container's own spelling cannot hold the child it has — a
+  `bulletList` outside `listItem`, a `codeBlock` outside text — the error result names that
+  instead.
 - Unmappable foreign HTML element: error result naming the element — never a silent drop.
 - Bare `@name` / `:smile:` in typed text: stays a text node. Only directives produce
   mention/emoji/media nodes; resolving names to ids needs I/O, which is the consumer's job.
@@ -116,9 +120,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
   returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
   general form owns the refusal. Refusing there refuses a document the general form spells.
-- Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and attribute values
-  are all held to 500 levels, so a deep document is a `Result` rather than the stack overflow that
-  waits near 2000.
+- Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
+  attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
+  `Result` rather than the stack overflow that waits near 2000.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
@@ -147,7 +151,8 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 
 No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
 validation or exported validator — a refusal that keeps the round-trip is not schema validation,
-so the one a node carrying the same mark type twice earns stays, no shipped CSS (§4), no streaming APIs, no performance budget —
+so the one a spelled node carrying the same mark type twice earns stays, no shipped CSS (§4), no
+streaming APIs, no performance budget —
 conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
 non-goal.
 

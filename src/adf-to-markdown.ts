@@ -5,11 +5,12 @@ import { blockDirective, spellDirectiveHeader } from './block-directives.ts'
 import { tryImage } from './markdown-image.ts'
 import { emitInlineLine } from './markdown-inline.ts'
 import { tryPipeTable } from './markdown-pipe-table.ts'
+import { carriedBlock, carryName } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
+import { holdsEntityReference, holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { isAdfDocument } from './adf-document.ts'
 import { largestNesting } from './nesting.ts'
-import { longestBacktickRun } from './backtick-runs.ts'
+import { fencedCodeBlock } from './backtick-runs.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive'
@@ -93,7 +94,7 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result
   if (node.type === 'hardBreak' || node.type === 'listItem' || node.type === 'text') {
     return failure('unsupported-node-shape', `a ${node.type} node cannot stand where a block belongs`, path)
   }
-  return failure('unsupported-node-type', `the canonical form spells no block node of type ${node.type}`, path)
+  return commonMarkLine(carriedBlock(node, path))
 }
 
 function commonMarkLine(text: Result<string>): Result<EmittedBlock> {
@@ -159,6 +160,7 @@ function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): R
 }
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  if (node.attrs?.['language'] === carryName) return carriedBlock(node, path)
   const validation = validateBlockNode(node, ['language'], path)
   if (!validation.ok) return validation
   const info = spellCodeFenceInfo(node.attrs?.['language'], path)
@@ -173,9 +175,7 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
     if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
     text += child.text
   }
-  const fence = '`'.repeat(Math.max(3, longestBacktickRun(text) + 1))
-  const opening = `${fence}${info.value}`
-  return success(text === '' ? `${opening}\n${fence}` : `${opening}\n${text}\n${fence}`)
+  return success(fencedCodeBlock(info.value, text))
 }
 
 function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorPath): Result<string> {
@@ -184,9 +184,11 @@ function spellCodeFenceInfo(language: JsonValue | undefined, path: ConvertErrorP
   if (language === '') {
     return failure('ambiguous-attribute-spelling', 'an empty codeBlock language and an absent one share one markdown spelling', path)
   }
-  if (language === 'adf') return failure('reserved-adf-language', 'the adf info string is reserved for the opaque carry', path)
   if (/[`\n\r]/.test(language) || language !== language.trim()) {
     return failure('unspellable-code-block-language', 'a fence info string holds no backtick and no edge whitespace', path)
+  }
+  if (holdsEntityReference(language)) {
+    return failure('unspellable-code-block-language', 'a fence info string shaped like an entity reference decodes on the way back', path)
   }
   return success(language)
 }

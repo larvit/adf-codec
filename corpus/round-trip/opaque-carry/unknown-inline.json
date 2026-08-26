@@ -1,0 +1,102 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Draft: ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "text": "Add a summary"
+          },
+          "type": "placeholder"
+        },
+        {
+          "text": " — expected Friday.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Blocked",
+          "type": "text"
+        },
+        {
+          "text": " on ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "extensionKey": "jira-issue",
+            "extensionType": "com.atlassian.jira.macro"
+          },
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "type": "inlineExtension"
+        },
+        {
+          "text": " until the rebuild lands.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": ":",
+          "type": "text"
+        },
+        {
+          "type": "blockCard"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "a",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "type": "placeholder"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "b",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

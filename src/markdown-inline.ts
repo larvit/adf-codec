@@ -4,6 +4,7 @@ import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineC
 import { inlineDirective, markDirective, spellInlineNodeAttributes, spellMarkAttributes } from './inline-directives.ts'
 import { largestNesting } from './nesting.ts'
 import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink, isUnicodeWhitespace } from './commonmark-grammar.ts'
+import { carriedInline } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
@@ -131,7 +132,8 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
   const runs: InlineRun[] = []
   for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
-    const mark = (node.marks ?? [])[depth]
+    // spec/flavour.md, Marks.
+    const mark = carries(node) ? undefined : (node.marks ?? [])[depth]
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
       continue
@@ -147,15 +149,23 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
+function carries(node: AdfNode): boolean {
+  return node.type !== 'hardBreak' && node.type !== 'text' && inlineDirective(node.type) === undefined
+}
+
 function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<InlineSegment[]> {
   const path = nodePath(context, index)
+  if (carries(node)) {
+    const carried = carriedInline(node, path)
+    if (!carried.ok) return carried
+    return success([syntax(carried.value)])
+  }
   const types = (node.marks ?? []).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
-  if (node.type === 'text') return emitText(node, context, path)
-  if (node.type === 'hardBreak') return emitHardBreak(node, context, path)
   const directive = inlineDirective(node.type)
-  if (directive === undefined) return failure('unsupported-node-type', `the canonical form spells no inline node of type ${node.type}`, path)
-  return emitInlineDirective(node, directive, path)
+  if (directive !== undefined) return emitInlineDirective(node, directive, path)
+  if (node.type === 'hardBreak') return emitHardBreak(node, context, path)
+  return emitText(node, context, path)
 }
 
 function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {

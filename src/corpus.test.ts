@@ -13,7 +13,7 @@ const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 const unspellableRoot = join(corpusRoot, 'unspellable')
 
-const emittingDirectories = ['block-nodes', 'commonmark-subset', 'inline-nodes']
+const emittingDirectories = ['block-nodes', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })

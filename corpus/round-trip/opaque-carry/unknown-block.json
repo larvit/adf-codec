@@ -1,0 +1,37 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "url": "https://example.com/roadmap"
+      },
+      "type": "blockCard"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "The card below has no spelling yet.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "layout": "wide",
+            "url": "https://example.com/board",
+            "width": 100
+          },
+          "type": "embedCard"
+        }
+      ],
+      "type": "panel"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
