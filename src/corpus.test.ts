@@ -7,9 +7,12 @@ import { fileURLToPath } from 'node:url'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { isAdfDocument } from './adf/document.ts'
 import { isJsonValue } from './json-value.ts'
+import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
+const errorsRoot = join(corpusRoot, 'errors')
+const normalizationRoot = join(corpusRoot, 'normalization')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 const unspellableRoot = join(corpusRoot, 'unspellable')
 
@@ -159,6 +162,40 @@ for (const name of names(unspellableRoot, '.json')) {
     const result = adfToMarkdown(parsed)
     assert.ok(!result.ok, result.ok ? `emitted ${JSON.stringify(result.value)}` : '')
     assert.equal(result.error.code, readFileSync(join(unspellableRoot, `${name}.error`), 'utf8').trimEnd())
+  })
+}
+
+test('normalization pairs every .md with a .json', () => {
+  assert.deepEqual(names(normalizationRoot, '.md'), names(normalizationRoot, '.json'))
+})
+
+test('normalization holds fixtures', () => {
+  assert.ok(names(normalizationRoot, '.md').length > 0)
+})
+
+for (const name of names(normalizationRoot, '.md')) {
+  test(`normalization/${name} parses to the document beside it`, () => {
+    const expected: unknown = JSON.parse(readFileSync(join(normalizationRoot, `${name}.json`), 'utf8'))
+    assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
+    const result = markdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
+    assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
+    assert.deepEqual(result.value, expected)
+  })
+}
+
+test('errors pairs every .md with an .error', () => {
+  assert.deepEqual(names(errorsRoot, '.md'), names(errorsRoot, '.error'))
+})
+
+test('errors holds fixtures', () => {
+  assert.ok(names(errorsRoot, '.md').length > 0)
+})
+
+for (const name of names(errorsRoot, '.md')) {
+  test(`errors/${name} is refused with the error it names`, () => {
+    const result = markdownToAdf(readFileSync(join(errorsRoot, `${name}.md`), 'utf8'))
+    assert.ok(!result.ok, result.ok ? `built ${JSON.stringify(result.value)}` : '')
+    assert.equal(result.error.code, readFileSync(join(errorsRoot, `${name}.error`), 'utf8').trimEnd())
   })
 }
 
