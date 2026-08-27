@@ -185,13 +185,16 @@ detail is settled at its own milestone.
         too — CommonMark destination spelling `emitLink` and `tryImageLine` share, and the six
         concerns that file carries are one fewer for it. `AttributeKind` and `AttributeVocabulary`
         follow the walk into `adf/`, the vocabulary a string-typed attribute grammar needs and
-        HTML will want too, not a markdown spelling. Two questions land here. The node tables are
-        a second copy of `spec/flavour.md`'s prose with no drift guard, and a mistyped attribute
-        name degrades into a false refusal no test catches — 3g builds the guard where a wrong
-        entry starts refusing documents, if it is worth building. And whether `markdown/` parts
-        again into its emit and parse halves now, while the move is still mechanical and the
-        shared set — the grammar module, emphasis matching, destination spelling, the tables'
-        markdown halves — is already known.
+        HTML will want too, not a markdown spelling.
+        **Settled** (the maintainer, 2026-08-27): `markdown/` parts here as well, into `emit/` and
+        `parse/` with the shared set at the root — the grammar module, emphasis matching,
+        destination spelling, the tables' markdown halves — and `parse/` arriving with 3b's first
+        file, the rule `html/` already follows. And the node tables, a second copy of
+        `spec/flavour.md`'s prose whose mistyped attribute name degrades into a false refusal no
+        test catches, get their guard: a test reads the spec's node sections, takes each
+        `name (type)` list and asserts it equals the table, leaving the spec the source a human
+        writes with no build step and no generated file. It is built at 3g, where a wrong entry
+        starts refusing documents.
   - [ ] **3b — The leaf blocks.** The line walk that opens and closes a block, ahead of any inline
         parsing: paragraph, ATX and setext heading, thematic break, fenced and indented code
         block, the HTML block whose lines it swallows whether or not the construct then errors,
@@ -206,14 +209,15 @@ detail is settled at its own milestone.
         rather than editing them.
   - [ ] **3c — The container blocks.** Blockquote, bullet and ordered list: the continuation a
         marker's width sets, lazy continuation, and the tightness ADF does not record — `> `
-        repeated being two bytes a level, so this is the cheapest way to reach §11's 500. Two
-        decisions land here, each holding a `corpus/unspellable/` document. Whether a claimed
-        line interrupts a paragraph is pinned for the plain case and unstated for the lazy one — a
-        closing fence on the line after a blockquote's open paragraph is lazy continuation in
-        CommonMark, which would swallow the fence and leave the container unclosed, and 2e1's
-        `closing-fence-line` orders its blockquote away from that edge meanwhile. And 2b's
-        tight-versus-blank separation, which `nested-list-tight` waits on: how the parser reads a
-        nested list after a block is the spelling the emitter owes, one answer for both.
+        repeated being two bytes a level, so this is the cheapest way to reach §11's 500.
+        **Settled** (the maintainer, 2026-08-27): a claimed line ends lazy continuation, so a
+        closing fence on the line after a blockquote's open paragraph closes its container instead
+        of continuing the paragraph CommonMark would fold it into. Claiming at block level is
+        already absolute, and this binds input alone — 2e1's `closing-fence-line` orders the
+        emitter's blockquote away from the edge either way — so `spec/flavour.md`'s claiming
+        paragraph gains the case here. 2b's tight-versus-blank separation lands here too, the one
+        `nested-list-tight` waits on: how the parser reads a nested list after a block is the
+        spelling the emitter owes, one answer for both.
   - [ ] **3d — Inline text.** The inline scanner over a block's content: backslash escapes,
         entity references decoding to their characters, code spans and the literal they hold —
         directive syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash
@@ -260,15 +264,15 @@ detail is settled at its own milestone.
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
         reading as the literal text they hold.
   - [ ] **3k — The CommonMark spec suite.** Checked in at `corpus/commonmark-spec/`, pinned to
-        the version it ships, `corpus/README.md` gaining the kind. What it asserts is the
-        question, and there are three answers. §2's canonical fixpoint alone — every example
-        either a named error, or emitting markdown that parses and emits to itself byte for byte —
-        is self-consistency, which a parser returning the empty document and one dropping every
-        emphasis both pass. Each example ships its own reference HTML, and reading that as corpus
-        data adds no format and no direction (§1): the fixpoint plus that HTML's text with tags
-        stripped, against the parsed document's concatenated `text`, catches the first, and the
-        fixpoint plus a count of the dozen elements the CommonMark subset covers catches both. The
-        pick, and the exception list whichever it is, are the maintainer's. One outcome is no
+        the version it ships, `corpus/README.md` gaining the kind.
+        **Settled** (the maintainer, 2026-08-27): three checks an example must pass, the reference
+        HTML each ships read as corpus data — which adds no format and no direction (§1). §2's
+        canonical fixpoint: a named error, or markdown that parses and emits to itself byte for
+        byte. That HTML's text, tags stripped and entities decoded, against the parsed document's
+        concatenated `text`. And a count of the dozen elements the CommonMark subset covers
+        against the marks and nodes they map to. The fixpoint alone is self-consistency a parser
+        returning the empty document passes, and the text alone one dropping every emphasis; the
+        counts close both. The exception list stays the maintainer's. One outcome is no
         exception and must not be filed as one: valid CommonMark parsing to a document
         `adfToMarkdown` refuses is a §2 hole, which is what three of `corpus/unspellable/`'s four
         hold until 3c, 3e and 3h land their answers. The parser's `ConvertErrorCode` additions
