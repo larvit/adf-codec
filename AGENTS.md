@@ -129,7 +129,8 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   table, a pipe cell — gives way with `undefined` for every shape it cannot spell, and fails only
   where the general form fails on the same node. Refusing there refuses a document the general
   form spells, so a refusal the general form does not share belongs in the general form or
-  nowhere.
+  nowhere — save the nested list a tight spelling would swallow, whose refusal the
+  tight-versus-blank answer owns (`todo.md` 2b).
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
   `Result` rather than the stack overflow that waits near 2000.

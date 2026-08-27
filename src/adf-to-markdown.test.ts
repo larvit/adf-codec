@@ -69,6 +69,9 @@ test('spells a code block language no info string holds as an attribute', () => 
   assert.equal(language('a`b'), ':::codeBlock {language="a\\u0060b"}\n```\n```\n:::\n')
   assert.equal(language(' sql'), ':::codeBlock {language=" sql"}\n```\n```\n:::\n')
   assert.equal(language('&#97;df'), ':::codeBlock {language="\\u0026#97;df"}\n```\n```\n:::\n')
+  assert.equal(language('foo\\+bar'), ':::codeBlock {language="foo\\\\+bar"}\n```\n```\n:::\n')
+  assert.equal(language('a\u0000b'), ':::codeBlock {language="a\\u0000b"}\n```\n```\n:::\n')
+  assert.equal(language('a\tb'), ':::codeBlock {language="a\\tb"}\n```\n```\n:::\n')
 })
 
 test('refuses a link destination CommonMark cannot spell', () => {
@@ -165,7 +168,7 @@ test('refuses a node whose content model the canonical form cannot emit', () => 
   assert.equal(code(adfToMarkdown(document({ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
 })
 
-test('spells a list its own markers cannot hold as a directive', () => {
+test('spells a list its own content shape cannot hold as a directive', () => {
   assert.equal(markdown(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), ':::bulletList\n::paragraph\n:::\n')
   assert.equal(markdown(adfToMarkdown(document({ type: 'bulletList' }))), ':::bulletList\n:::\n')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), ':::orderedList {order=2}\n:::\n')

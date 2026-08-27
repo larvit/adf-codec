@@ -67,7 +67,8 @@ detail is settled at its own milestone.
         above it is refused meanwhile, not spelled: the maintainer's answer on tight-versus-blank
         separation turns that refusal into an emission. The test is broader than the name it
         carries — `interruptsParagraph` reads the next list alone, so a list after a block no
-        paragraph continues, a code block say, is refused too — and the same answer narrows it. Block separation becomes
+        paragraph continues, a code block say, is refused too — and the same answer narrows it.
+        Block separation becomes
         `separationBetween(previous, next, container)` here — a boolean cannot hold the third case
         `spec/flavour.md` states for two directive blocks in a container body, and the maintainer's
         answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give
@@ -150,6 +151,9 @@ detail is settled at its own milestone.
         spelling an empty list or a non-`listItem` child that the plain form refuses. `order` is
         the first marker, so `order: 1` keeps the plain `1.` — what a real payload carries — and a
         list carrying no `order` has no number to take and takes the directive form.
+        2f raises what 1d's unspelled block separation costs: a single `localId` on a paragraph
+        beside a plain one now refuses every container body that is a directive's — a panel, an
+        expand, a table cell — where before 2f the attribute refused the document anyway.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
       into sub-items before starting (§15). Fixtures land with the code that reads them:
       `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity

@@ -32,7 +32,7 @@ normalizes to it through the round-trip.
   inside it, directive syntax and `~~` included.
 - Thematic break `---`.
 - Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
-  CommonMark admits no spelling — the end of a block, inside a heading — or where the node
+  CommonMark admits no spelling — the end of a block, inside an ATX heading — or where the node
   carries an attribute, it is the inline directive.
 - An empty paragraph — real payloads carry them — is `::paragraph`.
 - Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes.
@@ -174,14 +174,16 @@ form.
 - `blockquote`, `bulletList`, `listItem` — containers, block body; no attributes beyond `localId`.
 - `codeBlock` — container, body one fenced code block whose info string is the language and whose
   content is the node's. Attributes: `hideLineNumbers` (boolean), `language` (string), `localId`,
-  `uniqueId` (string), `wrap` (boolean). A language no info string holds — empty, or holding a
-  backtick, edge whitespace, an entity reference or the reserved `adf` — rides the `language`
-  attribute instead, and the fence carries no info string.
+  `uniqueId` (string), `wrap` (boolean). A language no info string carries back — empty, the
+  reserved `adf`, or holding a backtick, a backslash, a control character, edge whitespace or an
+  entity reference — rides the `language` attribute instead and the fence carries no info string;
+  writing both is a named error.
 - `heading` — container, inline body. Attributes: `level` (number), `localId`. `level` is the `#`
-  count, so a heading carrying none, or one outside 1-6, has no CommonMark spelling.
+  count, so a heading carrying none, or one that is no whole number from 1 to 6, has no CommonMark
+  spelling.
 - `orderedList` — container of `listItem`, block body. Attributes: `localId`, `order` (number).
-  `order` is the first marker, so a list carrying none, or one whose markers would run past
-  999999999, has no CommonMark spelling.
+  `order` is the first marker, so a list carrying none, one that is no whole number from 0, or one
+  whose markers would run past 999999999, has no CommonMark spelling.
 - `paragraph` — container, inline body; no attributes beyond `localId`.
 - `rule` — leaf; no attributes beyond `localId`.
 

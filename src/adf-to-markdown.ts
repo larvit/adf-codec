@@ -7,7 +7,7 @@ import { emitInlineLine } from './markdown-inline.ts'
 import { tryPipeTable } from './markdown-pipe-table.ts'
 import { carriedBlock, carryName } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { holdsEntityReference, holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
+import { holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
 import { carriesOnly, isAdfDocument } from './adf-document.ts'
 import { largestNesting } from './nesting.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
@@ -187,11 +187,11 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
   return success(text)
 }
 
-// spec/flavour.md, The CommonMark blocks: the languages an info string holds, the absent one as the empty string.
+// spec/flavour.md, The CommonMark blocks.
 function fenceInfo(language: JsonValue | undefined): string | undefined {
   if (language === undefined) return ''
   if (typeof language !== 'string' || language === '' || language === carryName) return undefined
-  if (/[`\n\r]/.test(language) || language !== language.trim() || holdsEntityReference(language)) return undefined
+  if (/[`\\]/.test(language) || holdsControlCharacter(language) || language !== language.trim() || holdsEntityReference(language)) return undefined
   return language
 }
 
