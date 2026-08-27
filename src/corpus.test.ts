@@ -66,6 +66,25 @@ for (const directory of emittingDirectories) {
   }
 }
 
+// One spelling for two documents is a round-trip break no parser can undo, and no parser is needed to see it.
+test('no two round-trip documents share one spelling', () => {
+  const documents = new Map<string, string>()
+  const spellings = new Map<string, string>()
+  for (const directory of emittingDirectories) {
+    for (const name of fixtureNames(directory, '.md')) {
+      const fixture = `${directory}/${name}`
+      const parsed: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
+      assert.ok(isJsonValue(parsed))
+      const document = serializeCanonicalJson(parsed, 'compact')
+      const markdown = readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8')
+      assert.equal(documents.get(document), undefined, `${fixture} repeats the document ${documents.get(document)} holds`)
+      assert.equal(spellings.get(markdown), undefined, `${fixture} and ${spellings.get(markdown)} share one markdown spelling`)
+      documents.set(document, fixture)
+      spellings.set(markdown, fixture)
+    }
+  }
+})
+
 // spec/flavour.md, Directives: the container fence rule, checked against the emitted bytes.
 function fenceNestingFault(markdown: string): string | undefined {
   const open: number[] = []

@@ -110,14 +110,20 @@ detail is settled at its own milestone.
           added to that list is the odd one out: `unspellableMark` finds it after assembly and
           names a mark type against the line's path, so the failing run needs identifying before
           the carry can replace the refusal `mark-inside-word` pinned.
-    - [ ] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
+    - [x] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
           than isolating one, and the gate's collision property: no two corpus documents may emit
           the same bytes — one spelling for two documents is a round-trip break no parser can undo,
-          and it is provable without one. It also settles the emitter's one known approximation:
-          delimiter flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the
-          way a run splits across several openers — is not modelled. No reachable violation has been
-          found by hand; the property test is what decides it, and 2e1's `carve-out-strike` pins a
-          second backslash only flanking-without-matching emits.
+          and it is provable without one.
+          **Settled** (the maintainer, 2026-08-27): the approximation this item inherited — flanking
+          exact, CommonMark's *matching* unmodelled — had two round-trip breaks reachable by hand,
+          so the emitter now models the matching. `process_emphasis` runs over the runs the emitter
+          wrote (`emphasis-matching.ts`) and a pair it hands to another delimiter rides the carry,
+          which is what the multiple-of-3 rule did to the em in `un*a**b*****c**istic`. A delimiter
+          run in text now escapes wherever CommonMark could open or close with it, not only open:
+          one that could only close stole the spelling around it (`un*a* b*istic`), and escaping
+          both ways keeps every delimiter the emitter did not write out of the matching. The
+          canonical form gained a backslash where a run only closes — `\*not emphasis\*`, and
+          2e1's `carve-out-strike` a third and fourth.
   - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
         CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
         `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying

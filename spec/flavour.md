@@ -39,9 +39,10 @@ normalizes to it through the round-trip.
 - Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
-  the leading delimiter of a construct that would otherwise open, re-scan from there, and
-  repeat — with the opener literal the closer parses as text, so `*not emphasis*` is
-  `\*not emphasis*`, one backslash.
+  the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat.
+  An emphasis delimiter run in text escapes where CommonMark can open **or** close with it, so
+  `*not emphasis*` is `\*not emphasis\*` — no delimiter the emitter did not write reaches the
+  matching below, which is what lets the emitter decide its own pairings.
 - Blocks separated by one blank line at document level, inside a blockquote and between CommonMark
   blocks; two directive blocks inside a container take none. No trailing whitespace outside a code
   block's
@@ -390,7 +391,9 @@ An inline node whose marks no nesting spells — a mark type not listed here, an
 spelling does not list, a value that is not the spelling's type, an attribute the spelling needs
 and the mark lacks, an order putting a code span outside another mark, `code` over anything but a
 text node or over text holding a newline, or a spelling CommonMark's flanking rules cannot open or
-close where the run sits (`un**-real**istic`) — rides the inline carry whole. A value the spelling
+close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere — the
+intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave the
+merged run's pairing to another delimiter — rides the inline carry whole. A value the spelling
 holds but CommonMark cannot write — a link destination or title — is a named error instead. An
 opaque carry inside a mark spelling is a named error in input: the carry restores its node
 exactly, marks included (AGENTS.md §3).

@@ -1,0 +1,312 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "text": "Release 2.4",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Shipped ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "shortName": ":rocket:",
+            "text": "🚀"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " on ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "timestamp": "1756080000000"
+          },
+          "type": "date"
+        },
+        {
+          "text": " — ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "01a032c3-7a7c-775f-a730-2d79351338b4",
+            "text": "@Mikael"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " owns the rollout, status ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "yellow",
+            "text": "In review"
+          },
+          "type": "status"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Part",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Qty",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Bolt M8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "40",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://example.com/washer"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Washer",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "12",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Torque the ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "M8 bolt",
+                  "type": "text"
+                },
+                {
+                  "text": " to ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "25 Nm",
+                  "type": "text"
+                },
+                {
+                  "text": ".",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Check the collation:",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "type": "code"
+                            }
+                          ],
+                          "text": "mysqldump --default-character-set=utf8mb4",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Rolled back once, see the ",
+              "type": "text"
+            },
+            {
+              "marks": [
+                {
+                  "type": "underline"
+                }
+              ],
+              "text": "postmortem",
+              "type": "text"
+            },
+            {
+              "text": ".",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "blockquote"
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "attrs": {
+        "panelType": "warning"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Do not skip the pre-flight.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

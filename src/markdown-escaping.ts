@@ -1,4 +1,5 @@
 import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
+import { unmatchedPair, type EmphasisDelimiter, type EmphasisRun } from './emphasis-matching.ts'
 
 export type EmphasisRole = 'close' | 'open'
 
@@ -14,7 +15,7 @@ export type AssembledLine = { line: string; unspellableRun: NodeRange | undefine
 
 export type LineContainer = 'heading' | 'paragraph' | 'table-cell'
 
-type DelimiterRun = { character: string; closeNodes: NodeRange | undefined; end: number; openNodes: NodeRange | undefined; start: number }
+type DelimiterGroup = { character: string; delimiters: EmphasisDelimiter[]; end: number; start: number }
 
 const delimiters = ['*', '_', '`', '~']
 
@@ -78,17 +79,20 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
 }
 
 function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
-  for (const run of delimiterRuns(segments, placements)) {
-    const before = charAt(output, run.start - 1)
-    const after = output.charAt(run.end)
-    if (run.openNodes !== undefined && !isLeftFlanking(before, after)) return run.openNodes
-    if (run.closeNodes !== undefined && !isRightFlanking(before, after)) return run.closeNodes
+  const { nodes, runs } = emphasisRuns(segments, placements, output)
+  for (const run of runs) {
+    for (const delimiter of run.delimiters) {
+      if (!(delimiter.closes ? run.canClose : run.canOpen)) return nodes[delimiter.pair]
+    }
   }
-  return undefined
+  const unmatched = unmatchedPair(runs)
+  return unmatched === undefined ? undefined : nodes[unmatched]
 }
 
-function delimiterRuns(segments: readonly InlineSegment[], placements: readonly number[]): DelimiterRun[] {
-  const runs: DelimiterRun[] = []
+function emphasisRuns(segments: readonly InlineSegment[], placements: readonly number[], output: string): { nodes: NodeRange[]; runs: EmphasisRun[] } {
+  const groups: DelimiterGroup[] = []
+  const nodes: NodeRange[] = []
+  const open: number[] = []
   let cursor = 0
   for (const segment of segments) {
     const start = placements[cursor] ?? 0
@@ -96,22 +100,29 @@ function delimiterRuns(segments: readonly InlineSegment[], placements: readonly 
     if (segment.emphasis === undefined) continue
     const closes = segment.emphasis === 'close'
     const end = start + segment.text.length
-    const previous = runs[runs.length - 1]
+    const pair = closes ? (open.pop() ?? nodes.length) : nodes.length
+    if (!closes) {
+      nodes.push(segment.nodes)
+      open.push(pair)
+    }
+    const delimiter = { closes, end, pair, start }
+    const previous = groups[groups.length - 1]
     if (previous !== undefined && previous.end === start && previous.character === segment.text.charAt(0)) {
-      previous.closeNodes = previous.closeNodes ?? (closes ? segment.nodes : undefined)
+      previous.delimiters.push(delimiter)
       previous.end = end
-      previous.openNodes = previous.openNodes ?? (closes ? undefined : segment.nodes)
       continue
     }
-    runs.push({
-      character: segment.text.charAt(0),
-      closeNodes: closes ? segment.nodes : undefined,
-      end,
-      openNodes: closes ? undefined : segment.nodes,
-      start,
-    })
+    groups.push({ character: segment.text.charAt(0), delimiters: [delimiter], end, start })
   }
-  return runs
+  return { nodes, runs: groups.map((group) => ({ ...group, ...delimiterFlags(group.character, charAt(output, group.start - 1), output.charAt(group.end)) })) }
+}
+
+// spec/flavour.md, Canonical form: CommonMark's own can-open and can-close, which `~` follows too.
+function delimiterFlags(character: string, before: string, after: string): { canClose: boolean; canOpen: boolean } {
+  const left = isLeftFlanking(before, after)
+  const right = isRightFlanking(before, after)
+  if (character !== '_') return { canClose: right, canOpen: left }
+  return { canClose: right && (!left || isPunctuation(after)), canOpen: left && (!right || isPunctuation(before)) }
 }
 
 function mergesWithSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
@@ -177,7 +188,7 @@ function claimsCharacter(
   if (character === ':') return inlineDirectiveOpener.test(rest)
   if (character === '[') return opensLink(scan, escapings, index)
   if (character === '`') return opensCodeSpan(scan, index, escaped)
-  if (character === '*' || character === '_' || character === '~') return opensEmphasis(scan, index, escaped)
+  if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, escaped)
   return false
 }
 
@@ -196,16 +207,13 @@ function opensCodeSpan(scan: string, index: number, escaped: ReadonlySet<number>
   return new RegExp('(?<!`)`{' + length + '}(?!`)').test(scan.slice(index + length))
 }
 
-function opensEmphasis(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
+function claimsEmphasis(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
   if (!startsRun(scan, index, escaped)) return false
   const character = scan.charAt(index)
   const length = runLength(scan, index)
-  const before = index === 0 ? '' : scan.charAt(index - 1)
-  const after = scan.charAt(index + length)
-  if (character === '~') return length === 2 && isLeftFlanking(before, after)
-  if (!isLeftFlanking(before, after)) return false
-  if (character === '*') return true
-  return !isRightFlanking(before, after) || isPunctuation(before)
+  if (character === '~' && length !== 2) return false
+  const flags = delimiterFlags(character, index === 0 ? '' : scan.charAt(index - 1), scan.charAt(index + length))
+  return flags.canClose || flags.canOpen
 }
 
 function startsRun(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
