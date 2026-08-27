@@ -7,7 +7,6 @@ export type ConvertErrorCode =
   | 'unspellable-link-title'
   | 'unspellable-whitespace'
   | 'unspelled-block-separation'
-  | 'unspelled-node-attribute'
   | 'unsupported-document-version'
   | 'unsupported-node-shape'
 

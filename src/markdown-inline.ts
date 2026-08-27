@@ -187,7 +187,7 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   const types = (node.marks ?? []).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   const directive = inlineDirective(node.type)
-  if (directive === undefined) return emitText(node, context, path)
+  if (directive === undefined) return emitText(node, context, index, path)
   if (node.type === 'hardBreak') return emitHardBreak(node, directive, context, index, path)
   return emitInlineDirective(node, directive, index, path)
 }
@@ -215,9 +215,8 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   return success({ segments: [syntax(`:${node.type}[`), ...content, syntax(`]${attributes}`)] })
 }
 
-function emitText(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
-  const unspelled = Object.keys(node.attrs ?? {})[0]
-  if (unspelled !== undefined) return failure('unspelled-node-attribute', `the text attribute ${unspelled} has no canonical markdown spelling`, path)
+function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
+  if (Object.keys(node.attrs ?? {}).length > 0) return success({ carry: { first: index, last: index } })
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text', path)
   if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node holds no content', path)
   if (/\r/.test(node.text)) return failure('unspellable-whitespace', 'a text node holds a carriage return CommonMark rewrites', path)

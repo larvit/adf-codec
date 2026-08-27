@@ -18,8 +18,9 @@ normalizes to it through the round-trip.
   inline, so a `~~~` line opens a CommonMark tilde code fence.
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
   `order` attribute. Continuation lines align with the first character after the marker
-  (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines, none before
-  a nested list. Blank lines between items normalize away; ADF does not record tightness.
+  (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines, none
+  between a nested list and a CommonMark block above it. Blank lines between items normalize
+  away; ADF does not record tightness.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
@@ -31,8 +32,8 @@ normalizes to it through the round-trip.
   inside it, directive syntax and `~~` included.
 - Thematic break `---`.
 - Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
-  CommonMark admits no spelling — the end of a block, inside a heading — or where the node carries
-  an attribute, it is the inline directive.
+  CommonMark admits no spelling — the end of a block, inside a heading — or where the node
+  carries an attribute, it is the inline directive.
 - An empty paragraph — real payloads carry them — is `::paragraph`.
 - Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes.
   `<url>` autolink form only when the text equals the destination and the destination is a valid
@@ -155,9 +156,8 @@ editor-normal ADF reads an empty attrs object, marks array or content array as t
 
 Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
 `json` value: `::::layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
-Three child nodes hold inline content rather than blocks (`caption`, `decisionItem`,
-`taskItem`): their body is at most one paragraph, whose inline content becomes the node's
-`content`; any other body is a named error.
+A section saying its body is inline takes at most one paragraph, whose inline content becomes
+the node's `content`; any other body is a named error, and a node holding no content is the leaf.
 
 A node the sections cannot spell rides the opaque carry: an attrs key its section does not
 list, a value that is not the section's type, or an arg-slot value that is no bare token. In
@@ -181,8 +181,7 @@ form.
 - `orderedList` — container of `listItem`, block body. Attributes: `localId`, `order` (number).
   `order` is the first marker, so a list carrying none, or one whose markers would run past
   999999999, has no CommonMark spelling.
-- `paragraph` — container, inline body; holding no content it is the leaf `::paragraph`. No
-  attributes beyond `localId`.
+- `paragraph` — container, inline body; no attributes beyond `localId`.
 - `rule` — leaf; no attributes beyond `localId`.
 
 ````
@@ -364,11 +363,11 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
 the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot
-as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content parsing to anything
-but one unmarked text node — adjacent identical-mark text nodes merged first — is a named
-error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the
-slot. The rest take no content, `:text` included; content on a node that takes none is a named
-error.
+as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
+parsing to anything but one unmarked text node — adjacent identical-mark text nodes merged first —
+is a named error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach
+into the slot. The rest take no content, `:text` included; content on a node that takes none is a
+named error.
 
 - `date` — `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — `id` (string), `localId` (string), `shortName` (string, `:name:`), `text` (string).

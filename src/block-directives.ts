@@ -93,7 +93,8 @@ export function blockDirective(type: string): BlockDirective | undefined {
 export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, spelledByBody: readonly string[] = []): string | undefined {
   const argument = spellArgument(node, directive)
   if (argument === undefined) return undefined
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, [directive.argument, ...spelledByBody])
+  const spelled = directive.argument === undefined ? spelledByBody : [directive.argument, ...spelledByBody]
+  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, spelled)
   if (pairs === undefined) return undefined
   const marks = node.marks ?? []
   if (marks.length > 0) pairs.push(['marks', spellJsonAttribute(markValues(marks))])

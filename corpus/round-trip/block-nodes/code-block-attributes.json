@@ -51,6 +51,27 @@
         }
       ],
       "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "attrs": {
+            "language": "text",
+            "wrap": true
+          },
+          "content": [
+            {
+              "text": ":::",
+              "type": "text"
+            }
+          ],
+          "type": "codeBlock"
+        }
+      ],
+      "type": "panel"
     }
   ],
   "type": "doc",

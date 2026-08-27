@@ -53,7 +53,7 @@ export function markSpelling(type: string): MarkSpelling | undefined {
 }
 
 export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective): string | undefined {
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, [directive.slot])
+  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot === undefined ? [] : [directive.slot])
   return pairs === undefined ? undefined : spellAttributes(pairs)
 }
 

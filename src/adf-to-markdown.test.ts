@@ -41,8 +41,11 @@ test('refuses a document version the markdown cannot carry', () => {
   assert.equal(code(adfToMarkdown({ type: 'doc', version: 2 })), 'unsupported-document-version')
 })
 
-test('refuses a text node attribute the canonical form does not spell', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ attrs: { localId: 'a' }, text: 'x', type: 'text' })))), 'unspelled-node-attribute')
+test('carries a text node attribute no spelling holds', () => {
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ attrs: { localId: 'a' }, text: 'x', type: 'text' })))),
+    ':adf{json="{\\"attrs\\":{\\"localId\\":\\"a\\"},\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n',
+  )
 })
 
 test('spells a CommonMark block as a directive where its own spelling holds neither attribute nor mark', () => {
@@ -160,9 +163,12 @@ test('refuses a carried node nested deeper than the emitter carries', () => {
 test('refuses a node whose content model the canonical form cannot emit', () => {
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ type: 'bulletList' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), 'unsupported-node-shape')
+})
+
+test('spells a list its own markers cannot hold as a directive', () => {
+  assert.equal(markdown(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), ':::bulletList\n::paragraph\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'bulletList' }))), ':::bulletList\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), ':::orderedList {order=2}\n:::\n')
 })
 
 test('spells an ordered list no marker fits as a directive', () => {
@@ -321,12 +327,12 @@ test('escapes a hyphen underline a hard break would expose', () => {
   assert.equal(line('=='), 'foo\\\n\\==\n')
 })
 
-test('refuses a list item whose marker completes a thematic break', () => {
+test('spells a list item whose marker completes a thematic break as a directive', () => {
   const item = (...content: AdfNode[]): AdfNode => ({ content, type: 'listItem' })
-  assert.equal(code(adfToMarkdown(document({ content: [item({ type: 'rule' })], type: 'bulletList' }))), 'unspellable-line-start')
+  assert.equal(markdown(adfToMarkdown(document({ content: [item({ type: 'rule' })], type: 'bulletList' }))), '::::bulletList\n:::listItem\n---\n:::\n::::\n')
   const nested: AdfNode = { content: [item({ content: [item()], type: 'bulletList' })], type: 'bulletList' }
   assert.equal(markdown(adfToMarkdown(document(nested))), '- -\n')
-  assert.equal(code(adfToMarkdown(document({ content: [item(nested)], type: 'bulletList' }))), 'unspellable-line-start')
+  assert.equal(markdown(adfToMarkdown(document({ content: [item(nested)], type: 'bulletList' }))), '::::bulletList\n:::listItem\n- -\n:::\n::::\n')
 })
 
 test('refuses the characters CommonMark rewrites', () => {
@@ -382,7 +388,8 @@ test('spells a block directive as its node type, arg and attributes', () => {
   const panel = (attrs: AdfAttributes): AdfDocument => document({ attrs, content: [paragraph({ text: 'x', type: 'text' })], type: 'panel' })
   assert.equal(markdown(adfToMarkdown(panel({ panelType: 'warning' }))), ':::panel warning\nx\n:::\n')
   assert.equal(markdown(adfToMarkdown(panel({}))), ':::panel\nx\n:::\n')
-  assert.equal(markdown(adfToMarkdown(document({ type: 'caption' }))), ':::caption\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ content: [{ text: 'x', type: 'text' }], type: 'caption' }))), ':::caption\nx\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'caption' }))), '::caption\n')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { localId: 'a' }, type: 'syncBlock' }))), '::syncBlock {localId=a}\n')
 })
 
@@ -429,9 +436,10 @@ test('separates two directive blocks in a container body by one line, two Common
   const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
   const panel = (...content: AdfNode[]): AdfDocument => document({ attrs: { panelType: 'info' }, content, type: 'panel' })
   assert.equal(markdown(adfToMarkdown(panel(text('a'), text('b')))), ':::panel info\na\n\nb\n:::\n')
-  assert.equal(markdown(adfToMarkdown(panel({ type: 'caption' }, { type: 'caption' }))), '::::panel info\n:::caption\n:::\n:::caption\n:::\n::::\n')
-  assert.equal(code(adfToMarkdown(panel(text('a'), { type: 'caption' }))), 'unspelled-block-separation')
-  assert.equal(code(adfToMarkdown(panel({ type: 'caption' }, text('a')))), 'unspelled-block-separation')
+  const caption: AdfNode = { content: [{ text: 'c', type: 'text' }], type: 'caption' }
+  assert.equal(markdown(adfToMarkdown(panel(caption, caption))), '::::panel info\n:::caption\nc\n:::\n:::caption\nc\n:::\n::::\n')
+  assert.equal(code(adfToMarkdown(panel(text('a'), caption))), 'unspelled-block-separation')
+  assert.equal(code(adfToMarkdown(panel(caption, text('a')))), 'unspelled-block-separation')
   assert.equal(code(adfToMarkdown(panel(paragraph(), text('a')))), 'unspelled-block-separation')
 })
 
@@ -451,6 +459,9 @@ test('spells the image form for exactly the centered external media shape', () =
   assert.ok(fallback({ alt: 4, type: 'external', url }))
   assert.ok(fallback({ type: 'external', url: 4 }))
   assert.equal(code(adfToMarkdown(single({ type: 'external', url }, paragraph()))), 'unsupported-node-shape')
+  const media: AdfNode = { attrs: { type: 'external', url }, type: 'media' }
+  assert.equal(code(adfToMarkdown(document({ attrs: { layout: 'center' }, content: [media], text: 'x', type: 'mediaSingle' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ attrs: { layout: 'center' }, content: [{ ...media, text: 'x' }], type: 'mediaSingle' }))), 'unsupported-node-shape')
 })
 
 test('spells a mediaSingle the image form does not fit as a directive', () => {

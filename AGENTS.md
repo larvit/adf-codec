@@ -125,9 +125,11 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   `matchEmphasis` transcribes the reference `process_emphasis` line for line, and its closer walk and
   opener search stay whole: broken into named steps they drift from the algorithm being faithful is
   the whole point of.
-- A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
-  returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
-  general form owns the refusal. Refusing there refuses a document the general form spells.
+- A readable spelling tried ahead of a general one — a CommonMark block, the image, the pipe
+  table, a pipe cell — gives way with `undefined` for every shape it cannot spell, and fails only
+  where the general form fails on the same node. Refusing there refuses a document the general
+  form spells, so a refusal the general form does not share belongs in the general form or
+  nowhere.
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
   `Result` rather than the stack overflow that waits near 2000.

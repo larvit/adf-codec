@@ -8,7 +8,7 @@ import { tryPipeTable } from './markdown-pipe-table.ts'
 import { carriedBlock, carryName } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { holdsEntityReference, holdsNullCharacter, isThematicBreak } from './commonmark-grammar.ts'
-import { isAdfDocument } from './adf-document.ts'
+import { carriesOnly, isAdfDocument } from './adf-document.ts'
 import { largestNesting } from './nesting.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
 
@@ -120,8 +120,7 @@ function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: Conv
   if (directive.body === 'code') return emitCodeDirective(node, directive, path)
   const header = spellDirectiveHeader(node, directive)
   if (header === undefined) return commonMarkLine(carriedBlock(node, path))
-  // spec/flavour.md, The CommonMark blocks: an empty paragraph is the leaf.
-  if (directive.body === 'none' || (node.type === 'paragraph' && content.length === 0)) {
+  if (directive.body === 'none' || (directive.body === 'inline' && content.length === 0)) {
     return success({ fenceColons: 2, spelling: 'directive', text: `::${header}` })
   }
   const body = directive.body === 'inline' ? emitInlineBody(content, path) : emitBlocks(content, 'directive', path, depth + 1)
@@ -140,7 +139,7 @@ function emitInlineBody(content: readonly AdfNode[], path: ConvertErrorPath): Re
 }
 
 function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
-  if (!commonMarkHead(node, [])) return undefined
+  if (!carriesOnly(node, [])) return undefined
   const inner = emitBlocks(node.content ?? [], 'document', path, depth + 1)
   if (!inner.ok) return inner
   const text = inner.value.text
@@ -151,7 +150,7 @@ function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): R
 }
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
-  if (!commonMarkHead(node, ['language'])) return undefined
+  if (!carriesOnly(node, ['language'])) return undefined
   const info = fenceInfo(node.attrs?.['language'])
   if (info === undefined) return undefined
   const text = codeBlockText(node, path)
@@ -198,7 +197,7 @@ function fenceInfo(language: JsonValue | undefined): string | undefined {
 }
 
 function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
-  if (!commonMarkHead(node, ['level'])) return undefined
+  if (!carriesOnly(node, ['level'])) return undefined
   const level = node.attrs?.['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
   const hashes = '#'.repeat(level)
@@ -211,17 +210,16 @@ function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock
 
 function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
   const ordered = node.type === 'orderedList'
-  if (!commonMarkHead(node, ordered ? ['order'] : [])) return undefined
+  if (!carriesOnly(node, ordered ? ['order'] : [])) return undefined
   const items = node.content ?? []
   const start = listStart(node, items.length)
-  if (start === undefined || items.some((item) => !commonMarkHead(item, []))) return undefined
-  if (items.length === 0) return failure('unsupported-node-shape', `a ${node.type} holds at least one listItem`, path)
+  if (start === undefined || items.length === 0) return undefined
+  if (items.some((item) => item.type !== 'listItem' || !carriesOnly(item, []))) return undefined
   const lines: string[] = []
   let fenceColons = 0
   for (const [offset, item] of items.entries()) {
-    const itemPath = [...path, 'content', offset]
-    if (item.type !== 'listItem') return failure('unsupported-node-shape', `a ${node.type} holds listItem nodes only`, itemPath)
-    const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ', itemPath, depth)
+    const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ', [...path, 'content', offset], depth)
+    if (emitted === undefined) return undefined
     if (!emitted.ok) return emitted
     fenceColons = Math.max(fenceColons, emitted.value.fenceColons)
     lines.push(emitted.value.text)
@@ -236,33 +234,25 @@ function listStart(node: AdfNode, items: number): number | undefined {
   return start + items - 1 > largestListMarker ? undefined : start
 }
 
-function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath, depth: number): Result<EmittedBody> {
+function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath, depth: number): Result<EmittedBody> | undefined {
   const inner = emitBlocks(item.content ?? [], 'list-item', path, depth + 1)
   if (!inner.ok) return inner
   if (inner.value.text === '') return success({ fenceColons: 0, text: marker.trimEnd() })
   const indent = ' '.repeat(marker.length)
   const lines = inner.value.text.split('\n').map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
-  const first = lines[0] ?? ''
-  if (isThematicBreak(first)) {
-    return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(first)}`, path)
-  }
+  if (isThematicBreak(lines[0] ?? '')) return undefined
   return success({ fenceColons: inner.value.fenceColons, text: lines.join('\n') })
 }
 
 function emitParagraph(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
   const content = node.content ?? []
-  if (content.length === 0 || !commonMarkHead(node, [])) return undefined
+  if (content.length === 0 || !carriesOnly(node, [])) return undefined
   const line = emitInlineLine(content, 'paragraph', path)
   if (!line.ok) return line
   return success(commonMarkText(line.value))
 }
 
 function emitRule(node: AdfNode): Result<EmittedBlock> | undefined {
-  if (!commonMarkHead(node, []) || (node.content ?? []).length > 0) return undefined
+  if (!carriesOnly(node, []) || (node.content ?? []).length > 0) return undefined
   return success(commonMarkText('---'))
-}
-
-function commonMarkHead(node: AdfNode, spelled: readonly string[]): boolean {
-  if ((node.marks ?? []).length > 0 || node.text !== undefined) return false
-  return Object.keys(node.attrs ?? {}).every((key) => spelled.includes(key))
 }

@@ -21,3 +21,11 @@ SELECT 1
 y
 ```
 :::
+
+::::panel info
+:::codeBlock {wrap=true}
+```text
+:::
+```
+:::
+::::

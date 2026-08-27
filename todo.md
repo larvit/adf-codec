@@ -65,7 +65,9 @@ detail is settled at its own milestone.
         the inline carry. `commonmark-subset/` green.
   - [x] **2b — Block nodes.** `block-nodes/` green. A nested list that cannot interrupt the block
         above it is refused meanwhile, not spelled: the maintainer's answer on tight-versus-blank
-        separation turns that refusal into an emission. Block separation becomes
+        separation turns that refusal into an emission. The test is broader than the name it
+        carries — `interruptsParagraph` reads the next list alone, so a list after a block no
+        paragraph continues, a code block say, is refused too — and the same answer narrows it. Block separation becomes
         `separationBetween(previous, next, container)` here — a boolean cannot hold the third case
         `spec/flavour.md` states for two directive blocks in a container body, and the maintainer's
         answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give

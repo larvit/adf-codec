@@ -11,11 +11,7 @@ export function isBareToken(text: string): boolean {
   return bareToken.test(text)
 }
 
-export function vocabularyPairs(
-  attrs: AdfAttributes,
-  vocabulary: AttributeVocabulary,
-  spelledElsewhere: readonly (string | undefined)[],
-): [string, string][] | undefined {
+export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocabulary, spelledElsewhere: readonly string[]): [string, string][] | undefined {
   const pairs: [string, string][] = []
   for (const [key, value] of Object.entries(attrs)) {
     if (spelledElsewhere.includes(key)) continue
