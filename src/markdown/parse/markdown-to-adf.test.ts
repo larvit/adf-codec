@@ -107,6 +107,7 @@ test('refuses the raw HTML no element mapping carries', () => {
   assert.equal(code(markdownToAdf('<pre>\nx\n</pre>\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('<span foo="bar">\n')), 'unmappable-html')
   assert.deepEqual(path(markdownToAdf('Part.\n\n<div>\n')), ['content', 1])
+  assert.equal(code(markdownToAdf('<div>\nx\n\n:::\n')), 'unmappable-html')
 })
 
 test('swallows an HTML block ahead of the claim a line inside it would make', () => {

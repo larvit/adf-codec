@@ -1,13 +1,11 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import type { LeafBlock } from './blocks.ts'
+import type { ClaimedConstruct, LeafBlock } from './blocks.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { parseBlocks } from './blocks.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
-  const parsed = parseBlocks(markdown)
-  if (!parsed.ok) return parsed
   const content: AdfNode[] = []
-  for (const [index, block] of parsed.value.blocks.entries()) {
+  for (const [index, block] of parseBlocks(markdown).blocks.entries()) {
     const node = blockNode(block, ['content', index])
     if (!node.ok) return node
     content.push(node.value)
@@ -16,11 +14,17 @@ export function markdownToAdf(markdown: string): Result<AdfDocument> {
 }
 
 function blockNode(block: LeafBlock, path: ConvertErrorPath): Result<AdfNode> {
+  if (block.kind === 'claim') return claimFailure(block.construct, path)
   if (block.kind === 'code') return success(codeBlockNode(block.language, block.text))
   if (block.kind === 'heading') return success(withContent({ attrs: { level: block.level }, type: 'heading' }, block.text))
-  if (block.kind === 'html') return failure('unmappable-html', `no element mapping carries ${block.name}`, path)
+  if (block.kind === 'html') return failure('unmappable-html', `no ADF node carries ${block.construct}`, path)
   if (block.kind === 'paragraph') return success(withContent({ type: 'paragraph' }, block.text))
   return success({ type: 'rule' })
+}
+
+function claimFailure(construct: ClaimedConstruct, path: ConvertErrorPath): Result<AdfNode> {
+  if (construct === 'directive') return failure('malformed-directive', 'the line claims a directive and parses as none', path)
+  return failure('malformed-pipe-table', 'the line claims a pipe table and parses as none', path)
 }
 
 function codeBlockNode(language: string, text: string): AdfNode {

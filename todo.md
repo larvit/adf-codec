@@ -210,7 +210,10 @@ detail is settled at its own milestone.
         rather than editing them.
   - [ ] **3c — The container blocks.** Blockquote, bullet and ordered list: the continuation a
         marker's width sets, lazy continuation, and the tightness ADF does not record — `> `
-        repeated being two bytes a level, so this is the cheapest way to reach §11's 500.
+        repeated being two bytes a level, so this is the cheapest way to reach §11's 500. 3b's leaf
+        readers scan the physical line themselves, so a container re-cuts the walk rather than adding
+        to it: the open containers' prefix comes off the line first and the readers take one line at a
+        time, `LeafBlock` renamed with the union they join.
         **Settled** (the maintainer, 2026-08-27): a claimed line ends lazy continuation, so a
         closing fence on the line after a blockquote's open paragraph closes its container instead
         of continuing the paragraph CommonMark would fold it into. Claiming at block level is
@@ -244,7 +247,8 @@ detail is settled at its own milestone.
   - [ ] **3f — The directive grammar.** The three forms — inline `:name[content]{attrs}`,
         container `:::name arg {attrs}`, leaf `::name arg {attrs}` — the attribute grammar with
         its quoting and escapes, the fence-length and nesting rules, and the malformed list
-        `spec/flavour.md` spells, each a named error.
+        `spec/flavour.md` spells, each a named error. `corpus.test.ts`'s `fenceNestingFault` stays a
+        second reading of the fence rule over emitted bytes: the double entry is the check.
         **Settled** (the maintainer, 2026-08-27): the code span, the entity and raw HTML bind
         first in input, as 2e3 already assumed of the emitted side — a raw `` ` ``, `&`, `<` or
         `|` inside `{attrs}` breaks the directive and is a named error, the author writing the
@@ -281,7 +285,8 @@ detail is settled at its own milestone.
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
         reading as the literal text they hold.
   - [ ] **3k — The CommonMark spec suite.** Checked in at `corpus/commonmark-spec/`, pinned to
-        the version it ships, `corpus/README.md` gaining the kind.
+        the version it ships — the one `html-blocks.ts` names for its start conditions —
+        `corpus/README.md` gaining the kind.
         **Settled** (the maintainer, 2026-08-27): three checks an example must pass, the reference
         HTML each ships read as corpus data — which adds no format and no direction (§1). §2's
         canonical fixpoint: a named error, or markdown that parses and emits to itself byte for

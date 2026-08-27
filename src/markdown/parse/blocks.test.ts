@@ -2,21 +2,14 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { LinkDefinition } from './link-reference-definitions.ts'
-import type { ParsedBlocks } from './blocks.ts'
 import { parseBlocks } from './blocks.ts'
 
-function walk(markdown: string): ParsedBlocks {
-  const result = parseBlocks(markdown)
-  assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
-  return result.value
-}
-
 function definitions(markdown: string): [string, LinkDefinition][] {
-  return [...walk(markdown).definitions]
+  return [...parseBlocks(markdown).definitions]
 }
 
 function kinds(markdown: string): string[] {
-  return walk(markdown).blocks.map((block) => block.kind)
+  return parseBlocks(markdown).blocks.map((block) => block.kind)
 }
 
 test('keeps the link reference definitions a paragraph gives up, the first of a label winning', () => {
@@ -50,4 +43,9 @@ test('swallows an HTML block to the end condition its start sets', () => {
   assert.deepEqual(kinds('<pre>x</pre>\nPart.\n'), ['html', 'paragraph'])
   assert.deepEqual(kinds('<div>\nx\n'), ['html'])
   assert.deepEqual(kinds('Part.\n<div>\n'), ['paragraph', 'html'])
+})
+
+test('carries a claimed line as the block it opens, the refusal the node layer builds', () => {
+  assert.deepEqual(kinds(':::\nPart.\n'), ['claim', 'paragraph'])
+  assert.deepEqual(kinds('Part.\n| x |\n'), ['paragraph', 'claim'])
 })

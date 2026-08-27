@@ -1,14 +1,16 @@
 import type { LinkDefinition } from './link-reference-definitions.ts'
 import type { OpenHtmlBlock } from './html-blocks.ts'
 import { atxHeading, claimsDirectiveLine, claimsPipeLine, closingCodeFence, isThematicBreak, openingCodeFence, setextHeadingLevel } from '../commonmark-grammar.ts'
-import { failure, success, type Result } from '../../result.ts'
 import { openingHtmlBlock } from './html-blocks.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
+export type ClaimedConstruct = 'directive' | 'pipe-table'
+
 export type LeafBlock =
+  | { construct: ClaimedConstruct; kind: 'claim' }
+  | { construct: string; kind: 'html' }
   | { kind: 'code'; language: string; text: string }
   | { kind: 'heading'; level: number; text: string }
-  | { kind: 'html'; name: string }
   | { kind: 'paragraph'; text: string }
   | { kind: 'rule' }
 
@@ -21,41 +23,51 @@ const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
 
-export function parseBlocks(markdown: string): Result<ParsedBlocks> {
+export function parseBlocks(markdown: string): ParsedBlocks {
   const lines = normalizeInput(markdown).split('\n')
   const walk: Walk = { blocks: [], definitions: new Map(), paragraph: [] }
   let index = 0
   while (index < lines.length) {
     const line = lines[index] ?? ''
-    index += 1
     if (blankLine.test(line)) {
       closeParagraph(walk)
+      index += 1
       continue
     }
     if (leadingColumns(line) >= indentedCodeColumns && walk.paragraph.length === 0) {
-      index = readIndentedCode(walk, lines, index - 1)
+      index = readIndentedCode(walk, lines, index)
       continue
     }
-    const opener = removeColumns(line, largestOpenerIndentation)
-    const claim = claimedLine(walk, opener)
-    if (claim !== undefined) return claim
-    if (readLineBlock(walk, opener)) continue
-    const fence = openingCodeFence(opener)
-    if (fence !== undefined) {
-      closeParagraph(walk)
-      index = readFencedCode(walk, lines, index, fence, leadingColumns(line))
-      continue
-    }
-    const html = openingHtmlBlock(opener, walk.paragraph.length > 0)
-    if (html !== undefined) {
-      closeParagraph(walk)
-      index = readHtmlBlock(walk, lines, index - 1, html)
+    const opened = openBlock(walk, lines, index, line)
+    if (opened !== undefined) {
+      index = opened
       continue
     }
     walk.paragraph.push(line.replace(/^[ \t]+/, ''))
+    index += 1
   }
   closeParagraph(walk)
-  return success({ blocks: walk.blocks, definitions: walk.definitions })
+  return { blocks: walk.blocks, definitions: walk.definitions }
+}
+
+function openBlock(walk: Walk, lines: readonly string[], index: number, line: string): number | undefined {
+  const opener = removeColumns(line, largestOpenerIndentation)
+  const claimed = claimedConstruct(opener)
+  if (claimed !== undefined) {
+    closeParagraph(walk)
+    walk.blocks.push({ construct: claimed, kind: 'claim' })
+    return index + 1
+  }
+  if (readLineBlock(walk, opener)) return index + 1
+  const fence = openingCodeFence(opener)
+  if (fence !== undefined) {
+    closeParagraph(walk)
+    return readFencedCode(walk, lines, index + 1, fence, leadingColumns(line))
+  }
+  const html = openingHtmlBlock(opener, walk.paragraph.length > 0)
+  if (html === undefined) return undefined
+  closeParagraph(walk)
+  return readHtmlBlock(walk, lines, index, html)
 }
 
 // The document's last line ending closes its line rather than opening an empty one.
@@ -66,13 +78,9 @@ function normalizeInput(markdown: string): string {
     .replace(/\n$/, '')
 }
 
-function claimedLine(walk: Walk, opener: string): Result<ParsedBlocks> | undefined {
-  const directive = claimsDirectiveLine(opener)
-  if (!directive && !claimsPipeLine(opener)) return undefined
-  closeParagraph(walk)
-  const path = ['content', walk.blocks.length]
-  if (directive) return failure('malformed-directive', 'the line claims a directive and parses as none', path)
-  return failure('malformed-pipe-table', 'the line claims a pipe table and parses as none', path)
+function claimedConstruct(opener: string): ClaimedConstruct | undefined {
+  if (claimsDirectiveLine(opener)) return 'directive'
+  return claimsPipeLine(opener) ? 'pipe-table' : undefined
 }
 
 // A setext underline over a paragraph the definitions emptied is no heading: it opens the next block.
@@ -139,7 +147,7 @@ function readHtmlBlock(walk: Walk, lines: readonly string[], start: number, html
     index += 1
     if (html.closer !== undefined && html.closer.test(line)) break
   }
-  walk.blocks.push({ kind: 'html', name: html.name })
+  walk.blocks.push({ construct: html.construct, kind: 'html' })
   return index
 }
 
