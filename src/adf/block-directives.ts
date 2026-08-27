@@ -1,9 +1,8 @@
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
 export type BlockDirective = {
-  argument?: string
   attributes: AttributeVocabulary
-  body: 'block' | 'code' | 'inline' | 'none'
+  contentModel: 'block' | 'code' | 'inline' | 'none'
 }
 
 const cellAttributes: AttributeVocabulary = {
@@ -42,48 +41,53 @@ const mediaAttributes: AttributeVocabulary = {
 
 const syncBlockAttributes: AttributeVocabulary = { localId: 'string', resourceId: 'string' }
 
-const blockDirectives: Readonly<Record<string, BlockDirective>> = {
-  blockTaskItem: { argument: 'state', attributes: localIdAttributes, body: 'block' },
-  blockquote: { attributes: localIdAttributes, body: 'block' },
-  bodiedExtension: { attributes: extensionAttributes, body: 'block' },
-  bodiedSyncBlock: { attributes: syncBlockAttributes, body: 'block' },
-  bulletList: { attributes: localIdAttributes, body: 'block' },
-  caption: { attributes: localIdAttributes, body: 'inline' },
+const blockDirectives = {
+  blockTaskItem: { attributes: localIdAttributes, contentModel: 'block' },
+  blockquote: { attributes: localIdAttributes, contentModel: 'block' },
+  bodiedExtension: { attributes: extensionAttributes, contentModel: 'block' },
+  bodiedSyncBlock: { attributes: syncBlockAttributes, contentModel: 'block' },
+  bulletList: { attributes: localIdAttributes, contentModel: 'block' },
+  caption: { attributes: localIdAttributes, contentModel: 'inline' },
   codeBlock: {
     attributes: { hideLineNumbers: 'boolean', language: 'string', localId: 'string', uniqueId: 'string', wrap: 'boolean' },
-    body: 'code',
+    contentModel: 'code',
   },
-  decisionItem: { attributes: { localId: 'string', state: 'string' }, body: 'inline' },
-  decisionList: { attributes: localIdAttributes, body: 'block' },
-  expand: { attributes: expandAttributes, body: 'block' },
-  extension: { attributes: extensionAttributes, body: 'none' },
-  extensionFrame: { attributes: {}, body: 'block' },
-  heading: { attributes: { level: 'number', localId: 'string' }, body: 'inline' },
-  layoutColumn: { attributes: { localId: 'string', valign: 'string', width: 'number' }, body: 'block' },
-  layoutSection: { attributes: localIdAttributes, body: 'block' },
-  listItem: { attributes: localIdAttributes, body: 'block' },
-  media: { attributes: mediaAttributes, body: 'none' },
-  mediaGroup: { attributes: {}, body: 'block' },
-  mediaSingle: { attributes: { layout: 'string', localId: 'string', width: 'number', widthType: 'string' }, body: 'block' },
-  multiBodiedExtension: { attributes: extensionAttributes, body: 'block' },
-  nestedExpand: { attributes: expandAttributes, body: 'block' },
-  orderedList: { attributes: { localId: 'string', order: 'number' }, body: 'block' },
+  decisionItem: { attributes: { localId: 'string', state: 'string' }, contentModel: 'inline' },
+  decisionList: { attributes: localIdAttributes, contentModel: 'block' },
+  expand: { attributes: expandAttributes, contentModel: 'block' },
+  extension: { attributes: extensionAttributes, contentModel: 'none' },
+  extensionFrame: { attributes: {}, contentModel: 'block' },
+  heading: { attributes: { level: 'number', localId: 'string' }, contentModel: 'inline' },
+  layoutColumn: { attributes: { localId: 'string', valign: 'string', width: 'number' }, contentModel: 'block' },
+  layoutSection: { attributes: localIdAttributes, contentModel: 'block' },
+  listItem: { attributes: localIdAttributes, contentModel: 'block' },
+  media: { attributes: mediaAttributes, contentModel: 'none' },
+  mediaGroup: { attributes: {}, contentModel: 'block' },
+  mediaSingle: { attributes: { layout: 'string', localId: 'string', width: 'number', widthType: 'string' }, contentModel: 'block' },
+  multiBodiedExtension: { attributes: extensionAttributes, contentModel: 'block' },
+  nestedExpand: { attributes: expandAttributes, contentModel: 'block' },
+  orderedList: { attributes: { localId: 'string', order: 'number' }, contentModel: 'block' },
   panel: {
-    argument: 'panelType',
     attributes: { localId: 'string', panelColor: 'string', panelIcon: 'string', panelIconId: 'string', panelIconText: 'string' },
-    body: 'block',
+    contentModel: 'block',
   },
-  paragraph: { attributes: localIdAttributes, body: 'inline' },
-  rule: { attributes: localIdAttributes, body: 'none' },
-  syncBlock: { attributes: syncBlockAttributes, body: 'none' },
-  table: { attributes: { displayMode: 'string', isNumberColumnEnabled: 'boolean', layout: 'string', localId: 'string', width: 'number' }, body: 'block' },
-  tableCell: { attributes: cellAttributes, body: 'block' },
-  tableHeader: { attributes: cellAttributes, body: 'block' },
-  tableRow: { attributes: localIdAttributes, body: 'block' },
-  taskItem: { argument: 'state', attributes: localIdAttributes, body: 'inline' },
-  taskList: { attributes: localIdAttributes, body: 'block' },
-}
+  paragraph: { attributes: localIdAttributes, contentModel: 'inline' },
+  rule: { attributes: localIdAttributes, contentModel: 'none' },
+  syncBlock: { attributes: syncBlockAttributes, contentModel: 'none' },
+  table: { attributes: { displayMode: 'string', isNumberColumnEnabled: 'boolean', layout: 'string', localId: 'string', width: 'number' }, contentModel: 'block' },
+  tableCell: { attributes: cellAttributes, contentModel: 'block' },
+  tableHeader: { attributes: cellAttributes, contentModel: 'block' },
+  tableRow: { attributes: localIdAttributes, contentModel: 'block' },
+  taskItem: { attributes: localIdAttributes, contentModel: 'inline' },
+  taskList: { attributes: localIdAttributes, contentModel: 'block' },
+} satisfies Readonly<Record<string, BlockDirective>>
+
+export type BlockType = keyof typeof blockDirectives
 
 export function blockDirective(type: string): BlockDirective | undefined {
-  return Object.hasOwn(blockDirectives, type) ? blockDirectives[type] : undefined
+  return isBlockType(type) ? blockDirectives[type] : undefined
+}
+
+function isBlockType(type: string): type is BlockType {
+  return Object.hasOwn(blockDirectives, type)
 }

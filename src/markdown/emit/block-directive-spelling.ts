@@ -1,13 +1,15 @@
-import type { AdfMark, AdfNode } from '../adf/document.ts'
-import type { BlockDirective } from '../adf/block-directives.ts'
-import type { JsonValue } from '../json-value.ts'
-import { isBareToken, spellAttributes, spellJsonAttribute, spellVocabulary } from './directive-attributes.ts'
-import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
+import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import type { BlockDirective } from '../../adf/block-directives.ts'
+import type { JsonValue } from '../../json-value.ts'
+import { blockArgument } from '../block-directive-arguments.ts'
+import { isBareToken, spellAttributes, spellJsonAttribute, spellVocabulary } from '../directive-attributes.ts'
+import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
 export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, spelledByBody: readonly string[] = []): string | undefined {
-  const argument = spellArgument(node, directive)
+  const argumentAttribute = blockArgument(node.type)
+  const argument = spellArgument(node, argumentAttribute)
   if (argument === undefined) return undefined
-  const spelled = directive.argument === undefined ? spelledByBody : [directive.argument, ...spelledByBody]
+  const spelled = argumentAttribute === undefined ? spelledByBody : [argumentAttribute, ...spelledByBody]
   const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, spelled)
   if (pairs === undefined) return undefined
   const spelledPairs = spellVocabulary(pairs)
@@ -17,8 +19,8 @@ export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, s
   return `${node.type}${argument}${attributes === '' ? '' : ` ${attributes}`}`
 }
 
-function spellArgument(node: AdfNode, directive: BlockDirective): string | undefined {
-  const value = directive.argument === undefined ? undefined : node.attrs?.[directive.argument]
+function spellArgument(node: AdfNode, argumentAttribute: string | undefined): string | undefined {
+  const value = argumentAttribute === undefined ? undefined : node.attrs?.[argumentAttribute]
   if (value === undefined) return ''
   if (typeof value !== 'string' || !isBareToken(value)) return undefined
   return ` ${value}`

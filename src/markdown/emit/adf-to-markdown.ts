@@ -9,7 +9,7 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { fencedCodeBlock } from '../backtick-runs.ts'
 import { holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isThematicBreak } from '../commonmark-grammar.ts'
 import { largestNesting } from '../../nesting.ts'
-import { spellDirectiveHeader } from '../block-directive-spelling.ts'
+import { spellDirectiveHeader } from './block-directive-spelling.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
 
@@ -117,14 +117,14 @@ function commonMarkText(text: string): EmittedBlock {
 function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text`, path)
   const content = node.content ?? []
-  if (directive.body === 'none' && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content`, path)
-  if (directive.body === 'code') return emitCodeDirective(node, directive, path)
+  if (directive.contentModel === 'none' && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content`, path)
+  if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path)
   const header = spellDirectiveHeader(node, directive)
   if (header === undefined) return commonMarkLine(carriedBlock(node, path))
-  if (directive.body === 'none' || (directive.body === 'inline' && content.length === 0)) {
+  if (directive.contentModel === 'none' || (directive.contentModel === 'inline' && content.length === 0)) {
     return success({ fenceColons: 2, spelling: 'directive', text: `::${header}` })
   }
-  const body = directive.body === 'inline' ? emitInlineBody(content, path) : emitBlocks(content, 'directive', path, depth + 1)
+  const body = directive.contentModel === 'inline' ? emitInlineBody(content, path) : emitBlocks(content, 'directive', path, depth + 1)
   if (!body.ok) return body
   const fenceColons = Math.max(3, body.value.fenceColons + 1)
   const fence = ':'.repeat(fenceColons)

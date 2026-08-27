@@ -1,5 +1,13 @@
-import { escapesLineClaim, opensBracketedAutolink, startsEntityReference, type LinePosition } from '../commonmark-grammar.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis } from '../emphasis-matching.ts'
+import {
+  escapesLineClaim,
+  isAsciiPunctuation,
+  opensBracketedAutolink,
+  opensHtmlConstruct,
+  startsEntityReference,
+  type LinePosition,
+} from '../commonmark-grammar.ts'
+import { opensInlineDirective } from '../directive-attributes.ts'
 
 export type EmphasisRole = 'close' | 'open'
 
@@ -21,9 +29,6 @@ type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; deli
 
 const delimiters = ['*', '_', '`', '~']
 
-const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
-const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
-const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
 const followsLinkText = /[([:]/
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
@@ -211,10 +216,10 @@ function claimsCharacter(
   const rest = scan.slice(index)
   if (inBrackets && (character === '[' || character === ']')) return true
   if (character === '|') return container === 'table-cell'
-  if (character === '\\') return asciiPunctuation.test(scan.charAt(index + 1))
+  if (character === '\\') return isAsciiPunctuation(scan.charAt(index + 1))
   if (character === '&') return startsEntityReference(rest)
-  if (character === '<') return opensBracketedAutolink(rest) || htmlConstructs.some((construct) => construct.test(rest))
-  if (character === ':') return inlineDirectiveOpener.test(rest)
+  if (character === '<') return opensBracketedAutolink(rest) || opensHtmlConstruct(rest)
+  if (character === ':') return opensInlineDirective(rest)
   if (character === '[') return opensLink(scan, escapings, index)
   if (character === '`') return opensCodeSpan(scan, index, escaped)
   if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, escaped)

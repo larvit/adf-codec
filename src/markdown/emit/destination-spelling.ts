@@ -1,5 +1,5 @@
-import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
-import { holdsControlCharacter, holdsEntityReference } from './commonmark-grammar.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { holdsControlCharacter, holdsEntityReference } from '../commonmark-grammar.ts'
 
 export function spellDestination(href: string, path: ConvertErrorPath): Result<string> {
   if (holdsControlCharacter(href)) return failure('unspellable-link-destination', 'a link destination holds a control character', path)

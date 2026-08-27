@@ -3,12 +3,17 @@ import type { VocabularyPair } from '../adf/attribute-vocabulary.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 const bareToken = /^[A-Za-z0-9_-]+$/
+const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
 
 // spec/flavour.md, Attributes.
 const quotedEscapes = /[&<`|]/g
 
 export function isBareToken(text: string): boolean {
   return bareToken.test(text)
+}
+
+export function opensInlineDirective(text: string): boolean {
+  return inlineDirectiveOpener.test(text)
 }
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {

@@ -10,8 +10,8 @@ import { longestBacktickRun } from '../backtick-runs.ts'
 import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 import { spellAttributes, spellStringAttribute } from '../directive-attributes.ts'
-import { spellDestination, spellTitle } from '../destination-spelling.ts'
-import { spellInlineNodeAttributes } from '../inline-directive-spelling.ts'
+import { spellDestination, spellTitle } from './destination-spelling.ts'
+import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 
 type EmittedLine = { line: string; segments: InlineSegment[] }
 
@@ -209,7 +209,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   if (!empty.ok) return empty
   const attributes = spellInlineNodeAttributes(node, directive)
   if (attributes === undefined) return success({ carry: { first: index, last: index } })
-  const slot = directive.slot === undefined ? undefined : node.attrs?.[directive.slot]
+  const slot = directive.textAttribute === undefined ? undefined : node.attrs?.[directive.textAttribute]
   if (slot === undefined) return success({ segments: [syntax(spellLeafDirective(node.type, attributes))] })
   if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
   if (/[\n\r]/.test(slot)) return failure('unspellable-whitespace', `a ${node.type} content slot holds a newline no inline directive spans`, path)

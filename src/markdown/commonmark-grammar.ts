@@ -1,5 +1,8 @@
 export type LinePosition = 'first' | 'later'
 
+const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
+const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
+
 const controlCharacterRange = '\\u0000-\\u001f\\u007f'
 const autolinkSource = `[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\\s<>${controlCharacterRange}]*`
 const nullCharacterSource = '\\u0000'
@@ -42,6 +45,10 @@ export function holdsNullCharacter(text: string): boolean {
   return nullCharacter.test(text)
 }
 
+export function isAsciiPunctuation(character: string): boolean {
+  return asciiPunctuation.test(character)
+}
+
 export function isAutolink(text: string): boolean {
   return autolink.test(text)
 }
@@ -56,6 +63,10 @@ export function isUnicodeWhitespace(character: string): boolean {
 
 export function opensBracketedAutolink(text: string): boolean {
   return bracketedAutolink.test(text)
+}
+
+export function opensHtmlConstruct(text: string): boolean {
+  return htmlConstructs.some((construct) => construct.test(text))
 }
 
 export function startsEntityReference(text: string): boolean {
