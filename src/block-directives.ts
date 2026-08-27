@@ -5,7 +5,7 @@ import { isBareToken, spellAttributes, spellJsonAttribute, vocabularyPairs } fro
 export type BlockDirective = {
   argument?: string
   attributes: AttributeVocabulary
-  body: 'block' | 'inline' | 'none'
+  body: 'block' | 'code' | 'inline' | 'none'
 }
 
 const cellAttributes: AttributeVocabulary = {
@@ -28,7 +28,7 @@ const extensionAttributes: AttributeVocabulary = {
   text: 'string',
 }
 
-const itemAttributes: AttributeVocabulary = { localId: 'string' }
+const localIdAttributes: AttributeVocabulary = { localId: 'string' }
 
 const mediaAttributes: AttributeVocabulary = {
   alt: 'string',
@@ -45,44 +45,55 @@ const mediaAttributes: AttributeVocabulary = {
 const syncBlockAttributes: AttributeVocabulary = { localId: 'string', resourceId: 'string' }
 
 const blockDirectives: Readonly<Record<string, BlockDirective>> = {
-  blockTaskItem: { argument: 'state', attributes: itemAttributes, body: 'block' },
+  blockTaskItem: { argument: 'state', attributes: localIdAttributes, body: 'block' },
+  blockquote: { attributes: localIdAttributes, body: 'block' },
   bodiedExtension: { attributes: extensionAttributes, body: 'block' },
   bodiedSyncBlock: { attributes: syncBlockAttributes, body: 'block' },
-  caption: { attributes: itemAttributes, body: 'inline' },
+  bulletList: { attributes: localIdAttributes, body: 'block' },
+  caption: { attributes: localIdAttributes, body: 'inline' },
+  codeBlock: {
+    attributes: { hideLineNumbers: 'boolean', language: 'string', localId: 'string', uniqueId: 'string', wrap: 'boolean' },
+    body: 'code',
+  },
   decisionItem: { attributes: { localId: 'string', state: 'string' }, body: 'inline' },
-  decisionList: { attributes: itemAttributes, body: 'block' },
+  decisionList: { attributes: localIdAttributes, body: 'block' },
   expand: { attributes: expandAttributes, body: 'block' },
   extension: { attributes: extensionAttributes, body: 'none' },
   extensionFrame: { attributes: {}, body: 'block' },
+  heading: { attributes: { level: 'number', localId: 'string' }, body: 'inline' },
   layoutColumn: { attributes: { localId: 'string', valign: 'string', width: 'number' }, body: 'block' },
-  layoutSection: { attributes: itemAttributes, body: 'block' },
+  layoutSection: { attributes: localIdAttributes, body: 'block' },
+  listItem: { attributes: localIdAttributes, body: 'block' },
   media: { attributes: mediaAttributes, body: 'none' },
   mediaGroup: { attributes: {}, body: 'block' },
   mediaSingle: { attributes: { layout: 'string', localId: 'string', width: 'number', widthType: 'string' }, body: 'block' },
   multiBodiedExtension: { attributes: extensionAttributes, body: 'block' },
   nestedExpand: { attributes: expandAttributes, body: 'block' },
+  orderedList: { attributes: { localId: 'string', order: 'number' }, body: 'block' },
   panel: {
     argument: 'panelType',
     attributes: { localId: 'string', panelColor: 'string', panelIcon: 'string', panelIconId: 'string', panelIconText: 'string' },
     body: 'block',
   },
+  paragraph: { attributes: localIdAttributes, body: 'inline' },
+  rule: { attributes: localIdAttributes, body: 'none' },
   syncBlock: { attributes: syncBlockAttributes, body: 'none' },
   table: { attributes: { displayMode: 'string', isNumberColumnEnabled: 'boolean', layout: 'string', localId: 'string', width: 'number' }, body: 'block' },
   tableCell: { attributes: cellAttributes, body: 'block' },
   tableHeader: { attributes: cellAttributes, body: 'block' },
-  tableRow: { attributes: itemAttributes, body: 'block' },
-  taskItem: { argument: 'state', attributes: itemAttributes, body: 'inline' },
-  taskList: { attributes: itemAttributes, body: 'block' },
+  tableRow: { attributes: localIdAttributes, body: 'block' },
+  taskItem: { argument: 'state', attributes: localIdAttributes, body: 'inline' },
+  taskList: { attributes: localIdAttributes, body: 'block' },
 }
 
 export function blockDirective(type: string): BlockDirective | undefined {
   return Object.hasOwn(blockDirectives, type) ? blockDirectives[type] : undefined
 }
 
-export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective): string | undefined {
+export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, spelledByBody: readonly string[] = []): string | undefined {
   const argument = spellArgument(node, directive)
   if (argument === undefined) return undefined
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.argument)
+  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, [directive.argument, ...spelledByBody])
   if (pairs === undefined) return undefined
   const marks = node.marks ?? []
   if (marks.length > 0) pairs.push(['marks', spellJsonAttribute(markValues(marks))])

@@ -174,7 +174,7 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
 
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
   if (carried.has(index)) return true
-  return node.type !== 'hardBreak' && node.type !== 'text' && inlineDirective(node.type) === undefined
+  return node.type !== 'text' && inlineDirective(node.type) === undefined
 }
 
 function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<Emission> {
@@ -187,18 +187,18 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   const types = (node.marks ?? []).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   const directive = inlineDirective(node.type)
-  if (directive !== undefined) return emitInlineDirective(node, directive, index, path)
-  if (node.type === 'hardBreak') return emitHardBreak(node, context, path)
-  return emitText(node, context, path)
+  if (directive === undefined) return emitText(node, context, path)
+  if (node.type === 'hardBreak') return emitHardBreak(node, directive, context, index, path)
+  return emitInlineDirective(node, directive, index, path)
 }
 
-function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
-  const unspelled = Object.keys(node.attrs ?? {})[0]
-  if (unspelled !== undefined) return failure('unspelled-node-attribute', `the hardBreak attribute ${unspelled} has no canonical markdown spelling`, path)
+function emitHardBreak(node: AdfNode, directive: InlineDirective, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
   const empty = refuseContentAndText(node, path)
   if (!empty.ok) return empty
-  if (context.spansLines && !context.atBlockEnd) return success({ segments: [syntax('\\\n')] })
-  return success({ segments: [syntax(spellLeafDirective('hardBreak', ''))] })
+  const attributes = spellInlineNodeAttributes(node, directive)
+  if (attributes === undefined) return success({ carry: { first: index, last: index } })
+  if (attributes === '' && context.spansLines && !context.atBlockEnd) return success({ segments: [syntax('\\\n')] })
+  return success({ segments: [syntax(spellLeafDirective('hardBreak', attributes))] })
 }
 
 function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: number, path: ConvertErrorPath): Result<Emission> {

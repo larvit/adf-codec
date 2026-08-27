@@ -134,6 +134,20 @@ detail is settled at its own milestone.
         page of carried JSON. Fixtures and emitter together, and the three documents the answer
         settles leave `corpus/unspellable/` as round-trip pairs: `block-local-id`,
         `code-block-empty-language`, `ordered-list-start-one`.
+        **Settled** (the maintainer, 2026-08-27): the `codeBlock` directive's body is one fenced
+        code block, the language staying on the fence line so every renderer still highlights it;
+        a language no info string holds — empty, a backtick, edge whitespace, an entity reference
+        or the reserved `adf` — rides the `language` attribute with the fence bare, which retires
+        2d's carry for the reserved name along with the premise that left it no other spelling.
+        The plain spelling gives way wherever it cannot render what the node carries rather than
+        only where it has no place for it, so a heading level absent or outside 1-6 and an order
+        whose markers would run past 999999999 take the directive form too, and
+        `ambiguous-attribute-spelling`, `unspellable-code-block-language`,
+        `unspellable-list-marker`, `unspelled-block-marks` and `unsupported-heading-level` leave
+        `ConvertErrorCode`; content and placement refusals stay, which leaves the directive form
+        spelling an empty list or a non-`listItem` child that the plain form refuses. `order` is
+        the first marker, so `order: 1` keeps the plain `1.` — what a real payload carries — and a
+        list carrying no `order` has no number to take and takes the directive form.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
       into sub-items before starting (§15). Fixtures land with the code that reads them:
       `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity

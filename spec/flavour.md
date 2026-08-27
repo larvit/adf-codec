@@ -16,8 +16,8 @@ normalizes to it through the round-trip.
   cannot parse (intra-word). Strike is GFM strikethrough narrowed to exactly two tildes — a
   single tilde or a run of three or more is literal text — and block structure resolves before
   inline, so a `~~~` line opens a CommonMark tilde code fence.
-- Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number taken from the
-  node's `order` attribute. Continuation lines align with the first character after the marker
+- Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
+  `order` attribute. Continuation lines align with the first character after the marker
   (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines, none before
   a nested list. Blank lines between items normalize away; ADF does not record tightness.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
@@ -31,7 +31,8 @@ normalizes to it through the round-trip.
   inside it, directive syntax and `~~` included.
 - Thematic break `---`.
 - Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
-  CommonMark admits no spelling — the end of a block, inside a heading — it is `:hardBreak{}`.
+  CommonMark admits no spelling — the end of a block, inside a heading — or where the node carries
+  an attribute, it is the inline directive.
 - An empty paragraph — real payloads carry them — is `::paragraph`.
 - Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes.
   `<url>` autolink form only when the text equals the destination and the destination is a valid
@@ -125,8 +126,9 @@ positions canonicalize differently, each fitting where it sits:
 - **Inline position**: `:adf{json="…"}` — compact serialization (keys sorted, no whitespace),
   JSON-string-escaped into the attribute.
 
-The info string `adf` is reserved: a genuine `codeBlock` whose `language` is exactly `adf` is
-itself emitted through the opaque carry, so the reservation stays absolute and stays lossless.
+The info string `adf` is reserved: a genuine `codeBlock` whose `language` is exactly `adf` takes
+the attribute the section below keeps for a language no info string holds, so the reservation
+stays absolute.
 In block-directive positions (`::adf`, `:::adf`) the reserved name is a named error — the
 carry's block form is the fence.
 
@@ -160,6 +162,36 @@ Three child nodes hold inline content rather than blocks (`caption`, `decisionIt
 A node the sections cannot spell rides the opaque carry: an attrs key its section does not
 list, a value that is not the section's type, or an arg-slot value that is no bare token. In
 markdown input the same mismatch is a named error.
+
+### The CommonMark blocks
+
+CommonMark spells `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`,
+`paragraph` and `rule`, and keeps that spelling wherever it holds what the node carries. What it
+cannot — `localId` (string) on any of them, marks, and the values below — takes the directive
+form.
+
+- `blockquote`, `bulletList`, `listItem` — containers, block body; no attributes beyond `localId`.
+- `codeBlock` — container, body one fenced code block whose info string is the language and whose
+  content is the node's. Attributes: `hideLineNumbers` (boolean), `language` (string), `localId`,
+  `uniqueId` (string), `wrap` (boolean). A language no info string holds — empty, or holding a
+  backtick, edge whitespace, an entity reference or the reserved `adf` — rides the `language`
+  attribute instead, and the fence carries no info string.
+- `heading` — container, inline body. Attributes: `level` (number), `localId`. `level` is the `#`
+  count, so a heading carrying none, or one outside 1-6, has no CommonMark spelling.
+- `orderedList` — container of `listItem`, block body. Attributes: `localId`, `order` (number).
+  `order` is the first marker, so a list carrying none, or one whose markers would run past
+  999999999, has no CommonMark spelling.
+- `paragraph` — container, inline body; holding no content it is the leaf `::paragraph`. No
+  attributes beyond `localId`.
+- `rule` — leaf; no attributes beyond `localId`.
+
+````
+:::codeBlock {localId=01a03d5c-9b21-73f4-8e6a-0c47b1d9e2f8 wrap=true}
+```rust
+fn main() {}
+```
+:::
+````
 
 ### Panel
 
@@ -331,8 +363,8 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 ## Inline nodes
 
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
-the nodes below, those with a `text` attribute spell it in the content slot as plain text: `[]` is
-the empty string, absent content is the absent attribute, non-empty content parsing to anything
+the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot
+as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content parsing to anything
 but one unmarked text node — adjacent identical-mark text nodes merged first — is a named
 error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the
 slot. The rest take no content, `:text` included; content on a node that takes none is a named
@@ -340,6 +372,7 @@ error.
 
 - `date` — `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — `id` (string), `localId` (string), `shortName` (string, `:name:`), `text` (string).
+- `hardBreak` — `localId` (string), `text` (string).
 - `inlineCard` — `data` (json), `localId` (string), `url` (string); real payloads carry one or
   the other.
 - `mediaInline` — `alt` (string), `collection` (string), `data` (json), `height` (number), `id`

@@ -1,0 +1,44 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "One",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "01a0431d-201e-7400-a175-9c04d3628f95"
+          },
+          "type": "hardBreak"
+        },
+        {
+          "text": "Two",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Three",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "text": "\n"
+          },
+          "type": "hardBreak"
+        },
+        {
+          "text": "Four",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

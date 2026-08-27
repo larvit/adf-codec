@@ -1,0 +1,58 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "hideLineNumbers": true,
+        "language": "rust",
+        "localId": "01a0431d-201b-70a7-81fa-8d0072e09eab",
+        "uniqueId": "4478e39c",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "fn main() {}",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "a`b"
+      },
+      "content": [
+        {
+          "text": "x",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": " sql"
+      },
+      "content": [
+        {
+          "text": "SELECT 1",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "&#97;df"
+      },
+      "content": [
+        {
+          "text": "y",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

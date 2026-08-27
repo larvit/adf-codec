@@ -26,7 +26,7 @@ function path(result: Result<string>): readonly (number | string)[] {
 }
 
 test('names the node a refusal came from', () => {
-  const unspellable: AdfNode = { attrs: { localId: 'a' }, type: 'paragraph' }
+  const unspellable: AdfNode = { text: 'x', type: 'paragraph' }
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [unspellable], type: 'listItem' }], type: 'bulletList' }
   assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), ['content', 1, 'content', 1, 'content', 0])
   assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { type: 'text' })))), ['content', 0, 'content', 1])
@@ -41,28 +41,31 @@ test('refuses a document version the markdown cannot carry', () => {
   assert.equal(code(adfToMarkdown({ type: 'doc', version: 2 })), 'unsupported-document-version')
 })
 
-test('refuses an attribute the canonical form does not spell', () => {
-  assert.equal(code(adfToMarkdown(document({ attrs: { localId: 'a' }, type: 'paragraph' }))), 'unspelled-node-attribute')
-  assert.equal(code(adfToMarkdown(document({ attrs: { wrap: true }, type: 'codeBlock' }))), 'unspelled-node-attribute')
-  assert.equal(code(adfToMarkdown(document(paragraph({ attrs: { localId: 'a' }, type: 'hardBreak' }, { text: 'x', type: 'text' })))), 'unspelled-node-attribute')
+test('refuses a text node attribute the canonical form does not spell', () => {
+  assert.equal(code(adfToMarkdown(document(paragraph({ attrs: { localId: 'a' }, text: 'x', type: 'text' })))), 'unspelled-node-attribute')
 })
 
-test('refuses marks on a block node', () => {
-  assert.equal(code(adfToMarkdown(document({ marks: [{ type: 'border' }], type: 'blockquote' }))), 'unspelled-block-marks')
+test('spells a CommonMark block as a directive where its own spelling holds neither attribute nor mark', () => {
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { localId: 'a' }, type: 'paragraph' }))), '::paragraph {localId=a}\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { wrap: true }, type: 'codeBlock' }))), ':::codeBlock {wrap=true}\n```\n```\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ attrs: { localId: 'a' }, type: 'hardBreak' }, { text: 'x', type: 'text' })))), ':hardBreak{localId=a}x\n')
+  assert.equal(markdown(adfToMarkdown(document({ marks: [{ type: 'border' }], type: 'blockquote' }))), ':::blockquote {marks="[{\\"type\\":\\"border\\"}]"}\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'listItem' }))), ':::listItem\n:::\n')
 })
 
-test('refuses an ordered list whose markdown start is ambiguous', () => {
+test('spells an ordered list from the order attribute its first marker is', () => {
   const items: AdfNode[] = [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }]
-  assert.equal(code(adfToMarkdown(document({ content: items, type: 'orderedList' }))), 'ambiguous-attribute-spelling')
-  assert.equal(code(adfToMarkdown(document({ attrs: { order: 1 }, content: items, type: 'orderedList' }))), 'ambiguous-attribute-spelling')
+  assert.equal(markdown(adfToMarkdown(document({ content: items, type: 'orderedList' }))), '::::orderedList\n:::listItem\nx\n:::\n::::\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 1 }, content: items, type: 'orderedList' }))), '1. x\n')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 2 }, content: items, type: 'orderedList' }))), '2. x\n')
 })
 
-test('refuses the code block info strings the fence cannot hold', () => {
-  assert.equal(code(adfToMarkdown(document({ attrs: { language: '' }, type: 'codeBlock' }))), 'ambiguous-attribute-spelling')
-  assert.equal(code(adfToMarkdown(document({ attrs: { language: 'a`b' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
-  assert.equal(code(adfToMarkdown(document({ attrs: { language: ' sql' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
-  assert.equal(code(adfToMarkdown(document({ attrs: { language: '&#97;df' }, type: 'codeBlock' }))), 'unspellable-code-block-language')
+test('spells a code block language no info string holds as an attribute', () => {
+  const language = (value: string): string => markdown(adfToMarkdown(document({ attrs: { language: value }, type: 'codeBlock' })))
+  assert.equal(language(''), ':::codeBlock {language=""}\n```\n```\n:::\n')
+  assert.equal(language('a`b'), ':::codeBlock {language="a\\u0060b"}\n```\n```\n:::\n')
+  assert.equal(language(' sql'), ':::codeBlock {language=" sql"}\n```\n```\n:::\n')
+  assert.equal(language('&#97;df'), ':::codeBlock {language="\\u0026#97;df"}\n```\n```\n:::\n')
 })
 
 test('refuses a link destination CommonMark cannot spell', () => {
@@ -131,15 +134,11 @@ test('carries a node type no section spells', () => {
   assert.equal(markdown(adfToMarkdown(document({ type: 'toString' }))), '```adf\n{\n  "type": "toString"\n}\n```\n')
   assert.equal(markdown(adfToMarkdown(document(paragraph({ type: 'blockCard' })))), ':adf{json="{\\"type\\":\\"blockCard\\"}"}\n')
   assert.equal(markdown(adfToMarkdown(document({ text: 'x', type: 'text' }))), '```adf\n{\n  "text": "x",\n  "type": "text"\n}\n```\n')
-  assert.equal(markdown(adfToMarkdown(document({ type: 'listItem' }))), '```adf\n{\n  "type": "listItem"\n}\n```\n')
   assert.equal(markdown(adfToMarkdown(document({ type: 'hardBreak' }))), '```adf\n{\n  "type": "hardBreak"\n}\n```\n')
 })
 
-test('carries the code block whose language is the reserved info string', () => {
-  assert.equal(
-    markdown(adfToMarkdown(document({ attrs: { language: 'adf' }, type: 'codeBlock' }))),
-    '```adf\n{\n  "attrs": {\n    "language": "adf"\n  },\n  "type": "codeBlock"\n}\n```\n',
-  )
+test('spells the code block whose language is the reserved info string', () => {
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { language: 'adf' }, type: 'codeBlock' }))), ':::codeBlock {language=adf}\n```\n```\n:::\n')
 })
 
 test('breaks a mark run at the node it carries', () => {
@@ -166,13 +165,13 @@ test('refuses a node whose content model the canonical form cannot emit', () => 
   assert.equal(code(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), 'unsupported-node-shape')
 })
 
-test('refuses an ordered list no marker spells', () => {
+test('spells an ordered list no marker fits as a directive', () => {
   const item: AdfNode = { content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }
   const list = (order: number, items: number): AdfDocument =>
     document({ attrs: { order }, content: Array.from({ length: items }, () => item), type: 'orderedList' })
-  assert.equal(code(adfToMarkdown(list(1.5, 1))), 'unsupported-node-shape')
+  assert.equal(markdown(adfToMarkdown(list(1.5, 1))), '::::orderedList {order="1.5"}\n:::listItem\nx\n:::\n::::\n')
   assert.equal(markdown(adfToMarkdown(list(999999999, 1))), '999999999. x\n')
-  assert.equal(code(adfToMarkdown(list(999999999, 2))), 'unspellable-list-marker')
+  assert.equal(markdown(adfToMarkdown(list(999999999, 2))), '::::orderedList {order=999999999}\n:::listItem\nx\n:::\n:::listItem\nx\n:::\n::::\n')
 })
 
 test('carries a code mark over anything but text', () => {
@@ -182,9 +181,9 @@ test('carries a code mark over anything but text', () => {
   )
 })
 
-test('refuses a heading level outside the ATX range', () => {
-  assert.equal(code(adfToMarkdown(document({ attrs: { level: 7 }, content: [{ text: 'x', type: 'text' }], type: 'heading' }))), 'unsupported-heading-level')
-  assert.equal(code(adfToMarkdown(document({ content: [{ text: 'x', type: 'text' }], type: 'heading' }))), 'unsupported-heading-level')
+test('spells a heading level no ATX heading fits as a directive', () => {
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { level: 7 }, content: [{ text: 'x', type: 'text' }], type: 'heading' }))), ':::heading {level=7}\nx\n:::\n')
+  assert.equal(markdown(adfToMarkdown(document({ content: [{ text: 'x', type: 'text' }], type: 'heading' }))), ':::heading\nx\n:::\n')
 })
 
 test('escapes only text that would otherwise open a construct', () => {
@@ -480,7 +479,7 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
   assert.ok(directive(adfToMarkdown(table(cell('tableHeader', text('Part'))))))
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader'))))))
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', text('a'), text('b')))))))
-  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { attrs: { localId: 'a' }, type: 'paragraph' }))))), 'unspelled-node-attribute')
+  assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', { attrs: { localId: 'a' }, type: 'paragraph' }))))))
   assert.equal(
     markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ attrs: { url: 'a|b' }, type: 'blockCard' }], type: 'paragraph' }))))),
     '| :adf{json="{\\"attrs\\":{\\"url\\":\\"a\\u007cb\\"},\\"type\\":\\"blockCard\\"}"} |\n| --- |\n',
