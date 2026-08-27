@@ -160,6 +160,7 @@ test('refuses a carried node nested deeper than the emitter carries', () => {
 
 test('refuses a node whose content model the canonical form cannot emit', () => {
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document({ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ type: 'bulletList' }))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), 'unsupported-node-shape')

@@ -163,7 +163,14 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<string> {
   let text = ''
   for (const [index, child] of (node.content ?? []).entries()) {
     const childPath = [...path, 'content', index]
-    if (child.type !== 'text' || typeof child.text !== 'string' || child.text === '' || (child.marks ?? []).length > 0 || Object.keys(child.attrs ?? {}).length > 0) {
+    if (
+      child.type !== 'text' ||
+      typeof child.text !== 'string' ||
+      child.text === '' ||
+      (child.content ?? []).length > 0 ||
+      (child.marks ?? []).length > 0 ||
+      Object.keys(child.attrs ?? {}).length > 0
+    ) {
       return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only', childPath)
     }
     if (/\r/.test(child.text)) return failure('unspellable-whitespace', 'a codeBlock holds no carriage return CommonMark keeps', childPath)
