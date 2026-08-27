@@ -257,9 +257,6 @@ function runLength(scan: string, index: number): number {
   return length
 }
 
-
-
-
 function charAt(text: string, index: number): string {
   return index < 0 ? '' : text.charAt(index)
 }

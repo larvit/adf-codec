@@ -80,6 +80,68 @@
         }
       ],
       "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "un",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            },
+            {
+              "type": "em"
+            }
+          ],
+          "text": "a",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            },
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "b",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "c",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "istic",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
     }
   ],
   "type": "doc",

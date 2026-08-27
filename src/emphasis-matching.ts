@@ -1,8 +1,8 @@
 import { isUnicodeWhitespace } from './commonmark-grammar.ts'
 
-export type DelimiterRun = { canClose: boolean; canOpen: boolean; character: string; length: number }
+type DelimiterRun = { canClose: boolean; canOpen: boolean; character: string; length: number }
 
-export type EmphasisPairing<Run> = { closer: Run; closerOffset: number; opener: Run; openerOffset: number; used: number }
+type EmphasisPairing<Run> = { closer: Run; closerOffset: number; opener: Run; openerOffset: number; used: number }
 
 type Candidate<Run> = {
   head: number
@@ -16,7 +16,6 @@ type Candidate<Run> = {
 
 const unicodePunctuation = /[\p{P}\p{S}]/u
 
-// spec/flavour.md, Canonical form: CommonMark's own can-open and can-close, which `~` follows too.
 export function delimiterFlags(character: string, before: string, after: string): { canClose: boolean; canOpen: boolean } {
   const left = isLeftFlanking(before, after)
   const right = isRightFlanking(before, after)
@@ -28,7 +27,6 @@ export function isWordCharacter(character: string): boolean {
   return character !== '' && !isWhitespace(character) && !isPunctuation(character)
 }
 
-// Flanking decides which delimiters may pair; this decides which ones do, and a pair it leaves out reads back as another document.
 export function matchEmphasis<Run extends DelimiterRun>(runs: readonly Run[]): EmphasisPairing<Run>[] {
   const pairings: EmphasisPairing<Run>[] = []
   const bottoms = new Map<string, Candidate<Run> | undefined>()

@@ -72,7 +72,6 @@ function roundTripFixtures(): { name: string; path: string }[] {
   )
 }
 
-// One spelling for two documents is a round-trip break no parser can undo, and no parser is needed to see it.
 test('no two round-trip documents share one markdown spelling', () => {
   const spellings = new Map<string, string>()
   for (const fixture of roundTripFixtures()) {
@@ -89,7 +88,7 @@ test('no round-trip fixture repeats the document another holds', () => {
   const documents = new Map<string, string>()
   for (const fixture of roundTripFixtures()) {
     const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
-    assert.ok(isJsonValue(parsed))
+    assert.ok(isJsonValue(parsed), `${fixture.name} does not hold a JSON value`)
     const document = serializeCanonicalJson(parsed, 'compact')
     assert.equal(documents.get(document), undefined, `${fixture.name} repeats the document ${documents.get(document)} holds`)
     documents.set(document, fixture.name)

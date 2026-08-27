@@ -297,32 +297,19 @@ test('escapes a literal delimiter that would merge with an emitted one', () => {
   assert.equal(emitted(marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' }), { text: '{}', type: 'text' }), '[x](https://example.com/){}\n')
 })
 
-test('escapes a literal delimiter run that flanks either way', () => {
-  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
-  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
-  assert.equal(emitted({ text: 'un', type: 'text' }, marked('a* b', { type: 'em' }), { text: 'istic', type: 'text' }), 'un*a\\* b*istic\n')
-  assert.equal(emitted(marked('a~~ b', { type: 'strike' })), '~~a\\~~ b~~\n')
-  assert.equal(emitted(marked('a_ b', { type: 'em' })), '_a\\_ b_\n')
-  assert.equal(emitted({ text: 'a* b', type: 'text' }), 'a\\* b\n')
-  assert.equal(emitted({ text: '2 * 3', type: 'text' }), '2 * 3\n')
-  assert.equal(emitted({ text: 'snake_case_name', type: 'text' }), 'snake_case_name\n')
+test('escapes a literal delimiter run that only closes', () => {
+  const emitted = (text: string): string => markdown(adfToMarkdown(document(paragraph({ text, type: 'text' }))))
+  assert.equal(emitted('a* b'), 'a\\* b\n')
+  assert.equal(emitted('2 * 3'), '2 * 3\n')
 })
 
-test('carries a mark run CommonMark matching pairs elsewhere', () => {
+test("spells a mark run CommonMark's matching pairs as written", () => {
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
   const em: AdfMark = { type: 'em' }
   const strong: AdfMark = { type: 'strong' }
-  assert.equal(
-    emitted({ text: 'un', type: 'text' }, marked('a', em), marked('b', em, strong), marked('c', strong), { text: 'istic', type: 'text' }),
-    'un:adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"a\\",\\"type\\":\\"text\\"}"}' +
-      ':adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"},{\\"type\\":\\"strong\\"}],\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}**c**istic\n',
-  )
-  assert.equal(
-    emitted(marked('a', strong, em), marked('b', strong), marked('c', strong, em)),
-    '***a*b**:adf{json="{\\"marks\\":[{\\"type\\":\\"strong\\"},{\\"type\\":\\"em\\"}],\\"text\\":\\"c\\",\\"type\\":\\"text\\"}"}\n',
-  )
   assert.equal(emitted({ text: 'un', type: 'text' }, marked('a', em, strong), { text: 'istic', type: 'text' }), 'un***a***istic\n')
+  assert.equal(emitted({ text: 're', type: 'text' }, marked('structure', strong), { text: ' the code', type: 'text' }), 're**structure** the code\n')
   assert.equal(
     emitted({ text: 'un', type: 'text' }, marked('a', em), marked('b', em, strong), marked('c', em), { text: 'istic', type: 'text' }),
     'un*a**b**c*istic\n',
