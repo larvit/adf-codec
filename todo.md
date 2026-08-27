@@ -213,7 +213,8 @@ detail is settled at its own milestone.
         repeated being two bytes a level, so this is the cheapest way to reach §11's 500. 3b's leaf
         readers scan the physical line themselves, so a container re-cuts the walk rather than adding
         to it: the open containers' prefix comes off the line first and the readers take one line at a
-        time, `LeafBlock` renamed with the union they join.
+        time, `LeafBlock` renamed with the union they join and `blockNode`'s chain gaining their
+        branches.
         **Settled** (the maintainer, 2026-08-27): a claimed line ends lazy continuation, so a
         closing fence on the line after a blockquote's open paragraph closes its container instead
         of continuing the paragraph CommonMark would fold it into. Claiming at block level is
@@ -225,13 +226,13 @@ detail is settled at its own milestone.
         into the separation it names, and `spec/flavour.md`'s "none between a nested list and a
         CommonMark block above it" gaining that exception. Every fixture spelled tight today keeps
         its bytes, and `nested-list-tight` becomes a round-trip pair.
-  - [ ] **3d — Inline text.** The inline scanner over a block's content: backslash escapes,
-        entity references decoding to their characters, code spans and the literal they hold —
-        directive syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash
-        and two trailing spaces alike, a soft line break as one space, and the raw inline tag,
-        comment and processing instruction refused by name, recognized by the
-        `commonmark-grammar.ts` predicates the emitter already escapes against, under 3b's
-        one-table rule.
+  - [ ] **3d — Inline text.** The inline scanner over a block's content: backslash escapes, entity
+        references decoding to their characters, code spans and the literal they hold — directive
+        syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash and two
+        trailing spaces alike, a soft line break as one space, the fenced info string's own decoding
+        the block walk leaves raw, and the raw inline tag, comment and processing instruction
+        refused by name, recognized by the `commonmark-grammar.ts` predicates the emitter already
+        escapes against, under 3b's one-table rule.
   - [ ] **3e — Emphasis and links.** `_`, `*` and `~~` runs through `matchEmphasis` to the `em`,
         `strong` and `strike` marks; links inline and reference, 3b's definitions resolved here,
         autolinks, and the image gap's named errors — a titled image, and one amid other text.

@@ -1,11 +1,11 @@
-import { holdsControlCharacter } from '../commonmark-grammar.ts'
+import { holdsControlCharacter, isAsciiPunctuation } from '../commonmark-grammar.ts'
 
 export type LinkDefinition = { destination: string; title?: string }
 
 type ReadDefinition = { definition: LinkDefinition; label: string; length: number }
 type ReadValue = { length: number; value: string }
 
-const bracketedDestination = /^<((?:[^\n<>\\]|\\[\s\S])*)>/
+const bracketedDestination = /^<((?:[^\n<>\\]|\\[^\n])*)>/
 const label = /^\[((?:[^[\]\\]|\\[\s\S]){1,999})\]:/
 const restOfLine = /^[ \t]*(?:\n|$)/
 const titleClosers: Readonly<Record<string, string>> = { '"': '"', "'": "'", '(': ')' }
@@ -24,18 +24,25 @@ export function readLinkDefinitions(definitions: Map<string, LinkDefinition>, te
 function readDefinition(text: string): ReadDefinition | undefined {
   const matched = label.exec(text)
   if (matched === null) return undefined
-  const raw = matched[1] ?? ''
-  if (raw.trim() === '') return undefined
+  const name = normalizeLabel(matched[1] ?? '')
+  if (name === '') return undefined
   const afterLabel = skipSpace(text, matched[0].length)
   const destination = readDestination(text, afterLabel)
   if (destination === undefined) return undefined
   const afterDestination = afterLabel + destination.length
-  const name = raw.replace(/[ \t\n]+/g, ' ').trim().toLowerCase()
   const titled = readTitledEnd(text, afterDestination)
   if (titled !== undefined) return { definition: { destination: destination.value, title: titled.value }, label: name, length: titled.length }
   const plain = endOfLine(text, afterDestination)
   if (plain === undefined) return undefined
   return { definition: { destination: destination.value }, label: name, length: plain }
+}
+
+// CommonMark's label matching: the whitespace a label holds collapses, and its case folds.
+function normalizeLabel(raw: string): string {
+  return raw
+    .replace(/^[ \t\n]+|[ \t\n]+$/g, '')
+    .replace(/[ \t\n]+/g, ' ')
+    .toLowerCase()
 }
 
 function readTitledEnd(text: string, offset: number): ReadValue | undefined {
@@ -56,7 +63,7 @@ function readDestination(text: string, offset: number): ReadValue | undefined {
   while (index < text.length) {
     const character = text.charAt(index)
     if (character === ' ' || holdsControlCharacter(character)) break
-    if (character === '\\') {
+    if (escapesNext(text, index)) {
       index += 2
       continue
     }
@@ -77,7 +84,7 @@ function readTitle(text: string, offset: number): ReadValue | undefined {
   let index = offset + 1
   while (index < text.length) {
     const character = text.charAt(index)
-    if (character === '\\') {
+    if (escapesNext(text, index)) {
       index += 2
       continue
     }
@@ -86,6 +93,11 @@ function readTitle(text: string, offset: number): ReadValue | undefined {
     index += 1
   }
   return undefined
+}
+
+// A backslash escapes ASCII punctuation only, so a line ending always ends the destination it follows.
+function escapesNext(text: string, index: number): boolean {
+  return text.charAt(index) === '\\' && isAsciiPunctuation(text.charAt(index + 1))
 }
 
 // The label, the destination and the title each take at most one line ending with them.

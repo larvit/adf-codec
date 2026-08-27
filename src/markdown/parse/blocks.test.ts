@@ -24,6 +24,14 @@ test('keeps the link reference definitions a paragraph gives up, the first of a 
   assert.deepEqual(definitions('[a]: /url\\(x\n'), [['a', { destination: '/url\\(x' }]])
   assert.deepEqual(definitions('[a]: <>\n'), [['a', { destination: '' }]])
   assert.deepEqual(definitions('[a]: /url "He said \\"hi\\""\n'), [['a', { destination: '/url', title: 'He said \\"hi\\"' }]])
+  assert.deepEqual(definitions('[a]: /url\\\n[b]: /b\n'), [
+    ['a', { destination: '/url\\' }],
+    ['b', { destination: '/b' }],
+  ])
+  assert.deepEqual(definitions('[\u00a0a]: /one\n[a]: /two\n'), [
+    ['\u00a0a', { destination: '/one' }],
+    ['a', { destination: '/two' }],
+  ])
 })
 
 test('leaves the paragraph a line no definition spells', () => {

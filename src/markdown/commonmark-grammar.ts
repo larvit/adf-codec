@@ -111,6 +111,6 @@ export function startsEntityReference(text: string): boolean {
   return anchoredEntityReference.test(text)
 }
 
-function trimSpace(text: string): string {
+export function trimSpace(text: string): string {
   return text.replace(/^[ \t]+|[ \t]+$/g, '')
 }

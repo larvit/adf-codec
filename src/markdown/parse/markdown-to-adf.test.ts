@@ -129,8 +129,14 @@ test('gives up the link reference definitions a paragraph opens with', () => {
   assert.deepEqual(content(markdownToAdf('[a]: /url\n===\n')), [paragraph('===')])
 })
 
+test('keeps the whitespace CommonMark strips no more of than a space or a tab', () => {
+  assert.deepEqual(content(markdownToAdf('\u00a0Part.\u00a0\n')), [paragraph('\u00a0Part.\u00a0')])
+  assert.deepEqual(content(markdownToAdf('  \u3000Part.\t\n')), [paragraph('\u3000Part.')])
+})
+
 test('normalizes the line endings and the null character CommonMark replaces', () => {
   assert.deepEqual(content(markdownToAdf('One\r\ntwo.\r\n')), [paragraph('One two.')])
+  assert.deepEqual(content(markdownToAdf('One\rtwo.\r')), [paragraph('One two.')])
   assert.deepEqual(content(markdownToAdf('```\r\nx\r\n```\r\n')), [{ content: [text('x')], type: 'codeBlock' }])
   assert.deepEqual(content(markdownToAdf('a\u0000b\n')), [paragraph('a\ufffdb')])
 })

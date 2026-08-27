@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { ClaimedConstruct, LeafBlock } from './blocks.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { parseBlocks } from './blocks.ts'
+import { trimSpace } from '../commonmark-grammar.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
   const content: AdfNode[] = []
@@ -40,7 +41,7 @@ function withContent(node: AdfNode, text: string): AdfNode {
 function inlineContent(text: string): AdfNode[] {
   const line = text
     .split('\n')
-    .map((part) => part.trim())
+    .map((part) => trimSpace(part))
     .join(' ')
   return line === '' ? [] : [{ text: line, type: 'text' }]
 }

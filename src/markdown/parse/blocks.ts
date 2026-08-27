@@ -70,7 +70,6 @@ function openBlock(walk: Walk, lines: readonly string[], index: number, line: st
   return readHtmlBlock(walk, lines, index, html)
 }
 
-// The document's last line ending closes its line rather than opening an empty one.
 function normalizeInput(markdown: string): string {
   return markdown
     .replace(/\r\n?/g, '\n')
