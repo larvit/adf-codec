@@ -197,12 +197,12 @@ test('escapes only text that would otherwise open a construct', () => {
   assert.equal(emitted(':::panel info'), '\\:::panel info\n')
   assert.equal(emitted('10:30 tomorrow'), '10:30 tomorrow\n')
   assert.equal(emitted('[a](b)'), '\\[a](b)\n')
-  assert.equal(emitted('**bold**'), '\\*\\*bold**\n')
+  assert.equal(emitted('**bold**'), '\\*\\*bold\\*\\*\n')
   assert.equal(emitted('a `x` b'), 'a \\`x` b\n')
-  assert.equal(emitted('~~struck~~'), '\\~~struck~~\n')
-  assert.equal(emitted('a \\* b'), 'a \\\\* b\n')
+  assert.equal(emitted('~~struck~~'), '\\~~struck\\~~\n')
+  assert.equal(emitted('a \\* b'), 'a \\\\\\* b\n')
   assert.equal(emitted('1. not a list'), '1\\. not a list\n')
-  assert.equal(emitted('*"quoted"*'), '\\*"quoted"*\n')
+  assert.equal(emitted('*"quoted"*'), '\\*"quoted"\\*\n')
   assert.equal(emitted('x"_y"'), 'x"\\_y"\n')
 })
 
@@ -295,6 +295,25 @@ test('escapes a literal delimiter that would merge with an emitted one', () => {
   assert.equal(emitted(marked('x', { type: 'underline' }), { text: '{}', type: 'text' }), ':underline[x]\\{}\n')
   assert.equal(emitted({ attrs: { text: '' }, type: 'status' }, { text: '{color=red}', type: 'text' }), ':status[]\\{color=red}\n')
   assert.equal(emitted(marked('x', { attrs: { href: 'https://example.com/' }, type: 'link' }), { text: '{}', type: 'text' }), '[x](https://example.com/){}\n')
+})
+
+test('escapes a literal delimiter run that only closes', () => {
+  const emitted = (text: string): string => markdown(adfToMarkdown(document(paragraph({ text, type: 'text' }))))
+  assert.equal(emitted('a* b'), 'a\\* b\n')
+  assert.equal(emitted('2 * 3'), '2 * 3\n')
+})
+
+test("spells a mark run CommonMark's matching pairs as written", () => {
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
+  const em: AdfMark = { type: 'em' }
+  const strong: AdfMark = { type: 'strong' }
+  assert.equal(emitted({ text: 'un', type: 'text' }, marked('a', em, strong), { text: 'istic', type: 'text' }), 'un***a***istic\n')
+  assert.equal(emitted({ text: 're', type: 'text' }, marked('structure', strong), { text: ' the code', type: 'text' }), 're**structure** the code\n')
+  assert.equal(
+    emitted({ text: 'un', type: 'text' }, marked('a', em), marked('b', em, strong), marked('c', em), { text: 'istic', type: 'text' }),
+    'un*a**b**c*istic\n',
+  )
 })
 
 test('escapes a hyphen underline a hard break would expose', () => {

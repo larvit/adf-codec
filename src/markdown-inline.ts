@@ -48,7 +48,7 @@ export function tryImageLine(alt: string | undefined, href: string, path: Conver
   return attempt.ok ? attempt.value.line : undefined
 }
 
-// A demand names a run no spelling holds, and a carried node joins no run, so every pass carries at least one more node.
+// A carried node joins no run, so every pass carries at least one more node.
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<EmittedLine> {
   const carried = new Set<number>()
   for (;;) {

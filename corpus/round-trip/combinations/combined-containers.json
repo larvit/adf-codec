@@ -1,0 +1,161 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "attrs": {
+                "panelType": "info"
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Check the collation before importing.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "panel"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "0198f3a2-7c41-7f2e-9b3a-4d8e2c1a6b90"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "0198f3a2-8d52-70b1-8c4f-5e9f3d2b7ca1",
+                    "state": "DONE"
+                  },
+                  "content": [
+                    {
+                      "text": "Write the spec",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "taskItem"
+                },
+                {
+                  "attrs": {
+                    "localId": "0198f3a2-9e63-7d80-a15b-6fa04e3c8db2",
+                    "state": "TODO"
+                  },
+                  "content": [
+                    {
+                      "text": "Ship it",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "taskItem"
+                }
+              ],
+              "type": "taskList"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    },
+    {
+      "attrs": {
+        "layout": "center",
+        "width": 50
+      },
+      "content": [
+        {
+          "attrs": {
+            "collection": "MediaServicesSample",
+            "id": "4478e39c-cf9b-41d1-ba92-68589487cd75",
+            "type": "file"
+          },
+          "type": "media"
+        },
+        {
+          "content": [
+            {
+              "text": "The moon, at night.",
+              "type": "text"
+            }
+          ],
+          "type": "caption"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "title": "Full build log"
+      },
+      "content": [
+        {
+          "attrs": {
+            "isNumberColumnEnabled": true
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Step",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableHeader"
+                }
+              ],
+              "type": "tableRow"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "background": "#deebff"
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Compile",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "expand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

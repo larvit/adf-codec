@@ -1,4 +1,5 @@
-import { escapesLineClaim, isUnicodeWhitespace, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
+import { escapesLineClaim, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
+import { delimiterFlags, isWordCharacter, matchEmphasis } from './emphasis-matching.ts'
 
 export type EmphasisRole = 'close' | 'open'
 
@@ -14,7 +15,9 @@ export type AssembledLine = { line: string; unspellableRun: NodeRange | undefine
 
 export type LineContainer = 'heading' | 'paragraph' | 'table-cell'
 
-type DelimiterRun = { character: string; closeNodes: NodeRange | undefined; end: number; openNodes: NodeRange | undefined; start: number }
+type EmittedDelimiter = { closes: boolean; offset: number; pair: number; width: number }
+
+type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; delimiters: EmittedDelimiter[]; length: number; start: number }
 
 const delimiters = ['*', '_', '`', '~']
 
@@ -22,7 +25,6 @@ const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
 const followsLinkText = /[([:]/
-const unicodePunctuation = /[\p{P}\p{S}]/u
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
   return escape(resolveEmphasis(segments), container)
@@ -78,40 +80,78 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
 }
 
 function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
-  for (const run of delimiterRuns(segments, placements)) {
-    const before = charAt(output, run.start - 1)
-    const after = output.charAt(run.end)
-    if (run.openNodes !== undefined && !isLeftFlanking(before, after)) return run.openNodes
-    if (run.closeNodes !== undefined && !isRightFlanking(before, after)) return run.closeNodes
+  const { nodes, runs } = emittedRuns(segments, placements, output)
+  const pair = misflanked(runs) ?? unpaired(runs)
+  return pair === undefined ? undefined : nodes[pair]
+}
+
+function misflanked(runs: readonly EmittedRun[]): number | undefined {
+  for (const run of runs) {
+    for (const delimiter of run.delimiters) {
+      if (!(delimiter.closes ? run.canClose : run.canOpen)) return delimiter.pair
+    }
   }
   return undefined
 }
 
-function delimiterRuns(segments: readonly InlineSegment[], placements: readonly number[]): DelimiterRun[] {
-  const runs: DelimiterRun[] = []
+function unpaired(runs: readonly EmittedRun[]): number | undefined {
+  const matched = new Set<number>()
+  for (const pairing of matchEmphasis(runs)) {
+    const opened = delimiterAt(pairing.opener, false, pairing.openerOffset, pairing.used)
+    const closed = delimiterAt(pairing.closer, true, pairing.closerOffset, pairing.used)
+    if (opened !== undefined && closed !== undefined && opened.pair === closed.pair) matched.add(opened.pair)
+  }
+  // The last opener left unpaired is the innermost: the smallest carry that changes the line.
+  let innermost: number | undefined
+  for (const run of runs) {
+    for (const delimiter of run.delimiters) {
+      if (!delimiter.closes && !matched.has(delimiter.pair)) innermost = delimiter.pair
+    }
+  }
+  return innermost
+}
+
+function delimiterAt(run: EmittedRun, closes: boolean, offset: number, width: number): EmittedDelimiter | undefined {
+  return run.delimiters.find((delimiter) => delimiter.closes === closes && delimiter.offset === offset && delimiter.width === width)
+}
+
+function emittedRuns(segments: readonly InlineSegment[], placements: readonly number[], output: string): { nodes: NodeRange[]; runs: EmittedRun[] } {
+  const runs: EmittedRun[] = []
+  const nodes: NodeRange[] = []
+  const open: number[] = []
   let cursor = 0
   for (const segment of segments) {
     const start = placements[cursor] ?? 0
     cursor += segment.text.length
     if (segment.emphasis === undefined) continue
     const closes = segment.emphasis === 'close'
-    const end = start + segment.text.length
+    const pair = closes ? (open.pop() ?? nodes.length) : nodes.length
+    if (!closes) {
+      nodes.push(segment.nodes)
+      open.push(pair)
+    }
+    const width = segment.text.length
     const previous = runs[runs.length - 1]
-    if (previous !== undefined && previous.end === start && previous.character === segment.text.charAt(0)) {
-      previous.closeNodes = previous.closeNodes ?? (closes ? segment.nodes : undefined)
-      previous.end = end
-      previous.openNodes = previous.openNodes ?? (closes ? undefined : segment.nodes)
+    if (previous !== undefined && previous.start + previous.length === start && previous.character === segment.text.charAt(0)) {
+      previous.delimiters.push({ closes, offset: start - previous.start, pair, width })
+      previous.length += width
       continue
     }
     runs.push({
+      canClose: false,
+      canOpen: false,
       character: segment.text.charAt(0),
-      closeNodes: closes ? segment.nodes : undefined,
-      end,
-      openNodes: closes ? undefined : segment.nodes,
+      delimiters: [{ closes, offset: 0, pair, width }],
+      length: width,
       start,
     })
   }
-  return runs
+  for (const run of runs) {
+    const flags = delimiterFlags(run.character, charAt(output, run.start - 1), output.charAt(run.start + run.length))
+    run.canClose = flags.canClose
+    run.canOpen = flags.canOpen
+  }
+  return { nodes, runs }
 }
 
 function mergesWithSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
@@ -177,7 +217,7 @@ function claimsCharacter(
   if (character === ':') return inlineDirectiveOpener.test(rest)
   if (character === '[') return opensLink(scan, escapings, index)
   if (character === '`') return opensCodeSpan(scan, index, escaped)
-  if (character === '*' || character === '_' || character === '~') return opensEmphasis(scan, index, escaped)
+  if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, escaped)
   return false
 }
 
@@ -196,16 +236,13 @@ function opensCodeSpan(scan: string, index: number, escaped: ReadonlySet<number>
   return new RegExp('(?<!`)`{' + length + '}(?!`)').test(scan.slice(index + length))
 }
 
-function opensEmphasis(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
+function claimsEmphasis(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
   if (!startsRun(scan, index, escaped)) return false
   const character = scan.charAt(index)
   const length = runLength(scan, index)
-  const before = index === 0 ? '' : scan.charAt(index - 1)
-  const after = scan.charAt(index + length)
-  if (character === '~') return length === 2 && isLeftFlanking(before, after)
-  if (!isLeftFlanking(before, after)) return false
-  if (character === '*') return true
-  return !isRightFlanking(before, after) || isPunctuation(before)
+  if (character === '~' && length !== 2) return false
+  const flags = delimiterFlags(character, index === 0 ? '' : scan.charAt(index - 1), scan.charAt(index + length))
+  return flags.canClose || flags.canOpen
 }
 
 function startsRun(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
@@ -218,30 +255,6 @@ function runLength(scan: string, index: number): number {
   let length = 0
   while (scan.charAt(index + length) === character) length += 1
   return length
-}
-
-function isLeftFlanking(before: string, after: string): boolean {
-  if (isWhitespace(after)) return false
-  if (!isPunctuation(after)) return true
-  return isWhitespace(before) || isPunctuation(before)
-}
-
-function isRightFlanking(before: string, after: string): boolean {
-  if (isWhitespace(before)) return false
-  if (!isPunctuation(before)) return true
-  return isWhitespace(after) || isPunctuation(after)
-}
-
-function isPunctuation(character: string): boolean {
-  return character !== '' && unicodePunctuation.test(character)
-}
-
-function isWhitespace(character: string): boolean {
-  return character === '' || isUnicodeWhitespace(character)
-}
-
-function isWordCharacter(character: string): boolean {
-  return character !== '' && !isUnicodeWhitespace(character) && !unicodePunctuation.test(character)
 }
 
 function charAt(text: string, index: number): string {

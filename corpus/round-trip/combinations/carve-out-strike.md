@@ -1,6 +1,6 @@
-\~~not strike~~
+\~~not strike\~~
 
-~~gone~~ but \~~kept~~
+~~gone~~ but \~~kept\~~
 
 A ~ B ~ C
 

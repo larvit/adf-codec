@@ -6,4 +6,4 @@
 
 snake_case_name
 
-\*not emphasis*
+\*not emphasis\*

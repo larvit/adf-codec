@@ -110,14 +110,20 @@ detail is settled at its own milestone.
           added to that list is the odd one out: `unspellableMark` finds it after assembly and
           names a mark type against the line's path, so the failing run needs identifying before
           the carry can replace the refusal `mark-inside-word` pinned.
-    - [ ] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
+    - [x] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
           than isolating one, and the gate's collision property: no two corpus documents may emit
           the same bytes — one spelling for two documents is a round-trip break no parser can undo,
-          and it is provable without one. It also settles the emitter's one known approximation:
-          delimiter flanking is exact, but CommonMark's *matching* — the multiple-of-3 rule and the
-          way a run splits across several openers — is not modelled. No reachable violation has been
-          found by hand; the property test is what decides it, and 2e1's `carve-out-strike` pins a
-          second backslash only flanking-without-matching emits.
+          and it is provable without one.
+          **Settled** (the maintainer, 2026-08-27): the approximation this item inherited — flanking
+          exact, CommonMark's *matching* unmodelled — had two round-trip breaks reachable by hand,
+          so the emitter now models the matching. `process_emphasis` runs over the runs the emitter
+          wrote (`emphasis-matching.ts`) and a pair it hands to another delimiter rides the carry,
+          which is what the multiple-of-3 rule did to the em in `un*a**b*****c**istic`. A delimiter
+          run in text now escapes wherever CommonMark could open or close with it, not only open:
+          one that could only close stole the spelling around it (`un*a* b*istic`), and escaping
+          both ways keeps every delimiter the emitter did not write out of the matching. The
+          canonical form gained a backslash where a run only closes — `\*not emphasis\*`, and
+          2e1's `carve-out-strike` a third and fourth.
   - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
         CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
         `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying
@@ -156,7 +162,10 @@ detail is settled at its own milestone.
       stay above all of it — the vocabulary a string-typed attribute grammar needs, which is why
       HTML will want them too, not a markdown spelling. Both node tables are a second copy of
       `spec/flavour.md`'s prose with no drift guard, and a mistyped attribute name degrades into a
-      false refusal no test catches.
+      false refusal no test catches. The parser reuses `emphasis-matching.ts` whole and lands it
+      beside the grammar module: `delimiterFlags` and `matchEmphasis` take CommonMark's own run
+      vocabulary rather than the emitter's, so no second `process_emphasis` exists to drift from
+      the first.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality
       the round-trip asserts, which over normalized input is the canonical serializer's compact
@@ -165,7 +174,10 @@ detail is settled at its own milestone.
       lifts the branch floor §10 keeps below 100 for exactly those halves.
       Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
       here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
-      markdown, the payloads supplied by the maintainer.
+      markdown, the payloads supplied by the maintainer. This subsumes 2e5's collision property —
+      a document that round-trips proves no other document shares its spelling — so decide here
+      whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
+      no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
       `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the

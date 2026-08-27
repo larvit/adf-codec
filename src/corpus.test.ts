@@ -66,6 +66,35 @@ for (const directory of emittingDirectories) {
   }
 }
 
+function roundTripFixtures(): { name: string; path: string }[] {
+  return emittingDirectories.flatMap((directory) =>
+    fixtureNames(directory, '.json').map((name) => ({ name: `${directory}/${name}`, path: join(roundTripRoot, directory, `${name}.json`) })),
+  )
+}
+
+test('no two round-trip documents share one markdown spelling', () => {
+  const spellings = new Map<string, string>()
+  for (const fixture of roundTripFixtures()) {
+    const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
+    assert.ok(isAdfDocument(parsed), `${fixture.name} is not an ADF document`)
+    const result = adfToMarkdown(parsed)
+    assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
+    assert.equal(spellings.get(result.value), undefined, `${fixture.name} and ${spellings.get(result.value)} share one markdown spelling`)
+    spellings.set(result.value, fixture.name)
+  }
+})
+
+test('no round-trip fixture repeats the document another holds', () => {
+  const documents = new Map<string, string>()
+  for (const fixture of roundTripFixtures()) {
+    const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
+    assert.ok(isJsonValue(parsed), `${fixture.name} does not hold a JSON value`)
+    const document = serializeCanonicalJson(parsed, 'compact')
+    assert.equal(documents.get(document), undefined, `${fixture.name} repeats the document ${documents.get(document)} holds`)
+    documents.set(document, fixture.name)
+  }
+})
+
 // spec/flavour.md, Directives: the container fence rule, checked against the emitted bytes.
 function fenceNestingFault(markdown: string): string | undefined {
   const open: number[] = []

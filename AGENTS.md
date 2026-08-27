@@ -119,6 +119,12 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   the spot.
 - Only the hard break's inline segment holds a raw newline — every other spelling escapes one or
   refuses it — which is how the whitespace carry finds a line edge.
+- Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
+  escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
+  only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
+  `matchEmphasis` transcribes the reference `process_emphasis` line for line, and its closer walk and
+  opener search stay whole: broken into named steps they drift from the algorithm being faithful is
+  the whole point of.
 - A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
   returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
   general form owns the refusal. Refusing there refuses a document the general form spells.
