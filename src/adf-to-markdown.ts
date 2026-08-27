@@ -132,7 +132,6 @@ function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: Conv
 }
 
 function emitInlineBody(content: readonly AdfNode[], path: ConvertErrorPath): Result<EmittedBody> {
-  if (content.length === 0) return success({ fenceColons: 0, text: '' })
   const line = emitInlineLine(content, 'paragraph', path)
   if (!line.ok) return line
   return success({ fenceColons: 0, text: line.value })

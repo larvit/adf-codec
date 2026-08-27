@@ -86,7 +86,8 @@ fence or opaque carry is content. Canonical form uses minimal lengths.
 Directive fence lines follow code-fence indentation (up to three spaces relative to their
 container); trailing whitespace on a fence line is tolerated in input, never emitted.
 
-**Leaf block**: `::name {attrs}` — a block-position node with no body.
+**Leaf block**: `::name arg {attrs}` — a block-position node with no body, `arg` reading as
+above.
 
 **Claiming at block level**, symmetric with inline: a line whose leading run of two or more
 colons is followed immediately by a name character is claimed and must parse fully as a container
