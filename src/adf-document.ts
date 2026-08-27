@@ -29,6 +29,11 @@ const documentKeys = ['content', 'type', 'version']
 const markKeys = ['attrs', 'type']
 const nodeKeys = ['attrs', 'content', 'marks', 'text', 'type']
 
+export function carriesOnly(node: AdfNode, attributes: readonly string[]): boolean {
+  if ((node.marks ?? []).length > 0 || node.text !== undefined) return false
+  return holdsOnly(node.attrs ?? {}, attributes)
+}
+
 export function isAdfDocument(value: unknown): value is AdfDocument {
   if (!isRecord(value) || !holdsOnly(value, documentKeys)) return false
   if (value['type'] !== 'doc') return false

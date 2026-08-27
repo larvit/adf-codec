@@ -13,6 +13,7 @@ export type MarkSpelling =
 const inlineDirectives: Readonly<Record<string, InlineDirective>> = {
   date: { attributes: { localId: 'string', timestamp: 'string' } },
   emoji: { attributes: { id: 'string', localId: 'string', shortName: 'string' }, slot: 'text' },
+  hardBreak: { attributes: { localId: 'string', text: 'string' } },
   inlineCard: { attributes: { data: 'json', localId: 'string', url: 'string' } },
   mediaInline: {
     attributes: {
@@ -52,11 +53,11 @@ export function markSpelling(type: string): MarkSpelling | undefined {
 }
 
 export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective): string | undefined {
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot)
+  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot === undefined ? [] : [directive.slot])
   return pairs === undefined ? undefined : spellAttributes(pairs)
 }
 
 export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {
-  const pairs = vocabularyPairs(mark.attrs ?? {}, vocabulary, undefined)
+  const pairs = vocabularyPairs(mark.attrs ?? {}, vocabulary, [])
   return pairs === undefined ? undefined : spellAttributes(pairs)
 }

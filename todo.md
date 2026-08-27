@@ -55,7 +55,7 @@ detail is settled at its own milestone.
   - [x] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
         border, subsup, textColor, underline; the content slot's `text` attribute and the
         `:text{text="…"}` whitespace spelling.
-- [ ] **2 — `adfToMarkdown`.** First real code. Each sub-item turns one corpus directory green;
+- [x] **2 — `adfToMarkdown`.** First real code. Each sub-item turns one corpus directory green;
       the two that have no fixtures yet write them in the same chunk, tests first (§10).
   - [x] **2a — The runner and the CommonMark subset.** The corpus runner: walk
         `corpus/round-trip/`, assert `adfToMarkdown` emits each `.md` byte for byte. Decide here
@@ -65,7 +65,10 @@ detail is settled at its own milestone.
         the inline carry. `commonmark-subset/` green.
   - [x] **2b — Block nodes.** `block-nodes/` green. A nested list that cannot interrupt the block
         above it is refused meanwhile, not spelled: the maintainer's answer on tight-versus-blank
-        separation turns that refusal into an emission. Block separation becomes
+        separation turns that refusal into an emission. The test is broader than the name it
+        carries — `interruptsParagraph` reads the next list alone, so a list after a block no
+        paragraph continues, a code block say, is refused too — and the same answer narrows it.
+        Block separation becomes
         `separationBetween(previous, next, container)` here — a boolean cannot hold the third case
         `spec/flavour.md` states for two directive blocks in a container body, and the maintainer's
         answer on a CommonMark block beside a directive block (1d) drops into the same seam. Give
@@ -82,7 +85,7 @@ detail is settled at its own milestone.
         info string, and the `codeBlock` whose language is `adf` — carried whole ahead of the
         attribute fallback 2e owes, since the reservation leaves that node no other spelling
         whatever 1d decides for its `localId`.
-  - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
+  - [x] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
         `corpus/round-trip/combinations/`.
     - [x] **2e1 — The carve-outs and the claimed line.** The three carve-outs
           and their escapes, and a paragraph line inside a container body shaped like a closing
@@ -124,7 +127,7 @@ detail is settled at its own milestone.
           both ways keeps every delimiter the emitter did not write out of the matching. The
           canonical form gained a backslash where a run only closes — `\*not emphasis\*`, and
           2e1's `carve-out-strike` a third and fourth.
-  - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
+  - [x] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
         CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
         `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying
         `localId`, `codeBlock`'s `hideLineNumbers`, `uniqueId` and `wrap`, and `blockquote`'s
@@ -134,6 +137,23 @@ detail is settled at its own milestone.
         page of carried JSON. Fixtures and emitter together, and the three documents the answer
         settles leave `corpus/unspellable/` as round-trip pairs: `block-local-id`,
         `code-block-empty-language`, `ordered-list-start-one`.
+        **Settled** (the maintainer, 2026-08-27): the `codeBlock` directive's body is one fenced
+        code block, the language staying on the fence line so every renderer still highlights it;
+        a language no info string holds — empty, a backtick, edge whitespace, an entity reference
+        or the reserved `adf` — rides the `language` attribute with the fence bare, which retires
+        2d's carry for the reserved name along with the premise that left it no other spelling.
+        The plain spelling gives way wherever it cannot render what the node carries rather than
+        only where it has no place for it, so a heading level absent or outside 1-6 and an order
+        whose markers would run past 999999999 take the directive form too, and
+        `ambiguous-attribute-spelling`, `unspellable-code-block-language`,
+        `unspellable-list-marker`, `unspelled-block-marks` and `unsupported-heading-level` leave
+        `ConvertErrorCode`; content and placement refusals stay, which leaves the directive form
+        spelling an empty list or a non-`listItem` child that the plain form refuses. `order` is
+        the first marker, so `order: 1` keeps the plain `1.` — what a real payload carries — and a
+        list carrying no `order` has no number to take and takes the directive form.
+        2f raises what 1d's unspelled block separation costs: a single `localId` on a paragraph
+        beside a plain one now refuses every container body that is a directive's — a panel, an
+        expand, a table cell — where before 2f the attribute refused the document anyway.
 - [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
       into sub-items before starting (§15). Fixtures land with the code that reads them:
       `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity
