@@ -1,40 +1,37 @@
-export type EmphasisDelimiter = { closes: boolean; end: number; pair: number; start: number }
+import { isUnicodeWhitespace } from './commonmark-grammar.ts'
 
-export type EmphasisRun = {
-  canClose: boolean
-  canOpen: boolean
-  character: string
-  delimiters: readonly EmphasisDelimiter[]
-  end: number
-  start: number
-}
+export type DelimiterRun = { canClose: boolean; canOpen: boolean; character: string; length: number }
 
-type Candidate = {
+export type EmphasisPairing<Run> = { closer: Run; closerOffset: number; opener: Run; openerOffset: number; used: number }
+
+type Candidate<Run> = {
   head: number
-  next: Candidate | undefined
+  next: Candidate<Run> | undefined
   original: number
-  previous: Candidate | undefined
+  previous: Candidate<Run> | undefined
   remaining: number
-  run: EmphasisRun
+  run: Run
   tail: number
 }
 
-// Flanking decides which delimiters may pair; matching decides which do, and a pair it leaves unpaired reads back as another document.
-export function unmatchedPair(runs: readonly EmphasisRun[]): number | undefined {
-  const matched = matchDelimiters(runs)
-  // The last opener left unpaired is the innermost: the smallest carry that changes the line.
-  let innermost: number | undefined
-  for (const run of runs) {
-    for (const delimiter of run.delimiters) {
-      if (!delimiter.closes && !matched.has(delimiter.pair)) innermost = delimiter.pair
-    }
-  }
-  return innermost
+const unicodePunctuation = /[\p{P}\p{S}]/u
+
+// spec/flavour.md, Canonical form: CommonMark's own can-open and can-close, which `~` follows too.
+export function delimiterFlags(character: string, before: string, after: string): { canClose: boolean; canOpen: boolean } {
+  const left = isLeftFlanking(before, after)
+  const right = isRightFlanking(before, after)
+  if (character !== '_') return { canClose: right, canOpen: left }
+  return { canClose: right && (!left || isPunctuation(after)), canOpen: left && (!right || isPunctuation(before)) }
 }
 
-function matchDelimiters(runs: readonly EmphasisRun[]): ReadonlySet<number> {
-  const matched = new Set<number>()
-  const bottoms = new Map<string, Candidate | undefined>()
+export function isWordCharacter(character: string): boolean {
+  return character !== '' && !isWhitespace(character) && !isPunctuation(character)
+}
+
+// Flanking decides which delimiters may pair; this decides which ones do, and a pair it leaves out reads back as another document.
+export function matchEmphasis<Run extends DelimiterRun>(runs: readonly Run[]): EmphasisPairing<Run>[] {
+  const pairings: EmphasisPairing<Run>[] = []
+  const bottoms = new Map<string, Candidate<Run> | undefined>()
   let closer = candidates(runs)
   while (closer !== undefined) {
     if (!closer.run.canClose) {
@@ -53,9 +50,9 @@ function matchDelimiters(runs: readonly EmphasisRun[]): ReadonlySet<number> {
       continue
     }
     const used = closer.remaining >= 2 && opener.remaining >= 2 ? 2 : 1
-    record(matched, opener, closer, used)
     opener.remaining -= used
     opener.tail -= used
+    pairings.push({ closer: closer.run, closerOffset: closer.head, opener: opener.run, openerOffset: opener.tail, used })
     closer.head += used
     closer.remaining -= used
     opener.next = closer
@@ -66,15 +63,22 @@ function matchDelimiters(runs: readonly EmphasisRun[]): ReadonlySet<number> {
     unlink(closer)
     closer = following
   }
-  return matched
+  return pairings
 }
 
-function candidates(runs: readonly EmphasisRun[]): Candidate | undefined {
-  let first: Candidate | undefined
-  let previous: Candidate | undefined
+function candidates<Run extends DelimiterRun>(runs: readonly Run[]): Candidate<Run> | undefined {
+  let first: Candidate<Run> | undefined
+  let previous: Candidate<Run> | undefined
   for (const run of runs) {
-    const length = run.end - run.start
-    const candidate: Candidate = { head: run.start, next: undefined, original: length, previous, remaining: length, run, tail: run.end }
+    const candidate: Candidate<Run> = {
+      head: 0,
+      next: undefined,
+      original: run.length,
+      previous,
+      remaining: run.length,
+      run,
+      tail: run.length,
+    }
     if (previous === undefined) first = candidate
     else previous.next = candidate
     previous = candidate
@@ -82,19 +86,33 @@ function candidates(runs: readonly EmphasisRun[]): Candidate | undefined {
   return first
 }
 
-function pairs(opener: Candidate, closer: Candidate): boolean {
+function pairs<Run extends DelimiterRun>(opener: Candidate<Run>, closer: Candidate<Run>): boolean {
   if (!opener.run.canOpen || opener.run.character !== closer.run.character) return false
   const odd = (closer.run.canOpen || opener.run.canClose) && closer.original % 3 !== 0 && (opener.original + closer.original) % 3 === 0
   return !odd
 }
 
-function record(matched: Set<number>, opener: Candidate, closer: Candidate, used: number): void {
-  const opened = opener.run.delimiters.find((delimiter) => !delimiter.closes && delimiter.start === opener.tail - used && delimiter.end === opener.tail)
-  const closed = closer.run.delimiters.find((delimiter) => delimiter.closes && delimiter.start === closer.head && delimiter.end === closer.head + used)
-  if (opened !== undefined && closed !== undefined && opened.pair === closed.pair) matched.add(opened.pair)
-}
-
-function unlink(candidate: Candidate): void {
+function unlink<Run>(candidate: Candidate<Run>): void {
   if (candidate.previous !== undefined) candidate.previous.next = candidate.next
   if (candidate.next !== undefined) candidate.next.previous = candidate.previous
+}
+
+function isLeftFlanking(before: string, after: string): boolean {
+  if (isWhitespace(after)) return false
+  if (!isPunctuation(after)) return true
+  return isWhitespace(before) || isPunctuation(before)
+}
+
+function isRightFlanking(before: string, after: string): boolean {
+  if (isWhitespace(before)) return false
+  if (!isPunctuation(before)) return true
+  return isWhitespace(after) || isPunctuation(after)
+}
+
+function isPunctuation(character: string): boolean {
+  return character !== '' && unicodePunctuation.test(character)
+}
+
+function isWhitespace(character: string): boolean {
+  return character === '' || isUnicodeWhitespace(character)
 }

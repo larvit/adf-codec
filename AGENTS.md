@@ -122,6 +122,8 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
   escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
   only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
+  `matchEmphasis` is a line-for-line transcription of the reference `process_emphasis` and stays one
+  function: split into named steps it drifts from the algorithm whose fidelity is the whole point.
 - A readable spelling tried ahead of a general one — the image, the pipe table, a pipe cell —
   returns `string | undefined`, never a `Result`: any failure is the fallback signal, and the
   general form owns the refusal. Refusing there refuses a document the general form spells.

@@ -162,7 +162,10 @@ detail is settled at its own milestone.
       stay above all of it — the vocabulary a string-typed attribute grammar needs, which is why
       HTML will want them too, not a markdown spelling. Both node tables are a second copy of
       `spec/flavour.md`'s prose with no drift guard, and a mistyped attribute name degrades into a
-      false refusal no test catches.
+      false refusal no test catches. The parser reuses `emphasis-matching.ts` whole and lands it
+      beside the grammar module: `delimiterFlags` and `matchEmphasis` take CommonMark's own run
+      vocabulary rather than the emitter's, so no second `process_emphasis` exists to drift from
+      the first.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality
       the round-trip asserts, which over normalized input is the canonical serializer's compact
@@ -171,7 +174,10 @@ detail is settled at its own milestone.
       lifts the branch floor §10 keeps below 100 for exactly those halves.
       Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
       here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
-      markdown, the payloads supplied by the maintainer.
+      markdown, the payloads supplied by the maintainer. This subsumes 2e5's collision property —
+      a document that round-trips proves no other document shares its spelling — so decide here
+      whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
+      no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
       `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the

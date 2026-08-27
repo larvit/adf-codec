@@ -66,22 +66,33 @@ for (const directory of emittingDirectories) {
   }
 }
 
+function roundTripFixtures(): { name: string; path: string }[] {
+  return emittingDirectories.flatMap((directory) =>
+    fixtureNames(directory, '.json').map((name) => ({ name: `${directory}/${name}`, path: join(roundTripRoot, directory, `${name}.json`) })),
+  )
+}
+
 // One spelling for two documents is a round-trip break no parser can undo, and no parser is needed to see it.
-test('no two round-trip documents share one spelling', () => {
-  const documents = new Map<string, string>()
+test('no two round-trip documents share one markdown spelling', () => {
   const spellings = new Map<string, string>()
-  for (const directory of emittingDirectories) {
-    for (const name of fixtureNames(directory, '.md')) {
-      const fixture = `${directory}/${name}`
-      const parsed: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
-      assert.ok(isJsonValue(parsed))
-      const document = serializeCanonicalJson(parsed, 'compact')
-      const markdown = readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8')
-      assert.equal(documents.get(document), undefined, `${fixture} repeats the document ${documents.get(document)} holds`)
-      assert.equal(spellings.get(markdown), undefined, `${fixture} and ${spellings.get(markdown)} share one markdown spelling`)
-      documents.set(document, fixture)
-      spellings.set(markdown, fixture)
-    }
+  for (const fixture of roundTripFixtures()) {
+    const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
+    assert.ok(isAdfDocument(parsed), `${fixture.name} is not an ADF document`)
+    const result = adfToMarkdown(parsed)
+    assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
+    assert.equal(spellings.get(result.value), undefined, `${fixture.name} and ${spellings.get(result.value)} share one markdown spelling`)
+    spellings.set(result.value, fixture.name)
+  }
+})
+
+test('no round-trip fixture repeats the document another holds', () => {
+  const documents = new Map<string, string>()
+  for (const fixture of roundTripFixtures()) {
+    const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
+    assert.ok(isJsonValue(parsed))
+    const document = serializeCanonicalJson(parsed, 'compact')
+    assert.equal(documents.get(document), undefined, `${fixture.name} repeats the document ${documents.get(document)} holds`)
+    documents.set(document, fixture.name)
   }
 })
 
