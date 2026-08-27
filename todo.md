@@ -168,7 +168,7 @@ detail is settled at its own milestone.
       unbounded nesting actually arrives, so §11's 500 binds all three of the emitter's guards
       here: block depth at 3c and again at 3f's container fences, inline and mark depth at 3f and
       3i, a carried value's JSON at 3j, where `isJsonValue` already bounds it.
-  - [ ] **3a — The hierarchy.** Mechanical, ahead of the first parser file: `src/adf/` and
+  - [x] **3a — The hierarchy.** Mechanical, ahead of the first parser file: `src/adf/` and
         `src/markdown/` (`html/` arrives with its first file, 6-7), the grammar module shared
         inside `markdown/`, and `emphasis-matching.ts` beside it — the parser reuses it whole,
         `delimiterFlags` and `matchEmphasis` taking CommonMark's own run vocabulary rather than

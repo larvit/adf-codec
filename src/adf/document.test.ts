@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { isAdfDocument } from './adf-document.ts'
+import { isAdfDocument } from './document.ts'
 
 test('accepts an editor-normal document', () => {
   assert.equal(isAdfDocument({ content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }), true)

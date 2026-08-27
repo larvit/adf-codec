@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './adf-document.ts'
-import type { Result } from './result.ts'
-import { adfToMarkdown } from './index.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { Result } from '../../result.ts'
+import { adfToMarkdown } from '../../index.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }

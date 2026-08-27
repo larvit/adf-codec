@@ -1,6 +1,4 @@
-import type { AdfMark, AdfNode, AttributeVocabulary } from './adf-document.ts'
-import type { JsonValue } from './json-value.ts'
-import { isBareToken, spellAttributes, spellJsonAttribute, vocabularyPairs } from './directive-attributes.ts'
+import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
 export type BlockDirective = {
   argument?: string
@@ -88,30 +86,4 @@ const blockDirectives: Readonly<Record<string, BlockDirective>> = {
 
 export function blockDirective(type: string): BlockDirective | undefined {
   return Object.hasOwn(blockDirectives, type) ? blockDirectives[type] : undefined
-}
-
-export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, spelledByBody: readonly string[] = []): string | undefined {
-  const argument = spellArgument(node, directive)
-  if (argument === undefined) return undefined
-  const spelled = directive.argument === undefined ? spelledByBody : [directive.argument, ...spelledByBody]
-  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, spelled)
-  if (pairs === undefined) return undefined
-  const marks = node.marks ?? []
-  if (marks.length > 0) pairs.push(['marks', spellJsonAttribute(markValues(marks))])
-  const attributes = spellAttributes(pairs)
-  return `${node.type}${argument}${attributes === '' ? '' : ` ${attributes}`}`
-}
-
-function spellArgument(node: AdfNode, directive: BlockDirective): string | undefined {
-  const value = directive.argument === undefined ? undefined : node.attrs?.[directive.argument]
-  if (value === undefined) return ''
-  if (typeof value !== 'string' || !isBareToken(value)) return undefined
-  return ` ${value}`
-}
-
-function markValues(marks: readonly AdfMark[]): JsonValue {
-  return marks.map((mark) => {
-    const attrs = mark.attrs ?? {}
-    return Object.keys(attrs).length === 0 ? { type: mark.type } : { attrs, type: mark.type }
-  })
 }

@@ -137,7 +137,11 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
-- Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`).
+- The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
+  format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
+- Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a
+  file does not repeat its directory in its name — `adf/document.ts`, never
+  `adf/adf-document.ts`.
 - Reuse before adding; the smallest sufficient diff is the benchmark; no speculative generality —
   a second consumer, or it goes.
 

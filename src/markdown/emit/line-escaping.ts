@@ -1,5 +1,5 @@
-import { escapesLineClaim, opensBracketedAutolink, startsEntityReference, type LinePosition } from './commonmark-grammar.ts'
-import { delimiterFlags, isWordCharacter, matchEmphasis } from './emphasis-matching.ts'
+import { escapesLineClaim, opensBracketedAutolink, startsEntityReference, type LinePosition } from '../commonmark-grammar.ts'
+import { delimiterFlags, isWordCharacter, matchEmphasis } from '../emphasis-matching.ts'
 
 export type EmphasisRole = 'close' | 'open'
 
