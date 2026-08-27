@@ -164,13 +164,16 @@ detail is settled at its own milestone.
       and `:hardBreak{}` sit in it — so 3b through 3f answer to their own tests and the one-way
       fixtures they land, and 3g is where the first directory reads back. The raw-HTML element
       mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input — a
-      block, an inline tag, a comment, a processing instruction — is a named error.
+      block, an inline tag, a comment, a processing instruction — is a named error. Input is where
+      unbounded nesting actually arrives, so §11's 500 binds all three of the emitter's guards
+      here: block depth at 3c and again at 3f's container fences, inline and mark depth at 3f and
+      3i, a carried value's JSON at 3j, where `isJsonValue` already bounds it.
   - [ ] **3a — The hierarchy.** Mechanical, ahead of the first parser file: `src/adf/` and
         `src/markdown/` (`html/` arrives with its first file, 6-7), the grammar module shared
         inside `markdown/`, and `emphasis-matching.ts` beside it — the parser reuses it whole,
         `delimiterFlags` and `matchEmphasis` taking CommonMark's own run vocabulary rather than
         the emitter's, so no second `process_emphasis` exists to drift from the first.
-        `block-directives.ts` and `inline-directives.ts` each part cleanly, a node table
+        `block-directives.ts` and `inline-directives.ts` each part by file, a node table
         milestones 6-7 need in `adf/` beside a markdown spelling that belongs in `markdown/`.
         `directive-attributes.ts` cannot: `vocabularyPairs` walks the vocabulary and spells the
         value in one pass, the type check living inside `spellAttributeValue`, so the check comes
@@ -202,9 +205,9 @@ detail is settled at its own milestone.
         `normalization/` fixtures, holding inline-trivial content so 3d and 3e add beside them
         rather than editing them.
   - [ ] **3c — The container blocks.** Blockquote, bullet and ordered list: the continuation a
-        marker's width sets, lazy continuation, and the tightness ADF does not record. Container
-        nesting is where §11's 500 arrives from input, `> ` repeated being two bytes a level.
-        Two decisions land here, each holding a `corpus/unspellable/` document. Whether a claimed
+        marker's width sets, lazy continuation, and the tightness ADF does not record — `> `
+        repeated being two bytes a level, so this is the cheapest way to reach §11's 500. Two
+        decisions land here, each holding a `corpus/unspellable/` document. Whether a claimed
         line interrupts a paragraph is pinned for the plain case and unstated for the lazy one — a
         closing fence on the line after a blockquote's open paragraph is lazy continuation in
         CommonMark, which would swallow the fence and leave the container unclosed, and 2e1's
@@ -267,10 +270,10 @@ detail is settled at its own milestone.
         fixpoint plus a count of the dozen elements the CommonMark subset covers catches both. The
         pick, and the exception list whichever it is, are the maintainer's. One outcome is no
         exception and must not be filed as one: valid CommonMark parsing to a document
-        `adfToMarkdown` refuses is a §2 hole, which is what `corpus/unspellable/` holds until 3c,
-        3e and 3h land their answers. The parser's `ConvertErrorCode` additions are read here as
-        one list before §8's freeze — nine sessions mint them independently, and one cause
-        wearing two codes is breaking to undo after `0.1.0`. `index.ts` gains `markdownToAdf`
+        `adfToMarkdown` refuses is a §2 hole, which is what three of `corpus/unspellable/`'s four
+        hold until 3c, 3e and 3h land their answers. The parser's `ConvertErrorCode` additions
+        are read here as one list before §8's freeze — nine sessions mint them independently, and
+        one cause wearing two codes is breaking to undo after `0.1.0`. `index.ts` gains `markdownToAdf`
         here with the README's status line, neither waiting on the exception list: a parser
         still missing syntax is a claim the entrypoint cannot keep, and the corpus reads it from
         its module meanwhile.
