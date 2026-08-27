@@ -387,9 +387,10 @@ inline nodes carrying an identical mark, attributes included, at that depth. A r
 node the emitter carries, so no emitted carry sits inside a mark spelling.
 
 An inline node whose marks no nesting spells — a mark type not listed here, an attribute no
-spelling holds, an order putting a code span outside another mark, `code` on text holding a
-newline, or a spelling CommonMark's flanking rules cannot open or close where the run sits
-(`un**-real**istic`) — rides the inline carry whole. An opaque carry inside a mark spelling is a
+spelling holds or one a spelling needs and the mark lacks, an order putting a code span outside
+another mark, `code` over anything but a text node or over text holding a newline, or a spelling
+CommonMark's flanking rules cannot open or close where the run sits (`un**-real**istic`) — rides
+the inline carry whole. An opaque carry inside a mark spelling is a
 named error in input: the carry restores its node exactly, marks included (AGENTS.md §3).
 
 ```

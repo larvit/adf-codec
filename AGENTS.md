@@ -82,7 +82,8 @@ closed list a consumer may switch exhaustively, the message free text, the path 
 from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
 new failure cause reuses a code where one fits; the list is complete at `0.1.0`. A code names the
 cause; where one cause recurs across node types, one code covers them all and `path` and `message`
-say which.
+say which. A cause the carry answers gets no code: no mark refuses, since a mark no spelling writes
+rides the carry with its node.
 
 ## 9. Release automation
 

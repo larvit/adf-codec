@@ -4,15 +4,17 @@ export type EmphasisRole = 'close' | 'open'
 
 export type InlineEscaping = 'backslash' | 'bracketed' | 'none'
 
+export type NodeRange = { first: number; last: number }
+
 export type InlineSegment =
-  | { emphasis: EmphasisRole; escaping: 'none'; mark: string; text: string }
+  | { emphasis: EmphasisRole; escaping: 'none'; nodes: NodeRange; text: string }
   | { emphasis?: undefined; escaping: InlineEscaping; text: string }
 
-export type AssembledLine = { line: string; unspellableMark: string | undefined }
+export type AssembledLine = { line: string; unspellableRun: NodeRange | undefined }
 
 export type LineContainer = 'heading' | 'paragraph' | 'table-cell'
 
-type DelimiterRun = { character: string; closeMark: string | undefined; end: number; openMark: string | undefined; start: number }
+type DelimiterRun = { character: string; closeNodes: NodeRange | undefined; end: number; openNodes: NodeRange | undefined; start: number }
 
 const delimiters = ['*', '_', '`', '~']
 
@@ -72,15 +74,15 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
     placements.push(output.length)
     output += scan.charAt(index)
   }
-  return { line: output, unspellableMark: unspellableMark(segments, output, placements) }
+  return { line: output, unspellableRun: unspellableRun(segments, output, placements) }
 }
 
-function unspellableMark(segments: readonly InlineSegment[], output: string, placements: readonly number[]): string | undefined {
+function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
   for (const run of delimiterRuns(segments, placements)) {
     const before = charAt(output, run.start - 1)
     const after = output.charAt(run.end)
-    if (run.openMark !== undefined && !isLeftFlanking(before, after)) return run.openMark
-    if (run.closeMark !== undefined && !isRightFlanking(before, after)) return run.closeMark
+    if (run.openNodes !== undefined && !isLeftFlanking(before, after)) return run.openNodes
+    if (run.closeNodes !== undefined && !isRightFlanking(before, after)) return run.closeNodes
   }
   return undefined
 }
@@ -96,16 +98,16 @@ function delimiterRuns(segments: readonly InlineSegment[], placements: readonly 
     const end = start + segment.text.length
     const previous = runs[runs.length - 1]
     if (previous !== undefined && previous.end === start && previous.character === segment.text.charAt(0)) {
-      previous.closeMark = previous.closeMark ?? (closes ? segment.mark : undefined)
+      previous.closeNodes = previous.closeNodes ?? (closes ? segment.nodes : undefined)
       previous.end = end
-      previous.openMark = previous.openMark ?? (closes ? undefined : segment.mark)
+      previous.openNodes = previous.openNodes ?? (closes ? undefined : segment.nodes)
       continue
     }
     runs.push({
       character: segment.text.charAt(0),
-      closeMark: closes ? segment.mark : undefined,
+      closeNodes: closes ? segment.nodes : undefined,
       end,
-      openMark: closes ? undefined : segment.mark,
+      openNodes: closes ? undefined : segment.nodes,
       start,
     })
   }

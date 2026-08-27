@@ -1,0 +1,94 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Reviewed ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "annotationType": "inlineComment",
+                "id": "0198f3a2-7c41-7f2e-9b3a-4d8e2c1a6b90"
+              },
+              "type": "annotation"
+            }
+          ],
+          "text": "audited",
+          "type": "text"
+        },
+        {
+          "text": " twice.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "colour": "red"
+              },
+              "type": "em"
+            }
+          ],
+          "text": "urgent",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "code"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "flag",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "a\nb",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "link"
+            }
+          ],
+          "text": "Release notes",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

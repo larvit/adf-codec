@@ -110,19 +110,19 @@ function commonMarkContainer(body: Result<EmittedBody>): Result<EmittedBlock> {
 
 function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text`, path)
-  const header = spellDirectiveHeader(node, directive, path)
-  if (!header.ok) return header
+  const header = spellDirectiveHeader(node, directive)
+  if (header === undefined) return commonMarkLine(carriedBlock(node, path))
   const content = node.content ?? []
   if (directive.body === 'none') {
     if (content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content`, path)
-    return success({ fenceColons: 2, spelling: 'directive', text: `::${header.value}` })
+    return success({ fenceColons: 2, spelling: 'directive', text: `::${header}` })
   }
   const body = directive.body === 'inline' ? emitInlineBody(content, path) : emitBlocks(content, 'directive', path, depth + 1)
   if (!body.ok) return body
   const fenceColons = Math.max(3, body.value.fenceColons + 1)
   const fence = ':'.repeat(fenceColons)
   const lines = body.value.text === '' ? '' : `${body.value.text}\n`
-  return success({ fenceColons, spelling: 'directive', text: `${fence}${header.value}\n${lines}${fence}` })
+  return success({ fenceColons, spelling: 'directive', text: `${fence}${header}\n${lines}${fence}` })
 }
 
 function emitInlineBody(content: readonly AdfNode[], path: ConvertErrorPath): Result<EmittedBody> {

@@ -1,11 +1,6 @@
 import type { AdfAttributes, AttributeKind, AttributeVocabulary } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
-import { failure, type ConvertErrorPath, type Result } from './result.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
-
-export type AttributeFault = { key: string; kind: AttributeKind | undefined }
-
-export type SpelledPairs = { fault: AttributeFault; pairs?: undefined } | { fault?: undefined; pairs: [string, string][] }
 
 const bareToken = /^[A-Za-z0-9_-]+$/
 
@@ -16,22 +11,17 @@ export function isBareToken(text: string): boolean {
   return bareToken.test(text)
 }
 
-export function attributeFailure<T>(type: string, fault: AttributeFault, path: ConvertErrorPath): Result<T> {
-  if (fault.kind === undefined) return failure('unspelled-node-attribute', `the ${type} attribute ${fault.key} has no canonical markdown spelling`, path)
-  return failure('unsupported-node-shape', `the ${type} attribute ${fault.key} holds no ${fault.kind}`, path)
-}
-
-export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocabulary, slot: string | undefined): SpelledPairs {
+export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocabulary, slot: string | undefined): [string, string][] | undefined {
   const pairs: [string, string][] = []
   for (const [key, value] of Object.entries(attrs)) {
     if (key === slot) continue
     const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
-    if (kind === undefined) return { fault: { key, kind: undefined } }
+    if (kind === undefined) return undefined
     const spelled = spellAttributeValue(value, kind)
-    if (spelled === undefined) return { fault: { key, kind } }
+    if (spelled === undefined) return undefined
     pairs.push([key, spelled])
   }
-  return { pairs }
+  return pairs
 }
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {

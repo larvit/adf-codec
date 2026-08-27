@@ -85,26 +85,36 @@ test('refuses a link title CommonMark cannot spell', () => {
   assert.equal(code(adfToMarkdown(titled('a\nb'))), 'unspellable-link-title')
 })
 
-test('refuses a link attribute no markdown spelling holds', () => {
+test('carries a link mark the link spelling cannot write', () => {
+  const carried = (mark: AdfMark): string => markdown(adfToMarkdown(document(paragraph({ marks: [mark], text: 't', type: 'text' }))))
   assert.equal(
-    code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: 'https://example.com/', id: 'x' }, type: 'link' }], text: 't', type: 'text' })))),
-    'unspellable-mark',
+    carried({ attrs: { href: 'x', id: 'y' }, type: 'link' }),
+    ':adf{json="{\\"marks\\":[{\\"attrs\\":{\\"href\\":\\"x\\",\\"id\\":\\"y\\"},\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n',
   )
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: 4 }, type: 'link' }], text: 't', type: 'text' })))), 'unspellable-mark')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'link' }], text: 't', type: 'text' })))), 'unsupported-node-shape')
+  assert.equal(carried({ attrs: { href: 4 }, type: 'link' }), ':adf{json="{\\"marks\\":[{\\"attrs\\":{\\"href\\":4},\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n')
+  assert.equal(carried({ type: 'link' }), ':adf{json="{\\"marks\\":[{\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n')
 })
 
-test('refuses a mark the canonical spellings cannot nest', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'annotation' }], text: 'x', type: 'text' })))), 'unspellable-mark')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }, { type: 'strong' }], text: 'x', type: 'text' })))), 'unspellable-mark')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { colour: 'red' }, type: 'em' }], text: 'x', type: 'text' })))), 'unspellable-mark')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { localId: 'x' }, type: 'code' }], text: 'x', type: 'text' })))), 'unspellable-mark')
+test('carries a mark the canonical spellings cannot nest', () => {
+  const carried = (...marks: AdfMark[]): string => markdown(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' }))))
+  assert.equal(carried({ type: 'annotation' }), ':adf{json="{\\"marks\\":[{\\"type\\":\\"annotation\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n')
+  assert.equal(
+    carried({ type: 'code' }, { type: 'strong' }),
+    ':adf{json="{\\"marks\\":[{\\"type\\":\\"code\\"},{\\"type\\":\\"strong\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n',
+  )
+  assert.equal(
+    carried({ attrs: { colour: 'red' }, type: 'em' }),
+    ':adf{json="{\\"marks\\":[{\\"attrs\\":{\\"colour\\":\\"red\\"},\\"type\\":\\"em\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n',
+  )
+  assert.equal(
+    carried({ attrs: { localId: 'x' }, type: 'code' }),
+    ':adf{json="{\\"marks\\":[{\\"attrs\\":{\\"localId\\":\\"x\\"},\\"type\\":\\"code\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n',
+  )
 })
 
 test('refuses whitespace CommonMark cannot hold', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ text: '\fa', type: 'text' })))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\rb', type: 'text' })))), 'unspellable-whitespace')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'em' }], text: 'x ', type: 'text' }, { text: 'y', type: 'text' })))), 'unspellable-mark')
 })
 
 test('refuses a line whose start block parsing would claim', () => {
@@ -164,8 +174,11 @@ test('refuses an ordered list no marker spells', () => {
   assert.equal(code(adfToMarkdown(list(999999999, 2))), 'unspellable-list-marker')
 })
 
-test('refuses a code span over anything but one text node', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], type: 'hardBreak' })))), 'unspellable-mark')
+test('carries a code mark over anything but text', () => {
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], type: 'hardBreak' })))),
+    ':adf{json="{\\"marks\\":[{\\"type\\":\\"code\\"}],\\"type\\":\\"hardBreak\\"}"}\n',
+  )
 })
 
 test('refuses a heading level outside the ATX range', () => {
@@ -207,18 +220,30 @@ test('wraps adjacent nodes carrying one mark once, and a differing mark twice', 
   assert.equal(emitted(marked('a', link('http://x')), marked('b', link('http://y'))), '[a](http://x)[b](http://y)\n')
 })
 
-test('refuses a mark spelling that cannot open or close where it sits', () => {
+test('carries a mark spelling that cannot open or close where it sits', () => {
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
   const strong: AdfMark = { type: 'strong' }
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'un', type: 'text' }, marked('-real', strong), { text: 'istic', type: 'text' })))), 'unspellable-mark')
-  assert.equal(code(adfToMarkdown(document(paragraph(marked('C++', { type: 'em' }), { text: 'ish', type: 'text' })))), 'unspellable-mark')
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('.a', strong))))), 'unspellable-mark')
+  assert.equal(
+    emitted({ text: 'un', type: 'text' }, marked('-real', strong), { text: 'istic', type: 'text' }),
+    'un:adf{json="{\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"text\\":\\"-real\\",\\"type\\":\\"text\\"}"}istic\n',
+  )
+  assert.equal(
+    emitted(marked('C++', { type: 'em' }), { text: 'ish', type: 'text' }),
+    ':adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"C++\\",\\"type\\":\\"text\\"}"}ish\n',
+  )
+  assert.equal(
+    emitted({ text: 'x', type: 'text' }, marked('.a', strong)),
+    'x:adf{json="{\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"text\\":\\".a\\",\\"type\\":\\"text\\"}"}\n',
+  )
   assert.equal(emitted({ text: 'un ', type: 'text' }, marked('-real', strong), { text: ' istic', type: 'text' }), 'un **-real** istic\n')
   assert.equal(emitted(marked('a.', strong)), '**a.**\n')
   assert.equal(emitted({ text: 'x', type: 'text' }, marked('a', strong), { text: 'y', type: 'text' }), 'x**a**y\n')
   const em: AdfMark = { type: 'em' }
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('a.', em), marked('b', strong))))), 'unspellable-mark')
+  assert.equal(
+    emitted({ text: 'x', type: 'text' }, marked('a.', em), marked('b', strong)),
+    'x:adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"a.\\",\\"type\\":\\"text\\"}"}**b**\n',
+  )
   assert.equal(emitted({ text: 'x', type: 'text' }, marked('ab', em, strong), { text: 'y', type: 'text' }), 'x***ab***y\n')
 })
 
@@ -252,7 +277,10 @@ test('escapes a literal delimiter that would merge with an emitted one', () => {
   assert.equal(emitted(marked('_a', { type: 'em' })), '_\\_a_\n')
   assert.equal(emitted(marked('a*', { type: 'strong' })), '**a\\***\n')
   assert.equal(emitted(marked('~a', { type: 'strike' })), '~~\\~a~~\n')
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, marked('~a', { type: 'strike' }))))), 'unspellable-mark')
+  assert.equal(
+    emitted({ text: 'x', type: 'text' }, marked('~a', { type: 'strike' })),
+    'x:adf{json="{\\"marks\\":[{\\"type\\":\\"strike\\"}],\\"text\\":\\"~a\\",\\"type\\":\\"text\\"}"}\n',
+  )
   assert.equal(emitted({ text: '`', type: 'text' }, marked('x', { type: 'code' })), '\\``x`\n')
   assert.equal(emitted(marked('x', { type: 'code' }), { text: '`', type: 'text' }), '`x`\\`\n')
   assert.equal(emitted({ text: '`a', type: 'text' }, marked('b', { type: 'code' })), '\\`a`b`\n')
@@ -291,12 +319,19 @@ test('refuses the characters CommonMark rewrites', () => {
 
 test('refuses a text node carrying no text at all', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ text: '', type: 'text' })))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '', type: 'text' })))), 'unsupported-node-shape')
 })
 
-test('refuses a mark run whose edge holds whitespace CommonMark flanking counts', () => {
+test('carries a mark run whose edge holds whitespace CommonMark flanking counts', () => {
   const em = { type: 'em' }
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em], text: 'a', type: 'text' }, { marks: [em], type: 'hardBreak' }, { text: 'b', type: 'text' })))), 'unspellable-whitespace')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em], text: '\u00a0a', type: 'text' })))), 'unspellable-whitespace')
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ marks: [em], text: 'a', type: 'text' }, { marks: [em], type: 'hardBreak' }, { text: 'b', type: 'text' })))),
+    ':adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"a\\",\\"type\\":\\"text\\"}"}:adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"type\\":\\"hardBreak\\"}"}b\n',
+  )
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ marks: [em], text: '\u00a0a', type: 'text' })))),
+    ':adf{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"\u00a0a\\",\\"type\\":\\"text\\"}"}\n',
+  )
 })
 
 test('pads a code span whose edges CommonMark would strip', () => {
@@ -329,17 +364,32 @@ test('spells a block directive as its node type, arg and attributes', () => {
   assert.equal(markdown(adfToMarkdown(document({ attrs: { localId: 'a' }, type: 'syncBlock' }))), '::syncBlock {localId=a}\n')
 })
 
-test('refuses a directive attribute no section spells', () => {
-  assert.equal(code(adfToMarkdown(document({ attrs: { rounded: true }, type: 'panel' }))), 'unspelled-node-attribute')
-  assert.equal(code(adfToMarkdown(document({ attrs: { toString: 'x' }, type: 'panel' }))), 'unspelled-node-attribute')
-  assert.equal(code(adfToMarkdown(document({ attrs: { localId: 4 }, type: 'panel' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ attrs: { width: '50' }, type: 'layoutColumn' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ attrs: { isNumberColumnEnabled: 'true' }, type: 'table' }))), 'unsupported-node-shape')
+test('carries a directive attribute no section spells', () => {
+  const carried = (node: AdfNode): string => markdown(adfToMarkdown(document(node)))
+  assert.equal(carried({ attrs: { rounded: true }, type: 'panel' }), '```adf\n{\n  "attrs": {\n    "rounded": true\n  },\n  "type": "panel"\n}\n```\n')
+  assert.equal(carried({ attrs: { toString: 'x' }, type: 'panel' }), '```adf\n{\n  "attrs": {\n    "toString": "x"\n  },\n  "type": "panel"\n}\n```\n')
+  assert.equal(carried({ attrs: { localId: 4 }, type: 'panel' }), '```adf\n{\n  "attrs": {\n    "localId": 4\n  },\n  "type": "panel"\n}\n```\n')
+  assert.equal(
+    carried({ attrs: { width: '50' }, type: 'layoutColumn' }),
+    '```adf\n{\n  "attrs": {\n    "width": "50"\n  },\n  "type": "layoutColumn"\n}\n```\n',
+  )
+  assert.equal(
+    carried({ attrs: { isNumberColumnEnabled: 'true' }, type: 'table' }),
+    '```adf\n{\n  "attrs": {\n    "isNumberColumnEnabled": "true"\n  },\n  "type": "table"\n}\n```\n',
+  )
+  assert.equal(
+    carried({ content: [{ attrs: { alt: 4 }, type: 'media' }], type: 'mediaGroup' }),
+    ':::mediaGroup\n```adf\n{\n  "attrs": {\n    "alt": 4\n  },\n  "type": "media"\n}\n```\n:::\n',
+  )
 })
 
-test('refuses an arg slot value no bare token spells', () => {
-  assert.equal(code(adfToMarkdown(document({ attrs: { panelType: 'extra info' }, type: 'panel' }))), 'unspelled-node-attribute')
-  assert.equal(code(adfToMarkdown(document({ attrs: { state: 2 }, type: 'taskItem' }))), 'unspelled-node-attribute')
+test('carries an arg slot value no bare token spells', () => {
+  const carried = (node: AdfNode): string => markdown(adfToMarkdown(document(node)))
+  assert.equal(
+    carried({ attrs: { panelType: 'extra info' }, type: 'panel' }),
+    '```adf\n{\n  "attrs": {\n    "panelType": "extra info"\n  },\n  "type": "panel"\n}\n```\n',
+  )
+  assert.equal(carried({ attrs: { state: 2 }, type: 'taskItem' }), '```adf\n{\n  "attrs": {\n    "state": 2\n  },\n  "type": "taskItem"\n}\n```\n')
 })
 
 test('carries a block node mark in the reserved attribute', () => {
@@ -376,8 +426,8 @@ test('spells the image form for exactly the centered external media shape', () =
   assert.ok(fallback({ alt: 'a\u0000b', type: 'external', url }))
   assert.ok(fallback({ type: 'external', url: 'https://example.com/a b>c' }))
   assert.ok(fallback({ alt: ' moon ', type: 'external', url }))
-  assert.equal(code(adfToMarkdown(single({ alt: 4, type: 'external', url }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(single({ type: 'external', url: 4 }))), 'unsupported-node-shape')
+  assert.ok(fallback({ alt: 4, type: 'external', url }))
+  assert.ok(fallback({ type: 'external', url: 4 }))
   assert.equal(code(adfToMarkdown(single({ type: 'external', url }, paragraph()))), 'unsupported-node-shape')
 })
 
@@ -435,12 +485,13 @@ test('spells an inline node as a directive with its content slot and attributes'
   assert.equal(emitted({ attrs: { url: 'a`b&c<d|e' }, type: 'inlineCard' }), ':inlineCard{url="a\\u0060b\\u0026c\\u003cd\\u007ce"}\n')
 })
 
-test('refuses an inline node attribute no section spells', () => {
-  const refused = (node: AdfNode): string => code(adfToMarkdown(document(paragraph(node))))
-  assert.equal(refused({ attrs: { rounded: true }, type: 'status' }), 'unspelled-node-attribute')
-  assert.equal(refused({ attrs: { toString: 'x' }, type: 'status' }), 'unspelled-node-attribute')
-  assert.equal(refused({ attrs: { color: 4 }, type: 'status' }), 'unsupported-node-shape')
-  assert.equal(refused({ attrs: { width: '2' }, type: 'mediaInline' }), 'unsupported-node-shape')
+test('carries an inline node attribute no section spells', () => {
+  const carried = (node: AdfNode): string => markdown(adfToMarkdown(document(paragraph(node))))
+  assert.equal(carried({ attrs: { rounded: true }, type: 'status' }), ':adf{json="{\\"attrs\\":{\\"rounded\\":true},\\"type\\":\\"status\\"}"}\n')
+  assert.equal(carried({ attrs: { toString: 'x' }, type: 'status' }), ':adf{json="{\\"attrs\\":{\\"toString\\":\\"x\\"},\\"type\\":\\"status\\"}"}\n')
+  assert.equal(carried({ attrs: { color: 4 }, type: 'status' }), ':adf{json="{\\"attrs\\":{\\"color\\":4},\\"type\\":\\"status\\"}"}\n')
+  assert.equal(carried({ attrs: { width: '2' }, type: 'mediaInline' }), ':adf{json="{\\"attrs\\":{\\"width\\":\\"2\\"},\\"type\\":\\"mediaInline\\"}"}\n')
+  assert.equal(carried({ attrs: { text: 4 }, type: 'status' }), ':adf{json="{\\"attrs\\":{\\"text\\":4},\\"type\\":\\"status\\"}"}\n')
 })
 
 test('refuses the content and slot an inline directive has no room for', () => {
@@ -449,7 +500,6 @@ test('refuses the content and slot an inline directive has no room for', () => {
   assert.equal(refused({ text: 'x', type: 'status' }), 'unsupported-node-shape')
   assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'hardBreak' }), 'unsupported-node-shape')
   assert.equal(refused({ text: 'x', type: 'hardBreak' }), 'unsupported-node-shape')
-  assert.equal(refused({ attrs: { text: 4 }, type: 'status' }), 'unsupported-node-shape')
   assert.equal(refused({ attrs: { text: 'a\nb' }, type: 'status' }), 'unspellable-whitespace')
   assert.equal(refused({ attrs: { text: 'a\u0000b' }, type: 'status' }), 'unspellable-character')
 })
@@ -477,10 +527,16 @@ test('spells the directive marks around the longest run they cover', () => {
   )
 })
 
-test('refuses a mark directive attribute no spelling holds', () => {
-  const refused = (mark: AdfMark): string => code(adfToMarkdown(document(paragraph({ marks: [mark], text: 'x', type: 'text' }))))
-  assert.equal(refused({ attrs: { width: 2 }, type: 'border' }), 'unspellable-mark')
-  assert.equal(refused({ attrs: { size: '2' }, type: 'border' }), 'unspellable-mark')
+test('carries a mark directive attribute no spelling holds', () => {
+  const carried = (mark: AdfMark): string => markdown(adfToMarkdown(document(paragraph({ marks: [mark], text: 'x', type: 'text' }))))
+  assert.equal(
+    carried({ attrs: { width: 2 }, type: 'border' }),
+    ':adf{json="{\\"marks\\":[{\\"attrs\\":{\\"width\\":2},\\"type\\":\\"border\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n',
+  )
+  assert.equal(
+    carried({ attrs: { size: '2' }, type: 'border' }),
+    ':adf{json="{\\"marks\\":[{\\"attrs\\":{\\"size\\":\\"2\\"},\\"type\\":\\"border\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n',
+  )
 })
 
 test('carries whitespace CommonMark strips in the reserved text directive', () => {

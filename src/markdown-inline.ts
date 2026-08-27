@@ -1,36 +1,42 @@
 import type { AdfMark, AdfNode } from './adf-document.ts'
 import type { InlineDirective } from './inline-directives.ts'
-import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer } from './markdown-escaping.ts'
+import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './markdown-escaping.ts'
 import { inlineDirective, markSpelling, spellInlineNodeAttributes, spellMarkAttributes } from './inline-directives.ts'
 import { largestNesting } from './nesting.ts'
-import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink, isUnicodeWhitespace } from './commonmark-grammar.ts'
+import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink } from './commonmark-grammar.ts'
 import { carriedInline } from './opaque-carry.ts'
 import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
 import { longestBacktickRun } from './backtick-runs.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 import { spellAttributes, spellStringAttribute } from './directive-attributes.ts'
 
+type EmittedLine = { line: string; segments: InlineSegment[] }
+
+type Emission = { carry: NodeRange; segments?: undefined } | { carry?: undefined; segments: InlineSegment[] }
+
 type InlineContext = {
   atBlockEnd: boolean
   bracketed: boolean
+  carried: ReadonlySet<number>
   path: ConvertErrorPath
   spansLines: boolean
 }
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
 
+type LineAttempt = { carry: NodeRange; line?: undefined } | { carry?: undefined; line: string }
+
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
-  const segments = lineSegments(nodes, container, path)
-  if (!segments.ok) return segments
-  return finishLine(segments.value, container, path)
+  const emitted = emitLine(nodes, container, path)
+  if (!emitted.ok) return emitted
+  return success(emitted.value.line)
 }
 
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): string | undefined {
-  const segments = lineSegments(nodes, 'table-cell', path)
-  if (!segments.ok) return undefined
-  if (segments.value.some((segment) => segment.escaping === 'none' && segment.text.includes('|'))) return undefined
-  const line = finishLine(segments.value, 'table-cell', path)
-  return line.ok ? line.value : undefined
+  const emitted = emitLine(nodes, 'table-cell', path)
+  if (!emitted.ok) return undefined
+  if (emitted.value.segments.some((segment) => segment.escaping === 'none' && segment.text.includes('|'))) return undefined
+  return emitted.value.line
 }
 
 export function tryImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): string | undefined {
@@ -38,23 +44,42 @@ export function tryImageLine(alt: string | undefined, href: string, path: Conver
   const destination = spellDestination(href, path)
   if (!destination.ok) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
-  const line = finishLine([syntax('!['), ...description, syntax(`](${destination.value})`)], 'paragraph', path)
-  return line.ok ? line.value : undefined
+  const attempt = attemptLine([syntax('!['), ...description, syntax(`](${destination.value})`)], 'paragraph', path)
+  return attempt.ok ? attempt.value.line : undefined
 }
 
-function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<InlineSegment[]> {
-  const segments = emitRun(nodes, 0, 0, { atBlockEnd: true, bracketed: false, path, spansLines: container === 'paragraph' })
-  if (!segments.ok) return segments
-  return success(carryStrippedWhitespace(segments.value))
-}
-
-function finishLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath): Result<string> {
-  const assembled = assembleInlineLine(segments, container)
-  if (assembled.unspellableMark !== undefined) {
-    return failure('unspellable-mark', `the ${assembled.unspellableMark} spelling cannot open or close where it sits`, path)
+// A demand names a run no spelling holds, and a carried node joins no run, so every pass carries one more node.
+function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<EmittedLine> {
+  const carried = new Set<number>()
+  for (;;) {
+    const emission = lineSegments(nodes, container, path, carried)
+    if (!emission.ok) return emission
+    if (emission.value.carry !== undefined) {
+      carryRange(carried, emission.value.carry)
+      continue
+    }
+    const attempt = attemptLine(emission.value.segments, container, path)
+    if (!attempt.ok) return attempt
+    if (attempt.value.carry === undefined) return success({ line: attempt.value.line, segments: emission.value.segments })
+    carryRange(carried, attempt.value.carry)
   }
-  const line = assembled.line
-  for (const [index, single] of line.split('\n').entries()) {
+}
+
+function carryRange(carried: Set<number>, range: NodeRange): void {
+  for (let index = range.first; index <= range.last; index += 1) carried.add(index)
+}
+
+function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, carried: ReadonlySet<number>): Result<Emission> {
+  const emission = emitRun(nodes, 0, 0, { atBlockEnd: true, bracketed: false, carried, path, spansLines: container === 'paragraph' })
+  if (!emission.ok) return emission
+  if (emission.value.carry !== undefined) return emission
+  return success({ segments: carryStrippedWhitespace(emission.value.segments) })
+}
+
+function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath): Result<LineAttempt> {
+  const assembled = assembleInlineLine(segments, container)
+  if (assembled.unspellableRun !== undefined) return success({ carry: assembled.unspellableRun })
+  for (const [index, single] of assembled.line.split('\n').entries()) {
     if (/^[ \t\v\f]|[ \t\v\f]$/.test(single)) {
       return failure('unspellable-whitespace', 'a line begins or ends with whitespace CommonMark strips', path)
     }
@@ -62,7 +87,7 @@ function finishLine(segments: readonly InlineSegment[], container: LineContainer
       return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(single)}`, path)
     }
   }
-  return success(line)
+  return success({ line: assembled.line })
 }
 
 // spec/flavour.md, Inline nodes.
@@ -110,27 +135,28 @@ function refuseContentAndText(node: AdfNode, path: ConvertErrorPath): Result<nul
   return success(null)
 }
 
-function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, context: InlineContext): Result<InlineSegment[]> {
+function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, context: InlineContext): Result<Emission> {
   if (depth > largestNesting) {
     return failure('unsupported-node-shape', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
   }
-  const runs = inlineRuns(nodes, depth, firstIndex)
+  const runs = inlineRuns(nodes, depth, firstIndex, context.carried)
   const segments: InlineSegment[] = []
   for (const [offset, run] of runs.entries()) {
     const runContext = { ...context, atBlockEnd: context.atBlockEnd && offset === runs.length - 1 }
     const emitted = run.kind === 'plain' ? emitLeaf(run.node, runContext, run.index) : emitMarkedRun(run.nodes, run.mark, depth, run.index, runContext)
     if (!emitted.ok) return emitted
-    segments.push(...emitted.value)
+    if (emitted.value.carry !== undefined) return emitted
+    segments.push(...emitted.value.segments)
   }
-  return success(segments)
+  return success({ segments })
 }
 
-function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number): InlineRun[] {
+function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number, carried: ReadonlySet<number>): InlineRun[] {
   const runs: InlineRun[] = []
   for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
     // spec/flavour.md, Marks.
-    const mark = carries(node) ? undefined : (node.marks ?? [])[depth]
+    const mark = carries(node, carried, index) ? undefined : (node.marks ?? [])[depth]
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
       continue
@@ -146,49 +172,50 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
-function carries(node: AdfNode): boolean {
+function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
+  if (carried.has(index)) return true
   return node.type !== 'hardBreak' && node.type !== 'text' && inlineDirective(node.type) === undefined
 }
 
-function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<InlineSegment[]> {
+function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<Emission> {
   const path = nodePath(context, index)
-  if (carries(node)) {
+  if (carries(node, context.carried, index)) {
     const carried = carriedInline(node, path)
     if (!carried.ok) return carried
-    return success([syntax(carried.value)])
+    return success({ segments: [syntax(carried.value)] })
   }
   const types = (node.marks ?? []).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   const directive = inlineDirective(node.type)
-  if (directive !== undefined) return emitInlineDirective(node, directive, path)
+  if (directive !== undefined) return emitInlineDirective(node, directive, index, path)
   if (node.type === 'hardBreak') return emitHardBreak(node, context, path)
   return emitText(node, context, path)
 }
 
-function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {
+function emitHardBreak(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
   const unspelled = Object.keys(node.attrs ?? {})[0]
   if (unspelled !== undefined) return failure('unspelled-node-attribute', `the hardBreak attribute ${unspelled} has no canonical markdown spelling`, path)
   const empty = refuseContentAndText(node, path)
   if (!empty.ok) return empty
-  if (context.spansLines && !context.atBlockEnd) return success([syntax('\\\n')])
-  return success([syntax(spellLeafDirective('hardBreak', ''))])
+  if (context.spansLines && !context.atBlockEnd) return success({ segments: [syntax('\\\n')] })
+  return success({ segments: [syntax(spellLeafDirective('hardBreak', ''))] })
 }
 
-function emitInlineDirective(node: AdfNode, directive: InlineDirective, path: ConvertErrorPath): Result<InlineSegment[]> {
+function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: number, path: ConvertErrorPath): Result<Emission> {
   const empty = refuseContentAndText(node, path)
   if (!empty.ok) return empty
-  const attributes = spellInlineNodeAttributes(node, directive, path)
-  if (!attributes.ok) return attributes
+  const attributes = spellInlineNodeAttributes(node, directive)
+  if (attributes === undefined) return success({ carry: { first: index, last: index } })
   const slot = directive.slot === undefined ? undefined : node.attrs?.[directive.slot]
-  if (slot === undefined) return success([syntax(spellLeafDirective(node.type, attributes.value))])
-  if (typeof slot !== 'string') return failure('unsupported-node-shape', `the ${node.type} attribute ${directive.slot} holds no string`, path)
+  if (slot === undefined) return success({ segments: [syntax(spellLeafDirective(node.type, attributes))] })
+  if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
   if (/[\n\r]/.test(slot)) return failure('unspellable-whitespace', `a ${node.type} content slot holds a newline no inline directive spans`, path)
   if (holdsNullCharacter(slot)) return failure('unspellable-character', `a ${node.type} content slot holds a null character CommonMark replaces`, path)
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
-  return success([syntax(`:${node.type}[`), ...content, syntax(`]${attributes.value}`)])
+  return success({ segments: [syntax(`:${node.type}[`), ...content, syntax(`]${attributes}`)] })
 }
 
-function emitText(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {
+function emitText(node: AdfNode, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
   const unspelled = Object.keys(node.attrs ?? {})[0]
   if (unspelled !== undefined) return failure('unspelled-node-attribute', `the text attribute ${unspelled} has no canonical markdown spelling`, path)
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text', path)
@@ -197,60 +224,51 @@ function emitText(node: AdfNode, context: InlineContext, path: ConvertErrorPath)
   if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
   const parts = node.text.split(/(\n+)/).filter((part) => part !== '')
-  return success(parts.map((part) => (part.startsWith('\n') ? carriedText(part) : { escaping, text: part })))
+  return success({ segments: parts.map((part) => (part.startsWith('\n') ? carriedText(part) : { escaping, text: part })) })
 }
 
-function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<InlineSegment[]> {
+function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {
   const path = nodePath(context, index)
+  const range: NodeRange = { first: index, last: index + nodes.length - 1 }
   const spelling = markSpelling(mark.type)
-  if (spelling === undefined) return failure('unspellable-mark', `no markdown spelling holds the ${mark.type} mark`, path)
-  const attributes = spellMarkAttributes(mark, spelling.attributes, path)
-  if (!attributes.ok) return attributes
-  if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, path)
-  if (spelling.kind === 'emphasis') return emitEmphasis(nodes, mark, spelling.spelling, depth, index, context, path)
-  if (spelling.kind === 'link') return emitLink(nodes, mark, depth, index, context, path)
+  if (spelling === undefined) return success({ carry: range })
+  const attributes = spellMarkAttributes(mark, spelling.attributes)
+  if (attributes === undefined) return success({ carry: range })
+  if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, range, path)
+  if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
+  if (spelling.kind === 'link') return emitLink(nodes, mark, depth, range, context, path)
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
-  return success([syntax(`:${mark.type}[`), ...inner.value, syntax(`]${attributes.value}`)])
+  if (inner.value.carry !== undefined) return inner
+  return success({ segments: [syntax(`:${mark.type}[`), ...inner.value.segments, syntax(`]${attributes}`)] })
 }
 
-function emitEmphasis(
-  nodes: readonly AdfNode[],
-  mark: AdfMark,
-  spelling: string,
-  depth: number,
-  index: number,
-  context: InlineContext,
-  path: ConvertErrorPath,
-): Result<InlineSegment[]> {
-  const inner = emitRun(nodes, depth + 1, index, context)
+function emitEmphasis(nodes: readonly AdfNode[], spelling: string, depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
+  const inner = emitRun(nodes, depth + 1, range.first, context)
   if (!inner.ok) return inner
-  const carried = carryStrippedWhitespace(inner.value)
-  const text = carried.map((segment) => segment.text).join('')
-  if (holdsEdgeWhitespace(text)) return failure('unspellable-whitespace', `the ${mark.type} spelling cannot open or close beside whitespace`, path)
-  return success([
-    { emphasis: 'open', escaping: 'none', mark: mark.type, text: spelling },
-    ...carried,
-    { emphasis: 'close', escaping: 'none', mark: mark.type, text: spelling },
-  ])
+  if (inner.value.carry !== undefined) return inner
+  const carried = carryStrippedWhitespace(inner.value.segments)
+  return success({
+    segments: [
+      { emphasis: 'open', escaping: 'none', nodes: range, text: spelling },
+      ...carried,
+      { emphasis: 'close', escaping: 'none', nodes: range, text: spelling },
+    ],
+  })
 }
 
-function emitCodeSpan(nodes: readonly AdfNode[], depth: number, path: ConvertErrorPath): Result<InlineSegment[]> {
+function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange, path: ConvertErrorPath): Result<Emission> {
   let text = ''
   for (const node of nodes) {
-    if (node.type !== 'text' || typeof node.text !== 'string' || node.text === '') return failure('unspellable-mark', 'a code span holds text nodes only', path)
-    if ((node.marks ?? []).length !== depth + 1) return failure('unspellable-mark', 'a code span cannot sit inside the marks it carries', path)
+    if (node.type !== 'text' || (node.marks ?? []).length !== depth + 1) return success({ carry: range })
+    if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text', path)
     text += node.text
   }
-  if (/[\n\r]/.test(text)) return failure('unspellable-mark', 'a code span holds no newline', path)
+  if (/[\n\r]/.test(text)) return success({ carry: range })
   if (holdsNullCharacter(text)) return failure('unspellable-character', 'a code span holds a null character CommonMark replaces', path)
   const fence = '`'.repeat(longestBacktickRun(text) + 1)
   const padded = needsPadding(text) ? ` ${text} ` : text
-  return success([syntax(`${fence}${padded}${fence}`)])
-}
-
-function holdsEdgeWhitespace(text: string): boolean {
-  return isUnicodeWhitespace(text.charAt(0)) || isUnicodeWhitespace(text.charAt(text.length - 1))
+  return success({ segments: [syntax(`${fence}${padded}${fence}`)] })
 }
 
 function needsPadding(text: string): boolean {
@@ -258,20 +276,21 @@ function needsPadding(text: string): boolean {
   return text.startsWith(' ') && text.endsWith(' ') && /[^ ]/.test(text)
 }
 
-function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext, path: ConvertErrorPath): Result<InlineSegment[]> {
+function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
   const href = mark.attrs?.['href']
   const title = mark.attrs?.['title']
-  if (typeof href !== 'string') return failure('unsupported-node-shape', 'a link mark carries no href', path)
+  if (typeof href !== 'string') return success({ carry: range })
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && (node.marks ?? []).length === depth + 1
-  if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success([syntax(`<${href}>`)])
+  if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
   const destination = spellDestination(href, path)
   if (!destination.ok) return destination
   const spelledTitle = typeof title === 'string' ? spellTitle(title, path) : success('')
   if (!spelledTitle.ok) return spelledTitle
-  const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true })
+  const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
-  return success([syntax('['), ...inner.value, syntax(`](${destination.value}${spelledTitle.value})`)])
+  if (inner.value.carry !== undefined) return inner
+  return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${destination.value}${spelledTitle.value})`)] })
 }
 
 function spellDestination(href: string, path: ConvertErrorPath): Result<string> {
