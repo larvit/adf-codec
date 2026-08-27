@@ -273,10 +273,10 @@ detail is settled at its own milestone.
         `adfToMarkdown` refuses is a §2 hole, which is what three of `corpus/unspellable/`'s four
         hold until 3c, 3e and 3h land their answers. The parser's `ConvertErrorCode` additions
         are read here as one list before §8's freeze — nine sessions mint them independently, and
-        one cause wearing two codes is breaking to undo after `0.1.0`. `index.ts` gains `markdownToAdf`
-        here with the README's status line, neither waiting on the exception list: a parser
-        still missing syntax is a claim the entrypoint cannot keep, and the corpus reads it from
-        its module meanwhile.
+        one cause wearing two codes is breaking to undo after `0.1.0`. `index.ts` gains
+        `markdownToAdf` here with the README's status line, neither waiting on the exception list:
+        a parser still missing syntax is a claim the entrypoint cannot keep, and the corpus reads
+        it from its module meanwhile.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) is finished here, on 3i's merging — `toEditorNormal(doc)` and the
       equality the round-trip asserts, which over normalized input is the canonical serializer's
