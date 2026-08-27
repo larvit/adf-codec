@@ -1,8 +1,8 @@
-import type { AdfNode } from './adf-document.ts'
-import { carriesOnly } from './adf-document.ts'
-import type { ConvertErrorPath } from './result.ts'
-import { serializeCanonicalJson } from './canonical-json.ts'
-import { tryImageLine } from './markdown-inline.ts'
+import type { AdfNode } from '../../adf/document.ts'
+import { carriesOnly } from '../../adf/document.ts'
+import type { ConvertErrorPath } from '../../result.ts'
+import { serializeCanonicalJson } from '../../canonical-json.ts'
+import { tryImageLine } from './inline-line.ts'
 
 const centeredMediaSingle = '{"layout":"center"}'
 const imageAttributes = ['alt', 'type', 'url']

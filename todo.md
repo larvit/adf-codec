@@ -95,9 +95,10 @@ detail is settled at its own milestone.
           included, and a mark spelling that cannot open where it sits (`un**-real**istic`; the spec
           owes the carry a trigger). One mark vocabulary lands here, before 2e3 changes the
           attribute spelling: `emphasisSpellings`, `linkAttributes` and the `code`/`link` names join
-          `inline-directives.ts`, which holds four of the nine marks while the rest are branch
-          literals in the emitter — and the parser (3) needs every name to make `:em[x]` the named
-          error `spec/flavour.md` promises.
+          the mark table (3a parted it across `adf/mark-attributes.ts` and
+          `markdown/mark-spellings.ts`), which holds four of the nine marks while the rest are
+          branch literals in the emitter — and the parser (3) needs every name to make `:em[x]`
+          the named error `spec/flavour.md` promises.
     - [x] **2e3 — Attribute canonicalization and the quoted value's escape.**
           **Settled** (the maintainer, 2026-08-26): a quoted attribute value escapes `` ` ``, `&`,
           `<` and `|` as `\u0060`, `\u0026`, `\u003c` and `\u007c`, in every directive, block and
@@ -168,7 +169,7 @@ detail is settled at its own milestone.
       unbounded nesting actually arrives, so §11's 500 binds all three of the emitter's guards
       here: block depth at 3c and again at 3f's container fences, inline and mark depth at 3f and
       3i, a carried value's JSON at 3j, where `isJsonValue` already bounds it.
-  - [ ] **3a — The hierarchy.** Mechanical, ahead of the first parser file: `src/adf/` and
+  - [x] **3a — The hierarchy.** Mechanical, ahead of the first parser file: `src/adf/` and
         `src/markdown/` (`html/` arrives with its first file, 6-7), the grammar module shared
         inside `markdown/`, and `emphasis-matching.ts` beside it — the parser reuses it whole,
         `delimiterFlags` and `matchEmphasis` taking CommonMark's own run vocabulary rather than
@@ -188,7 +189,7 @@ detail is settled at its own milestone.
         HTML will want too, not a markdown spelling.
         **Settled** (the maintainer, 2026-08-27): `markdown/` parts here as well, into `emit/` and
         `parse/` with the shared set at the root — the grammar module, emphasis matching,
-        destination spelling, the tables' markdown halves — and `parse/` arriving with 3b's first
+        the tables' markdown halves — and `parse/` arriving with 3b's first
         file, the rule `html/` already follows. And the node tables, a second copy of
         `spec/flavour.md`'s prose whose mistyped attribute name degrades into a false refusal no
         test catches, get their guard: a test reads the spec's node sections, takes each
@@ -225,8 +226,9 @@ detail is settled at its own milestone.
         entity references decoding to their characters, code spans and the literal they hold —
         directive syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash
         and two trailing spaces alike, a soft line break as one space, and the raw inline tag,
-        comment and processing instruction refused by name, recognized by the `htmlConstructs`
-        `markdown-escaping.ts` already escapes against, under 3b's one-table rule.
+        comment and processing instruction refused by name, recognized by the
+        `commonmark-grammar.ts` predicates the emitter already escapes against, under 3b's
+        one-table rule.
   - [ ] **3e — Emphasis and links.** `_`, `*` and `~~` runs through `matchEmphasis` to the `em`,
         `strong` and `strike` marks; links inline and reference, 3b's definitions resolved here,
         autolinks, and the image gap's named errors — a titled image, and one amid other text.

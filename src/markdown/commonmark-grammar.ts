@@ -11,7 +11,9 @@ const bracketedAutolink = new RegExp(`^<(?:${autolinkSource})>`)
 const controlCharacter = new RegExp(`[${controlCharacterRange}]`)
 const entityReference = new RegExp(entityReferenceSource)
 const nullCharacter = new RegExp(nullCharacterSource)
+const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const firstCharacterOpeners = [/^#{1,6}(?:[ \t]|$)/, /^>/, /^[*+-](?:[ \t]|$)/, /^`{3,}/, /^~{3,}/, /^:{2,}/, /^\|/]
+const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const orderedListOpener = /^(\d{1,9})[.)](?:[ \t]|$)/
 const setextUnderline = /^(?:=+|-+)$/
 const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/
@@ -42,6 +44,10 @@ export function holdsNullCharacter(text: string): boolean {
   return nullCharacter.test(text)
 }
 
+export function isAsciiPunctuation(character: string): boolean {
+  return asciiPunctuation.test(character)
+}
+
 export function isAutolink(text: string): boolean {
   return autolink.test(text)
 }
@@ -56,6 +62,10 @@ export function isUnicodeWhitespace(character: string): boolean {
 
 export function opensBracketedAutolink(text: string): boolean {
   return bracketedAutolink.test(text)
+}
+
+export function opensHtmlConstruct(text: string): boolean {
+  return htmlConstructs.some((construct) => construct.test(text))
 }
 
 export function startsEntityReference(text: string): boolean {

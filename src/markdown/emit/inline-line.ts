@@ -1,14 +1,17 @@
-import type { AdfMark, AdfNode } from './adf-document.ts'
-import type { InlineDirective } from './inline-directives.ts'
-import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './markdown-escaping.ts'
-import { inlineDirective, markSpelling, spellInlineNodeAttributes, spellMarkAttributes } from './inline-directives.ts'
-import { largestNesting } from './nesting.ts'
-import { claimsLine, holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isAutolink } from './commonmark-grammar.ts'
-import { carriedInline } from './opaque-carry.ts'
-import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { longestBacktickRun } from './backtick-runs.ts'
-import { serializeCanonicalJson } from './canonical-json.ts'
-import { spellAttributes, spellStringAttribute } from './directive-attributes.ts'
+import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import type { InlineDirective } from '../../adf/inline-directives.ts'
+import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
+import { carriedInline } from '../opaque-carry.ts'
+import { claimsLine, holdsEntityReference, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { inlineDirective } from '../../adf/inline-directives.ts'
+import { largestNesting } from '../../nesting.ts'
+import { longestBacktickRun } from '../backtick-runs.ts'
+import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
+import { serializeCanonicalJson } from '../../canonical-json.ts'
+import { spellAttributes, spellStringAttribute } from '../directive-attributes.ts'
+import { spellDestination, spellTitle } from './destination-spelling.ts'
+import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 
 type EmittedLine = { line: string; segments: InlineSegment[] }
 
@@ -206,7 +209,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   if (!empty.ok) return empty
   const attributes = spellInlineNodeAttributes(node, directive)
   if (attributes === undefined) return success({ carry: { first: index, last: index } })
-  const slot = directive.slot === undefined ? undefined : node.attrs?.[directive.slot]
+  const slot = directive.textAttribute === undefined ? undefined : node.attrs?.[directive.textAttribute]
   if (slot === undefined) return success({ segments: [syntax(spellLeafDirective(node.type, attributes))] })
   if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
   if (/[\n\r]/.test(slot)) return failure('unspellable-whitespace', `a ${node.type} content slot holds a newline no inline directive spans`, path)
@@ -291,41 +294,6 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
   return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${destination.value}${spelledTitle.value})`)] })
-}
-
-function spellDestination(href: string, path: ConvertErrorPath): Result<string> {
-  if (holdsControlCharacter(href)) return failure('unspellable-link-destination', 'a link destination holds a control character', path)
-  if (href.includes('\\')) return failure('unspellable-link-destination', 'no canonical escape spells a backslash in a link destination', path)
-  if (holdsEntityReference(href)) {
-    return failure('unspellable-link-destination', 'a link destination shaped like an entity reference decodes on the way back', path)
-  }
-  if (href.includes(' ')) {
-    if (/[<>]/.test(href)) {
-      return failure('unspellable-link-destination', 'no canonical escape spells an angle bracket beside a space in a link destination', path)
-    }
-    return success(`<${href}>`)
-  }
-  if (href.startsWith('<')) return failure('unspellable-link-destination', 'a bare link destination cannot begin with an angle bracket', path)
-  if (!balanced(href)) return failure('unspellable-link-destination', 'no canonical escape spells an unbalanced parenthesis in a link destination', path)
-  return success(href)
-}
-
-function spellTitle(title: string, path: ConvertErrorPath): Result<string> {
-  if (/["\n\r\\]/.test(title)) {
-    return failure('unspellable-link-title', 'no canonical escape spells a quote, backslash or newline in a link title', path)
-  }
-  if (holdsEntityReference(title)) return failure('unspellable-link-title', 'a link title shaped like an entity reference decodes on the way back', path)
-  return success(` "${title}"`)
-}
-
-function balanced(href: string): boolean {
-  let depth = 0
-  for (const character of href) {
-    if (character === '(') depth += 1
-    if (character === ')') depth -= 1
-    if (depth < 0) return false
-  }
-  return depth === 0
 }
 
 function sameMark(candidate: AdfMark, mark: AdfMark): boolean {

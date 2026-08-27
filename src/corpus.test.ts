@@ -4,8 +4,8 @@ import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { adfToMarkdown } from './adf-to-markdown.ts'
-import { isAdfDocument } from './adf-document.ts'
+import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
+import { isAdfDocument } from './adf/document.ts'
 import { isJsonValue } from './json-value.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 

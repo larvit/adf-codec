@@ -1,7 +1,7 @@
-import type { AdfNode } from './adf-document.ts'
-import { carriesOnly } from './adf-document.ts'
-import { tryPipeCell } from './markdown-inline.ts'
-import type { ConvertErrorPath } from './result.ts'
+import type { AdfNode } from '../../adf/document.ts'
+import { carriesOnly } from '../../adf/document.ts'
+import { tryPipeCell } from './inline-line.ts'
+import type { ConvertErrorPath } from '../../result.ts'
 
 export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | undefined {
   const rows = pipeRows(node)
