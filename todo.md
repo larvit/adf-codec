@@ -215,9 +215,12 @@ detail is settled at its own milestone.
         of continuing the paragraph CommonMark would fold it into. Claiming at block level is
         already absolute, and this binds input alone — 2e1's `closing-fence-line` orders the
         emitter's blockquote away from the edge either way — so `spec/flavour.md`'s claiming
-        paragraph gains the case here. 2b's tight-versus-blank separation lands here too, the one
-        `nested-list-tight` waits on: how the parser reads a nested list after a block is the
-        spelling the emitter owes, one answer for both.
+        paragraph gains the case here. And 2b's tight-versus-blank, one answer for both
+        directions: the tight spelling stays wherever it parses back, a blank line going in only
+        where the nested list would be swallowed — `interruptsParagraph` inverted from a refusal
+        into the separation it names, and `spec/flavour.md`'s "none between a nested list and a
+        CommonMark block above it" gaining that exception. Every fixture spelled tight today keeps
+        its bytes, and `nested-list-tight` becomes a round-trip pair.
   - [ ] **3d — Inline text.** The inline scanner over a block's content: backslash escapes,
         entity references decoding to their characters, code spans and the literal they hold —
         directive syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash
@@ -229,17 +232,22 @@ detail is settled at its own milestone.
         autolinks, and the image gap's named errors — a titled image, and one amid other text.
         `spec/flavour.md` does not yet pin `~`'s `can_open`/`can_close`, which is transcription
         rather than a decision: `delimiterFlags` already gives it CommonMark flanking, as for `*`,
-        and §8 fixed that the moment the emitter shipped. The decision here is 1d's deferred pair,
-        which no other chunk forces and milestone 5 assumes landed — the spelling for a link
-        destination holding an unbalanced `)` and for a title holding `"`, both refused today in
-        `corpus/unspellable/`.
+        and §8 fixed that the moment the emitter shipped.
+        **Settled** (the maintainer, 2026-08-27): 1d's deferred pair takes the backslash inside
+        the delimiters it already has — `[a](https://example.com/a\)b)` and
+        `[a](/url "He said \"hi\"")`. `<…>` stays reserved for the destination holding a space,
+        where nothing else works, so each construct keeps one spelling and a destination holding
+        both composes. `link-destination-parenthesis` and `link-title-quote` become round-trip
+        pairs.
   - [ ] **3f — The directive grammar.** The three forms — inline `:name[content]{attrs}`,
         container `:::name arg {attrs}`, leaf `::name arg {attrs}` — the attribute grammar with
         its quoting and escapes, the fence-length and nesting rules, and the malformed list
-        `spec/flavour.md` spells, each a named error. Precedence in input between a directive and
-        a code span, an entity or raw HTML written raw inside its attributes is unpinned — 2e3's
-        escape keeps emitted output clear of that collision, so the pick binds input alone — and
-        it lands here.
+        `spec/flavour.md` spells, each a named error.
+        **Settled** (the maintainer, 2026-08-27): the code span, the entity and raw HTML bind
+        first in input, as 2e3 already assumed of the emitted side — a raw `` ` ``, `&`, `<` or
+        `|` inside `{attrs}` breaks the directive and is a named error, the author writing the
+        `\u0060` the emitter writes. One precedence covers both directions, and CommonMark's own
+        ordering stays untouched.
   - [ ] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section
@@ -249,10 +257,17 @@ detail is settled at its own milestone.
         settles, read from the other side; the `codeBlock` directive's fenced body and the
         `language` attribute a bare fence leaves it; the media family's composition and the
         CommonMark image shape; both table forms, the pipe table's cell split and its named
-        errors; and the one paragraph an inline body takes. 1d's last deferred pick lands here,
-        the one `container-block-separation` holds: how a container body separates a CommonMark
-        block from a directive block is what the parser must read, so it is the answer the emitter
-        owes as well.
+        errors; and the one paragraph an inline body takes.
+        **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
+        `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
+        in a container body with no blank line between them. That reduces the three cases to one
+        rule, separation only where its absence would merge the blocks: the `:::` fence is
+        separation already, and 3c's claim ends the lazy continuation that would otherwise swallow
+        it. The fixture becomes a round-trip pair, and with `nested-list-tight` and 3e's pair that
+        empties `corpus/unspellable/`: this chunk settles the directory's own guard in
+        `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
+        The emitter's other refusals survive on causes no fixture in that directory covers, so
+        3k's one-list pass is where they get fixtures or the directory goes.
   - [ ] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
         `text` attribute and the error a slot holding anything but one unmarked text node is; the
         `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,
