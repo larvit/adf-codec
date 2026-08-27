@@ -1,7 +1,6 @@
 import type { AdfMark, AdfNode, AttributeVocabulary } from './adf-document.ts'
 import type { JsonValue } from './json-value.ts'
-import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { attributeFailure, isBareToken, spellAttributes, spellJsonAttribute, vocabularyPairs } from './directive-attributes.ts'
+import { isBareToken, spellAttributes, spellJsonAttribute, vocabularyPairs } from './directive-attributes.ts'
 
 export type BlockDirective = {
   argument?: string
@@ -80,24 +79,22 @@ export function blockDirective(type: string): BlockDirective | undefined {
   return Object.hasOwn(blockDirectives, type) ? blockDirectives[type] : undefined
 }
 
-export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<string> {
-  const argument = spellArgument(node, directive, path)
-  if (!argument.ok) return argument
-  const spelled = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.argument)
-  if (spelled.fault !== undefined) return attributeFailure(node.type, spelled.fault, path)
+export function spellDirectiveHeader(node: AdfNode, directive: BlockDirective): string | undefined {
+  const argument = spellArgument(node, directive)
+  if (argument === undefined) return undefined
+  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.argument)
+  if (pairs === undefined) return undefined
   const marks = node.marks ?? []
-  if (marks.length > 0) spelled.pairs.push(['marks', spellJsonAttribute(markValues(marks))])
-  const attributes = spellAttributes(spelled.pairs)
-  return success(`${node.type}${argument.value}${attributes === '' ? '' : ` ${attributes}`}`)
+  if (marks.length > 0) pairs.push(['marks', spellJsonAttribute(markValues(marks))])
+  const attributes = spellAttributes(pairs)
+  return `${node.type}${argument}${attributes === '' ? '' : ` ${attributes}`}`
 }
 
-function spellArgument(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<string> {
+function spellArgument(node: AdfNode, directive: BlockDirective): string | undefined {
   const value = directive.argument === undefined ? undefined : node.attrs?.[directive.argument]
-  if (value === undefined) return success('')
-  if (typeof value !== 'string' || !isBareToken(value)) {
-    return failure('unspelled-node-attribute', `the ${node.type} attribute ${directive.argument} holds no bare token the arg slot spells`, path)
-  }
-  return success(` ${value}`)
+  if (value === undefined) return ''
+  if (typeof value !== 'string' || !isBareToken(value)) return undefined
+  return ` ${value}`
 }
 
 function markValues(marks: readonly AdfMark[]): JsonValue {

@@ -103,13 +103,13 @@ detail is settled at its own milestone.
           CommonMark's own precedence between a directive and a code span, and collapsed
           `escaping: 'attribute'` into `none`. The escaper's link-opener scan skips emitted syntax
           to match: a `](` inside a directive escapes no text `[`.
-    - [ ] **2e4 — The carry's fallback triggers.** `spec/flavour.md` carries a node its section
+    - [x] **2e4 — The carry's fallback triggers.** `spec/flavour.md` carries a node its section
           cannot spell — an attrs key no section lists, a value that is not the section's type, an
           arg slot holding no bare token, marks no nesting spells — where the emitter still refuses,
           which leaves the refusals a container's own spelling owns. The flanking trigger 2e2
           added to that list is the odd one out: `unspellableMark` finds it after assembly and
           names a mark type against the line's path, so the failing run needs identifying before
-          the carry can replace the refusal `corpus/unspellable/mark-inside-word` pins.
+          the carry can replace the refusal `mark-inside-word` pinned.
     - [ ] **2e5 — Combined documents and the collision property.** Documents combining nodes rather
           than isolating one, and the gate's collision property: no two corpus documents may emit
           the same bytes — one spelling for two documents is a round-trip break no parser can undo,

@@ -1,7 +1,5 @@
 import type { AdfMark, AdfNode, AttributeVocabulary } from './adf-document.ts'
-import type { AttributeFault } from './directive-attributes.ts'
-import { failure, success, type ConvertErrorPath, type Result } from './result.ts'
-import { attributeFailure, spellAttributes, vocabularyPairs } from './directive-attributes.ts'
+import { spellAttributes, vocabularyPairs } from './directive-attributes.ts'
 
 export type InlineDirective = {
   attributes: AttributeVocabulary
@@ -53,19 +51,12 @@ export function markSpelling(type: string): MarkSpelling | undefined {
   return Object.hasOwn(markSpellings, type) ? markSpellings[type] : undefined
 }
 
-export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective, path: ConvertErrorPath): Result<string> {
-  const spelled = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot)
-  if (spelled.fault !== undefined) return attributeFailure(node.type, spelled.fault, path)
-  return success(spellAttributes(spelled.pairs))
+export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective): string | undefined {
+  const pairs = vocabularyPairs(node.attrs ?? {}, directive.attributes, directive.slot)
+  return pairs === undefined ? undefined : spellAttributes(pairs)
 }
 
-export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary, path: ConvertErrorPath): Result<string> {
-  const spelled = vocabularyPairs(mark.attrs ?? {}, vocabulary, undefined)
-  if (spelled.fault !== undefined) return markFailure(mark.type, spelled.fault, path)
-  return success(spellAttributes(spelled.pairs))
-}
-
-function markFailure<T>(type: string, fault: AttributeFault, path: ConvertErrorPath): Result<T> {
-  if (fault.kind === undefined) return failure('unspellable-mark', `the ${type} spelling holds no ${fault.key} attribute`, path)
-  return failure('unspellable-mark', `the ${type} attribute ${fault.key} holds no ${fault.kind}`, path)
+export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {
+  const pairs = vocabularyPairs(mark.attrs ?? {}, vocabulary, undefined)
+  return pairs === undefined ? undefined : spellAttributes(pairs)
 }

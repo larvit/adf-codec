@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "rounded": true
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Check the collation.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "panelType": "extra info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Two words fit no arg slot.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "content": [
+        {
+          "text": "See ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": 5,
+            "text": "In review"
+          },
+          "type": "status"
+        },
+        {
+          "text": " now.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
