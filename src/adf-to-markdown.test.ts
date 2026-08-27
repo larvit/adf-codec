@@ -317,9 +317,12 @@ test('refuses the characters CommonMark rewrites', () => {
   assert.equal(code(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
 })
 
-test('refuses a text node carrying no text at all', () => {
+test('refuses a text node the spelling would empty out', () => {
+  const nested: AdfNode[] = [{ text: 'lost', type: 'text' }]
   assert.equal(code(adfToMarkdown(document(paragraph({ text: '', type: 'text' })))), 'unsupported-node-shape')
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '', type: 'text' })))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document(paragraph({ content: nested, text: 'x', type: 'text' })))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document(paragraph({ content: nested, marks: [{ type: 'code' }], text: 'x', type: 'text' })))), 'unsupported-node-shape')
 })
 
 test('carries a mark run whose edge holds whitespace CommonMark flanking counts', () => {

@@ -386,12 +386,14 @@ restores the array, not a set — and opens each spelling once over the longest 
 inline nodes carrying an identical mark, attributes included, at that depth. A run breaks at every
 node the emitter carries, so no emitted carry sits inside a mark spelling.
 
-An inline node whose marks no nesting spells — a mark type not listed here, an attribute no
-spelling holds or one a spelling needs and the mark lacks, an order putting a code span outside
-another mark, `code` over anything but a text node or over text holding a newline, or a spelling
-CommonMark's flanking rules cannot open or close where the run sits (`un**-real**istic`) — rides
-the inline carry whole. An opaque carry inside a mark spelling is a
-named error in input: the carry restores its node exactly, marks included (AGENTS.md §3).
+An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
+spelling does not list, a value that is not the spelling's type, an attribute the spelling needs
+and the mark lacks, an order putting a code span outside another mark, `code` over anything but a
+text node or over text holding a newline, or a spelling CommonMark's flanking rules cannot open or
+close where the run sits (`un**-real**istic`) — rides the inline carry whole. A value the spelling
+holds but CommonMark cannot write — a link destination or title — is a named error instead. An
+opaque carry inside a mark spelling is a named error in input: the carry restores its node
+exactly, marks included (AGENTS.md §3).
 
 ```
 :textColor[**Overdue**]{color="#ae2e24"}, H:subsup[2]{type=sub}O, :underline[signed].

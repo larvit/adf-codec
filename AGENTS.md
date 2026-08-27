@@ -82,8 +82,8 @@ closed list a consumer may switch exhaustively, the message free text, the path 
 from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
 new failure cause reuses a code where one fits; the list is complete at `0.1.0`. A code names the
 cause; where one cause recurs across node types, one code covers them all and `path` and `message`
-say which. A cause the carry answers gets no code: no mark refuses, since a mark no spelling writes
-rides the carry with its node.
+say which. A cause the carry answers gets no code: a mark no spelling writes rides the carry with
+its node.
 
 ## 9. Release automation
 
@@ -154,9 +154,8 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
 validation or exported validator — a refusal that keeps the round-trip is not schema validation,
 so the one a spelled node carrying the same mark type twice earns stays, no shipped CSS (§4), no
-streaming APIs, no performance budget —
-conversions are O(n), real documents are kilobytes. A CLI is a later goal (`todo.md`), not a
-non-goal.
+streaming APIs, no performance budget — real documents are kilobytes. A CLI is a later goal
+(`todo.md`), not a non-goal.
 
 ## 15. The working loop
 

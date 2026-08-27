@@ -7,3 +7,5 @@ Reviewed :adf{json="{\"marks\":[{\"attrs\":{\"annotationType\":\"inlineComment\"
 :adf{json="{\"marks\":[{\"type\":\"code\"}],\"text\":\"a\\nb\",\"type\":\"text\"}"}
 
 :adf{json="{\"marks\":[{\"type\":\"link\"}],\"text\":\"Release notes\",\"type\":\"text\"}"}
+
+a:adf{json="{\"marks\":[{\"type\":\"em\"}],\"text\":\".\",\"type\":\"text\"}"}b:adf{json="{\"marks\":[{\"type\":\"strong\"}],\"text\":\",\",\"type\":\"text\"}"}c
