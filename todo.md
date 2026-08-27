@@ -154,38 +154,83 @@ detail is settled at its own milestone.
         2f raises what 1d's unspelled block separation costs: a single `localId` on a paragraph
         beside a plain one now refuses every container body that is a directive's — a panel, an
         expand, a table cell — where before 2f the attribute refused the document anyway.
-- [ ] **3 — `markdownToAdf`.** The CommonMark parser is the largest single component; split it
-      into sub-items before starting (§15). Fixtures land with the code that reads them:
-      `corpus/normalization/` (setext, indented code, loose lists, `*`/`+` bullets, entity
-      references, soft wraps — one-way, the markdown not canonical) and `corpus/errors/` (a
-      markdown input per named error — malformed directives, the image gap, a claimed pipe-table
-      line that does not parse, the content slot, raw HTML with no mapping — each with the error
-      it must return). The raw-HTML element mapping is empty until milestone 6, so at `0.1.0`
-      every raw-HTML construct in input is an error result. The CommonMark spec suite runs
-      against it from here (§10). The parser owes `~` the same `can_open`/`can_close` the emitter
-      assumes — CommonMark flanking, as for `*` — which `spec/flavour.md` does not yet pin, and
-      the precedence in input between a directive and a code span, an entity or raw HTML written
-      raw inside its attributes — 2e3's escape keeps emitted output clear of that collision, so the
-      pick binds input alone. Whether a claimed line interrupts a paragraph is pinned for the plain
-      case and unstated for the lazy one: a closing fence on the line after a blockquote's open
-      paragraph is lazy continuation in CommonMark, which would swallow the fence and leave the
-      container unclosed. 2e1's `closing-fence-line` orders its blockquote away from that edge
-      meanwhile. `src/` gets its hierarchy at the same split — `adf/`, `markdown/`, `html/`, the
-      grammar module shared inside `markdown/` — while the rename is
-      still mechanical. Three files do not move whole: `block-directives.ts` and
-      `inline-directives.ts` each hold a node table milestones 6-7 need in `adf/` beside a
-      markdown spelling that belongs in `markdown/`, and `directive-attributes.ts` fuses the
-      format-neutral conformance walk (`vocabularyPairs`) with the markdown value spelling HTML
-      has no use for. `spellDestination`, `spellTitle` and `balanced` leave `markdown-inline.ts`
-      here too — CommonMark destination spelling `emitLink` and `tryImageLine` share, and the six
-      concerns that file carries are one fewer for it. `AttributeKind` and `AttributeVocabulary`
-      stay above all of it — the vocabulary a string-typed attribute grammar needs, which is why
-      HTML will want them too, not a markdown spelling. Both node tables are a second copy of
-      `spec/flavour.md`'s prose with no drift guard, and a mistyped attribute name degrades into a
-      false refusal no test catches. The parser reuses `emphasis-matching.ts` whole and lands it
-      beside the grammar module: `delimiterFlags` and `matchEmphasis` take CommonMark's own run
-      vocabulary rather than the emitter's, so no second `process_emphasis` exists to drift from
-      the first.
+- [ ] **3 — `markdownToAdf`.** The largest single component, so it splits below. Each sub-item
+      lands the fixtures its own code reads, and the runner grows a parse half as they do:
+      `parsingDirectories` beside `emittingDirectories`, a round-trip directory joining it only
+      once every fixture in it reads back to its document, and readers for `corpus/normalization/`
+      (setext, indented code, loose lists, `*`/`+` bullets, entity references, soft wraps —
+      one-way, the markdown not canonical) and `corpus/errors/` (a markdown input per named error,
+      the code in a `.error` beside it) with the first fixture each. The raw-HTML element mapping
+      is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input — a block, an
+      inline tag, a comment, a processing instruction — is a named error.
+  - [ ] **3a — The hierarchy.** Mechanical, ahead of the first parser file: `src/adf/` and
+        `src/markdown/` (`html/` arrives with its first file, 6-7), the grammar module shared
+        inside `markdown/`, and `emphasis-matching.ts` beside it — the parser reuses it whole,
+        `delimiterFlags` and `matchEmphasis` taking CommonMark's own run vocabulary rather than
+        the emitter's, so no second `process_emphasis` exists to drift from the first. Three files
+        do not move whole: `block-directives.ts` and `inline-directives.ts` each hold a node table
+        milestones 6-7 need in `adf/` beside a markdown spelling that belongs in `markdown/`, and
+        `directive-attributes.ts` fuses the format-neutral conformance walk (`vocabularyPairs`)
+        with the markdown value spelling HTML has no use for. `spellDestination`, `spellTitle` and
+        `balanced` leave `markdown-inline.ts` here too — CommonMark destination spelling
+        `emitLink` and `tryImageLine` share, and the six concerns that file carries are one fewer
+        for it. `AttributeKind` and `AttributeVocabulary` stay above all of it — the vocabulary a
+        string-typed attribute grammar needs, which is why HTML will want them too, not a markdown
+        spelling. Both node tables are a second copy of `spec/flavour.md`'s prose with no drift
+        guard, and a mistyped attribute name degrades into a false refusal no test catches; 3e
+        makes them the parser's contract as well, so whether that guard is worth building is
+        asked here.
+  - [ ] **3b — The block scanner.** CommonMark block structure, ahead of any inline parsing:
+        paragraph, ATX and setext heading, thematic break, fenced and indented code block,
+        blockquote, and bullet and ordered list — continuation, laziness, and the tightness ADF
+        does not record — with the blank lines between them. Block-level claiming is structure's
+        too: a colon run or an unescaped leading `|` is claimed here, the parse behind it 3e's and
+        3f's, a claim with nothing yet to parse it the named error the claim promises meanwhile.
+        Whether a claimed line interrupts a paragraph is pinned for the plain case and unstated
+        for the lazy one — a closing fence on the line after a blockquote's open paragraph is lazy
+        continuation in CommonMark, which would swallow the fence and leave the container
+        unclosed, and 2e1's `closing-fence-line` orders its blockquote away from that edge
+        meanwhile — so the answer lands here.
+  - [ ] **3c — Inline text.** The inline scanner over a block's content: backslash escapes,
+        entity references decoding to their characters, code spans and the literal they hold —
+        directive syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash
+        and two trailing spaces alike, and a soft line break as one space.
+  - [ ] **3d — Emphasis and links.** `_`, `*` and `~~` runs through `matchEmphasis` to the `em`,
+        `strong` and `strike` marks; links inline and reference, link reference definitions,
+        autolinks, and the image gap's named errors — a titled image, and one amid other text.
+        `spec/flavour.md` does not yet pin `~`'s `can_open`/`can_close`, the CommonMark flanking
+        the emitter already assumes: it lands here.
+  - [ ] **3e — The directive grammar.** `commonmark-subset/` reads back. The three forms — inline
+        `:name[content]{attrs}`, container `:::name arg {attrs}`, leaf `::name arg {attrs}` — with
+        the attribute grammar and the types each section assigns, the fence-length and nesting
+        rules, an unknown name as a named error, and the malformed list `spec/flavour.md` spells.
+        The node tables read backwards turn a parsed directive into its node: the arg to the
+        attribute it names, the body to `content`, the reserved `marks` key to the marks array.
+        Precedence in input between a directive and a code span, an entity or raw HTML written raw
+        inside its attributes is unpinned — 2e3's escape keeps emitted output clear of that
+        collision, so the pick binds input alone — and it lands here.
+  - [ ] **3f — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
+        settles, read from the other side; the `codeBlock` directive's fenced body and the
+        `language` attribute a bare fence leaves it; the media family's composition and the
+        CommonMark image shape; both table forms, the pipe table's cell split and its named
+        errors; and the one paragraph an inline body takes.
+  - [ ] **3g — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
+        `text` attribute and the error a slot holding anything but one unmarked text node is; the
+        `:text{text="…"}` whitespace spelling, merged into editor-normal text nodes (§2); the
+        four directive marks and their nesting order, outermost first; and `:em[x]` as the error
+        `spec/flavour.md` promises.
+  - [ ] **3h — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
+        the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
+        named error, a carry inside a mark spelling another, and the three carve-outs' escapes
+        reading as the literal text they hold.
+  - [ ] **3i — The CommonMark spec suite.** The suite checked in, pinned to the version it ships,
+        `corpus/README.md` gaining its kind. What it can assert is the open question: no HTML
+        exists to compare against until 7, which leaves §2's canonical fixpoint — every example
+        is either a documented carve-out or gap error, or emits markdown that parses and emits to
+        itself byte for byte. That exception list is contract, so it is the maintainer's.
+        `index.ts` gains `markdownToAdf` here, with the README's status line: a parser still
+        missing syntax is a claim the entrypoint cannot keep, and the corpus reads it from its
+        module meanwhile.
 - [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
       3. Editor-normal (§2) gets its implementation here — `toEditorNormal(doc)` and the equality
       the round-trip asserts, which over normalized input is the canonical serializer's compact
