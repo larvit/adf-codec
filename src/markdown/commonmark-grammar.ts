@@ -1,8 +1,5 @@
 export type LinePosition = 'first' | 'later'
 
-const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
-const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
-
 const controlCharacterRange = '\\u0000-\\u001f\\u007f'
 const autolinkSource = `[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\\s<>${controlCharacterRange}]*`
 const nullCharacterSource = '\\u0000'
@@ -14,7 +11,9 @@ const bracketedAutolink = new RegExp(`^<(?:${autolinkSource})>`)
 const controlCharacter = new RegExp(`[${controlCharacterRange}]`)
 const entityReference = new RegExp(entityReferenceSource)
 const nullCharacter = new RegExp(nullCharacterSource)
+const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const firstCharacterOpeners = [/^#{1,6}(?:[ \t]|$)/, /^>/, /^[*+-](?:[ \t]|$)/, /^`{3,}/, /^~{3,}/, /^:{2,}/, /^\|/]
+const htmlConstructs = [/^<[!?]/, /^<\/?[A-Za-z][A-Za-z0-9-]*(?:[\s/>]|$)/, /^<[^\s<>@]+@[^\s<>@]+>/]
 const orderedListOpener = /^(\d{1,9})[.)](?:[ \t]|$)/
 const setextUnderline = /^(?:=+|-+)$/
 const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/

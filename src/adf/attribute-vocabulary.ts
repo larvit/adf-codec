@@ -1,7 +1,7 @@
 import type { AdfAttributes } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
 
-export type AttributeKind = 'boolean' | 'json' | 'number' | 'string'
+type AttributeKind = 'boolean' | 'json' | 'number' | 'string'
 
 export type AttributeVocabulary = Readonly<Record<string, AttributeKind>>
 

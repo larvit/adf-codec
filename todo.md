@@ -189,7 +189,7 @@ detail is settled at its own milestone.
         HTML will want too, not a markdown spelling.
         **Settled** (the maintainer, 2026-08-27): `markdown/` parts here as well, into `emit/` and
         `parse/` with the shared set at the root — the grammar module, emphasis matching,
-        destination spelling, the tables' markdown halves — and `parse/` arriving with 3b's first
+        the tables' markdown halves — and `parse/` arriving with 3b's first
         file, the rule `html/` already follows. And the node tables, a second copy of
         `spec/flavour.md`'s prose whose mistyped attribute name degrades into a false refusal no
         test catches, get their guard: a test reads the spec's node sections, takes each
