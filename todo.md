@@ -55,7 +55,7 @@ detail is settled at its own milestone.
   - [x] **1d3 — Inline nodes and marks**: date, emoji, inlineCard, mediaInline, mention, status;
         border, subsup, textColor, underline; the content slot's `text` attribute and the
         `:text{text="…"}` whitespace spelling.
-- [ ] **2 — `adfToMarkdown`.** First real code. Each sub-item turns one corpus directory green;
+- [x] **2 — `adfToMarkdown`.** First real code. Each sub-item turns one corpus directory green;
       the two that have no fixtures yet write them in the same chunk, tests first (§10).
   - [x] **2a — The runner and the CommonMark subset.** The corpus runner: walk
         `corpus/round-trip/`, assert `adfToMarkdown` emits each `.md` byte for byte. Decide here
@@ -85,7 +85,7 @@ detail is settled at its own milestone.
         info string, and the `codeBlock` whose language is `adf` — carried whole ahead of the
         attribute fallback 2e owes, since the reservation leaves that node no other spelling
         whatever 1d decides for its `localId`.
-  - [ ] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
+  - [x] **2e — Carve-outs and combinations.** Fixtures and emitter together, into
         `corpus/round-trip/combinations/`.
     - [x] **2e1 — The carve-outs and the claimed line.** The three carve-outs
           and their escapes, and a paragraph line inside a container body shaped like a closing
@@ -127,7 +127,7 @@ detail is settled at its own milestone.
           both ways keeps every delimiter the emitter did not write out of the matching. The
           canonical form gained a backslash where a run only closes — `\*not emphasis\*`, and
           2e1's `carve-out-strike` a third and fourth.
-  - [ ] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
+  - [x] **2f — The attributes CommonMark cannot hold.** 1d's settled answer: the block nodes
         CommonMark spells — `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`,
         `orderedList`, `paragraph`, `rule` — get directive sections in `spec/flavour.md` carrying
         `localId`, `codeBlock`'s `hideLineNumbers`, `uniqueId` and `wrap`, and `blockquote`'s
