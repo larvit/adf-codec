@@ -196,7 +196,7 @@ detail is settled at its own milestone.
         `name (type)` list and asserts it equals the table, leaving the spec the source a human
         writes with no build step and no generated file. It is built at 3g, where a wrong entry
         starts refusing documents.
-  - [ ] **3b — The leaf blocks.** The line walk that opens and closes a block, ahead of any inline
+  - [x] **3b — The leaf blocks.** The line walk that opens and closes a block, ahead of any inline
         parsing: paragraph, ATX and setext heading, thematic break, fenced and indented code
         block, the HTML block whose lines it swallows whether or not the construct then errors,
         the link reference definitions a closing paragraph gives up, and the blank lines between
