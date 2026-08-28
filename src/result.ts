@@ -1,5 +1,8 @@
 export type ConvertErrorCode =
+  | 'malformed-directive'
+  | 'malformed-pipe-table'
   | 'not-an-adf-document'
+  | 'unmappable-html'
   | 'unspellable-adjacent-lists'
   | 'unspellable-character'
   | 'unspellable-line-start'

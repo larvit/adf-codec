@@ -1,15 +1,18 @@
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { isAdfDocument } from './adf/document.ts'
 import { isJsonValue } from './json-value.ts'
+import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
+const errorsRoot = join(corpusRoot, 'errors')
+const normalizationRoot = join(corpusRoot, 'normalization')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 const unspellableRoot = join(corpusRoot, 'unspellable')
 
@@ -33,12 +36,31 @@ function names(root: string, extension: string): string[] {
     .sort()
 }
 
+// One kind's fixture pairs, its two tests declared with them.
+function pairedNames(root: string, first: string, second: string): string[] {
+  const kind = basename(root)
+
+  test(`${kind} pairs every ${first} with a ${second}`, () => {
+    assert.deepEqual(names(root, first), names(root, second))
+  })
+
+  test(`${kind} holds fixtures`, () => {
+    assert.ok(names(root, first).length > 0)
+  })
+
+  return names(root, first)
+}
+
 function corpusJsonPaths(): string[] {
   return readdirSync(corpusRoot, { encoding: 'utf8', recursive: true })
     .filter((name) => name.endsWith('.json'))
     .map((name) => join(corpusRoot, name))
     .sort()
 }
+
+test('every corpus directory is a kind the runner reads', () => {
+  assert.deepEqual(directoryNames(corpusRoot), ['errors', 'normalization', 'round-trip', 'unspellable'])
+})
 
 test('every round-trip directory emits', () => {
   assert.deepEqual(directoryNames(roundTripRoot), [...emittingDirectories].sort())
@@ -144,21 +166,31 @@ for (const directory of emittingDirectories) {
   }
 }
 
-test('unspellable pairs every .json with an .error', () => {
-  assert.deepEqual(names(unspellableRoot, '.json'), names(unspellableRoot, '.error'))
-})
-
-test('unspellable holds fixtures', () => {
-  assert.ok(names(unspellableRoot, '.json').length > 0)
-})
-
-for (const name of names(unspellableRoot, '.json')) {
+for (const name of pairedNames(unspellableRoot, '.json', '.error')) {
   test(`unspellable/${name} is refused with the error it names`, () => {
     const parsed: unknown = JSON.parse(readFileSync(join(unspellableRoot, `${name}.json`), 'utf8'))
     assert.ok(isAdfDocument(parsed), `${name}.json is not an ADF document`)
     const result = adfToMarkdown(parsed)
     assert.ok(!result.ok, result.ok ? `emitted ${JSON.stringify(result.value)}` : '')
     assert.equal(result.error.code, readFileSync(join(unspellableRoot, `${name}.error`), 'utf8').trimEnd())
+  })
+}
+
+for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
+  test(`normalization/${name} parses to the document beside it`, () => {
+    const expected: unknown = JSON.parse(readFileSync(join(normalizationRoot, `${name}.json`), 'utf8'))
+    assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
+    const result = markdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
+    assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
+    assert.deepEqual(result.value, expected)
+  })
+}
+
+for (const name of pairedNames(errorsRoot, '.md', '.error')) {
+  test(`errors/${name} is refused with the error it names`, () => {
+    const result = markdownToAdf(readFileSync(join(errorsRoot, `${name}.md`), 'utf8'))
+    assert.ok(!result.ok, result.ok ? `built ${JSON.stringify(result.value)}` : '')
+    assert.equal(result.error.code, readFileSync(join(errorsRoot, `${name}.error`), 'utf8').trimEnd())
   })
 }
 

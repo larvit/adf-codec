@@ -29,6 +29,7 @@ type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; deli
 
 const delimiters = ['*', '_', '`', '~']
 
+// The `:` keeps a `[label]: url` line escaped: unescaped, the parser swallows it as a link reference definition.
 const followsLinkText = /[([:]/
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
