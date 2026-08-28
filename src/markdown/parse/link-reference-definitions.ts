@@ -37,7 +37,6 @@ function readDefinition(text: string): ReadDefinition | undefined {
   return { definition: { destination: destination.value }, label: name, length: plain }
 }
 
-// CommonMark's label matching: the whitespace a label holds collapses, and its case folds.
 function normalizeLabel(raw: string): string {
   return raw
     .replace(/^[ \t\n]+|[ \t\n]+$/g, '')

@@ -36,6 +36,7 @@ test('keeps the link reference definitions a paragraph gives up, the first of a 
 
 test('leaves the paragraph a line no definition spells', () => {
   assert.deepEqual(definitions('[]: /url\n'), [])
+  assert.deepEqual(definitions('[ ]: /url\n'), [])
   assert.deepEqual(definitions('[a]: <un>closed>\n'), [])
   assert.deepEqual(definitions('[a]: <unclosed\n'), [])
   assert.deepEqual(definitions('[a]: /url)x\n'), [])
