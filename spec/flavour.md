@@ -19,7 +19,9 @@ normalizes to it through the round-trip.
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
   `order` attribute. Continuation lines align with the first character after the marker
   (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines, none
-  between a nested list and a CommonMark block above it. Blank lines between items normalize
+  between a nested list and a CommonMark block above it — one where the nested list's own marker
+  cannot interrupt a paragraph (any ordered list, or a bullet list whose first item opens with an
+  empty block), which the block above would otherwise swallow. Blank lines between items normalize
   away; ADF does not record tightness.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
@@ -92,7 +94,8 @@ above.
 **Claiming at block level**, symmetric with inline: a line whose leading run of two or more
 colons is followed immediately by a name character is claimed and must parse fully as a container
 opening or a leaf, else it is a named error. A bare colon-run line is a closing fence while a
-container is open, a named error otherwise.
+container is open, a named error otherwise. A claimed line also ends a lazy continuation: the
+blockquote or list item whose paragraph CommonMark would fold it into closes instead.
 
 **Attributes**: `{key=value key2="two words"}`. `{attrs}` is optional in every form, and `{}` is
 valid — no attributes. A bare value matches `[A-Za-z0-9_-]+`; any other value is double-quoted

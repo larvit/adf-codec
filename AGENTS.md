@@ -81,8 +81,9 @@ The error surface is a contract too. `ConvertError` is `{ code, message, path }`
 closed list a consumer may switch exhaustively, the message free text, the path the node's position
 from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
 new failure cause reuses a code where one fits; the list is complete at `0.1.0`. A code names the
-cause; where one cause recurs across node types, one code covers them all and `path` and `message`
-say which. A claim code names the spelling claimed, never the node that spelling would have built:
+cause; where one cause recurs across node types or across directions, one code covers them all and
+`path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
+direction hits it. A claim code names the spelling claimed, never the node that spelling would have built:
 a malformed `:::table` is a `malformed-directive`. A cause the carry answers gets no code: a mark no
 spelling writes rides the carry with its node.
 

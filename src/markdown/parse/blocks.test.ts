@@ -28,6 +28,10 @@ test('keeps the link reference definitions a paragraph gives up, the first of a 
     ['a', { destination: '/url\\' }],
     ['b', { destination: '/b' }],
   ])
+  assert.deepEqual(definitions('> [a]: /url\n\n- [b]: /other\n'), [
+    ['a', { destination: '/url' }],
+    ['b', { destination: '/other' }],
+  ])
   assert.deepEqual(definitions('[\u00a0a]: /one\n[a]: /two\n'), [
     ['\u00a0a', { destination: '/one' }],
     ['a', { destination: '/two' }],

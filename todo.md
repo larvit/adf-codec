@@ -208,7 +208,7 @@ detail is settled at its own milestone.
         error the claim promises meanwhile. The runner's parse half comes with it, and the first
         `normalization/` fixtures, holding inline-trivial content so 3d and 3e add beside them
         rather than editing them.
-  - [ ] **3c — The container blocks.** Blockquote, bullet and ordered list: the continuation a
+  - [x] **3c — The container blocks.** Blockquote, bullet and ordered list: the continuation a
         marker's width sets, lazy continuation, and the tightness ADF does not record — `> `
         repeated being two bytes a level, so this is the cheapest way to reach §11's 500. 3b's leaf
         readers scan the physical line themselves, so a container re-cuts the walk rather than adding
@@ -225,7 +225,7 @@ detail is settled at its own milestone.
         where the nested list would be swallowed — `interruptsParagraph` inverted from a refusal
         into the separation it names, and `spec/flavour.md`'s "none between a nested list and a
         CommonMark block above it" gaining that exception. Every fixture spelled tight today keeps
-        its bytes, and `nested-list-tight` becomes a round-trip pair.
+        its bytes, and `nested-list-tight` becomes the round-trip pair `nested-list-separation`.
   - [ ] **3d — Inline text.** The inline scanner over a block's content: backslash escapes, entity
         references decoding to their characters, code spans and the literal they hold — directive
         syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash and two
@@ -270,7 +270,7 @@ detail is settled at its own milestone.
         in a container body with no blank line between them. That reduces the three cases to one
         rule, separation only where its absence would merge the blocks: the `:::` fence is
         separation already, and 3c's claim ends the lazy continuation that would otherwise swallow
-        it. The fixture becomes a round-trip pair, and with `nested-list-tight` and 3e's pair that
+        it. The fixture becomes a round-trip pair, and with `nested-list-separation` and 3e's pair that
         empties `corpus/unspellable/`: this chunk settles the directory's own guard in
         `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
         The emitter's other refusals survive on causes no fixture in that directory covers, so

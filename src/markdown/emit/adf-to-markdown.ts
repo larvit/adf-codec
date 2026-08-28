@@ -31,7 +31,7 @@ export function adfToMarkdown(document: AdfDocument): Result<string> {
 }
 
 function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: ConvertErrorPath, depth: number): Result<EmittedBody> {
-  if (depth > largestNesting) return failure('unsupported-node-shape', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
+  if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
     const nodePath = [...path, 'content', index]
@@ -60,12 +60,7 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
     if (previous.node.type === next.node.type) {
       return failure('unspellable-adjacent-lists', `two adjacent ${next.node.type} nodes read back as one list`, next.path)
     }
-    if (container === 'list-item') {
-      if (!interruptsParagraph(next.node)) {
-        return failure('unspellable-line-start', `a ${next.node.type} that cannot interrupt the block above it has no tight spelling`, next.path)
-      }
-      return success('\n')
-    }
+    if (container === 'list-item') return success(interruptsParagraph(next.node) ? '\n' : '\n\n')
   }
   if (container !== 'directive' || plainPair) return success('\n\n')
   if (previous.spelling === 'directive' && next.spelling === 'directive') return success('\n')

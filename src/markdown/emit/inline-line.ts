@@ -140,7 +140,7 @@ function refuseContentAndText(node: AdfNode, path: ConvertErrorPath): Result<nul
 
 function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, context: InlineContext): Result<Emission> {
   if (depth > largestNesting) {
-    return failure('unsupported-node-shape', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
+    return failure('unsupported-nesting-depth', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
   }
   const runs = inlineRuns(nodes, depth, firstIndex, context.carried)
   const segments: InlineSegment[] = []

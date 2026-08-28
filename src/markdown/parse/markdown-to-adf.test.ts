@@ -25,6 +25,22 @@ function paragraph(value: string): AdfNode {
   return { content: [text(value)], type: 'paragraph' }
 }
 
+function item(...content: AdfNode[]): AdfNode {
+  return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
+}
+
+function bulletList(...content: AdfNode[]): AdfNode {
+  return { content, type: 'bulletList' }
+}
+
+function orderedList(order: number, ...content: AdfNode[]): AdfNode {
+  return { attrs: { order }, content, type: 'orderedList' }
+}
+
+function quote(...content: AdfNode[]): AdfNode {
+  return content.length === 0 ? { type: 'blockquote' } : { content, type: 'blockquote' }
+}
+
 test('builds an empty document from input holding no block', () => {
   assert.deepEqual(markdownToAdf(''), { ok: true, value: { type: 'doc', version: 1 } })
   assert.deepEqual(content(markdownToAdf('\n \n\t\n')), [])
@@ -139,4 +155,73 @@ test('normalizes the line endings and the null character CommonMark replaces', (
   assert.deepEqual(content(markdownToAdf('One\rtwo.\r')), [paragraph('One two.')])
   assert.deepEqual(content(markdownToAdf('```\r\nx\r\n```\r\n')), [{ content: [text('x')], type: 'codeBlock' }])
   assert.deepEqual(content(markdownToAdf('a\u0000b\n')), [paragraph('a\ufffdb')])
+})
+
+test('reads a blockquote and the blocks its prefix carries', () => {
+  assert.deepEqual(content(markdownToAdf('> Ship it.\n>\n> Then tell them.\n')), [quote(paragraph('Ship it.'), paragraph('Then tell them.'))])
+  assert.deepEqual(content(markdownToAdf('>Ship it.\n')), [quote(paragraph('Ship it.'))])
+  assert.deepEqual(content(markdownToAdf('   > > Deep.\n')), [quote(quote(paragraph('Deep.')))])
+  assert.deepEqual(content(markdownToAdf('>\n')), [quote()])
+  assert.deepEqual(content(markdownToAdf('> One.\n\n> Two.\n')), [quote(paragraph('One.')), quote(paragraph('Two.'))])
+  assert.deepEqual(content(markdownToAdf('Part.\n> Ship it.\n')), [paragraph('Part.'), quote(paragraph('Ship it.'))])
+  assert.deepEqual(content(markdownToAdf('    > Code.\n')), [{ content: [text('> Code.')], type: 'codeBlock' }])
+})
+
+test('reads a bullet list, the marker width setting the continuation', () => {
+  assert.deepEqual(content(markdownToAdf('- Bolt M8\n- Nut M8\n')), [bulletList(item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
+  assert.deepEqual(content(markdownToAdf('- Washer M8\n  - Fibre\n')), [bulletList(item(paragraph('Washer M8'), bulletList(item(paragraph('Fibre')))))])
+  assert.deepEqual(content(markdownToAdf('-\n')), [bulletList(item())])
+  assert.deepEqual(content(markdownToAdf('- One\n\n  Two.\n')), [bulletList(item(paragraph('One'), paragraph('Two.')))])
+  assert.deepEqual(content(markdownToAdf('-     Code.\n')), [bulletList(item({ content: [text('Code.')], type: 'codeBlock' }))])
+  assert.deepEqual(content(markdownToAdf('- a\n* b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
+})
+
+test('reads an ordered list, its first marker the order attribute', () => {
+  assert.deepEqual(content(markdownToAdf('9. Bolt M8\n10. Nut M8\n')), [orderedList(9, item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
+  assert.deepEqual(content(markdownToAdf('1) Loosen the clamp\n')), [orderedList(1, item(paragraph('Loosen the clamp')))])
+  assert.deepEqual(content(markdownToAdf('1. a\n1) b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('0. Zero\n')), [orderedList(0, item(paragraph('Zero')))])
+})
+
+test('drops the tightness ADF does not record', () => {
+  assert.deepEqual(content(markdownToAdf('- a\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n\n  2. b\n')), [bulletList(item(paragraph('a'), orderedList(2, item(paragraph('b')))))])
+})
+
+test('opens a list beside a paragraph only where the marker interrupts it', () => {
+  assert.deepEqual(content(markdownToAdf('Part.\n- a\n')), [paragraph('Part.'), bulletList(item(paragraph('a')))])
+  assert.deepEqual(content(markdownToAdf('Part.\n1. a\n')), [paragraph('Part.'), orderedList(1, item(paragraph('a')))])
+  assert.deepEqual(content(markdownToAdf('Part.\n2. a\n')), [paragraph('Part. 2. a')])
+  assert.deepEqual(content(markdownToAdf('Part.\n*\n')), [paragraph('Part. *')])
+  assert.deepEqual(content(markdownToAdf('Part.\n- - -\n')), [paragraph('Part.'), { type: 'rule' }])
+  assert.deepEqual(content(markdownToAdf('Part.\n-\n')), [{ attrs: { level: 2 }, content: [text('Part.')], type: 'heading' }])
+  assert.deepEqual(content(markdownToAdf('- a\n  2. b\n')), [bulletList(item(paragraph('a 2. b')))])
+})
+
+test('folds a lazy continuation into the paragraph the container holds', () => {
+  assert.deepEqual(content(markdownToAdf('> One\ntwo.\n')), [quote(paragraph('One two.'))])
+  assert.deepEqual(content(markdownToAdf('- One\ntwo.\n')), [bulletList(item(paragraph('One two.')))])
+  assert.deepEqual(content(markdownToAdf('> One\n    two.\n')), [quote(paragraph('One two.'))])
+  assert.deepEqual(content(markdownToAdf('> One\n\ntwo.\n')), [quote(paragraph('One')), paragraph('two.')])
+  assert.deepEqual(content(markdownToAdf('> One\n# Two\n')), [quote(paragraph('One')), { attrs: { level: 1 }, content: [text('Two')], type: 'heading' }])
+  assert.deepEqual(content(markdownToAdf('> One\n---\n')), [quote(paragraph('One')), { type: 'rule' }])
+  assert.deepEqual(content(markdownToAdf('> One\n```\n')), [quote(paragraph('One')), { type: 'codeBlock' }])
+  assert.equal(code(markdownToAdf('> One\n<div>\n')), 'unmappable-html')
+})
+
+test('ends a lazy continuation at a claimed line', () => {
+  assert.equal(code(markdownToAdf('> Part.\n:::\n')), 'malformed-directive')
+  assert.deepEqual(path(markdownToAdf('> Part.\n:::\n')), ['content', 1])
+  assert.equal(code(markdownToAdf('- Part.\n| x |\n')), 'malformed-pipe-table')
+})
+
+test('names the block the claim inside a container opens', () => {
+  assert.deepEqual(path(markdownToAdf('> Part.\n>\n> :::x\n')), ['content', 0, 'content', 1])
+  assert.deepEqual(path(markdownToAdf('- Part.\n- | x |\n')), ['content', 0, 'content', 1, 'content', 0])
+})
+
+test('refuses input nested deeper than the parser carries', () => {
+  assert.equal(code(markdownToAdf('> '.repeat(501))), 'unsupported-nesting-depth')
+  assert.ok(markdownToAdf('> '.repeat(500)).ok)
 })

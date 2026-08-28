@@ -159,8 +159,8 @@ test('breaks a mark run at the node it carries', () => {
 test('refuses a carried node nested deeper than the emitter carries', () => {
   let node: AdfNode = { type: 'blockCard' }
   for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockCard' }
-  assert.equal(code(adfToMarkdown(document(node))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document(paragraph(node)))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document(node))), 'unsupported-nesting-depth')
+  assert.equal(code(adfToMarkdown(document(paragraph(node)))), 'unsupported-nesting-depth')
 })
 
 test('refuses a node whose content model the canonical form cannot emit', () => {
@@ -261,19 +261,19 @@ test('refuses a node carrying one mark type twice', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [em, em], text: 'x', type: 'text' })))), 'unsupported-node-shape')
 })
 
-test('refuses a nested list the tight spelling would swallow', () => {
+test('parts a nested list the tight spelling would swallow from the block above it', () => {
   const item = (...content: AdfNode[]): AdfNode => ({ content, type: 'listItem' })
   const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
   const outer = (...content: AdfNode[]): AdfDocument => document({ content: [item(...content)], type: 'bulletList' })
   const ordered: AdfNode = { attrs: { order: 2 }, content: [item(text('b'))], type: 'orderedList' }
-  assert.equal(code(adfToMarkdown(outer(text('a'), ordered))), 'unspellable-line-start')
-  assert.equal(code(adfToMarkdown(outer(text('a'), { content: [item()], type: 'bulletList' }))), 'unspellable-line-start')
+  assert.equal(markdown(adfToMarkdown(outer(text('a'), ordered))), '- a\n\n  2. b\n')
+  assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item()], type: 'bulletList' }))), '- a\n\n  -\n')
   assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item(text('b'))], type: 'bulletList' }))), '- a\n  - b\n')
 })
 
 test('refuses marks and attributes nested deeper than the emitter carries', () => {
   const marks: AdfMark[] = Array.from({ length: 600 }, (_, index) => ({ type: index % 2 === 0 ? 'em' : 'strong' }))
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
   let attrs: AdfMark['attrs'] = { depth: 'x' }
   for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), 'not-an-adf-document')
@@ -380,7 +380,7 @@ test('spells one code span over a run of code-marked nodes', () => {
 test('refuses a document nested deeper than the emitter carries', () => {
   let node: AdfNode = paragraph({ text: 'x', type: 'text' })
   for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockquote' }
-  assert.equal(code(adfToMarkdown(document(node))), 'unsupported-node-shape')
+  assert.equal(code(adfToMarkdown(document(node))), 'unsupported-nesting-depth')
 })
 
 test('emits an empty list item without trailing whitespace', () => {
