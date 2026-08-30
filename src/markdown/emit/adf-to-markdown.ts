@@ -55,7 +55,7 @@ function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: 
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): Result<string> {
   const plainPair = previous.spelling !== 'directive' && next.spelling !== 'directive'
-  if (next.spelling === 'list') {
+  if (plainPair && next.spelling === 'list') {
     if (previous.spelling === 'list' && previous.node.type === next.node.type) {
       return failure('unspellable-adjacent-lists', `two adjacent ${next.node.type} nodes read back as one list`, next.path)
     }

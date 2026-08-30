@@ -134,8 +134,9 @@ test('refuses two adjacent lists of the same kind, the marker spelling being wha
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
   assert.equal(code(adfToMarkdown(document(list, list))), 'unspellable-adjacent-lists')
   const carried: AdfNode = { ...list, attrs: { unknown: 'x' } }
-  assert.ok(markdown(adfToMarkdown(document(carried, carried))).startsWith('```adf\n'))
+  assert.ok(markdown(adfToMarkdown(document(carried, carried))).includes('```\n\n```adf\n'))
   assert.ok(markdown(adfToMarkdown(document(carried, list))).endsWith('```\n\n- x\n'))
+  assert.ok(markdown(adfToMarkdown(document(list, carried))).startsWith('- x\n\n```adf\n'))
 })
 
 test('carries a node type no section spells', () => {
@@ -273,6 +274,10 @@ test('parts a nested list the tight spelling would swallow from the block above 
   assert.equal(markdown(adfToMarkdown(outer(text('a'), { ...ordered, attrs: { order: 1 } }))), '- a\n  1. b\n')
   assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item()], type: 'bulletList' }))), '- a\n\n  -\n')
   assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item(text('b'))], type: 'bulletList' }))), '- a\n  - b\n')
+  const list: AdfNode = { content: [item(text('b'))], type: 'bulletList' }
+  const panel: AdfNode = { attrs: { panelType: 'info' }, content: [text('p')], type: 'panel' }
+  assert.equal(markdown(adfToMarkdown(outer(panel, list))), '- :::panel info\n  p\n  :::\n\n  - b\n')
+  assert.ok(markdown(adfToMarkdown(outer(text('a'), { ...list, attrs: { unknown: 'x' } }))).startsWith('- a\n\n  ```adf\n'))
 })
 
 test('refuses marks and attributes nested deeper than the emitter carries', () => {
