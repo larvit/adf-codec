@@ -22,7 +22,6 @@ function blockNodes(blocks: readonly Block[], path: ConvertErrorPath, depth: num
   return success(content)
 }
 
-// Switched, not chained: `noImplicitReturns` then refuses the kind a later milestone adds and forgets.
 function blockNode(block: Block, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':

@@ -85,6 +85,7 @@ test('reads a fenced code block, its info string the language', () => {
   assert.deepEqual(content(markdownToAdf('~~~ a`b\n```\n~~~\n')), [{ attrs: { language: 'a`b' }, content: [text('```')], type: 'codeBlock' }])
   assert.deepEqual(content(markdownToAdf('``` a`b\n')), [paragraph('``` a`b')])
   assert.deepEqual(content(markdownToAdf('```\n``` x\n```\n')), [{ content: [text('``` x')], type: 'codeBlock' }])
+  assert.deepEqual(content(markdownToAdf('```\n- x\n> y\n```\n')), [{ content: [text('- x\n> y')], type: 'codeBlock' }])
 })
 
 test('strips the opening fence indentation from the content lines it holds', () => {
@@ -124,6 +125,7 @@ test('refuses the raw HTML no element mapping carries', () => {
   assert.equal(code(markdownToAdf('<span foo="bar">\n')), 'unmappable-html')
   assert.deepEqual(path(markdownToAdf('Part.\n\n<div>\n')), ['content', 1])
   assert.equal(code(markdownToAdf('<div>\nx\n\n:::\n')), 'unmappable-html')
+  assert.equal(code(markdownToAdf('<div>\n- x\n</div>\n')), 'unmappable-html')
 })
 
 test('swallows an HTML block ahead of the claim a line inside it would make', () => {

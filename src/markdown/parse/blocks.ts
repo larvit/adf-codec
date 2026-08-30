@@ -5,6 +5,7 @@ import {
   claimsPipeLine,
   closingCodeFence,
   isThematicBreak,
+  listMarker,
   markerInterruptsParagraph,
   openingCodeFence,
   setextHeadingLevel,
@@ -39,13 +40,9 @@ type OpenLeaf =
 
 type ContainerStart = { kind: 'blockquote'; rest: string } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; marker: string; rest: string }
 
-type ItemMarker = { list: ListBlock; marker: string; width: number }
-
 type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; stack: OpenContainer[] }
 
 const blankLine = /^[ \t]*$/
-const bulletMarker = /^[-*+](?=[ \t]|$)/
-const orderedMarker = /^(\d{1,9})([.)])(?=[ \t]|$)/
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
@@ -59,6 +56,11 @@ export function parseBlocks(markdown: string): ParsedBlocks {
 
 function readLine(walk: Walk, line: string): void {
   const matched = matchContainers(walk, line)
+  // A leaf that swallows whole lines takes the marker too: no container opens inside a code or HTML block.
+  if (matched.depth === walk.stack.length && swallowsLines(walk.leaf)) {
+    readBlockLine(walk, matched.rest)
+    return
+  }
   const paragraphOpen = matched.depth === walk.stack.length && walk.leaf?.kind === 'paragraph'
   const opened = openContainers(walk, matched.rest, paragraphOpen, matched.depth)
   if (!opened.opened && matched.depth < walk.stack.length) {
@@ -69,6 +71,10 @@ function readLine(walk: Walk, line: string): void {
     closeContainers(walk, matched.depth)
   }
   readBlockLine(walk, opened.rest)
+}
+
+function swallowsLines(leaf: OpenLeaf | undefined): boolean {
+  return leaf?.kind === 'fenced-code' || leaf?.kind === 'html'
 }
 
 function matchContainers(walk: Walk, line: string): { depth: number; rest: string } {
@@ -111,38 +117,32 @@ function openContainers(walk: Walk, line: string, paragraphOpen: boolean, depth:
 function containerStart(line: string, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
   const opener = removeColumns(line, largestOpenerIndentation)
   if (opener.startsWith('>')) return { kind: 'blockquote', rest: removeColumns(opener.slice(1), 1) }
-  if (isThematicBreak(opener) || (paragraphOpen && setextHeadingLevel(opener) !== undefined)) return undefined
+  if (isThematicBreak(opener)) return undefined
   return itemStart(line, opener, paragraphOpen, enclosing)
 }
 
 function itemStart(line: string, opener: string, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
-  const marker = itemMarker(opener)
+  const marker = listMarker(opener)
   if (marker === undefined) return undefined
   const after = opener.slice(marker.width)
   const blank = blankLine.test(after)
-  if (paragraphOpen && !markerInterruptsParagraph(marker.list.kind === 'orderedList' ? marker.list.start : undefined, blank)) return undefined
+  if (paragraphOpen && !markerInterruptsParagraph(marker.start, blank)) return undefined
   const spaces = leadingColumns(after)
   const padding = blank || spaces > indentedCodeColumns ? 1 : spaces
-  const continued = enclosing?.kind === 'item' && enclosing.list.kind === marker.list.kind && enclosing.marker === marker.marker
+  const kind = marker.start === undefined ? 'bulletList' : 'orderedList'
+  const continued = enclosing?.kind === 'item' && enclosing.list.kind === kind && enclosing.marker === marker.delimiter
   return {
     fresh: !continued,
     indentation: leadingColumns(line) + marker.width + padding,
     kind: 'item',
-    list: continued ? enclosing.list : marker.list,
-    marker: marker.marker,
+    list: continued ? enclosing.list : openList(marker.start),
+    marker: marker.delimiter,
     rest: blank ? '' : removeColumns(after, padding),
   }
 }
 
-function itemMarker(opener: string): ItemMarker | undefined {
-  const ordered = orderedMarker.exec(opener)
-  if (ordered !== null) {
-    const digits = ordered[1] ?? ''
-    const delimiter = ordered[2] ?? ''
-    return { list: { items: [], kind: 'orderedList', start: Number(digits) }, marker: delimiter, width: digits.length + 1 }
-  }
-  const bullet = bulletMarker.exec(opener)?.[0]
-  return bullet === undefined ? undefined : { list: { items: [], kind: 'bulletList' }, marker: bullet, width: 1 }
+function openList(start: number | undefined): ListBlock {
+  return start === undefined ? { items: [], kind: 'bulletList' } : { items: [], kind: 'orderedList', start }
 }
 
 function openContainer(walk: Walk, start: ContainerStart): void {
