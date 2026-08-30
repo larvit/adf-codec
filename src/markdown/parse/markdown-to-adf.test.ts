@@ -25,6 +25,14 @@ function paragraph(value: string): AdfNode {
   return { content: [text(value)], type: 'paragraph' }
 }
 
+function codeSpan(value: string): AdfNode {
+  return { marks: [{ type: 'code' }], text: value, type: 'text' }
+}
+
+function hardBreak(): AdfNode {
+  return { type: 'hardBreak' }
+}
+
 function item(...content: AdfNode[]): AdfNode {
   return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
 }
@@ -112,7 +120,7 @@ test('claims a block-level colon run with no directive to parse it', () => {
 
 test('claims a block-level pipe with no table to parse it', () => {
   assert.equal(code(markdownToAdf('| Part | Qty |\n')), 'malformed-pipe-table')
-  assert.deepEqual(content(markdownToAdf('\\| Part\n')), [paragraph('\\| Part')])
+  assert.deepEqual(content(markdownToAdf('\\| Part\n')), [paragraph('| Part')])
 })
 
 test('refuses the raw HTML no element mapping carries', () => {
@@ -123,6 +131,8 @@ test('refuses the raw HTML no element mapping carries', () => {
   assert.equal(code(markdownToAdf('<![CDATA[x]]>\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('<pre>\nx\n</pre>\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('<span foo="bar">\n')), 'unmappable-html')
+  assert.equal(code(markdownToAdf('<div\n')), 'unmappable-html')
+  assert.equal(code(markdownToAdf('<?php\n')), 'unmappable-html')
   assert.deepEqual(path(markdownToAdf('Part.\n\n<div>\n')), ['content', 1])
   assert.equal(code(markdownToAdf('<div>\nx\n\n:::\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('<div>\n- x\n</div>\n')), 'unmappable-html')
@@ -131,11 +141,6 @@ test('refuses the raw HTML no element mapping carries', () => {
 test('swallows an HTML block ahead of the claim a line inside it would make', () => {
   assert.equal(code(markdownToAdf('<!--\n:::\n-->\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('<div>\n| x |\n</div>\n')), 'unmappable-html')
-})
-
-test('leaves a tag that opens no HTML block to the paragraph it sits in', () => {
-  assert.deepEqual(content(markdownToAdf('Part.\n<span>\n')), [paragraph('Part. <span>')])
-  assert.deepEqual(content(markdownToAdf('3 < 4\n')), [paragraph('3 < 4')])
 })
 
 test('gives up the link reference definitions a paragraph opens with', () => {
@@ -222,6 +227,8 @@ test('folds a lazy continuation into the paragraph the container holds', () => {
   assert.deepEqual(content(markdownToAdf('> One\n---\n')), [quote(paragraph('One')), { type: 'rule' }])
   assert.deepEqual(content(markdownToAdf('> One\n```\n')), [quote(paragraph('One')), { type: 'codeBlock' }])
   assert.equal(code(markdownToAdf('> One\n<div>\n')), 'unmappable-html')
+  assert.deepEqual(path(markdownToAdf('> One\n<div>\n')), ['content', 1])
+  assert.deepEqual(path(markdownToAdf('> One\n<span>\n')), ['content', 0, 'content', 0])
 })
 
 test('ends a lazy continuation at a claimed line', () => {
@@ -238,4 +245,81 @@ test('names the block the claim inside a container opens', () => {
 test('refuses input nested deeper than the parser carries', () => {
   assert.equal(code(markdownToAdf('> '.repeat(501))), 'unsupported-nesting-depth')
   assert.ok(markdownToAdf('> '.repeat(500)).ok)
+})
+
+test('decodes the backslash escapes CommonMark spells, and keeps the rest literal', () => {
+  assert.deepEqual(content(markdownToAdf('\\*not emphasis\\*\n')), [paragraph('*not emphasis*')])
+  assert.deepEqual(content(markdownToAdf('\\\\\n')), [paragraph('\\')])
+  assert.deepEqual(content(markdownToAdf('\\a \\\u00a0\n')), [paragraph('\\a \\\u00a0')])
+  assert.deepEqual(content(markdownToAdf('Part\\\n')), [paragraph('Part\\')])
+  assert.deepEqual(content(markdownToAdf('a\\`b`\n')), [paragraph('a`b`')])
+})
+
+test('decodes the entity references HTML5 names, and the numeric ones', () => {
+  assert.deepEqual(content(markdownToAdf('&amp; &copy; &ngE; &zwnj; &AElig;\n')), [paragraph('& \u00a9 \u2267\u0338 \u200c \u00c6')])
+  assert.deepEqual(content(markdownToAdf('&#35; &#X22; &#x2665;\n')), [paragraph('# " \u2665')])
+  assert.deepEqual(content(markdownToAdf('&#0; &#xd800; &#9999999;\n')), [paragraph('\ufffd \ufffd \ufffd')])
+  assert.deepEqual(content(markdownToAdf('&zzz; &amp &#; &\n')), [paragraph('&zzz; &amp &#; &')])
+  assert.deepEqual(content(markdownToAdf('&#96;not code&#96;\n')), [paragraph('`not code`')])
+  assert.deepEqual(content(markdownToAdf('a&Tab;b&NewLine;c&nbsp;d&Aopf;e&verbar;f\n')), [paragraph('a\tb\nc d\u{1d538}e|f')])
+})
+
+test('reads a code span, its content literal', () => {
+  assert.deepEqual(content(markdownToAdf('Run `npm test` now.\n')), [
+    { content: [text('Run '), codeSpan('npm test'), text(' now.')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('``a`b``\n')), [{ content: [codeSpan('a`b')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('` `` `\n')), [{ content: [codeSpan('``')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('`  `\n')), [{ content: [codeSpan('  ')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('`a\nb`\n')), [{ content: [codeSpan('a b')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('`foo``bar`\n')), [{ content: [codeSpan('foo``bar')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('`:::panel` `~~x~~` `\\*` `&amp;`\n')), [
+    {
+      content: [codeSpan(':::panel'), text(' '), codeSpan('~~x~~'), text(' '), codeSpan('\\*'), text(' '), codeSpan('&amp;')],
+      type: 'paragraph',
+    },
+  ])
+  assert.deepEqual(content(markdownToAdf('`foo\n')), [paragraph('`foo')])
+  assert.deepEqual(content(markdownToAdf('``foo`\n')), [paragraph('``foo`')])
+})
+
+test('reads a hard break from a trailing backslash and from two trailing spaces alike', () => {
+  assert.deepEqual(content(markdownToAdf('One\\\ntwo.\n')), [{ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('One  \ntwo.\n')), [{ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('One\\  \ntwo.\n')), [{ content: [text('One\\'), hardBreak(), text('two.')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('One \\\ntwo.\n')), [{ content: [text('One '), hardBreak(), text('two.')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('One \ntwo.\n')), [paragraph('One two.')])
+  assert.deepEqual(content(markdownToAdf('One \t\ntwo.\n')), [paragraph('One two.')])
+  assert.deepEqual(content(markdownToAdf('One  \n')), [paragraph('One')])
+  assert.deepEqual(content(markdownToAdf('> One\\\n> two.\n')), [quote({ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' })])
+})
+
+test('decodes the fenced info string the block walk leaves raw', () => {
+  assert.deepEqual(content(markdownToAdf('```java&#8203;script\nx\n```\n')), [
+    { attrs: { language: 'java\u200bscript' }, content: [text('x')], type: 'codeBlock' },
+  ])
+  assert.deepEqual(content(markdownToAdf('```\\#c\nx\n```\n')), [{ attrs: { language: '#c' }, content: [text('x')], type: 'codeBlock' }])
+})
+
+test('refuses the raw inline HTML no element mapping carries, naming it', () => {
+  assert.equal(content(markdownToAdf('Part <span> here.\n')), 'unmappable-html: no ADF node carries <span>')
+  assert.equal(content(markdownToAdf('Part </div> here.\n')), 'unmappable-html: no ADF node carries <div>')
+  assert.equal(content(markdownToAdf('Part <!-- note --> here.\n')), 'unmappable-html: no ADF node carries an HTML comment')
+  assert.equal(content(markdownToAdf('Part <?php ?> here.\n')), 'unmappable-html: no ADF node carries an HTML processing instruction')
+  assert.equal(content(markdownToAdf('Part <!DOCTYPE html> here.\n')), 'unmappable-html: no ADF node carries an HTML declaration')
+  assert.equal(content(markdownToAdf('Part <![CDATA[x]]> here.\n')), 'unmappable-html: no ADF node carries a CDATA section')
+  assert.equal(content(markdownToAdf('Part <!--> here.\n')), 'unmappable-html: no ADF node carries an HTML comment')
+  assert.equal(content(markdownToAdf('Part <!---> here.\n')), 'unmappable-html: no ADF node carries an HTML comment')
+  assert.equal(code(markdownToAdf('A <a href="/x" disabled\nid=y> b\n')), 'unmappable-html')
+  assert.equal(code(markdownToAdf('Part.\n<span>\n')), 'unmappable-html')
+  assert.deepEqual(path(markdownToAdf('Part.\n\nA <b>b</b>.\n')), ['content', 1])
+})
+
+test('leaves the angle bracket that opens no HTML construct to the text it sits in', () => {
+  assert.deepEqual(content(markdownToAdf('3 < 4 and 5 <b 6\n')), [paragraph('3 < 4 and 5 <b 6')])
+  assert.deepEqual(content(markdownToAdf('a <b"c> d\n')), [paragraph('a <b"c> d')])
+  assert.deepEqual(content(markdownToAdf('a <!-- b\n')), [paragraph('a <!-- b')])
+  assert.deepEqual(content(markdownToAdf('a </b c> d\n')), [paragraph('a </b c> d')])
+  assert.deepEqual(content(markdownToAdf('`<span>`\n')), [{ content: [codeSpan('<span>')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('\\<span>\n')), [paragraph('<span>')])
 })

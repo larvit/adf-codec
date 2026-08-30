@@ -4,13 +4,14 @@ import {
   claimsDirectiveLine,
   claimsPipeLine,
   closingCodeFence,
+  decodeTextEscapes,
   isThematicBreak,
   listMarker,
   markerInterruptsParagraph,
   openingCodeFence,
+  openingHtmlBlock,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
-import { openingHtmlBlock } from './html-blocks.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
 export type ClaimedConstruct = 'directive' | 'pipe-table'
@@ -177,7 +178,7 @@ function continuesLazily(walk: Walk, line: Line): boolean {
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = removeColumns(line, largestOpenerIndentation).text
   if (claimedConstruct(opener) !== undefined || isThematicBreak(opener)) return false
-  return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, false) === undefined
+  return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, true) === undefined
 }
 
 function readBlockLine(walk: Walk, line: Line): void {
@@ -281,7 +282,7 @@ function closeLeaf(walk: Walk): void {
   }
   walk.leaf = undefined
   if (leaf.kind === 'html') currentBlocks(walk).push({ construct: leaf.construct, kind: 'html' })
-  else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? leaf.info : '', text: leaf.lines.join('\n') })
+  else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', text: leaf.lines.join('\n') })
 }
 
 function takeParagraph(walk: Walk): string | undefined {

@@ -1,13 +1,8 @@
+import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis } from '../emphasis-matching.ts'
-import {
-  escapesLineClaim,
-  isAsciiPunctuation,
-  opensBracketedAutolink,
-  opensHtmlConstruct,
-  startsEntityReference,
-  type LinePosition,
-} from '../commonmark-grammar.ts'
+import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
 import { opensInlineDirective } from '../directive-attributes.ts'
+import { readEntityReference } from '../entity-references.ts'
 
 export type EmphasisRole = 'close' | 'open'
 
@@ -20,6 +15,8 @@ export type InlineSegment =
   | { emphasis?: undefined; escaping: InlineEscaping; text: string }
 
 export type AssembledLine = { line: string; unspellableRun: NodeRange | undefined }
+
+type ScanLine = { position: LinePosition; start: number; text: string }
 
 export type LineContainer = 'heading' | 'paragraph' | 'table-cell'
 
@@ -72,10 +69,18 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
   const escaped = new Set<number>()
   const placements: number[] = []
   let output = ''
+  const linkClose = lastLinkClose(scan, escapings)
+  let line = scanLine(scan, 0)
   for (let index = 0; index < scan.length; index += 1) {
+    if (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
-    if (escapable && (mergesWithSyntax(scan, escapings, index) || opensConstruct(scan, escapings, index, escaping === 'bracketed', container, escaped))) {
+    if (
+      escapable &&
+      (claimsLineStart(line, index, container) ||
+        mergesWithSyntax(scan, escapings, index) ||
+        opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))
+    ) {
       output += '\\'
       escaped.add(index)
     }
@@ -181,23 +186,23 @@ function isSyntax(escaping: InlineEscaping | undefined): boolean {
 
 function opensConstruct(
   scan: string,
-  escapings: readonly (InlineEscaping | undefined)[],
+  linkClose: number,
   index: number,
   inBrackets: boolean,
   container: LineContainer,
   escaped: ReadonlySet<number>,
 ): boolean {
   if (container === 'heading' && closesHeading(scan, index)) return true
-  if (container === 'paragraph' && claimsLineStart(scan, index)) return true
-  return claimsCharacter(scan, escapings, index, inBrackets, container, escaped)
+  return claimsCharacter(scan, linkClose, index, inBrackets, container, escaped)
 }
 
-function claimsLineStart(scan: string, index: number): boolean {
-  const start = scan.lastIndexOf('\n', index - 1) + 1
-  const end = scan.indexOf('\n', index)
-  const line = scan.slice(start, end === -1 ? undefined : end)
-  const position: LinePosition = start === 0 ? 'first' : 'later'
-  return escapesLineClaim(line, index - start, position)
+function claimsLineStart(line: ScanLine, index: number, container: LineContainer): boolean {
+  return container === 'paragraph' && escapesLineClaim(line.text, index - line.start, line.position)
+}
+
+function scanLine(scan: string, start: number): ScanLine {
+  const end = scan.indexOf('\n', start)
+  return { position: start === 0 ? 'first' : 'later', start, text: scan.slice(start, end === -1 ? undefined : end) }
 }
 
 function closesHeading(scan: string, index: number): boolean {
@@ -207,39 +212,38 @@ function closesHeading(scan: string, index: number): boolean {
 
 function claimsCharacter(
   scan: string,
-  escapings: readonly (InlineEscaping | undefined)[],
+  linkClose: number,
   index: number,
   inBrackets: boolean,
   container: LineContainer,
   escaped: ReadonlySet<number>,
 ): boolean {
   const character = scan.charAt(index)
-  const rest = scan.slice(index)
   if (inBrackets && (character === '[' || character === ']')) return true
   if (character === '|') return container === 'table-cell'
-  if (character === '\\') return isAsciiPunctuation(scan.charAt(index + 1))
-  if (character === '&') return startsEntityReference(rest)
-  if (character === '<') return opensBracketedAutolink(rest) || opensHtmlConstruct(rest)
-  if (character === ':') return opensInlineDirective(rest)
-  if (character === '[') return opensLink(scan, escapings, index)
+  if (character === '\\') return backslashEscape(scan, index) !== undefined
+  if (character === '&') return readEntityReference(scan, index) !== undefined
+  if (character === '<') return opensBracketedAutolink(scan, index) || opensEmailAutolink(scan, index) || inlineHtmlConstruct(scan, index) !== undefined
+  if (character === ':') return opensInlineDirective(scan, index)
+  if (character === '[') return index < linkClose
   if (character === '`') return opensCodeSpan(scan, index, escaped)
   if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, escaped)
   return false
 }
 
 // A `]` the emitter spelled sits inside a construct that binds before link text does.
-function opensLink(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
-  for (let cursor = index + 1; cursor < scan.length; cursor += 1) {
+function lastLinkClose(scan: string, escapings: readonly (InlineEscaping | undefined)[]): number {
+  for (let cursor = scan.length - 1; cursor >= 0; cursor -= 1) {
     if (scan.charAt(cursor) !== ']' || isSyntax(escapings[cursor])) continue
-    if (followsLinkText.test(scan.charAt(cursor + 1))) return true
+    if (followsLinkText.test(scan.charAt(cursor + 1))) return cursor
   }
-  return false
+  return -1
 }
 
 function opensCodeSpan(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
   if (!startsRun(scan, index, escaped)) return false
-  const length = runLength(scan, index)
-  return new RegExp('(?<!`)`{' + length + '}(?!`)').test(scan.slice(index + length))
+  const opener = backtickRun(scan, index)
+  return closingBacktickRun(scan, index + opener, opener) !== undefined
 }
 
 function claimsEmphasis(scan: string, index: number, escaped: ReadonlySet<number>): boolean {

@@ -7,3 +7,7 @@
 snake_case_name
 
 \*not emphasis\*
+
+\<div opens no HTML block
+
+\<?php opens none either

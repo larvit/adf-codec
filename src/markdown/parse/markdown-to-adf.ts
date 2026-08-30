@@ -3,7 +3,7 @@ import type { Block, ClaimedConstruct } from './blocks.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
-import { trimSpace } from '../commonmark-grammar.ts'
+import { parseInlineContent } from './inline-content.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
   const content = blockNodes(parseBlocks(markdown).blocks, [], 0)
@@ -33,13 +33,13 @@ function blockNode(block: Block, path: ConvertErrorPath, depth: number): Result<
     case 'code':
       return success(codeBlockNode(block.language, block.text))
     case 'heading':
-      return success(withContent({ attrs: { level: block.level }, type: 'heading' }, block.text))
+      return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, path)
     case 'html':
       return failure('unmappable-html', `no ADF node carries ${block.construct}`, path)
     case 'orderedList':
       return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, path, depth)
     case 'paragraph':
-      return success(withContent({ type: 'paragraph' }, block.text))
+      return contentNode({ type: 'paragraph' }, block.text, path)
     case 'rule':
       return success({ type: 'rule' })
   }
@@ -75,15 +75,8 @@ function codeBlockNode(language: string, text: string): AdfNode {
   return text === '' ? node : { ...node, content: [{ text, type: 'text' }] }
 }
 
-function withContent(node: AdfNode, text: string): AdfNode {
-  const content = inlineContent(text)
-  return content.length === 0 ? node : { ...node, content }
-}
-
-function inlineContent(text: string): AdfNode[] {
-  const line = text
-    .split('\n')
-    .map((part) => trimSpace(part))
-    .join(' ')
-  return line === '' ? [] : [{ text: line, type: 'text' }]
+function contentNode(node: AdfNode, text: string, path: ConvertErrorPath): Result<AdfNode> {
+  const content = parseInlineContent(text, path)
+  if (!content.ok) return content
+  return success(content.value.length === 0 ? node : { ...node, content: content.value })
 }

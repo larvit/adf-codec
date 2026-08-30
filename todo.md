@@ -226,13 +226,20 @@ detail is settled at its own milestone.
         into the separation it names, and `spec/flavour.md`'s "none between a nested list and a
         CommonMark block above it" gaining that exception. Every fixture spelled tight today keeps
         its bytes, and `nested-list-tight` becomes the round-trip pair `nested-list-separation`.
-  - [ ] **3d — Inline text.** The inline scanner over a block's content: backslash escapes, entity
+  - [x] **3d — Inline text.** The inline scanner over a block's content: backslash escapes, entity
         references decoding to their characters, code spans and the literal they hold — directive
         syntax and `~~` included — CommonMark's own hard breaks, a trailing backslash and two
         trailing spaces alike, a soft line break as one space, the fenced info string's own decoding
         the block walk leaves raw, and the raw inline tag, comment and processing instruction
         refused by name, recognized by the `commonmark-grammar.ts` predicates the emitter already
         escapes against, under 3b's one-table rule.
+        **Settled** (the maintainer, 2026-08-30): entity references decode against HTML5's whole
+        named table, checked in packed (§5) — a curated subset leaves 3k an exception class and a
+        cutoff line nobody can defend. And the escape superset the emitter reads for raw HTML
+        tightens into one precise CommonMark inline reader both directions share, the email
+        autolink parting off as 3e's own predicate: refusing on the superset would refuse
+        `1 <b 2`, a fourth carve-out §4 and the README do not list. `holdsEntityReference` reads
+        the table for the same reason, so `&notareference;` is emitted bare.
   - [ ] **3e — Emphasis and links.** `_`, `*` and `~~` runs through `matchEmphasis` to the `em`,
         `strong` and `strike` marks; links inline and reference, 3b's definitions resolved here,
         autolinks, and the image gap's named errors — a titled image, and one amid other text.

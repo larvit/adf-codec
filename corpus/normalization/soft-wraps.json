@@ -1,0 +1,22 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "A paragraph the author soft-wrapped across three lines, holding a hard break",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "the backslash spells.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,37 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "© 2026 — the № you asked for, & nothing else.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Escaped, the reference stays literal: &copy; and ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "&copy;",
+          "type": "text"
+        },
+        {
+          "text": " alike.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

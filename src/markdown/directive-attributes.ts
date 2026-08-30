@@ -3,7 +3,7 @@ import type { VocabularyPair } from '../adf/attribute-vocabulary.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 const bareToken = /^[A-Za-z0-9_-]+$/
-const inlineDirectiveOpener = /^:[a-z][A-Za-z0-9]*[[{]/
+const inlineDirectiveOpener = /:[a-z][A-Za-z0-9]*[[{]/y
 
 // spec/flavour.md, Attributes.
 const quotedEscapes = /[&<`|]/g
@@ -12,7 +12,8 @@ export function isBareToken(text: string): boolean {
   return bareToken.test(text)
 }
 
-export function opensInlineDirective(text: string): boolean {
+export function opensInlineDirective(text: string, index: number): boolean {
+  inlineDirectiveOpener.lastIndex = index
   return inlineDirectiveOpener.test(text)
 }
 

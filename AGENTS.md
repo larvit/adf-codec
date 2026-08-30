@@ -53,8 +53,10 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 `dependencies` is empty. A runtime dependency enters only through a decision entry here stating
 why ~20 lines of own code cannot do the job, who maintains it, and what auditing it costs. So the
-CommonMark and HTML parsers are written in this repo. `devDependencies`: few, each earning its
-keep; they never reach a consumer.
+CommonMark and HTML parsers are written in this repo. A table a standard fixes is data rather than
+a dependency: HTML5's 2125 semicolon-terminated character references ship packed in their own
+module, so entity decoding is complete without one. `devDependencies`: few, each earning its keep;
+they never reach a consumer.
 
 ## 6. The package contract
 
@@ -136,6 +138,10 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
   `Result` rather than the stack overflow that waits near 2000.
+- A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the
+  line before it reads, `indexOf` — never a fresh slice per character, and a per-character walk
+  hoists the scan that does not vary with the character. The pipeline persona feeds documents
+  nobody typed, and a megabyte through a quadratic walk is a minute rather than a millisecond.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
@@ -175,8 +181,8 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
 validation or exported validator — a refusal that keeps the round-trip is not schema validation,
 so the one a spelled node carrying the same mark type twice earns stays, no shipped CSS (§4), no
-streaming APIs, no performance budget — real documents are kilobytes. A CLI is a later goal
-(`todo.md`), not a non-goal.
+streaming APIs, no performance budget past §11's scanning rule — nothing here is tuned, and no
+figure is promised. A CLI is a later goal (`todo.md`), not a non-goal.
 
 ## 15. The working loop
 
