@@ -59,7 +59,7 @@ export function parseBlocks(markdown: string): ParsedBlocks {
 
 function readLine(walk: Walk, line: Line): void {
   const matched = matchContainers(walk, line)
-  // A leaf that swallows whole lines takes the marker too: no container opens inside a code or HTML block.
+  // CommonMark: no container opens inside an open code or HTML block.
   if (matched.depth === walk.stack.length && swallowsLines(walk.leaf)) {
     readBlockLine(walk, matched.rest)
     return

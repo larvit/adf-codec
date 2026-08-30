@@ -199,6 +199,7 @@ test('measures a tab from the column the containers cut it to', () => {
 test('drops the tightness ADF does not record', () => {
   assert.deepEqual(content(markdownToAdf('- a\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(markdownToAdf('- a\n\n  2. b\n')), [bulletList(item(paragraph('a'), orderedList(2, item(paragraph('b')))))])
+  assert.deepEqual(content(markdownToAdf('- a\n\n  -\n')), [bulletList(item(paragraph('a'), bulletList(item())))])
 })
 
 test('opens a list beside a paragraph only where the marker interrupts it', () => {

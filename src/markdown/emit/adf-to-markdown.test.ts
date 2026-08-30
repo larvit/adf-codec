@@ -130,9 +130,12 @@ test('refuses a line whose start block parsing would claim', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '```', type: 'text' })))), 'unspellable-line-start')
 })
 
-test('refuses two adjacent lists of the same kind', () => {
+test('refuses two adjacent lists of the same kind, the marker spelling being what merges', () => {
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
   assert.equal(code(adfToMarkdown(document(list, list))), 'unspellable-adjacent-lists')
+  const carried: AdfNode = { ...list, attrs: { unknown: 'x' } }
+  assert.ok(markdown(adfToMarkdown(document(carried, carried))).startsWith('```adf\n'))
+  assert.ok(markdown(adfToMarkdown(document(carried, list))).endsWith('```\n\n- x\n'))
 })
 
 test('carries a node type no section spells', () => {

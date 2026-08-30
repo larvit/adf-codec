@@ -14,13 +14,12 @@ import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
-type BlockSpelling = 'commonmark' | 'directive'
+type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBody = { fenceColons: number; text: string }
 type EmittedBlock = EmittedBody & { spelling: BlockSpelling }
 type PlacedBlock = EmittedBlock & { node: AdfNode; path: ConvertErrorPath }
 
 const largestListMarker = 999999999
-const listTypes = ['bulletList', 'orderedList']
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
   if (!isAdfDocument(document)) return failure('not-an-adf-document', 'the value is not an ADF document', [])
@@ -55,9 +54,9 @@ function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: 
 }
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): Result<string> {
-  const plainPair = previous.spelling === 'commonmark' && next.spelling === 'commonmark'
-  if (plainPair && listTypes.includes(next.node.type)) {
-    if (previous.node.type === next.node.type) {
+  const plainPair = previous.spelling !== 'directive' && next.spelling !== 'directive'
+  if (next.spelling === 'list') {
+    if (previous.spelling === 'list' && previous.node.type === next.node.type) {
       return failure('unspellable-adjacent-lists', `two adjacent ${next.node.type} nodes read back as one list`, next.path)
     }
     if (container === 'list-item') return success(interruptsParagraph(next.node) ? '\n' : '\n\n')
@@ -221,7 +220,7 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<
     fenceColons = Math.max(fenceColons, emitted.value.fenceColons)
     lines.push(emitted.value.text)
   }
-  return success({ fenceColons, spelling: 'commonmark', text: lines.join('\n') })
+  return success({ fenceColons, spelling: 'list', text: lines.join('\n') })
 }
 
 function listStart(node: AdfNode, items: number): number | undefined {
