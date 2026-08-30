@@ -7,7 +7,7 @@ import { carriesOnly, isAdfDocument } from '../../adf/document.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
-import { holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isThematicBreak } from '../commonmark-grammar.ts'
+import { holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { largestNesting } from '../../nesting.ts'
 import { spellDirectiveHeader } from './block-directive-spelling.ts'
 import { tryImage } from './image.ts'
@@ -72,8 +72,10 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
 }
 
 function interruptsParagraph(node: AdfNode): boolean {
-  if (node.type === 'orderedList') return false
-  return ((node.content ?? [])[0]?.content ?? []).length > 0
+  const items = node.content ?? []
+  const empty = (items[0]?.content ?? []).length === 0
+  if (node.type !== 'orderedList') return markerInterruptsParagraph(undefined, empty)
+  return markerInterruptsParagraph(listStart(node, items.length) ?? 0, empty)
 }
 
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {

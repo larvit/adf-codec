@@ -197,6 +197,7 @@ test('opens a list beside a paragraph only where the marker interrupts it', () =
   assert.deepEqual(content(markdownToAdf('Part.\n- - -\n')), [paragraph('Part.'), { type: 'rule' }])
   assert.deepEqual(content(markdownToAdf('Part.\n-\n')), [{ attrs: { level: 2 }, content: [text('Part.')], type: 'heading' }])
   assert.deepEqual(content(markdownToAdf('- a\n  2. b\n')), [bulletList(item(paragraph('a 2. b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n  1. b\n')), [bulletList(item(paragraph('a'), orderedList(1, item(paragraph('b')))))])
 })
 
 test('folds a lazy continuation into the paragraph the container holds', () => {

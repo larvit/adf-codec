@@ -22,16 +22,28 @@ function blockNodes(blocks: readonly Block[], path: ConvertErrorPath, depth: num
   return success(content)
 }
 
+// Switched, not chained: `noImplicitReturns` then refuses the kind a later milestone adds and forgets.
 function blockNode(block: Block, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  if (block.kind === 'blockquote') return containerNode({ type: 'blockquote' }, block.blocks, path, depth)
-  if (block.kind === 'bulletList') return listNode({ type: 'bulletList' }, block.items, path, depth)
-  if (block.kind === 'claim') return claimFailure(block.construct, path)
-  if (block.kind === 'code') return success(codeBlockNode(block.language, block.text))
-  if (block.kind === 'heading') return success(withContent({ attrs: { level: block.level }, type: 'heading' }, block.text))
-  if (block.kind === 'html') return failure('unmappable-html', `no ADF node carries ${block.construct}`, path)
-  if (block.kind === 'orderedList') return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, path, depth)
-  if (block.kind === 'paragraph') return success(withContent({ type: 'paragraph' }, block.text))
-  return success({ type: 'rule' })
+  switch (block.kind) {
+    case 'blockquote':
+      return containerNode({ type: 'blockquote' }, block.blocks, path, depth)
+    case 'bulletList':
+      return listNode({ type: 'bulletList' }, block.items, path, depth)
+    case 'claim':
+      return claimFailure(block.construct, path)
+    case 'code':
+      return success(codeBlockNode(block.language, block.text))
+    case 'heading':
+      return success(withContent({ attrs: { level: block.level }, type: 'heading' }, block.text))
+    case 'html':
+      return failure('unmappable-html', `no ADF node carries ${block.construct}`, path)
+    case 'orderedList':
+      return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, path, depth)
+    case 'paragraph':
+      return success(withContent({ type: 'paragraph' }, block.text))
+    case 'rule':
+      return success({ type: 'rule' })
+  }
 }
 
 function containerNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath, depth: number): Result<AdfNode> {
@@ -51,8 +63,12 @@ function listNode(node: AdfNode, items: readonly Block[][], path: ConvertErrorPa
 }
 
 function claimFailure(construct: ClaimedConstruct, path: ConvertErrorPath): Result<AdfNode> {
-  if (construct === 'directive') return failure('malformed-directive', 'the line claims a directive and parses as none', path)
-  return failure('malformed-pipe-table', 'the line claims a pipe table and parses as none', path)
+  switch (construct) {
+    case 'directive':
+      return failure('malformed-directive', 'the line claims a directive and parses as none', path)
+    case 'pipe-table':
+      return failure('malformed-pipe-table', 'the line claims a pipe table and parses as none', path)
+  }
 }
 
 function codeBlockNode(language: string, text: string): AdfNode {

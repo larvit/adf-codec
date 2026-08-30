@@ -142,7 +142,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - `src/adf/` holds ADF's own knowledge and imports no format. Each format directory (`markdown/`,
   `html/`) parts into `emit/` (ADF→format) and `parse/` (format→ADF), its root holding what both
   directions read. A construct's reader lives in that root beside the regex the emitter escapes
-  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`.
+  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`. A rule both
+  directions must answer alike — whether a list marker interrupts a paragraph — is one function
+  there too, never a copy per direction, however conservative the copy would be.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
 - Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a

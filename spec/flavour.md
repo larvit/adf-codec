@@ -19,9 +19,9 @@ normalizes to it through the round-trip.
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
   `order` attribute. Continuation lines align with the first character after the marker
   (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines, none
-  between a nested list and a CommonMark block above it — one where the nested list's own marker
-  cannot interrupt a paragraph (any ordered list, or a bullet list whose first item opens with an
-  empty block), which the block above would otherwise swallow. Blank lines between items normalize
+  between a nested list and a CommonMark block above it — one wherever the nested list's own
+  marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or a list
+  whose first item is empty), whatever block sits above it. Blank lines between items normalize
   away; ADF does not record tightness.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.

@@ -86,6 +86,12 @@ export function isUnicodeWhitespace(character: string): boolean {
   return unicodeWhitespace.test(character)
 }
 
+// The first marker of a list, `undefined` for a bullet: one answer both directions read, or the emitter
+// spells a list the parser folds into the paragraph above it.
+export function markerInterruptsParagraph(start: number | undefined, empty: boolean): boolean {
+  return !empty && (start === undefined || start === 1)
+}
+
 export function openingCodeFence(line: string): { info: string; marker: string } | undefined {
   const marker = codeFenceOpener.exec(line)?.[1]
   if (marker === undefined) return undefined

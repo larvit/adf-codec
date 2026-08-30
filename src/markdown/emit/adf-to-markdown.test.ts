@@ -267,6 +267,7 @@ test('parts a nested list the tight spelling would swallow from the block above 
   const outer = (...content: AdfNode[]): AdfDocument => document({ content: [item(...content)], type: 'bulletList' })
   const ordered: AdfNode = { attrs: { order: 2 }, content: [item(text('b'))], type: 'orderedList' }
   assert.equal(markdown(adfToMarkdown(outer(text('a'), ordered))), '- a\n\n  2. b\n')
+  assert.equal(markdown(adfToMarkdown(outer(text('a'), { ...ordered, attrs: { order: 1 } }))), '- a\n  1. b\n')
   assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item()], type: 'bulletList' }))), '- a\n\n  -\n')
   assert.equal(markdown(adfToMarkdown(outer(text('a'), { content: [item(text('b'))], type: 'bulletList' }))), '- a\n  - b\n')
 })
@@ -381,6 +382,9 @@ test('refuses a document nested deeper than the emitter carries', () => {
   let node: AdfNode = paragraph({ text: 'x', type: 'text' })
   for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockquote' }
   assert.equal(code(adfToMarkdown(document(node))), 'unsupported-nesting-depth')
+  let carried: AdfNode = paragraph({ text: 'x', type: 'text' })
+  for (let depth = 0; depth < 500; depth += 1) carried = { content: [carried], type: 'blockquote' }
+  assert.ok(adfToMarkdown(document(carried)).ok)
 })
 
 test('emits an empty list item without trailing whitespace', () => {

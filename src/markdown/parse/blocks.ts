@@ -1,5 +1,14 @@
 import type { LinkDefinition } from './link-reference-definitions.ts'
-import { atxHeading, claimsDirectiveLine, claimsPipeLine, closingCodeFence, isThematicBreak, openingCodeFence, setextHeadingLevel } from '../commonmark-grammar.ts'
+import {
+  atxHeading,
+  claimsDirectiveLine,
+  claimsPipeLine,
+  closingCodeFence,
+  isThematicBreak,
+  markerInterruptsParagraph,
+  openingCodeFence,
+  setextHeadingLevel,
+} from '../commonmark-grammar.ts'
 import { openingHtmlBlock } from './html-blocks.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
@@ -85,10 +94,11 @@ function continuesContainer(walk: Walk, container: OpenContainer, line: string):
 }
 
 function openContainers(walk: Walk, line: string, paragraphOpen: boolean, depth: number): { opened: boolean; rest: string } {
+  const unmatched = walk.stack[depth]
   let opened = false
   let rest = line
   while (leadingColumns(rest) < indentedCodeColumns) {
-    const start = containerStart(rest, opened ? false : paragraphOpen, opened ? undefined : walk.stack[depth])
+    const start = containerStart(rest, opened ? false : paragraphOpen, opened ? undefined : unmatched)
     if (start === undefined) break
     if (!opened) closeContainers(walk, depth)
     opened = true
@@ -102,11 +112,15 @@ function containerStart(line: string, paragraphOpen: boolean, enclosing: OpenCon
   const opener = removeColumns(line, largestOpenerIndentation)
   if (opener.startsWith('>')) return { kind: 'blockquote', rest: removeColumns(opener.slice(1), 1) }
   if (isThematicBreak(opener) || (paragraphOpen && setextHeadingLevel(opener) !== undefined)) return undefined
+  return itemStart(line, opener, paragraphOpen, enclosing)
+}
+
+function itemStart(line: string, opener: string, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
   const marker = itemMarker(opener)
   if (marker === undefined) return undefined
   const after = opener.slice(marker.width)
   const blank = blankLine.test(after)
-  if (paragraphOpen && (blank || (marker.list.kind === 'orderedList' && marker.list.start !== 1))) return undefined
+  if (paragraphOpen && !markerInterruptsParagraph(marker.list.kind === 'orderedList' ? marker.list.start : undefined, blank)) return undefined
   const spaces = leadingColumns(after)
   const padding = blank || spaces > indentedCodeColumns ? 1 : spaces
   const continued = enclosing?.kind === 'item' && enclosing.list.kind === marker.list.kind && enclosing.marker === marker.marker
