@@ -6,7 +6,7 @@
       },
       "content": [
         {
-          "text": "SELECT id\nFROM part\nWHERE qty > 0;",
+          "text": "SELECT id\nFROM part\nWHERE qty > 0;\n- 1. the markers a container start would claim",
           "type": "text"
         }
       ],

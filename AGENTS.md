@@ -81,8 +81,9 @@ The error surface is a contract too. `ConvertError` is `{ code, message, path }`
 closed list a consumer may switch exhaustively, the message free text, the path the node's position
 from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
 new failure cause reuses a code where one fits; the list is complete at `0.1.0`. A code names the
-cause; where one cause recurs across node types, one code covers them all and `path` and `message`
-say which. A claim code names the spelling claimed, never the node that spelling would have built:
+cause; where one cause recurs across node types or across directions, one code covers them all and
+`path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
+direction hits it. A claim code names the spelling claimed, never the node that spelling would have built:
 a malformed `:::table` is a `malformed-directive`. A cause the carry answers gets no code: a mark no
 spelling writes rides the carry with its node.
 
@@ -141,7 +142,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - `src/adf/` holds ADF's own knowledge and imports no format. Each format directory (`markdown/`,
   `html/`) parts into `emit/` (ADF→format) and `parse/` (format→ADF), its root holding what both
   directions read. A construct's reader lives in that root beside the regex the emitter escapes
-  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`.
+  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`. A rule both
+  directions must answer alike — whether a list marker interrupts a paragraph — is one function
+  there too, never a copy per direction, however conservative the copy would be.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
 - Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a

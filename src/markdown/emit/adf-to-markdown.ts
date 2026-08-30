@@ -7,20 +7,19 @@ import { carriesOnly, isAdfDocument } from '../../adf/document.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
-import { holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isThematicBreak } from '../commonmark-grammar.ts'
+import { holdsControlCharacter, holdsEntityReference, holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { largestNesting } from '../../nesting.ts'
 import { spellDirectiveHeader } from './block-directive-spelling.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
-type BlockSpelling = 'commonmark' | 'directive'
+type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBody = { fenceColons: number; text: string }
 type EmittedBlock = EmittedBody & { spelling: BlockSpelling }
 type PlacedBlock = EmittedBlock & { node: AdfNode; path: ConvertErrorPath }
 
 const largestListMarker = 999999999
-const listTypes = ['bulletList', 'orderedList']
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
   if (!isAdfDocument(document)) return failure('not-an-adf-document', 'the value is not an ADF document', [])
@@ -31,7 +30,7 @@ export function adfToMarkdown(document: AdfDocument): Result<string> {
 }
 
 function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: ConvertErrorPath, depth: number): Result<EmittedBody> {
-  if (depth > largestNesting) return failure('unsupported-node-shape', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
+  if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
     const nodePath = [...path, 'content', index]
@@ -55,17 +54,12 @@ function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: 
 }
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): Result<string> {
-  const plainPair = previous.spelling === 'commonmark' && next.spelling === 'commonmark'
-  if (plainPair && listTypes.includes(next.node.type)) {
-    if (previous.node.type === next.node.type) {
+  const plainPair = previous.spelling !== 'directive' && next.spelling !== 'directive'
+  if (plainPair && next.spelling === 'list') {
+    if (previous.spelling === 'list' && previous.node.type === next.node.type) {
       return failure('unspellable-adjacent-lists', `two adjacent ${next.node.type} nodes read back as one list`, next.path)
     }
-    if (container === 'list-item') {
-      if (!interruptsParagraph(next.node)) {
-        return failure('unspellable-line-start', `a ${next.node.type} that cannot interrupt the block above it has no tight spelling`, next.path)
-      }
-      return success('\n')
-    }
+    if (container === 'list-item') return success(interruptsParagraph(next.node) ? '\n' : '\n\n')
   }
   if (container !== 'directive' || plainPair) return success('\n\n')
   if (previous.spelling === 'directive' && next.spelling === 'directive') return success('\n')
@@ -77,8 +71,10 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
 }
 
 function interruptsParagraph(node: AdfNode): boolean {
-  if (node.type === 'orderedList') return false
-  return ((node.content ?? [])[0]?.content ?? []).length > 0
+  const items = node.content ?? []
+  const empty = (items[0]?.content ?? []).length === 0
+  if (node.type !== 'orderedList') return markerInterruptsParagraph(undefined, empty)
+  return markerInterruptsParagraph(listStart(node, items.length) ?? 0, empty)
 }
 
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
@@ -224,7 +220,7 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<
     fenceColons = Math.max(fenceColons, emitted.value.fenceColons)
     lines.push(emitted.value.text)
   }
-  return success({ fenceColons, spelling: 'commonmark', text: lines.join('\n') })
+  return success({ fenceColons, spelling: 'list', text: lines.join('\n') })
 }
 
 function listStart(node: AdfNode, items: number): number | undefined {

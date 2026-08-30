@@ -23,7 +23,7 @@ export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<str
 
 function carriedJson(node: AdfNode, spelling: JsonSpelling, path: ConvertErrorPath): Result<string> {
   if (!isJsonValue(node)) {
-    return failure('unsupported-node-shape', `a carried node's JSON nests deeper than the ${largestNesting} levels the emitter carries`, path)
+    return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${largestNesting} levels the emitter carries`, path)
   }
   return success(serializeCanonicalJson(node, spelling))
 }

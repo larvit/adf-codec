@@ -11,6 +11,7 @@ export type ConvertErrorCode =
   | 'unspellable-whitespace'
   | 'unspelled-block-separation'
   | 'unsupported-document-version'
+  | 'unsupported-nesting-depth'
   | 'unsupported-node-shape'
 
 export type ConvertErrorPath = readonly (number | string)[]
