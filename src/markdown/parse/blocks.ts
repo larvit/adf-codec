@@ -38,7 +38,10 @@ type OpenLeaf =
   | { indentation: number; info: string; kind: 'fenced-code'; lines: string[]; marker: string }
   | { kind: 'paragraph'; lines: string[] }
 
-type ContainerStart = { kind: 'blockquote'; rest: string } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; marker: string; rest: string }
+type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; marker: string; rest: Line }
+
+// The line from an absolute column on: a tab a cut splits keeps the stop it is measured against.
+type Line = { column: number; text: string }
 
 type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; stack: OpenContainer[] }
 
@@ -49,12 +52,12 @@ const tabStop = 4
 
 export function parseBlocks(markdown: string): ParsedBlocks {
   const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, stack: [] }
-  for (const line of normalizeInput(markdown).split('\n')) readLine(walk, line)
+  for (const text of normalizeInput(markdown).split('\n')) readLine(walk, { column: 0, text })
   closeLeaf(walk)
   return { blocks: walk.blocks, definitions: walk.definitions }
 }
 
-function readLine(walk: Walk, line: string): void {
+function readLine(walk: Walk, line: Line): void {
   const matched = matchContainers(walk, line)
   // A leaf that swallows whole lines takes the marker too: no container opens inside a code or HTML block.
   if (matched.depth === walk.stack.length && swallowsLines(walk.leaf)) {
@@ -65,7 +68,7 @@ function readLine(walk: Walk, line: string): void {
   const opened = openContainers(walk, matched.rest, paragraphOpen, matched.depth)
   if (!opened.opened && matched.depth < walk.stack.length) {
     if (continuesLazily(walk, opened.rest)) {
-      appendParagraph(walk, opened.rest)
+      appendParagraph(walk, opened.rest.text)
       return
     }
     closeContainers(walk, matched.depth)
@@ -77,7 +80,7 @@ function swallowsLines(leaf: OpenLeaf | undefined): boolean {
   return leaf?.kind === 'fenced-code' || leaf?.kind === 'html'
 }
 
-function matchContainers(walk: Walk, line: string): { depth: number; rest: string } {
+function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } {
   let depth = 0
   let rest = line
   for (const container of walk.stack) {
@@ -89,17 +92,21 @@ function matchContainers(walk: Walk, line: string): { depth: number; rest: strin
   return { depth, rest }
 }
 
-function continuesContainer(walk: Walk, container: OpenContainer, line: string): string | undefined {
-  if (container.kind === 'blockquote') {
-    const opener = removeColumns(line, largestOpenerIndentation)
-    return opener.startsWith('>') ? removeColumns(opener.slice(1), 1) : undefined
-  }
+function continuesContainer(walk: Walk, container: OpenContainer, line: Line): Line | undefined {
+  if (container.kind === 'blockquote') return blockquoteRest(removeColumns(line, largestOpenerIndentation))
   // A list item begins with at most one blank line: an empty one gives the second up.
-  if (blankLine.test(line)) return container.blocks.length === 0 && walk.leaf === undefined ? undefined : ''
+  if (blankLine.test(line.text)) {
+    return container.blocks.length === 0 && walk.leaf === undefined ? undefined : { column: line.column, text: '' }
+  }
   return leadingColumns(line) < container.indentation ? undefined : removeColumns(line, container.indentation)
 }
 
-function openContainers(walk: Walk, line: string, paragraphOpen: boolean, depth: number): { opened: boolean; rest: string } {
+function blockquoteRest(opener: Line): Line | undefined {
+  if (!opener.text.startsWith('>')) return undefined
+  return removeColumns({ column: opener.column + 1, text: opener.text.slice(1) }, 1)
+}
+
+function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: number): { opened: boolean; rest: Line } {
   const unmatched = walk.stack[depth]
   let opened = false
   let rest = line
@@ -114,18 +121,19 @@ function openContainers(walk: Walk, line: string, paragraphOpen: boolean, depth:
   return { opened, rest }
 }
 
-function containerStart(line: string, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
+function containerStart(line: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
   const opener = removeColumns(line, largestOpenerIndentation)
-  if (opener.startsWith('>')) return { kind: 'blockquote', rest: removeColumns(opener.slice(1), 1) }
-  if (isThematicBreak(opener)) return undefined
+  const blockquote = blockquoteRest(opener)
+  if (blockquote !== undefined) return { kind: 'blockquote', rest: blockquote }
+  if (isThematicBreak(opener.text)) return undefined
   return itemStart(line, opener, paragraphOpen, enclosing)
 }
 
-function itemStart(line: string, opener: string, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
-  const marker = listMarker(opener)
+function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
+  const marker = listMarker(opener.text)
   if (marker === undefined) return undefined
-  const after = opener.slice(marker.width)
-  const blank = blankLine.test(after)
+  const after: Line = { column: opener.column + marker.width, text: opener.text.slice(marker.width) }
+  const blank = blankLine.test(after.text)
   if (paragraphOpen && !markerInterruptsParagraph(marker.start, blank)) return undefined
   const spaces = leadingColumns(after)
   const padding = blank || spaces > indentedCodeColumns ? 1 : spaces
@@ -137,7 +145,7 @@ function itemStart(line: string, opener: string, paragraphOpen: boolean, enclosi
     kind: 'item',
     list: continued ? enclosing.list : openList(marker.start),
     marker: marker.delimiter,
-    rest: blank ? '' : removeColumns(after, padding),
+    rest: blank ? after : removeColumns(after, padding),
   }
 }
 
@@ -164,53 +172,53 @@ function closeContainers(walk: Walk, depth: number): void {
 }
 
 // A claimed line ends the lazy continuation CommonMark would fold it into (spec/flavour.md).
-function continuesLazily(walk: Walk, line: string): boolean {
-  if (walk.leaf?.kind !== 'paragraph' || blankLine.test(line)) return false
+function continuesLazily(walk: Walk, line: Line): boolean {
+  if (walk.leaf?.kind !== 'paragraph' || blankLine.test(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
-  const opener = removeColumns(line, largestOpenerIndentation)
+  const opener = removeColumns(line, largestOpenerIndentation).text
   if (claimedConstruct(opener) !== undefined || isThematicBreak(opener)) return false
   return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, false) === undefined
 }
 
-function readBlockLine(walk: Walk, line: string): void {
+function readBlockLine(walk: Walk, line: Line): void {
   const leaf = walk.leaf
   if (leaf?.kind === 'fenced-code') {
-    if (closingCodeFence(removeColumns(line, largestOpenerIndentation), leaf.marker)) closeLeaf(walk)
-    else leaf.lines.push(removeColumns(line, leaf.indentation))
+    if (closingCodeFence(removeColumns(line, largestOpenerIndentation).text, leaf.marker)) closeLeaf(walk)
+    else leaf.lines.push(removeColumns(line, leaf.indentation).text)
     return
   }
   if (leaf?.kind === 'html') {
-    if (leaf.closer === undefined ? blankLine.test(line) : leaf.closer.test(line)) closeLeaf(walk)
+    if (leaf.closer === undefined ? blankLine.test(line.text) : leaf.closer.test(line.text)) closeLeaf(walk)
     return
   }
   if (leaf?.kind === 'indented-code') {
     if (readIndentedCodeLine(leaf, line)) return
     closeLeaf(walk)
   }
-  if (blankLine.test(line)) {
+  if (blankLine.test(line.text)) {
     closeLeaf(walk)
     return
   }
   if (walk.leaf === undefined && leadingColumns(line) >= indentedCodeColumns) {
-    walk.leaf = { held: [], kind: 'indented-code', lines: [removeColumns(line, indentedCodeColumns)] }
+    walk.leaf = { held: [], kind: 'indented-code', lines: [removeColumns(line, indentedCodeColumns).text] }
     return
   }
   openLeaf(walk, line)
 }
 
-function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>, line: string): boolean {
-  if (blankLine.test(line)) {
-    leaf.held.push(removeColumns(line, indentedCodeColumns))
+function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>, line: Line): boolean {
+  if (blankLine.test(line.text)) {
+    leaf.held.push(removeColumns(line, indentedCodeColumns).text)
     return true
   }
   if (leadingColumns(line) < indentedCodeColumns) return false
-  leaf.lines.push(...leaf.held, removeColumns(line, indentedCodeColumns))
+  leaf.lines.push(...leaf.held, removeColumns(line, indentedCodeColumns).text)
   leaf.held.length = 0
   return true
 }
 
-function openLeaf(walk: Walk, line: string): void {
-  const opener = removeColumns(line, largestOpenerIndentation)
+function openLeaf(walk: Walk, line: Line): void {
+  const opener = removeColumns(line, largestOpenerIndentation).text
   const claimed = claimedConstruct(opener)
   if (claimed !== undefined) {
     closeLeaf(walk)
@@ -226,12 +234,12 @@ function openLeaf(walk: Walk, line: string): void {
   }
   const html = openingHtmlBlock(opener, walk.leaf?.kind === 'paragraph')
   if (html === undefined) {
-    appendParagraph(walk, line)
+    appendParagraph(walk, line.text)
     return
   }
   closeLeaf(walk)
   walk.leaf = { closer: html.closer, construct: html.construct, kind: 'html' }
-  if (html.closer?.test(line) === true) closeLeaf(walk)
+  if (html.closer?.test(line.text) === true) closeLeaf(walk)
 }
 
 // A setext underline over a paragraph the definitions emptied is no heading: it opens the next block.
@@ -300,27 +308,28 @@ function normalizeInput(markdown: string): string {
     .replace(/\n$/, '')
 }
 
-function leadingColumns(line: string): number {
+function leadingColumns(line: Line): number {
   let columns = 0
-  for (const character of line) {
+  for (const character of line.text) {
     if (character === ' ') columns += 1
-    else if (character === '\t') columns += tabStop - (columns % tabStop)
+    else if (character === '\t') columns += tabStop - ((line.column + columns) % tabStop)
     else break
   }
   return columns
 }
 
 // CommonMark's tab stops: a tab the cut splits gives the columns it holds past the cut back as spaces.
-function removeColumns(line: string, columns: number): string {
-  let removed = 0
+function removeColumns(line: Line, columns: number): Line {
+  const target = line.column + columns
+  let column = line.column
   let index = 0
-  while (removed < columns && index < line.length) {
-    const character = line.charAt(index)
+  while (column < target && index < line.text.length) {
+    const character = line.text.charAt(index)
     if (character !== ' ' && character !== '\t') break
-    const width = character === ' ' ? 1 : tabStop - (removed % tabStop)
+    const width = character === ' ' ? 1 : tabStop - (column % tabStop)
     index += 1
-    if (removed + width > columns) return ' '.repeat(removed + width - columns) + line.slice(index)
-    removed += width
+    if (column + width > target) return { column: target, text: ' '.repeat(column + width - target) + line.text.slice(index) }
+    column += width
   }
-  return line.slice(index)
+  return { column, text: line.text.slice(index) }
 }

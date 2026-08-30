@@ -186,6 +186,16 @@ test('reads an ordered list, its first marker the order attribute', () => {
   assert.deepEqual(content(markdownToAdf('0. Zero\n')), [orderedList(0, item(paragraph('Zero')))])
 })
 
+test('measures a tab from the column the containers cut it to', () => {
+  assert.deepEqual(content(markdownToAdf('>\t\tfoo\n')), [quote({ content: [text('  foo')], type: 'codeBlock' })])
+  assert.deepEqual(content(markdownToAdf('-\t\tfoo\n')), [bulletList(item({ content: [text('  foo')], type: 'codeBlock' }))])
+  assert.deepEqual(content(markdownToAdf('- foo\n\n\t\tbar\n')), [bulletList(item(paragraph('foo'), { content: [text('  bar')], type: 'codeBlock' }))])
+  assert.deepEqual(content(markdownToAdf('-\t foo\n')), [bulletList(item(paragraph('foo')))])
+  assert.deepEqual(content(markdownToAdf(' - foo\n   - bar\n\t - baz\n')), [
+    bulletList(item(paragraph('foo'), bulletList(item(paragraph('bar'), bulletList(item(paragraph('baz'))))))),
+  ])
+})
+
 test('drops the tightness ADF does not record', () => {
   assert.deepEqual(content(markdownToAdf('- a\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(markdownToAdf('- a\n\n  2. b\n')), [bulletList(item(paragraph('a'), orderedList(2, item(paragraph('b')))))])
