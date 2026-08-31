@@ -240,7 +240,7 @@ detail is settled at its own milestone.
         autolink parting off as 3e's own predicate: refusing on the superset would refuse
         `1 <b 2`, a fourth carve-out §4 and the README do not list. `holdsEntityReference` reads
         the table for the same reason, so `&notareference;` is emitted bare.
-  - [ ] **3e — Emphasis and links.** `_`, `*` and `~~` runs through `matchEmphasis` to the `em`,
+  - [x] **3e — Emphasis and links.** `_`, `*` and `~~` runs through `matchEmphasis` to the `em`,
         `strong` and `strike` marks; links inline and reference, 3b's definitions resolved here,
         autolinks, and the image gap's named errors — a titled image, and one amid other text.
         `spec/flavour.md` does not yet pin `~`'s `can_open`/`can_close`, which is transcription
@@ -252,6 +252,22 @@ detail is settled at its own milestone.
         where nothing else works, so each construct keeps one spelling and a destination holding
         both composes. `link-destination-parenthesis` and `link-title-quote` become round-trip
         pairs.
+        **Settled** (the maintainer, 2026-08-31): the destination escapes only the parenthesis it
+        leaves unbalanced, so `/wiki/Foo_(bar)` keeps its bytes, and the backslash stays refused in
+        both the destination and the title — which leaves `[a](/a\b)` a §2 hole 3k's exception list
+        answers, as `<http://x?a=1&amp;b=2>` is, autolinks decoding neither escapes nor references.
+        The image gap mints `unmappable-image`, mirroring `unmappable-html` — a construct in input
+        no ADF node carries. And the CommonMark image shape lands here rather than at 3h: once
+        `[…](…)` reads, a lone `![alt](url)` would otherwise misparse as text plus a link, so 3h
+        keeps the rest of the media family and loses only that line.
+        **Settled** (the maintainer, 2026-08-31, on the review): an empty link text — `[](/u)` —
+        leaves the brackets the text they are rather than minting a refusal or dropping the
+        destination, giving the label back the way an unresolved pair does, so the shortcut behind
+        `[][r]` still reads. A description holding an image flattens to that image's own alt, which
+        is what alt text means and what keeps the documented gap to mid-text and titled images; a
+        break of either kind inside one reads as a space. And a destination or title whose entity
+        reference decodes to a control character — `[a](/x&#10;y)` — joins 3k's exception list
+        beside the two above: the reader takes cmark's reading, the emitter has no spelling for it.
   - [ ] **3f — The directive grammar.** The three forms — inline `:name[content]{attrs}`,
         container `:::name arg {attrs}`, leaf `::name arg {attrs}` — the attribute grammar with
         its quoting and escapes, the fence-length and nesting rules, and the malformed list
@@ -269,9 +285,9 @@ detail is settled at its own milestone.
         guard is built here if the answer there was yes.
   - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
         settles, read from the other side; the `codeBlock` directive's fenced body and the
-        `language` attribute a bare fence leaves it; the media family's composition and the
-        CommonMark image shape; both table forms, the pipe table's cell split and its named
-        errors; and the one paragraph an inline body takes.
+        `language` attribute a bare fence leaves it; the media family's composition; both table
+        forms, the pipe table's cell split and its named errors; and the one paragraph an inline
+        body takes.
         **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
         `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
         in a container body with no blank line between them. That reduces the three cases to one
@@ -300,7 +316,9 @@ detail is settled at its own milestone.
         canonical fixpoint: a named error, or markdown that parses and emits to itself byte for
         byte. That HTML's text, tags stripped and entities decoded, against the parsed document's
         concatenated `text`. And a count of the dozen elements the CommonMark subset covers
-        against the marks and nodes they map to. The fixpoint alone is self-consistency a parser
+        against the marks and nodes they map to — counting distinct mark types per text node, since
+        3e collapses a spelling nested inside its own kind and `*(*a*)*` is two `<em>` against one
+        `em`. The fixpoint alone is self-consistency a parser
         returning the empty document passes, and the text alone one dropping every emphasis; the
         counts close both. The exception list stays the maintainer's. One outcome is no
         exception and must not be filed as one: valid CommonMark parsing to a document

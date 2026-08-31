@@ -9,9 +9,9 @@ import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
 import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
-import { serializeCanonicalJson } from '../../canonical-json.ts'
+import { sameMark } from '../../adf/editor-normal.ts'
 import { spellAttributes, spellStringAttribute } from '../directive-attributes.ts'
-import { spellDestination, spellTitle } from './destination-spelling.ts'
+import { spellDestination, spellTitle } from '../link-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 
 type EmittedLine = { line: string; segments: InlineSegment[] }
@@ -297,7 +297,3 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${destination.value}${spelledTitle.value})`)] })
 }
 
-function sameMark(candidate: AdfMark, mark: AdfMark): boolean {
-  if (candidate.type !== mark.type) return false
-  return serializeCanonicalJson(candidate.attrs ?? {}, 'compact') === serializeCanonicalJson(mark.attrs ?? {}, 'compact')
-}

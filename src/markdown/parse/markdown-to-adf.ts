@@ -1,60 +1,62 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, ClaimedConstruct } from './blocks.ts'
+import type { LinkDefinitions } from './inline-content.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
-  const content = blockNodes(parseBlocks(markdown).blocks, [], 0)
+  const parsed = parseBlocks(markdown)
+  const content = blockNodes(parsed.blocks, parsed.definitions, [], 0)
   if (!content.ok) return content
   return success(content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 })
 }
 
-function blockNodes(blocks: readonly Block[], path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
-    const node = blockNode(block, [...path, 'content', index], depth)
+    const node = blockNode(block, definitions, [...path, 'content', index], depth)
     if (!node.ok) return node
     content.push(node.value)
   }
   return success(content)
 }
 
-function blockNode(block: Block, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':
-      return containerNode({ type: 'blockquote' }, block.blocks, path, depth)
+      return containerNode({ type: 'blockquote' }, block.blocks, definitions, path, depth)
     case 'bulletList':
-      return listNode({ type: 'bulletList' }, block.items, path, depth)
+      return listNode({ type: 'bulletList' }, block.items, definitions, path, depth)
     case 'claim':
       return claimFailure(block.construct, path)
     case 'code':
       return success(codeBlockNode(block.language, block.text))
     case 'heading':
-      return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, path)
+      return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, definitions, path)
     case 'html':
       return failure('unmappable-html', `no ADF node carries ${block.construct}`, path)
     case 'orderedList':
-      return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, path, depth)
+      return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, definitions, path, depth)
     case 'paragraph':
-      return contentNode({ type: 'paragraph' }, block.text, path)
+      return contentNode({ type: 'paragraph' }, block.text, definitions, path)
     case 'rule':
       return success({ type: 'rule' })
   }
 }
 
-function containerNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const content = blockNodes(blocks, path, depth + 1)
+function containerNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+  const content = blockNodes(blocks, definitions, path, depth + 1)
   if (!content.ok) return content
   return success(content.value.length === 0 ? node : { ...node, content: content.value })
 }
 
-function listNode(node: AdfNode, items: readonly Block[][], path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const content: AdfNode[] = []
   for (const [index, blocks] of items.entries()) {
-    const item = containerNode({ type: 'listItem' }, blocks, [...path, 'content', index], depth)
+    const item = containerNode({ type: 'listItem' }, blocks, definitions, [...path, 'content', index], depth)
     if (!item.ok) return item
     content.push(item.value)
   }
@@ -75,8 +77,13 @@ function codeBlockNode(language: string, text: string): AdfNode {
   return text === '' ? node : { ...node, content: [{ text, type: 'text' }] }
 }
 
-function contentNode(node: AdfNode, text: string, path: ConvertErrorPath): Result<AdfNode> {
-  const content = parseInlineContent(text, path)
+// spec/flavour.md, The CommonMark image: only a paragraph gives an image the block it needs.
+function contentNode(node: AdfNode, text: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
+  const content = parseInlineContent(text, definitions, path)
   if (!content.ok) return content
-  return success(content.value.length === 0 ? node : { ...node, content: content.value })
+  const image = content.value.image
+  if (image !== undefined) {
+    return node.type === 'paragraph' ? success(image) : failure('unmappable-image', `no ADF node carries an image inside a ${node.type}`, path)
+  }
+  return success(content.value.nodes.length === 0 ? node : { ...node, content: content.value.nodes })
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { LinkDefinition } from './link-reference-definitions.ts'
+import type { LinkDefinition } from '../link-syntax.ts'
 import { parseBlocks } from './blocks.ts'
 
 function definitions(markdown: string): [string, LinkDefinition][] {
@@ -21,9 +21,10 @@ test('keeps the link reference definitions a paragraph gives up, the first of a 
   ])
   assert.deepEqual(definitions('[a\\]b]: /url\n'), [['a\\]b', { destination: '/url' }]])
   assert.deepEqual(definitions('[a]: /url(x)y\n'), [['a', { destination: '/url(x)y' }]])
-  assert.deepEqual(definitions('[a]: /url\\(x\n'), [['a', { destination: '/url\\(x' }]])
+  assert.deepEqual(definitions('[a]: /url\\(x\n'), [['a', { destination: '/url(x' }]])
+  assert.deepEqual(definitions('[a]: /url&amp;x\n'), [['a', { destination: '/url&x' }]])
   assert.deepEqual(definitions('[a]: <>\n'), [['a', { destination: '' }]])
-  assert.deepEqual(definitions('[a]: /url "He said \\"hi\\""\n'), [['a', { destination: '/url', title: 'He said \\"hi\\"' }]])
+  assert.deepEqual(definitions('[a]: /url "He said \\"hi\\""\n'), [['a', { destination: '/url', title: 'He said "hi"' }]])
   assert.deepEqual(definitions('[a]: /url\\\n[b]: /b\n'), [
     ['a', { destination: '/url\\' }],
     ['b', { destination: '/b' }],
@@ -47,6 +48,7 @@ test('leaves the paragraph a line no definition spells', () => {
   assert.deepEqual(definitions('[a]: /url "One" and more\n'), [])
   assert.deepEqual(definitions('[a]:\n'), [])
   assert.deepEqual(definitions('[a]: /url "unclosed\n'), [])
+  assert.deepEqual(definitions('[a]: /url (a(b)\n'), [])
   assert.deepEqual(kinds('[a]: /url\nPart.\n'), ['paragraph'])
 })
 

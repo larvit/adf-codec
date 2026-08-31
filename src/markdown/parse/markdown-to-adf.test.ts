@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfDocument, AdfNode } from '../../adf/document.ts'
+import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
 import { markdownToAdf } from './markdown-to-adf.ts'
+
+const em: AdfMark = { type: 'em' }
+const strike: AdfMark = { type: 'strike' }
+const strong: AdfMark = { type: 'strong' }
 
 function code(result: Result<AdfDocument>): string {
   return result.ok ? `built ${JSON.stringify(result.value)}` : result.error.code
@@ -47,6 +51,19 @@ function orderedList(order: number, ...content: AdfNode[]): AdfNode {
 
 function quote(...content: AdfNode[]): AdfNode {
   return content.length === 0 ? { type: 'blockquote' } : { content, type: 'blockquote' }
+}
+
+function marked(value: string, ...marks: AdfMark[]): AdfNode {
+  return { marks, text: value, type: 'text' }
+}
+
+function link(href: string, title?: string): AdfMark {
+  return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
+}
+
+function image(url: string, alt?: string): AdfNode {
+  const media: AdfNode = { attrs: alt === undefined ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }
+  return { attrs: { layout: 'center' }, content: [media], type: 'mediaSingle' }
 }
 
 test('builds an empty document from input holding no block', () => {
@@ -322,4 +339,143 @@ test('leaves the angle bracket that opens no HTML construct to the text it sits 
   assert.deepEqual(content(markdownToAdf('a </b c> d\n')), [paragraph('a </b c> d')])
   assert.deepEqual(content(markdownToAdf('`<span>`\n')), [{ content: [codeSpan('<span>')], type: 'paragraph' }])
   assert.deepEqual(content(markdownToAdf('\\<span>\n')), [paragraph('<span>')])
+})
+
+test('reads the emphasis CommonMark matches, the marks nesting outermost first', () => {
+  assert.deepEqual(content(markdownToAdf('*a*\n')), [{ content: [marked('a', em)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('_a_\n')), [{ content: [marked('a', em)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('**a**\n')), [{ content: [marked('a', strong)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('__a__\n')), [{ content: [marked('a', strong)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('***a***\n')), [{ content: [marked('a', em, strong)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('*a **b** c*\n')), [
+    { content: [marked('a ', em), marked('b', em, strong), marked(' c', em)], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('a*b*c\n')), [{ content: [text('a'), marked('b', em), text('c')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('# *a*\n')), [{ attrs: { level: 1 }, content: [marked('a', em)], type: 'heading' }])
+})
+
+test('leaves a delimiter run CommonMark pairs with nothing in the text it sits in', () => {
+  assert.deepEqual(content(markdownToAdf('a_b_c\n')), [paragraph('a_b_c')])
+  assert.deepEqual(content(markdownToAdf('*a\n')), [paragraph('*a')])
+  assert.deepEqual(content(markdownToAdf('a * b\n')), [paragraph('a * b')])
+  assert.deepEqual(content(markdownToAdf('**a*\n')), [{ content: [text('*'), marked('a', em)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('*a**\n')), [{ content: [marked('a', em), text('*')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('\\*a\\*\n')), [paragraph('*a*')])
+  assert.deepEqual(content(markdownToAdf('`*a*`\n')), [{ content: [codeSpan('*a*')], type: 'paragraph' }])
+})
+
+test('reads two tildes as strike, a single tilde and a longer run literal', () => {
+  assert.deepEqual(content(markdownToAdf('~~a~~\n')), [{ content: [marked('a', strike)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('a ~b~ c\n')), [paragraph('a ~b~ c')])
+  assert.deepEqual(content(markdownToAdf('a ~~~b~~~ c\n')), [paragraph('a ~~~b~~~ c')])
+  assert.deepEqual(content(markdownToAdf('~~a **b**~~\n')), [{ content: [marked('a ', strike), marked('b', strike, strong)], type: 'paragraph' }])
+})
+
+test('reads an inline link, its destination and title', () => {
+  assert.deepEqual(content(markdownToAdf('[a](/url)\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a](/url "t")\n')), [{ content: [marked('a', link('/url', 't'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a](\n/url\n"t" )\n')), [{ content: [marked('a', link('/url', 't'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a](<u v>)\n')), [{ content: [marked('a', link('u v'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a]()\n')), [{ content: [marked('a', link(''))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a](/x(y))\n')), [{ content: [marked('a', link('/x(y)'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[**a**](/u)\n')), [{ content: [marked('a', link('/u'), strong)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a `b`](/u)\n')), [
+    { content: [marked('a ', link('/u')), { marks: [link('/u'), { type: 'code' }], text: 'b', type: 'text' }], type: 'paragraph' },
+  ])
+})
+
+test('decodes the escapes and the references a destination and a title hold', () => {
+  assert.deepEqual(content(markdownToAdf('[a](/x\\)y)\n')), [{ content: [marked('a', link('/x)y'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a](/u "He said \\"hi\\"")\n')), [{ content: [marked('a', link('/u', 'He said "hi"'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a](/x&amp;y)\n')), [{ content: [marked('a', link('/x&y'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a][r]\n\n[r]: /x\\)y "He said \\"hi\\""\n')), [
+    { content: [marked('a', link('/x)y', 'He said "hi"'))], type: 'paragraph' },
+  ])
+})
+
+test('leaves the bracket pair no link parses as the text it holds', () => {
+  assert.deepEqual(content(markdownToAdf('[a\n')), [paragraph('[a')])
+  assert.deepEqual(content(markdownToAdf('[a] (/u)\n')), [paragraph('[a] (/u)')])
+  assert.deepEqual(content(markdownToAdf('a ] b\n')), [paragraph('a ] b')])
+  assert.deepEqual(content(markdownToAdf('[a](/u\n')), [paragraph('[a](/u')])
+  assert.deepEqual(content(markdownToAdf('[a](/u x)\n')), [paragraph('[a](/u x)')])
+  assert.deepEqual(content(markdownToAdf('[a](<u\n')), [paragraph('[a](<u')])
+  assert.deepEqual(content(markdownToAdf('![a\n')), [paragraph('![a')])
+  assert.deepEqual(content(markdownToAdf('[a [b](/u) c](/v)\n')), [
+    { content: [text('[a '), marked('b', link('/u')), text(' c](/v)')], type: 'paragraph' },
+  ])
+})
+
+test('reads the reference links a definition resolves, and leaves the rest literal', () => {
+  assert.deepEqual(content(markdownToAdf('[a][r]\n\n[r]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a][]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[Foo\nBar][]\n\n[foo   bar]: /url\n')), [{ content: [marked('Foo Bar', link('/url'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('[a][z]\n\n[a]: /url\n')), [paragraph('[a][z]')])
+  assert.deepEqual(content(markdownToAdf('[a]\n')), [paragraph('[a]')])
+  assert.deepEqual(content(markdownToAdf('[][]\n')), [paragraph('[][]')])
+})
+
+test('reads an autolink, the email form as the mailto link it means', () => {
+  assert.deepEqual(content(markdownToAdf('<https://example.com/>\n')), [
+    { content: [marked('https://example.com/', link('https://example.com/'))], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('a <a@b.example.com> c\n')), [
+    { content: [text('a '), marked('a@b.example.com', link('mailto:a@b.example.com')), text(' c')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('a <a@b-c.example.com> d\n')), [
+    { content: [text('a '), marked('a@b-c.example.com', link('mailto:a@b-c.example.com')), text(' d')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('a <b@-c.example.com> d\n')), [paragraph('a <b@-c.example.com> d')])
+  assert.deepEqual(content(markdownToAdf('a <b[c@example.com> d\n')), [paragraph('a <b[c@example.com> d')])
+  assert.deepEqual(content(markdownToAdf('<https://example.com/?a=\\*>\n')), [
+    { content: [marked('https://example.com/?a=\\*', link('https://example.com/?a=\\*'))], type: 'paragraph' },
+  ])
+  assert.equal(code(markdownToAdf('<https://example.com/> <span>\n')), 'unmappable-html')
+})
+
+test('reads a lone image as the media the flavour spells for it', () => {
+  assert.deepEqual(content(markdownToAdf('![The moon](https://example.com/moon.png)\n')), [
+    image('https://example.com/moon.png', 'The moon'),
+  ])
+  assert.deepEqual(content(markdownToAdf('![](/u)\n')), [image('/u')])
+  assert.deepEqual(content(markdownToAdf('![*a*](/u)\n')), [image('/u', 'a')])
+  assert.deepEqual(content(markdownToAdf('- ![a](/u)\n')), [bulletList(item(image('/u', 'a')))])
+})
+
+test('flattens the description of a lone image to the plain text alt holds', () => {
+  assert.deepEqual(content(markdownToAdf('![a [b](/u) c](/v)\n')), [image('/v', 'a b c')])
+  assert.deepEqual(content(markdownToAdf('![a ![b](/c) d](/e)\n')), [image('/e', 'a b d')])
+  assert.deepEqual(content(markdownToAdf('![a\nb](/u)\n')), [image('/u', 'a b')])
+  assert.deepEqual(content(markdownToAdf('![a  \nb](/u)\n')), [image('/u', 'a b')])
+  assert.deepEqual(content(markdownToAdf('![a `b`](/u)\n')), [image('/u', 'a b')])
+})
+
+test('leaves the brackets of an empty link text the text they are', () => {
+  assert.deepEqual(content(markdownToAdf('[](/u)\n')), [paragraph('[](/u)')])
+  assert.deepEqual(content(markdownToAdf('a [](/u) b\n')), [paragraph('a [](/u) b')])
+  // The pair gives the label back the way an unresolved one does, so the shortcut behind it still reads.
+  assert.deepEqual(content(markdownToAdf('[][r]\n\n[r]: /u\n')), [{ content: [text('[]'), marked('r', link('/u'))], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('![](/u)\n')), [image('/u')])
+})
+
+test('refuses the image no ADF node carries where it sits', () => {
+  assert.equal(content(markdownToAdf('![a](/u "t")\n')), 'unmappable-image: no media node carries a link title')
+  assert.equal(content(markdownToAdf('See ![a](/u).\n')), 'unmappable-image: an image fits only as a paragraph of its own')
+  assert.equal(code(markdownToAdf('# ![a](/u)\n')), 'unmappable-image')
+  assert.equal(code(markdownToAdf('*![a](/u)*\n')), 'unmappable-image')
+  assert.equal(code(markdownToAdf('[![a](/u)](/v)\n')), 'unmappable-image')
+  assert.equal(code(markdownToAdf('![a](/u)![b](/v)\n')), 'unmappable-image')
+  assert.equal(code(markdownToAdf('![a ![b](/c) d\n')), 'unmappable-image')
+  assert.deepEqual(path(markdownToAdf('Part.\n\nSee ![a](/u).\n')), ['content', 1])
+  assert.deepEqual(content(markdownToAdf('![a]\n')), [paragraph('![a]')])
+  assert.deepEqual(content(markdownToAdf('a ! b\n')), [paragraph('a ! b')])
+})
+
+test('carries the mark a spelling nested inside its own kind names once', () => {
+  assert.deepEqual(content(markdownToAdf('*(*a*)*\n')), [{ content: [marked('(a)', em)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf(`${'*'.repeat(600)}a${'*'.repeat(600)}\n`)), [{ content: [marked('a', strong)], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('*a **b** c*\n')), [
+    { content: [marked('a ', em), marked('b', em, strong), marked(' c', em)], type: 'paragraph' },
+  ])
 })

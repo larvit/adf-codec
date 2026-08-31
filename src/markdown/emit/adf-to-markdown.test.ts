@@ -76,7 +76,6 @@ test('spells a code block language no info string holds as an attribute', () => 
 
 test('refuses a link destination CommonMark cannot spell', () => {
   const link = (href: string): AdfDocument => document(paragraph({ marks: [{ attrs: { href }, type: 'link' }], text: 't', type: 'text' }))
-  assert.equal(code(adfToMarkdown(link('https://example.com/a)b'))), 'unspellable-link-destination')
   assert.equal(code(adfToMarkdown(link('https://example.com/a b>c'))), 'unspellable-link-destination')
   assert.equal(code(adfToMarkdown(link('<https://example.com/'))), 'unspellable-link-destination')
   assert.equal(code(adfToMarkdown(link('https://example.com/a\\b'))), 'unspellable-link-destination')
@@ -84,14 +83,23 @@ test('refuses a link destination CommonMark cannot spell', () => {
   assert.equal(code(adfToMarkdown(link('https://example.com/a\nb'))), 'unspellable-link-destination')
   const entity = 'https://example.com/?a=1&amp;b=2'
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: entity }, type: 'link' }], text: entity, type: 'text' })))), 'unspellable-link-destination')
-  assert.equal(markdown(adfToMarkdown(link('https://en.example.com/a_(b)'))), '[t](https://en.example.com/a_(b))\n')
 })
 
-test('refuses a link title CommonMark cannot spell', () => {
+test('escapes the parenthesis a link destination leaves unbalanced, and no other', () => {
+  const link = (href: string): string => markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href }, type: 'link' }], text: 't', type: 'text' }))))
+  assert.equal(link('https://en.example.com/a_(b)'), '[t](https://en.example.com/a_(b))\n')
+  assert.equal(link('https://example.com/a)b'), '[t](https://example.com/a\\)b)\n')
+  assert.equal(link('https://example.com/a(b'), '[t](https://example.com/a\\(b)\n')
+  assert.equal(link('https://example.com/)(') , '[t](https://example.com/\\)\\()\n')
+  assert.equal(link('https://example.com/a (b'), '[t](<https://example.com/a (b>)\n')
+})
+
+test('escapes the quote a link title holds, and refuses the rest', () => {
   const titled = (title: string): AdfDocument =>
     document(paragraph({ marks: [{ attrs: { href: 'https://example.com/', title }, type: 'link' }], text: 't', type: 'text' }))
-  assert.equal(code(adfToMarkdown(titled('He said "hi"'))), 'unspellable-link-title')
+  assert.equal(markdown(adfToMarkdown(titled('He said "hi"'))), '[t](https://example.com/ "He said \\"hi\\"")\n')
   assert.equal(code(adfToMarkdown(titled('a\nb'))), 'unspellable-link-title')
+  assert.equal(code(adfToMarkdown(titled('a\\b'))), 'unspellable-link-title')
 })
 
 test('carries a link mark the link spelling cannot write', () => {

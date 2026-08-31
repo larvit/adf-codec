@@ -37,9 +37,10 @@ normalizes to it through the round-trip.
   CommonMark admits no spelling — the end of a block, inside an ATX heading — or where the node
   carries an attribute, it is the inline directive.
 - An empty paragraph — real payloads carry them — is `::paragraph`.
-- Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes.
-  `<url>` autolink form only when the text equals the destination and the destination is a valid
-  CommonMark autolink (absolute URI).
+- Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes. A
+  backslash escapes a parenthesis the destination leaves unbalanced, and a quote inside the title;
+  a balanced pair stays bare. `<url>` autolink form only when the text equals the destination and
+  the destination is a valid CommonMark autolink (absolute URI).
 - Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
@@ -244,7 +245,8 @@ The moon, at night.
 
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
-from the destination, `alt` the description's plain-text content when non-empty. `adfToMarkdown`
+from the destination, `alt` the description's plain-text content when non-empty — a link or image
+inside it contributing its own text, and a break of either kind a space. `adfToMarkdown`
 emits the image form for exactly that shape — those attrs and no others, no marks on either
 node, no caption, and a `media` carrying nothing beyond `alt`, `type` and `url` — and only where
 CommonMark spells the pair: a destination or a description the image form cannot hold, an empty

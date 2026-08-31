@@ -148,7 +148,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - `src/adf/` holds ADF's own knowledge and imports no format. Each format directory (`markdown/`,
   `html/`) parts into `emit/` (ADF→format) and `parse/` (format→ADF), its root holding what both
   directions read. A construct's reader lives in that root beside the regex the emitter escapes
-  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`. A rule both
+  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`, unless it is
+  part of a construct the root already holds — a grammar stays in one file rather than splitting
+  across the seam. A rule both
   directions must answer alike — whether a list marker interrupts a paragraph — is one function
   there too, never a copy per direction, however conservative the copy would be.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
@@ -180,7 +182,8 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 
 No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
 validation or exported validator — a refusal that keeps the round-trip is not schema validation,
-so the one a spelled node carrying the same mark type twice earns stays, no shipped CSS (§4), no
+so the one a spelled node carrying the same mark type twice earns stays, and input nesting a
+spelling inside its own kind (`*(*a*)*`) names that mark once, no shipped CSS (§4), no
 streaming APIs, no performance budget past §11's scanning rule — nothing here is tuned, and no
 figure is promised. A CLI is a later goal (`todo.md`), not a non-goal.
 

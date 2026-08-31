@@ -1,7 +1,7 @@
+import { runLength } from './emphasis-matching.ts'
+
 export function backtickRun(text: string, index: number): number {
-  let length = 0
-  while (text.charAt(index + length) === '`') length += 1
-  return length
+  return text.charAt(index) === '`' ? runLength(text, index) : 0
 }
 
 // Where the run of exactly `opener` backticks closing a code span begins, `undefined` where none does.

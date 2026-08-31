@@ -2,7 +2,7 @@ import { isUnicodeWhitespace } from './commonmark-grammar.ts'
 
 type DelimiterRun = { canClose: boolean; canOpen: boolean; character: string; length: number }
 
-type EmphasisPairing<Run> = { closer: Run; closerOffset: number; opener: Run; openerOffset: number; used: number }
+export type EmphasisPairing<Run> = { closer: Run; closerOffset: number; opener: Run; openerOffset: number; used: number }
 
 type Candidate<Run> = {
   head: number
@@ -62,6 +62,13 @@ export function matchEmphasis<Run extends DelimiterRun>(runs: readonly Run[]): E
     closer = following
   }
   return pairings
+}
+
+export function runLength(text: string, index: number): number {
+  const character = text.charAt(index)
+  let length = 0
+  while (text.charAt(index + length) === character) length += 1
+  return length
 }
 
 function candidates<Run extends DelimiterRun>(runs: readonly Run[]): Candidate<Run> | undefined {

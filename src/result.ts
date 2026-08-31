@@ -3,6 +3,7 @@ export type ConvertErrorCode =
   | 'malformed-pipe-table'
   | 'not-an-adf-document'
   | 'unmappable-html'
+  | 'unmappable-image'
   | 'unspellable-adjacent-lists'
   | 'unspellable-character'
   | 'unspellable-line-start'

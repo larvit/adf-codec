@@ -1,5 +1,5 @@
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
-import { delimiterFlags, isWordCharacter, matchEmphasis } from '../emphasis-matching.ts'
+import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
 import { opensInlineDirective } from '../directive-attributes.ts'
 import { readEntityReference } from '../entity-references.ts'
@@ -258,13 +258,6 @@ function claimsEmphasis(scan: string, index: number, escaped: ReadonlySet<number
 function startsRun(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
   if (index === 0 || escaped.has(index - 1)) return true
   return scan.charAt(index - 1) !== scan.charAt(index)
-}
-
-function runLength(scan: string, index: number): number {
-  const character = scan.charAt(index)
-  let length = 0
-  while (scan.charAt(index + length) === character) length += 1
-  return length
 }
 
 function charAt(text: string, index: number): string {

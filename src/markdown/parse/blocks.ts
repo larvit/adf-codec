@@ -1,4 +1,4 @@
-import type { LinkDefinition } from './link-reference-definitions.ts'
+import type { LinkDefinition } from '../link-syntax.ts'
 import {
   atxHeading,
   claimsDirectiveLine,

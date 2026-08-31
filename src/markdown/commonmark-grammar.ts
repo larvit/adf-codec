@@ -56,7 +56,10 @@ const pipeClaim = /^\|/
 const bulletListOpener = /^[*+-](?:[ \t]|$)/
 // A superset of what the parser claims: over-escaping a line is safe, under-escaping one breaks the round-trip.
 const firstCharacterOpeners = [atxHeadingOpener, /^>/, bulletListOpener, codeFenceOpener, /^:{2,}/, pipeClaim]
-const emailAutolink = /<[^\s<>@]+@[^\s<>@]+>/y
+// CommonMark 0.31.2, Autolinks: the email production, whose label may not open or close with a hyphen.
+const emailNameSource = "[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+"
+const emailLabelSource = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
+const emailAutolink = new RegExp(`<${emailNameSource}@${emailLabelSource}(?:\\.${emailLabelSource})*>`, 'y')
 const orderedListOpener = /^(\d{1,9})([.)])(?:[ \t]|$)/
 const setextUnderline = /^(=+|-+)[ \t]*$/
 const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/
@@ -197,13 +200,21 @@ export function openingHtmlBlock(line: string, interrupting: boolean): OpenHtmlB
 }
 
 export function opensBracketedAutolink(text: string, index: number): boolean {
-  bracketedAutolink.lastIndex = index
-  return bracketedAutolink.test(text)
+  return readBracketedAutolink(text, index) !== undefined
 }
 
 export function opensEmailAutolink(text: string, index: number): boolean {
+  return readEmailAutolink(text, index) !== undefined
+}
+
+export function readBracketedAutolink(text: string, index: number): number | undefined {
+  bracketedAutolink.lastIndex = index
+  return bracketedAutolink.exec(text)?.[0].length
+}
+
+export function readEmailAutolink(text: string, index: number): number | undefined {
   emailAutolink.lastIndex = index
-  return emailAutolink.test(text)
+  return emailAutolink.exec(text)?.[0].length
 }
 
 export function setextHeadingLevel(line: string): number | undefined {
