@@ -65,7 +65,8 @@ they never reach a consumer.
   `tsconfig.build.json` is that gate, typechecking the shipped files alone with `types: []` and
   `lib: ES2022`, so `node:fs`, `process` and an ES2024 method are compile errors here rather than a
   consumer's crash there. Node's test runner, the corpus reads and the build are the repo's own,
-  never the library's.
+  never the library's, and `engines.node` states the floor the shipped JavaScript needs — `>=18`,
+  the lowest line carrying ES2022 — never the higher one those repo-only tools want.
 - ESM only — no CommonJS build, no dual-package hazard.
 - One entrypoint: built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint —
   Node refuses to type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`),

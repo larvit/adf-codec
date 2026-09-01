@@ -145,8 +145,7 @@ numbering is the order the work was planned in, not the order it ships.
       maintainer's bump PR also removes `private: true`, the guard against any earlier publish.
       §6's browser half is first checkable here, on the emitted `dist/index.js` a browser can
       load — the compile gate names no host API, and a real page converting a document is the
-      other half. `engines` is settled here too: `>=24` is the toolchain's floor, not the ES2022
-      one the shipped JavaScript needs, and it reads to a consumer as the latter.
+      other half.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
       is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
       3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry

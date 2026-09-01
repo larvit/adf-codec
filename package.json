@@ -10,7 +10,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": ">=18"
   },
   "scripts": {
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-branches=97 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
