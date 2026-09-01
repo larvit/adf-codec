@@ -128,11 +128,32 @@ test('reads an indented code block where no paragraph is open', () => {
 
 test('claims a block-level colon run with no directive to parse it', () => {
   assert.equal(code(markdownToAdf(':::\n')), 'malformed-directive')
-  assert.equal(code(markdownToAdf('::panel\n')), 'malformed-directive')
-  assert.equal(code(markdownToAdf('   :::panel info\nx\n:::\n')), 'malformed-directive')
-  assert.deepEqual(path(markdownToAdf('Part.\n:::x\n')), ['content', 1])
+  assert.equal(code(markdownToAdf('::Panel\n')), 'malformed-directive')
+  assert.equal(code(markdownToAdf('::panel {a=1 a=2}\n')), 'malformed-directive')
   assert.deepEqual(content(markdownToAdf(':10:30\n')), [paragraph(':10:30')])
   assert.deepEqual(content(markdownToAdf(':: two\n')), [paragraph(':: two')])
+})
+
+test('reads the three directive forms, and names the node none of them reads back to', () => {
+  assert.equal(code(markdownToAdf('::rule\n')), 'unknown-directive-name')
+  assert.equal(code(markdownToAdf('   :::panel info\nx\n:::\n')), 'unknown-directive-name')
+  assert.equal(code(markdownToAdf('Part :mention[@A]{id=b1c2}.\n')), 'unknown-directive-name')
+  assert.equal(content(markdownToAdf('::rule\n')), 'unknown-directive-name: the directive name rule reads back to no node')
+  assert.deepEqual(path(markdownToAdf('Part.\n\n::rule\n')), ['content', 1])
+  assert.equal(content(markdownToAdf('Part.\n:::x\n')), 'malformed-directive: a container fenced with 3 colons is unclosed')
+  assert.deepEqual(path(markdownToAdf('Part.\n:::x\n')), ['content', 1])
+})
+
+test('leaves the colon that opens no directive the text it is', () => {
+  assert.deepEqual(content(markdownToAdf('At 10:30 :smile: today.\n')), [paragraph('At 10:30 :smile: today.')])
+  assert.deepEqual(content(markdownToAdf('\\:mention[@A]\n')), [paragraph(':mention[@A]')])
+  assert.deepEqual(content(markdownToAdf('`:mention[@A]`\n')), [{ content: [codeSpan(':mention[@A]')], type: 'paragraph' }])
+})
+
+test('names the inline directive left unclosed at the end of its line', () => {
+  assert.equal(code(markdownToAdf('Part :mention[@A\n')), 'malformed-directive')
+  assert.equal(code(markdownToAdf('Part :mention[@A]{id=\n')), 'malformed-directive')
+  assert.deepEqual(path(markdownToAdf('> Part :mention[@A\n')), ['content', 0, 'content', 0])
 })
 
 test('claims a block-level pipe with no table to parse it', () => {

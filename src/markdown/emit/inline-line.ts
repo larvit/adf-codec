@@ -10,7 +10,7 @@ import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
 import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
-import { spellAttributes, spellStringAttribute } from '../directive-attributes.ts'
+import { spellAttributes, spellStringAttribute } from '../directive-syntax.ts'
 import { spellDestination, spellTitle } from '../link-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 

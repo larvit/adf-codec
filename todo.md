@@ -268,7 +268,7 @@ detail is settled at its own milestone.
         break of either kind inside one reads as a space. And a destination or title whose entity
         reference decodes to a control character — `[a](/x&#10;y)` — joins 3k's exception list
         beside the two above: the reader takes cmark's reading, the emitter has no spelling for it.
-  - [ ] **3f — The directive grammar.** The three forms — inline `:name[content]{attrs}`,
+  - [x] **3f — The directive grammar.** The three forms — inline `:name[content]{attrs}`,
         container `:::name arg {attrs}`, leaf `::name arg {attrs}` — the attribute grammar with
         its quoting and escapes, the fence-length and nesting rules, and the malformed list
         `spec/flavour.md` spells, each a named error. `corpus.test.ts`'s `fenceNestingFault` stays a
@@ -278,11 +278,30 @@ detail is settled at its own milestone.
         `|` inside `{attrs}` breaks the directive and is a named error, the author writing the
         `\u0060` the emitter writes. One precedence covers both directions, and CommonMark's own
         ordering stays untouched.
+        **Settled** (the maintainer, 2026-09-01): a directive whose name reads back to no node
+        takes its own code, `unknown-directive-name` — a well-formed spelling the vocabulary does
+        not hold is not a malformed one, and §8's "erroring input gaining meaning later is MINOR"
+        is what a consumer switches the two apart for. And input reads canonical spacing only: one
+        space parting the name, the argument, `{attrs}` and each attribute pair, no padding inside
+        the braces, trailing whitespace on a directive block line tolerated — §8 makes loosening a
+        MINOR, so strict is the reversible direction. `directive-attributes.ts` becomes
+        `directive-syntax.ts` with the readers in it: the whole directive grammar, both
+        directions, beside the escaping regexes and the spellings it must not drift from. And the
+        500-level guards compose here for the first time — a recursive reader stacked on the block
+        walk — so `nesting-depth-composed` pins both axes now rather than waiting for 3i's third.
+        A closing fence closes the innermost open container however long its run, which
+        `spec/flavour.md`'s closing-fence sentence now says: a run reaching past the innermost
+        leaves the fence it did not close a named error, which §2 prefers to closing more than the
+        author wrote.
   - [ ] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section
         assigns, the body to `content`, the reserved `marks` key to the marks array. 3a's drift
         guard is built here if the answer there was yes.
+        3f leaves two here: `Read<T>` moves to `src/result.ts` once a second reader takes it, and
+        the reserved `adf` name in block position needs an error of its own — 3f reports it as
+        `unknown-directive-name`, which §8 makes the signal that a later MINOR may give the name
+        meaning, and `adf` never will.
   - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
         settles, read from the other side; the `codeBlock` directive's fenced body and the
         `language` attribute a bare fence leaves it; the media family's composition; both table

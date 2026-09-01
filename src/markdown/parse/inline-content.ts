@@ -4,9 +4,10 @@ import type { LinkDefinition } from '../link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from '../commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.ts'
-import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
+import { readInlineDirective, unknownDirectiveFault } from '../directive-syntax.ts'
 
 export type InlineContent = { image: AdfNode; nodes?: undefined } | { image?: undefined; nodes: AdfNode[] }
 
@@ -48,6 +49,12 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
         const angle = readAngle(scan, index)
         if (!angle.ok) return angle
         index = angle.value
+        break
+      }
+      case ':': {
+        const directive = readDirective(scan, index)
+        if (!directive.ok) return directive
+        index = directive.value
         break
       }
       case '!':
@@ -129,6 +136,15 @@ function openBracket(scan: Scan, index: number): number {
   flush(scan, false)
   scan.pieces.push({ active: true, image, kind: 'open', start: index + width })
   return index + width
+}
+
+function readDirective(scan: Scan, index: number): Result<number> {
+  const directive = readInlineDirective(scan.source, index)
+  if (directive === undefined) {
+    scan.pending += ':'
+    return success(index + 1)
+  }
+  return faulted(directive.fault ?? unknownDirectiveFault(directive.value.name), scan.path)
 }
 
 function flush(scan: Scan, strip: boolean): void {

@@ -83,14 +83,18 @@ block content
 
 The fence is three or more colons. `arg` is one optional bare token whose meaning each node
 defines (e.g. the panel type). The body is block markdown. The closing fence is a line of at
-least the opening's length, and a container's fence is longer than every directive fence line
-anywhere in its body, however deeply a list item or blockquote nests it; a colon run inside a code
+least the opening's length and closes the innermost open container however long its run, and a
+container's fence is longer than every directive fence line anywhere in its body, however deeply a list item or blockquote nests it; a colon run inside a code
 fence or opaque carry is content. Canonical form uses minimal lengths.
 Directive fence lines follow code-fence indentation (up to three spaces relative to their
-container); trailing whitespace on a fence line is tolerated in input, never emitted.
+container).
 
 **Leaf block**: `::name arg {attrs}` — a block-position node with no body, `arg` reading as
 above.
+
+Canonical spacing is the only spacing input reads: one space parts the name, `arg` and `{attrs}`,
+and one parts each attribute pair, with no padding inside the braces. Trailing whitespace on a
+directive block line is tolerated in input, never emitted.
 
 **Claiming at block level**, symmetric with inline: a line whose leading run of two or more
 colons is followed immediately by a name character is claimed and must parse fully as a container

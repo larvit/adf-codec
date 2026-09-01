@@ -87,7 +87,12 @@ cause; where one cause recurs across node types or across directions, one code c
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
 direction hits it. A claim code names the spelling claimed, never the node that spelling would have built:
 a malformed `:::table` is a `malformed-directive`. A cause the carry answers gets no code: a mark no
-spelling writes rides the carry with its node.
+spelling writes rides the carry with its node. A directive whose name reads back to no node is
+`unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
+apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
+refusal found before its position is known — the block walk's, a directive reader's — is a
+`ConvertFault`, the code and message without the path; the node walk attaches the path as it
+descends, so a document reports its first error in document order.
 
 ## 9. Release automation
 
@@ -120,7 +125,8 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
 - Failures are values: everything returns
   `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
   `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
-  the spot.
+  the spot. A reader with no path to name returns `Read<T>` instead, the same two arms over a
+  `ConvertFault`, and `faulted` attaches the path where the walk knows it.
 - Only the hard break's inline segment holds a raw newline — every other spelling escapes one or
   refuses it — which is how the whitespace carry finds a line edge.
 - Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
