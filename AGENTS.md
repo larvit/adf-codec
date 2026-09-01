@@ -60,6 +60,12 @@ they never reach a consumer.
 
 ## 6. The package contract
 
+- Runs on every runtime, not only Node — a browser as readily as a server. The shipped source is
+  ECMAScript and nothing else, at an ES2022 baseline: no host import, no host global, no DOM.
+  `tsconfig.build.json` is that gate, typechecking the shipped files alone with `types: []` and
+  `lib: ES2022`, so `node:fs`, `process` and an ES2024 method are compile errors here rather than a
+  consumer's crash there. Node's test runner, the corpus reads and the build are the repo's own,
+  never the library's.
 - ESM only — no CommonJS build, no dual-package hazard.
 - One entrypoint: built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint —
   Node refuses to type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`),
@@ -112,6 +118,10 @@ descends, so a document reports its first error in document order.
 Test for the behaviour wanted first, then implement until green. `node --test`, beside the code.
 Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
 coverage does not decline, containers are torn down after a run.
+
+The gate runs that same suite under Deno and Bun as well as Node, the three images pinned alike:
+§6's compile gate proves no host API is named, and only running proves those engines execute what
+is written. Both refuse a run that matches no test, so Node's is the only vacuous-green guard.
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards

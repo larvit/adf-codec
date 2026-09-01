@@ -139,10 +139,14 @@ numbering is the order the work was planned in, not the order it ships.
       additions are read here as one list before that freeze — nine sessions mint them
       independently, and one cause wearing two codes is breaking to undo after `0.1.0`. `0.1.0`
       is the markdown round-trip: both markdown directions, the types, `isAdfDocument`. The build
-      lands here: a build tsconfig emitting JS and `.d.ts` to `dist/` (the dev config's
+      lands here: `tsconfig.build.json` gains emit of JS and `.d.ts` to `dist/` (the dev config's
       `allowImportingTsExtensions` forces `noEmit`, so the build config needs
       `rewriteRelativeImportExtensions`), plus `exports`/`files` in `package.json`. The
       maintainer's bump PR also removes `private: true`, the guard against any earlier publish.
+      §6's browser half is first checkable here, on the emitted `dist/index.js` a browser can
+      load — the compile gate names no host API, and a real page converting a document is the
+      other half. `engines` is settled here too: `>=24` is the toolchain's floor, not the ES2022
+      one the shipped JavaScript needs, and it reads to a consumer as the latter.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
       is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
       3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry

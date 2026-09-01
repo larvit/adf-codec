@@ -64,4 +64,5 @@ Personas, never named consumers (AGENTS.md §7):
 ## The package
 
 ESM only, no runtime dependencies, public npmjs. Built JavaScript with `.d.ts` beside it.
-Contract: `AGENTS.md` §5–6.
+Pure ECMAScript at an ES2022 baseline, reaching for no host API, so a browser runs it as readily
+as a server; the test suite runs under Node, Deno and Bun. Contract: `AGENTS.md` §5–6.
