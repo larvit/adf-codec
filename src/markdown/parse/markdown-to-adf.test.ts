@@ -135,6 +135,9 @@ test('reads the codeBlock directive body as the node content, the info string it
   assert.deepEqual(content(markdownToAdf(':::codeBlock {language=""}\n```\nx\n```\n:::\n')), [
     { attrs: { language: '' }, content: [text('x')], type: 'codeBlock' },
   ])
+  assert.deepEqual(content(markdownToAdf(':::codeBlock {wrap=true}\n    fn()\n:::\n')), [
+    { attrs: { wrap: true }, content: [text('fn()')], type: 'codeBlock' },
+  ])
   // The body is a CommonMark fence, so its info string decodes escapes the way any other fence's does.
   assert.deepEqual(content(markdownToAdf(':::codeBlock {wrap=true}\n```\\#c\nx\n```\n:::\n')), [
     { attrs: { language: '#c', wrap: true }, content: [text('x')], type: 'codeBlock' },
@@ -305,7 +308,7 @@ test('names the argument and the body a node takes no reading for', () => {
   assert.equal(content(markdownToAdf(':::paragraph\n:::\n')), 'unsupported-node-shape: an empty paragraph takes the leaf form, ::')
   assert.equal(content(markdownToAdf(':::paragraph\nOne.\n\nTwo.\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
   assert.equal(content(markdownToAdf(':::paragraph\n---\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
-  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\nx\n:::\n')), 'unsupported-node-shape: codeBlock takes one fenced code block as its body')
+  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\nx\n:::\n')), 'unsupported-node-shape: codeBlock takes one code block as its body')
   assert.equal(content(markdownToAdf(':::paragraph\n![a](/u)\n:::\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
   assert.equal(content(markdownToAdf('Part :date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content')
   assert.equal(
@@ -392,6 +395,7 @@ test('reads a bullet list, the marker width setting the continuation', () => {
   assert.deepEqual(content(markdownToAdf('- a\n\n+ b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(markdownToAdf('- a\n-\n\n- c\n')), [bulletList(item(paragraph('a')), item(), item(paragraph('c')))])
   assert.deepEqual(content(markdownToAdf('- a\n1. b\n')), [bulletList(item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(markdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
 })
 

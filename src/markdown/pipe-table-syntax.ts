@@ -19,22 +19,21 @@ export function malformedPipeTable(message: string): ConvertFault {
 // spec/flavour.md, Tables: the cells of a claimed row, the closing `|` the spelling writes optional here.
 export function pipeCells(line: string): string[] | undefined {
   if (!claimsPipeLine(line)) return undefined
-  const row = line.replace(/[ \t]+$/, '')
   const cells: string[] = []
   let start = 1
   let index = 1
-  while (index < row.length) {
-    if (backslashEscape(row, index) !== undefined) {
+  while (index < line.length) {
+    if (backslashEscape(line, index) !== undefined) {
       index += 2
       continue
     }
-    if (row.charAt(index) === '|') {
-      cells.push(trimSpace(row.slice(start, index)))
+    if (line.charAt(index) === '|') {
+      cells.push(trimSpace(line.slice(start, index)))
       start = index + 1
     }
     index += 1
   }
-  cells.push(trimSpace(row.slice(start)))
+  cells.push(trimSpace(line.slice(start)))
   if (cells.length > 1 && cells.at(-1) === '') cells.pop()
   return cells
 }

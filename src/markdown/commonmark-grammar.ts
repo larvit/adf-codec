@@ -60,7 +60,7 @@ const firstCharacterOpeners = [atxHeadingOpener, /^>/, bulletListOpener, codeFen
 const emailNameSource = "[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+"
 const emailLabelSource = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
 const emailAutolink = new RegExp(`<${emailNameSource}@${emailLabelSource}(?:\\.${emailLabelSource})*>`, 'y')
-const orderedListOpener = /^(\d{1,9})([.)])(?:[ \t]|$)/
+const orderedListOpener = /^(\d{1,9})(?:[.)])(?:[ \t]|$)/
 const setextUnderline = /^(=+|-+)[ \t]*$/
 const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/
 const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u

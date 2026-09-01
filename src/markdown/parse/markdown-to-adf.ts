@@ -79,10 +79,9 @@ function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, de
   return inlineBodyNode(node, blocks, definitions, path)
 }
 
-// spec/flavour.md, The CommonMark blocks: the language rides the one slot fenceInfo picks for it.
 function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
   const only = blocks.length === 1 ? blocks[0] : undefined
-  if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one fenced code block as its body`, path)
+  if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one code block as its body`, path)
   const attribute = node.attrs?.['language']
   const fromFence = only.language !== ''
   const slot = languageSlot(fromFence ? only.language : attribute)

@@ -383,7 +383,6 @@ function closeLeaf(walk: Walk): void {
   else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', text: leaf.lines.join('\n') })
 }
 
-// spec/flavour.md, Tables: the delimiter row underlines the header and leaves the body its cell count.
 function pipeTableBlock(rows: readonly [string[], ...string[][]]): Block {
   const [header, delimiter, ...body] = rows
   if (delimiter !== undefined && delimiter.some(isPipeAlignment)) {
