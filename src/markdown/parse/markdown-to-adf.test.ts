@@ -647,6 +647,8 @@ test('flattens the description of a lone image to the plain text alt holds', () 
   assert.deepEqual(content(markdownToAdf('![a\nb](/u)\n')), [image('/u', 'a b')])
   assert.deepEqual(content(markdownToAdf('![a  \nb](/u)\n')), [image('/u', 'a b')])
   assert.deepEqual(content(markdownToAdf('![a `b`](/u)\n')), [image('/u', 'a b')])
+  assert.deepEqual(content(markdownToAdf('![a :mention[@A]{id=b1c2} b](/u)\n')), [image('/u', 'a @A b')])
+  assert.deepEqual(content(markdownToAdf('![:mention[@A]{id=b1c2}](/u)\n')), [image('/u', '@A')])
 })
 
 test('leaves the brackets of an empty link text the text they are', () => {
@@ -697,9 +699,12 @@ test('names the content slot no one unmarked text node reads back from', () => {
   assert.equal(code(markdownToAdf(':status[:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(content(markdownToAdf(':status[![a](/u)]{color=yellow}\n')), 'unmappable-image: an image fits only as a paragraph of its own')
   assert.equal(code(markdownToAdf(':status[<div>]{color=yellow}\n')), 'unmappable-html')
-  // The slot parses before the name's table is consulted, so a doubly-broken span reports its inner error.
   assert.equal(code(markdownToAdf(':date[<div>]{timestamp=1}\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf(':widget[<div>]\n')), 'unmappable-html')
+  const spans = 'unspellable-whitespace: the status content slot holds a newline no inline directive spans'
+  assert.equal(content(markdownToAdf(':status[:text{text="\\n"}]{color=yellow}\n')), spans)
+  assert.equal(content(markdownToAdf(':status[a&#10;b]{color=yellow}\n')), spans)
+  assert.equal(content(markdownToAdf(':status[a&#13;b]{color=yellow}\n')), spans)
   assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot')
 })
 
@@ -732,6 +737,9 @@ test('reads the directive marks, the nesting outermost first', () => {
   assert.deepEqual(content(markdownToAdf(':border[a]{color="#091e42" size=2}\n')), wrapped({ attrs: { color: '#091e42', size: 2 }, type: 'border' }))
   assert.deepEqual(content(markdownToAdf(':underline[a:date{timestamp=1}]\n')), [
     { content: [marked('a', underline), { attrs: { timestamp: '1' }, marks: [underline], type: 'date' }], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('_:underline[a:date{timestamp=1}]_\n')), [
+    { content: [marked('a', em, underline), { attrs: { timestamp: '1' }, marks: [em, underline], type: 'date' }], type: 'paragraph' },
   ])
   assert.equal(content(markdownToAdf(':border[a]{color="#091e42" size=x}\n')), 'unsupported-node-shape: the size attribute of border is no number')
 })

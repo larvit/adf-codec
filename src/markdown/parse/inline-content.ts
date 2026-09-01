@@ -6,6 +6,7 @@ import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedA
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { inlineDirective } from '../../adf/inline-directives.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
 import { readDirectiveMark } from './directive-marks.ts'
@@ -305,9 +306,15 @@ function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition:
 }
 
 function imageAlt(inner: readonly Piece[]): string {
-  return resolveNodes(inner)
-    .map((node) => (node.type === 'hardBreak' ? ' ' : (node.text ?? '')))
-    .join('')
+  return resolveNodes(inner).map(altText).join('')
+}
+
+// spec/flavour.md, The CommonMark image: the description's plain text, the content slot included.
+function altText(node: AdfNode): string {
+  if (node.type === 'hardBreak') return ' '
+  const slot = inlineDirective(node.type)?.textAttribute
+  const spelled = slot === undefined ? undefined : node.attrs?.[slot]
+  return typeof spelled === 'string' ? spelled : (node.text ?? '')
 }
 
 function resolveNodes(pieces: readonly Piece[]): AdfNode[] {

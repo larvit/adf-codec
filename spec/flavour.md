@@ -260,7 +260,8 @@ The moon, at night.
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
 from the destination, `alt` the description's plain-text content when non-empty — a link or image
-inside it contributing its own text, and a break of either kind a space. `adfToMarkdown`
+inside it contributing its own text, a node spelling its text in the content slot contributing
+that text, and a break of either kind a space. `adfToMarkdown`
 emits the image form for exactly that shape — those attrs and no others, no marks on either
 node, no caption, and a `media` carrying nothing beyond `alt`, `type` and `url` — and only where
 CommonMark spells the pair: a destination or a description the image form cannot hold, an empty

@@ -357,8 +357,13 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         CommonMark carries plainly, are named errors, as 3g refuses the directive form of a node
         CommonMark spells. The reader takes the slot's parsed nodes rather than its text, so the
         rule refusing anything but one unmarked text node sits beside the node tables that own the
-        slot, and a node taking no content still names that first. `directive-content-slot` stays
-        with the fixtures, its cause now a marked slot rather than a slot at all.
+        slot. Only `text`, read ahead of the slot, names a refusal before the slot's own: a
+        doubly-broken span reports what its content holds, `:date[<div>]{timestamp=1}` being
+        `unmappable-html` rather than `date takes no content`, which the maintainer pinned with an
+        assertion rather than reordering the readers. `directive-content-slot` stays with the
+        fixtures, its cause now a marked slot rather than a slot at all. The slot's own whitespace
+        answers the rule the spelling does: `:text{text="\n"}` and `&#10;` alike reach a slot the
+        emitter refuses a line ending in, so one function answers both directions.
         The same read found the hole the other way: `attemptLine` refused a line edged with a
         vertical tab or a form feed, where CommonMark strips spaces and tabs alone, so valid
         CommonMark parsed to a document `adfToMarkdown` then refused. The edges that check covered

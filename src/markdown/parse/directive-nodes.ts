@@ -10,6 +10,7 @@ import { failure, faulted, success, type ConvertErrorPath, type Result } from '.
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { marksAttribute, readMarkValues } from '../block-directive-marks.ts'
 import { readVocabulary } from './directive-attributes.ts'
+import { slotLineEndingFault } from '../directive-syntax.ts'
 
 export type BlockDirectiveNode = { contentModel: BlockDirective['contentModel']; node: AdfNode }
 
@@ -56,6 +57,8 @@ export function readInlineDirectiveNode(
   if (slot !== undefined && content !== undefined) {
     const text = slotText(content)
     if (text === undefined) return failure('unsupported-node-shape', `the ${name} content slot holds one unmarked text node`, path)
+    const spans = slotLineEndingFault(name, text)
+    if (spans !== undefined) return faulted(spans, path)
     attrs.value[slot] = text
   }
   return success(namedNode(name, attrs.value, undefined))
