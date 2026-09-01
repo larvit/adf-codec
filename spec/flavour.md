@@ -62,7 +62,9 @@ node and mark names the sections below spell as directives. Recognition is synta
 name-set-independent: anything matching the forms below parses as a directive regardless of
 whether the name is known, and an unknown name is an error result naming it — so output an old
 emitter escaped stays escaped, and erroring input gaining meaning later is MINOR, never a reparse
-(§8). The name `adf` is reserved for the opaque carry, as both directive name and fence info
+(§8). Each name belongs to one position, and a name the other one spells — a mark or an inline
+node written as a block directive, a block node written inline — is a different error, naming the
+spelling it takes. The name `adf` is reserved for the opaque carry, as both directive name and fence info
 string.
 
 **Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.

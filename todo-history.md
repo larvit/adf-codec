@@ -364,6 +364,12 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         fixtures, its cause now a marked slot rather than a slot at all. The slot's own whitespace
         answers the rule the spelling does: `:text{text="\n"}` and `&#10;` alike reach a slot the
         emitter refuses a line ending in, so one function answers both directions.
+        **Settled** (the maintainer, 2026-09-01): a name the other position spells names that
+        spelling rather than reading as unknown — `:::em` and `::date` take
+        `unsupported-node-shape` naming the inline form, `:paragraph[a]` the block one — leaving
+        `unknown-directive-name` for a name no table holds, which is the meaning §8 gives it. The
+        two readers lean on the tables being disjoint, so that is a test beside the spec drift
+        guard now.
         The same read found the hole the other way: `attemptLine` refused a line edged with a
         vertical tab or a form feed, where CommonMark strips spaces and tabs alone, so valid
         CommonMark parsed to a document `adfToMarkdown` then refused. The edges that check covered

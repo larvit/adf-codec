@@ -251,6 +251,16 @@ test('names the directive name no node reads back to', () => {
   assert.deepEqual(path(markdownToAdf('Part.\n:::x\n')), ['content', 1])
 })
 
+test('names the position a directive name the other one spells belongs to', () => {
+  assert.equal(content(markdownToAdf(':::em\na\n:::\n')), 'unsupported-node-shape: em is spelled _x_, never as a block directive')
+  assert.equal(content(markdownToAdf('::underline\n')), 'unsupported-node-shape: underline is spelled :underline[…], never as a block directive')
+  assert.equal(content(markdownToAdf('::text {text=" "}\n')), 'unsupported-node-shape: text takes the inline form, :text')
+  assert.equal(content(markdownToAdf('::date {timestamp=1}\n')), 'unsupported-node-shape: date takes the inline form, :date')
+  assert.equal(content(markdownToAdf(':paragraph[a]\n')), 'unsupported-node-shape: paragraph takes the block form, ::paragraph')
+  assert.equal(code(markdownToAdf(':::widget\na\n:::\n')), 'unknown-directive-name')
+  assert.equal(code(markdownToAdf(':widget[a]\n')), 'unknown-directive-name')
+})
+
 test('names the reserved carry name a block directive spells', () => {
   const reserved = 'malformed-directive: the name adf is reserved for the opaque carry, whose block form is the fence'
   assert.equal(content(markdownToAdf('::adf\n')), reserved)
