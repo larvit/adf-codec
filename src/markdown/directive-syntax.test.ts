@@ -9,13 +9,13 @@ function attributes(...pairs: [string, string][]): ReadonlyMap<string, string> {
   return new Map(pairs)
 }
 
-function header(colons: number, name: string, argument?: string, ...pairs: [string, string][]): DirectiveLine {
-  return { argument, attributes: attributes(...pairs), colons, kind: 'header', name }
+function header(colons: number, name: string, argument?: string, ...pairs: [string, string][]): { value: DirectiveLine } {
+  return { value: { argument, attributes: attributes(...pairs), colons, kind: 'header', name } }
 }
 
 function fault(line: string): string {
   const read = readDirectiveLine(line)
-  return read?.kind === 'fault' ? read.fault.message : `read ${JSON.stringify(read)}`
+  return read?.fault === undefined ? `read ${JSON.stringify(read)}` : read.fault.message
 }
 
 function inline(text: string): unknown {
@@ -37,9 +37,9 @@ test('claims a colon-run line only where a name or nothing follows the colons', 
 })
 
 test('reads a bare colon run as the fence that closes a container', () => {
-  assert.deepEqual(readDirectiveLine(':::'), { colons: 3, kind: 'closing' })
-  assert.deepEqual(readDirectiveLine('::'), { colons: 2, kind: 'closing' })
-  assert.deepEqual(readDirectiveLine('::::::  \t'), { colons: 6, kind: 'closing' })
+  assert.deepEqual(readDirectiveLine(':::'), { value: { colons: 3, kind: 'closing' } })
+  assert.deepEqual(readDirectiveLine('::'), { value: { colons: 2, kind: 'closing' } })
+  assert.deepEqual(readDirectiveLine('::::::  \t'), { value: { colons: 6, kind: 'closing' } })
 })
 
 test('reads the leaf and container forms, their argument and their attributes', () => {

@@ -87,6 +87,16 @@ test('holds a directive container open until the fence that closes it', () => {
   assert.deepEqual(faults(':::panel info\n> Part.\n> :::\n'), [])
   assert.deepEqual(faults('::::panel info\n- :::expand\n  Part.\n  :::\n::::\n'), [])
   assert.deepEqual(faults(':::panel info\n```\n:::\n```\n:::\n'), [])
+  assert.deepEqual(parseBlocks(':::panel info {panelColor="#ff0000"}\nPart.\n:::\n').blocks, [
+    {
+      argument: 'info',
+      attributes: new Map([['panelColor', '#ff0000']]),
+      blocks: [{ kind: 'paragraph', text: 'Part.' }],
+      kind: 'directive',
+      name: 'panel',
+    },
+  ])
+  assert.deepEqual(parseBlocks('::rule\n').blocks, [{ argument: undefined, attributes: new Map(), blocks: undefined, kind: 'directive', name: 'rule' }])
 })
 
 test('names the directive fence a container does not sit longer than', () => {

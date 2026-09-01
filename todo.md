@@ -286,7 +286,9 @@ detail is settled at its own milestone.
         the braces, trailing whitespace on a directive block line tolerated — §8 makes loosening a
         MINOR, so strict is the reversible direction. `directive-attributes.ts` becomes
         `directive-syntax.ts` with the readers in it: the whole directive grammar, both
-        directions, beside the escaping regexes and the spellings it must not drift from.
+        directions, beside the escaping regexes and the spellings it must not drift from. And the
+        500-level guards compose here for the first time — a recursive reader stacked on the block
+        walk — so `nesting-depth-composed` pins both axes now rather than waiting for 3i's third.
   - [ ] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section

@@ -181,10 +181,15 @@ function openContainer(walk: Walk, start: ContainerStart): void {
 
 function closeContainers(walk: Walk, depth: number): void {
   closeLeaf(walk)
-  for (const container of walk.stack.splice(depth)) {
+  for (const container of walk.stack.slice(depth)) {
     if (container.kind !== 'directive') continue
     container.parent[container.index] = { fault: malformedDirective(`a container fenced with ${container.colons} colons is unclosed`), kind: 'fault' }
   }
+  dropContainers(walk, depth)
+}
+
+function dropContainers(walk: Walk, depth: number): void {
+  walk.stack.length = depth
 }
 
 function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'header' }>): void {
@@ -200,12 +205,7 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'he
   if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, colons: directive.colons, index: parent.length - 1, kind: 'directive', parent })
 }
 
-function readDirective(walk: Walk, directive: DirectiveLine): void {
-  closeLeaf(walk)
-  if (directive.kind === 'fault') {
-    pushFault(walk, directive.fault)
-    return
-  }
+function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
   const enclosing = innermostDirective(walk)
   if (directive.kind === 'closing') {
     closeDirective(walk, directive.colons, enclosing)
@@ -227,7 +227,7 @@ function closeDirective(walk: Walk, colons: number, enclosing: { container: Open
     pushFault(walk, malformedDirective(`a closing fence is shorter than the ${enclosing.container.colons} colons it would close`))
     return
   }
-  walk.stack.length = enclosing.depth
+  dropContainers(walk, enclosing.depth)
 }
 
 function innermostDirective(walk: Walk): { container: OpenDirective; depth: number } | undefined {
@@ -292,7 +292,9 @@ function openLeaf(walk: Walk, line: Line): void {
   const opener = removeColumns(line, largestOpenerIndentation).text
   const directive = readDirectiveLine(opener)
   if (directive !== undefined) {
-    readDirective(walk, directive)
+    closeLeaf(walk)
+    if (directive.fault === undefined) applyDirectiveLine(walk, directive.value)
+    else pushFault(walk, directive.fault)
     return
   }
   if (claimsPipeLine(opener)) {

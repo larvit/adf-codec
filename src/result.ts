@@ -18,17 +18,22 @@ export type ConvertErrorCode =
 
 export type ConvertErrorPath = readonly (number | string)[]
 
-export type ConvertFault = {
+export type ConvertError = {
   code: ConvertErrorCode
   message: string
+  path: ConvertErrorPath
 }
 
-export type ConvertError = ConvertFault & { path: ConvertErrorPath }
+export type ConvertFault = Omit<ConvertError, 'path'>
 
 export type Result<T> = { error: ConvertError; ok: false } | { ok: true; value: T }
 
 export function failure<T>(code: ConvertErrorCode, message: string, path: ConvertErrorPath): Result<T> {
   return { error: { code, message, path }, ok: false }
+}
+
+export function faulted<T>(fault: ConvertFault, path: ConvertErrorPath): Result<T> {
+  return failure(fault.code, fault.message, path)
 }
 
 export function success<T>(value: T): Result<T> {

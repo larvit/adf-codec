@@ -4,7 +4,7 @@ import type { LinkDefinition } from '../link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from '../commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.ts'
-import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
 import { readInlineDirective, unknownDirectiveFault } from '../directive-syntax.ts'
@@ -144,8 +144,7 @@ function readDirective(scan: Scan, index: number): Result<number> {
     scan.pending += ':'
     return success(index + 1)
   }
-  const fault = directive.fault ?? unknownDirectiveFault(directive.value.name)
-  return failure(fault.code, fault.message, scan.path)
+  return faulted(directive.fault ?? unknownDirectiveFault(directive.value.name), scan.path)
 }
 
 function flush(scan: Scan, strip: boolean): void {

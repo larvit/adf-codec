@@ -12,11 +12,10 @@ export type DirectiveAttributes = ReadonlyMap<string, string>
 export type DirectiveLine =
   | { argument: string | undefined; attributes: DirectiveAttributes; colons: number; kind: 'header'; name: string }
   | { colons: number; kind: 'closing' }
-  | { fault: ConvertFault; kind: 'fault' }
 
-export type InlineDirective = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string }
+export type DirectiveSpan = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string }
 
-type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
+export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
 
 type Attributes = { attributes: DirectiveAttributes; length: number }
 
@@ -50,17 +49,17 @@ export function opensInlineDirective(text: string, index: number): boolean {
   return inlineDirectiveName(text, index) !== undefined
 }
 
-export function readDirectiveLine(line: string): DirectiveLine | undefined {
+export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined {
   if (!claimsDirectiveLine(line)) return undefined
   const colons = runLength(line, 0)
   const rest = line.slice(colons)
-  if (lineEnd.test(rest)) return { colons, kind: 'closing' }
+  if (lineEnd.test(rest)) return { value: { colons, kind: 'closing' } }
   const header = readDirectiveHeader(rest)
-  if (header.fault !== undefined) return { fault: header.fault, kind: 'fault' }
-  return { argument: header.value.argument, attributes: header.value.attributes, colons, kind: 'header', name: header.value.name }
+  if (header.fault !== undefined) return { fault: header.fault }
+  return { value: { argument: header.value.argument, attributes: header.value.attributes, colons, kind: 'header', name: header.value.name } }
 }
 
-export function readInlineDirective(text: string, index: number): Read<InlineDirective> | undefined {
+export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> | undefined {
   return readNestedDirective(text, index, 1)
 }
 
@@ -130,7 +129,7 @@ function readDirectiveHeader(rest: string): Read<{ argument: string | undefined;
   return { value: { argument, attributes, name } }
 }
 
-function readNestedDirective(text: string, index: number, depth: number): Read<InlineDirective> | undefined {
+function readNestedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> | undefined {
   const name = inlineDirectiveName(text, index)
   if (name === undefined) return undefined
   if (depth > largestNesting) {

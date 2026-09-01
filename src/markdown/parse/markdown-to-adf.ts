@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block } from './blocks.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
@@ -33,12 +33,10 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
       return listNode({ type: 'bulletList' }, block.items, definitions, path, depth)
     case 'code':
       return success(codeBlockNode(block.language, block.text))
-    case 'directive': {
-      const fault = unknownDirectiveFault(block.name)
-      return failure(fault.code, fault.message, path)
-    }
+    case 'directive':
+      return faulted(unknownDirectiveFault(block.name), path)
     case 'fault':
-      return failure(block.fault.code, block.fault.message, path)
+      return faulted(block.fault, path)
     case 'heading':
       return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, definitions, path)
     case 'html':
