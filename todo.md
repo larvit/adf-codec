@@ -5,7 +5,7 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5 → `0.1.0`; 4b → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`. The
+Shipping order: 3h, 3i, 3j, 5a, 5 → `0.1.0`; 4b → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`. The
 numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
@@ -158,6 +158,12 @@ numbering is the order the work was planned in, not the order it ships.
       landing after the release leaves the README's canonical-fixpoint sentence claiming more than
       `0.1.0` keeps — 3e names three shapes that parse and then refuse — so the release narrows
       that sentence or lists them.
+- [ ] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
+      the published identity: `package.json` `name` and `repository`, the Gitea repo and its
+      remote, the README title, §6's published-as line, the checkout directory.
+      **Settled** (the maintainer, 2026-09-01): ADF's own `A` is "Atlassian", and "converter" is
+      the one-way lossy tool §2 exists to replace, where a codec is both directions. It names the
+      hub, not the formats around it.
 - [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
