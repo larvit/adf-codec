@@ -176,9 +176,19 @@ function openContainer(walk: Walk, start: ContainerStart): void {
     walk.stack.push(blockquote)
     return
   }
-  if (start.fresh) currentBlocks(walk).push(start.list)
-  start.list.items.push(blocks)
-  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list: start.list })
+  const list = openedList(walk, start)
+  list.items.push(blocks)
+  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
+}
+
+// Two lists of a kind never sit adjacent: one `- ` spelling reads them back as one (spec/flavour.md).
+function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
+  if (!start.fresh) return start.list
+  const blocks = currentBlocks(walk)
+  const previous = blocks.at(-1)
+  if ((previous?.kind === 'bulletList' || previous?.kind === 'orderedList') && previous.kind === start.list.kind) return previous
+  blocks.push(start.list)
+  return start.list
 }
 
 function closeContainers(walk: Walk, depth: number): void {

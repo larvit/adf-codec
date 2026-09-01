@@ -295,13 +295,17 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
       `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
       The emitter's other refusals survive on causes no fixture in that directory covers, so
       3k's one-list pass is where they get fixtures or the directory goes.
-      **Settled** (the maintainer, 2026-09-01): losing that cause closed one of the two shapes
-      input accepted and emit refused, not the last. The other surfaced here — CommonMark opens a
-      second list on a marker change, so `- a` over `* b` built two adjacent `bulletList` nodes
-      `adfToMarkdown` refuses — and the parser continues the list instead, the way it already
-      drops the blank lines between items. With both closed the parse-then-emit fixpoint the
-      README promises holds for every construct the parser reads, rather than only for what the
-      emitter wrote.
+      **Settled** (the maintainer, 2026-09-01): losing that cause closed one of the shapes input
+      accepted and emit refused, not the last. Two adjacent lists of a kind are what
+      `adfToMarkdown` refuses and one `- ` spelling cannot hold apart, and the walk reached them
+      two ways — a marker change, which CommonMark opens a second list on, and an empty last item,
+      whose blank line pops the container the list's identity hung from. The parser opens no list
+      beside one of its own kind instead, the way it already drops the blank lines between items;
+      3k owes the CommonMark suite an exception where the reference HTML holds two `<ul>`. The
+      `normalization/` arm emits each document and reads it back from here, so the population that
+      class lives in is checked rather than read. The README's canonical-fixpoint sentence still
+      claims more than the parser keeps — 3e's three shapes — which stays milestone 5's to
+      narrow.
 - [x] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section

@@ -5,7 +5,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryName } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { fenceInfo } from '../code-language.ts'
+import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
@@ -85,8 +85,8 @@ function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: Conver
   if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one fenced code block as its body`, path)
   const attribute = node.attrs?.['language']
   const fromFence = only.language !== ''
-  const info = fenceInfo(fromFence ? only.language : attribute)
-  if ((info !== undefined && info !== '') !== fromFence || (fromFence && attribute !== undefined)) {
+  const slot = languageSlot(fromFence ? only.language : attribute)
+  if ((slot.kind === 'fence') !== fromFence || (fromFence && attribute !== undefined)) {
     return failure('unsupported-node-shape', `${node.type} spells its language in the fence info string, or in the attribute where no info string carries it back`, path)
   }
   const spelled = fromFence ? { ...node, attrs: { ...node.attrs, language: only.language } } : node

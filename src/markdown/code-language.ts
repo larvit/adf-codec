@@ -3,10 +3,12 @@ import { carryName } from './opaque-carry.ts'
 import { holdsControlCharacter } from './commonmark-grammar.ts'
 import { holdsEntityReference } from './entity-references.ts'
 
-// spec/flavour.md, The CommonMark blocks: the info string the language rides, `undefined` where the attribute carries it.
-export function fenceInfo(language: JsonValue | undefined): string | undefined {
-  if (language === undefined) return ''
-  if (typeof language !== 'string' || language === '' || language === carryName) return undefined
-  if (/[`\\]/.test(language) || holdsControlCharacter(language) || language !== language.trim() || holdsEntityReference(language)) return undefined
-  return language
+export type LanguageSlot = { info: string; kind: 'fence' } | { kind: 'attribute' } | { kind: 'none' }
+
+// spec/flavour.md, The CommonMark blocks: the one slot a codeBlock's language rides, both directions.
+export function languageSlot(language: JsonValue | undefined): LanguageSlot {
+  if (language === undefined) return { kind: 'none' }
+  if (typeof language !== 'string' || language === '' || language === carryName) return { kind: 'attribute' }
+  if (/[`\\]/.test(language) || holdsControlCharacter(language) || language !== language.trim() || holdsEntityReference(language)) return { kind: 'attribute' }
+  return { info: language, kind: 'fence' }
 }

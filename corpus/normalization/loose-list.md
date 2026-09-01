@@ -1,6 +1,6 @@
 * Bolt M8
 
-+ Nut M8
+* Nut M8
 
 Then:
 

@@ -61,9 +61,10 @@ numbering is the order the work was planned in, not the order it ships.
         parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
         that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
         from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
-        directive position want a claim code — `:em[x]` is an error forever, so
-        `unknown-directive-name`'s "a later MINOR may give the name meaning" is the wrong signal,
-        as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
+        directive position take `unsupported-node-shape` rather than a code of their own — §8
+        already answers a well-formed directive the node tables refuse, and the message names the
+        spelling to use (`*x*`), while `unknown-directive-name`'s "a later MINOR may give the name
+        meaning" stays the wrong signal, as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
         The marks a spelling wraps answer the same question 3g settled for a block's form: only the
         nesting the emitter writes parses back.
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
@@ -123,7 +124,10 @@ numbering is the order the work was planned in, not the order it ships.
       landed the last decision `corpus/unspellable/` held and the directory went with it, so what
       the code list holds from here is permanent. The parser's own code
       additions are read here as one list before that freeze — nine sessions mint them
-      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. `0.1.0`
+      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. That read
+      gets a test rather than an eye — every `ConvertErrorCode` member named at a production call
+      site, the way `spec.test.ts` guards the node tables — since `unspelled-block-separation`
+      outlived its cause until 3h went looking. `0.1.0`
       is the markdown round-trip: both markdown directions, the types, `isAdfDocument`. The build
       lands here: `tsconfig.build.json` gains emit of JS and `.d.ts` to `dist/` (its own
       `allowImportingTsExtensions` forces `noEmit`, so `rewriteRelativeImportExtensions` lands

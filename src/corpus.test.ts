@@ -187,12 +187,17 @@ for (const directory of emittingDirectories) {
 }
 
 for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
-  test(`normalization/${name} parses to the document beside it`, () => {
+  test(`normalization/${name} parses to the document beside it, which emits and reads back to itself`, () => {
     const expected: unknown = JSON.parse(readFileSync(join(normalizationRoot, `${name}.json`), 'utf8'))
     assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
     const result = markdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
     assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
     assert.deepEqual(result.value, expected)
+    const emitted = adfToMarkdown(result.value)
+    assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
+    const again = markdownToAdf(emitted.value)
+    assert.ok(again.ok, again.ok ? '' : `${again.error.code}: ${again.error.message}`)
+    assert.deepEqual(again.value, expected)
   })
 }
 

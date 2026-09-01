@@ -171,13 +171,13 @@ export function isUnicodeWhitespace(character: string): boolean {
 }
 
 // `start` is the list's first number, `undefined` for a bullet.
-export function listMarker(line: string): { delimiter: string; start: number | undefined; width: number } | undefined {
+export function listMarker(line: string): { start: number | undefined; width: number } | undefined {
   const ordered = orderedListOpener.exec(line)
   if (ordered !== null) {
     const digits = ordered[1] ?? ''
-    return { delimiter: ordered[2] ?? '', start: Number(digits), width: digits.length + 1 }
+    return { start: Number(digits), width: digits.length + 1 }
   }
-  return bulletListOpener.test(line) ? { delimiter: line.charAt(0), start: undefined, width: 1 } : undefined
+  return bulletListOpener.test(line) ? { start: undefined, width: 1 } : undefined
 }
 
 export function markerInterruptsParagraph(start: number | undefined, empty: boolean): boolean {

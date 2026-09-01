@@ -6,7 +6,7 @@ import { carriesOnly, isAdfDocument } from '../../adf/document.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
-import { fenceInfo } from '../code-language.ts'
+import { languageSlot } from '../code-language.ts'
 import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { largestNesting } from '../../nesting.ts'
 import { spellDirectiveHeader } from './block-directive-spelling.ts'
@@ -147,20 +147,21 @@ function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): R
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, ['language'])) return undefined
-  const info = fenceInfo(node.attrs?.['language'])
-  if (info === undefined) return undefined
+  const slot = languageSlot(node.attrs?.['language'])
+  if (slot.kind === 'attribute') return undefined
   const text = codeBlockText(node, path)
   if (!text.ok) return text
-  return success(commonMarkText(fencedCodeBlock(info, text.value)))
+  return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
 }
 
 function emitCodeDirective(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<EmittedBlock> {
-  const info = fenceInfo(node.attrs?.['language'])
-  const header = spellDirectiveHeader(node, directive, info === undefined ? [] : ['language'])
+  const slot = languageSlot(node.attrs?.['language'])
+  const header = spellDirectiveHeader(node, directive, slot.kind === 'attribute' ? [] : ['language'])
   if (header === undefined) return commonMarkLine(carriedBlock(node, path))
   const text = codeBlockText(node, path)
   if (!text.ok) return text
-  return success({ fenceColons: 3, spelling: 'directive', text: `:::${header}\n${fencedCodeBlock(info ?? '', text.value)}\n:::` })
+  const info = slot.kind === 'fence' ? slot.info : ''
+  return success({ fenceColons: 3, spelling: 'directive', text: `:::${header}\n${fencedCodeBlock(info, text.value)}\n:::` })
 }
 
 function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
