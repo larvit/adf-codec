@@ -120,6 +120,7 @@ test('names the inline directive left unclosed at the end of its line', () => {
   assert.equal(inline(':underline[:status[x'), 'an inline directive [content] is unclosed')
   assert.equal(inline(':mention[@A]{id=1'), 'the {attrs} closing brace is missing')
   assert.equal(inline(':mention{id=1'), 'the {attrs} closing brace is missing')
+  assert.equal(inline(':text{text="a\nb"}'), 'the {attrs} quoted value is not a JSON string')
 })
 
 test('refuses inline directives nested deeper than the parser carries', () => {

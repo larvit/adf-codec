@@ -289,11 +289,19 @@ detail is settled at its own milestone.
         directions, beside the escaping regexes and the spellings it must not drift from. And the
         500-level guards compose here for the first time — a recursive reader stacked on the block
         walk — so `nesting-depth-composed` pins both axes now rather than waiting for 3i's third.
+        A closing fence closes the innermost open container however long its run, which
+        `spec/flavour.md`'s closing-fence sentence now says: a run reaching past the innermost
+        leaves the fence it did not close a named error, which §2 prefers to closing more than the
+        author wrote.
   - [ ] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section
         assigns, the body to `content`, the reserved `marks` key to the marks array. 3a's drift
         guard is built here if the answer there was yes.
+        3f leaves two here: `Read<T>` moves to `src/result.ts` once a second reader takes it, and
+        the reserved `adf` name in block position needs an error of its own — 3f reports it as
+        `unknown-directive-name`, which §8 makes the signal that a later MINOR may give the name
+        meaning, and `adf` never will.
   - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
         settles, read from the other side; the `codeBlock` directive's fenced body and the
         `language` attribute a bare fence leaves it; the media family's composition; both table

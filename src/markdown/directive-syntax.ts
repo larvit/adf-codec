@@ -153,7 +153,7 @@ function readNestedDirective(text: string, index: number, depth: number): Read<D
   return { value: { attributes, content, length: cursor - index, name } }
 }
 
-// Where the content's own closing bracket sits: a code span, an escape and a nested directive each bind before it.
+// A code span, an escape and a nested directive each bind before the content's own closing bracket.
 function readDirectiveContent(text: string, start: number, depth: number): Read<number> {
   let brackets = 0
   let cursor = start
