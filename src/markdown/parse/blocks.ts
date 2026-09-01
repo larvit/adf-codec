@@ -1,3 +1,5 @@
+import type { ConvertFault } from '../../result.ts'
+import type { DirectiveAttributes, DirectiveLine } from '../directive-syntax.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
 import {
   atxHeading,
@@ -12,14 +14,14 @@ import {
   openingHtmlBlock,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
+import { malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
-export type ClaimedConstruct = 'directive' | 'pipe-table'
-
 export type Block =
+  | { argument: string | undefined; attributes: DirectiveAttributes; blocks: Block[] | undefined; kind: 'directive'; name: string }
   | { blocks: Block[]; kind: 'blockquote' }
-  | { construct: ClaimedConstruct; kind: 'claim' }
   | { construct: string; kind: 'html' }
+  | { fault: ConvertFault; kind: 'fault' }
   | { items: Block[][]; kind: 'bulletList' }
   | { items: Block[][]; kind: 'orderedList'; start: number }
   | { kind: 'code'; language: string; text: string }
@@ -29,9 +31,16 @@ export type Block =
 
 export type ParsedBlocks = { blocks: Block[]; definitions: Map<string, LinkDefinition> }
 
+type DirectiveBlock = Extract<Block, { kind: 'directive' }>
+
 type ListBlock = Extract<Block, { items: Block[][] }>
 
-type OpenContainer = Extract<Block, { kind: 'blockquote' }> | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock; marker: string }
+type OpenDirective = { blocks: Block[]; colons: number; index: number; kind: 'directive'; parent: Block[] }
+
+type OpenContainer =
+  | Extract<Block, { kind: 'blockquote' }>
+  | OpenDirective
+  | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock; marker: string }
 
 type OpenLeaf =
   | { closer: RegExp | undefined; construct: string; kind: 'html' }
@@ -49,12 +58,13 @@ type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; stack: OpenContainer[] 
 const blankLine = /^[ \t]*$/
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
+const leafColons = 2
 const tabStop = 4
 
 export function parseBlocks(markdown: string): ParsedBlocks {
   const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, stack: [] }
   for (const text of normalizeInput(markdown).split('\n')) readLine(walk, { column: 0, text })
-  closeLeaf(walk)
+  closeContainers(walk, 0)
   return { blocks: walk.blocks, definitions: walk.definitions }
 }
 
@@ -95,6 +105,8 @@ function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } 
 
 function continuesContainer(walk: Walk, container: OpenContainer, line: Line): Line | undefined {
   if (container.kind === 'blockquote') return blockquoteRest(removeColumns(line, largestOpenerIndentation))
+  // A directive container has no continuation marker: only its own fence closes it.
+  if (container.kind === 'directive') return line
   // A list item begins with at most one blank line: an empty one gives the second up.
   if (blankLine.test(line.text)) {
     return container.blocks.length === 0 && walk.leaf === undefined ? undefined : { column: line.column, text: '' }
@@ -169,7 +181,65 @@ function openContainer(walk: Walk, start: ContainerStart): void {
 
 function closeContainers(walk: Walk, depth: number): void {
   closeLeaf(walk)
-  walk.stack.length = depth
+  for (const container of walk.stack.splice(depth)) {
+    if (container.kind !== 'directive') continue
+    container.parent[container.index] = { fault: malformedDirective(`a container fenced with ${container.colons} colons is unclosed`), kind: 'fault' }
+  }
+}
+
+function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'header' }>): void {
+  const block: DirectiveBlock = {
+    argument: directive.argument,
+    attributes: directive.attributes,
+    blocks: directive.colons > leafColons ? [] : undefined,
+    kind: 'directive',
+    name: directive.name,
+  }
+  const parent = currentBlocks(walk)
+  parent.push(block)
+  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, colons: directive.colons, index: parent.length - 1, kind: 'directive', parent })
+}
+
+function readDirective(walk: Walk, directive: DirectiveLine): void {
+  closeLeaf(walk)
+  if (directive.kind === 'fault') {
+    pushFault(walk, directive.fault)
+    return
+  }
+  const enclosing = innermostDirective(walk)
+  if (directive.kind === 'closing') {
+    closeDirective(walk, directive.colons, enclosing)
+    return
+  }
+  if (enclosing !== undefined && directive.colons >= enclosing.container.colons) {
+    pushFault(walk, malformedDirective(`a directive fence line is at least as long as the container's ${enclosing.container.colons} colons`))
+    return
+  }
+  openDirective(walk, directive)
+}
+
+function closeDirective(walk: Walk, colons: number, enclosing: { container: OpenDirective; depth: number } | undefined): void {
+  if (enclosing === undefined) {
+    pushFault(walk, malformedDirective('a closing fence closes no open container'))
+    return
+  }
+  if (colons < enclosing.container.colons) {
+    pushFault(walk, malformedDirective(`a closing fence is shorter than the ${enclosing.container.colons} colons it would close`))
+    return
+  }
+  walk.stack.length = enclosing.depth
+}
+
+function innermostDirective(walk: Walk): { container: OpenDirective; depth: number } | undefined {
+  for (let depth = walk.stack.length - 1; depth >= 0; depth -= 1) {
+    const container = walk.stack[depth]
+    if (container?.kind === 'directive') return { container, depth }
+  }
+  return undefined
+}
+
+function pushFault(walk: Walk, fault: ConvertFault): void {
+  currentBlocks(walk).push({ fault, kind: 'fault' })
 }
 
 // A claimed line ends the lazy continuation CommonMark would fold it into (spec/flavour.md).
@@ -177,7 +247,7 @@ function continuesLazily(walk: Walk, line: Line): boolean {
   if (walk.leaf?.kind !== 'paragraph' || blankLine.test(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = removeColumns(line, largestOpenerIndentation).text
-  if (claimedConstruct(opener) !== undefined || isThematicBreak(opener)) return false
+  if (claimsDirectiveLine(opener) || claimsPipeLine(opener) || isThematicBreak(opener)) return false
   return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, true) === undefined
 }
 
@@ -220,10 +290,14 @@ function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>
 
 function openLeaf(walk: Walk, line: Line): void {
   const opener = removeColumns(line, largestOpenerIndentation).text
-  const claimed = claimedConstruct(opener)
-  if (claimed !== undefined) {
+  const directive = readDirectiveLine(opener)
+  if (directive !== undefined) {
+    readDirective(walk, directive)
+    return
+  }
+  if (claimsPipeLine(opener)) {
     closeLeaf(walk)
-    currentBlocks(walk).push({ construct: claimed, kind: 'claim' })
+    pushFault(walk, { code: 'malformed-pipe-table', message: 'the line claims a pipe table and parses as none' })
     return
   }
   if (readLineBlock(walk, opener)) return
@@ -295,11 +369,6 @@ function takeParagraph(walk: Walk): string | undefined {
 
 function currentBlocks(walk: Walk): Block[] {
   return walk.stack.at(-1)?.blocks ?? walk.blocks
-}
-
-function claimedConstruct(opener: string): ClaimedConstruct | undefined {
-  if (claimsDirectiveLine(opener)) return 'directive'
-  return claimsPipeLine(opener) ? 'pipe-table' : undefined
 }
 
 function normalizeInput(markdown: string): string {

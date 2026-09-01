@@ -1,6 +1,6 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { InlineDirective } from '../../adf/inline-directives.ts'
-import { spellAttributes, spellVocabulary } from '../directive-attributes.ts'
+import { spellAttributes, spellVocabulary } from '../directive-syntax.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
 export function spellInlineNodeAttributes(node: AdfNode, directive: InlineDirective): string | undefined {

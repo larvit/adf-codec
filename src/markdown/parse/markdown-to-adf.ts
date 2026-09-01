@@ -1,10 +1,11 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import type { Block, ClaimedConstruct } from './blocks.ts'
+import type { Block } from './blocks.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
+import { unknownDirectiveFault } from '../directive-syntax.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
   const parsed = parseBlocks(markdown)
@@ -30,10 +31,14 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
       return containerNode({ type: 'blockquote' }, block.blocks, definitions, path, depth)
     case 'bulletList':
       return listNode({ type: 'bulletList' }, block.items, definitions, path, depth)
-    case 'claim':
-      return claimFailure(block.construct, path)
     case 'code':
       return success(codeBlockNode(block.language, block.text))
+    case 'directive': {
+      const fault = unknownDirectiveFault(block.name)
+      return failure(fault.code, fault.message, path)
+    }
+    case 'fault':
+      return failure(block.fault.code, block.fault.message, path)
     case 'heading':
       return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, definitions, path)
     case 'html':
@@ -61,15 +66,6 @@ function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDef
     content.push(item.value)
   }
   return success({ ...node, content })
-}
-
-function claimFailure(construct: ClaimedConstruct, path: ConvertErrorPath): Result<AdfNode> {
-  switch (construct) {
-    case 'directive':
-      return failure('malformed-directive', 'the line claims a directive and parses as none', path)
-    case 'pipe-table':
-      return failure('malformed-pipe-table', 'the line claims a pipe table and parses as none', path)
-  }
 }
 
 function codeBlockNode(language: string, text: string): AdfNode {

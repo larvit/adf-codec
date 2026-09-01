@@ -87,7 +87,9 @@ cause; where one cause recurs across node types or across directions, one code c
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
 direction hits it. A claim code names the spelling claimed, never the node that spelling would have built:
 a malformed `:::table` is a `malformed-directive`. A cause the carry answers gets no code: a mark no
-spelling writes rides the carry with its node.
+spelling writes rides the carry with its node. A directive whose name reads back to no node is
+`unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
+apart from a typo is what a consumer switches on when a later MINOR gives the name meaning.
 
 ## 9. Release automation
 

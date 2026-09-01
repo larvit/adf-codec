@@ -2,7 +2,7 @@ import type { AdfMark } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
 import { isMarkType, markAttributes } from '../adf/mark-attributes.ts'
-import { spellAttributes, spellVocabulary } from './directive-attributes.ts'
+import { spellAttributes, spellVocabulary } from './directive-syntax.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | { kind: 'emphasis'; spelling: string }

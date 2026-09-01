@@ -2,6 +2,7 @@ export type ConvertErrorCode =
   | 'malformed-directive'
   | 'malformed-pipe-table'
   | 'not-an-adf-document'
+  | 'unknown-directive-name'
   | 'unmappable-html'
   | 'unmappable-image'
   | 'unspellable-adjacent-lists'
@@ -17,11 +18,12 @@ export type ConvertErrorCode =
 
 export type ConvertErrorPath = readonly (number | string)[]
 
-export type ConvertError = {
+export type ConvertFault = {
   code: ConvertErrorCode
   message: string
-  path: ConvertErrorPath
 }
+
+export type ConvertError = ConvertFault & { path: ConvertErrorPath }
 
 export type Result<T> = { error: ConvertError; ok: false } | { ok: true; value: T }
 

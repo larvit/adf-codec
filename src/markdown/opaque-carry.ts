@@ -5,7 +5,7 @@ import { isJsonValue } from '../json-value.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
 import { largestNesting } from '../nesting.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
-import { spellAttributes, spellStringAttribute } from './directive-attributes.ts'
+import { spellAttributes, spellStringAttribute } from './directive-syntax.ts'
 
 export const carryName = 'adf'
 

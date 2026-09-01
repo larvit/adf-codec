@@ -1,7 +1,7 @@
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
-import { opensInlineDirective } from '../directive-attributes.ts'
+import { opensInlineDirective } from '../directive-syntax.ts'
 import { readEntityReference } from '../entity-references.ts'
 
 export type EmphasisRole = 'close' | 'open'

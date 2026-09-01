@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import type { Block } from './blocks.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
 import { parseBlocks } from './blocks.ts'
 
@@ -10,6 +11,20 @@ function definitions(markdown: string): [string, LinkDefinition][] {
 
 function kinds(markdown: string): string[] {
   return parseBlocks(markdown).blocks.map((block) => block.kind)
+}
+
+function faults(markdown: string): string[] {
+  const messages: string[] = []
+  const walk = (blocks: readonly Block[]): void => {
+    for (const block of blocks) {
+      if (block.kind === 'fault') messages.push(block.fault.message)
+      if (block.kind === 'blockquote') walk(block.blocks)
+      if (block.kind === 'directive' && block.blocks !== undefined) walk(block.blocks)
+      if (block.kind === 'bulletList' || block.kind === 'orderedList') for (const item of block.items) walk(item)
+    }
+  }
+  walk(parseBlocks(markdown).blocks)
+  return messages
 }
 
 test('keeps the link reference definitions a paragraph gives up, the first of a label winning', () => {
@@ -61,6 +76,23 @@ test('swallows an HTML block to the end condition its start sets', () => {
 })
 
 test('carries a claimed line as the block it opens, the refusal the node layer builds', () => {
-  assert.deepEqual(kinds(':::\nPart.\n'), ['claim', 'paragraph'])
-  assert.deepEqual(kinds('Part.\n| x |\n'), ['paragraph', 'claim'])
+  assert.deepEqual(kinds(':::\nPart.\n'), ['fault', 'paragraph'])
+  assert.deepEqual(kinds('Part.\n| x |\n'), ['paragraph', 'fault'])
+})
+
+test('holds a directive container open until the fence that closes it', () => {
+  assert.deepEqual(kinds(':::panel info\nPart.\n:::\nMore.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(kinds('::rule\nPart.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(faults(':::panel info\n\nPart.\n\n:::\n'), [])
+  assert.deepEqual(faults(':::panel info\n> Part.\n> :::\n'), [])
+  assert.deepEqual(faults('::::panel info\n- :::expand\n  Part.\n  :::\n::::\n'), [])
+  assert.deepEqual(faults(':::panel info\n```\n:::\n```\n:::\n'), [])
+})
+
+test('names the directive fence a container does not sit longer than', () => {
+  assert.deepEqual(faults(':::panel info\n:::expand\nPart.\n:::\n'), ["a directive fence line is at least as long as the container's 3 colons"])
+  assert.deepEqual(faults('::::panel info\n:::\n::::\n'), ['a closing fence is shorter than the 4 colons it would close'])
+  assert.deepEqual(faults(':::panel info\nPart.\n'), ['a container fenced with 3 colons is unclosed'])
+  assert.deepEqual(faults('- :::panel info\n\nPart.\n'), ['a container fenced with 3 colons is unclosed'])
+  assert.deepEqual(faults('Part.\n\n:::\n'), ['a closing fence closes no open container'])
 })
