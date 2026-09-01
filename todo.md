@@ -393,6 +393,17 @@ detail is settled at its own milestone.
       a document that round-trips proves no other document shares its spelling — so decide here
       whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
       no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
+- [ ] **4b — The block walk's retry, before 5.** `emitBlock` walks a subtree twice wherever
+      `readableBlock` reads it whole and then gives up — a list item whose first line reads back
+      as a thematic break — and the walk below does the same, so the cost doubles per level:
+      3.4kB of nested lists takes half a second, depth 20 about eight, depth 24 minutes. It
+      predates 3g on both directions, and 3g's `commonMarkSpelling` gave it a second entry point.
+      The README's bot and pipeline personas feed markdown nobody typed, so this ships as a hang
+      on a small input; §11's scanning rule is the same argument one shape further in. The retry
+      is what to remove — one walk answering both the readable question and the directive
+      fallback. Memoizing `emitBlock` is the shortcut, and the node reference is the wrong key: a
+      caller may hold one node object at two positions, where the cached depth and path are
+      another node's.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
       `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the
