@@ -17,6 +17,8 @@ const roundTripRoot = join(corpusRoot, 'round-trip')
 const unspellableRoot = join(corpusRoot, 'unspellable')
 
 const emittingDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
+// A directory joins once every fixture in it reads back to its document.
+const parsingDirectories = ['commonmark-subset']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -84,6 +86,25 @@ for (const directory of emittingDirectories) {
       const emitted = Buffer.from(result.value, 'utf8')
       if (!emitted.equals(expected)) assert.equal(result.value, expected.toString('utf8'))
       assert.ok(emitted.equals(expected))
+    })
+  }
+}
+
+test('every parsing directory is one of the emitting directories', () => {
+  assert.deepEqual(
+    parsingDirectories.filter((directory) => emittingDirectories.includes(directory)),
+    parsingDirectories,
+  )
+})
+
+for (const directory of parsingDirectories) {
+  for (const name of fixtureNames(directory, '.md')) {
+    test(`${directory}/${name} reads its markdown back to the document beside it`, () => {
+      const expected: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
+      assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
+      const result = markdownToAdf(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8'))
+      assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
+      assert.deepEqual(result.value, expected)
     })
   }
 }

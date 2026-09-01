@@ -293,7 +293,7 @@ detail is settled at its own milestone.
         `spec/flavour.md`'s closing-fence sentence now says: a run reaching past the innermost
         leaves the fence it did not close a named error, which §2 prefers to closing more than the
         author wrote.
-  - [ ] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
+  - [x] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section
         assigns, the body to `content`, the reserved `marks` key to the marks array. 3a's drift
@@ -302,11 +302,29 @@ detail is settled at its own milestone.
         the reserved `adf` name in block position needs an error of its own — 3f reports it as
         `unknown-directive-name`, which §8 makes the signal that a later MINOR may give the name
         meaning, and `adf` never will.
-  - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
-        settles, read from the other side; the `codeBlock` directive's fenced body and the
-        `language` attribute a bare fence leaves it; the media family's composition; both table
-        forms, the pipe table's cell split and its named errors; and the one paragraph an inline
-        body takes.
+        **Settled** (the maintainer, 2026-09-01): the reserved `adf` name in block position is a
+        `malformed-directive` — the grammar section states the reservation, so it is that spelling
+        the name breaks — and a well-formed directive the tables refuse is `unsupported-node-shape`,
+        the emitter's code for the same mismatch read the other way; AGENTS.md §8 carries the
+        split. And input reads canonical `{attrs}` alone, keys in order and every value spelled as
+        the emitter spells it, the error naming the spelling to write instead: §8 makes loosening a
+        MINOR, so strict is the reversible direction, as 3f already settled for spacing.
+        **Settled** (the maintainer, 2026-09-01, on the review): 2f's plain-versus-directive
+        choice is read back here rather than at 3h — a directive spelling a node CommonMark holds
+        is refused, so `::rule` and `:::blockquote` are errors while `::rule {localId=…}` is not.
+        The parser asks `spellsCommonMark`, the emitter's own choice, rather than restating the
+        per-node conditions: a copy would refuse the list whose first item reads back as a
+        thematic break, which the emitter does spell as a directive, and §2 breaks in silence.
+        Two refusals land here for a later chunk to lift, on the same rule: the inline `[content]`
+        slot, which 3i opens for `emoji`, `mention` and `status`, and the `codeBlock` content
+        model's fenced body, 3h's. `Read<T>` stays where 3f left it — the node reader knows its
+        path and returns `Result`, so no second reader took it. The drift guard earned itself on
+        the way in: the spec's `text` attribute was missing from three inline table entries, which
+        the content slot spells and the vocabulary walk already passes over.
+  - [ ] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced body and the
+        `language` attribute a bare fence leaves it; the media family's composition; and both
+        table forms, the pipe table's cell split and its named errors. `fenceInfo` is a rule both
+        directions answer alike and moves to the `markdown/` root with the language attribute.
         **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
         `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
         in a container body with no blank line between them. That reduces the three cases to one
@@ -317,16 +335,30 @@ detail is settled at its own milestone.
         `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
         The emitter's other refusals survive on causes no fixture in that directory covers, so
         3k's one-list pass is where they get fixtures or the directory goes.
+        Losing that cause closes the last shape input accepts and emit refuses — a CommonMark block
+        beside a directive one inside a list item — so the parse-then-emit fixpoint the README
+        promises holds from here rather than only for what the emitter wrote.
   - [ ] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
         `text` attribute and the error a slot holding anything but one unmarked text node is; the
         `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,
         outermost first; and `:em[x]` as the error `spec/flavour.md` promises. Editor-normal's
         merging half lands here, `text-whitespace` being the first fixture that forces it, and 4's
         `toEditorNormal` is built on it.
+        3g's shape leaves three: `readInlineDirectiveNode` takes the name, the attributes and the
+        slot's parsed text rather than the span, since `inline-content.ts` already imports it and
+        parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
+        that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
+        from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
+        directive position want a claim code — `:em[x]` is an error forever, so
+        `unknown-directive-name`'s "a later MINOR may give the name meaning" is the wrong signal,
+        as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
+        The marks a spelling wraps answer the same question 3g settled for a block's form: only the
+        nesting the emitter writes parses back.
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
         the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
-        reading as the literal text they hold.
+        reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
+        `codeBlock` from it; the refusal goes when the carry reads it.
   - [ ] **3k — The CommonMark spec suite.** Checked in at `corpus/commonmark-spec/`, pinned to
         the version it ships — the one `html-blocks.ts` names for its start conditions —
         `corpus/README.md` gaining the kind.
@@ -361,6 +393,17 @@ detail is settled at its own milestone.
       a document that round-trips proves no other document shares its spelling — so decide here
       whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
       no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
+- [ ] **4b — The block walk's retry, before 5.** `emitBlock` walks a subtree twice wherever
+      `readableBlock` reads it whole and then gives up — a list item whose first line reads back
+      as a thematic break — and the walk below does the same, so the cost doubles per level:
+      3.4kB of nested lists takes half a second, depth 20 about eight, depth 24 minutes. It
+      predates 3g on both directions, and 3g's `commonMarkSpelling` gave it a second entry point.
+      The README's bot and pipeline personas feed markdown nobody typed, so this ships as a hang
+      on a small input; §11's scanning rule is the same argument one shape further in. The retry
+      is what to remove — one walk answering both the readable question and the directive
+      fallback. Memoizing `emitBlock` is the shortcut, and the node reference is the wrong key: a
+      caller may hold one node object at two positions, where the cached depth and path are
+      another node's.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
       `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the

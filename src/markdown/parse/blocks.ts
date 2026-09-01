@@ -31,7 +31,7 @@ export type Block =
 
 export type ParsedBlocks = { blocks: Block[]; definitions: Map<string, LinkDefinition> }
 
-type DirectiveBlock = Extract<Block, { kind: 'directive' }>
+export type DirectiveBlock = Extract<Block, { kind: 'directive' }>
 
 type ListBlock = Extract<Block, { items: Block[][] }>
 

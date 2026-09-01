@@ -86,6 +86,12 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result
   return emitDirectiveBlock(node, directive, path, depth)
 }
 
+export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number): Result<null> | undefined {
+  const readable = readableBlock(node, path, depth)
+  if (readable === undefined) return undefined
+  return readable.ok ? success(null) : readable
+}
+
 function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
   if (node.type === 'blockquote') return emitBlockquote(node, path, depth)
   if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path, depth)

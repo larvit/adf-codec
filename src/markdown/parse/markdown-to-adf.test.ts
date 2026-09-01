@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
+import { largestNesting } from '../../nesting.ts'
 import { markdownToAdf } from './markdown-to-adf.ts'
 
 const em: AdfMark = { type: 'em' }
@@ -134,14 +135,110 @@ test('claims a block-level colon run with no directive to parse it', () => {
   assert.deepEqual(content(markdownToAdf(':: two\n')), [paragraph(':: two')])
 })
 
-test('reads the three directive forms, and names the node none of them reads back to', () => {
-  assert.equal(code(markdownToAdf('::rule\n')), 'unknown-directive-name')
-  assert.equal(code(markdownToAdf('   :::panel info\nx\n:::\n')), 'unknown-directive-name')
-  assert.equal(code(markdownToAdf('Part :mention[@A]{id=b1c2}.\n')), 'unknown-directive-name')
-  assert.equal(content(markdownToAdf('::rule\n')), 'unknown-directive-name: the directive name rule reads back to no node')
-  assert.deepEqual(path(markdownToAdf('Part.\n\n::rule\n')), ['content', 1])
+test('reads the three directive forms into the nodes the tables name', () => {
+  assert.deepEqual(content(markdownToAdf('::rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
+  assert.deepEqual(content(markdownToAdf('::paragraph\n')), [{ type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('   :::panel info\nPart.\n:::\n')), [
+    { attrs: { panelType: 'info' }, content: [paragraph('Part.')], type: 'panel' },
+  ])
+  assert.deepEqual(content(markdownToAdf(':::blockquote {localId=a-1}\n:::\n')), [{ attrs: { localId: 'a-1' }, type: 'blockquote' }])
+  assert.deepEqual(content(markdownToAdf(':::heading {level=2 localId=a-1}\nPart.\n:::\n')), [
+    { attrs: { level: 2, localId: 'a-1' }, content: [text('Part.')], type: 'heading' },
+  ])
+  assert.deepEqual(content(markdownToAdf('Part:hardBreak{}.\n')), [{ content: [text('Part'), hardBreak(), text('.')], type: 'paragraph' }])
+})
+
+test('names the directive form a node CommonMark spells refuses', () => {
+  const named = (type: string): string => `unsupported-node-shape: ${type} takes the CommonMark spelling, not the directive form`
+  assert.equal(content(markdownToAdf('::rule\n')), named('rule'))
+  assert.equal(content(markdownToAdf(':::blockquote\nPart.\n:::\n')), named('blockquote'))
+  assert.equal(content(markdownToAdf(':::heading {level=2}\nPart.\n:::\n')), named('heading'))
+  assert.equal(content(markdownToAdf(':::paragraph\nPart.\n:::\n')), named('paragraph'))
+  assert.equal(content(markdownToAdf('::::bulletList\n:::listItem\nPart.\n:::\n::::\n')), named('bulletList'))
+  // The item whose first line reads back as a thematic break keeps the directive form the emitter falls back to.
+  assert.deepEqual(content(markdownToAdf('::::bulletList\n:::listItem\n---\n:::\n::::\n')), [bulletList(item({ type: 'rule' }))])
+})
+
+// The spelling the emitter refuses gives the emitter's own error, never a second name for it.
+test('gives back the refusal the CommonMark spelling itself raises', () => {
+  const nested = '::::::::bulletList\n:::::::listItem\n---\n\n::::::bulletList\n:::::listItem\n---\n\n::::bulletList\n:::listItem\n---\n:::\n::::\n:::::\n::::::\n:::::::\n::::::::\n'
+  assert.equal(code(markdownToAdf(nested)), 'unspelled-block-separation')
+})
+
+test('names the directive name no node reads back to', () => {
+  assert.equal(code(markdownToAdf(':::widget info\nx\n:::\n')), 'unknown-directive-name')
+  assert.equal(content(markdownToAdf('::widget\n')), 'unknown-directive-name: the directive name widget reads back to no node')
+  assert.equal(code(markdownToAdf(':widget[x]\n')), 'unknown-directive-name')
+  assert.deepEqual(path(markdownToAdf('Part.\n\n::widget\n')), ['content', 1])
   assert.equal(content(markdownToAdf('Part.\n:::x\n')), 'malformed-directive: a container fenced with 3 colons is unclosed')
   assert.deepEqual(path(markdownToAdf('Part.\n:::x\n')), ['content', 1])
+})
+
+test('names the reserved carry name a block directive spells', () => {
+  const reserved = 'malformed-directive: the name adf is reserved for the opaque carry, whose block form is the fence'
+  assert.equal(content(markdownToAdf('::adf\n')), reserved)
+  assert.equal(content(markdownToAdf(':::adf\nx\n:::\n')), reserved)
+  assert.equal(content(markdownToAdf('```adf\nx\n```\n')), 'malformed-directive: the info string adf is reserved for the opaque carry')
+  assert.deepEqual(content(markdownToAdf('```adfx\nx\n```\n')), [{ attrs: { language: 'adfx' }, content: [text('x')], type: 'codeBlock' }])
+})
+
+test('reads each attribute value as the type its section assigns', () => {
+  assert.deepEqual(content(markdownToAdf('::media {height=10 id=a-1 type=file url="/x y" width="20.5"}\n')), [
+    { attrs: { height: 10, id: 'a-1', type: 'file', url: '/x y', width: 20.5 }, type: 'media' },
+  ])
+  assert.deepEqual(content(markdownToAdf(':::table {isNumberColumnEnabled=true}\n:::\n')), [{ attrs: { isNumberColumnEnabled: true }, type: 'table' }])
+  assert.deepEqual(content(markdownToAdf(':::tableCell {colwidth="[340,420]"}\n:::\n')), [{ attrs: { colwidth: [340, 420] }, type: 'tableCell' }])
+  assert.deepEqual(content(markdownToAdf('::rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
+})
+
+test('reads the reserved marks key as the node array it spells', () => {
+  assert.deepEqual(content(markdownToAdf('::rule {marks="[{\\"type\\":\\"em\\"}]"}\n')), [{ marks: [em], type: 'rule' }])
+  assert.deepEqual(content(markdownToAdf('::rule {localId=a-1 marks="[{\\"attrs\\":{\\"mode\\":\\"wide\\"},\\"type\\":\\"breakout\\"}]"}\n')), [
+    { attrs: { localId: 'a-1' }, marks: [{ attrs: { mode: 'wide' }, type: 'breakout' }], type: 'rule' },
+  ])
+})
+
+test('names the marks key no marks array reads back from', () => {
+  const named = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON'
+  assert.equal(content(markdownToAdf('::rule {marks="[]"}\n')), named)
+  assert.equal(content(markdownToAdf('::rule {marks="[1]"}\n')), named)
+  assert.equal(content(markdownToAdf('::rule {marks="{}"}\n')), named)
+  assert.equal(content(markdownToAdf('::rule {marks=x}\n')), named)
+  assert.equal(content(markdownToAdf('::rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n')), named)
+})
+
+test('names the attribute a node holds no reading for', () => {
+  assert.equal(content(markdownToAdf('::rule {bogus=1}\n')), 'unsupported-node-shape: rule holds no bogus attribute')
+  assert.equal(content(markdownToAdf('::media {width=wide}\n')), 'unsupported-node-shape: the width attribute of media is no number')
+  assert.equal(content(markdownToAdf(':::table {isNumberColumnEnabled=yes}\n:::\n')), 'unsupported-node-shape: the isNumberColumnEnabled attribute of table is no boolean')
+  assert.equal(content(markdownToAdf('::media {width=true}\n')), 'unsupported-node-shape: the width attribute of media is no number')
+  assert.equal(content(markdownToAdf(':::tableCell {colwidth="[340,"}\n:::\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
+  const deep = `${'['.repeat(largestNesting + 2)}${']'.repeat(largestNesting + 2)}`
+  assert.equal(content(markdownToAdf(`:::tableCell {colwidth="${deep}"}\n:::\n`)), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
+  assert.equal(content(markdownToAdf(':::panel info {panelType=note}\nx\n:::\n')), 'unsupported-node-shape: panel spells its panelType attribute as the directive argument')
+  assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot')
+})
+
+test('names the attribute value spelled outside the canonical form', () => {
+  assert.equal(content(markdownToAdf('::rule {localId="a-1"}\n')), 'unsupported-node-shape: rule spells its localId attribute as localId=a-1')
+  assert.equal(content(markdownToAdf('::media {width="20.0"}\n')), 'unsupported-node-shape: media spells its width attribute as width=20')
+  assert.equal(content(markdownToAdf(':::tableCell {colwidth="[340, 420]"}\n:::\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth="[340,420]"')
+})
+
+test('names the argument and the body a node takes no reading for', () => {
+  assert.equal(content(markdownToAdf('::rule x\n')), 'unsupported-node-shape: rule takes no argument')
+  assert.equal(content(markdownToAdf(':::rule\nPart.\n:::\n')), 'unsupported-node-shape: rule holds no content')
+  assert.equal(content(markdownToAdf('::bulletList\n')), 'unsupported-node-shape: bulletList spells its body in the container form, :::')
+  assert.equal(content(markdownToAdf(':::paragraph\n:::\n')), 'unsupported-node-shape: an empty paragraph takes the leaf form, ::')
+  assert.equal(content(markdownToAdf(':::paragraph\nOne.\n\nTwo.\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
+  assert.equal(content(markdownToAdf(':::paragraph\n---\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
+  assert.equal(content(markdownToAdf(':::codeBlock\n```\nx\n```\n:::\n')), 'unsupported-node-shape: the fenced body of codeBlock is unsupported')
+  assert.equal(content(markdownToAdf(':::paragraph\n![a](/u)\n:::\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
+  assert.equal(content(markdownToAdf('Part :date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content')
+  assert.equal(
+    content(markdownToAdf('Part :emoji[x]{shortName=":x:"}.\n')),
+    'unsupported-node-shape: the content slot emoji spells its text attribute in is unsupported',
+  )
 })
 
 test('leaves the colon that opens no directive the text it is', () => {

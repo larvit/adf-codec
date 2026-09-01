@@ -37,7 +37,7 @@ export function isAdfDocument(value: unknown): value is AdfDocument {
   return !('content' in value) || isNodeArray(value['content'])
 }
 
-function isAdfMark(value: unknown): value is AdfMark {
+export function isAdfMark(value: unknown): value is AdfMark {
   if (!isRecord(value) || !holdsOnly(value, markKeys)) return false
   if (typeof value['type'] !== 'string') return false
   return !('attrs' in value) || isAttributes(value['attrs'])

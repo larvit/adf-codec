@@ -7,7 +7,8 @@ import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.t
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
-import { readInlineDirective, unknownDirectiveFault } from '../directive-syntax.ts'
+import { readInlineDirective } from '../directive-syntax.ts'
+import { readInlineDirectiveNode } from './directive-nodes.ts'
 
 export type InlineContent = { image: AdfNode; nodes?: undefined } | { image?: undefined; nodes: AdfNode[] }
 
@@ -144,7 +145,12 @@ function readDirective(scan: Scan, index: number): Result<number> {
     scan.pending += ':'
     return success(index + 1)
   }
-  return faulted(directive.fault ?? unknownDirectiveFault(directive.value.name), scan.path)
+  if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
+  const node = readInlineDirectiveNode(directive.value, scan.path)
+  if (!node.ok) return node
+  flush(scan, false)
+  pushNode(scan, node.value)
+  return success(index + directive.value.length)
 }
 
 function flush(scan: Scan, strip: boolean): void {
