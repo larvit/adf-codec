@@ -18,7 +18,6 @@ const directiveName = /`([a-z][A-Za-z0-9]*)`/g
 const namedType = /^`([a-z][A-Za-z0-9]*)` \(([^)]*)\)/
 const owned = ' — '
 
-// Every node bullet of one section, its continuation lines folded in and its examples dropped.
 function bullets(heading: string): string[] {
   const items: string[] = []
   let fence: string | undefined
@@ -78,7 +77,6 @@ function attributeList(heading: string, prose: string): AttributeVocabulary {
   }
 }
 
-// A parenthesized value set documents what payloads hold; the type stays string.
 function attributeKind(heading: string, parenthesized: string): AttributeKind {
   const first = parenthesized.split(/[\s,]/)[0] ?? ''
   if (first === 'boolean' || first === 'json' || first === 'number' || first === 'string') return first

@@ -8,8 +8,7 @@ import { largestNesting } from '../nesting.ts'
 import { runLength } from './emphasis-matching.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
-// The value as the input spells it, beside the string the grammar decodes it to.
-export type DirectiveValue = { spelling: string; text: string }
+export type DirectiveValue = { decoded: string; spelling: string }
 
 export type DirectiveAttributes = ReadonlyMap<string, DirectiveValue>
 
@@ -80,7 +79,7 @@ export function readInlineDirective(text: string, index: number): Read<Directive
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {
   if (pairs.length === 0) return ''
-  const spelled = [...pairs].sort(([left], [right]) => (left < right ? -1 : 1)).map(([key, value]) => `${key}=${value}`)
+  const spelled = [...pairs].sort(([left], [right]) => keyOrder(left, right)).map(([key, value]) => `${key}=${value}`)
   return `{${spelled.join(' ')}}`
 }
 
@@ -105,6 +104,10 @@ export function spellVocabulary(pairs: readonly VocabularyPair[]): [string, stri
 
 export function unknownDirectiveFault(name: string): ConvertFault {
   return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node` }
+}
+
+function keyOrder(left: string, right: string): number {
+  return left < right ? -1 : 1
 }
 
 function quote(text: string): string {
@@ -221,7 +224,7 @@ function readAttributes(text: string, index: number): Read<Attributes> {
     if (pair.fault !== undefined) return { fault: pair.fault }
     const key = pair.value.key
     if (attributes.has(key)) return { fault: malformedDirective(`the attribute key ${key} is spelled twice`) }
-    if (key < previous) return { fault: malformedDirective(`${orderFault}: ${key} before ${previous}`) }
+    if (keyOrder(previous, key) > 0) return { fault: malformedDirective(`${orderFault}: ${key} before ${previous}`) }
     previous = key
     attributes.set(key, pair.value.value)
     cursor = pair.value.end
@@ -243,7 +246,7 @@ function readAttributePair(text: string, index: number): Read<AttributePair> {
   bareRun.lastIndex = start
   const bare = bareRun.exec(text)?.[0]
   if (bare === undefined) return { fault: malformedDirective(pairFault) }
-  return { value: { end: start + bare.length, key, value: { spelling: bare, text: bare } } }
+  return { value: { end: start + bare.length, key, value: { decoded: bare, spelling: bare } } }
 }
 
 function readQuotedValue(text: string, index: number): Read<{ end: number; value: DirectiveValue }> {
@@ -257,7 +260,7 @@ function readQuotedValue(text: string, index: number): Read<{ end: number; value
   }
   const parsed = parseJson(spelling)
   if (typeof parsed !== 'string') return { fault: malformedDirective('the {attrs} quoted value is not a JSON string') }
-  return { value: { end: cursor + 1, value: { spelling, text: parsed } } }
+  return { value: { end: cursor + 1, value: { decoded: parsed, spelling } } }
 }
 
 function parseJson(raw: string): JsonValue | undefined {

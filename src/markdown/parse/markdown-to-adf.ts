@@ -1,5 +1,6 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
+import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -7,6 +8,7 @@ import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
+import { spellsCommonMark } from '../emit/adf-to-markdown.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
   const parsed = parseBlocks(markdown)
@@ -54,22 +56,30 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
 function directiveNode(block: DirectiveBlock, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const read = readBlockDirectiveNode(block.name, block.argument, block.attributes, path)
   if (!read.ok) return read
-  const { contentModel, node } = read.value
-  const blocks = block.blocks
+  const built = directiveBody(read.value, block.blocks, definitions, path, depth)
+  if (!built.ok) return built
+  if (spellsCommonMark(built.value, path, depth)) {
+    return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)
+  }
+  return built
+}
+
+function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+  const { contentModel, node } = read
   if (blocks === undefined) {
     if (contentModel === 'none' || contentModel === 'inline') return success(node)
-    return failure('unsupported-node-shape', `a ${node.type} spells its body in the container form :::${node.type}`, path)
+    return failure('unsupported-node-shape', `${node.type} spells its body in the container form, :::`, path)
   }
-  if (contentModel === 'none') return failure('unsupported-node-shape', `a ${node.type} holds no content`, path)
-  if (contentModel === 'code') return failure('unsupported-node-shape', `the fenced body of a ${node.type} is unsupported`, path)
+  if (contentModel === 'none') return failure('unsupported-node-shape', `${node.type} holds no content`, path)
+  if (contentModel === 'code') return failure('unsupported-node-shape', `the fenced body of ${node.type} is unsupported`, path)
   if (contentModel === 'block') return containerNode(node, blocks, definitions, path, depth)
   return inlineBodyNode(node, blocks, definitions, path)
 }
 
 function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
-  if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} is the leaf form ::${node.type}`, path)
+  if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} takes the leaf form, ::`, path)
   const only = blocks.length === 1 ? blocks[0] : undefined
-  if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `a ${node.type} takes one paragraph as its body`, path)
+  if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body`, path)
   return contentNode(node, only.text, definitions, path)
 }
 

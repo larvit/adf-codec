@@ -86,6 +86,11 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result
   return emitDirectiveBlock(node, directive, path, depth)
 }
 
+// The plain-versus-directive choice is the emitter's; input reads it back rather than restating it (AGENTS.md §11).
+export function spellsCommonMark(node: AdfNode, path: ConvertErrorPath, depth: number): boolean {
+  return readableBlock(node, path, depth) !== undefined
+}
+
 function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
   if (node.type === 'blockquote') return emitBlockquote(node, path, depth)
   if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path, depth)

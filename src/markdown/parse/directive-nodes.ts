@@ -32,7 +32,7 @@ export function readBlockDirectiveNode(
   const attrs = readVocabulary(name, rest, directive.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
   if (argument !== undefined) {
-    if (argumentKey === undefined) return failure('unsupported-node-shape', `a ${name} takes no argument`, path)
+    if (argumentKey === undefined) return failure('unsupported-node-shape', `${name} takes no argument`, path)
     attrs.value[argumentKey] = argument
   }
   const spelled = attributes.get(marksAttribute)
@@ -46,7 +46,7 @@ export function readInlineDirectiveNode(span: DirectiveSpan, path: ConvertErrorP
   if (directive === undefined) return faulted(unknownDirectiveFault(span.name), path)
   const slot = directive.textAttribute
   if (span.content !== undefined) {
-    const message = slot === undefined ? `a ${span.name} takes no content` : `the content slot a ${span.name} spells its ${slot} attribute in is unsupported`
+    const message = slot === undefined ? `${span.name} takes no content` : `the content slot ${span.name} spells its ${slot} attribute in is unsupported`
     return failure('unsupported-node-shape', message, path)
   }
   const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }
@@ -66,24 +66,24 @@ function readVocabulary(
   for (const [key, spelled] of attributes) {
     if (key === elsewhere?.key) {
       const place = elsewhere.slot === 'argument' ? 'as the directive argument' : 'in the content slot'
-      return failure('unsupported-node-shape', `a ${type} spells its ${key} attribute ${place}`, path)
+      return failure('unsupported-node-shape', `${type} spells its ${key} attribute ${place}`, path)
     }
     const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
-    if (kind === undefined) return failure('unsupported-node-shape', `a ${type} holds no ${key} attribute`, path)
-    const read = attributeValue(spelled.text, kind)
-    if (read === undefined) return failure('unsupported-node-shape', `the ${key} attribute of a ${type} is a ${kind}`, path)
+    if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute`, path)
+    const read = attributeValue(spelled.decoded, kind)
+    if (read === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind}`, path)
     const spelling = spellAttributeValue(read)
-    if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `a ${type} spells its ${key} attribute as ${key}=${spelling}`, path)
+    if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${key} attribute as ${key}=${spelling}`, path)
     attrs[key] = read.value
   }
   return success(attrs)
 }
 
 function readMarks(type: string, spelled: DirectiveValue, path: ConvertErrorPath): Result<AdfMark[]> {
-  const read = attributeValue(spelled.text, 'json')
+  const read = attributeValue(spelled.decoded, 'json')
   const marks = read === undefined || spellAttributeValue(read) !== spelled.spelling ? undefined : readMarkValues(read.value)
   if (marks === undefined) {
-    return failure('unsupported-node-shape', `the ${marksAttribute} attribute of a ${type} is its marks array in canonical JSON`, path)
+    return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} is its marks array in canonical JSON`, path)
   }
   return success(marks)
 }

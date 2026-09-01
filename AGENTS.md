@@ -170,7 +170,9 @@ both answer to the round-trip corpus and to nothing else where a node has no fix
   part of a construct the root already holds — a grammar stays in one file rather than splitting
   across the seam. A rule both
   directions must answer alike — whether a list marker interrupts a paragraph — is one function
-  there too, never a copy per direction, however conservative the copy would be.
+  there too, never a copy per direction, however conservative the copy would be. Where the rule is
+  the emitter's own choice, input consults it rather than restating it: the parser asks
+  `spellsCommonMark` which form the emitter picks, so no fixture the emitter writes can be refused.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
   Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so

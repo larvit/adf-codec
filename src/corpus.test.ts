@@ -90,7 +90,7 @@ for (const directory of emittingDirectories) {
   }
 }
 
-test('every parsing directory emits the markdown it reads back', () => {
+test('every parsing directory is one of the emitting directories', () => {
   assert.deepEqual(
     parsingDirectories.filter((directory) => emittingDirectories.includes(directory)),
     parsingDirectories,

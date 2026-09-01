@@ -5,11 +5,11 @@ import type { DirectiveAttributes, DirectiveLine } from './directive-syntax.ts'
 import { largestNesting } from '../nesting.ts'
 import { readDirectiveLine, readInlineDirective } from './directive-syntax.ts'
 
-// A pair the input spells bare reads its own text back; a quoted one names the spelling beside it.
+// A pair the input spells bare decodes to itself; a quoted one names its spelling beside the decoding.
 type Pair = [string, string, string?]
 
 function attributes(...pairs: Pair[]): DirectiveAttributes {
-  return new Map(pairs.map(([key, text, spelling]) => [key, { spelling: spelling ?? text, text }]))
+  return new Map(pairs.map(([key, decoded, spelling]) => [key, { decoded, spelling: spelling ?? decoded }]))
 }
 
 function header(colons: number, name: string, argument?: string, ...pairs: Pair[]): { value: DirectiveLine } {

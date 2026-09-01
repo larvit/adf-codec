@@ -90,7 +90,7 @@ test('holds a directive container open until the fence that closes it', () => {
   assert.deepEqual(parseBlocks(':::panel info {panelColor="#ff0000"}\nPart.\n:::\n').blocks, [
     {
       argument: 'info',
-      attributes: new Map([['panelColor', { spelling: '"#ff0000"', text: '#ff0000' }]]),
+      attributes: new Map([['panelColor', { decoded: '#ff0000', spelling: '"#ff0000"' }]]),
       blocks: [{ kind: 'paragraph', text: 'Part.' }],
       kind: 'directive',
       name: 'panel',

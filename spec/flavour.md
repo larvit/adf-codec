@@ -156,7 +156,9 @@ included, is an error result naming it. The flavour never emits raw HTML.
 
 The directive name is always the ADF node type. A container's body is the node's `content`; a
 leaf has none. Every directive parses in any position — `markdownToAdf` builds exactly what is
-written; validity against ADF's content models stays the author's business (AGENTS.md §14).
+written; validity against ADF's content models stays the author's business (AGENTS.md §14). It
+parses only in the form the emitter picks, though: a directive spelling a node CommonMark holds
+is a named error, the per-node plain-versus-directive choice below read backwards.
 
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
@@ -425,8 +427,8 @@ the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identic
 
 An inline node's marks ride the spelling wrapped around them, never the block sections' reserved
 `marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown spellings, and are
-not directive names: `:em[x]` is a named error. The other four are inline directives, content
-required non-empty.
+not directive names: `:em[x]` is a named error. `border`, `subsup`, `textColor` and `underline`
+are inline directives, content required non-empty.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.

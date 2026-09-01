@@ -309,14 +309,19 @@ detail is settled at its own milestone.
         split. And input reads canonical `{attrs}` alone, keys in order and every value spelled as
         the emitter spells it, the error naming the spelling to write instead: §8 makes loosening a
         MINOR, so strict is the reversible direction, as 3f already settled for spacing.
+        **Settled** (the maintainer, 2026-09-01, on the review): 2f's plain-versus-directive
+        choice is read back here rather than at 3h — a directive spelling a node CommonMark holds
+        is refused, so `::rule` and `:::blockquote` are errors while `::rule {localId=…}` is not.
+        The parser asks `spellsCommonMark`, the emitter's own choice, rather than restating the
+        per-node conditions: a copy would refuse the list whose first item reads back as a
+        thematic break, which the emitter does spell as a directive, and §2 breaks in silence.
         Two refusals land here for a later chunk to lift, on the same rule: the inline `[content]`
         slot, which 3i opens for `emoji`, `mention` and `status`, and the `codeBlock` content
         model's fenced body, 3h's. `Read<T>` stays where 3f left it — the node reader knows its
         path and returns `Result`, so no second reader took it. The drift guard earned itself on
         the way in: the spec's `text` attribute was missing from three inline table entries, which
         the content slot spells and the vocabulary walk already passes over.
-  - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
-        settles, read from the other side; the `codeBlock` directive's fenced body and the
+  - [ ] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced body and the
         `language` attribute a bare fence leaves it; the media family's composition; and both
         table forms, the pipe table's cell split and its named errors. `fenceInfo` is a rule both
         directions answer alike and moves to the `markdown/` root with the language attribute.
@@ -344,6 +349,8 @@ detail is settled at its own milestone.
         directive position want a claim code — `:em[x]` is an error forever, so
         `unknown-directive-name`'s "a later MINOR may give the name meaning" is the wrong signal,
         as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
+        The marks a spelling wraps answer the same question 3g settled for a block's form: only the
+        nesting the emitter writes parses back.
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
         the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
