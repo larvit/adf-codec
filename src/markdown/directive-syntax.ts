@@ -107,7 +107,8 @@ export function unknownDirectiveFault(name: string): ConvertFault {
 }
 
 function keyOrder(left: string, right: string): number {
-  return left < right ? -1 : 1
+  if (left < right) return -1
+  return left > right ? 1 : 0
 }
 
 function quote(text: string): string {

@@ -148,7 +148,6 @@ test('reads the three directive forms into the nodes the tables name', () => {
   assert.deepEqual(content(markdownToAdf('Part:hardBreak{}.\n')), [{ content: [text('Part'), hardBreak(), text('.')], type: 'paragraph' }])
 })
 
-// The emitter's plain-versus-directive choice, read backwards: only the form it picks parses.
 test('names the directive form a node CommonMark spells refuses', () => {
   const named = (type: string): string => `unsupported-node-shape: ${type} takes the CommonMark spelling, not the directive form`
   assert.equal(content(markdownToAdf('::rule\n')), named('rule'))
@@ -158,6 +157,12 @@ test('names the directive form a node CommonMark spells refuses', () => {
   assert.equal(content(markdownToAdf('::::bulletList\n:::listItem\nPart.\n:::\n::::\n')), named('bulletList'))
   // The item whose first line reads back as a thematic break keeps the directive form the emitter falls back to.
   assert.deepEqual(content(markdownToAdf('::::bulletList\n:::listItem\n---\n:::\n::::\n')), [bulletList(item({ type: 'rule' }))])
+})
+
+// The spelling the emitter refuses gives the emitter's own error, never a second name for it.
+test('gives back the refusal the CommonMark spelling itself raises', () => {
+  const nested = '::::::::bulletList\n:::::::listItem\n---\n\n::::::bulletList\n:::::listItem\n---\n\n::::bulletList\n:::listItem\n---\n:::\n::::\n:::::\n::::::\n:::::::\n::::::::\n'
+  assert.equal(code(markdownToAdf(nested)), 'unspelled-block-separation')
 })
 
 test('names the directive name no node reads back to', () => {

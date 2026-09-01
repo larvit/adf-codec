@@ -335,6 +335,9 @@ detail is settled at its own milestone.
         `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
         The emitter's other refusals survive on causes no fixture in that directory covers, so
         3k's one-list pass is where they get fixtures or the directory goes.
+        Losing that cause closes the last shape input accepts and emit refuses — a CommonMark block
+        beside a directive one inside a list item — so the parse-then-emit fixpoint the README
+        promises holds from here rather than only for what the emitter wrote.
   - [ ] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
         `text` attribute and the error a slot holding anything but one unmarked text node is; the
         `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,

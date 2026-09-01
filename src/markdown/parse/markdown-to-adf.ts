@@ -3,12 +3,12 @@ import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryName } from '../opaque-carry.ts'
+import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
-import { spellsCommonMark } from '../emit/adf-to-markdown.ts'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument> {
   const parsed = parseBlocks(markdown)
@@ -58,10 +58,10 @@ function directiveNode(block: DirectiveBlock, definitions: LinkDefinitions, path
   if (!read.ok) return read
   const built = directiveBody(read.value, block.blocks, definitions, path, depth)
   if (!built.ok) return built
-  if (spellsCommonMark(built.value, path, depth)) {
-    return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)
-  }
-  return built
+  const readable = commonMarkSpelling(built.value, path, depth)
+  if (readable === undefined) return built
+  if (!readable.ok) return readable
+  return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)
 }
 
 function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {

@@ -157,8 +157,8 @@ included, is an error result naming it. The flavour never emits raw HTML.
 The directive name is always the ADF node type. A container's body is the node's `content`; a
 leaf has none. Every directive parses in any position — `markdownToAdf` builds exactly what is
 written; validity against ADF's content models stays the author's business (AGENTS.md §14). It
-parses only in the form the emitter picks, though: a directive spelling a node CommonMark holds
-is a named error, the per-node plain-versus-directive choice below read backwards.
+parses only in the form the emitter picks, though: a directive spelling a node the emitter would
+have written as CommonMark is a named error.
 
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
