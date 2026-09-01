@@ -11,7 +11,6 @@ export type ConvertErrorCode =
   | 'unspellable-link-destination'
   | 'unspellable-link-title'
   | 'unspellable-whitespace'
-  | 'unspelled-block-separation'
   | 'unsupported-document-version'
   | 'unsupported-nesting-depth'
   | 'unsupported-node-shape'

@@ -281,7 +281,28 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         `spec/flavour.md`'s closing-fence sentence now says: a run reaching past the innermost
         leaves the fence it did not close a named error, which §2 prefers to closing more than the
         author wrote.
-  - [x] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
+  - [x] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced body and the
+      `language` attribute a bare fence leaves it; the media family's composition; and both
+      table forms, the pipe table's cell split and its named errors. `fenceInfo` is a rule both
+      directions answer alike and moves to the `markdown/` root with the language attribute.
+      **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
+      `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
+      in a container body with no blank line between them. That reduces the three cases to one
+      rule, separation only where its absence would merge the blocks: the `:::` fence is
+      separation already, and 3c's claim ends the lazy continuation that would otherwise swallow
+      it. The fixture becomes a round-trip pair, and with `nested-list-separation` and 3e's pair
+      that empties `corpus/unspellable/`: this chunk settles the directory's own guard in
+      `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
+      The emitter's other refusals survive on causes no fixture in that directory covers, so
+      3k's one-list pass is where they get fixtures or the directory goes.
+      **Settled** (the maintainer, 2026-09-01): losing that cause closed one of the two shapes
+      input accepted and emit refused, not the last. The other surfaced here — CommonMark opens a
+      second list on a marker change, so `- a` over `* b` built two adjacent `bulletList` nodes
+      `adfToMarkdown` refuses — and the parser continues the list instead, the way it already
+      drops the blank lines between items. With both closed the parse-then-emit fixpoint the
+      README promises holds for every construct the parser reads, rather than only for what the
+      emitter wrote.
+- [x] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section
         assigns, the body to `content`, the reserved `marks` key to the marks array. 3a's drift

@@ -22,7 +22,8 @@ normalizes to it through the round-trip.
   between a nested list and a CommonMark block above it — one wherever the nested list's own
   marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or a list
   whose first item is empty), whatever block sits above it. Blank lines between items normalize
-  away; ADF does not record tightness.
+  away, and so does the marker change CommonMark starts a second list on: ADF records no
+  tightness, and one `- ` spelling leaves two adjacent lists of a type no way back.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
@@ -190,7 +191,8 @@ form.
   (string), `uniqueId` (string), `wrap` (boolean). A language no info string carries back — empty,
   the reserved `adf`, or holding a backtick, a backslash, a control character, edge whitespace or
   an entity reference — rides the `language` attribute instead and the fence carries no info
-  string; writing both is a named error.
+  string; writing it in the slot that rule leaves empty, or in both, is a named error. The body is
+  an ordinary fence, so its info string decodes escapes and entity references as any other does.
 - `heading` — container, inline body. Attributes: `level` (number), `localId` (string). `level` is
   the `#` count, so a heading carrying none, or one that is no whole number from 1 to 6, has no
   CommonMark spelling.

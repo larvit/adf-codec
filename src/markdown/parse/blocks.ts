@@ -14,6 +14,7 @@ import {
   openingHtmlBlock,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
+import { isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
@@ -28,6 +29,7 @@ export type Block =
   | { kind: 'heading'; level: number; text: string }
   | { kind: 'paragraph'; text: string }
   | { kind: 'rule' }
+  | { kind: 'table'; rows: string[][] }
 
 export type ParsedBlocks = { blocks: Block[]; definitions: Map<string, LinkDefinition> }
 
@@ -40,15 +42,16 @@ type OpenDirective = { blocks: Block[]; colons: number; index: number; kind: 'di
 type OpenContainer =
   | Extract<Block, { kind: 'blockquote' }>
   | OpenDirective
-  | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock; marker: string }
+  | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock }
 
 type OpenLeaf =
   | { closer: RegExp | undefined; construct: string; kind: 'html' }
   | { held: string[]; kind: 'indented-code'; lines: string[] }
   | { indentation: number; info: string; kind: 'fenced-code'; lines: string[]; marker: string }
   | { kind: 'paragraph'; lines: string[] }
+  | { kind: 'pipe-table'; rows: [string[], ...string[][]] }
 
-type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; marker: string; rest: Line }
+type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; rest: Line }
 
 // The line from an absolute column on: a tab a cut splits keeps the stop it is measured against.
 type Line = { column: number; text: string }
@@ -151,13 +154,12 @@ function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: 
   const spaces = leadingColumns(after)
   const padding = blank || spaces > indentedCodeColumns ? 1 : spaces
   const kind = marker.start === undefined ? 'bulletList' : 'orderedList'
-  const continued = enclosing?.kind === 'item' && enclosing.list.kind === kind && enclosing.marker === marker.delimiter
+  const continued = enclosing?.kind === 'item' && enclosing.list.kind === kind
   return {
     fresh: !continued,
     indentation: leadingColumns(line) + marker.width + padding,
     kind: 'item',
     list: continued ? enclosing.list : openList(marker.start),
-    marker: marker.delimiter,
     rest: blank ? after : removeColumns(after, padding),
   }
 }
@@ -176,7 +178,7 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   }
   if (start.fresh) currentBlocks(walk).push(start.list)
   start.list.items.push(blocks)
-  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list: start.list, marker: start.marker })
+  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list: start.list })
 }
 
 function closeContainers(walk: Walk, depth: number): void {
@@ -262,6 +264,14 @@ function readBlockLine(walk: Walk, line: Line): void {
     if (leaf.closer === undefined ? blankLine.test(line.text) : leaf.closer.test(line.text)) closeLeaf(walk)
     return
   }
+  if (leaf?.kind === 'pipe-table') {
+    const cells = pipeCells(removeColumns(line, largestOpenerIndentation).text)
+    if (cells !== undefined) {
+      leaf.rows.push(cells)
+      return
+    }
+    closeLeaf(walk)
+  }
   if (leaf?.kind === 'indented-code') {
     if (readIndentedCodeLine(leaf, line)) return
     closeLeaf(walk)
@@ -297,9 +307,10 @@ function openLeaf(walk: Walk, line: Line): void {
     else pushFault(walk, directive.fault)
     return
   }
-  if (claimsPipeLine(opener)) {
+  const cells = pipeCells(opener)
+  if (cells !== undefined) {
     closeLeaf(walk)
-    pushFault(walk, { code: 'malformed-pipe-table', message: 'the line claims a pipe table and parses as none' })
+    walk.leaf = { kind: 'pipe-table', rows: [cells] }
     return
   }
   if (readLineBlock(walk, opener)) return
@@ -358,7 +369,26 @@ function closeLeaf(walk: Walk): void {
   }
   walk.leaf = undefined
   if (leaf.kind === 'html') currentBlocks(walk).push({ construct: leaf.construct, kind: 'html' })
+  else if (leaf.kind === 'pipe-table') currentBlocks(walk).push(pipeTableBlock(leaf.rows))
   else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', text: leaf.lines.join('\n') })
+}
+
+// spec/flavour.md, Tables: the delimiter row underlines the header and leaves the body its cell count.
+function pipeTableBlock(rows: readonly [string[], ...string[][]]): Block {
+  const [header, delimiter, ...body] = rows
+  if (delimiter !== undefined && delimiter.some(isPipeAlignment)) {
+    return faultedBlock('a pipe table carries no column alignment ADF could hold')
+  }
+  if (delimiter === undefined || !delimiter.every(isPipeDelimiter)) {
+    return faultedBlock('a pipe table underlines its header with a row of `-` runs')
+  }
+  const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
+  if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${ragged.length} cells where its header holds ${header.length}`)
+  return { kind: 'table', rows: [header, ...body] }
+}
+
+function faultedBlock(message: string): Block {
+  return { fault: malformedPipeTable(message), kind: 'fault' }
 }
 
 function takeParagraph(walk: Walk): string | undefined {

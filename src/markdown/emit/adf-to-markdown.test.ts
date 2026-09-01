@@ -472,15 +472,15 @@ test('refuses the content a directive body has no room for', () => {
   assert.equal(code(adfToMarkdown(document({ text: 'x', type: 'panel' }))), 'unsupported-node-shape')
 })
 
-test('separates two directive blocks in a container body by one line, two CommonMark blocks by a blank one', () => {
+test('separates blocks in a container body by a blank line only where the fence is not separation already', () => {
   const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
   const panel = (...content: AdfNode[]): AdfDocument => document({ attrs: { panelType: 'info' }, content, type: 'panel' })
   assert.equal(markdown(adfToMarkdown(panel(text('a'), text('b')))), ':::panel info\na\n\nb\n:::\n')
   const caption: AdfNode = { content: [{ text: 'c', type: 'text' }], type: 'caption' }
   assert.equal(markdown(adfToMarkdown(panel(caption, caption))), '::::panel info\n:::caption\nc\n:::\n:::caption\nc\n:::\n::::\n')
-  assert.equal(code(adfToMarkdown(panel(text('a'), caption))), 'unspelled-block-separation')
-  assert.equal(code(adfToMarkdown(panel(caption, text('a')))), 'unspelled-block-separation')
-  assert.equal(code(adfToMarkdown(panel(paragraph(), text('a')))), 'unspelled-block-separation')
+  assert.equal(markdown(adfToMarkdown(panel(text('a'), caption))), '::::panel info\na\n:::caption\nc\n:::\n::::\n')
+  assert.equal(markdown(adfToMarkdown(panel(caption, text('a')))), '::::panel info\n:::caption\nc\n:::\na\n::::\n')
+  assert.equal(markdown(adfToMarkdown(panel(paragraph(), text('a')))), ':::panel info\n::paragraph\na\n:::\n')
 })
 
 test('spells the image form for exactly the centered external media shape', () => {

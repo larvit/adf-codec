@@ -1,14 +1,13 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockDirective } from '../../adf/block-directives.ts'
-import type { JsonValue } from '../../json-value.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
-import { carriedBlock, carryName } from '../opaque-carry.ts'
+import { carriedBlock } from '../opaque-carry.ts'
 import { carriesOnly, isAdfDocument } from '../../adf/document.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
-import { holdsControlCharacter, holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
-import { holdsEntityReference } from '../entity-references.ts'
+import { fenceInfo } from '../code-language.ts'
+import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { largestNesting } from '../../nesting.ts'
 import { spellDirectiveHeader } from './block-directive-spelling.ts'
 import { tryImage } from './image.ts'
@@ -62,13 +61,7 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
     }
     if (container === 'list-item') return success(interruptsParagraph(next.node) ? '\n' : '\n\n')
   }
-  if (container !== 'directive' || plainPair) return success('\n\n')
-  if (previous.spelling === 'directive' && next.spelling === 'directive') return success('\n')
-  return failure(
-    'unspelled-block-separation',
-    `the canonical form leaves the separation between a ${previous.spelling} and a ${next.spelling} block in a container body unspelled`,
-    next.path,
-  )
+  return success(container === 'directive' && !plainPair ? '\n' : '\n\n')
 }
 
 function interruptsParagraph(node: AdfNode): boolean {
@@ -189,14 +182,6 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
     text += child.text
   }
   return success(text)
-}
-
-// spec/flavour.md, The CommonMark blocks.
-function fenceInfo(language: JsonValue | undefined): string | undefined {
-  if (language === undefined) return ''
-  if (typeof language !== 'string' || language === '' || language === carryName) return undefined
-  if (/[`\\]/.test(language) || holdsControlCharacter(language) || language !== language.trim() || holdsEntityReference(language)) return undefined
-  return language
 }
 
 function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {

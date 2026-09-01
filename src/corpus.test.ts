@@ -14,11 +14,10 @@ const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const errorsRoot = join(corpusRoot, 'errors')
 const normalizationRoot = join(corpusRoot, 'normalization')
 const roundTripRoot = join(corpusRoot, 'round-trip')
-const unspellableRoot = join(corpusRoot, 'unspellable')
 
 const emittingDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
 // A directory joins once every fixture in it reads back to its document.
-const parsingDirectories = ['commonmark-subset']
+const parsingDirectories = ['block-nodes', 'commonmark-subset']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -61,7 +60,7 @@ function corpusJsonPaths(): string[] {
 }
 
 test('every corpus directory is a kind the runner reads', () => {
-  assert.deepEqual(directoryNames(corpusRoot), ['errors', 'normalization', 'round-trip', 'unspellable'])
+  assert.deepEqual(directoryNames(corpusRoot), ['errors', 'normalization', 'round-trip'])
 })
 
 test('every round-trip directory emits', () => {
@@ -185,16 +184,6 @@ for (const directory of emittingDirectories) {
       assert.equal(fenceNestingFault(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8')), undefined)
     })
   }
-}
-
-for (const name of pairedNames(unspellableRoot, '.json', '.error')) {
-  test(`unspellable/${name} is refused with the error it names`, () => {
-    const parsed: unknown = JSON.parse(readFileSync(join(unspellableRoot, `${name}.json`), 'utf8'))
-    assert.ok(isAdfDocument(parsed), `${name}.json is not an ADF document`)
-    const result = adfToMarkdown(parsed)
-    assert.ok(!result.ok, result.ok ? `emitted ${JSON.stringify(result.value)}` : '')
-    assert.equal(result.error.code, readFileSync(join(unspellableRoot, `${name}.error`), 'utf8').trimEnd())
-  })
 }
 
 for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
