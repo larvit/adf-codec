@@ -144,9 +144,10 @@ numbering is the order the work was planned in, not the order it ships.
       beside it), plus `exports`/`files` in `package.json`. The
       maintainer's bump PR also removes `private: true`, the guard against any earlier publish.
       §6's browser half is first checkable here, on the emitted `dist/index.js` a browser can
-      load — the compile gate names no host API, and a real page converting a document is the
-      other half; name the engines that page covers, since Bun's JavaScriptCore is not Safari's
-      and none of the three legs is SpiderMonkey. `engines.node` gets its one-line proof here
+      load — the compile gate names no host API, and a real page converting the corpus is the
+      other half. Headless Firefox is that page, settling both at once: the browser proof, and the
+      only SpiderMonkey there is, `ci.sh`'s three legs being two V8s and a JavaScriptCore that is
+      not Safari's. `engines.node` gets its one-line proof here
       too — `import('./dist/index.js')` under a pinned `node:18` image, which cannot run the
       suite that type stripping wants 22+ for, but proves exactly what the field claims.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus

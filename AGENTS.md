@@ -60,11 +60,13 @@ they never reach a consumer.
 
 ## 6. The package contract
 
-- Runs on every runtime, not only Node — a browser as readily as a server. The shipped source is
-  ECMAScript and nothing else, at an ES2022 baseline: no host import, no host global, no DOM.
-  `tsconfig.build.json` is that gate, typechecking the shipped files alone with `types: []` and
-  `lib: ES2022`, so `node:fs`, `process` and an ES2024 method are compile errors here rather than a
-  consumer's crash there. Node's test runner, the corpus reads and the build are the repo's own,
+- Runs on any ES2022 engine, not only Node — a browser as readily as a server. The shipped source
+  is ECMAScript and nothing else: no host import, no host global, no DOM. `tsconfig.build.json` is
+  that gate, typechecking the shipped files alone with `types: []` and `lib: ES2022`, so `node:fs`,
+  `process` and an ES2024 method are compile errors here rather than a consumer's crash there. The
+  standard is the line, never an engine list: one implementing it in part — Hermes is the live
+  doubt, on the Unicode property escapes and the lookbehind the markdown grammar spells — is out of
+  scope rather than a bug. Node's test runner, the corpus reads and the build are the repo's own,
   never the library's, and `engines.node` states the floor the shipped JavaScript needs — `>=18` —
   never the higher one those repo-only tools want.
 - ESM only — no CommonJS build, no dual-package hazard.
