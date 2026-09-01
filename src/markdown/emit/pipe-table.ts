@@ -1,5 +1,6 @@
 import type { AdfNode } from '../../adf/document.ts'
 import { carriesOnly } from '../../adf/document.ts'
+import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
 import type { ConvertErrorPath } from '../../result.ts'
 
@@ -15,8 +16,8 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | un
       if (line === undefined) return undefined
       cells.push(line)
     }
-    lines.push(`| ${cells.join(' | ')} |`)
-    if (rowIndex === 0) lines.push(`| ${cells.map(() => '---').join(' | ')} |`)
+    lines.push(spellPipeRow(cells))
+    if (rowIndex === 0) lines.push(spellPipeDelimiter(cells.length))
   }
   return lines.join('\n')
 }

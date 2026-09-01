@@ -6,12 +6,10 @@ One directory per contract kind, each landing with its milestone:
   document, byte for byte, and that `markdownToAdf` must read back to it (AGENTS.md §2). Grouped
   by what the fixture exercises.
 - `normalization/` — `<name>.md` + `<name>.json`: markdown input, and the document
-  `markdownToAdf` must build from it. One-way; the markdown is not canonical.
+  `markdownToAdf` must build from it, which must in turn emit and read back to itself. The
+  markdown is not canonical.
 - `errors/` — `<name>.md`: markdown input that must not convert. A `<name>.error` beside it
   pins which error.
-- `unspellable/` — `<name>.json`: ADF `adfToMarkdown` must refuse, the `ConvertErrorCode` in the
-  `<name>.error` beside it. Two populations live here: refusals that stay contract, and documents
-  a maintainer decision (`todo.md`) moves to `round-trip/`.
 - `real-payloads/` — `<name>.json`: sanitized live ADF, round-tripped ADF→markdown→ADF. No
   expected markdown.
 

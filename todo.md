@@ -5,8 +5,8 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5 → `0.1.0`; 4b → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`. The
-numbering is the order the work was planned in, not the order it ships.
+Shipping order: 3h, 3i, 3j, 5a, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`.
+The numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
@@ -49,23 +49,7 @@ numbering is the order the work was planned in, not the order it ships.
   - [x] **3e — Emphasis and links.**
   - [x] **3f — The directive grammar.**
   - [x] **3g — The node tables read backwards.**
-  - [ ] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced body and the
-        `language` attribute a bare fence leaves it; the media family's composition; and both
-        table forms, the pipe table's cell split and its named errors. `fenceInfo` is a rule both
-        directions answer alike and moves to the `markdown/` root with the language attribute.
-        **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
-        `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
-        in a container body with no blank line between them. That reduces the three cases to one
-        rule, separation only where its absence would merge the blocks: the `:::` fence is
-        separation already, and 3c's claim ends the lazy continuation that would otherwise swallow
-        it. The fixture becomes a round-trip pair, and with `nested-list-separation` and 3e's pair that
-        empties `corpus/unspellable/`: this chunk settles the directory's own guard in
-        `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
-        The emitter's other refusals survive on causes no fixture in that directory covers, so
-        3k's one-list pass is where they get fixtures or the directory goes.
-        Losing that cause closes the last shape input accepts and emit refuses — a CommonMark block
-        beside a directive one inside a list item — so the parse-then-emit fixpoint the README
-        promises holds from here rather than only for what the emitter wrote.
+  - [x] **3h — The block nodes.**
   - [ ] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
         `text` attribute and the error a slot holding anything but one unmarked text node is; the
         `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,
@@ -77,9 +61,10 @@ numbering is the order the work was planned in, not the order it ships.
         parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
         that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
         from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
-        directive position want a claim code — `:em[x]` is an error forever, so
-        `unknown-directive-name`'s "a later MINOR may give the name meaning" is the wrong signal,
-        as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
+        directive position take `unsupported-node-shape` rather than a code of their own — §8
+        already answers a well-formed directive the node tables refuse, and the message names the
+        spelling to use (`*x*`), while `unknown-directive-name`'s "a later MINOR may give the name
+        meaning" stays the wrong signal, as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
         The marks a spelling wraps answer the same question 3g settled for a block's form: only the
         nesting the emitter writes parses back.
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
@@ -102,10 +87,12 @@ numbering is the order the work was planned in, not the order it ships.
         3e collapses a spelling nested inside its own kind and `*(*a*)*` is two `<em>` against one
         `em`. The fixpoint alone is self-consistency a parser
         returning the empty document passes, and the text alone one dropping every emphasis; the
-        counts close both. The exception list stays the maintainer's. One outcome is no
+        counts close both. The exception list stays the maintainer's, and one entry is owed
+        already: 3h continues a list across the marker change CommonMark splits on, so an example
+        the reference HTML gives two `<ul>` counts one `bulletList`. One outcome is no
         exception and must not be filed as one: valid CommonMark parsing to a document
-        `adfToMarkdown` refuses is a §2 hole, which is what three of `corpus/unspellable/`'s four
-        hold until 3c, 3e and 3h land their answers.
+        `adfToMarkdown` refuses is a §2 hole, which is what `corpus/unspellable/` held until 3c,
+        3e and 3h landed their answers and emptied it.
 - [ ] **4 — Round-trip property tests (`0.2.0`)**, widening 3j's corpus round-trip past the
       documents a human wrote — the thing that proves 2 and 3 beyond them. Editor-normal (§2) is
       finished here, on 3i's merging — `toEditorNormal(doc)` and the equality the round-trip
@@ -132,12 +119,23 @@ numbering is the order the work was planned in, not the order it ships.
       caller may hold one node object at two positions, where the cached depth and path are
       another node's. `0.1.0` ships with the retry in it, so a deep document is slow rather than
       wrong until the patch.
+- [ ] **4c — The scanning rule's remaining sites (`0.1.1`).** A trailing-anchored regex re-walks
+      its run from every start position, so an interior whitespace run costs quadratic time rather
+      than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk
+      replaced the regex. Three sites the same sweep did not reach: `normalizeLabel` in
+      `link-syntax.ts`, whose shortcut-reference input is `scan.source.slice(...)` rather than the
+      999-capped `readLabel` value, and two in `emit/inline-line.ts`. The fix is the one 3h used —
+      an index walk, `trimTrailingSpace` where the ends match. §11's scanning rule is the whole
+      argument; the pipeline persona feeds documents nobody typed.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
-      the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
-      `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the
-      directory empties as they land and whatever survives is permanent. The parser's own code
+      the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: 3h
+      landed the last decision `corpus/unspellable/` held and the directory went with it, so what
+      the code list holds from here is permanent. The parser's own code
       additions are read here as one list before that freeze — nine sessions mint them
-      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. `0.1.0`
+      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. That read
+      gets a test rather than an eye — every `ConvertErrorCode` member named at a production call
+      site, the way `spec.test.ts` guards the node tables — since `unspelled-block-separation`
+      outlived its cause until 3h went looking. `0.1.0`
       is the markdown round-trip: both markdown directions, the types, `isAdfDocument`. The build
       lands here: `tsconfig.build.json` gains emit of JS and `.d.ts` to `dist/` (its own
       `allowImportingTsExtensions` forces `noEmit`, so `rewriteRelativeImportExtensions` lands

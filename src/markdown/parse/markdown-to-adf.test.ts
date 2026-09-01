@@ -67,6 +67,18 @@ function image(url: string, alt?: string): AdfNode {
   return { attrs: { layout: 'center' }, content: [media], type: 'mediaSingle' }
 }
 
+function cell(type: string, ...content: AdfNode[]): AdfNode {
+  return { content: [content.length === 0 ? { type: 'paragraph' } : { content, type: 'paragraph' }], type }
+}
+
+function row(...cells: AdfNode[]): AdfNode {
+  return { content: cells, type: 'tableRow' }
+}
+
+function table(...rows: AdfNode[]): AdfNode {
+  return { content: rows, type: 'table' }
+}
+
 test('builds an empty document from input holding no block', () => {
   assert.deepEqual(markdownToAdf(''), { ok: true, value: { type: 'doc', version: 1 } })
   assert.deepEqual(content(markdownToAdf('\n \n\t\n')), [])
@@ -112,6 +124,70 @@ test('reads a fenced code block, its info string the language', () => {
   assert.deepEqual(content(markdownToAdf('``` a`b\n')), [paragraph('``` a`b')])
   assert.deepEqual(content(markdownToAdf('```\n``` x\n```\n')), [{ content: [text('``` x')], type: 'codeBlock' }])
   assert.deepEqual(content(markdownToAdf('```\n- x\n> y\n```\n')), [{ content: [text('- x\n> y')], type: 'codeBlock' }])
+})
+
+test('reads the codeBlock directive body as the node content, the info string its language', () => {
+  const fenced = ':::codeBlock {wrap=true}\n```rust\nfn main() {}\n```\n:::\n'
+  assert.deepEqual(content(markdownToAdf(fenced)), [
+    { attrs: { language: 'rust', wrap: true }, content: [text('fn main() {}')], type: 'codeBlock' },
+  ])
+  assert.deepEqual(content(markdownToAdf(':::codeBlock {wrap=true}\n```\n```\n:::\n')), [{ attrs: { wrap: true }, type: 'codeBlock' }])
+  assert.deepEqual(content(markdownToAdf(':::codeBlock {language=""}\n```\nx\n```\n:::\n')), [
+    { attrs: { language: '' }, content: [text('x')], type: 'codeBlock' },
+  ])
+  assert.deepEqual(content(markdownToAdf(':::codeBlock {wrap=true}\n    fn()\n:::\n')), [
+    { attrs: { wrap: true }, content: [text('fn()')], type: 'codeBlock' },
+  ])
+  // The body is a CommonMark fence, so its info string decodes escapes the way any other fence's does.
+  assert.deepEqual(content(markdownToAdf(':::codeBlock {wrap=true}\n```\\#c\nx\n```\n:::\n')), [
+    { attrs: { language: '#c', wrap: true }, content: [text('x')], type: 'codeBlock' },
+  ])
+})
+
+test('names the slot a codeBlock spells its language outside of', () => {
+  const slot = 'unsupported-node-shape: codeBlock spells its language in the fence info string, or in the attribute where no info string carries it back'
+  assert.equal(content(markdownToAdf(':::codeBlock {language=rust wrap=true}\n```\nx\n```\n:::\n')), slot)
+  assert.equal(content(markdownToAdf(':::codeBlock {language=rust}\n```sql\nx\n```\n:::\n')), slot)
+  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\n```adf\nx\n```\n:::\n')), slot)
+  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\n```a\\b\nx\n```\n:::\n')), slot)
+  assert.equal(content(markdownToAdf('::codeBlock {wrap=true}\n')), 'unsupported-node-shape: codeBlock spells its body in the container form, :::')
+})
+
+test('reads a pipe table into the header row and the body rows under it', () => {
+  const pipes = '| Part | Note |\n| --- | --- |\n| Nut \\| washer | `8.8` |\n| Spare |  |\n'
+  assert.deepEqual(content(markdownToAdf(pipes)), [
+    table(
+      row(cell('tableHeader', text('Part')), cell('tableHeader', text('Note'))),
+      row(cell('tableCell', text('Nut | washer')), cell('tableCell', codeSpan('8.8'))),
+      row(cell('tableCell', text('Spare')), cell('tableCell')),
+    ),
+  ])
+  assert.deepEqual(content(markdownToAdf('| Part\n| -\n')), [table(row(cell('tableHeader', text('Part'))))])
+  assert.deepEqual(content(markdownToAdf('   | Part |\n   | --- |\n')), [table(row(cell('tableHeader', text('Part'))))])
+})
+
+test('claims the line a pipe opens and gives the rest back to the block walk', () => {
+  const header = table(row(cell('tableHeader', text('a'))))
+  assert.deepEqual(content(markdownToAdf('Part.\n| a |\n| --- |\n')), [paragraph('Part.'), header])
+  assert.deepEqual(content(markdownToAdf('| a |\n| --- |\nPart.\n')), [header, paragraph('Part.')])
+  assert.deepEqual(content(markdownToAdf('> | a |\n> | --- |\n')), [quote(header)])
+  assert.deepEqual(content(markdownToAdf('- | a |\n  | --- |\n')), [bulletList(item(header))])
+  assert.deepEqual(content(markdownToAdf('| a |\n| --- |\n    x\n')), [header, { content: [text('x')], type: 'codeBlock' }])
+  assert.deepEqual(content(markdownToAdf('\\| a |\n')), [paragraph('| a |')])
+})
+
+test('names the pipe table a claimed line does not spell', () => {
+  assert.equal(content(markdownToAdf('| a | b |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs')
+  assert.equal(content(markdownToAdf('| a |\n| x |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs')
+  assert.equal(content(markdownToAdf('| a | b |\n| :--- | ---: |\n')), 'malformed-pipe-table: a pipe table carries no column alignment ADF could hold')
+  assert.equal(content(markdownToAdf('| a | b |\n| --- |\n')), 'malformed-pipe-table: a pipe table row holds 1 cells where its header holds 2')
+  assert.equal(content(markdownToAdf('| a |\n| --- |\n| b | c |\n')), 'malformed-pipe-table: a pipe table row holds 2 cells where its header holds 1')
+  assert.deepEqual(path(markdownToAdf('Part.\n\n| a |\n')), ['content', 1])
+})
+
+test('refuses the image a pipe cell holds no ADF node for', () => {
+  assert.equal(content(markdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
+  assert.deepEqual(path(markdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), ['content', 0, 'content', 1, 'content', 0, 'content', 0])
 })
 
 test('strips the opening fence indentation from the content lines it holds', () => {
@@ -161,8 +237,8 @@ test('names the directive form a node CommonMark spells refuses', () => {
 
 // The spelling the emitter refuses gives the emitter's own error, never a second name for it.
 test('gives back the refusal the CommonMark spelling itself raises', () => {
-  const nested = '::::::::bulletList\n:::::::listItem\n---\n\n::::::bulletList\n:::::listItem\n---\n\n::::bulletList\n:::listItem\n---\n:::\n::::\n:::::\n::::::\n:::::::\n::::::::\n'
-  assert.equal(code(markdownToAdf(nested)), 'unspelled-block-separation')
+  const destination = ':::blockquote\n[t](https://example.com/a\\b)\n:::\n'
+  assert.equal(content(markdownToAdf(destination)), 'unspellable-link-destination: no canonical escape spells a backslash in a link destination')
 })
 
 test('names the directive name no node reads back to', () => {
@@ -232,7 +308,7 @@ test('names the argument and the body a node takes no reading for', () => {
   assert.equal(content(markdownToAdf(':::paragraph\n:::\n')), 'unsupported-node-shape: an empty paragraph takes the leaf form, ::')
   assert.equal(content(markdownToAdf(':::paragraph\nOne.\n\nTwo.\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
   assert.equal(content(markdownToAdf(':::paragraph\n---\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
-  assert.equal(content(markdownToAdf(':::codeBlock\n```\nx\n```\n:::\n')), 'unsupported-node-shape: the fenced body of codeBlock is unsupported')
+  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\nx\n:::\n')), 'unsupported-node-shape: codeBlock takes one code block as its body')
   assert.equal(content(markdownToAdf(':::paragraph\n![a](/u)\n:::\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
   assert.equal(content(markdownToAdf('Part :date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content')
   assert.equal(
@@ -315,14 +391,18 @@ test('reads a bullet list, the marker width setting the continuation', () => {
   assert.deepEqual(content(markdownToAdf('-\n')), [bulletList(item())])
   assert.deepEqual(content(markdownToAdf('- One\n\n  Two.\n')), [bulletList(item(paragraph('One'), paragraph('Two.')))])
   assert.deepEqual(content(markdownToAdf('-     Code.\n')), [bulletList(item({ content: [text('Code.')], type: 'codeBlock' }))])
-  assert.deepEqual(content(markdownToAdf('- a\n* b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n* b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n\n+ b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n-\n\n- c\n')), [bulletList(item(paragraph('a')), item(), item(paragraph('c')))])
+  assert.deepEqual(content(markdownToAdf('- a\n1. b\n')), [bulletList(item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(markdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
 })
 
 test('reads an ordered list, its first marker the order attribute', () => {
   assert.deepEqual(content(markdownToAdf('9. Bolt M8\n10. Nut M8\n')), [orderedList(9, item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
   assert.deepEqual(content(markdownToAdf('1) Loosen the clamp\n')), [orderedList(1, item(paragraph('Loosen the clamp')))])
-  assert.deepEqual(content(markdownToAdf('1. a\n1) b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('1. a\n1) b\n')), [orderedList(1, item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(markdownToAdf('0. Zero\n')), [orderedList(0, item(paragraph('Zero')))])
 })
 

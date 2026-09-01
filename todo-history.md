@@ -309,3 +309,29 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         path and returns `Result`, so no second reader took it. The drift guard earned itself on
         the way in: the spec's `text` attribute was missing from three inline table entries, which
         the content slot spells and the vocabulary walk already passes over.
+  - [x] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced
+        body and the `language` attribute a bare fence leaves it; the media family's composition;
+        and both table forms, the pipe table's cell split and its named errors. `fenceInfo` is a
+        rule both directions answer alike and moves to the `markdown/` root with the language
+        attribute.
+        **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
+        `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
+        in a container body with no blank line between them. That reduces the three cases to one
+        rule, separation only where its absence would merge the blocks: the `:::` fence is
+        separation already, and 3c's claim ends the lazy continuation that would otherwise swallow
+        it. The fixture becomes a round-trip pair, and with `nested-list-separation` and 3e's pair
+        that empties `corpus/unspellable/`: this chunk settles the directory's own guard in
+        `corpus.test.ts` too, and `unspelled-block-separation`, which loses its only cause here.
+        The emitter's other refusals survive on causes no fixture in that directory covers, so
+        3k's one-list pass is where they get fixtures or the directory goes.
+        **Settled** (the maintainer, 2026-09-01): losing that cause closed one of the shapes input
+        accepted and emit refused, not the last. Two adjacent lists of a kind are what
+        `adfToMarkdown` refuses and one `- ` spelling cannot hold apart, and the walk reached them
+        two ways — a marker change, which CommonMark opens a second list on, and an empty last item,
+        whose blank line pops the container the list's identity hung from. The parser opens no list
+        beside one of its own kind instead, the way it already drops the blank lines between items;
+        3k owes the CommonMark suite an exception where the reference HTML holds two `<ul>`. The
+        `normalization/` arm emits each document and reads it back from here, so the population that
+        class lives in is checked rather than read. The README's canonical-fixpoint sentence still
+        claims more than the parser keeps — 3e's three shapes — which stays milestone 5's to
+        narrow.

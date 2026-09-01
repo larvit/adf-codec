@@ -60,7 +60,7 @@ const firstCharacterOpeners = [atxHeadingOpener, /^>/, bulletListOpener, codeFen
 const emailNameSource = "[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+"
 const emailLabelSource = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
 const emailAutolink = new RegExp(`<${emailNameSource}@${emailLabelSource}(?:\\.${emailLabelSource})*>`, 'y')
-const orderedListOpener = /^(\d{1,9})([.)])(?:[ \t]|$)/
+const orderedListOpener = /^(\d{1,9})(?:[.)])(?:[ \t]|$)/
 const setextUnderline = /^(=+|-+)[ \t]*$/
 const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/
 const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u
@@ -171,13 +171,13 @@ export function isUnicodeWhitespace(character: string): boolean {
 }
 
 // `start` is the list's first number, `undefined` for a bullet.
-export function listMarker(line: string): { delimiter: string; start: number | undefined; width: number } | undefined {
+export function listMarker(line: string): { start: number | undefined; width: number } | undefined {
   const ordered = orderedListOpener.exec(line)
   if (ordered !== null) {
     const digits = ordered[1] ?? ''
-    return { delimiter: ordered[2] ?? '', start: Number(digits), width: digits.length + 1 }
+    return { start: Number(digits), width: digits.length + 1 }
   }
-  return bulletListOpener.test(line) ? { delimiter: line.charAt(0), start: undefined, width: 1 } : undefined
+  return bulletListOpener.test(line) ? { start: undefined, width: 1 } : undefined
 }
 
 export function markerInterruptsParagraph(start: number | undefined, empty: boolean): boolean {
@@ -223,6 +223,18 @@ export function setextHeadingLevel(line: string): number | undefined {
   return underline.startsWith('=') ? 1 : 2
 }
 
+function spaceOrTab(character: string): boolean {
+  return character === ' ' || character === '\t'
+}
+
 export function trimSpace(text: string): string {
-  return text.replace(/^[ \t]+|[ \t]+$/g, '')
+  let start = 0
+  while (start < text.length && spaceOrTab(text.charAt(start))) start += 1
+  return trimTrailingSpace(text.slice(start))
+}
+
+export function trimTrailingSpace(text: string): string {
+  let end = text.length
+  while (end > 0 && spaceOrTab(text.charAt(end - 1))) end -= 1
+  return text.slice(0, end)
 }

@@ -1,14 +1,13 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockDirective } from '../../adf/block-directives.ts'
-import type { JsonValue } from '../../json-value.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
-import { carriedBlock, carryName } from '../opaque-carry.ts'
+import { carriedBlock } from '../opaque-carry.ts'
 import { carriesOnly, isAdfDocument } from '../../adf/document.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
-import { holdsControlCharacter, holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
-import { holdsEntityReference } from '../entity-references.ts'
+import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
+import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { spellDirectiveHeader } from './block-directive-spelling.ts'
 import { tryImage } from './image.ts'
@@ -62,13 +61,7 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
     }
     if (container === 'list-item') return success(interruptsParagraph(next.node) ? '\n' : '\n\n')
   }
-  if (container !== 'directive' || plainPair) return success('\n\n')
-  if (previous.spelling === 'directive' && next.spelling === 'directive') return success('\n')
-  return failure(
-    'unspelled-block-separation',
-    `the canonical form leaves the separation between a ${previous.spelling} and a ${next.spelling} block in a container body unspelled`,
-    next.path,
-  )
+  return success(container === 'directive' && !plainPair ? '\n' : '\n\n')
 }
 
 function interruptsParagraph(node: AdfNode): boolean {
@@ -154,20 +147,21 @@ function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): R
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, ['language'])) return undefined
-  const info = fenceInfo(node.attrs?.['language'])
-  if (info === undefined) return undefined
+  const slot = languageSlot(node.attrs?.['language'])
+  if (slot.kind === 'attribute') return undefined
   const text = codeBlockText(node, path)
   if (!text.ok) return text
-  return success(commonMarkText(fencedCodeBlock(info, text.value)))
+  return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
 }
 
 function emitCodeDirective(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<EmittedBlock> {
-  const info = fenceInfo(node.attrs?.['language'])
-  const header = spellDirectiveHeader(node, directive, info === undefined ? [] : ['language'])
+  const slot = languageSlot(node.attrs?.['language'])
+  const header = spellDirectiveHeader(node, directive, slot.kind === 'attribute' ? [] : ['language'])
   if (header === undefined) return commonMarkLine(carriedBlock(node, path))
   const text = codeBlockText(node, path)
   if (!text.ok) return text
-  return success({ fenceColons: 3, spelling: 'directive', text: `:::${header}\n${fencedCodeBlock(info ?? '', text.value)}\n:::` })
+  const info = slot.kind === 'fence' ? slot.info : ''
+  return success({ fenceColons: 3, spelling: 'directive', text: `:::${header}\n${fencedCodeBlock(info, text.value)}\n:::` })
 }
 
 function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
@@ -189,14 +183,6 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
     text += child.text
   }
   return success(text)
-}
-
-// spec/flavour.md, The CommonMark blocks.
-function fenceInfo(language: JsonValue | undefined): string | undefined {
-  if (language === undefined) return ''
-  if (typeof language !== 'string' || language === '' || language === carryName) return undefined
-  if (/[`\\]/.test(language) || holdsControlCharacter(language) || language !== language.trim() || holdsEntityReference(language)) return undefined
-  return language
 }
 
 function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {

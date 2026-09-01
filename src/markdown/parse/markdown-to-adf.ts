@@ -5,6 +5,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryName } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
@@ -50,6 +51,8 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
       return paragraphNode(block.text, definitions, path)
     case 'rule':
       return success({ type: 'rule' })
+    case 'table':
+      return tableNode(block.rows, definitions, path)
   }
 }
 
@@ -71,9 +74,37 @@ function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, de
     return failure('unsupported-node-shape', `${node.type} spells its body in the container form, :::`, path)
   }
   if (contentModel === 'none') return failure('unsupported-node-shape', `${node.type} holds no content`, path)
-  if (contentModel === 'code') return failure('unsupported-node-shape', `the fenced body of ${node.type} is unsupported`, path)
+  if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
   if (contentModel === 'block') return containerNode(node, blocks, definitions, path, depth)
   return inlineBodyNode(node, blocks, definitions, path)
+}
+
+function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
+  const only = blocks.length === 1 ? blocks[0] : undefined
+  if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one code block as its body`, path)
+  const attribute = node.attrs?.['language']
+  const fromFence = only.language !== ''
+  const slot = languageSlot(fromFence ? only.language : attribute)
+  if ((slot.kind === 'fence') !== fromFence || (fromFence && attribute !== undefined)) {
+    return failure('unsupported-node-shape', `${node.type} spells its language in the fence info string, or in the attribute where no info string carries it back`, path)
+  }
+  const spelled = fromFence ? { ...node, attrs: { ...node.attrs, language: only.language } } : node
+  return success(withContent(spelled, only.text === '' ? [] : [{ text: only.text, type: 'text' }]))
+}
+
+function tableNode(rows: readonly string[][], definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
+  const content: AdfNode[] = []
+  for (const [rowIndex, cells] of rows.entries()) {
+    const type = rowIndex === 0 ? 'tableHeader' : 'tableCell'
+    const row: AdfNode[] = []
+    for (const [cellIndex, cell] of cells.entries()) {
+      const paragraph = contentNode({ type: 'paragraph' }, cell, definitions, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
+      if (!paragraph.ok) return paragraph
+      row.push({ content: [paragraph.value], type })
+    }
+    content.push({ content: row, type: 'tableRow' })
+  }
+  return success({ content, type: 'table' })
 }
 
 function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
