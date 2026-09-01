@@ -223,7 +223,8 @@ worth deliberating; what matters is that nothing is left undone in the end. Per 
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted through the `0.1.0` release —
-   PR #3), check the box in `todo.md`, report, stop. The next chunk gets a fresh session.
+   PR #3), check the box in `todo.md` and move the item's text to `todo-history.md`, leaving its
+   title behind, report, stop. The next chunk gets a fresh session.
 
 Ask, don't guess: any choice where what the maintainer would pick is not near-certain gets asked,
 and the answer lands as a decision in this file. The confidence bar is very high — asking too
