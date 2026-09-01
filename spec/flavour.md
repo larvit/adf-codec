@@ -421,7 +421,9 @@ an em, strong or strike spelling's inner edges, a pipe cell's edges — is spell
 `:text{text="…"}`, the reserved key carrying the node's text, escaped by the attribute grammar
 and never literal: pipe cells trim and pad. The emitter wraps the whitespace run alone and leaves
 the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identical marks
-(AGENTS.md §2).
+(AGENTS.md §2). Input reads that spelling alone: the value is one run of spaces and tabs, or one
+run of newlines, and anything else — a mixed run, or text CommonMark carries plainly — is a named
+error.
 
 ```
 :text{text="  "}Two leading spaces held, and one text node split:text{text="\n"}over two lines.

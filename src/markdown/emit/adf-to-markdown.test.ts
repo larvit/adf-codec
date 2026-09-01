@@ -130,7 +130,6 @@ test('carries a mark the canonical spellings cannot nest', () => {
 })
 
 test('refuses whitespace CommonMark cannot hold', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: '\fa', type: 'text' })))), 'unspellable-whitespace')
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\rb', type: 'text' })))), 'unspellable-whitespace')
 })
 
@@ -535,7 +534,7 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
     markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ attrs: { url: 'a|b' }, type: 'blockCard' }], type: 'paragraph' }))))),
     '| :adf{json="{\\"attrs\\":{\\"url\\":\\"a\\u007cb\\"},\\"type\\":\\"blockCard\\"}"} |\n| --- |\n',
   )
-  assert.equal(code(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: '\fa', type: 'text' }], type: 'paragraph' }))))), 'unspellable-whitespace')
+  assert.equal(markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: '\fa', type: 'text' }], type: 'paragraph' }))))), '| \fa |\n| --- |\n')
   assert.ok(directive(adfToMarkdown(table(row(cell('tableHeader', { attrs: { level: 1 }, type: 'heading' }))))))
   assert.equal(markdown(adfToMarkdown(table(row(cell('tableHeader', { content: [{ text: ' a', type: 'text' }], type: 'paragraph' }))))), '| :text{text=" "}a |\n| --- |\n')
   const marked = (mark: AdfMark): AdfDocument => table(row(cell('tableHeader', { content: [{ marks: [mark], text: 'l', type: 'text' }], type: 'paragraph' })))
@@ -621,4 +620,6 @@ test('carries whitespace CommonMark strips in the reserved text directive', () =
   assert.equal(emitted({ text: 'a ', type: 'text' }, { type: 'hardBreak' }, { text: ' b', type: 'text' }), 'a:text{text=" "}\\\n:text{text=" "}b\n')
   assert.equal(emitted({ marks: [{ type: 'em' }], text: ' a ', type: 'text' }), '_:text{text=" "}a:text{text=" "}_\n')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { level: 1 }, content: [{ text: 'x ', type: 'text' }], type: 'heading' }))), '# x:text{text=" "}\n')
+  // CommonMark strips spaces and tabs alone, so the whitespace beside them is plain text.
+  assert.equal(emitted({ text: '\va\f', type: 'text' }), '\va\f\n')
 })

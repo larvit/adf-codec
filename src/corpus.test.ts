@@ -17,7 +17,7 @@ const roundTripRoot = join(corpusRoot, 'round-trip')
 
 const emittingDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
 // A directory joins once every fixture in it reads back to its document.
-const parsingDirectories = ['block-nodes', 'commonmark-subset']
+const parsingDirectories = ['block-nodes', 'commonmark-subset', 'inline-nodes']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })

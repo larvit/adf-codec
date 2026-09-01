@@ -1,7 +1,7 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { BlockDirective } from '../../adf/block-directives.ts'
-import type { DirectiveAttributes, DirectiveSpan, DirectiveValue } from '../directive-syntax.ts'
+import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import { attributeValue, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
@@ -41,21 +41,36 @@ export function readBlockDirectiveNode(
   return success({ contentModel: directive.contentModel, node: namedNode(name, attrs.value, marks.value) })
 }
 
-export function readInlineDirectiveNode(span: DirectiveSpan, path: ConvertErrorPath): Result<AdfNode> {
-  const directive = inlineDirective(span.name)
-  if (directive === undefined) return faulted(unknownDirectiveFault(span.name), path)
+export function readInlineDirectiveNode(
+  name: string,
+  attributes: DirectiveAttributes,
+  content: readonly AdfNode[] | undefined,
+  path: ConvertErrorPath,
+): Result<AdfNode> {
+  const directive = inlineDirective(name)
+  if (directive === undefined) return faulted(unknownDirectiveFault(name), path)
   const slot = directive.textAttribute
-  if (span.content !== undefined) {
-    const message = slot === undefined ? `${span.name} takes no content` : `the content slot ${span.name} spells its ${slot} attribute in is unsupported`
-    return failure('unsupported-node-shape', message, path)
-  }
+  if (slot === undefined && content !== undefined) return failure('unsupported-node-shape', `${name} takes no content`, path)
   const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }
-  const attrs = readVocabulary(span.name, span.attributes, directive.attributes, elsewhere, path)
+  const attrs = readVocabulary(name, attributes, directive.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
-  return success(namedNode(span.name, attrs.value, undefined))
+  if (slot !== undefined && content !== undefined) {
+    const text = slotText(content)
+    if (text === undefined) return failure('unsupported-node-shape', `the ${name} content slot holds one unmarked text node`, path)
+    attrs.value[slot] = text
+  }
+  return success(namedNode(name, attrs.value, undefined))
 }
 
-function readVocabulary(
+// spec/flavour.md, Inline nodes: the slot is plain text, its adjacent nodes already merged.
+function slotText(content: readonly AdfNode[]): string | undefined {
+  if (content.length === 0) return ''
+  const only = content.length === 1 ? content[0] : undefined
+  if (only?.type !== 'text' || (only.marks ?? []).length > 0 || typeof only.text !== 'string') return undefined
+  return only.text
+}
+
+export function readVocabulary(
   type: string,
   attributes: DirectiveAttributes,
   vocabulary: AttributeVocabulary,

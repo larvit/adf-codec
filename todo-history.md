@@ -335,3 +335,31 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         class lives in is checked rather than read. The README's canonical-fixpoint sentence still
         claims more than the parser keeps — 3e's three shapes — which stays milestone 5's to
         narrow.
+  - [x] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
+        `text` attribute and the error a slot holding anything but one unmarked text node is; the
+        `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,
+        outermost first; and `:em[x]` as the error `spec/flavour.md` promises. Editor-normal's
+        merging half lands here, `text-whitespace` being the first fixture that forces it, and 4's
+        `toEditorNormal` is built on it.
+        3g's shape leaves three: `readInlineDirectiveNode` takes the name, the attributes and the
+        slot's parsed text rather than the span, since `inline-content.ts` already imports it and
+        parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
+        that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
+        from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
+        directive position take `unsupported-node-shape` rather than a code of their own — §8
+        already answers a well-formed directive the node tables refuse, and the message names the
+        spelling to use (`*x*`), while `unknown-directive-name`'s "a later MINOR may give the name
+        meaning" stays the wrong signal, as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
+        The marks a spelling wraps answer the same question 3g settled for a block's form: only the
+        nesting the emitter writes parses back.
+        **Settled** (the maintainer, 2026-09-01): `:text` reads back what the emitter writes and
+        nothing else — one run of spaces and tabs, or one run of newlines. A mixed run, and text
+        CommonMark carries plainly, are named errors, as 3g refuses the directive form of a node
+        CommonMark spells. The reader takes the slot's parsed nodes rather than its text, so the
+        rule refusing anything but one unmarked text node sits beside the node tables that own the
+        slot, and a node taking no content still names that first.
+        The same read found the hole the other way: `attemptLine` refused a line edged with a
+        vertical tab or a form feed, where CommonMark strips spaces and tabs alone, so valid
+        CommonMark parsed to a document `adfToMarkdown` then refused. The edges that check covered
+        are carried before the line is assembled, so narrowing it to spaces and tabs left it no
+        cause and it goes with them.

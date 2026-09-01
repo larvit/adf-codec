@@ -50,23 +50,7 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **3f — The directive grammar.**
   - [x] **3g — The node tables read backwards.**
   - [x] **3h — The block nodes.**
-  - [ ] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
-        `text` attribute and the error a slot holding anything but one unmarked text node is; the
-        `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,
-        outermost first; and `:em[x]` as the error `spec/flavour.md` promises. Editor-normal's
-        merging half lands here, `text-whitespace` being the first fixture that forces it, and 4's
-        `toEditorNormal` is built on it.
-        3g's shape leaves three: `readInlineDirectiveNode` takes the name, the attributes and the
-        slot's parsed text rather than the span, since `inline-content.ts` already imports it and
-        parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
-        that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
-        from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
-        directive position take `unsupported-node-shape` rather than a code of their own — §8
-        already answers a well-formed directive the node tables refuse, and the message names the
-        spelling to use (`*x*`), while `unknown-directive-name`'s "a later MINOR may give the name
-        meaning" stays the wrong signal, as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
-        The marks a spelling wraps answer the same question 3g settled for a block's form: only the
-        nesting the emitter writes parses back.
+  - [x] **3i — The inline nodes and the marks.**
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
         the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes

@@ -10,9 +10,9 @@ import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
 import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
-import { spellAttributes, spellStringAttribute } from '../directive-syntax.ts'
 import { spellDestination, spellTitle } from '../link-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
+import { spellTextDirective } from '../text-directive.ts'
 
 type EmittedLine = { line: string; segments: InlineSegment[] }
 
@@ -84,9 +84,6 @@ function attemptLine(segments: readonly InlineSegment[], container: LineContaine
   const assembled = assembleInlineLine(segments, container)
   if (assembled.unspellableRun !== undefined) return success({ carry: assembled.unspellableRun })
   for (const [index, single] of assembled.line.split('\n').entries()) {
-    if (/^[ \t\v\f]|[ \t\v\f]$/.test(single)) {
-      return failure('unspellable-whitespace', 'a line begins or ends with whitespace CommonMark strips', path)
-    }
     if (container === 'paragraph' && claimsLine(single, index === 0 ? 'first' : 'later')) {
       return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(single)}`, path)
     }
@@ -121,7 +118,7 @@ function carryEdges(segment: InlineSegment, leading: boolean, trailing: boolean)
 }
 
 function carriedText(text: string): InlineSegment {
-  return syntax(spellLeafDirective('text', spellAttributes([['text', spellStringAttribute(text)]])))
+  return syntax(spellTextDirective(text))
 }
 
 function spellLeafDirective(name: string, attributes: string): string {
