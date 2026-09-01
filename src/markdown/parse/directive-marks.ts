@@ -3,7 +3,7 @@ import type { DirectiveAttributes } from '../directive-syntax.ts'
 import type { MarkSpelling } from '../mark-spellings.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { markSpelling } from '../mark-spellings.ts'
-import { readVocabulary } from './directive-nodes.ts'
+import { readVocabulary } from './directive-attributes.ts'
 
 export function readDirectiveMark(name: string, attributes: DirectiveAttributes, path: ConvertErrorPath): Result<AdfMark> | undefined {
   const spelling = markSpelling(name)

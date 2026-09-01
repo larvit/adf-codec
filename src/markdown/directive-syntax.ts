@@ -87,6 +87,10 @@ export function spellJsonAttribute(value: JsonValue): string {
   return quote(serializeCanonicalJson(value, 'compact'))
 }
 
+export function spellLeafDirective(name: string, attributes: string): string {
+  return `:${name}${attributes === '' ? '{}' : attributes}`
+}
+
 export function spellStringAttribute(text: string): string {
   return isBareToken(text) ? text : quote(text)
 }

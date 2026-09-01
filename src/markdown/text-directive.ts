@@ -1,12 +1,12 @@
 import type { ConvertFault } from '../result.ts'
 import type { DirectiveSpan, Read } from './directive-syntax.ts'
-import { spellAttributes, spellStringAttribute } from './directive-syntax.ts'
+import { spellAttributes, spellLeafDirective, spellStringAttribute } from './directive-syntax.ts'
 
 const name = 'text'
 const whitespaceRun = /^(?:[ \t]+|\n+)$/
 
 export function spellTextDirective(text: string): string {
-  return `:${name}${spellAttributes([[name, spellStringAttribute(text)]])}`
+  return spellLeafDirective(name, spellAttributes([[name, spellStringAttribute(text)]]))
 }
 
 export function readTextDirective(span: DirectiveSpan): Read<string> | undefined {

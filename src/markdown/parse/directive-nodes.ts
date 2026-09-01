@@ -1,7 +1,7 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
-import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { BlockDirective } from '../../adf/block-directives.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
+import type { Elsewhere } from './directive-attributes.ts'
 import { attributeValue, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
@@ -9,10 +9,9 @@ import { carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { marksAttribute, readMarkValues } from '../block-directive-marks.ts'
+import { readVocabulary } from './directive-attributes.ts'
 
 export type BlockDirectiveNode = { contentModel: BlockDirective['contentModel']; node: AdfNode }
-
-type Elsewhere = { key: string; slot: 'argument' | 'content' }
 
 export function readBlockDirectiveNode(
   name: string,
@@ -68,30 +67,6 @@ function slotText(content: readonly AdfNode[]): string | undefined {
   const only = content.length === 1 ? content[0] : undefined
   if (only?.type !== 'text' || (only.marks ?? []).length > 0 || typeof only.text !== 'string') return undefined
   return only.text
-}
-
-export function readVocabulary(
-  type: string,
-  attributes: DirectiveAttributes,
-  vocabulary: AttributeVocabulary,
-  elsewhere: Elsewhere | undefined,
-  path: ConvertErrorPath,
-): Result<AdfAttributes> {
-  const attrs: AdfAttributes = {}
-  for (const [key, spelled] of attributes) {
-    if (key === elsewhere?.key) {
-      const place = elsewhere.slot === 'argument' ? 'as the directive argument' : 'in the content slot'
-      return failure('unsupported-node-shape', `${type} spells its ${key} attribute ${place}`, path)
-    }
-    const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
-    if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute`, path)
-    const read = attributeValue(spelled.decoded, kind)
-    if (read === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind}`, path)
-    const spelling = spellAttributeValue(read)
-    if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${key} attribute as ${key}=${spelling}`, path)
-    attrs[key] = read.value
-  }
-  return success(attrs)
 }
 
 function readMarks(type: string, spelled: DirectiveValue, path: ConvertErrorPath): Result<AdfMark[]> {

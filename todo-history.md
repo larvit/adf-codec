@@ -357,7 +357,8 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         CommonMark carries plainly, are named errors, as 3g refuses the directive form of a node
         CommonMark spells. The reader takes the slot's parsed nodes rather than its text, so the
         rule refusing anything but one unmarked text node sits beside the node tables that own the
-        slot, and a node taking no content still names that first.
+        slot, and a node taking no content still names that first. `directive-content-slot` stays
+        with the fixtures, its cause now a marked slot rather than a slot at all.
         The same read found the hole the other way: `attemptLine` refused a line edged with a
         vertical tab or a form feed, where CommonMark strips spaces and tabs alone, so valid
         CommonMark parsed to a document `adfToMarkdown` then refused. The edges that check covered

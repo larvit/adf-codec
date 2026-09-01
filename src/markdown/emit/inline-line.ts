@@ -12,6 +12,7 @@ import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
 import { spellDestination, spellTitle } from '../link-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
+import { spellLeafDirective } from '../directive-syntax.ts'
 import { spellTextDirective } from '../text-directive.ts'
 
 type EmittedLine = { line: string; segments: InlineSegment[] }
@@ -119,10 +120,6 @@ function carryEdges(segment: InlineSegment, leading: boolean, trailing: boolean)
 
 function carriedText(text: string): InlineSegment {
   return syntax(spellTextDirective(text))
-}
-
-function spellLeafDirective(name: string, attributes: string): string {
-  return `:${name}${attributes === '' ? '{}' : attributes}`
 }
 
 function syntax(text: string): InlineSegment {

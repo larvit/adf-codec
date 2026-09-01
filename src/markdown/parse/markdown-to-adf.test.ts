@@ -697,6 +697,9 @@ test('names the content slot no one unmarked text node reads back from', () => {
   assert.equal(code(markdownToAdf(':status[:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(content(markdownToAdf(':status[![a](/u)]{color=yellow}\n')), 'unmappable-image: an image fits only as a paragraph of its own')
   assert.equal(code(markdownToAdf(':status[<div>]{color=yellow}\n')), 'unmappable-html')
+  // The slot parses before the name's table is consulted, so a doubly-broken span reports its inner error.
+  assert.equal(code(markdownToAdf(':date[<div>]{timestamp=1}\n')), 'unmappable-html')
+  assert.equal(code(markdownToAdf(':widget[<div>]\n')), 'unmappable-html')
   assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot')
 })
 

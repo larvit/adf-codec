@@ -55,7 +55,10 @@ The numbering is the order the work was planned in, not the order it ships.
         the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
         reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
-        `codeBlock` from it; the refusal goes when the carry reads it.
+        `codeBlock` from it; the refusal goes when the carry reads it. 3i left the slot parse
+        contextless, so the refusal a carry inside a mark spelling earns needs a channel — a reader
+        context in place of `parseInline`'s `strip` flag, or a return arm from the slot — and
+        `directiveNodes` takes its fourth reader beside it.
         `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
         last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
         corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.
@@ -109,8 +112,12 @@ The numbering is the order the work was planned in, not the order it ships.
       replaced the regex. Three sites the same sweep did not reach: `normalizeLabel` in
       `link-syntax.ts`, whose shortcut-reference input is `scan.source.slice(...)` rather than the
       999-capped `readLabel` value, and two in `emit/inline-line.ts`. The fix is the one 3h used —
-      an index walk, `trimTrailingSpace` where the ends match. §11's scanning rule is the whole
-      argument; the pipeline persona feeds documents nobody typed.
+      an index walk, `trimTrailingSpace` where the ends match. A fourth of another shape joins
+      them: `readNestedDirective` restarts its depth counter per level, so each parse level
+      re-scans the region below it and nested inline directives cost O(depth × content) — 3f's
+      cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
+      guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
+      nobody typed.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: 3h
       landed the last decision `corpus/unspellable/` held and the directory went with it, so what
