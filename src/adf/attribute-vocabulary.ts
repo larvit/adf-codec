@@ -1,15 +1,17 @@
 import type { AdfAttributes } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
 
-type AttributeKind = 'boolean' | 'json' | 'number' | 'string'
+export type AttributeKind = 'boolean' | 'json' | 'number' | 'string'
 
 export type AttributeVocabulary = Readonly<Record<string, AttributeKind>>
 
-export type VocabularyPair =
-  | { key: string; kind: 'boolean'; value: boolean }
-  | { key: string; kind: 'json'; value: JsonValue }
-  | { key: string; kind: 'number'; value: number }
-  | { key: string; kind: 'string'; value: string }
+export type VocabularyValue =
+  | { kind: 'boolean'; value: boolean }
+  | { kind: 'json'; value: JsonValue }
+  | { kind: 'number'; value: number }
+  | { kind: 'string'; value: string }
+
+export type VocabularyPair = VocabularyValue & { key: string }
 
 export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocabulary, spelledElsewhere: readonly string[]): VocabularyPair[] | undefined {
   const pairs: VocabularyPair[] = []

@@ -112,7 +112,9 @@ quoted value holds `}` unescaped. All values are strings at the grammar level; e
 assigns types.
 Canonical form orders keys alphabetically, spells values bare wherever allowed, escapes inside
 quotes in the shortest form each escape has, and omits empty `{attrs}` except where the `{` itself
-claims the directive (`:hardBreak{}`).
+claims the directive (`:hardBreak{}`). Input reads that spelling alone: keys out of order, a value
+quoted where bare carries it, an escape longer than it need be, and a number or `json` value
+outside its canonical JSON spelling are each a named error naming the spelling to write instead.
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — the leading `:` of a would-be directive, `]` inside content, a `{` right
@@ -179,21 +181,21 @@ CommonMark spells `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`
 cannot — `localId` (string) on any of them, marks, and the values below — takes the directive
 form.
 
-- `blockquote`, `bulletList`, `listItem` — containers, block body; no attributes beyond `localId`.
+- `blockquote`, `bulletList`, `listItem` — containers, block body. Attributes: `localId` (string).
 - `codeBlock` — container, body one fenced code block whose info string is the language and whose
-  content is the node's. Attributes: `hideLineNumbers` (boolean), `language` (string), `localId`,
-  `uniqueId` (string), `wrap` (boolean). A language no info string carries back — empty, the
-  reserved `adf`, or holding a backtick, a backslash, a control character, edge whitespace or an
-  entity reference — rides the `language` attribute instead and the fence carries no info string;
-  writing both is a named error.
-- `heading` — container, inline body. Attributes: `level` (number), `localId`. `level` is the `#`
-  count, so a heading carrying none, or one that is no whole number from 1 to 6, has no CommonMark
-  spelling.
-- `orderedList` — container of `listItem`, block body. Attributes: `localId`, `order` (number).
-  `order` is the first marker, so a list carrying none, one that is no whole number from 0, or one
-  whose markers would run past 999999999, has no CommonMark spelling.
-- `paragraph` — container, inline body; no attributes beyond `localId`.
-- `rule` — leaf; no attributes beyond `localId`.
+  content is the node's. Attributes: `hideLineNumbers` (boolean), `language` (string), `localId`
+  (string), `uniqueId` (string), `wrap` (boolean). A language no info string carries back — empty,
+  the reserved `adf`, or holding a backtick, a backslash, a control character, edge whitespace or
+  an entity reference — rides the `language` attribute instead and the fence carries no info
+  string; writing both is a named error.
+- `heading` — container, inline body. Attributes: `level` (number), `localId` (string). `level` is
+  the `#` count, so a heading carrying none, or one that is no whole number from 1 to 6, has no
+  CommonMark spelling.
+- `orderedList` — container of `listItem`, block body. Attributes: `localId` (string), `order`
+  (number). `order` is the first marker, so a list carrying none, one that is no whole number
+  from 0, or one whose markers would run past 999999999, has no CommonMark spelling.
+- `paragraph` — container, inline body. Attributes: `localId` (string).
+- `rule` — leaf. Attributes: `localId` (string).
 
 ````
 :::codeBlock {localId=01a03d5c-9b21-73f4-8e6a-0c47b1d9e2f8 wrap=true}
@@ -205,9 +207,10 @@ fn main() {}
 
 ### Panel
 
-Container; the arg is `panelType` (`custom` `error` `info` `note` `success` `tip` `warning`).
-Attributes: `localId` (string), `panelColor` (string), `panelIcon` (string), `panelIconId`
-(string), `panelIconText` (string) — the editor writes the last four for `custom` panels.
+- `panel` — container; the arg is `panelType` (`custom` `error` `info` `note` `success` `tip`
+  `warning`). Attributes: `localId` (string), `panelColor` (string), `panelIcon` (string),
+  `panelIconId` (string), `panelIconText` (string) — the editor writes the last four for `custom`
+  panels.
 
 ```
 :::panel warning
@@ -217,8 +220,8 @@ Check the collation before importing.
 
 ### Expand
 
-`expand` and `nestedExpand`: containers, no arg — same syntax, two node types, the name picks
-which. Attributes: `localId` (string), `title` (string).
+- `expand`, `nestedExpand` — containers, no arg; same syntax, two node types, the name picks
+  which. Attributes: `localId` (string), `title` (string).
 
 ```
 :::expand {title="Full build log"}
@@ -236,7 +239,7 @@ which. Attributes: `localId` (string), `title` (string).
   `layout` (`align-end` `align-start` `center` `full-width` `wide` `wrap-left` `wrap-right`),
   `localId` (string), `width` (number), `widthType` (`percentage` `pixel`).
 - `caption` — container, inline body. Attributes: `localId` (string).
-- `mediaGroup` — container of `::media` leaves, no attributes.
+- `mediaGroup` — container of `::media` leaves. Attributes: none.
 
 ```
 ::::mediaSingle {layout=center width=50}
@@ -306,11 +309,13 @@ Bolt M8
 :::::
 ```
 
-Attributes — `table`: `displayMode` (`default` `fixed`), `isNumberColumnEnabled` (boolean),
-`layout` (`align-end` `align-start` `center` `default` `full-width` `wide`), `localId`
-(string), `width` (number, pixels). `tableRow`: `localId` (string). `tableCell` and
-`tableHeader`: `background` (string), `colspan` (number), `colwidth` (json, one pixel width per
-spanned column), `localId` (string), `rowspan` (number), `valign` (`bottom` `middle` `top`).
+- `table` — container of `tableRow` containers. Attributes: `displayMode` (`default` `fixed`),
+  `isNumberColumnEnabled` (boolean), `layout` (`align-end` `align-start` `center` `default`
+  `full-width` `wide`), `localId` (string), `width` (number, pixels).
+- `tableRow` — container of cells. Attributes: `localId` (string).
+- `tableCell`, `tableHeader` — containers, block body. Attributes: `background` (string),
+  `colspan` (number), `colwidth` (json, one pixel width per spanned column), `localId` (string),
+  `rowspan` (number), `valign` (`bottom` `middle` `top`).
 
 ### Task and decision lists
 
@@ -318,7 +323,8 @@ spanned column), `localId` (string), `rowspan` (number), `valign` (`bottom` `mid
   Attributes: `localId` (string).
 - `taskItem` — container, inline body; the arg is the state (`DONE` `TODO`). Attributes:
   `localId` (string).
-- `blockTaskItem` — container, block body; arg and attributes as `taskItem`.
+- `blockTaskItem` — container, block body; the arg is the state as `taskItem`. Attributes:
+  `localId` (string).
 - `decisionList` — container of `decisionItem` directives. Attributes: `localId` (string).
 - `decisionItem` — container, inline body. Attributes: `localId` (string), `state` (string —
   free-form; the editor writes `DECIDED`).
@@ -336,9 +342,9 @@ Ship it
 
 ### Layout
 
-`layoutSection` — container of `layoutColumn` containers; attributes: `localId` (string).
-`layoutColumn` — container, block body; attributes: `localId` (string), `valign` (`bottom`
-`middle` `top`), `width` (number — percent).
+- `layoutSection` — container of `layoutColumn` containers. Attributes: `localId` (string).
+- `layoutColumn` — container, block body. Attributes: `localId` (string), `valign` (`bottom`
+  `middle` `top`), `width` (number — percent).
 
 ```
 ::::layoutSection
@@ -353,10 +359,11 @@ Right.
 
 ### Extensions
 
-`extension` — leaf. `bodiedExtension` — container, block body. `multiBodiedExtension` —
-container of `extensionFrame` containers; `extensionFrame` — container, block body, no
-attributes. The other three share: `extensionKey` (string), `extensionType` (string), `layout`
-(`default` `full-width` `wide`), `localId` (string), `parameters` (json), `text` (string).
+- `extension`, `bodiedExtension`, `multiBodiedExtension` — a leaf, a container with a block body,
+  and a container of `extensionFrame` containers. Attributes: `extensionKey` (string),
+  `extensionType` (string), `layout` (`default` `full-width` `wide`), `localId` (string),
+  `parameters` (json), `text` (string).
+- `extensionFrame` — container, block body. Attributes: none.
 
 ```
 ::extension {extensionKey=toc extensionType="com.atlassian.confluence.macro.core" parameters="{\"maxLevel\":2}"}
@@ -364,8 +371,8 @@ attributes. The other three share: `extensionKey` (string), `extensionType` (str
 
 ### Sync blocks
 
-`syncBlock` — leaf. `bodiedSyncBlock` — container, block body. Attributes: `localId` (string),
-`resourceId` (string).
+- `syncBlock`, `bodiedSyncBlock` — a leaf and a container with a block body. Attributes:
+  `localId` (string), `resourceId` (string).
 
 ```
 ::syncBlock {localId=0198f3a2-af74-7e91-b26c-70b15f4d9ec3 resourceId="ari:cloud:confluence:site/page/123"}
@@ -381,18 +388,19 @@ is a named error, and so is a `text` key in `{attrs}`. An enclosing mark spellin
 into the slot. The rest take no content, `:text` included; content on a node that takes none is a
 named error.
 
-- `date` — `localId` (string), `timestamp` (string, epoch milliseconds).
-- `emoji` — `id` (string), `localId` (string), `shortName` (string, `:name:`), `text` (string).
-- `hardBreak` — `localId` (string), `text` (string).
-- `inlineCard` — `data` (json), `localId` (string), `url` (string); real payloads carry one or
-  the other.
-- `mediaInline` — `alt` (string), `collection` (string), `data` (json), `height` (number), `id`
-  (string), `localId` (string), `occurrenceKey` (string), `type` (`file` `image` `link`), `width`
-  (number).
-- `mention` — `accessLevel` (`APPLICATION` `CONTAINER` `NONE` `SITE`), `id` (string), `localId`
-  (string), `text` (string), `userType` (`APP` `DEFAULT` `SPECIAL`).
-- `status` — `color` (`blue` `green` `neutral` `purple` `red` `yellow`), `localId` (string),
-  `style` (string), `text` (string).
+- `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
+- `emoji` — Attributes: `id` (string), `localId` (string), `shortName` (string, `:name:`), `text`
+  (string).
+- `hardBreak` — Attributes: `localId` (string), `text` (string).
+- `inlineCard` — Attributes: `data` (json), `localId` (string), `url` (string); real payloads
+  carry one or the other.
+- `mediaInline` — Attributes: `alt` (string), `collection` (string), `data` (json), `height`
+  (number), `id` (string), `localId` (string), `occurrenceKey` (string), `type` (`file` `image`
+  `link`), `width` (number).
+- `mention` — Attributes: `accessLevel` (`APPLICATION` `CONTAINER` `NONE` `SITE`), `id` (string),
+  `localId` (string), `text` (string), `userType` (`APP` `DEFAULT` `SPECIAL`).
+- `status` — Attributes: `color` (`blue` `green` `neutral` `purple` `red` `yellow`), `localId`
+  (string), `style` (string), `text` (string).
 
 ```
 :status[In review]{color=yellow} — :mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4}
@@ -415,14 +423,16 @@ the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identic
 ## Marks
 
 An inline node's marks ride the spelling wrapped around them, never the block sections' reserved
-`marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown spellings, which hold
-no attributes beyond `link`'s `href` and `title`, and are not directive names: `:em[x]` is a named
-error. The other four are inline directives, content required non-empty:
+`marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown spellings, and are
+not directive names: `:em[x]` is a named error. The other four are inline directives, content
+required non-empty.
 
-- `border` — `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
-- `subsup` — `type` (`sub` `sup`).
-- `textColor` — `color` (string, `#rrggbb`).
-- `underline` — no attributes.
+- `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
+- `code`, `em`, `strike`, `strong` — Attributes: none.
+- `link` — Attributes: `href` (string), `title` (string).
+- `subsup` — Attributes: `type` (`sub` `sup`).
+- `textColor` — Attributes: `color` (string, `#rrggbb`).
+- `underline` — Attributes: none.
 
 A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
 outermost first: `_:underline[x]_` gives marks `[em, underline]`, `:underline[_x_]` the reverse.

@@ -1,13 +1,17 @@
+import type { AttributeKind, VocabularyPair, VocabularyValue } from '../adf/attribute-vocabulary.ts'
 import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
-import type { VocabularyPair } from '../adf/attribute-vocabulary.ts'
 import { backslashEscape, claimsDirectiveLine } from './commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from './backtick-runs.ts'
+import { isJsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { runLength } from './emphasis-matching.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
-export type DirectiveAttributes = ReadonlyMap<string, string>
+// The value as the input spells it, beside the string the grammar decodes it to.
+export type DirectiveValue = { spelling: string; text: string }
+
+export type DirectiveAttributes = ReadonlyMap<string, DirectiveValue>
 
 export type DirectiveLine =
   | { argument: string | undefined; attributes: DirectiveAttributes; colons: number; kind: 'header'; name: string }
@@ -19,7 +23,7 @@ export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: und
 
 type Attributes = { attributes: DirectiveAttributes; length: number }
 
-type AttributePair = { end: number; key: string; value: string }
+type AttributePair = { end: number; key: string; value: DirectiveValue }
 
 const bareTokenSource = '[A-Za-z0-9_-]+'
 const bareRun = new RegExp(bareTokenSource, 'y')
@@ -34,8 +38,18 @@ const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
 
 const nameFault = 'a directive name reads [a-z][A-Za-z0-9]*'
+const orderFault = 'the {attrs} keys read in alphabetical order'
 const pairFault = 'an attribute reads key=value, the value bare or double-quoted'
 const shapeFault = 'a directive line reads a name, one bare argument and {attrs}, one space apart'
+
+export function attributeValue(text: string, kind: AttributeKind): VocabularyValue | undefined {
+  if (kind === 'string') return { kind, value: text }
+  if (kind === 'boolean') return text === 'true' || text === 'false' ? { kind, value: text === 'true' } : undefined
+  const parsed = parseJson(text)
+  if (parsed === undefined) return undefined
+  if (kind === 'json') return { kind, value: parsed }
+  return typeof parsed === 'number' ? { kind, value: parsed } : undefined
+}
 
 export function isBareToken(text: string): boolean {
   return bareToken.test(text)
@@ -77,19 +91,19 @@ export function spellStringAttribute(text: string): string {
   return isBareToken(text) ? text : quote(text)
 }
 
+export function spellAttributeValue(value: VocabularyValue): string {
+  if (value.kind === 'boolean') return `${value.value}`
+  if (value.kind === 'json') return spellJsonAttribute(value.value)
+  if (value.kind === 'number') return spellStringAttribute(JSON.stringify(value.value))
+  return spellStringAttribute(value.value)
+}
+
 export function spellVocabulary(pairs: readonly VocabularyPair[]): [string, string][] {
   return pairs.map((pair): [string, string] => [pair.key, spellAttributeValue(pair)])
 }
 
 export function unknownDirectiveFault(name: string): ConvertFault {
   return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node` }
-}
-
-function spellAttributeValue(pair: VocabularyPair): string {
-  if (pair.kind === 'boolean') return `${pair.value}`
-  if (pair.kind === 'json') return spellJsonAttribute(pair.value)
-  if (pair.kind === 'number') return spellStringAttribute(JSON.stringify(pair.value))
-  return spellStringAttribute(pair.value)
 }
 
 function quote(text: string): string {
@@ -192,8 +206,9 @@ function readCodeSpanEnd(text: string, index: number): number | undefined {
 }
 
 function readAttributes(text: string, index: number): Read<Attributes> {
-  const attributes = new Map<string, string>()
+  const attributes = new Map<string, DirectiveValue>()
   let cursor = index + 1
+  let previous = ''
   while (cursor < text.length && text.charAt(cursor) !== '}') {
     if (attributes.size > 0) {
       if (text.charAt(cursor) !== ' ') return { fault: malformedDirective(pairFault) }
@@ -201,8 +216,11 @@ function readAttributes(text: string, index: number): Read<Attributes> {
     }
     const pair = readAttributePair(text, cursor)
     if (pair.fault !== undefined) return { fault: pair.fault }
-    if (attributes.has(pair.value.key)) return { fault: malformedDirective(`the attribute key ${pair.value.key} is spelled twice`) }
-    attributes.set(pair.value.key, pair.value.value)
+    const key = pair.value.key
+    if (attributes.has(key)) return { fault: malformedDirective(`the attribute key ${key} is spelled twice`) }
+    if (key < previous) return { fault: malformedDirective(`${orderFault}: ${key} before ${previous}`) }
+    previous = key
+    attributes.set(key, pair.value.value)
     cursor = pair.value.end
   }
   if (text.charAt(cursor) !== '}') return { fault: malformedDirective('the {attrs} closing brace is missing') }
@@ -220,29 +238,29 @@ function readAttributePair(text: string, index: number): Read<AttributePair> {
     return { value: { end: quoted.value.end, key, value: quoted.value.value } }
   }
   bareRun.lastIndex = start
-  const value = bareRun.exec(text)?.[0]
-  if (value === undefined) return { fault: malformedDirective(pairFault) }
-  return { value: { end: start + value.length, key, value } }
+  const bare = bareRun.exec(text)?.[0]
+  if (bare === undefined) return { fault: malformedDirective(pairFault) }
+  return { value: { end: start + bare.length, key, value: { spelling: bare, text: bare } } }
 }
 
-function readQuotedValue(text: string, index: number): Read<{ end: number; value: string }> {
+function readQuotedValue(text: string, index: number): Read<{ end: number; value: DirectiveValue }> {
   let cursor = index + 1
   while (cursor < text.length && text.charAt(cursor) !== '"') cursor += text.charAt(cursor) === '\\' ? 2 : 1
   if (text.charAt(cursor) !== '"') return { fault: malformedDirective('the {attrs} quoted value is unclosed') }
-  const raw = text.slice(index, cursor + 1)
-  const character = rawReserved.exec(raw)?.[0]
+  const spelling = text.slice(index, cursor + 1)
+  const character = rawReserved.exec(spelling)?.[0]
   if (character !== undefined) {
     return { fault: malformedDirective(`a raw ${character} inside {attrs} breaks the directive: spell it \\u${escapeDigits(character)}`) }
   }
-  const value = parseJsonString(raw)
-  if (value === undefined) return { fault: malformedDirective('the {attrs} quoted value is not a JSON string') }
-  return { value: { end: cursor + 1, value } }
+  const parsed = parseJson(spelling)
+  if (typeof parsed !== 'string') return { fault: malformedDirective('the {attrs} quoted value is not a JSON string') }
+  return { value: { end: cursor + 1, value: { spelling, text: parsed } } }
 }
 
-function parseJsonString(raw: string): string | undefined {
+function parseJson(raw: string): JsonValue | undefined {
   try {
     const value: unknown = JSON.parse(raw)
-    return typeof value === 'string' ? value : undefined
+    return isJsonValue(value) ? value : undefined
   } catch {
     return undefined
   }

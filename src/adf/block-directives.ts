@@ -41,7 +41,7 @@ const mediaAttributes: AttributeVocabulary = {
 
 const syncBlockAttributes: AttributeVocabulary = { localId: 'string', resourceId: 'string' }
 
-const blockDirectives = {
+export const blockDirectives = {
   blockTaskItem: { attributes: localIdAttributes, contentModel: 'block' },
   blockquote: { attributes: localIdAttributes, contentModel: 'block' },
   bodiedExtension: { attributes: extensionAttributes, contentModel: 'block' },

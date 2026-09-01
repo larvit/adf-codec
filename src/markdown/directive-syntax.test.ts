@@ -1,15 +1,18 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { DirectiveLine } from './directive-syntax.ts'
+import type { DirectiveAttributes, DirectiveLine } from './directive-syntax.ts'
 import { largestNesting } from '../nesting.ts'
 import { readDirectiveLine, readInlineDirective } from './directive-syntax.ts'
 
-function attributes(...pairs: [string, string][]): ReadonlyMap<string, string> {
-  return new Map(pairs)
+// A pair the input spells bare reads its own text back; a quoted one names the spelling beside it.
+type Pair = [string, string, string?]
+
+function attributes(...pairs: Pair[]): DirectiveAttributes {
+  return new Map(pairs.map(([key, text, spelling]) => [key, { spelling: spelling ?? text, text }]))
 }
 
-function header(colons: number, name: string, argument?: string, ...pairs: [string, string][]): { value: DirectiveLine } {
+function header(colons: number, name: string, argument?: string, ...pairs: Pair[]): { value: DirectiveLine } {
   return { value: { argument, attributes: attributes(...pairs), colons, kind: 'header', name } }
 }
 
@@ -25,7 +28,7 @@ function inline(text: string): unknown {
   return { attributes: read.value.attributes, content: read.value.content, length: read.value.length, name: read.value.name }
 }
 
-function spans(text: string, name: string, content: string | undefined, ...pairs: [string, string][]): void {
+function spans(text: string, name: string, content: string | undefined, ...pairs: Pair[]): void {
   assert.deepEqual(inline(text), { attributes: attributes(...pairs), content, length: text.length, name })
 }
 
@@ -48,15 +51,23 @@ test('reads the leaf and container forms, their argument and their attributes', 
   assert.deepEqual(readDirectiveLine('::taskItem TODO'), header(2, 'taskItem', 'TODO'))
   assert.deepEqual(readDirectiveLine('::hardBreak {}'), header(2, 'hardBreak'))
   assert.deepEqual(readDirectiveLine('::media {id=a-1 type=file}'), header(2, 'media', undefined, ['id', 'a-1'], ['type', 'file']))
-  assert.deepEqual(readDirectiveLine('::panel info {panelColor="#ff0000"} '), header(2, 'panel', 'info', ['panelColor', '#ff0000']))
+  assert.deepEqual(readDirectiveLine('::panel info {panelColor="#ff0000"} '), header(2, 'panel', 'info', ['panelColor', '#ff0000', '"#ff0000"']))
   assert.deepEqual(readDirectiveLine(':::panel info'), header(3, 'panel', 'info'))
 })
 
 test('decodes a quoted attribute value, the escapes {attrs} reserves included', () => {
-  assert.deepEqual(readDirectiveLine('::extension {text="two words"}'), header(2, 'extension', undefined, ['text', 'two words']))
-  assert.deepEqual(readDirectiveLine('::extension {text="a\\u0060b\\u0026c\\u003cd\\u007ce"}'), header(2, 'extension', undefined, ['text', 'a`b&c<d|e']))
-  assert.deepEqual(readDirectiveLine('::extension {text="a\\"b\\\\c\\nd"}'), header(2, 'extension', undefined, ['text', 'a"b\\c\nd']))
-  assert.deepEqual(readDirectiveLine('::extension {text="}{"}'), header(2, 'extension', undefined, ['text', '}{']))
+  assert.deepEqual(readDirectiveLine('::extension {text="two words"}'), header(2, 'extension', undefined, ['text', 'two words', '"two words"']))
+  assert.deepEqual(
+    readDirectiveLine('::extension {text="a\\u0060b\\u0026c\\u003cd\\u007ce"}'),
+    header(2, 'extension', undefined, ['text', 'a`b&c<d|e', '"a\\u0060b\\u0026c\\u003cd\\u007ce"']),
+  )
+  assert.deepEqual(readDirectiveLine('::extension {text="a\\"b\\\\c\\nd"}'), header(2, 'extension', undefined, ['text', 'a"b\\c\nd', '"a\\"b\\\\c\\nd"']))
+  assert.deepEqual(readDirectiveLine('::extension {text="}{"}'), header(2, 'extension', undefined, ['text', '}{', '"}{"']))
+})
+
+test('names the {attrs} keys read out of the alphabetical order canonical form spells', () => {
+  assert.equal(fault('::media {type=file id=a-1}'), 'the {attrs} keys read in alphabetical order: id before type')
+  assert.deepEqual(readDirectiveLine('::media {id=a-1 type=file}'), header(2, 'media', undefined, ['id', 'a-1'], ['type', 'file']))
 })
 
 test('names the directive line no spelling reads', () => {
@@ -97,7 +108,7 @@ test('reads an inline directive only where a bracket or a brace follows the name
   assert.equal(inline(':mention @A'), 'unclaimed')
   spans(':mention[@A]', 'mention', '@A')
   spans(':date{timestamp=1756080000000}', 'date', undefined, ['timestamp', '1756080000000'])
-  spans(':emoji[]{shortName=":tada:"}', 'emoji', '', ['shortName', ':tada:'])
+  spans(':emoji[]{shortName=":tada:"}', 'emoji', '', ['shortName', ':tada:', '":tada:"'])
   spans(':underline[ a ]', 'underline', ' a ')
 })
 
@@ -107,10 +118,10 @@ test('binds an inline directive as a unit, its content balancing brackets like l
   spans(':underline[a `]` b]', 'underline', 'a `]` b')
   spans(':underline[a `b c]', 'underline', 'a `b c')
   spans(':underline[:status[x]{color=red}]', 'underline', ':status[x]{color=red}')
-  spans(':status[x]{color=red style="bold "}', 'status', 'x', ['color', 'red'], ['style', 'bold '])
+  spans(':status[x]{color=red style="bold "}', 'status', 'x', ['color', 'red'], ['style', 'bold ', '"bold "'])
   assert.deepEqual(inline(':underline[a]{}(b)'), { attributes: attributes(), content: 'a', length: 15, name: 'underline' })
   assert.deepEqual(inline(':underline[a] {}'), { attributes: attributes(), content: 'a', length: 13, name: 'underline' })
-  assert.deepEqual(inline(':text{text=" "} and more'), { attributes: attributes(['text', ' ']), content: undefined, length: 15, name: 'text' })
+  assert.deepEqual(inline(':text{text=" "} and more'), { attributes: attributes(['text', ' ', '" "']), content: undefined, length: 15, name: 'text' })
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {

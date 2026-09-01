@@ -89,7 +89,11 @@ direction hits it. A claim code names the spelling claimed, never the node that 
 a malformed `:::table` is a `malformed-directive`. A cause the carry answers gets no code: a mark no
 spelling writes rides the carry with its node. A directive whose name reads back to no node is
 `unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
-apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
+apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. What
+the grammar itself refuses stays a claim code, key order among it; a well-formed directive the
+node tables refuse — an attribute a node does not hold or spells elsewhere, a value outside its
+kind or its canonical spelling, an argument or a body its content model does not take — is
+`unsupported-node-shape`, the emitter's code for the same mismatch read the other way. A
 refusal found before its position is known — the block walk's, a directive reader's — is a
 `ConvertFault`, the code and message without the path; the node walk attaches the path as it
 descends, so a document reports its first error in document order.

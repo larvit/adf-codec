@@ -293,7 +293,7 @@ detail is settled at its own milestone.
         `spec/flavour.md`'s closing-fence sentence now says: a run reaching past the innermost
         leaves the fence it did not close a named error, which §2 prefers to closing more than the
         author wrote.
-  - [ ] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
+  - [x] **3g — The node tables read backwards.** `commonmark-subset/` reads back, the first
         directory to. A parsed directive becomes its node: the name to the type and an unknown one
         to a named error, the arg to the attribute it names, each value to the type its section
         assigns, the body to `content`, the reserved `marks` key to the marks array. 3a's drift
@@ -302,11 +302,23 @@ detail is settled at its own milestone.
         the reserved `adf` name in block position needs an error of its own — 3f reports it as
         `unknown-directive-name`, which §8 makes the signal that a later MINOR may give the name
         meaning, and `adf` never will.
+        **Settled** (the maintainer, 2026-09-01): the reserved `adf` name in block position is a
+        `malformed-directive` — the grammar section states the reservation, so it is that spelling
+        the name breaks — and a well-formed directive the tables refuse is `unsupported-node-shape`,
+        the emitter's code for the same mismatch read the other way; AGENTS.md §8 carries the
+        split. And input reads canonical `{attrs}` alone, keys in order and every value spelled as
+        the emitter spells it, the error naming the spelling to write instead: §8 makes loosening a
+        MINOR, so strict is the reversible direction, as 3f already settled for spacing.
+        Two refusals land here for a later chunk to lift, on the same rule: the inline `[content]`
+        slot, which 3i opens for `emoji`, `mention` and `status`, and the `codeBlock` content
+        model's fenced body, 3h's. `Read<T>` stays where 3f left it — the node reader knows its
+        path and returns `Result`, so no second reader took it. The drift guard earned itself on
+        the way in: the spec's `text` attribute was missing from three inline table entries, which
+        the content slot spells and the vocabulary walk already passes over.
   - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
         settles, read from the other side; the `codeBlock` directive's fenced body and the
-        `language` attribute a bare fence leaves it; the media family's composition; both table
-        forms, the pipe table's cell split and its named errors; and the one paragraph an inline
-        body takes.
+        `language` attribute a bare fence leaves it; the media family's composition; and both
+        table forms, the pipe table's cell split and its named errors.
         **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
         `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
         in a container body with no blank line between them. That reduces the three cases to one
