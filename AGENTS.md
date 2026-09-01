@@ -125,7 +125,8 @@ and neither extra leg is Node's proof twice. Deno refuses an extensionless or di
 so it holds the module graph to the fully-spelled form a browser can load; Bun runs
 JavaScriptCore, the one engine of the three that is not V8, where the Unicode property escapes
 emphasis matching leans on can disagree. Both refuse a run matching no test, so Node's is the only
-vacuous-green guard.
+vacuous-green guard, and a test may reach only for what all three `node:` shims carry — the price
+of proving those engines over the corpus rather than over a smoke import.
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
