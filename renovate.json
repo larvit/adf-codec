@@ -5,10 +5,28 @@
     {
       "customType": "regex",
       "datasourceTemplate": "docker",
+      "depNameTemplate": "denoland/deno",
+      "description": "Pin the Deno image ci.sh runs",
+      "managerFilePatterns": ["ci.sh"],
+      "matchStrings": ["denoland/deno:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
       "depNameTemplate": "node",
       "description": "Pin the node image ci.sh runs",
       "managerFilePatterns": ["ci.sh"],
       "matchStrings": ["node:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "oven/bun",
+      "description": "Pin the Bun image ci.sh runs",
+      "managerFilePatterns": ["ci.sh"],
+      "matchStrings": ["oven/bun:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
     },
     {

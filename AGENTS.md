@@ -60,6 +60,15 @@ they never reach a consumer.
 
 ## 6. The package contract
 
+- Runs on any ES2022 engine, not only Node — a browser as readily as a server. The shipped source
+  is ECMAScript and nothing else: no host import, no host global, no DOM. `tsconfig.build.json` is
+  that gate, typechecking the shipped files alone, so `node:fs`, `process` and an ES2024 method are
+  compile errors here rather than a consumer's crash there. The standard is the line, never an
+  engine list: one implementing it in part — Hermes is the live doubt, on §10's property escapes
+  and on lookbehind — is out of scope rather than a bug. Node's test runner, the corpus reads and
+  the build are the repo's own,
+  never the library's, and `engines.node` states the floor the shipped JavaScript needs — `>=18` —
+  never the higher one those repo-only tools want.
 - ESM only — no CommonJS build, no dual-package hazard.
 - One entrypoint: built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint —
   Node refuses to type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`),
@@ -104,14 +113,23 @@ descends, so a document reports its first error in document order.
   differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
   deliberate semver judgment.
 - Renovate watches devDependencies, Docker pins and action tags; automerges everything on green CI.
-- Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`); actions
-  pin semver tags.
+- Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`), as
+  specific as the publisher tags: `oven/bun:1.4.0-alpine` pins Bun's patch and leaves the base
+  floating because Bun publishes nothing narrower. Actions pin semver tags.
 
 ## 10. Tests first, in Docker
 
 Test for the behaviour wanted first, then implement until green. `node --test`, beside the code.
 Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
 coverage does not decline, containers are torn down after a run.
+
+The gate runs that same suite under Deno and Bun as well as Node, the three images pinned alike,
+and neither extra leg is Node's proof twice. Deno refuses an extensionless or directory specifier,
+so it holds the module graph to the fully-spelled form a browser can load; Bun runs
+JavaScriptCore, the one engine of the three that is not V8, where the Unicode property escapes
+emphasis matching leans on can disagree. Both refuse a run matching no test, so Node's is the only
+vacuous-green guard, and a test may reach only for what all three `node:` shims carry — the price
+of proving those engines over the corpus rather than over a smoke import.
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
