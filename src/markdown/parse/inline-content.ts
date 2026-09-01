@@ -1,7 +1,7 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { EmphasisPairing } from '../emphasis-matching.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
-import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from '../commonmark-grammar.ts'
+import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -28,9 +28,7 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 
 type Scan = { definitions: LinkDefinitions; path: ConvertErrorPath; pending: string; pieces: Piece[]; source: string }
 
-const hardBreakSpaces = / {2,}$/
 const imageAlone = 'an image fits only as a paragraph of its own'
-const trailingSpace = /[ \t]+$/
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<InlineContent> {
   const scan: Scan = { definitions, path, pending: '', pieces: [], source }
@@ -95,7 +93,7 @@ function readBackslash(scan: Scan, index: number): number {
 }
 
 function readLineEnding(scan: Scan, index: number): number {
-  const hard = hardBreakSpaces.test(scan.pending)
+  const hard = scan.pending.endsWith('  ')
   flush(scan, true)
   if (hard) pushNode(scan, { type: 'hardBreak' })
   else scan.pending = ' '
@@ -154,7 +152,7 @@ function readDirective(scan: Scan, index: number): Result<number> {
 }
 
 function flush(scan: Scan, strip: boolean): void {
-  const raw = strip ? scan.pending.replace(trailingSpace, '') : scan.pending
+  const raw = strip ? trimTrailingSpace(scan.pending) : scan.pending
   scan.pending = ''
   if (raw !== '') scan.pieces.push({ kind: 'nodes', nodes: [{ text: decodeTextEscapes(raw), type: 'text' }] })
 }

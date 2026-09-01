@@ -223,6 +223,18 @@ export function setextHeadingLevel(line: string): number | undefined {
   return underline.startsWith('=') ? 1 : 2
 }
 
+function spaceOrTab(character: string): boolean {
+  return character === ' ' || character === '\t'
+}
+
 export function trimSpace(text: string): string {
-  return text.replace(/^[ \t]+|[ \t]+$/g, '')
+  let start = 0
+  while (start < text.length && spaceOrTab(text.charAt(start))) start += 1
+  return trimTrailingSpace(text.slice(start))
+}
+
+export function trimTrailingSpace(text: string): string {
+  let end = text.length
+  while (end > 0 && spaceOrTab(text.charAt(end - 1))) end -= 1
+  return text.slice(0, end)
 }
