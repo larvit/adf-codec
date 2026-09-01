@@ -318,7 +318,8 @@ detail is settled at its own milestone.
   - [ ] **3h — The block nodes.** `block-nodes/` reads back: the plain-versus-directive choice 2f
         settles, read from the other side; the `codeBlock` directive's fenced body and the
         `language` attribute a bare fence leaves it; the media family's composition; and both
-        table forms, the pipe table's cell split and its named errors.
+        table forms, the pipe table's cell split and its named errors. `fenceInfo` is a rule both
+        directions answer alike and moves to the `markdown/` root with the language attribute.
         **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
         `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
         in a container body with no blank line between them. That reduces the three cases to one
@@ -335,10 +336,19 @@ detail is settled at its own milestone.
         outermost first; and `:em[x]` as the error `spec/flavour.md` promises. Editor-normal's
         merging half lands here, `text-whitespace` being the first fixture that forces it, and 4's
         `toEditorNormal` is built on it.
+        3g's shape leaves three: `readInlineDirectiveNode` takes the name, the attributes and the
+        slot's parsed text rather than the span, since `inline-content.ts` already imports it and
+        parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
+        that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
+        from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
+        directive position want a claim code — `:em[x]` is an error forever, so
+        `unknown-directive-name`'s "a later MINOR may give the name meaning" is the wrong signal,
+        as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
         the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
-        reading as the literal text they hold.
+        reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
+        `codeBlock` from it; the refusal goes when the carry reads it.
   - [ ] **3k — The CommonMark spec suite.** Checked in at `corpus/commonmark-spec/`, pinned to
         the version it ships — the one `html-blocks.ts` names for its start conditions —
         `corpus/README.md` gaining the kind.

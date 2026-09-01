@@ -159,6 +159,8 @@ test('names the reserved carry name a block directive spells', () => {
   const reserved = 'malformed-directive: the name adf is reserved for the opaque carry, whose block form is the fence'
   assert.equal(content(markdownToAdf('::adf\n')), reserved)
   assert.equal(content(markdownToAdf(':::adf\nx\n:::\n')), reserved)
+  assert.equal(content(markdownToAdf('```adf\nx\n```\n')), 'malformed-directive: the info string adf is reserved for the opaque carry')
+  assert.deepEqual(content(markdownToAdf('```adfx\nx\n```\n')), [{ attrs: { language: 'adfx' }, content: [text('x')], type: 'codeBlock' }])
 })
 
 test('reads each attribute value as the type its section assigns', () => {

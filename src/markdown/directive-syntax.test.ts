@@ -49,7 +49,6 @@ test('reads the leaf and container forms, their argument and their attributes', 
   assert.deepEqual(readDirectiveLine('::rule'), header(2, 'rule'))
   assert.deepEqual(readDirectiveLine('::rule  '), header(2, 'rule'))
   assert.deepEqual(readDirectiveLine('::taskItem TODO'), header(2, 'taskItem', 'TODO'))
-  assert.deepEqual(readDirectiveLine('::hardBreak {}'), header(2, 'hardBreak'))
   assert.deepEqual(readDirectiveLine('::media {id=a-1 type=file}'), header(2, 'media', undefined, ['id', 'a-1'], ['type', 'file']))
   assert.deepEqual(readDirectiveLine('::panel info {panelColor="#ff0000"} '), header(2, 'panel', 'info', ['panelColor', '#ff0000', '"#ff0000"']))
   assert.deepEqual(readDirectiveLine(':::panel info'), header(3, 'panel', 'info'))
@@ -70,6 +69,14 @@ test('names the {attrs} keys read out of the alphabetical order canonical form s
   assert.deepEqual(readDirectiveLine('::media {id=a-1 type=file}'), header(2, 'media', undefined, ['id', 'a-1'], ['type', 'file']))
 })
 
+test('spells an empty {attrs} only where the brace itself claims the directive', () => {
+  const omitted = 'an empty {attrs} is omitted unless the { itself claims the directive'
+  assert.equal(fault('::rule {}'), omitted)
+  assert.equal(fault(':::panel info {}'), omitted)
+  assert.equal(inline(':underline[a]{}'), omitted)
+  spans(':hardBreak{}', 'hardBreak', undefined)
+})
+
 test('names the directive line no spelling reads', () => {
   assert.equal(fault('::Panel'), 'a directive name reads [a-z][A-Za-z0-9]*')
   assert.equal(fault('::1panel'), 'a directive name reads [a-z][A-Za-z0-9]*')
@@ -77,7 +84,7 @@ test('names the directive line no spelling reads', () => {
   assert.equal(fault('::panel info extra'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
   assert.equal(fault('::panel{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
   assert.equal(fault('::panel info{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
-  assert.equal(fault('::panel {} x'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
+  assert.equal(fault('::panel {a=1} x'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
 })
 
 test('names the attributes no spelling reads', () => {
@@ -119,7 +126,6 @@ test('binds an inline directive as a unit, its content balancing brackets like l
   spans(':underline[a `b c]', 'underline', 'a `b c')
   spans(':underline[:status[x]{color=red}]', 'underline', ':status[x]{color=red}')
   spans(':status[x]{color=red style="bold "}', 'status', 'x', ['color', 'red'], ['style', 'bold ', '"bold "'])
-  assert.deepEqual(inline(':underline[a]{}(b)'), { attributes: attributes(), content: 'a', length: 15, name: 'underline' })
   assert.deepEqual(inline(':underline[a] {}'), { attributes: attributes(), content: 'a', length: 13, name: 'underline' })
   assert.deepEqual(inline(':text{text=" "} and more'), { attributes: attributes(['text', ' ', '" "']), content: undefined, length: 15, name: 'text' })
 })

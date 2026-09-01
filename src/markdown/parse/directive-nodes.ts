@@ -12,7 +12,7 @@ import { marksAttribute, readMarkValues } from '../block-directive-marks.ts'
 
 export type BlockDirectiveNode = { contentModel: BlockDirective['contentModel']; node: AdfNode }
 
-type Elsewhere = { key: string; place: string }
+type Elsewhere = { key: string; slot: 'argument' | 'content' }
 
 export function readBlockDirectiveNode(
   name: string,
@@ -28,7 +28,7 @@ export function readBlockDirectiveNode(
   const argumentKey = blockArgument(name)
   const rest = new Map(attributes)
   rest.delete(marksAttribute)
-  const elsewhere = argumentKey === undefined ? undefined : { key: argumentKey, place: 'as the directive argument' }
+  const elsewhere: Elsewhere | undefined = argumentKey === undefined ? undefined : { key: argumentKey, slot: 'argument' }
   const attrs = readVocabulary(name, rest, directive.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
   if (argument !== undefined) {
@@ -38,7 +38,7 @@ export function readBlockDirectiveNode(
   const spelled = attributes.get(marksAttribute)
   const marks: Result<AdfMark[] | undefined> = spelled === undefined ? success(undefined) : readMarks(name, spelled, path)
   if (!marks.ok) return marks
-  return success({ contentModel: directive.contentModel, node: directiveNode(name, attrs.value, marks.value) })
+  return success({ contentModel: directive.contentModel, node: namedNode(name, attrs.value, marks.value) })
 }
 
 export function readInlineDirectiveNode(span: DirectiveSpan, path: ConvertErrorPath): Result<AdfNode> {
@@ -49,10 +49,10 @@ export function readInlineDirectiveNode(span: DirectiveSpan, path: ConvertErrorP
     const message = slot === undefined ? `a ${span.name} takes no content` : `the content slot a ${span.name} spells its ${slot} attribute in is unsupported`
     return failure('unsupported-node-shape', message, path)
   }
-  const elsewhere = slot === undefined ? undefined : { key: slot, place: 'in the content slot' }
+  const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }
   const attrs = readVocabulary(span.name, span.attributes, directive.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
-  return success(directiveNode(span.name, attrs.value, undefined))
+  return success(namedNode(span.name, attrs.value, undefined))
 }
 
 function readVocabulary(
@@ -64,7 +64,10 @@ function readVocabulary(
 ): Result<AdfAttributes> {
   const attrs: AdfAttributes = {}
   for (const [key, spelled] of attributes) {
-    if (key === elsewhere?.key) return failure('unsupported-node-shape', `a ${type} spells its ${key} attribute ${elsewhere.place}`, path)
+    if (key === elsewhere?.key) {
+      const place = elsewhere.slot === 'argument' ? 'as the directive argument' : 'in the content slot'
+      return failure('unsupported-node-shape', `a ${type} spells its ${key} attribute ${place}`, path)
+    }
     const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
     if (kind === undefined) return failure('unsupported-node-shape', `a ${type} holds no ${key} attribute`, path)
     const read = attributeValue(spelled.text, kind)
@@ -85,7 +88,7 @@ function readMarks(type: string, spelled: DirectiveValue, path: ConvertErrorPath
   return success(marks)
 }
 
-function directiveNode(type: string, attrs: AdfAttributes, marks: readonly AdfMark[] | undefined): AdfNode {
+function namedNode(type: string, attrs: AdfAttributes, marks: readonly AdfMark[] | undefined): AdfNode {
   const named = Object.keys(attrs).length === 0 ? { type } : { attrs, type }
   return marks === undefined ? named : { ...named, marks: [...marks] }
 }

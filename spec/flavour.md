@@ -113,8 +113,9 @@ assigns types.
 Canonical form orders keys alphabetically, spells values bare wherever allowed, escapes inside
 quotes in the shortest form each escape has, and omits empty `{attrs}` except where the `{` itself
 claims the directive (`:hardBreak{}`). Input reads that spelling alone: keys out of order, a value
-quoted where bare carries it, an escape longer than it need be, and a number or `json` value
-outside its canonical JSON spelling are each a named error naming the spelling to write instead.
+quoted where bare carries it, an escape longer than it need be, an empty `{attrs}` the name or the
+`[content]` already claims, and a number or `json` value outside its canonical JSON spelling are
+each a named error naming the spelling to write instead.
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — the leading `:` of a would-be directive, `]` inside content, a `{` right

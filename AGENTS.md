@@ -122,6 +122,14 @@ The corpus, all checked in: hand-built fixtures per node and combination; real s
 live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite against
 `markdownToAdf` and `markdownToHtml`.
 
+`spec/flavour.md` is read as a source too, so the node tables cannot drift from the prose they
+copy: each `- ` bullet in `## Block nodes`, `## Inline nodes` and `## Marks` declares the nodes
+named before its first em dash, with the attributes following `Attributes: ` — a parenthesized
+value set reading `string` — and must equal the tables in `adf/`. Keep prose in those sections out
+of a bullet; fenced examples are skipped. It guards the attributes alone: nodes that differ in
+content model share a bullet, and the argument attribute is spelled ahead of `Attributes: `, so
+both answer to the round-trip corpus and to nothing else where a node has no fixture.
+
 ## 11. Code rules
 
 - Two-space indent, strict TypeScript, English everywhere. Alphabetical order wherever order
@@ -165,6 +173,9 @@ live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite aga
   there too, never a copy per direction, however conservative the copy would be.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
+  Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so
+  decode-respell-compare cannot drift, and each format writes its own — canonical JSON for a
+  number is the markdown flavour's choice, not ADF's.
 - Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a
   file does not repeat its directory in its name — `adf/document.ts`, never
   `adf/adf-document.ts`.

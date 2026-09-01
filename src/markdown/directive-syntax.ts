@@ -37,6 +37,7 @@ const quotedEscapes = new RegExp(reservedSource, 'g')
 const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
 
+const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive'
 const nameFault = 'a directive name reads [a-z][A-Za-z0-9]*'
 const orderFault = 'the {attrs} keys read in alphabetical order'
 const pairFault = 'an attribute reads key=value, the value bare or double-quoted'
@@ -136,6 +137,7 @@ function readDirectiveHeader(rest: string): Read<{ argument: string | undefined;
   if (rest.charAt(cursor) === ' ' && rest.charAt(cursor + 1) === '{') {
     const read = readAttributes(rest, cursor + 1)
     if (read.fault !== undefined) return { fault: read.fault }
+    if (read.value.attributes.size === 0) return { fault: malformedDirective(emptyFault) }
     attributes = read.value.attributes
     cursor += 1 + read.value.length
   }
@@ -161,6 +163,7 @@ function readNestedDirective(text: string, index: number, depth: number): Read<D
   if (text.charAt(cursor) === '{') {
     const read = readAttributes(text, cursor)
     if (read.fault !== undefined) return { fault: read.fault }
+    if (read.value.attributes.size === 0 && content !== undefined) return { fault: malformedDirective(emptyFault) }
     attributes = read.value.attributes
     cursor += read.value.length
   }
