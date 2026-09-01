@@ -139,13 +139,16 @@ numbering is the order the work was planned in, not the order it ships.
       additions are read here as one list before that freeze — nine sessions mint them
       independently, and one cause wearing two codes is breaking to undo after `0.1.0`. `0.1.0`
       is the markdown round-trip: both markdown directions, the types, `isAdfDocument`. The build
-      lands here: `tsconfig.build.json` gains emit of JS and `.d.ts` to `dist/` (the dev config's
-      `allowImportingTsExtensions` forces `noEmit`, so the build config needs
-      `rewriteRelativeImportExtensions`), plus `exports`/`files` in `package.json`. The
+      lands here: `tsconfig.build.json` gains emit of JS and `.d.ts` to `dist/` (its own
+      `allowImportingTsExtensions` forces `noEmit`, so `rewriteRelativeImportExtensions` lands
+      beside it), plus `exports`/`files` in `package.json`. The
       maintainer's bump PR also removes `private: true`, the guard against any earlier publish.
       §6's browser half is first checkable here, on the emitted `dist/index.js` a browser can
       load — the compile gate names no host API, and a real page converting a document is the
-      other half.
+      other half; name the engines that page covers, since Bun's JavaScriptCore is not Safari's
+      and none of the three legs is SpiderMonkey. `engines.node` gets its one-line proof here
+      too — `import('./dist/index.js')` under a pinned `node:18` image, which cannot run the
+      suite that type stripping wants 22+ for, but proves exactly what the field claims.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
       is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
       3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry

@@ -65,8 +65,8 @@ they never reach a consumer.
   `tsconfig.build.json` is that gate, typechecking the shipped files alone with `types: []` and
   `lib: ES2022`, so `node:fs`, `process` and an ES2024 method are compile errors here rather than a
   consumer's crash there. Node's test runner, the corpus reads and the build are the repo's own,
-  never the library's, and `engines.node` states the floor the shipped JavaScript needs — `>=18`,
-  the lowest line carrying ES2022 — never the higher one those repo-only tools want.
+  never the library's, and `engines.node` states the floor the shipped JavaScript needs — `>=18` —
+  never the higher one those repo-only tools want.
 - ESM only — no CommonJS build, no dual-package hazard.
 - One entrypoint: built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint —
   Node refuses to type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`),
@@ -120,9 +120,12 @@ Test for the behaviour wanted first, then implement until green. `node --test`, 
 Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
 coverage does not decline, containers are torn down after a run.
 
-The gate runs that same suite under Deno and Bun as well as Node, the three images pinned alike:
-§6's compile gate proves no host API is named, and only running proves those engines execute what
-is written. Both refuse a run that matches no test, so Node's is the only vacuous-green guard.
+The gate runs that same suite under Deno and Bun as well as Node, the three images pinned alike,
+and neither extra leg is Node's proof twice. Deno refuses an extensionless or directory specifier,
+so it holds the module graph to the fully-spelled form a browser can load; Bun runs
+JavaScriptCore, the one engine of the three that is not V8, where the Unicode property escapes
+emphasis matching leans on can disagree. Both refuse a run matching no test, so Node's is the only
+vacuous-green guard.
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards

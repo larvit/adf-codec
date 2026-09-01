@@ -5,7 +5,11 @@ cd "$(dirname "$0")"
 bun_image=oven/bun:1.4.0-alpine
 deno_image=denoland/deno:2.9.6
 node_image=node:24.19.0-alpine3.24
-in_image() { docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/app" -w /app --entrypoint "$2" "$1" "${@:3}"; }
+in_image() {
+  local image=$1 entrypoint=$2
+  shift 2
+  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
+}
 
 in_image "$node_image" npm ci
 in_image "$node_image" npm run typecheck
@@ -21,4 +25,4 @@ if printf '%s' "$test_output" | grep -q 'ℹ tests 0'; then
 fi
 
 in_image "$deno_image" deno test --allow-read --no-check src/
-in_image "$bun_image" bun test
+in_image "$bun_image" bun test src/
