@@ -148,7 +148,7 @@ numbering is the order the work was planned in, not the order it ships.
       other half. Headless Firefox is that page, settling both at once: the browser proof, and the
       only SpiderMonkey there is, `ci.sh`'s three legs being two V8s and a JavaScriptCore that is
       not Safari's. `engines.node` gets its one-line proof here
-      too — `import('./dist/index.js')` under a pinned `node:18` image, which cannot run the
+      too — `import('./dist/index.js')` under a pinned Node 18 image, which cannot run the
       suite that type stripping wants 22+ for, but proves exactly what the field claims.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
       is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —

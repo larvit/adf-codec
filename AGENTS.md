@@ -62,11 +62,11 @@ they never reach a consumer.
 
 - Runs on any ES2022 engine, not only Node — a browser as readily as a server. The shipped source
   is ECMAScript and nothing else: no host import, no host global, no DOM. `tsconfig.build.json` is
-  that gate, typechecking the shipped files alone with `types: []` and `lib: ES2022`, so `node:fs`,
-  `process` and an ES2024 method are compile errors here rather than a consumer's crash there. The
-  standard is the line, never an engine list: one implementing it in part — Hermes is the live
-  doubt, on the Unicode property escapes and the lookbehind the markdown grammar spells — is out of
-  scope rather than a bug. Node's test runner, the corpus reads and the build are the repo's own,
+  that gate, typechecking the shipped files alone, so `node:fs`, `process` and an ES2024 method are
+  compile errors here rather than a consumer's crash there. The standard is the line, never an
+  engine list: one implementing it in part — Hermes is the live doubt, on §10's property escapes
+  and on lookbehind — is out of scope rather than a bug. Node's test runner, the corpus reads and
+  the build are the repo's own,
   never the library's, and `engines.node` states the floor the shipped JavaScript needs — `>=18` —
   never the higher one those repo-only tools want.
 - ESM only — no CommonJS build, no dual-package hazard.
@@ -113,8 +113,9 @@ descends, so a document reports its first error in document order.
   differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
   deliberate semver judgment.
 - Renovate watches devDependencies, Docker pins and action tags; automerges everything on green CI.
-- Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`); actions
-  pin semver tags.
+- Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`), as
+  specific as the publisher tags: `oven/bun:1.4.0-alpine` pins Bun's patch and leaves the base
+  floating because Bun publishes nothing narrower. Actions pin semver tags.
 
 ## 10. Tests first, in Docker
 
