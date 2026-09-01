@@ -1,9 +1,12 @@
 # Todo
 
-The plan, in order. Nothing is built. Design questions are settled in `AGENTS.md`; remaining spec
-detail is settled at its own milestone.
+The plan. Design questions are settled in `AGENTS.md`; remaining spec detail is settled at its own
+milestone.
 
 ## Milestones
+
+Shipping order: 3h, 3i, 3j, 5 → `0.1.0`; 4b → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`. The
+numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.** `package.json` per §6, `tsconfig.json`, `.npmrc` (`save-exact=true`), the
       Docker tooling, `renovate.json` (§9), and `.gitea/workflows/ci.yml` gating branches:
@@ -155,8 +158,8 @@ detail is settled at its own milestone.
         2f raises what 1d's unspelled block separation costs: a single `localId` on a paragraph
         beside a plain one now refuses every container body that is a directive's — a panel, an
         expand, a table cell — where before 2f the attribute refused the document anyway.
-- [ ] **3 — `markdownToAdf`.** Each sub-item lands the fixtures its own code reads, and the runner
-      grows a parse half as they do: `parsingDirectories` beside `emittingDirectories`, a
+- [ ] **3 — `markdownToAdf` (`0.1.0`).** Each sub-item lands the fixtures its own code reads, and
+      the runner grows a parse half as they do: `parsingDirectories` beside `emittingDirectories`, a
       round-trip directory joining it only once every fixture in it reads back to its document,
       and readers for `corpus/normalization/` (setext, indented code, loose lists, `*`/`+`
       bullets, entity references, soft wraps — one-way, the markdown not canonical) and
@@ -359,9 +362,12 @@ detail is settled at its own milestone.
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
         reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
         `codeBlock` from it; the refusal goes when the carry reads it.
-  - [ ] **3k — The CommonMark spec suite.** Checked in at `corpus/commonmark-spec/`, pinned to
-        the version it ships — the one `html-blocks.ts` names for its start conditions —
-        `corpus/README.md` gaining the kind.
+        `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
+        last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
+        corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.
+  - [ ] **3k — The CommonMark spec suite (`0.2.0`).** Checked in at `corpus/commonmark-spec/`,
+        pinned to the version it ships — the one `html-blocks.ts` names for its start
+        conditions — `corpus/README.md` gaining the kind.
         **Settled** (the maintainer, 2026-08-27): three checks an example must pass, the reference
         HTML each ships read as corpus data — which adds no format and no direction (§1). §2's
         canonical fixpoint: a named error, or markdown that parses and emits to itself byte for
@@ -374,16 +380,12 @@ detail is settled at its own milestone.
         counts close both. The exception list stays the maintainer's. One outcome is no
         exception and must not be filed as one: valid CommonMark parsing to a document
         `adfToMarkdown` refuses is a §2 hole, which is what three of `corpus/unspellable/`'s four
-        hold until 3c, 3e and 3h land their answers. The parser's `ConvertErrorCode` additions
-        are read here as one list before §8's freeze — nine sessions mint them independently, and
-        one cause wearing two codes is breaking to undo after `0.1.0`. `index.ts` gains
-        `markdownToAdf` here with the README's status line, neither waiting on the exception list:
-        a parser still missing syntax is a claim the entrypoint cannot keep, and the corpus reads
-        it from its module meanwhile.
-- [ ] **4 — Round-trip property tests** over the corpus, both ways — the thing that proves 2 and
-      3. Editor-normal (§2) is finished here, on 3i's merging — `toEditorNormal(doc)` and the
-      equality the round-trip asserts, which over normalized input is the canonical serializer's
-      compact spelling — rather than staying spelled inline as `?? []` at every reader. The
+        hold until 3c, 3e and 3h land their answers.
+- [ ] **4 — Round-trip property tests (`0.2.0`)**, widening 3j's corpus round-trip past the
+      documents a human wrote — the thing that proves 2 and 3 beyond them. Editor-normal (§2) is
+      finished here, on 3i's merging — `toEditorNormal(doc)` and the equality the round-trip
+      asserts, which over normalized input is the canonical serializer's compact spelling —
+      rather than staying spelled inline as `?? []` at every reader. The
       reading half is `nodeContent`/`nodeAttrs`/`nodeMarks` over the ~28 sites spelling it
       inline today, which also lifts the branch floor §10 keeps below 100 for exactly those
       halves.
@@ -393,7 +395,7 @@ detail is settled at its own milestone.
       a document that round-trips proves no other document shares its spelling — so decide here
       whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
       no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
-- [ ] **4b — The block walk's retry, before 5.** `emitBlock` walks a subtree twice wherever
+- [ ] **4b — The block walk's retry (`0.1.1`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
       as a thematic break — and the walk below does the same, so the cost doubles per level:
       3.4kB of nested lists takes half a second, depth 20 about eight, depth 24 minutes. It
@@ -403,19 +405,30 @@ detail is settled at its own milestone.
       is what to remove — one walk answering both the readable question and the directive
       fallback. Memoizing `emitBlock` is the shortcut, and the node reference is the wrong key: a
       caller may hold one node object at two positions, where the cached depth and path are
-      another node's.
+      another node's. `0.1.0` ships with the retry in it, so a deep document is slow rather than
+      wrong until the patch.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: every
       `corpus/unspellable/` document is a decision or a deferred trigger this file names, so the
-      directory empties as they land and whatever survives is permanent. `0.1.0` is the markdown round-trip: both markdown
-      directions, the types, `isAdfDocument`. The build lands here: a build tsconfig emitting JS
-      and `.d.ts` to `dist/` (the dev config's `allowImportingTsExtensions` forces `noEmit`, so
-      the build config needs `rewriteRelativeImportExtensions`), plus `exports`/`files` in
-      `package.json`. The maintainer's bump PR also removes `private: true`, the guard against any
-      earlier publish.
-- [ ] **6 — The HTML dialect spec.** Element-by-element mapping, the `data-*` fidelity scheme, the
-      opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
-- [ ] **7 — HTML, ship `0.2.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
+      directory empties as they land and whatever survives is permanent. The parser's own code
+      additions are read here as one list before that freeze — nine sessions mint them
+      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. `0.1.0`
+      is the markdown round-trip: both markdown directions, the types, `isAdfDocument`. The build
+      lands here: a build tsconfig emitting JS and `.d.ts` to `dist/` (the dev config's
+      `allowImportingTsExtensions` forces `noEmit`, so the build config needs
+      `rewriteRelativeImportExtensions`), plus `exports`/`files` in `package.json`. The
+      maintainer's bump PR also removes `private: true`, the guard against any earlier publish.
+      **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
+      is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
+      3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry
+      `0.1.1`. A consumer using the library is worth more than a wider proof nobody has needed
+      yet, and §8's pre-1.0 rules cover what the wider proof then finds. 3k's exception list
+      landing after the release leaves the README's canonical-fixpoint sentence claiming more than
+      `0.1.0` keeps — 3e names three shapes that parse and then refuse — so the release narrows
+      that sentence or lists them.
+- [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
+      scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
+- [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
       `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 
