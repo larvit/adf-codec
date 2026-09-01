@@ -309,10 +309,11 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         path and returns `Result`, so no second reader took it. The drift guard earned itself on
         the way in: the spec's `text` attribute was missing from three inline table entries, which
         the content slot spells and the vocabulary walk already passes over.
-  - [x] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced body and the
-        `language` attribute a bare fence leaves it; the media family's composition; and both
-        table forms, the pipe table's cell split and its named errors. `fenceInfo` is a rule both
-        directions answer alike and moves to the `markdown/` root with the language attribute.
+  - [x] **3h — The block nodes.** `block-nodes/` reads back: the `codeBlock` directive's fenced
+        body and the `language` attribute a bare fence leaves it; the media family's composition;
+        and both table forms, the pipe table's cell split and its named errors. `fenceInfo` is a
+        rule both directions answer alike and moves to the `markdown/` root with the language
+        attribute.
         **Settled** (the maintainer, 2026-08-27): 1d's last pick, the one
         `container-block-separation` holds — a CommonMark block and a directive block sit adjacent
         in a container body with no blank line between them. That reduces the three cases to one

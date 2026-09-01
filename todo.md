@@ -5,8 +5,8 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5 → `0.1.0`; 4b → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`. The
-numbering is the order the work was planned in, not the order it ships.
+Shipping order: 3h, 3i, 3j, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`.
+The numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
@@ -119,6 +119,14 @@ numbering is the order the work was planned in, not the order it ships.
       caller may hold one node object at two positions, where the cached depth and path are
       another node's. `0.1.0` ships with the retry in it, so a deep document is slow rather than
       wrong until the patch.
+- [ ] **4c — The scanning rule's remaining sites (`0.1.1`).** A trailing-anchored regex re-walks
+      its run from every start position, so an interior whitespace run costs quadratic time rather
+      than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk
+      replaced the regex. Three sites the same sweep did not reach: `normalizeLabel` in
+      `link-syntax.ts`, whose shortcut-reference input is `scan.source.slice(...)` rather than the
+      999-capped `readLabel` value, and two in `emit/inline-line.ts`. The fix is the one 3h used —
+      an index walk, `trimTrailingSpace` where the ends match. §11's scanning rule is the whole
+      argument; the pipeline persona feeds documents nobody typed.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: 3h
       landed the last decision `corpus/unspellable/` held and the directory went with it, so what
