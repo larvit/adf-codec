@@ -98,7 +98,7 @@
                 {
                   "content": [
                     {
-                      "text": "Sold as a pair",
+                      "text": "\fSold as a pair\u000b",
                       "type": "text"
                     }
                   ],
@@ -157,7 +157,7 @@
                 {
                   "content": [
                     {
-                      "text": "Spare",
+                      "text": " Spare",
                       "type": "text"
                     }
                   ],

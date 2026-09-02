@@ -77,6 +77,12 @@ export function readInlineDirective(text: string, index: number): Read<Directive
   return readNestedDirective(text, index, 1)
 }
 
+// Both directions answer alike: an inline directive never spans lines, so no content slot holds a line ending.
+export function slotLineEndingFault(type: string, text: string): ConvertFault | undefined {
+  if (!/[\n\r]/.test(text)) return undefined
+  return { code: 'unspellable-whitespace', message: `the ${type} content slot holds a newline no inline directive spans` }
+}
+
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {
   if (pairs.length === 0) return ''
   const spelled = [...pairs].sort(([left], [right]) => keyOrder(left, right)).map(([key, value]) => `${key}=${value}`)
@@ -85,6 +91,10 @@ export function spellAttributes(pairs: readonly (readonly [string, string])[]): 
 
 export function spellJsonAttribute(value: JsonValue): string {
   return quote(serializeCanonicalJson(value, 'compact'))
+}
+
+export function spellLeafDirective(name: string, attributes: string): string {
+  return `:${name}${attributes === '' ? '{}' : attributes}`
 }
 
 export function spellStringAttribute(text: string): string {

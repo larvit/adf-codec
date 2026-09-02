@@ -11,3 +11,5 @@ Space after the break\
 :text{text=" "}survives too.
 
 Kept _:text{text=" "}inside:text{text=" "}_, exactly.
+
+Edged with the whitespace CommonMark keeps

@@ -1,14 +1,18 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import type { DirectiveSpan } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../emphasis-matching.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { inlineDirective } from '../../adf/inline-directives.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
+import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirective } from '../directive-syntax.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
+import { readTextDirective } from '../text-directive.ts'
 
 export type InlineContent = { image: AdfNode; nodes?: undefined } | { image?: undefined; nodes: AdfNode[] }
 
@@ -31,6 +35,10 @@ type Scan = { definitions: LinkDefinitions; path: ConvertErrorPath; pending: str
 const imageAlone = 'an image fits only as a paragraph of its own'
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<InlineContent> {
+  return parseInline(source, definitions, path, true)
+}
+
+function parseInline(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, strip: boolean): Result<InlineContent> {
   const scan: Scan = { definitions, path, pending: '', pieces: [], source }
   let index = 0
   while (index < source.length) {
@@ -76,7 +84,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
         index += 1
     }
   }
-  flush(scan, true)
+  flush(scan, strip)
   return assemble(scan)
 }
 
@@ -144,11 +152,38 @@ function readDirective(scan: Scan, index: number): Result<number> {
     return success(index + 1)
   }
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
-  const node = readInlineDirectiveNode(directive.value, scan.path)
-  if (!node.ok) return node
+  const nodes = directiveNodes(scan, directive.value)
+  if (!nodes.ok) return nodes
   flush(scan, false)
-  pushNode(scan, node.value)
+  scan.pieces.push({ kind: 'nodes', nodes: nodes.value })
   return success(index + directive.value.length)
+}
+
+function directiveNodes(scan: Scan, span: DirectiveSpan): Result<AdfNode[]> {
+  const text = readTextDirective(span)
+  if (text?.fault !== undefined) return faulted(text.fault, scan.path)
+  if (text !== undefined) return success([{ text: text.value, type: 'text' }])
+  const slot = slotNodes(scan, span.content)
+  if (!slot.ok) return slot
+  const mark = readDirectiveMark(span.name, span.attributes, scan.path)
+  if (mark !== undefined) {
+    if (!mark.ok) return mark
+    if (slot.value === undefined || slot.value.length === 0) {
+      return failure('unsupported-node-shape', `the ${span.name} mark wraps the [content] it marks`, scan.path)
+    }
+    return success(applyMark(slot.value, mark.value))
+  }
+  const node = readInlineDirectiveNode(span.name, span.attributes, slot.value, scan.path)
+  if (!node.ok) return node
+  return success([node.value])
+}
+
+function slotNodes(scan: Scan, content: string | undefined): Result<AdfNode[] | undefined> {
+  if (content === undefined) return success(undefined)
+  const parsed = parseInline(content, scan.definitions, scan.path, false)
+  if (!parsed.ok) return parsed
+  if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
+  return success(parsed.value.nodes)
 }
 
 function flush(scan: Scan, strip: boolean): void {
@@ -271,9 +306,15 @@ function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition:
 }
 
 function imageAlt(inner: readonly Piece[]): string {
-  return resolveNodes(inner)
-    .map((node) => (node.type === 'hardBreak' ? ' ' : (node.text ?? '')))
-    .join('')
+  return resolveNodes(inner).map(altText).join('')
+}
+
+// spec/flavour.md, The CommonMark image: the description's plain text, the content slot included.
+function altText(node: AdfNode): string {
+  if (node.type === 'hardBreak') return ' '
+  const slot = inlineDirective(node.type)?.textAttribute
+  const spelled = slot === undefined ? undefined : node.attrs?.[slot]
+  return typeof spelled === 'string' ? spelled : (node.text ?? '')
 }
 
 function resolveNodes(pieces: readonly Piece[]): AdfNode[] {

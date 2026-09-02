@@ -62,7 +62,9 @@ node and mark names the sections below spell as directives. Recognition is synta
 name-set-independent: anything matching the forms below parses as a directive regardless of
 whether the name is known, and an unknown name is an error result naming it — so output an old
 emitter escaped stays escaped, and erroring input gaining meaning later is MINOR, never a reparse
-(§8). The name `adf` is reserved for the opaque carry, as both directive name and fence info
+(§8). Each name belongs to one position, and a name the other one spells — a mark or an inline
+node written as a block directive, a block node written inline — is a different error, naming the
+spelling it takes. The name `adf` is reserved for the opaque carry, as both directive name and fence info
 string.
 
 **Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.
@@ -260,9 +262,10 @@ The moon, at night.
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
 from the destination, `alt` the description's plain-text content when non-empty — a link or image
-inside it contributing its own text, and a break of either kind a space. `adfToMarkdown`
-emits the image form for exactly that shape — those attrs and no others, no marks on either
-node, no caption, and a `media` carrying nothing beyond `alt`, `type` and `url` — and only where
+inside it contributing its own text, a node spelling its text in the content slot contributing
+that text, and a break of either kind a space. `adfToMarkdown` emits the image form for exactly
+that shape — those attrs and no others, no marks on either node, no caption, and a `media`
+carrying nothing beyond `alt`, `type` and `url` — and only where
 CommonMark spells the pair: a destination or a description the image form cannot hold, an empty
 `alt` included, takes the directive form instead. An image amid
 other text, or one carrying a title, is a named error: `mediaInline` carries a media
@@ -421,7 +424,9 @@ an em, strong or strike spelling's inner edges, a pipe cell's edges — is spell
 `:text{text="…"}`, the reserved key carrying the node's text, escaped by the attribute grammar
 and never literal: pipe cells trim and pad. The emitter wraps the whitespace run alone and leaves
 the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identical marks
-(AGENTS.md §2).
+(AGENTS.md §2). Input reads that spelling alone: the value is one run of spaces and tabs, or one
+run of newlines, and anything else — a mixed run, or text CommonMark carries plainly — is a named
+error.
 
 ```
 :text{text="  "}Two leading spaces held, and one text node split:text{text="\n"}over two lines.

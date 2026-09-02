@@ -80,6 +80,15 @@
         }
       ],
       "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "\u000bEdged with the whitespace CommonMark keeps\f",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
     }
   ],
   "type": "doc",

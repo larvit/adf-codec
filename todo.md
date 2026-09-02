@@ -50,28 +50,15 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **3f — The directive grammar.**
   - [x] **3g — The node tables read backwards.**
   - [x] **3h — The block nodes.**
-  - [ ] **3i — The inline nodes and the marks.** `inline-nodes/` reads back: the content slot's
-        `text` attribute and the error a slot holding anything but one unmarked text node is; the
-        `:text{text="…"}` whitespace spelling; the four directive marks and their nesting order,
-        outermost first; and `:em[x]` as the error `spec/flavour.md` promises. Editor-normal's
-        merging half lands here, `text-whitespace` being the first fixture that forces it, and 4's
-        `toEditorNormal` is built on it.
-        3g's shape leaves three: `readInlineDirectiveNode` takes the name, the attributes and the
-        slot's parsed text rather than the span, since `inline-content.ts` already imports it and
-        parsing the slot inside it is a cycle; the four directive marks get `parse/directive-marks.ts`
-        that `inline-content.ts` tries ahead of the node reader, as `mark-spellings.ts` sits apart
-        from `emit/inline-directive-spelling.ts`; and the five markdown-spelled mark names in inline
-        directive position take `unsupported-node-shape` rather than a code of their own — §8
-        already answers a well-formed directive the node tables refuse, and the message names the
-        spelling to use (`*x*`), while `unknown-directive-name`'s "a later MINOR may give the name
-        meaning" stays the wrong signal, as it was for `adf`. `corpus/errors/directive-content-slot` goes when the slot opens.
-        The marks a spelling wraps answer the same question 3g settled for a block's form: only the
-        nesting the emitter writes parses back.
+  - [x] **3i — The inline nodes and the marks.**
   - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
         the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
         named error, a carry inside a mark spelling another, and the three carve-outs' escapes
         reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
-        `codeBlock` from it; the refusal goes when the carry reads it.
+        `codeBlock` from it; the refusal goes when the carry reads it. 3i left the slot parse
+        contextless, so the refusal a carry inside a mark spelling earns needs a channel — a reader
+        context in place of `parseInline`'s `strip` flag, or a return arm from the slot — and
+        `directiveNodes` takes its fourth reader beside it.
         `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
         last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
         corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.
@@ -125,8 +112,12 @@ The numbering is the order the work was planned in, not the order it ships.
       replaced the regex. Three sites the same sweep did not reach: `normalizeLabel` in
       `link-syntax.ts`, whose shortcut-reference input is `scan.source.slice(...)` rather than the
       999-capped `readLabel` value, and two in `emit/inline-line.ts`. The fix is the one 3h used —
-      an index walk, `trimTrailingSpace` where the ends match. §11's scanning rule is the whole
-      argument; the pipeline persona feeds documents nobody typed.
+      an index walk, `trimTrailingSpace` where the ends match. A fourth of another shape joins
+      them: `readNestedDirective` restarts its depth counter per level, so each parse level
+      re-scans the region below it and nested inline directives cost O(depth × content) — 3f's
+      cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
+      guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
+      nobody typed.
 - [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
       the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: 3h
       landed the last decision `corpus/unspellable/` held and the directory went with it, so what
