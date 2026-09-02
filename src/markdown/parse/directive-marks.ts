@@ -16,7 +16,7 @@ export function readDirectiveMark(name: string, attributes: DirectiveAttributes,
   return success(Object.keys(attrs.value).length === 0 ? { type: name } : { attrs: attrs.value, type: name })
 }
 
-export function markSpellingFault(name: string): ConvertFault | undefined {
+export function inlineMarkSpellingFault(name: string): ConvertFault | undefined {
   const spelling = markSpelling(name)
   if (spelling === undefined) return undefined
   return { code: 'unsupported-node-shape', message: `${name} is spelled ${markdownForm(spelling) ?? `:${name}[…]`}, never as a block directive` }

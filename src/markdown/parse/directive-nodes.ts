@@ -9,7 +9,7 @@ import { blockDirective } from '../../adf/block-directives.ts'
 import { carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
-import { markSpellingFault } from './directive-marks.ts'
+import { inlineMarkSpellingFault } from './directive-marks.ts'
 import { marksAttribute, readMarkValues } from '../block-directive-marks.ts'
 import { readVocabulary } from './directive-attributes.ts'
 import { slotLineEndingFault } from '../directive-syntax.ts'
@@ -69,15 +69,17 @@ export function readInlineDirectiveNode(
 
 // A name the other position spells names that spelling, never the code a later MINOR may fill (AGENTS.md §8).
 function inlineSpellingFault(name: string): ConvertFault | undefined {
-  const mark = markSpellingFault(name)
+  const mark = inlineMarkSpellingFault(name)
   if (mark !== undefined) return mark
   if (inlineDirective(name) === undefined && name !== textDirectiveName) return undefined
-  return { code: 'unsupported-node-shape', message: `${name} takes the inline form, :${name}` }
+  return { code: 'unsupported-node-shape', message: `${name} takes the inline form, :${name}{…}` }
 }
 
 function blockSpellingFault(name: string): ConvertFault | undefined {
-  if (blockDirective(name) === undefined) return undefined
-  return { code: 'unsupported-node-shape', message: `${name} takes the block form, ::${name}` }
+  const directive = blockDirective(name)
+  if (directive === undefined) return undefined
+  const form = directive.contentModel === 'none' ? `::${name}` : `:::${name}`
+  return { code: 'unsupported-node-shape', message: `${name} takes the block form, ${form}` }
 }
 
 // spec/flavour.md, Inline nodes: the slot is plain text, its adjacent nodes already merged.

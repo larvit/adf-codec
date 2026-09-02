@@ -263,9 +263,9 @@ The moon, at night.
 a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
 from the destination, `alt` the description's plain-text content when non-empty — a link or image
 inside it contributing its own text, a node spelling its text in the content slot contributing
-that text, and a break of either kind a space. `adfToMarkdown`
-emits the image form for exactly that shape — those attrs and no others, no marks on either
-node, no caption, and a `media` carrying nothing beyond `alt`, `type` and `url` — and only where
+that text, and a break of either kind a space. `adfToMarkdown` emits the image form for exactly
+that shape — those attrs and no others, no marks on either node, no caption, and a `media`
+carrying nothing beyond `alt`, `type` and `url` — and only where
 CommonMark spells the pair: a destination or a description the image form cannot hold, an empty
 `alt` included, takes the directive form instead. An image amid
 other text, or one carrying a title, is a named error: `mediaInline` carries a media
