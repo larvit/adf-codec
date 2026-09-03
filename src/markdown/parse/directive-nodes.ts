@@ -3,7 +3,7 @@ import type { BlockDirective } from '../../adf/block-directives.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
-import { attributeValue, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
+import { attributeValue, directiveLineEscape, inlineDirectiveEscape, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
 import { carryName } from '../opaque-carry.ts'
@@ -27,7 +27,7 @@ export function readBlockDirectiveNode(
     return failure('malformed-directive', `the name ${carryName} is reserved for the opaque carry, whose block form is the fence`, path)
   }
   const directive = blockDirective(name)
-  if (directive === undefined) return faulted(inlineSpellingFault(name) ?? unknownDirectiveFault(name), path)
+  if (directive === undefined) return faulted(inlineSpellingFault(name) ?? unknownDirectiveFault(name, directiveLineEscape), path)
   const argumentKey = blockArgument(name)
   const rest = new Map(attributes)
   rest.delete(marksAttribute)
@@ -51,7 +51,7 @@ export function readInlineDirectiveNode(
   path: ConvertErrorPath,
 ): Result<AdfNode> {
   const directive = inlineDirective(name)
-  if (directive === undefined) return faulted(blockSpellingFault(name) ?? unknownDirectiveFault(name), path)
+  if (directive === undefined) return faulted(blockSpellingFault(name) ?? unknownDirectiveFault(name, inlineDirectiveEscape), path)
   const slot = directive.textAttribute
   if (slot === undefined && content !== undefined) return failure('unsupported-node-shape', `${name} takes no content: this one holds some`, path)
   const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }

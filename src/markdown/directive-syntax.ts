@@ -37,6 +37,7 @@ const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
 
 export const directiveLineEscape = '\\::: keeps the line literal text'
+export const inlineDirectiveEscape = '\\: keeps the colon literal'
 
 const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
 const nameFault = `a directive name reads [a-z][A-Za-z0-9]*: this one does not; ${directiveLineEscape}`
@@ -123,12 +124,16 @@ export function spellVocabulary(pairs: readonly VocabularyPair[]): [string, stri
   return pairs.map((pair): [string, string] => [pair.key, spellAttributeValue(pair)])
 }
 
-export function unknownDirectiveFault(name: string): ConvertFault {
-  return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node` }
+export function unknownDirectiveFault(name: string, escape: string): ConvertFault {
+  return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node; ${escape}` }
 }
 
 export function unsupportedNodeShape(message: string): ConvertFault {
   return { code: 'unsupported-node-shape', message }
+}
+
+function attributePairFault(escape: string): ConvertFault {
+  return malformedDirective(`${pairFault}; ${escape}`)
 }
 
 function keyOrder(left: string, right: string): number {
@@ -164,7 +169,7 @@ function readDirectiveHeader(rest: string): Read<{ argument: string | undefined;
     cursor += 1 + argument.length
   }
   if (rest.charAt(cursor) === ' ' && rest.charAt(cursor + 1) === '{') {
-    const read = readAttributes(rest, cursor + 1)
+    const read = readAttributes(rest, cursor + 1, directiveLineEscape)
     if (read.fault !== undefined) return { fault: read.fault }
     if (read.value.attributes.size === 0) return { fault: malformedDirective(emptyFault) }
     attributes = read.value.attributes
@@ -190,7 +195,7 @@ function readNestedDirective(text: string, index: number, depth: number): Read<D
   }
   let attributes = noAttributes
   if (text.charAt(cursor) === '{') {
-    const read = readAttributes(text, cursor)
+    const read = readAttributes(text, cursor, inlineDirectiveEscape)
     if (read.fault !== undefined) return { fault: read.fault }
     if (read.value.attributes.size === 0 && content !== undefined) return { fault: malformedDirective(emptyFault) }
     attributes = read.value.attributes
@@ -226,7 +231,7 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
     if (character === ']') brackets -= 1
     cursor += 1
   }
-  return { fault: malformedDirective('an inline directive [content] is unclosed') }
+  return { fault: malformedDirective(`an inline directive [content] is unclosed; ${inlineDirectiveEscape}`) }
 }
 
 // `undefined` where the span crosses the line ending an inline directive may not cross.
@@ -237,16 +242,16 @@ function readCodeSpanEnd(text: string, index: number): number | undefined {
   return text.slice(index, closer + opener).includes('\n') ? undefined : closer + opener
 }
 
-function readAttributes(text: string, index: number): Read<Attributes> {
+function readAttributes(text: string, index: number, escape: string): Read<Attributes> {
   const attributes = new Map<string, DirectiveValue>()
   let cursor = index + 1
   let previous = ''
   while (cursor < text.length && text.charAt(cursor) !== '}') {
     if (attributes.size > 0) {
-      if (text.charAt(cursor) !== ' ') return { fault: malformedDirective(pairFault) }
+      if (text.charAt(cursor) !== ' ') return { fault: attributePairFault(escape) }
       cursor += 1
     }
-    const pair = readAttributePair(text, cursor)
+    const pair = readAttributePair(text, cursor, escape)
     if (pair.fault !== undefined) return { fault: pair.fault }
     const key = pair.value.key
     if (attributes.has(key)) return { fault: malformedDirective(`the attribute key ${key} is spelled twice`) }
@@ -259,10 +264,10 @@ function readAttributes(text: string, index: number): Read<Attributes> {
   return { value: { attributes, length: cursor + 1 - index } }
 }
 
-function readAttributePair(text: string, index: number): Read<AttributePair> {
+function readAttributePair(text: string, index: number, escape: string): Read<AttributePair> {
   bareRun.lastIndex = index
   const key = bareRun.exec(text)?.[0]
-  if (key === undefined || text.charAt(index + key.length) !== '=') return { fault: malformedDirective(pairFault) }
+  if (key === undefined || text.charAt(index + key.length) !== '=') return { fault: attributePairFault(escape) }
   const start = index + key.length + 1
   if (text.charAt(start) === '"') {
     const quoted = readQuotedValue(text, start)
@@ -271,7 +276,7 @@ function readAttributePair(text: string, index: number): Read<AttributePair> {
   }
   bareRun.lastIndex = start
   const bare = bareRun.exec(text)?.[0]
-  if (bare === undefined) return { fault: malformedDirective(pairFault) }
+  if (bare === undefined) return { fault: attributePairFault(escape) }
   return { value: { end: start + bare.length, key, value: { decoded: bare, spelling: bare } } }
 }
 

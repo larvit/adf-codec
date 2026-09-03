@@ -425,5 +425,7 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         parts into `adfDocumentFault`, the guard reading it, so the first failing check is the
         message — the wrapper mistake names the key it found. Two carve-outs claim a line, not
         three: a matched `~~` pair spells `strike` silently, so nothing refuses it and no message
-        names `\~~`; the escape lands on the directive-line and pipe-table refusals a prose line
-        hits. `a pipe table row holds 1 cells` gained its plural.
+        names `\~~`. The escape lands on the refusals a prose line hits, in the form that was
+        claimed — `\:::` on the directive line's, `\|` on the pipe table's, `\:` on the inline
+        directive's, the attribute-pair and unknown-name faults taking whichever form read them.
+        `a pipe table row holds 1 cells` gained its plural.

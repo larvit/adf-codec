@@ -248,8 +248,9 @@ test('gives back the refusal the CommonMark spelling itself raises', () => {
 
 test('names the directive name no node reads back to', () => {
   assert.equal(code(markdownToAdf(':::widget info\nx\n:::\n')), 'unknown-directive-name')
-  assert.equal(content(markdownToAdf('::widget\n')), 'unknown-directive-name: the directive name widget reads back to no node')
-  assert.equal(code(markdownToAdf(':widget[x]\n')), 'unknown-directive-name')
+  assert.equal(content(markdownToAdf('::widget\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\::: keeps the line literal text')
+  assert.equal(content(markdownToAdf(':widget[x]\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\: keeps the colon literal')
+  assert.equal(content(markdownToAdf('ratio a:b[c]{d}\n')), 'malformed-directive: an attribute reads key=value, the value bare or double-quoted: this one does not; \\: keeps the colon literal')
   assert.deepEqual(path(markdownToAdf('Part.\n\n::widget\n')), ['content', 1])
   assert.equal(content(markdownToAdf('Part.\n:::x\n')), 'malformed-directive: a container fenced with 3 colons is unclosed')
   assert.deepEqual(path(markdownToAdf('Part.\n:::x\n')), ['content', 1])
@@ -417,7 +418,7 @@ test('leaves the colon that opens no directive the text it is', () => {
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {
-  assert.equal(code(markdownToAdf('Part :mention[@A\n')), 'malformed-directive')
+  assert.equal(content(markdownToAdf('Part :mention[@A\n')), 'malformed-directive: an inline directive [content] is unclosed; \\: keeps the colon literal')
   assert.equal(code(markdownToAdf('Part :mention[@A]{id=\n')), 'malformed-directive')
   assert.deepEqual(path(markdownToAdf('> Part :mention[@A\n')), ['content', 0, 'content', 0])
 })
