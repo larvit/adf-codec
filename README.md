@@ -1,4 +1,4 @@
-# @larvit/atlassian-adf-converter
+# @larvit/adf-codec
 
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
