@@ -113,7 +113,9 @@ The numbering is the order the work was planned in, not the order it ships.
       landed the last decision `corpus/unspellable/` held and the directory went with it, so what
       the code list holds from here is permanent. The parser's own code
       additions are read here as one list before that freeze — nine sessions mint them
-      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. That read
+      independently, and one cause wearing two codes is breaking to undo after `0.1.0` — one is
+      known already: a json attribute value past 500 levels reads `unsupported-node-shape` on
+      parse but `unsupported-nesting-depth` through the carry on emit. That read
       gets a test rather than an eye — every `ConvertErrorCode` member named at a production call
       site, the way `spec.test.ts` guards the node tables — since `unspelled-block-separation`
       outlived its cause until 3h went looking. `0.1.0`

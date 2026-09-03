@@ -135,8 +135,9 @@ literal-text fallback — a typo that reparses as prose is the silent loss §2 r
 ## The opaque carry (AGENTS.md §3)
 
 A node no section spells where it stands — an unknown type, or a known one whose spelling belongs
-to the other position — rides as its raw JSON and restores to a deep-equal node. Block and inline
-positions canonicalize differently, each fitting where it sits:
+to the other position — rides as its raw JSON and restores to a deep-equal node. A carry may hold
+a node the emitter spells natively: it restores verbatim, and the next emit spells it canonically
+(AGENTS.md §2). Block and inline positions canonicalize differently, each fitting where it sits:
 
 - **Block position**: a fenced code block with info string `adf`, body = the node's JSON —
   two-space indent, object keys sorted.
