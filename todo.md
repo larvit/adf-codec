@@ -138,7 +138,9 @@ The numbering is the order the work was planned in, not the order it ships.
       yet, and §8's pre-1.0 rules cover what the wider proof then finds. 3k's exception list
       landing after the release leaves the README's canonical-fixpoint sentence claiming more than
       `0.1.0` keeps — 3e names three shapes that parse and then refuse — so the release narrows
-      that sentence or lists them.
+      that sentence or lists them. `[x](http://a\b)` is one to narrow it against: it parses
+      cleanly and refuses on the way back, so a successful parse does not imply a spellable
+      document.
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**

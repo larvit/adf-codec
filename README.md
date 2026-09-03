@@ -20,6 +20,22 @@ represent.
 
 ## The shape
 
+```sh
+npm install @larvit/adf-codec
+```
+
+```ts
+import { markdownToAdf } from '@larvit/adf-codec'
+
+const result = markdownToAdf('# Release notes\n\n:::panel info\nShipped on Tuesday.\n:::\n')
+if (result.ok) {
+  send(result.value)
+} else {
+  const { code, message, path, position } = result.error
+  console.error(`${code} at line ${position.line}, ${path.map((step) => '/' + step).join('')}: ${message}`)
+}
+```
+
 Pure functions, no I/O, no configuration. ADF is the hub: markdown↔HTML compose through it.
 
 ```ts
@@ -37,17 +53,21 @@ htmlToMarkdown(html: string): Result<string>              // 0.3.0, via ADF
 
 ## The errors
 
-An ADF node type this version does not know is not an error: it rides both formats opaquely and
-restores unchanged (AGENTS.md §3).
+An ADF node type this version does not know is not an error: it is carried opaquely and restores
+unchanged (AGENTS.md §3).
 
-`ConvertError` is `{ code, message, path, position? }`. `code` is stable across minors and safe to
-`switch` on exhaustively with no `default`; `message` is free text and may change in any release.
-A parse always names a position, so `markdownToAdf` returns `ParseError` and its `position` reads
-without a guard; an emit reads no source and carries `path` alone; one handler typed on
-`ConvertError` takes both, which is what the composed `markdownToHtml` and `htmlToMarkdown` hand
-back. `path` is the node's place from the document root, alternating `'content'` and an index, so
-`path.map((step) => '/' + step).join('')` is a JSON Pointer at the node — the empty path being the
-document itself.
+`ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
+stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text
+and may change in any release. A parse always names a position, so `markdownToAdf` returns
+`ParseError` and its `position` reads without a guard; an emit reads no source and carries `path`
+alone; one handler typed on `ConvertError` takes both, which is what the composed `markdownToHtml`
+and `htmlToMarkdown` hand back. `path` is the node's place from the document root, alternating
+`'content'` and an index, so `path.map((step) => '/' + step).join('')` is a JSON Pointer at the
+node — the empty path being the document itself.
+
+A call reports the first refusal in document order and stops, so a document with several surfaces
+them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
+the identical error: fix the input, or set the document aside.
 
 `position` is `{ line, offset }` into the string passed in: `line` counted from 1, `offset` a
 UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte offset. It points at
@@ -59,20 +79,21 @@ Parsing — `markdownToAdf`, and `htmlToAdf` at `0.3.0`:
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `malformed-directive` | a `:::` block or `:name[…]` inline directive the grammar cannot read — an unclosed fence or `[content]`, `{attrs}` out of order or duplicated, invalid JSON in an `adf` carry | write the spelling the message names, or escape the line — `\:::` for a block, `\:` for an inline one — to keep it literal text |
-| `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; a backslash before a pipe keeps it literal text |
+| `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the colon; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the markdown holds a raw HTML tag, comment or processing instruction | remove it or write it in the flavour — ADF holds no raw-HTML node, and the element mapping lands at `0.3.0` |
-| `unmappable-image` | an image sits inside other content, or carries a title | give the image a paragraph of its own and drop the title, or write the `mediaSingle` directive form |
+| `unmappable-image` | an image sits inside other content, or carries a title | give the image a paragraph of its own and drop the title |
 
 Emitting — `adfToMarkdown`, and `adfToHtml` at `0.3.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node | guard the boundary you receive JSON at with `isAdfDocument`; the message names the branch that refused |
-| `unsupported-document-version` | the document's `version` is not 1 | convert a version-1 document — no markdown spelling carries another |
+| `unsupported-document-version` | the document's `version` is not 1 | keep the ADF and pass the document over, or show it read-only; the version is the site's, not yours to change |
 
-Either direction — a parse reaches the emitter's own refusals too, asking it which CommonMark
-spelling a node takes:
+Either direction. The emitter's own refusals are in this group — a parse reaches them by asking it
+which CommonMark spelling a node takes — so the two rows above are not the measure of how often an
+emit refuses:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -80,7 +101,7 @@ spelling a node takes:
 | `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
 | `unspellable-link` | a link `href` or `title` holds what no canonical escape spells — a backslash, a newline, a control character, an entity reference, an angle bracket beside a space | percent-encode the destination (`%5C` for the backslash, `%26` for the `&` that opens the entity), or drop the title |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
-| `unsupported-nesting-depth` | blocks, marks or a carried node's JSON nest past 500 levels | flatten the document; the limit is fixed, and it is what stands between a deep document and a stack overflow |
+| `unsupported-nesting-depth` | blocks, marks or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
 | `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take — or markdown writes as a directive a node the flavour spells as CommonMark | write the shape the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
