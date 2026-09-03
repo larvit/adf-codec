@@ -147,24 +147,7 @@ The numbering is the order the work was planned in, not the order it ships.
       the freeze closes it.
   - [x] **5b1 — The error's source position.**
   - [x] **5b2 — The error messages.**
-  - [ ] **5b3 — The code list and the flavour's gaps.** A second read of the surface, this one on
-        the fifteen names §8 freezes at `0.1.0`: two pairs of them are one cause each, and one
-        names a state the flavour leaves no way out of. `unspellable-character` and the text half
-        of `unspellable-whitespace` are one refusal — a character CommonMark rewrites, the message
-        naming it — and merge, `unspellable-whitespace` keeping the code for its other cause, the
-        content slot no inline directive spans. `unspellable-link-destination` and
-        `unspellable-link-title` become `unspellable-link`, the message naming the attribute.
-        `unspellable-adjacent-lists` goes entirely: two adjacent `bulletList` nodes are valid ADF a
-        site writes, and refusing them leaves the viewer persona a document it cannot render at
-        all, so the flavour gains the separator that spells the pair apart, both directions,
-        `spec/flavour.md` and fixtures. Thirteen codes stand — `unspellable-whitespace` keeps its own.
-        The bare pipe table — `a | b` over `--- | ---`, GFM's shape without the leading pipes — is
-        the one input that loses structure silently, reading back as a paragraph of prose; it
-        becomes a `malformed-pipe-table` naming the form a row takes. That code keeps its name for
-        the alignment colon: the flavour's own delimiter row is `-` runs, so the grammar is what
-        refuses, and §8 records it rather than answering it again each review. The ninth
-        `adfDocumentFault` branch names no node and carries the document's own path, the one branch
-        the other eight outshine; §8 records why the guard stays a boolean.
+  - [x] **5b3 — The code list and the flavour's gaps.**
   - [ ] **5b4 — The README's consumer surface.** §8 invites an exhaustive switch on `code` and no
         code name appears in the README, so it gains a table — code, when it fires, what the
         consumer does — grouped by direction, over the thirteen names 5b3 settled. Four things a
