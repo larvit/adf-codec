@@ -386,3 +386,9 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
         last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
         corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.
+- [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
+      the published identity: `package.json` `name` and `repository`, the Gitea repo and its
+      remote, the README title, §6's published-as line, the checkout directory.
+      **Settled** (the maintainer, 2026-09-01): ADF's own `A` is "Atlassian", and "converter" is
+      the one-way lossy tool §2 exists to replace, where a codec is both directions. It names the
+      hub, not the formats around it.

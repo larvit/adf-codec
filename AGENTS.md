@@ -73,7 +73,7 @@ they never reach a consumer.
 - One entrypoint: built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint —
   Node refuses to type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`),
   so it cannot serve an npm consumer.
-- Published to public npmjs as `@larvit/atlassian-adf-converter`. Public source: the Gitea repo
+- Published to public npmjs as `@larvit/adf-codec`. Public source: the Gitea repo
   goes public, LICENSE in place, before the first publish.
 - Exact versions: `save-exact=true` in `.npmrc`.
 

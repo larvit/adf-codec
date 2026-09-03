@@ -1,12 +1,12 @@
 {
-  "name": "@larvit/atlassian-adf-converter",
+  "name": "@larvit/adf-codec",
   "version": "0.0.0",
   "private": true,
   "description": "Lossless conversion between Atlassian Document Format, extended markdown and HTML",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://gitea.larvit.se/larvit/atlassian-adf-converter.git"
+    "url": "git+https://gitea.larvit.se/larvit/adf-codec.git"
   },
   "type": "module",
   "engines": {
