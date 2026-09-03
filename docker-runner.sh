@@ -6,5 +6,5 @@ node_image=node:24.19.0-alpine3.24
 in_image() {
   local image=$1 entrypoint=$2
   shift 2
-  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -e NPM_TOKEN -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
+  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
 }

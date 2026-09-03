@@ -4,7 +4,7 @@ import { adfDocumentFault, carriesOnly } from '../../adf/document.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
-import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
 import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { languageSlot } from '../code-language.ts'
@@ -24,10 +24,7 @@ const largestListMarker = 999999999
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
   const fault = adfDocumentFault(document)
-  if (fault !== undefined && adfDocumentFault(document, Number.POSITIVE_INFINITY) === undefined) {
-    return failure('unsupported-nesting-depth', `an attribute value nests deeper than the ${largestNesting} levels the emitter carries`, [])
-  }
-  if (fault !== undefined) return failure('not-an-adf-document', fault, [])
+  if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   const blocks = emitBlocks(document.content ?? [], 'document', [], 0)
   if (!blocks.ok) return blocks

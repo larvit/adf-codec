@@ -498,8 +498,11 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
       its own text: an attribute value past 500 levels was `unsupported-node-shape` on parse and
       `not-an-adf-document` on emit, the document guard counting the `attrs` object as a level the
       parser does not, so a value at exactly 500 parsed into a document the emitter then refused.
-      The guard now holds each attribute value to 500 of its own and runs a second time unbounded,
-      which parts depth from shape, and both directions answer with `unsupported-nesting-depth`.
+      Depth left the shape predicates on both sides: `isJsonValue` structural and `overNested`
+      beside it, `adfDocumentFault` returning the code with the message and `attributeValue` the
+      reason it refused, so both directions answer with `unsupported-nesting-depth` naming the
+      attribute, and `isAdfDocument` calls a deep document a document as it always did a deep
+      block.
       `engines.node` gets its one-line proof too — the built entrypoint imported and round-tripped
       under a pinned Node 18 image, which cannot run the suite that type stripping wants 22+ for,
       but proves exactly what the field claims. Beside it, the emitted `.d.ts` typechecked from a

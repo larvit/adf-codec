@@ -131,10 +131,15 @@ descends, so a document reports its first error in document order. `not-an-adf-d
 the document's own path throughout: eight of the guard's nine branches read the document's own
 shape, and threading a path to the ninth — a malformed node anywhere in the tree — wants the
 manual stack §11's no-recursion rule forces, whose empty half no input reaches. The message names
-the violation instead. Depth is not one of the nine: the guard runs a second time unbounded, so an
-attribute value past 500 levels is `unsupported-nesting-depth` from the emitter as it already is
-from the parser, and both directions refuse the same value — the guard counts the levels an
-attribute holds, never the `attrs` object holding it.
+the violation instead. Depth is not one of the nine: `adfDocumentFault` returns the code with the
+message, so an attribute value past 500 levels is `unsupported-nesting-depth` from the emitter as
+it already is from the parser, both directions refusing the same value — the count is the levels
+an attribute holds, never the `attrs` object holding it. `isAdfDocument` is true for a depth fault:
+a deep document is a document, as the 2000-level blocks and the 600-deep marks the guard already
+waves through are, and depth is the walks' answer rather than the shape's. A non-finite number
+stays parted where depth is joined: the parse says `unsupported-node-shape` because the markdown is
+at fault, the emit `not-an-adf-document` because the input is, and unlike depth nothing round-trips
+inconsistently between them.
 
 `position` is the parse side's alone: an emitter reads no source, so an emit error carries `path`
 and nothing more. It is `{ line, offset }` at the start of the line the block holding the refusal
@@ -156,6 +161,13 @@ wide `Result<T>`, since half their refusals come from an emit stage that read no
   deliberate semver judgment. `publish.sh` is that job, and `private: true` stops it before it
   reads the token, so the pipeline is live and silent until the maintainer's first bump drops the
   field.
+- The publish and the tag each observe their own end state — the version on npm, the tag on the
+  remote — and neither gates the other, so a run that dies between them converges on the next push
+  to `main` rather than leaving npm ahead of the tags. An unanswered registry reads the same as an
+  unpublished version, which npm's own duplicate rejection is what catches. The job rebuilds rather
+  than taking the gate's `dist`: the lockfile is committed, the image is patch-pinned and `tsc` is
+  deterministic, so the two builds agree, and promoting an artifact would make the release path
+  depend on a store that the gate would then have to keep.
 - Renovate watches devDependencies, Docker pins and action tags; automerges everything on green CI.
 - Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`), as
   specific as the publisher tags: `oven/bun:1.4.0-alpine` pins Bun's patch and leaves the base
@@ -175,10 +187,13 @@ emphasis matching leans on can disagree. Both refuse a run matching no test, so 
 vacuous-green guard, and a test may reach only for what all three `node:` shims carry — the price
 of proving those engines over the corpus rather than over a smoke import.
 
-The gate then builds and runs `package-tests/` against what it built, reached by the package's own
-name so `exports` answers: `consumer.ts` typechecks the emitted `.d.ts` from outside
-`tsconfig.build.json`, since declaration emit leaves `.ts` specifiers a consumer's resolver must
-map itself, and `node-floor.js` round-trips under a Node pinned to `engines.node`'s floor.
+The gate then packs the build and installs the tarball under `package-tests/`, so `files`,
+`exports` and `types` are proved on the artifact that ships rather than on the source tree a
+self-reference would resolve against. `consumer.ts` typechecks the emitted `.d.ts` from outside
+`tsconfig.build.json` — declaration emit leaves the `.ts` specifiers
+`rewriteRelativeImportExtensions` rewrites in the JavaScript, and this is what says a consumer's
+resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` stays unproven.
+`node-floor.js` round-trips the installed package under a Node pinned to `engines.node`'s floor.
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards

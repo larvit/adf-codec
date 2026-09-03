@@ -1,8 +1,9 @@
 import type { AdfAttributes } from '../../adf/document.ts'
 import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { DirectiveAttributes } from '../directive-syntax.ts'
-import { attributeNestingFault, attributeValue, spellAttributeValue } from '../directive-syntax.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { attributeNestingMessage } from '../../adf/document.ts'
+import { attributeValue, spellAttributeValue } from '../directive-syntax.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 
 export type Elsewhere = { key: string; slot: 'argument' | 'content' }
 
@@ -22,14 +23,11 @@ export function readVocabulary(
     const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
     if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute: this one spells it`, path)
     const read = attributeValue(spelled.decoded, kind)
-    if (read === undefined) {
-      const deep = attributeNestingFault(spelled.decoded, kind, key, type)
-      if (deep !== undefined) return faulted(deep, path)
-      return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind}`, path)
-    }
-    const spelling = spellAttributeValue(read)
+    if (read.refusal === 'nesting') return failure('unsupported-nesting-depth', attributeNestingMessage(key, type), path)
+    if (read.value === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind}`, path)
+    const spelling = spellAttributeValue(read.value)
     if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${key} attribute as ${key}=${spelling}`, path)
-    attrs[key] = read.value
+    attrs[key] = read.value.value
   }
   return success(attrs)
 }

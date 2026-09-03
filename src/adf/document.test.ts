@@ -6,7 +6,11 @@ import { adfDocumentFault, isAdfDocument } from './document.ts'
 import { largestNesting } from '../nesting.ts'
 
 function fault(value: unknown): string {
-  return adfDocumentFault(value) ?? 'accepted'
+  return adfDocumentFault(value)?.message ?? 'accepted'
+}
+
+function faultCode(value: unknown): string {
+  return adfDocumentFault(value)?.code ?? 'accepted'
 }
 
 function nested(levels: number): JsonValue {
@@ -56,13 +60,15 @@ test('rejects a node whose shape ProseMirror JSON cannot hold', () => {
   assert.equal(isAdfDocument({ content: [{ attrs: [], type: 'paragraph' }], type: 'doc', version: 1 }), false)
 })
 
-test('holds an attribute value to the levels the parser reads one at, the attrs object costing none', () => {
-  assert.equal(isAdfDocument(withAttribute(nested(largestNesting))), true)
-  assert.equal(isAdfDocument(withAttribute(nested(largestNesting + 1))), false)
-  assert.equal(adfDocumentFault(withAttribute(nested(largestNesting + 1)), Number.POSITIVE_INFINITY), undefined)
+test('names the attribute nesting past the levels the parser reads one at, and still calls the value a document', () => {
+  const deeper = (key: string, type: string): string => `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
+  assert.equal(fault(withAttribute(nested(largestNesting))), 'accepted')
+  assert.equal(fault(withAttribute(nested(largestNesting + 1))), deeper('a', 'paragraph'))
+  assert.equal(faultCode(withAttribute(nested(largestNesting + 1))), 'unsupported-nesting-depth')
+  assert.equal(isAdfDocument(withAttribute(nested(largestNesting + 1))), true)
   const marked = { content: [{ marks: [{ attrs: { a: nested(largestNesting + 1) }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }
-  assert.equal(isAdfDocument(marked), false)
-  assert.equal(adfDocumentFault(marked, Number.POSITIVE_INFINITY), undefined)
+  assert.equal(fault(marked), deeper('a', 'link'))
+  assert.equal(isAdfDocument(marked), true)
 })
 
 test('accepts the JSON values an attribute may hold', () => {

@@ -9,6 +9,9 @@ jobs:
       - run: bash ci.sh
 
   publish:
+    concurrency:
+      cancel-in-progress: false
+      group: publish
     if: github.ref == 'refs/heads/main'
     needs: gate
     runs-on: docker-host

@@ -7,7 +7,7 @@
       "datasourceTemplate": "docker",
       "depNameTemplate": "denoland/deno",
       "description": "Pin the Deno image the gate runs",
-      "managerFilePatterns": ["docker-images.sh"],
+      "managerFilePatterns": ["docker-runner.sh"],
       "matchStrings": ["denoland/deno:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
     },
@@ -16,7 +16,7 @@
       "datasourceTemplate": "docker",
       "depNameTemplate": "node",
       "description": "Pin the node image the gate runs",
-      "managerFilePatterns": ["docker-images.sh"],
+      "managerFilePatterns": ["docker-runner.sh"],
       "matchStrings": ["node_image=node:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
     },
@@ -25,7 +25,7 @@
       "datasourceTemplate": "docker",
       "depNameTemplate": "node-floor",
       "description": "Pin the node image proving engines.node, held to that major",
-      "managerFilePatterns": ["docker-images.sh"],
+      "managerFilePatterns": ["docker-runner.sh"],
       "matchStrings": ["floor_image=node:(?<currentValue>[0-9][^\\s\"']*)"],
       "packageNameTemplate": "node",
       "versioningTemplate": "docker"
@@ -35,7 +35,7 @@
       "datasourceTemplate": "docker",
       "depNameTemplate": "oven/bun",
       "description": "Pin the Bun image the gate runs",
-      "managerFilePatterns": ["docker-images.sh"],
+      "managerFilePatterns": ["docker-runner.sh"],
       "matchStrings": ["oven/bun:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
     },

@@ -437,7 +437,8 @@ test('names the attribute a node holds no reading for', () => {
 
 test('names the depth an attribute value nests past, never the kind the JSON reads as', () => {
   const nested = (levels: number): string => `${'['.repeat(levels)}1${']'.repeat(levels)}`
-  const deeper = (key: string, type: string): string => `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels the parser carries`
+  const deeper = (key: string, type: string): string =>
+    `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
   assert.equal(content(markdownToAdf(`:::tableCell {colwidth="${nested(largestNesting + 1)}"}\n:::\n`)), deeper('colwidth', 'tableCell'))
   assert.equal(content(markdownToAdf(`::rule {marks="${nested(largestNesting + 1)}"}\n`)), deeper('marks', 'rule'))
   assert.equal(content(markdownToAdf(`::media {width="${nested(largestNesting + 1)}"}\n`)), 'unsupported-node-shape: the width attribute of media is no number')

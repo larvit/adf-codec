@@ -3,10 +3,12 @@ import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
 import { backslashEscape, claimsDirectiveLine } from './commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from './backtick-runs.ts'
-import { isJsonValue } from '../json-value.ts'
+import { isJsonValue, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { runLength } from './emphasis-matching.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
+
+export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
 
 export type DirectiveValue = { decoded: string; spelling: string }
 
@@ -45,18 +47,13 @@ const orderFault = 'the {attrs} keys read in alphabetical order'
 const pairFault = 'an attribute reads key=value, the value bare or double-quoted: this one does not'
 const shapeFault = `a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveLineEscape}`
 
-export function attributeNestingFault(text: string, kind: AttributeKind, key: string, type: string): ConvertFault | undefined {
-  if (kind !== 'json' || parseJson(text, Number.POSITIVE_INFINITY) === undefined) return undefined
-  return { code: 'unsupported-nesting-depth', message: `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels the parser carries` }
-}
-
-export function attributeValue(text: string, kind: AttributeKind): VocabularyValue | undefined {
-  if (kind === 'string') return { kind, value: text }
-  if (kind === 'boolean') return text === 'true' || text === 'false' ? { kind, value: text === 'true' } : undefined
+export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
+  if (kind === 'string') return { value: { kind, value: text } }
+  if (kind === 'boolean') return text === 'true' || text === 'false' ? { value: { kind, value: text === 'true' } } : { refusal: 'kind' }
   const parsed = parseJson(text)
-  if (parsed === undefined) return undefined
-  if (kind === 'json') return { kind, value: parsed }
-  return typeof parsed === 'number' ? { kind, value: parsed } : undefined
+  if (parsed === undefined) return { refusal: 'kind' }
+  if (kind === 'number') return typeof parsed === 'number' ? { value: { kind, value: parsed } } : { refusal: 'kind' }
+  return overNested(parsed) ? { refusal: 'nesting' } : { value: { kind, value: parsed } }
 }
 
 export function isBareToken(text: string): boolean {
@@ -299,10 +296,10 @@ function readQuotedValue(text: string, index: number): Read<{ end: number; value
   return { value: { end: cursor + 1, value: { decoded: parsed, spelling } } }
 }
 
-function parseJson(raw: string, levels: number = largestNesting): JsonValue | undefined {
+function parseJson(raw: string): JsonValue | undefined {
   try {
     const value: unknown = JSON.parse(raw)
-    return isJsonValue(value, levels) ? value : undefined
+    return isJsonValue(value) ? value : undefined
   } catch {
     return undefined
   }
