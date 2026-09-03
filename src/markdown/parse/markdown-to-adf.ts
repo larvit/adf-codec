@@ -4,16 +4,18 @@ import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
 
-export function markdownToAdf(markdown: string): Result<AdfDocument> {
+const documentStart: SourcePosition = { line: 1, offset: 0 }
+
+export function markdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   const parsed = parseBlocks(markdown)
-  const content = blockNodes(parsed.blocks, parsed.definitions, [], 0)
+  const content = positioned(blockNodes(parsed.blocks, parsed.definitions, [], 0), documentStart)
   if (!content.ok) return content
   return success(content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 })
 }
@@ -22,7 +24,7 @@ function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
-    const node = blockNode(block, definitions, [...path, 'content', index], depth)
+    const node = positioned(blockNode(block, definitions, [...path, 'content', index], depth), block.position)
     if (!node.ok) return node
     content.push(node.value)
   }
@@ -111,7 +113,7 @@ function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: Li
   if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} takes the leaf form, ::`, path)
   const only = blocks.length === 1 ? blocks[0] : undefined
   if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body`, path)
-  return contentNode(node, only.text, definitions, path)
+  return positioned(contentNode(node, only.text, definitions, path), only.position)
 }
 
 function containerNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {

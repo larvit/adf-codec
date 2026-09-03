@@ -24,17 +24,23 @@ Pure functions, no I/O, no configuration. ADF is the hub: markdown↔HTML compos
 
 ```ts
 adfToMarkdown(doc: AdfDocument): Result<string>
-markdownToAdf(markdown: string): Result<AdfDocument>
+markdownToAdf(markdown: string): Result<AdfDocument, ParseError>
 adfToHtml(doc: AdfDocument): Result<string>
-htmlToAdf(html: string): Result<AdfDocument>
+htmlToAdf(html: string): Result<AdfDocument, ParseError>
 markdownToHtml(markdown: string): Result<string>   // via ADF
 htmlToMarkdown(html: string): Result<string>       // via ADF
 isAdfDocument(v: unknown): v is AdfDocument
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
-`ConvertError` is `{ code, message, path }`: a code from a closed set, and the path of the node it
-names, from the document root.
+`ConvertError` is `{ code, message, path, position? }`: a code from a closed set, the path of the
+node it names from the document root, and — parsing — a `{ line, offset }` into the string passed
+in, at the start of the line the refused block begins on, `line` counted from 1.
+
+Parsing a source always names where in it the refusal sits, so `markdownToAdf` and `htmlToAdf`
+return the narrowed `ParseError`, whose `position` is there to read without a guard. Every other
+direction emits, from a document with no source behind it, and carries `path` alone — including
+`markdownToHtml` and `htmlToMarkdown`, where half the refusals come from the emit half.
 
 ## The guarantees
 

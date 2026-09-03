@@ -1,4 +1,4 @@
-import type { ConvertFault } from '../../result.ts'
+import type { ConvertFault, SourcePosition } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveLine } from '../directive-syntax.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
 import {
@@ -12,13 +12,14 @@ import {
   markerInterruptsParagraph,
   openingCodeFence,
   openingHtmlBlock,
+  replaceNullCharacters,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
 import { isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
-export type Block =
+export type Block = { position: SourcePosition } & (
   | { argument: string | undefined; attributes: DirectiveAttributes; blocks: Block[] | undefined; kind: 'directive'; name: string }
   | { blocks: Block[]; kind: 'blockquote' }
   | { construct: string; kind: 'html' }
@@ -30,6 +31,7 @@ export type Block =
   | { kind: 'paragraph'; text: string }
   | { kind: 'rule' }
   | { kind: 'table'; rows: string[][] }
+)
 
 export type ParsedBlocks = { blocks: Block[]; definitions: Map<string, LinkDefinition> }
 
@@ -37,26 +39,27 @@ export type DirectiveBlock = Extract<Block, { kind: 'directive' }>
 
 type ListBlock = Extract<Block, { items: Block[][] }>
 
-type OpenDirective = { blocks: Block[]; colons: number; index: number; kind: 'directive'; parent: Block[] }
+type OpenDirective = { blocks: Block[]; colons: number; index: number; kind: 'directive'; parent: Block[]; position: SourcePosition }
 
 type OpenContainer =
   | Extract<Block, { kind: 'blockquote' }>
   | OpenDirective
   | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock }
 
-type OpenLeaf =
+type OpenLeaf = { position: SourcePosition } & (
   | { closer: RegExp | undefined; construct: string; kind: 'html' }
   | { held: string[]; kind: 'indented-code'; lines: string[] }
   | { indentation: number; info: string; kind: 'fenced-code'; lines: string[]; marker: string }
-  | { kind: 'paragraph'; lines: string[] }
+  | { kind: 'paragraph'; lines: string[]; positions: SourcePosition[] }
   | { kind: 'pipe-table'; rows: [string[], ...string[][]] }
+)
 
 type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; rest: Line }
 
 // The line from an absolute column on: a tab a cut splits keeps the stop it is measured against.
 type Line = { column: number; text: string }
 
-type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; stack: OpenContainer[] }
+type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; position: SourcePosition; stack: OpenContainer[] }
 
 const blankLine = /^[ \t]*$/
 const indentedCodeColumns = 4
@@ -65,8 +68,11 @@ const leafColons = 2
 const tabStop = 4
 
 export function parseBlocks(markdown: string): ParsedBlocks {
-  const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, stack: [] }
-  for (const text of normalizeInput(markdown).split('\n')) readLine(walk, { column: 0, text })
+  const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, position: { line: 1, offset: 0 }, stack: [] }
+  for (const line of sourceLines(markdown)) {
+    walk.position = line.position
+    readLine(walk, { column: 0, text: line.text })
+  }
   closeContainers(walk, 0)
   return { blocks: walk.blocks, definitions: walk.definitions }
 }
@@ -127,7 +133,7 @@ function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: n
   let opened = false
   let rest = line
   while (leadingColumns(rest) < indentedCodeColumns) {
-    const start = containerStart(rest, opened ? false : paragraphOpen, opened ? undefined : unmatched)
+    const start = containerStart(rest, opened ? false : paragraphOpen, opened ? undefined : unmatched, walk.position)
     if (start === undefined) break
     if (!opened) closeContainers(walk, depth)
     opened = true
@@ -137,15 +143,15 @@ function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: n
   return { opened, rest }
 }
 
-function containerStart(line: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
+function containerStart(line: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined, position: SourcePosition): ContainerStart | undefined {
   const opener = removeColumns(line, largestOpenerIndentation)
   const blockquote = blockquoteRest(opener)
   if (blockquote !== undefined) return { kind: 'blockquote', rest: blockquote }
   if (isThematicBreak(opener.text)) return undefined
-  return itemStart(line, opener, paragraphOpen, enclosing)
+  return itemStart(line, opener, paragraphOpen, enclosing, position)
 }
 
-function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined): ContainerStart | undefined {
+function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined, position: SourcePosition): ContainerStart | undefined {
   const marker = listMarker(opener.text)
   if (marker === undefined) return undefined
   const after: Line = { column: opener.column + marker.width, text: opener.text.slice(marker.width) }
@@ -159,19 +165,19 @@ function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: 
     fresh: !continued,
     indentation: leadingColumns(line) + marker.width + padding,
     kind: 'item',
-    list: continued ? enclosing.list : openList(marker.start),
+    list: continued ? enclosing.list : openList(marker.start, position),
     rest: blank ? after : removeColumns(after, padding),
   }
 }
 
-function openList(start: number | undefined): ListBlock {
-  return start === undefined ? { items: [], kind: 'bulletList' } : { items: [], kind: 'orderedList', start }
+function openList(start: number | undefined, position: SourcePosition): ListBlock {
+  return start === undefined ? { items: [], kind: 'bulletList', position } : { items: [], kind: 'orderedList', position, start }
 }
 
 function openContainer(walk: Walk, start: ContainerStart): void {
   const blocks: Block[] = []
   if (start.kind === 'blockquote') {
-    const blockquote: OpenContainer = { blocks, kind: 'blockquote' }
+    const blockquote: OpenContainer = { blocks, kind: 'blockquote', position: walk.position }
     currentBlocks(walk).push(blockquote)
     walk.stack.push(blockquote)
     return
@@ -195,7 +201,11 @@ function closeContainers(walk: Walk, depth: number): void {
   closeLeaf(walk)
   for (const container of walk.stack.slice(depth)) {
     if (container.kind !== 'directive') continue
-    container.parent[container.index] = { fault: malformedDirective(`a container fenced with ${container.colons} colons is unclosed`), kind: 'fault' }
+    container.parent[container.index] = {
+      fault: malformedDirective(`a container fenced with ${container.colons} colons is unclosed`),
+      kind: 'fault',
+      position: container.position,
+    }
   }
   dropContainers(walk, depth)
 }
@@ -211,10 +221,12 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'he
     blocks: directive.colons > leafColons ? [] : undefined,
     kind: 'directive',
     name: directive.name,
+    position: walk.position,
   }
   const parent = currentBlocks(walk)
   parent.push(block)
-  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, colons: directive.colons, index: parent.length - 1, kind: 'directive', parent })
+  const { position } = block
+  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, colons: directive.colons, index: parent.length - 1, kind: 'directive', parent, position })
 }
 
 function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
@@ -251,7 +263,7 @@ function innermostDirective(walk: Walk): { container: OpenDirective; depth: numb
 }
 
 function pushFault(walk: Walk, fault: ConvertFault): void {
-  currentBlocks(walk).push({ fault, kind: 'fault' })
+  currentBlocks(walk).push({ fault, kind: 'fault', position: walk.position })
 }
 
 // A claimed line ends the lazy continuation CommonMark would fold it into (spec/flavour.md).
@@ -291,7 +303,7 @@ function readBlockLine(walk: Walk, line: Line): void {
     return
   }
   if (walk.leaf === undefined && leadingColumns(line) >= indentedCodeColumns) {
-    walk.leaf = { held: [], kind: 'indented-code', lines: [removeColumns(line, indentedCodeColumns).text] }
+    walk.leaf = { held: [], kind: 'indented-code', lines: [removeColumns(line, indentedCodeColumns).text], position: walk.position }
     return
   }
   openLeaf(walk, line)
@@ -320,14 +332,14 @@ function openLeaf(walk: Walk, line: Line): void {
   const cells = pipeCells(opener)
   if (cells !== undefined) {
     closeLeaf(walk)
-    walk.leaf = { kind: 'pipe-table', rows: [cells] }
+    walk.leaf = { kind: 'pipe-table', position: walk.position, rows: [cells] }
     return
   }
   if (readLineBlock(walk, opener)) return
   const fence = openingCodeFence(opener)
   if (fence !== undefined) {
     closeLeaf(walk)
-    walk.leaf = { indentation: leadingColumns(line), info: fence.info, kind: 'fenced-code', lines: [], marker: fence.marker }
+    walk.leaf = { indentation: leadingColumns(line), info: fence.info, kind: 'fenced-code', lines: [], marker: fence.marker, position: walk.position }
     return
   }
   const html = openingHtmlBlock(opener, walk.leaf?.kind === 'paragraph')
@@ -336,7 +348,7 @@ function openLeaf(walk: Walk, line: Line): void {
     return
   }
   closeLeaf(walk)
-  walk.leaf = { closer: html.closer, construct: html.construct, kind: 'html' }
+  walk.leaf = { closer: html.closer, construct: html.construct, kind: 'html', position: walk.position }
   if (html.closer?.test(line.text) === true) closeLeaf(walk)
 }
 
@@ -344,79 +356,98 @@ function openLeaf(walk: Walk, line: Line): void {
 function readLineBlock(walk: Walk, opener: string): boolean {
   const level = walk.leaf?.kind === 'paragraph' ? setextHeadingLevel(opener) : undefined
   if (level !== undefined) {
-    const text = takeParagraph(walk)
-    if (text !== undefined) {
-      currentBlocks(walk).push({ kind: 'heading', level, text })
+    const paragraph = takeParagraph(walk)
+    if (paragraph !== undefined) {
+      currentBlocks(walk).push({ kind: 'heading', level, position: paragraph.position, text: paragraph.text })
       return true
     }
   }
   if (isThematicBreak(opener)) {
     closeLeaf(walk)
-    currentBlocks(walk).push({ kind: 'rule' })
+    currentBlocks(walk).push({ kind: 'rule', position: walk.position })
     return true
   }
   const heading = atxHeading(opener)
   if (heading === undefined) return false
   closeLeaf(walk)
-  currentBlocks(walk).push({ kind: 'heading', level: heading.level, text: heading.text })
+  currentBlocks(walk).push({ kind: 'heading', level: heading.level, position: walk.position, text: heading.text })
   return true
 }
 
 function appendParagraph(walk: Walk, line: string): void {
   const leaf = walk.leaf
   const text = line.replace(/^[ \t]+/, '')
-  if (leaf?.kind === 'paragraph') leaf.lines.push(text)
-  else walk.leaf = { kind: 'paragraph', lines: [text] }
+  if (leaf?.kind !== 'paragraph') {
+    walk.leaf = { kind: 'paragraph', lines: [text], position: walk.position, positions: [walk.position] }
+    return
+  }
+  leaf.lines.push(text)
+  leaf.positions.push(walk.position)
 }
 
 function closeLeaf(walk: Walk): void {
   const leaf = walk.leaf
   if (leaf === undefined) return
   if (leaf.kind === 'paragraph') {
-    const text = takeParagraph(walk)
-    if (text !== undefined) currentBlocks(walk).push({ kind: 'paragraph', text })
+    const paragraph = takeParagraph(walk)
+    if (paragraph !== undefined) currentBlocks(walk).push(paragraph)
     return
   }
   walk.leaf = undefined
-  if (leaf.kind === 'html') currentBlocks(walk).push({ construct: leaf.construct, kind: 'html' })
-  else if (leaf.kind === 'pipe-table') currentBlocks(walk).push(pipeTableBlock(leaf.rows))
-  else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', text: leaf.lines.join('\n') })
+  const { position } = leaf
+  if (leaf.kind === 'html') currentBlocks(walk).push({ construct: leaf.construct, kind: 'html', position })
+  else if (leaf.kind === 'pipe-table') currentBlocks(walk).push(pipeTableBlock(leaf.rows, position))
+  else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', position, text: leaf.lines.join('\n') })
 }
 
-function pipeTableBlock(rows: readonly [string[], ...string[][]]): Block {
+function pipeTableBlock(rows: readonly [string[], ...string[][]], position: SourcePosition): Block {
   const [header, delimiter, ...body] = rows
   if (delimiter !== undefined && delimiter.some(isPipeAlignment)) {
-    return faultedBlock('a pipe table carries no column alignment ADF could hold')
+    return faultedBlock('a pipe table carries no column alignment ADF could hold', position)
   }
   if (delimiter === undefined || !delimiter.every(isPipeDelimiter)) {
-    return faultedBlock('a pipe table underlines its header with a row of `-` runs')
+    return faultedBlock('a pipe table underlines its header with a row of `-` runs', position)
   }
   const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
-  if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${ragged.length} cells where its header holds ${header.length}`)
-  return { kind: 'table', rows: [header, ...body] }
+  if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${ragged.length} cells where its header holds ${header.length}`, position)
+  return { kind: 'table', position, rows: [header, ...body] }
 }
 
-function faultedBlock(message: string): Block {
-  return { fault: malformedPipeTable(message), kind: 'fault' }
+function faultedBlock(message: string, position: SourcePosition): Block {
+  return { fault: malformedPipeTable(message), kind: 'fault', position }
 }
 
-function takeParagraph(walk: Walk): string | undefined {
+// The definitions a paragraph gives up are whole lines, so what is left starts at one this held.
+function takeParagraph(walk: Walk): Extract<Block, { kind: 'paragraph' }> | undefined {
   const leaf = walk.leaf
   if (leaf?.kind !== 'paragraph') return undefined
   walk.leaf = undefined
   const text = readLinkDefinitions(walk.definitions, leaf.lines.join('\n'))
-  return text === '' ? undefined : text
+  if (text === '') return undefined
+  const kept = leaf.positions[leaf.lines.length - text.split('\n').length]
+  return { kind: 'paragraph', position: kept ?? leaf.position, text }
 }
 
 function currentBlocks(walk: Walk): Block[] {
   return walk.stack.at(-1)?.blocks ?? walk.blocks
 }
 
-function normalizeInput(markdown: string): string {
-  return markdown
-    .replace(/\r\n?/g, '\n')
-    .replaceAll('\u0000', '\ufffd')
-    .replace(/\n$/, '')
+function* sourceLines(markdown: string): Generator<{ position: SourcePosition; text: string }> {
+  let line = 1
+  let start = 0
+  for (let index = 0; index < markdown.length; index += 1) {
+    const character = markdown.charAt(index)
+    if (character !== '\n' && character !== '\r') continue
+    yield sourceLine(markdown, line, start, index)
+    if (character === '\r' && markdown.charAt(index + 1) === '\n') index += 1
+    line += 1
+    start = index + 1
+  }
+  if (start < markdown.length) yield sourceLine(markdown, line, start, markdown.length)
+}
+
+function sourceLine(markdown: string, line: number, start: number, end: number): { position: SourcePosition; text: string } {
+  return { position: { line, offset: start }, text: replaceNullCharacters(markdown.slice(start, end)) }
 }
 
 function leadingColumns(line: Line): number {

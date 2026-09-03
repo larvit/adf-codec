@@ -1,4 +1,4 @@
-import { readEntityReference } from './entity-references.ts'
+import { readEntityReference, replacementCharacter } from './entity-references.ts'
 
 export type LinePosition = 'first' | 'later'
 
@@ -27,6 +27,7 @@ const bracketedAutolink = new RegExp(`<(?:${autolinkSource})>`, 'y')
 const controlCharacter = new RegExp(`[${controlCharacterRange}]`)
 const htmlTag = new RegExp(htmlTagSource, 'y')
 const nullCharacter = new RegExp(nullCharacterSource)
+const nullCharacters = new RegExp(nullCharacterSource, 'g')
 const tagName = new RegExp(`^</?(${tagNameSource})[\\s\\S]*$`)
 // The opener's own match ends with the terminator where the construct is complete on its own (`<!-->`).
 const inlineHtmlConstructs = [
@@ -135,6 +136,10 @@ export function holdsControlCharacter(text: string): boolean {
 
 export function holdsNullCharacter(text: string): boolean {
   return nullCharacter.test(text)
+}
+
+export function replaceNullCharacters(text: string): string {
+  return text.replaceAll(nullCharacters, replacementCharacter)
 }
 
 function htmlTagName(text: string): string {

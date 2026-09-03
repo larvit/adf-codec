@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
-import type { Result } from '../../result.ts'
+import type { ParseError, Result, SourcePosition } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markdownToAdf } from './markdown-to-adf.ts'
 
@@ -21,6 +21,10 @@ function content(result: Result<AdfDocument>): AdfNode[] | string {
 
 function path(result: Result<AdfDocument>): readonly (number | string)[] {
   return result.ok ? ['built'] : result.error.path
+}
+
+function position(result: Result<AdfDocument, ParseError>): SourcePosition | string {
+  return result.ok ? 'built' : result.error.position
 }
 
 function text(value: string): AdfNode {
@@ -441,6 +445,30 @@ test('refuses the raw HTML no element mapping carries', () => {
 test('swallows an HTML block ahead of the claim a line inside it would make', () => {
   assert.equal(code(markdownToAdf('<!--\n:::\n-->\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('<div>\n| x |\n</div>\n')), 'unmappable-html')
+})
+
+test('names the line and the offset in the input a refusal sits at, the innermost block winning', () => {
+  assert.deepEqual(position(markdownToAdf('<div>\n')), { line: 1, offset: 0 })
+  assert.deepEqual(position(markdownToAdf('Part.\n\n<div>\n')), { line: 3, offset: 7 })
+  assert.deepEqual(position(markdownToAdf('> Part.\n>\n> a <span>b</span>\n')), { line: 3, offset: 10 })
+  assert.deepEqual(position(markdownToAdf('- Part.\n- a <span>b</span>\n')), { line: 2, offset: 8 })
+  assert.deepEqual(position(markdownToAdf('Part.\n\n:::panel info\nMore.\n')), { line: 3, offset: 7 })
+  assert.deepEqual(position(markdownToAdf('x\n\na <span>b</span>\n===\n')), { line: 3, offset: 3 })
+  assert.deepEqual(position(markdownToAdf('x\n\n```adf\n{\n```\n')), { line: 3, offset: 3 })
+  assert.deepEqual(position(markdownToAdf('x\n\n| a |\n')), { line: 3, offset: 3 })
+  assert.deepEqual(position(markdownToAdf('a\nb <span>c</span>\n')), { line: 1, offset: 0 })
+  assert.deepEqual(position(markdownToAdf('Part.\r\n\r\n<div>\r\n')), { line: 3, offset: 9 })
+  assert.deepEqual(position(markdownToAdf('a\u0000b\n\n<div>\n')), { line: 3, offset: 5 })
+  assert.deepEqual(position(markdownToAdf(':::caption\na <span>b</span>\n:::\n')), { line: 2, offset: 11 })
+  assert.deepEqual(position(markdownToAdf('x\n\n:::caption\n- a\n:::\n')), { line: 3, offset: 3 })
+})
+
+test('names the line the text a paragraph keeps starts on, never a definition line it gave up', () => {
+  assert.deepEqual(position(markdownToAdf('[a]: /url\n<span>b</span>\n')), { line: 2, offset: 10 })
+  assert.deepEqual(position(markdownToAdf('[a]: /a\n[b]: /b\n[c]: /c\n[d]: /d\n<span>x</span>\n')), { line: 5, offset: 32 })
+  assert.deepEqual(position(markdownToAdf('[a]:\n<the url>\n"Title"\n<span>b</span>\n')), { line: 4, offset: 23 })
+  assert.deepEqual(position(markdownToAdf('> [a]: /url\n> <span>b</span>\n')), { line: 2, offset: 12 })
+  assert.deepEqual(position(markdownToAdf(':::caption\n[a]: /url\n<span>b</span>\n:::\n')), { line: 3, offset: 21 })
 })
 
 test('gives up the link reference definitions a paragraph opens with', () => {
