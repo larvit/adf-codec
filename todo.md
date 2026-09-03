@@ -145,14 +145,7 @@ The numbering is the order the work was planned in, not the order it ships.
       README documenting no part of it. The sub-items are that read's answers, and they land before
       5 because §8 freezes the code list at `0.1.0` and 5b3's table is what reads the list before
       the freeze closes it.
-  - [ ] **5b1 — The error's source position.** A parse error names an ADF path into a document the
-        caller does not hold yet — `unmappable-html` at `["content", 5]` for a `<span>` on line
-        12 — and no coordinate into the markdown string it passed in. `ConvertError` gains an
-        optional `position` the parser carries to every parse-side mint, and the README's published
-        shape gains it.
-        **Settled** (the maintainer, 2026-09-03): the position is the parse side's alone — an
-        emitter has no source string to point into, so emit-side errors keep `path` unchanged. The
-        representation and where the position is captured are implementation judgment.
+  - [x] **5b1 — The error's source position.**
   - [ ] **5b2 — The error messages.** Most state the rule and leave the violation to be inferred —
         `a text node holds text` for a node holding none — so `rule: violation` becomes house style
         across the sites that do. `not-an-adf-document` gives one sentence of eight words to `null`,

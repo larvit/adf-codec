@@ -392,3 +392,18 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
       **Settled** (the maintainer, 2026-09-01): ADF's own `A` is "Atlassian", and "converter" is
       the one-way lossy tool §2 exists to replace, where a codec is both directions. It names the
       hub, not the formats around it.
+  - [x] **5b1 — The error's source position.** A parse error names an ADF path into a document the
+        caller does not hold yet — `unmappable-html` at `["content", 5]` for a `<span>` on line
+        12 — and no coordinate into the markdown string it passed in. `ConvertError` gains an
+        optional `position` the parser carries to every parse-side mint, and the README's published
+        shape gains it.
+        **Settled** (the maintainer, 2026-09-03): the position is the parse side's alone — an
+        emitter has no source string to point into, so emit-side errors keep `path` unchanged. The
+        representation and where the position is captured are implementation judgment.
+        The block walk mints it and the node walk attaches it as results return, one call in
+        `blockNodes`, so the innermost block wins and the emitter's own refusals — which the
+        parser re-enters for the CommonMark spelling — get an input coordinate too. Line endings
+        stay as the input spells them, so an offset indexes the string the caller passed rather
+        than a normalized copy of it. §8 records both framings the review settled beside it:
+        `unsupported-node-shape` stays one code across the two directions, and `unmappable-html`
+        names the version rather than the element.
