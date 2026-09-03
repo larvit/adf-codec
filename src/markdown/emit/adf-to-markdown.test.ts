@@ -38,8 +38,8 @@ test('names the node a refusal came from, and no source the emitter never read',
   assert.equal(position(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), undefined)
 })
 
-test('refuses a value that is not an ADF document', () => {
-  assert.equal(code(adfToMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document')
+test('refuses a value that is not an ADF document, naming the check it failed', () => {
+  assert.equal(markdown(adfToMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })
 
 test('refuses a document version the markdown cannot carry', () => {
@@ -186,8 +186,14 @@ test('refuses a carried node nested deeper than the levels its position leaves',
 })
 
 test('refuses a node whose content model the canonical form cannot emit', () => {
-  assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
+  assert.equal(
+    markdown(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))),
+    'unsupported-node-shape: a codeBlock holds plain text nodes only: this paragraph node is not one',
+  )
+  assert.equal(
+    markdown(adfToMarkdown(document({ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }], type: 'codeBlock' }))),
+    'unsupported-node-shape: a codeBlock holds plain text nodes only: this text node is not one',
+  )
 })
 
 test('spells a list its own content shape cannot hold as a directive', () => {
@@ -320,7 +326,10 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
   let attrs: AdfMark['attrs'] = { depth: 'x' }
   for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), 'not-an-adf-document')
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))),
+    "not-an-adf-document: an ADF document's content holds ADF nodes: one of them is not",
+  )
 })
 
 test('escapes a literal delimiter that would merge with an emitted one', () => {
@@ -383,18 +392,26 @@ test('spells a list item whose marker completes a thematic break as a directive'
 })
 
 test('refuses the characters CommonMark rewrites', () => {
-  assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' }))), 'unspellable-whitespace')
+  assert.equal(
+    markdown(adfToMarkdown(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' }))),
+    'unspellable-whitespace: a codeBlock holds no carriage return CommonMark keeps: this text holds one',
+  )
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\u0000b', type: 'text' })))), 'unspellable-character')
   assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))), 'unspellable-character')
-  assert.equal(code(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape')
+  assert.equal(
+    markdown(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))),
+    'unsupported-node-shape: a codeBlock holds plain text nodes only: this text node is not one',
+  )
 })
 
 test('refuses a text node the spelling would empty out', () => {
   const nested: AdfNode[] = [{ text: 'lost', type: 'text' }]
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: '', type: 'text' })))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '', type: 'text' })))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document(paragraph({ content: nested, text: 'x', type: 'text' })))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document(paragraph({ content: nested, marks: [{ type: 'code' }], text: 'x', type: 'text' })))), 'unsupported-node-shape')
+  const empty = 'unsupported-node-shape: a text node holds text: this one has none'
+  const holding = 'unsupported-node-shape: a text node holds no content: this one holds some'
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ text: '', type: 'text' })))), empty)
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '', type: 'text' })))), empty)
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ content: nested, text: 'x', type: 'text' })))), holding)
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ content: nested, marks: [{ type: 'code' }], text: 'x', type: 'text' })))), holding)
 })
 
 test('carries a mark run whose edge holds whitespace CommonMark flanking counts', () => {
@@ -478,8 +495,8 @@ test('carries a block node mark in the reserved attribute', () => {
 })
 
 test('refuses the content a directive body has no room for', () => {
-  assert.equal(code(adfToMarkdown(document({ content: [paragraph()], type: 'media' }))), 'unsupported-node-shape')
-  assert.equal(code(adfToMarkdown(document({ text: 'x', type: 'panel' }))), 'unsupported-node-shape')
+  assert.equal(markdown(adfToMarkdown(document({ content: [paragraph()], type: 'media' }))), 'unsupported-node-shape: a media holds no content: this one holds some')
+  assert.equal(markdown(adfToMarkdown(document({ text: 'x', type: 'panel' }))), 'unsupported-node-shape: a panel carries no text: this one holds text')
 })
 
 test('separates blocks in a container body by a blank line only where the fence is not separation already', () => {
@@ -578,13 +595,14 @@ test('carries an inline node attribute no section spells', () => {
 })
 
 test('refuses the content and slot an inline directive has no room for', () => {
-  const refused = (node: AdfNode): string => code(adfToMarkdown(document(paragraph(node, { text: 'y', type: 'text' }))))
-  assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'status' }), 'unsupported-node-shape')
-  assert.equal(refused({ text: 'x', type: 'status' }), 'unsupported-node-shape')
-  assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'hardBreak' }), 'unsupported-node-shape')
-  assert.equal(refused({ text: 'x', type: 'hardBreak' }), 'unsupported-node-shape')
-  assert.equal(refused({ attrs: { text: 'a\nb' }, type: 'status' }), 'unspellable-whitespace')
-  assert.equal(refused({ attrs: { text: 'a\u0000b' }, type: 'status' }), 'unspellable-character')
+  const refused = (node: AdfNode): string => markdown(adfToMarkdown(document(paragraph(node, { text: 'y', type: 'text' }))))
+  const neither = (type: string, held: string): string => `unsupported-node-shape: a ${type} node holds neither content nor text: this one holds ${held}`
+  assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'status' }), neither('status', 'content'))
+  assert.equal(refused({ text: 'x', type: 'status' }), neither('status', 'text'))
+  assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'hardBreak' }), neither('hardBreak', 'content'))
+  assert.equal(refused({ text: 'x', type: 'hardBreak' }), neither('hardBreak', 'text'))
+  assert.equal(refused({ attrs: { text: 'a\nb' }, type: 'status' }), 'unspellable-whitespace: the status content slot holds a newline no inline directive spans')
+  assert.equal(refused({ attrs: { text: 'a\u0000b' }, type: 'status' }), 'unspellable-character: a status content slot holds a null character CommonMark replaces')
 })
 
 test('spells the directive marks around the longest run they cover', () => {

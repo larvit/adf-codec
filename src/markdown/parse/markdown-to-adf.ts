@@ -46,7 +46,7 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
     case 'heading':
       return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, definitions, path)
     case 'html':
-      return failure('unmappable-html', `no ADF node carries ${block.construct}`, path)
+      return failure('unmappable-html', `no raw HTML converts at this version: ${block.construct}`, path)
     case 'orderedList':
       return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, definitions, path, depth)
     case 'paragraph':
@@ -73,9 +73,9 @@ function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, de
   const { contentModel, node } = read
   if (blocks === undefined) {
     if (contentModel === 'none' || contentModel === 'inline') return success(node)
-    return failure('unsupported-node-shape', `${node.type} spells its body in the container form, :::`, path)
+    return failure('unsupported-node-shape', `${node.type} spells its body in the container form, :::, never the leaf form`, path)
   }
-  if (contentModel === 'none') return failure('unsupported-node-shape', `${node.type} holds no content`, path)
+  if (contentModel === 'none') return failure('unsupported-node-shape', `${node.type} holds no content: this one holds some`, path)
   if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
   if (contentModel === 'block') return containerNode(node, blocks, definitions, path, depth)
   return inlineBodyNode(node, blocks, definitions, path)
@@ -83,7 +83,7 @@ function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, de
 
 function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
   const only = blocks.length === 1 ? blocks[0] : undefined
-  if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one code block as its body`, path)
+  if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one code block as its body: this body is not one`, path)
   const attribute = node.attrs?.['language']
   const fromFence = only.language !== ''
   const slot = languageSlot(fromFence ? only.language : attribute)
@@ -110,9 +110,9 @@ function tableNode(rows: readonly string[][], definitions: LinkDefinitions, path
 }
 
 function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
-  if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} takes the leaf form, ::`, path)
+  if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} takes the leaf form, ::, never an empty container`, path)
   const only = blocks.length === 1 ? blocks[0] : undefined
-  if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body`, path)
+  if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body: this body is not one`, path)
   return positioned(contentNode(node, only.text, definitions, path), only.position)
 }
 

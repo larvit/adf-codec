@@ -146,15 +146,7 @@ The numbering is the order the work was planned in, not the order it ships.
       5 because §8 freezes the code list at `0.1.0` and 5b3's table is what reads the list before
       the freeze closes it.
   - [x] **5b1 — The error's source position.**
-  - [ ] **5b2 — The error messages.** Most state the rule and leave the violation to be inferred —
-        `a text node holds text` for a node holding none — so `rule: violation` becomes house style
-        across the sites that do. `not-an-adf-document` gives one sentence of eight words to `null`,
-        a string, a missing `version`, a `type` that is not `doc` and a REST envelope around the
-        document; naming the check that failed makes the highest-frequency integrator mistake
-        self-diagnosing without the library naming a REST shape (§7). The three carve-out claim
-        messages name the escape that unclaims the line — `\|`, `\~~`, `\:::` — which today only
-        `spec/flavour.md` holds. `unmappable-html` reads as §8 now frames it: this version converts
-        no raw HTML, never a permanent judgment on the element.
+  - [x] **5b2 — The error messages.**
   - [ ] **5b3 — The README's consumer surface.** §8 invites an exhaustive switch on `code` and no
         code name appears in the README, so it gains a table — code, when it fires, what the
         consumer does — grouped by direction; drafting it is the audit that reads the fifteen names

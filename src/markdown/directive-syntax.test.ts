@@ -70,7 +70,7 @@ test('names the {attrs} keys read out of the alphabetical order canonical form s
 })
 
 test('spells an empty {attrs} only where the brace itself claims the directive', () => {
-  const omitted = 'an empty {attrs} is omitted unless the { itself claims the directive'
+  const omitted = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
   assert.equal(fault('::rule {}'), omitted)
   assert.equal(fault(':::panel info {}'), omitted)
   assert.equal(inline(':underline[a]{}'), omitted)
@@ -78,26 +78,27 @@ test('spells an empty {attrs} only where the brace itself claims the directive',
 })
 
 test('names the directive line no spelling reads', () => {
-  assert.equal(fault('::Panel'), 'a directive name reads [a-z][A-Za-z0-9]*')
-  assert.equal(fault('::1panel'), 'a directive name reads [a-z][A-Za-z0-9]*')
-  assert.equal(fault('::panel  info'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
-  assert.equal(fault('::panel info extra'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
-  assert.equal(fault('::panel{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
-  assert.equal(fault('::panel info{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
-  assert.equal(fault('::panel {a=1} x'), 'a directive line reads a name, one bare argument and {attrs}, one space apart')
+  assert.equal(fault('::Panel'), 'a directive name reads [a-z][A-Za-z0-9]*: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::1panel'), 'a directive name reads [a-z][A-Za-z0-9]*: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel  info'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel info extra'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel info{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel {a=1} x'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
 })
 
 test('names the attributes no spelling reads', () => {
   assert.equal(fault('::panel {a=1'), 'the {attrs} closing brace is missing')
   assert.equal(fault('::panel {a="x}'), 'the {attrs} quoted value is unclosed')
   assert.equal(fault('::panel {a="\\uzzzz"}'), 'the {attrs} quoted value is not a JSON string')
-  assert.equal(fault('::panel {a}'), 'an attribute reads key=value, the value bare or double-quoted')
-  assert.equal(fault('::panel {a=}'), 'an attribute reads key=value, the value bare or double-quoted')
-  assert.equal(fault('::panel {=1}'), 'an attribute reads key=value, the value bare or double-quoted')
-  assert.equal(fault('::panel {a=1  b=2}'), 'an attribute reads key=value, the value bare or double-quoted')
-  assert.equal(fault('::panel { a=1}'), 'an attribute reads key=value, the value bare or double-quoted')
-  assert.equal(fault('::panel {a=1 }'), 'an attribute reads key=value, the value bare or double-quoted')
+  assert.equal(fault('::panel {a}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel {a=}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel {=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel {a=1  b=2}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel { a=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
+  assert.equal(fault('::panel {a=1 }'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
   assert.equal(fault('::panel {a=1 a=2}'), 'the attribute key a is spelled twice')
+  assert.equal(inline(':mention[@A]{id}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\: keeps the colon literal')
 })
 
 test('breaks the directive on the raw characters a quoted value spells as escapes', () => {
@@ -131,10 +132,10 @@ test('binds an inline directive as a unit, its content balancing brackets like l
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {
-  assert.equal(inline(':mention[@A'), 'an inline directive [content] is unclosed')
-  assert.equal(inline(':mention[@A\nB]'), 'an inline directive [content] is unclosed')
-  assert.equal(inline(':mention[a `b\nc` d]'), 'an inline directive [content] is unclosed')
-  assert.equal(inline(':underline[:status[x'), 'an inline directive [content] is unclosed')
+  assert.equal(inline(':mention[@A'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
+  assert.equal(inline(':mention[@A\nB]'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
+  assert.equal(inline(':mention[a `b\nc` d]'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
+  assert.equal(inline(':underline[:status[x'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
   assert.equal(inline(':mention[@A]{id=1'), 'the {attrs} closing brace is missing')
   assert.equal(inline(':mention{id=1'), 'the {attrs} closing brace is missing')
   assert.equal(inline(':text{text="a\nb"}'), 'the {attrs} quoted value is not a JSON string')

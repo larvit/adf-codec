@@ -56,7 +56,7 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number): R
     const shape = spelling === 'compact' ? 'compact, keys sorted' : 'two-space indent, keys sorted'
     return { fault: unsupportedNodeShape(`the opaque carry spells its node's JSON canonically: ${shape}`) }
   }
-  if (!isAdfNode(value)) return { fault: unsupportedNodeShape("the opaque carry holds one ADF node's JSON") }
+  if (!isAdfNode(value)) return { fault: unsupportedNodeShape("the opaque carry holds one ADF node's JSON: this JSON is no ADF node") }
   return { value }
 }
 

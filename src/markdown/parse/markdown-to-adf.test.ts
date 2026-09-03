@@ -155,7 +155,7 @@ test('names the slot a codeBlock spells its language outside of', () => {
   assert.equal(content(markdownToAdf(':::codeBlock {language=rust}\n```sql\nx\n```\n:::\n')), slot)
   assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\n```adf\nx\n```\n:::\n')), slot)
   assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\n```a\\b\nx\n```\n:::\n')), slot)
-  assert.equal(content(markdownToAdf('::codeBlock {wrap=true}\n')), 'unsupported-node-shape: codeBlock spells its body in the container form, :::')
+  assert.equal(content(markdownToAdf('::codeBlock {wrap=true}\n')), 'unsupported-node-shape: codeBlock spells its body in the container form, :::, never the leaf form')
 })
 
 test('reads a pipe table into the header row and the body rows under it', () => {
@@ -182,11 +182,11 @@ test('claims the line a pipe opens and gives the rest back to the block walk', (
 })
 
 test('names the pipe table a claimed line does not spell', () => {
-  assert.equal(content(markdownToAdf('| a | b |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs')
-  assert.equal(content(markdownToAdf('| a |\n| x |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs')
-  assert.equal(content(markdownToAdf('| a | b |\n| :--- | ---: |\n')), 'malformed-pipe-table: a pipe table carries no column alignment ADF could hold')
-  assert.equal(content(markdownToAdf('| a | b |\n| --- |\n')), 'malformed-pipe-table: a pipe table row holds 1 cells where its header holds 2')
-  assert.equal(content(markdownToAdf('| a |\n| --- |\n| b | c |\n')), 'malformed-pipe-table: a pipe table row holds 2 cells where its header holds 1')
+  assert.equal(content(markdownToAdf('| a | b |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text')
+  assert.equal(content(markdownToAdf('| a |\n| x |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text')
+  assert.equal(content(markdownToAdf('| a | b |\n| :--- | ---: |\n')), 'malformed-pipe-table: a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon')
+  assert.equal(content(markdownToAdf('| a | b |\n| --- |\n')), 'malformed-pipe-table: a pipe table row holds 1 cell where its header holds 2 cells')
+  assert.equal(content(markdownToAdf('| a |\n| --- |\n| b | c |\n')), 'malformed-pipe-table: a pipe table row holds 2 cells where its header holds 1 cell')
   assert.deepEqual(path(markdownToAdf('Part.\n\n| a |\n')), ['content', 1])
 })
 
@@ -248,8 +248,9 @@ test('gives back the refusal the CommonMark spelling itself raises', () => {
 
 test('names the directive name no node reads back to', () => {
   assert.equal(code(markdownToAdf(':::widget info\nx\n:::\n')), 'unknown-directive-name')
-  assert.equal(content(markdownToAdf('::widget\n')), 'unknown-directive-name: the directive name widget reads back to no node')
-  assert.equal(code(markdownToAdf(':widget[x]\n')), 'unknown-directive-name')
+  assert.equal(content(markdownToAdf('::widget\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\::: keeps the line literal text')
+  assert.equal(content(markdownToAdf(':widget[x]\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\: keeps the colon literal')
+  assert.equal(content(markdownToAdf('ratio a:b[c]{d}\n')), 'malformed-directive: an attribute reads key=value, the value bare or double-quoted: this one does not; \\: keeps the colon literal')
   assert.deepEqual(path(markdownToAdf('Part.\n\n::widget\n')), ['content', 1])
   assert.equal(content(markdownToAdf('Part.\n:::x\n')), 'malformed-directive: a container fenced with 3 colons is unclosed')
   assert.deepEqual(path(markdownToAdf('Part.\n:::x\n')), ['content', 1])
@@ -258,10 +259,10 @@ test('names the directive name no node reads back to', () => {
 test('names the position a directive name the other one spells belongs to', () => {
   assert.equal(content(markdownToAdf(':::em\na\n:::\n')), 'unsupported-node-shape: em is spelled _x_, never as a block directive')
   assert.equal(content(markdownToAdf('::underline\n')), 'unsupported-node-shape: underline is spelled :underline[…], never as a block directive')
-  assert.equal(content(markdownToAdf('::text {text=" "}\n')), 'unsupported-node-shape: text takes the inline form, :text{…}')
-  assert.equal(content(markdownToAdf('::date {timestamp=1}\n')), 'unsupported-node-shape: date takes the inline form, :date{…}')
-  assert.equal(content(markdownToAdf(':paragraph[a]\n')), 'unsupported-node-shape: paragraph takes the block form, :::paragraph')
-  assert.equal(content(markdownToAdf(':rule[a]\n')), 'unsupported-node-shape: rule takes the block form, ::rule')
+  assert.equal(content(markdownToAdf('::text {text=" "}\n')), 'unsupported-node-shape: text takes the inline form, :text{…}, never the block form')
+  assert.equal(content(markdownToAdf('::date {timestamp=1}\n')), 'unsupported-node-shape: date takes the inline form, :date{…}, never the block form')
+  assert.equal(content(markdownToAdf(':paragraph[a]\n')), 'unsupported-node-shape: paragraph takes the block form, :::paragraph, never the inline form')
+  assert.equal(content(markdownToAdf(':rule[a]\n')), 'unsupported-node-shape: rule takes the block form, ::rule, never the inline form')
   assert.equal(code(markdownToAdf(':::widget\na\n:::\n')), 'unknown-directive-name')
   assert.equal(code(markdownToAdf(':widget[a]\n')), 'unknown-directive-name')
 })
@@ -303,16 +304,16 @@ test('names the canonical spelling a carried JSON reads alone', () => {
 })
 
 test('names the node JSON an opaque carry restores alone', () => {
-  const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON"
+  const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node"
   assert.equal(content(markdownToAdf('```adf\n[]\n```\n')), node)
   assert.equal(content(markdownToAdf(':adf{json=null}\n')), node)
   assert.equal(content(markdownToAdf(':adf{json="{\\"kind\\":\\"x\\"}"}\n')), node)
 })
 
 test('names the shape the inline carry reads alone', () => {
-  assert.equal(content(markdownToAdf(':adf[x]{json="{}"}\n')), 'unsupported-node-shape: adf takes no content')
-  assert.equal(content(markdownToAdf(':adf{}\n')), 'unsupported-node-shape: adf holds one json attribute alone')
-  assert.equal(content(markdownToAdf(':adf{json="{}" localId=x}\n')), 'unsupported-node-shape: adf holds one json attribute alone')
+  assert.equal(content(markdownToAdf(':adf[x]{json="{}"}\n')), 'unsupported-node-shape: adf takes no content: this one holds some')
+  assert.equal(content(markdownToAdf(':adf{}\n')), 'unsupported-node-shape: adf holds one json attribute alone: this one does not')
+  assert.equal(content(markdownToAdf(':adf{json="{}" localId=x}\n')), 'unsupported-node-shape: adf holds one json attribute alone: this one does not')
   assert.equal(content(markdownToAdf(':adf{json="null"}\n')), 'unsupported-node-shape: adf spells its json attribute as json=null')
 })
 
@@ -372,7 +373,7 @@ test('reads the reserved marks key as the node array it spells', () => {
 })
 
 test('names the marks key no marks array reads back from', () => {
-  const named = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON'
+  const named = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON: this one is not'
   assert.equal(content(markdownToAdf('::rule {marks="[]"}\n')), named)
   assert.equal(content(markdownToAdf('::rule {marks="[1]"}\n')), named)
   assert.equal(content(markdownToAdf('::rule {marks="{}"}\n')), named)
@@ -381,15 +382,15 @@ test('names the marks key no marks array reads back from', () => {
 })
 
 test('names the attribute a node holds no reading for', () => {
-  assert.equal(content(markdownToAdf('::rule {bogus=1}\n')), 'unsupported-node-shape: rule holds no bogus attribute')
+  assert.equal(content(markdownToAdf('::rule {bogus=1}\n')), 'unsupported-node-shape: rule holds no bogus attribute: this one spells it')
   assert.equal(content(markdownToAdf('::media {width=wide}\n')), 'unsupported-node-shape: the width attribute of media is no number')
   assert.equal(content(markdownToAdf(':::table {isNumberColumnEnabled=yes}\n:::\n')), 'unsupported-node-shape: the isNumberColumnEnabled attribute of table is no boolean')
   assert.equal(content(markdownToAdf('::media {width=true}\n')), 'unsupported-node-shape: the width attribute of media is no number')
   assert.equal(content(markdownToAdf(':::tableCell {colwidth="[340,"}\n:::\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
   const deep = `${'['.repeat(largestNesting + 2)}${']'.repeat(largestNesting + 2)}`
   assert.equal(content(markdownToAdf(`:::tableCell {colwidth="${deep}"}\n:::\n`)), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
-  assert.equal(content(markdownToAdf(':::panel info {panelType=note}\nx\n:::\n')), 'unsupported-node-shape: panel spells its panelType attribute as the directive argument')
-  assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot')
+  assert.equal(content(markdownToAdf(':::panel info {panelType=note}\nx\n:::\n')), 'unsupported-node-shape: panel spells its panelType attribute as the directive argument, never in {attrs}')
+  assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
 })
 
 test('names the attribute value spelled outside the canonical form', () => {
@@ -399,15 +400,15 @@ test('names the attribute value spelled outside the canonical form', () => {
 })
 
 test('names the argument and the body a node takes no reading for', () => {
-  assert.equal(content(markdownToAdf('::rule x\n')), 'unsupported-node-shape: rule takes no argument')
-  assert.equal(content(markdownToAdf(':::rule\nPart.\n:::\n')), 'unsupported-node-shape: rule holds no content')
-  assert.equal(content(markdownToAdf('::bulletList\n')), 'unsupported-node-shape: bulletList spells its body in the container form, :::')
-  assert.equal(content(markdownToAdf(':::paragraph\n:::\n')), 'unsupported-node-shape: an empty paragraph takes the leaf form, ::')
-  assert.equal(content(markdownToAdf(':::paragraph\nOne.\n\nTwo.\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
-  assert.equal(content(markdownToAdf(':::paragraph\n---\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body')
-  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\nx\n:::\n')), 'unsupported-node-shape: codeBlock takes one code block as its body')
+  assert.equal(content(markdownToAdf('::rule x\n')), 'unsupported-node-shape: rule takes no argument: this one spells one')
+  assert.equal(content(markdownToAdf(':::rule\nPart.\n:::\n')), 'unsupported-node-shape: rule holds no content: this one holds some')
+  assert.equal(content(markdownToAdf('::bulletList\n')), 'unsupported-node-shape: bulletList spells its body in the container form, :::, never the leaf form')
+  assert.equal(content(markdownToAdf(':::paragraph\n:::\n')), 'unsupported-node-shape: an empty paragraph takes the leaf form, ::, never an empty container')
+  assert.equal(content(markdownToAdf(':::paragraph\nOne.\n\nTwo.\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
+  assert.equal(content(markdownToAdf(':::paragraph\n---\n:::\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
+  assert.equal(content(markdownToAdf(':::codeBlock {wrap=true}\nx\n:::\n')), 'unsupported-node-shape: codeBlock takes one code block as its body: this body is not one')
   assert.equal(content(markdownToAdf(':::paragraph\n![a](/u)\n:::\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
-  assert.equal(content(markdownToAdf('Part :date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content')
+  assert.equal(content(markdownToAdf('Part :date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content: this one holds some')
 })
 
 test('leaves the colon that opens no directive the text it is', () => {
@@ -417,7 +418,7 @@ test('leaves the colon that opens no directive the text it is', () => {
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {
-  assert.equal(code(markdownToAdf('Part :mention[@A\n')), 'malformed-directive')
+  assert.equal(content(markdownToAdf('Part :mention[@A\n')), 'malformed-directive: an inline directive [content] is unclosed; \\: keeps the colon literal')
   assert.equal(code(markdownToAdf('Part :mention[@A]{id=\n')), 'malformed-directive')
   assert.deepEqual(path(markdownToAdf('> Part :mention[@A\n')), ['content', 0, 'content', 0])
 })
@@ -637,14 +638,14 @@ test('decodes the fenced info string the block walk leaves raw', () => {
 })
 
 test('refuses the raw inline HTML no element mapping carries, naming it', () => {
-  assert.equal(content(markdownToAdf('Part <span> here.\n')), 'unmappable-html: no ADF node carries <span>')
-  assert.equal(content(markdownToAdf('Part </div> here.\n')), 'unmappable-html: no ADF node carries <div>')
-  assert.equal(content(markdownToAdf('Part <!-- note --> here.\n')), 'unmappable-html: no ADF node carries an HTML comment')
-  assert.equal(content(markdownToAdf('Part <?php ?> here.\n')), 'unmappable-html: no ADF node carries an HTML processing instruction')
-  assert.equal(content(markdownToAdf('Part <!DOCTYPE html> here.\n')), 'unmappable-html: no ADF node carries an HTML declaration')
-  assert.equal(content(markdownToAdf('Part <![CDATA[x]]> here.\n')), 'unmappable-html: no ADF node carries a CDATA section')
-  assert.equal(content(markdownToAdf('Part <!--> here.\n')), 'unmappable-html: no ADF node carries an HTML comment')
-  assert.equal(content(markdownToAdf('Part <!---> here.\n')), 'unmappable-html: no ADF node carries an HTML comment')
+  assert.equal(content(markdownToAdf('Part <span> here.\n')), 'unmappable-html: no raw HTML converts at this version: <span>')
+  assert.equal(content(markdownToAdf('Part </div> here.\n')), 'unmappable-html: no raw HTML converts at this version: <div>')
+  assert.equal(content(markdownToAdf('Part <!-- note --> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML comment')
+  assert.equal(content(markdownToAdf('Part <?php ?> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML processing instruction')
+  assert.equal(content(markdownToAdf('Part <!DOCTYPE html> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML declaration')
+  assert.equal(content(markdownToAdf('Part <![CDATA[x]]> here.\n')), 'unmappable-html: no raw HTML converts at this version: a CDATA section')
+  assert.equal(content(markdownToAdf('Part <!--> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML comment')
+  assert.equal(content(markdownToAdf('Part <!---> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML comment')
   assert.equal(code(markdownToAdf('A <a href="/x" disabled\nid=y> b\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf('Part.\n<span>\n')), 'unmappable-html')
   assert.deepEqual(path(markdownToAdf('Part.\n\nA <b>b</b>.\n')), ['content', 1])
@@ -781,7 +782,7 @@ test('leaves the brackets of an empty link text the text they are', () => {
 
 test('refuses the image no ADF node carries where it sits', () => {
   assert.equal(content(markdownToAdf('![a](/u "t")\n')), 'unmappable-image: no media node carries a link title')
-  assert.equal(content(markdownToAdf('See ![a](/u).\n')), 'unmappable-image: an image fits only as a paragraph of its own')
+  assert.equal(content(markdownToAdf('See ![a](/u).\n')), 'unmappable-image: an image fits only as a paragraph of its own: this one sits inside other content')
   assert.equal(code(markdownToAdf('# ![a](/u)\n')), 'unmappable-image')
   assert.equal(code(markdownToAdf('*![a](/u)*\n')), 'unmappable-image')
   assert.equal(code(markdownToAdf('[![a](/u)](/v)\n')), 'unmappable-image')
@@ -814,10 +815,10 @@ test('reads the content slot as the text attribute the node spells there', () =>
 })
 
 test('names the content slot no one unmarked text node reads back from', () => {
-  assert.equal(content(markdownToAdf(':status[**A**]{color=yellow}\n')), 'unsupported-node-shape: the status content slot holds one unmarked text node')
+  assert.equal(content(markdownToAdf(':status[**A**]{color=yellow}\n')), 'unsupported-node-shape: the status content slot holds one unmarked text node: this one holds something else')
   assert.equal(code(markdownToAdf(':status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(code(markdownToAdf(':status[:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
-  assert.equal(content(markdownToAdf(':status[![a](/u)]{color=yellow}\n')), 'unmappable-image: an image fits only as a paragraph of its own')
+  assert.equal(content(markdownToAdf(':status[![a](/u)]{color=yellow}\n')), 'unmappable-image: an image fits only as a paragraph of its own: this one sits inside other content')
   assert.equal(code(markdownToAdf(':status[<div>]{color=yellow}\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf(':date[<div>]{timestamp=1}\n')), 'unmappable-html')
   assert.equal(code(markdownToAdf(':widget[<div>]\n')), 'unmappable-html')
@@ -825,7 +826,7 @@ test('names the content slot no one unmarked text node reads back from', () => {
   assert.equal(content(markdownToAdf(':status[:text{text="\\n"}]{color=yellow}\n')), spans)
   assert.equal(content(markdownToAdf(':status[a&#10;b]{color=yellow}\n')), spans)
   assert.equal(content(markdownToAdf(':status[a&#13;b]{color=yellow}\n')), spans)
-  assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot')
+  assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
 })
 
 test('reads the whitespace the reserved text directive carries', () => {
@@ -836,13 +837,13 @@ test('reads the whitespace the reserved text directive carries', () => {
 })
 
 test('names the text directive spelling no whitespace run reads back from', () => {
-  const named = 'unsupported-node-shape: text spells one run of spaces and tabs, or one run of newlines'
+  const named = 'unsupported-node-shape: text spells one run of spaces and tabs, or one run of newlines: this one spells neither'
   assert.equal(content(markdownToAdf(':text{text=hi}\n')), named)
   assert.equal(content(markdownToAdf(':text{text=" \\n"}\n')), named)
   assert.equal(content(markdownToAdf(':text{text=""}\n')), named)
-  assert.equal(content(markdownToAdf(':text{}\n')), 'unsupported-node-shape: text holds one text attribute alone')
-  assert.equal(content(markdownToAdf(':text{localId=a text=" "}\n')), 'unsupported-node-shape: text holds one text attribute alone')
-  assert.equal(content(markdownToAdf(':text[a]{text=" "}\n')), 'unsupported-node-shape: text takes no content')
+  assert.equal(content(markdownToAdf(':text{}\n')), 'unsupported-node-shape: text holds one text attribute alone: this one does not')
+  assert.equal(content(markdownToAdf(':text{localId=a text=" "}\n')), 'unsupported-node-shape: text holds one text attribute alone: this one does not')
+  assert.equal(content(markdownToAdf(':text[a]{text=" "}\n')), 'unsupported-node-shape: text takes no content: this one holds some')
   assert.equal(content(markdownToAdf(':text{text="\\u0020"}\n')), 'unsupported-node-shape: text spells its text attribute as text=" "')
 })
 
@@ -873,7 +874,7 @@ test('names the mark markdown spells, never a directive', () => {
 })
 
 test('names the directive mark left without the content it wraps', () => {
-  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks'
+  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps none'
   assert.equal(content(markdownToAdf(':underline[]\n')), named)
   assert.equal(content(markdownToAdf(':underline{}\n')), named)
 })

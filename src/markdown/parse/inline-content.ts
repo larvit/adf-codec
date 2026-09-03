@@ -37,7 +37,7 @@ type Scan = { definitions: LinkDefinitions; path: ConvertErrorPath; pending: str
 type SlotContent = { carry: boolean; nodes: AdfNode[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
-const imageAlone = 'an image fits only as a paragraph of its own'
+const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<InlineContent> {
   return parseInline(source, definitions, path, true)
@@ -133,7 +133,7 @@ function readAngle(scan: Scan, index: number): Result<number> {
     return success(index + autolink.length)
   }
   const construct = inlineHtmlConstruct(scan.source, index)
-  if (construct !== undefined) return failure('unmappable-html', `no ADF node carries ${construct}`, scan.path)
+  if (construct !== undefined) return failure('unmappable-html', `no raw HTML converts at this version: ${construct}`, scan.path)
   scan.pending += '<'
   return success(index + 1)
 }
@@ -179,7 +179,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
   if (mark !== undefined) {
     if (!mark.ok) return mark
     if (slot.value === undefined || slot.value.nodes.length === 0) {
-      return failure('unsupported-node-shape', `the ${span.name} mark wraps the [content] it marks`, scan.path)
+      return failure('unsupported-node-shape', `the ${span.name} mark wraps the [content] it marks: this one wraps none`, scan.path)
     }
     if (slot.value.carry) return failure('unsupported-node-shape', carriedInMark, scan.path)
     return success({ kind: 'nodes', nodes: applyMark(slot.value.nodes, mark.value) })

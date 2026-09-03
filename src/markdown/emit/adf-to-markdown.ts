@@ -1,8 +1,8 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockDirective } from '../../adf/block-directives.ts'
+import { adfDocumentFault, carriesOnly } from '../../adf/document.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
 import { carriedBlock } from '../opaque-carry.ts'
-import { carriesOnly, isAdfDocument } from '../../adf/document.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
@@ -22,7 +22,8 @@ type PlacedBlock = EmittedBlock & { node: AdfNode; path: ConvertErrorPath }
 const largestListMarker = 999999999
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
-  if (!isAdfDocument(document)) return failure('not-an-adf-document', 'the value is not an ADF document', [])
+  const fault = adfDocumentFault(document)
+  if (fault !== undefined) return failure('not-an-adf-document', fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   const blocks = emitBlocks(document.content ?? [], 'document', [], 0)
   if (!blocks.ok) return blocks
@@ -111,9 +112,9 @@ function commonMarkText(text: string): EmittedBlock {
 }
 
 function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
-  if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text`, path)
+  if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
   const content = node.content ?? []
-  if (directive.contentModel === 'none' && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content`, path)
+  if (directive.contentModel === 'none' && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path, depth)
   const header = spellDirectiveHeader(node, directive)
   if (header === undefined) return commonMarkLine(carriedBlock(node, path, depth))
@@ -176,9 +177,9 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
       (child.marks ?? []).length > 0 ||
       Object.keys(child.attrs ?? {}).length > 0
     ) {
-      return failure('unsupported-node-shape', 'a codeBlock holds plain text nodes only', childPath)
+      return failure('unsupported-node-shape', `a codeBlock holds plain text nodes only: this ${child.type} node is not one`, childPath)
     }
-    if (/\r/.test(child.text)) return failure('unspellable-whitespace', 'a codeBlock holds no carriage return CommonMark keeps', childPath)
+    if (/\r/.test(child.text)) return failure('unspellable-whitespace', 'a codeBlock holds no carriage return CommonMark keeps: this text holds one', childPath)
     if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
     text += child.text
   }

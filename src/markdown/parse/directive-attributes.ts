@@ -17,10 +17,10 @@ export function readVocabulary(
   for (const [key, spelled] of attributes) {
     if (key === elsewhere?.key) {
       const place = elsewhere.slot === 'argument' ? 'as the directive argument' : 'in the content slot'
-      return failure('unsupported-node-shape', `${type} spells its ${key} attribute ${place}`, path)
+      return failure('unsupported-node-shape', `${type} spells its ${key} attribute ${place}, never in {attrs}`, path)
     }
     const kind = Object.hasOwn(vocabulary, key) ? vocabulary[key] : undefined
-    if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute`, path)
+    if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute: this one spells it`, path)
     const read = attributeValue(spelled.decoded, kind)
     if (read === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind}`, path)
     const spelling = spellAttributeValue(read)

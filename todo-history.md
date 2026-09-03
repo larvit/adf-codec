@@ -412,3 +412,20 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         `unsupported-node-shape` stays one code across the two directions, `unmappable-html` names
         the version rather than the element, and a direction that reads a source returns the
         narrowed error type.
+  - [x] **5b2 — The error messages.** Most state the rule and leave the violation to be inferred —
+        `a text node holds text` for a node holding none — so `rule: violation` becomes house style
+        across the sites that do. `not-an-adf-document` gives one sentence of eight words to `null`,
+        a string, a missing `version`, a `type` that is not `doc` and a REST envelope around the
+        document; naming the check that failed makes the highest-frequency integrator mistake
+        self-diagnosing without the library naming a REST shape (§7). The three carve-out claim
+        messages name the escape that unclaims the line — `\|`, `\~~`, `\:::` — which today only
+        `spec/flavour.md` holds. `unmappable-html` reads as §8 now frames it: this version converts
+        no raw HTML, never a permanent judgment on the element.
+        Thirty-odd sites gained the violation clause and §8 gained the house style. `isAdfDocument`
+        parts into `adfDocumentFault`, the guard reading it, so the first failing check is the
+        message — the wrapper mistake names the key it found. Two carve-outs claim a line, not
+        three: a matched `~~` pair spells `strike` silently, so nothing refuses it and no message
+        names `\~~`. The escape lands on the refusals a prose line hits, in the form that was
+        claimed — `\:::` on the directive line's, `\|` on the pipe table's, `\:` on the inline
+        directive's, the attribute-pair and unknown-name faults taking whichever form read them.
+        `a pipe table row holds 1 cells` gained its plural.

@@ -15,8 +15,8 @@ import {
   replaceNullCharacters,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
+import { directiveLineEscape, malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
 import { isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
-import { malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
 export type Block = { position: SourcePosition } & (
@@ -244,7 +244,7 @@ function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
 
 function closeDirective(walk: Walk, colons: number, enclosing: { container: OpenDirective; depth: number } | undefined): void {
   if (enclosing === undefined) {
-    pushFault(walk, malformedDirective('a closing fence closes no open container'))
+    pushFault(walk, malformedDirective(`a closing fence closes no open container; ${directiveLineEscape}`))
     return
   }
   if (colons < enclosing.container.colons) {
@@ -403,14 +403,18 @@ function closeLeaf(walk: Walk): void {
 function pipeTableBlock(rows: readonly [string[], ...string[][]], position: SourcePosition): Block {
   const [header, delimiter, ...body] = rows
   if (delimiter !== undefined && delimiter.some(isPipeAlignment)) {
-    return faultedBlock('a pipe table carries no column alignment ADF could hold', position)
+    return faultedBlock('a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon', position)
   }
   if (delimiter === undefined || !delimiter.every(isPipeDelimiter)) {
-    return faultedBlock('a pipe table underlines its header with a row of `-` runs', position)
+    return faultedBlock('a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text', position)
   }
   const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
-  if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${ragged.length} cells where its header holds ${header.length}`, position)
+  if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${cellCount(ragged.length)} where its header holds ${cellCount(header.length)}`, position)
   return { kind: 'table', position, rows: [header, ...body] }
+}
+
+function cellCount(count: number): string {
+  return `${count} cell${count === 1 ? '' : 's'}`
 }
 
 function faultedBlock(message: string, position: SourcePosition): Block {
