@@ -392,6 +392,11 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
       **Settled** (the maintainer, 2026-09-01): ADF's own `A` is "Atlassian", and "converter" is
       the one-way lossy tool §2 exists to replace, where a codec is both directions. It names the
       hub, not the formats around it.
+- [x] **5b — The consumer's error surface (`0.1.0`).** A product-owner read of the public surface
+      found the error result legible to the library and opaque to the consumer holding it, and the
+      README documenting no part of it. The sub-items are that read's answers, and they land before
+      5 because §8 freezes the code list at `0.1.0` and 5b4's table is what reads the list before
+      the freeze closes it.
   - [x] **5b1 — The error's source position.** A parse error names an ADF path into a document the
         caller does not hold yet — `unmappable-html` at `["content", 5]` for a `<span>` on line
         12 — and no coordinate into the markdown string it passed in. `ConvertError` gains an
@@ -455,3 +460,25 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         so the emitter escapes that line's first character rather than refusing the document.
         `spec/flavour.md` had two directive blocks inside a container taking no blank line; the
         rule both directions keep is that a pair holding one takes none.
+  - [x] **5b4 — The README's consumer surface.** §8 invites an exhaustive switch on `code` and no
+        code name appears in the README, so it gains a table — code, when it fires, what the
+        consumer does — grouped by direction, over the thirteen names 5b3 settled. Four things a
+        reader who has not opened the code cannot know: raw
+        HTML is core CommonMark and every construct in input is an error until `0.3.0`, which the
+        guarantees' "three carve-outs and one gap" denies and which is the bot and LLM personas'
+        most common failure; `adfToHtml`, `htmlToAdf`, `markdownToHtml` and `htmlToMarkdown` sit
+        unmarked in the code block people copy from, as do the two HTML guarantee bullets, and take
+        a `0.3.0` mark or leave the block; `adfToMarkdown` is partial on valid ADF — a text node
+        holding a carriage return, a link destination no canonical escape spells — which the viewer
+        persona needs told along with
+        what to do about it; and GFM past tables and strikethrough is literal text, task lists
+        taking `:::taskList`. One sentence for the LLM persona: `code` is stable across minors,
+        `message` is free text. The type-level surface freezes at the same moment and gets the same
+        read: what `index.ts` exports and what it withholds, `ParseError` against `ConvertError`
+        where a direction reads a source, and `ConvertFault` staying internal — the README table
+        names the shapes a consumer switches on, so the two audits are one.
+        The direction grouping is read off the call sites rather than the code prefixes, which do
+        not partition by direction: the parser asks the emitter which CommonMark spelling a node
+        takes (§11), so six codes reach a `markdownToAdf` caller as well as an `adfToMarkdown` one.
+        The trailing pipe of a pipe-table row is optional in input, not required; the leading one
+        is what every row must carry.
