@@ -16,7 +16,7 @@ import {
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
 import { directiveLineEscape, malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
-import { isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
+import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { readLinkDefinitions } from './link-reference-definitions.ts'
 
 export type Block = { position: SourcePosition } & (
@@ -358,7 +358,7 @@ function readLineBlock(walk: Walk, opener: string): boolean {
   if (level !== undefined) {
     const paragraph = takeParagraph(walk)
     if (paragraph !== undefined) {
-      currentBlocks(walk).push({ kind: 'heading', level, position: paragraph.position, text: paragraph.text })
+      currentBlocks(walk).push(bareTableFault(paragraph) ?? { kind: 'heading', level, position: paragraph.position, text: paragraph.text })
       return true
     }
   }
@@ -390,7 +390,7 @@ function closeLeaf(walk: Walk): void {
   if (leaf === undefined) return
   if (leaf.kind === 'paragraph') {
     const paragraph = takeParagraph(walk)
-    if (paragraph !== undefined) currentBlocks(walk).push(paragraph)
+    if (paragraph !== undefined) currentBlocks(walk).push(bareTableFault(paragraph) ?? paragraph)
     return
   }
   walk.leaf = undefined
@@ -411,6 +411,19 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
   const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
   if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${cellCount(ragged.length)} where its header holds ${cellCount(header.length)}`, position)
   return { kind: 'table', position, rows: [header, ...body] }
+}
+
+// spec/flavour.md, Tables: GFM's table without the leading pipes, which no line of it claims.
+function bareTableFault(paragraph: Extract<Block, { kind: 'paragraph' }>): Block | undefined {
+  let header: string[] | undefined
+  for (const line of paragraph.text.split('\n')) {
+    const cells = barePipeCells(line)
+    if (header !== undefined && cells !== undefined && cells.length === header.length && isDelimiterRow(cells)) {
+      return faultedBlock('a pipe table opens every row with `|`: this one does not; \\| keeps a pipe literal text', paragraph.position)
+    }
+    header = cells
+  }
+  return undefined
 }
 
 function cellCount(count: number): string {

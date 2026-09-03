@@ -429,3 +429,29 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         claimed — `\:::` on the directive line's, `\|` on the pipe table's, `\:` on the inline
         directive's, the attribute-pair and unknown-name faults taking whichever form read them.
         `a pipe table row holds 1 cells` gained its plural.
+  - [x] **5b3 — The code list and the flavour's gaps.** A second read of the surface, this one on
+        the fifteen names §8 freezes at `0.1.0`: two pairs of them are one cause each, and one
+        names a state the flavour leaves no way out of. `unspellable-character` and the text half
+        of `unspellable-whitespace` are one refusal — a character CommonMark rewrites, the message
+        naming it — and merge, `unspellable-whitespace` keeping the code for its other cause, the
+        content slot no inline directive spans. `unspellable-link-destination` and
+        `unspellable-link-title` become `unspellable-link`, the message naming the attribute.
+        `unspellable-adjacent-lists` goes entirely: two adjacent `bulletList` nodes are valid ADF a
+        site writes, and refusing them leaves the viewer persona a document it cannot render at
+        all, so the flavour gains the separator that spells the pair apart, both directions,
+        `spec/flavour.md` and fixtures. Thirteen codes stand — `unspellable-whitespace` keeps its own.
+        The bare pipe table — `a | b` over `--- | ---`, GFM's shape without the leading pipes — is
+        the one input that loses structure silently, reading back as a paragraph of prose; it
+        becomes a `malformed-pipe-table` naming the form a row takes. That code keeps its name for
+        the alignment colon: the flavour's own delimiter row is `-` runs, so the grammar is what
+        refuses, and §8 records it rather than answering it again each review. The ninth
+        `adfDocumentFault` branch names no node and carries the document's own path, the one branch
+        the other eight outshine; §8 records why the guard stays a boolean.
+        `::listBreak` is the separator's spelling: the grammar's leaf form, and a second reserved
+        name beside `adf` — every other name is an ADF node or mark type, and this one builds none.
+        It reads only between two adjacent lists of one type, and takes the separation any
+        directive block takes where it sits, so a directive container holds it with no blank line.
+        A hard break is the one spelling that can put a bare delimiter row under a row of its own,
+        so the emitter escapes that line's first character rather than refusing the document.
+        `spec/flavour.md` had two directive blocks inside a container taking no blank line; the
+        rule both directions keep is that a pair holding one takes none.

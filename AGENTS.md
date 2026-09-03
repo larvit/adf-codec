@@ -97,13 +97,25 @@ names the escape that unclaims the form claimed: `\:::` for a directive line, `\
 row, `\:` for an inline directive.
 Adding, removing or renaming a code is breaking, so a milestone meeting a new failure cause
 reuses a code where one fits; the list is complete at `0.1.0`. A code names the
-cause; where one cause recurs across node types or across directions, one code covers them all and
+cause; where one cause recurs across node types, across one mark's attributes or across
+directions, one code covers them all and
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
-direction hits it. A claim code names the spelling claimed, never the node that spelling would have built:
-a malformed `:::table` is a `malformed-directive`. A cause the carry answers gets no code: a mark no
+direction hits it, `unspellable-link` the destination and the title alike. Where two codes stay
+apart, the line between them is what they name: `unspellable-character` is a character CommonMark
+rewrites wherever text holds it, `unspellable-whitespace` the newline no inline directive's
+content slot spans, in either direction. A claim code names the spelling claimed, never the node that spelling would have built:
+a malformed `:::table` is a `malformed-directive`, and an alignment colon a `malformed-pipe-table` —
+the flavour's own delimiter row is `-` runs, so the grammar refuses the colon rather than ADF's
+missing column model doing it. A refusal no spelling recovers from is a gap in the flavour rather
+than a code: give the flavour the spelling and the code goes, which the freeze is the last moment
+for. A cause the carry answers gets no code: a mark no
 spelling writes rides the carry with its node. A directive whose name reads back to no node is
 `unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
-apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. What
+apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
+reserved name is a known name, so never that code, and the two the flavour reserves part on form:
+a form the grammar does not have is a claim code — `::adf`, whose carry is the fence — and a
+well-formed form in the wrong place is `unsupported-node-shape`, `::listBreak` parting anything
+but two adjacent lists of one type. What
 the grammar itself refuses stays a claim code, key order among it; a well-formed directive the
 node tables refuse — an attribute a node does not hold or spells elsewhere, a value outside its
 kind or its canonical spelling, an argument or a body its content model does not take — is
@@ -113,7 +125,11 @@ them after `0.1.0` is MAJOR. `unmappable-html` names the version rather than the
 converts no raw HTML, so at `0.3.0` the mapped elements stop erroring and the code stays for what
 no ADF node carries. A refusal found before its path is known — the block walk's, a directive
 reader's — is a `ConvertFault`, the code and message alone; the node walk attaches the path as it
-descends, so a document reports its first error in document order.
+descends, so a document reports its first error in document order. `not-an-adf-document` carries
+the document's own path throughout: eight of the guard's nine branches read the document's own
+shape, and threading a path to the ninth — a malformed node anywhere in the tree — wants the
+manual stack §11's no-recursion rule forces, whose empty half no input reaches. The message names
+the violation instead.
 
 `position` is the parse side's alone: an emitter reads no source, so an emit error carries `path`
 and nothing more. It is `{ line, offset }` at the start of the line the block holding the refusal

@@ -81,13 +81,13 @@ test('spells a code block language no info string holds as an attribute', () => 
 
 test('refuses a link destination CommonMark cannot spell', () => {
   const link = (href: string): AdfDocument => document(paragraph({ marks: [{ attrs: { href }, type: 'link' }], text: 't', type: 'text' }))
-  assert.equal(code(adfToMarkdown(link('https://example.com/a b>c'))), 'unspellable-link-destination')
-  assert.equal(code(adfToMarkdown(link('<https://example.com/'))), 'unspellable-link-destination')
-  assert.equal(code(adfToMarkdown(link('https://example.com/a\\b'))), 'unspellable-link-destination')
-  assert.equal(code(adfToMarkdown(link('https://example.com/?a=1&amp;b=2'))), 'unspellable-link-destination')
-  assert.equal(code(adfToMarkdown(link('https://example.com/a\nb'))), 'unspellable-link-destination')
+  assert.equal(code(adfToMarkdown(link('https://example.com/a b>c'))), 'unspellable-link')
+  assert.equal(code(adfToMarkdown(link('<https://example.com/'))), 'unspellable-link')
+  assert.equal(code(adfToMarkdown(link('https://example.com/a\\b'))), 'unspellable-link')
+  assert.equal(code(adfToMarkdown(link('https://example.com/?a=1&amp;b=2'))), 'unspellable-link')
+  assert.equal(code(adfToMarkdown(link('https://example.com/a\nb'))), 'unspellable-link')
   const entity = 'https://example.com/?a=1&amp;b=2'
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: entity }, type: 'link' }], text: entity, type: 'text' })))), 'unspellable-link-destination')
+  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: entity }, type: 'link' }], text: entity, type: 'text' })))), 'unspellable-link')
 })
 
 test('escapes the parenthesis a link destination leaves unbalanced, and no other', () => {
@@ -103,8 +103,8 @@ test('escapes the quote a link title holds, and refuses the rest', () => {
   const titled = (title: string): AdfDocument =>
     document(paragraph({ marks: [{ attrs: { href: 'https://example.com/', title }, type: 'link' }], text: 't', type: 'text' }))
   assert.equal(markdown(adfToMarkdown(titled('He said "hi"'))), '[t](https://example.com/ "He said \\"hi\\"")\n')
-  assert.equal(code(adfToMarkdown(titled('a\nb'))), 'unspellable-link-title')
-  assert.equal(code(adfToMarkdown(titled('a\\b'))), 'unspellable-link-title')
+  assert.equal(code(adfToMarkdown(titled('a\nb'))), 'unspellable-link')
+  assert.equal(code(adfToMarkdown(titled('a\\b'))), 'unspellable-link')
 })
 
 test('carries a link mark the link spelling cannot write', () => {
@@ -134,17 +134,25 @@ test('carries a mark the canonical spellings cannot nest', () => {
   )
 })
 
-test('refuses whitespace CommonMark cannot hold', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\rb', type: 'text' })))), 'unspellable-whitespace')
-})
-
 test('refuses a line whose start block parsing would claim', () => {
   assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '```', type: 'text' })))), 'unspellable-line-start')
 })
 
-test('refuses two adjacent lists of the same kind, the marker spelling being what merges', () => {
+test('escapes the delimiter row a hard break leaves opening a pipe table with no leading pipe', () => {
+  const broken = (second: string): string => markdown(adfToMarkdown(document(paragraph({ text: 'a | b', type: 'text' }, { type: 'hardBreak' }, { text: second, type: 'text' }))))
+  assert.equal(broken('--- | ---'), 'a | b\\\n\\--- | ---\n')
+  assert.equal(broken(':--- | ---:'), 'a | b\\\n\\:--- | ---:\n')
+  assert.equal(broken('c | d'), 'a | b\\\nc | d\n')
+})
+
+test('parts two adjacent lists of the same kind, the marker spelling being what merges', () => {
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
-  assert.equal(code(adfToMarkdown(document(list, list))), 'unspellable-adjacent-lists')
+  assert.equal(markdown(adfToMarkdown(document(list, list))), '- x\n\n::listBreak\n\n- x\n')
+  const ordered: AdfNode = { attrs: { order: 1 }, content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'orderedList' }
+  assert.equal(markdown(adfToMarkdown(document(ordered, ordered))), '1. x\n\n::listBreak\n\n1. x\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { panelType: 'info' }, content: [list, list], type: 'panel' }))), ':::panel info\n- x\n::listBreak\n- x\n:::\n')
+  const nested: AdfNode = { content: [{ content: [list, list], type: 'listItem' }], type: 'bulletList' }
+  assert.equal(markdown(adfToMarkdown(document(nested))), '- - x\n\n  ::listBreak\n\n  - x\n')
   const carried: AdfNode = { ...list, attrs: { unknown: 'x' } }
   assert.ok(markdown(adfToMarkdown(document(carried, carried))).includes('```\n\n```adf\n'))
   assert.ok(markdown(adfToMarkdown(document(carried, list))).endsWith('```\n\n- x\n'))
@@ -394,7 +402,11 @@ test('spells a list item whose marker completes a thematic break as a directive'
 test('refuses the characters CommonMark rewrites', () => {
   assert.equal(
     markdown(adfToMarkdown(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' }))),
-    'unspellable-whitespace: a codeBlock holds no carriage return CommonMark keeps: this text holds one',
+    'unspellable-character: a codeBlock holds no carriage return CommonMark keeps: this text holds one',
+  )
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ text: 'a\rb', type: 'text' })))),
+    'unspellable-character: a text node holds a carriage return CommonMark rewrites',
   )
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\u0000b', type: 'text' })))), 'unspellable-character')
   assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))), 'unspellable-character')

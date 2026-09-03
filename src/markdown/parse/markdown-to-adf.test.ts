@@ -190,6 +190,50 @@ test('names the pipe table a claimed line does not spell', () => {
   assert.deepEqual(path(markdownToAdf('Part.\n\n| a |\n')), ['content', 1])
 })
 
+test('names the pipe table whose rows open with no pipe', () => {
+  const bare = 'malformed-pipe-table: a pipe table opens every row with `|`: this one does not; \\| keeps a pipe literal text'
+  assert.equal(content(markdownToAdf('a | b\n--- | ---\n')), bare)
+  assert.equal(content(markdownToAdf('Intro.\na | b\n--- | ---\n')), bare)
+  assert.equal(content(markdownToAdf('a | b\n--- | ---\n===\n')), bare)
+  assert.equal(content(markdownToAdf('a | b\n:--- | ---:\n')), bare)
+  assert.deepEqual(content(markdownToAdf('a | b\nc | d\n')), [paragraph('a | b c | d')])
+  assert.deepEqual(content(markdownToAdf('a | b\n--- | --- | ---\n')), [paragraph('a | b --- | --- | ---')])
+  assert.deepEqual(content(markdownToAdf('a \\| b\n--- | ---\n')), [paragraph('a | b --- | ---')])
+  assert.deepEqual(content(markdownToAdf('a\n---\n')), [{ attrs: { level: 2 }, content: [text('a')], type: 'heading' }])
+  assert.deepEqual(path(markdownToAdf('Part.\n\na | b\n--- | ---\n')), ['content', 1])
+})
+
+test('gives back the refusal an inline body holds, never the shape check above it', () => {
+  const bare = 'malformed-pipe-table: a pipe table opens every row with `|`: this one does not; \\| keeps a pipe literal text'
+  assert.equal(content(markdownToAdf(':::caption\na | b\n--- | ---\n:::\n')), bare)
+  assert.deepEqual(position(markdownToAdf(':::caption\na | b\n--- | ---\n:::\n')), { line: 2, offset: 11 })
+  assert.equal(code(markdownToAdf(':::caption\n| a |\n:::\n')), 'malformed-pipe-table')
+  assert.equal(content(markdownToAdf(':::caption\n- a\n:::\n')), 'unsupported-node-shape: caption takes one paragraph as its body: this body is not one')
+})
+
+test('reads the separator that parts two adjacent lists of one kind', () => {
+  const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
+  assert.deepEqual(content(markdownToAdf('- a\n\n::listBreak\n\n- b\n')), parted)
+  assert.deepEqual(content(markdownToAdf('- a\n::listBreak\n- b\n')), parted)
+  assert.deepEqual(content(markdownToAdf('1. a\n\n::listBreak\n\n1. b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+  assert.deepEqual(content(markdownToAdf('> - a\n> ::listBreak\n> - b\n')), [quote(...parted)])
+  assert.deepEqual(path(markdownToAdf('- a\n\n::listBreak\n\n- b\n\n| x |\n')), ['content', 2])
+})
+
+test('refuses the list separator that parts anything else', () => {
+  const parts = 'unsupported-node-shape: listBreak parts two adjacent lists of one type: this one parts something else'
+  assert.equal(content(markdownToAdf('::listBreak\n')), parts)
+  assert.equal(content(markdownToAdf('- a\n\n::listBreak\n')), parts)
+  assert.equal(content(markdownToAdf('- a\n\n::listBreak\n\n1. b\n')), parts)
+  assert.equal(content(markdownToAdf('Part.\n\n::listBreak\n\n- b\n')), parts)
+  const bare = 'unsupported-node-shape: listBreak spells the bare leaf form, ::listBreak: this one spells more'
+  assert.equal(content(markdownToAdf('- a\n\n::listBreak x\n\n- b\n')), bare)
+  assert.equal(content(markdownToAdf('- a\n\n::listBreak {id=x}\n\n- b\n')), bare)
+  assert.equal(content(markdownToAdf(':::listBreak\n- a\n:::\n')), bare)
+  assert.equal(content(markdownToAdf(':listBreak{}\n')), 'unsupported-node-shape: listBreak takes the block form, ::listBreak, never the inline form')
+  assert.deepEqual(path(markdownToAdf('Part.\n\n::listBreak\n')), ['content', 1])
+})
+
 test('refuses the image a pipe cell holds no ADF node for', () => {
   assert.equal(content(markdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
   assert.deepEqual(path(markdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), ['content', 0, 'content', 1, 'content', 0, 'content', 0])
@@ -243,7 +287,7 @@ test('names the directive form a node CommonMark spells refuses', () => {
 // The spelling the emitter refuses gives the emitter's own error, never a second name for it.
 test('gives back the refusal the CommonMark spelling itself raises', () => {
   const destination = ':::blockquote\n[t](https://example.com/a\\b)\n:::\n'
-  assert.equal(content(markdownToAdf(destination)), 'unspellable-link-destination: no canonical escape spells a backslash in a link destination')
+  assert.equal(content(markdownToAdf(destination)), 'unspellable-link: no canonical escape spells a backslash in a link destination')
 })
 
 test('names the directive name no node reads back to', () => {
