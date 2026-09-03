@@ -38,7 +38,7 @@ export function readCarriedInline(span: DirectiveSpan): Read<AdfNode> | undefine
 
 function carriedJson(node: AdfNode, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<string> {
   if (!isJsonValue(node, levels)) {
-    return failure('unsupported-nesting-depth', `a carried node's JSON nests the document deeper than the ${largestNesting} levels the emitter carries`, path)
+    return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
   return success(serializeCanonicalJson(node, spelling))
 }
@@ -50,7 +50,7 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number): R
   if (!isJsonValue(value, levels)) {
     // Unbounded, the same walk parts the two causes one `false` holds (AGENTS.md §8).
     if (!isJsonValue(value, Number.POSITIVE_INFINITY)) return { fault: unsupportedNodeShape('the opaque carry holds a number JSON cannot spell') }
-    return { fault: { code: 'unsupported-nesting-depth', message: `a carried node's JSON nests the input deeper than the ${largestNesting} levels the parser carries` } }
+    return { fault: { code: 'unsupported-nesting-depth', message: `a carried node's JSON nests deeper than the ${levels} levels its position leaves` } }
   }
   if (serializeCanonicalJson(value, spelling) !== raw) {
     const shape = spelling === 'compact' ? 'compact, keys sorted' : 'two-space indent, keys sorted'
