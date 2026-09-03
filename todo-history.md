@@ -482,3 +482,30 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         takes (§11), so six codes reach a `markdownToAdf` caller as well as an `adfToMarkdown` one.
         The trailing pipe of a pipe-table row is optional in input, not required; the leading one
         is what every row must carry.
+- [x] **5c — The build and the release pipeline.** Split out of 5, which kept only the
+      maintainer's own acts. The build: `tsconfig.build.json` gains emit of JS and `.d.ts` to
+      `dist/` (its own `allowImportingTsExtensions` forces `noEmit`, so
+      `rewriteRelativeImportExtensions` lands beside it), plus `exports`/`files` in
+      `package.json`. Publish-on-version-change (§9) as `publish.sh`, run by a `main`-only job
+      needing the gate. The `ConvertErrorCode` freeze (§8) is checkable here: 3h landed the last
+      decision `corpus/unspellable/` held and the directory went with it, so what the code list
+      holds from here is permanent. The parser's own code additions are read here as one list
+      before that freeze — nine sessions mint them independently, and one cause wearing two codes
+      is breaking to undo after `0.1.0`. That read gets a test rather than an eye — every
+      `ConvertErrorCode` member named at a production call site, the way `spec.test.ts` guards the
+      node tables — since `unspelled-block-separation` outlived its cause until 3h went looking.
+      All thirteen have a call site; the audit's find was the depth one 5 predicted, read wrong in
+      its own text: an attribute value past 500 levels was `unsupported-node-shape` on parse and
+      `not-an-adf-document` on emit, the document guard counting the `attrs` object as a level the
+      parser does not, so a value at exactly 500 parsed into a document the emitter then refused.
+      The guard now holds each attribute value to 500 of its own and runs a second time unbounded,
+      which parts depth from shape, and both directions answer with `unsupported-nesting-depth`.
+      `engines.node` gets its one-line proof too — the built entrypoint imported and round-tripped
+      under a pinned Node 18 image, which cannot run the suite that type stripping wants 22+ for,
+      but proves exactly what the field claims. Beside it, the emitted `.d.ts` typechecked from a
+      consumer's position: declaration emit leaves the `.ts` specifiers `rewriteRelativeImportExtensions`
+      rewrites in the JavaScript, and nothing else in the repo reads them the way an installed
+      consumer would. 3k's exception list landing after the release left the README's
+      canonical-fixpoint sentence claiming more than `0.1.0` keeps — 3e names three shapes that
+      parse and then refuse — so it now says a parse succeeding is no promise of a way back, and
+      names them.

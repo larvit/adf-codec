@@ -3,7 +3,7 @@ import type { BlockDirective } from '../../adf/block-directives.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
-import { attributeValue, directiveLineEscape, inlineDirectiveEscape, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
+import { attributeNestingFault, attributeValue, directiveLineEscape, inlineDirectiveEscape, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
 import { carryName } from '../opaque-carry.ts'
@@ -94,6 +94,8 @@ function slotText(content: readonly AdfNode[]): string | undefined {
 
 function readMarks(type: string, spelled: DirectiveValue, path: ConvertErrorPath): Result<AdfMark[]> {
   const read = attributeValue(spelled.decoded, 'json')
+  const deep = read === undefined ? attributeNestingFault(spelled.decoded, 'json', marksAttribute, type) : undefined
+  if (deep !== undefined) return faulted(deep, path)
   const marks = read === undefined || spellAttributeValue(read) !== spelled.spelling ? undefined : readMarkValues(read.value)
   if (marks === undefined) {
     return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} is its marks array in canonical JSON: this one is not`, path)

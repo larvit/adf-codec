@@ -24,6 +24,9 @@ const largestListMarker = 999999999
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
   const fault = adfDocumentFault(document)
+  if (fault !== undefined && adfDocumentFault(document, Number.POSITIVE_INFINITY) === undefined) {
+    return failure('unsupported-nesting-depth', `an attribute value nests deeper than the ${largestNesting} levels the emitter carries`, [])
+  }
   if (fault !== undefined) return failure('not-an-adf-document', fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   const blocks = emitBlocks(document.content ?? [], 'document', [], 0)

@@ -1,4 +1,5 @@
 import { isJsonValue, type JsonValue } from '../json-value.ts'
+import { largestNesting } from '../nesting.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
 
@@ -25,7 +26,7 @@ const documentKeys = ['content', 'type', 'version']
 const markKeys = ['attrs', 'type']
 const nodeKeys = ['attrs', 'content', 'marks', 'text', 'type']
 
-export function adfDocumentFault(value: unknown): string | undefined {
+export function adfDocumentFault(value: unknown, levels: number = largestNesting): string | undefined {
   if (!isRecord(value)) return `an ADF document is an object: found ${describe(value)}`
   const extra = extraKey(value, documentKeys)
   if (extra !== undefined) return `an ADF document holds content, type and version alone: found the key ${extra}`
@@ -37,7 +38,7 @@ export function adfDocumentFault(value: unknown): string | undefined {
   if (!('content' in value)) return undefined
   const content = value['content']
   if (!Array.isArray(content)) return `an ADF document's content is an array: found ${describe(content)}`
-  return isNodeArray(content) ? undefined : "an ADF document's content holds ADF nodes: one of them is not"
+  return isNodeArray(content, levels) ? undefined : "an ADF document's content holds ADF nodes: one of them is not"
 }
 
 export function carriesOnly(node: AdfNode, attributes: readonly string[]): boolean {
@@ -50,23 +51,23 @@ export function isAdfDocument(value: unknown): value is AdfDocument {
 }
 
 export function isAdfNode(value: unknown): value is AdfNode {
-  return isNodeArray([value])
+  return isNodeArray([value], largestNesting)
 }
 
-export function isAdfMark(value: unknown): value is AdfMark {
+export function isAdfMark(value: unknown, levels: number = largestNesting): value is AdfMark {
   if (!isRecord(value) || !holdsOnly(value, markKeys)) return false
   if (typeof value['type'] !== 'string') return false
-  return !('attrs' in value) || isAttributes(value['attrs'])
+  return !('attrs' in value) || isAttributes(value['attrs'], levels)
 }
 
-function isNodeArray(value: readonly unknown[]): boolean {
+function isNodeArray(value: readonly unknown[], levels: number): boolean {
   const pending: unknown[] = [...value]
   while (pending.length > 0) {
     const node = pending.pop()
     if (!isRecord(node) || !holdsOnly(node, nodeKeys)) return false
     if (typeof node['type'] !== 'string') return false
-    if ('attrs' in node && !isAttributes(node['attrs'])) return false
-    if ('marks' in node && !isArrayOf(node['marks'], isAdfMark)) return false
+    if ('attrs' in node && !isAttributes(node['attrs'], levels)) return false
+    if ('marks' in node && !isArrayOf(node['marks'], (mark): mark is AdfMark => isAdfMark(mark, levels))) return false
     if ('text' in node && typeof node['text'] !== 'string') return false
     if ('content' in node) {
       const content = node['content']
@@ -81,8 +82,9 @@ function isArrayOf<T>(value: unknown, guard: (item: unknown) => item is T): valu
   return Array.isArray(value) && [...value].every(guard)
 }
 
-function isAttributes(value: unknown): value is AdfAttributes {
-  return isRecord(value) && isJsonValue(value)
+// Per value, so an attribute reaches the same 500 levels the parser reads one at (AGENTS.md §11).
+function isAttributes(value: unknown, levels: number): value is AdfAttributes {
+  return isRecord(value) && Object.values(value).every((held) => isJsonValue(held, levels))
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

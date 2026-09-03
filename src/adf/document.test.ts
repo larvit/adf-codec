@@ -1,10 +1,22 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import type { JsonValue } from '../json-value.ts'
 import { adfDocumentFault, isAdfDocument } from './document.ts'
+import { largestNesting } from '../nesting.ts'
 
 function fault(value: unknown): string {
   return adfDocumentFault(value) ?? 'accepted'
+}
+
+function nested(levels: number): JsonValue {
+  let value: JsonValue = 1
+  for (let level = 0; level < levels; level += 1) value = [value]
+  return value
+}
+
+function withAttribute(value: JsonValue): unknown {
+  return { content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }
 }
 
 test('accepts an editor-normal document', () => {
@@ -42,6 +54,15 @@ test('rejects a node whose shape ProseMirror JSON cannot hold', () => {
   assert.equal(isAdfDocument({ content: [{ marks: [{ type: 1 }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
   assert.equal(isAdfDocument({ content: [{ attrs: { a: Number.POSITIVE_INFINITY }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
   assert.equal(isAdfDocument({ content: [{ attrs: [], type: 'paragraph' }], type: 'doc', version: 1 }), false)
+})
+
+test('holds an attribute value to the levels the parser reads one at, the attrs object costing none', () => {
+  assert.equal(isAdfDocument(withAttribute(nested(largestNesting))), true)
+  assert.equal(isAdfDocument(withAttribute(nested(largestNesting + 1))), false)
+  assert.equal(adfDocumentFault(withAttribute(nested(largestNesting + 1)), Number.POSITIVE_INFINITY), undefined)
+  const marked = { content: [{ marks: [{ attrs: { a: nested(largestNesting + 1) }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }
+  assert.equal(isAdfDocument(marked), false)
+  assert.equal(adfDocumentFault(marked, Number.POSITIVE_INFINITY), undefined)
 })
 
 test('accepts the JSON values an attribute may hold', () => {

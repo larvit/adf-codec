@@ -45,6 +45,11 @@ const orderFault = 'the {attrs} keys read in alphabetical order'
 const pairFault = 'an attribute reads key=value, the value bare or double-quoted: this one does not'
 const shapeFault = `a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveLineEscape}`
 
+export function attributeNestingFault(text: string, kind: AttributeKind, key: string, type: string): ConvertFault | undefined {
+  if (kind !== 'json' || parseJson(text, Number.POSITIVE_INFINITY) === undefined) return undefined
+  return { code: 'unsupported-nesting-depth', message: `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels the parser carries` }
+}
+
 export function attributeValue(text: string, kind: AttributeKind): VocabularyValue | undefined {
   if (kind === 'string') return { kind, value: text }
   if (kind === 'boolean') return text === 'true' || text === 'false' ? { kind, value: text === 'true' } : undefined
@@ -294,10 +299,10 @@ function readQuotedValue(text: string, index: number): Read<{ end: number; value
   return { value: { end: cursor + 1, value: { decoded: parsed, spelling } } }
 }
 
-function parseJson(raw: string): JsonValue | undefined {
+function parseJson(raw: string, levels: number = largestNesting): JsonValue | undefined {
   try {
     const value: unknown = JSON.parse(raw)
-    return isJsonValue(value) ? value : undefined
+    return isJsonValue(value, levels) ? value : undefined
   } catch {
     return undefined
   }

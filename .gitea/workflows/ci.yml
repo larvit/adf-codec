@@ -7,3 +7,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - run: bash ci.sh
+
+  publish:
+    if: github.ref == 'refs/heads/main'
+    needs: gate
+    runs-on: docker-host
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bash publish.sh

@@ -431,10 +431,16 @@ test('names the attribute a node holds no reading for', () => {
   assert.equal(content(markdownToAdf(':::table {isNumberColumnEnabled=yes}\n:::\n')), 'unsupported-node-shape: the isNumberColumnEnabled attribute of table is no boolean')
   assert.equal(content(markdownToAdf('::media {width=true}\n')), 'unsupported-node-shape: the width attribute of media is no number')
   assert.equal(content(markdownToAdf(':::tableCell {colwidth="[340,"}\n:::\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
-  const deep = `${'['.repeat(largestNesting + 2)}${']'.repeat(largestNesting + 2)}`
-  assert.equal(content(markdownToAdf(`:::tableCell {colwidth="${deep}"}\n:::\n`)), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
   assert.equal(content(markdownToAdf(':::panel info {panelType=note}\nx\n:::\n')), 'unsupported-node-shape: panel spells its panelType attribute as the directive argument, never in {attrs}')
   assert.equal(content(markdownToAdf('Part :mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
+})
+
+test('names the depth an attribute value nests past, never the kind the JSON reads as', () => {
+  const nested = (levels: number): string => `${'['.repeat(levels)}1${']'.repeat(levels)}`
+  const deeper = (key: string, type: string): string => `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels the parser carries`
+  assert.equal(content(markdownToAdf(`:::tableCell {colwidth="${nested(largestNesting + 1)}"}\n:::\n`)), deeper('colwidth', 'tableCell'))
+  assert.equal(content(markdownToAdf(`::rule {marks="${nested(largestNesting + 1)}"}\n`)), deeper('marks', 'rule'))
+  assert.equal(content(markdownToAdf(`::media {width="${nested(largestNesting + 1)}"}\n`)), 'unsupported-node-shape: the width attribute of media is no number')
 })
 
 test('names the attribute value spelled outside the canonical form', () => {

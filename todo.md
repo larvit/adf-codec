@@ -5,8 +5,8 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 →
-`0.3.0`.
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`;
+6, 7 → `0.3.0`.
 The numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
@@ -108,45 +108,30 @@ The numbering is the order the work was planned in, not the order it ships.
       cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
       guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
       nobody typed.
-- [ ] **5 — Release pipeline, ship `0.1.0`.** Publish-on-version-change (§9), `NPM_TOKEN` secret,
-      the repo made public first (§6). The `ConvertErrorCode` freeze (§8) is checkable here: 3h
-      landed the last decision `corpus/unspellable/` held and the directory went with it, so what
-      the code list holds from here is permanent. The parser's own code
-      additions are read here as one list before that freeze — nine sessions mint them
-      independently, and one cause wearing two codes is breaking to undo after `0.1.0` — one is
-      known already: a json attribute value past 500 levels reads `unsupported-node-shape` on
-      parse but `unsupported-nesting-depth` through the carry on emit. That read
-      gets a test rather than an eye — every `ConvertErrorCode` member named at a production call
-      site, the way `spec.test.ts` guards the node tables — since `unspelled-block-separation`
-      outlived its cause until 3h went looking. `0.1.0`
-      is the markdown round-trip: both markdown directions, the types, `isAdfDocument`. The build
-      lands here: `tsconfig.build.json` gains emit of JS and `.d.ts` to `dist/` (its own
-      `allowImportingTsExtensions` forces `noEmit`, so `rewriteRelativeImportExtensions` lands
-      beside it), plus `exports`/`files` in `package.json`. The
-      maintainer's bump PR also removes `private: true`, the guard against any earlier publish.
-      §6's browser half is first checkable here, on the emitted `dist/index.js` a browser can
-      load — the compile gate names no host API, and a real page converting the corpus is the
-      other half. Headless Firefox is that page, settling both at once: the browser proof, and the
-      only SpiderMonkey there is, `ci.sh`'s three legs being two V8s and a JavaScriptCore that is
-      not Safari's. `engines.node` gets its one-line proof here
-      too — `import('./dist/index.js')` under a pinned Node 18 image, which cannot run the
-      suite that type stripping wants 22+ for, but proves exactly what the field claims.
+- [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo
+      public (§6), create the `NPM_TOKEN` secret, and open the bump PR that sets `version` to
+      `0.1.0` and drops `private: true`, the guard against any earlier publish. `0.1.0` is the
+      markdown round-trip: both markdown directions, the types, `isAdfDocument`, proved over the
+      checked-in corpus.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
       is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
       3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry
       `0.1.1`. A consumer using the library is worth more than a wider proof nobody has needed
-      yet, and §8's pre-1.0 rules cover what the wider proof then finds. 3k's exception list
-      landing after the release leaves the README's canonical-fixpoint sentence claiming more than
-      `0.1.0` keeps — 3e names three shapes that parse and then refuse — so the release narrows
-      that sentence or lists them. `[x](http://a\b)` is one to narrow it against: it parses
-      cleanly and refuses on the way back, so a successful parse does not imply a spellable
-      document.
+      yet, and §8's pre-1.0 rules cover what the wider proof then finds.
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**
   - [x] **5b2 — The error messages.**
   - [x] **5b3 — The code list and the flavour's gaps.**
   - [x] **5b4 — The README's consumer surface.**
+- [x] **5c — The build and the release pipeline.**
+- [ ] **5d — The browser leg (`0.1.0`).** §6's browser half is checkable on the emitted
+      `dist/index.js` a browser can load — the compile gate names no host API, and a real page
+      converting the corpus is the other half. Headless Firefox is that page, settling both at
+      once: the browser proof, and the only SpiderMonkey there is, the gate's three engine legs
+      being two V8s and a JavaScriptCore that is not Safari's. The mechanism is the decision this
+      item opens with: a browser leg wants an image, a driver and a way to carry a verdict back
+      out, none of which the gate's plain `docker run` per engine has.
 - [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /

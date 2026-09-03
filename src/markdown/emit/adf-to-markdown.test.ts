@@ -2,8 +2,10 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
-import { adfToMarkdown } from '../../index.ts'
+import { adfToMarkdown, markdownToAdf } from '../../index.ts'
+import { largestNesting } from '../../nesting.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
@@ -334,10 +336,18 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
   let attrs: AdfMark['attrs'] = { depth: 'x' }
   for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
-  assert.equal(
-    markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))),
-    "not-an-adf-document: an ADF document's content holds ADF nodes: one of them is not",
-  )
+  const deeper = `unsupported-nesting-depth: an attribute value nests deeper than the ${largestNesting} levels the emitter carries`
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper)
+  const card = (levels: number): AdfNode => {
+    let data: JsonValue = 1
+    for (let level = 0; level < levels; level += 1) data = [data]
+    return { attrs: { data, url: 'https://example.com/a' }, type: 'inlineCard' }
+  }
+  assert.equal(markdown(adfToMarkdown(document(paragraph(card(largestNesting + 1))))), deeper)
+  assert.deepEqual(path(adfToMarkdown(document(paragraph(card(largestNesting + 1))))), [])
+  const spelled = adfToMarkdown(document(paragraph(card(largestNesting))))
+  assert.ok(spelled.ok, spelled.ok ? '' : spelled.error.message)
+  assert.deepEqual(markdownToAdf(spelled.value), { ok: true, value: document(paragraph(card(largestNesting))) })
 })
 
 test('escapes a literal delimiter that would merge with an emitted one', () => {
