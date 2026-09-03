@@ -108,5 +108,5 @@ test('names the directive fence a container does not sit longer than', () => {
   assert.deepEqual(faults('::::panel info\n:::expand\nPart.\n:::::\n::::\n'), [])
   assert.deepEqual(faults(':::panel info\nPart.\n'), ['a container fenced with 3 colons is unclosed'])
   assert.deepEqual(faults('- :::panel info\n\nPart.\n'), ['a container fenced with 3 colons is unclosed'])
-  assert.deepEqual(faults('Part.\n\n:::\n'), ['a closing fence closes no open container'])
+  assert.deepEqual(faults('Part.\n\n:::\n'), ['a closing fence closes no open container; \\::: keeps the line literal text'])
 })

@@ -36,11 +36,13 @@ const quotedEscapes = new RegExp(reservedSource, 'g')
 const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
 
-const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive'
-const nameFault = 'a directive name reads [a-z][A-Za-z0-9]*'
+export const directiveLineEscape = '\\::: keeps the line literal text'
+
+const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
+const nameFault = `a directive name reads [a-z][A-Za-z0-9]*: this one does not; ${directiveLineEscape}`
 const orderFault = 'the {attrs} keys read in alphabetical order'
-const pairFault = 'an attribute reads key=value, the value bare or double-quoted'
-const shapeFault = 'a directive line reads a name, one bare argument and {attrs}, one space apart'
+const pairFault = 'an attribute reads key=value, the value bare or double-quoted: this one does not'
+const shapeFault = `a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveLineEscape}`
 
 export function attributeValue(text: string, kind: AttributeKind): VocabularyValue | undefined {
   if (kind === 'string') return { kind, value: text }
@@ -78,9 +80,9 @@ export function readInlineDirective(text: string, index: number): Read<Directive
 }
 
 export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<string> {
-  if (span.content !== undefined) return { fault: unsupportedNodeShape(`${span.name} takes no content`) }
+  if (span.content !== undefined) return { fault: unsupportedNodeShape(`${span.name} takes no content: this one holds some`) }
   const spelled = span.attributes.get(key)
-  if (spelled === undefined || span.attributes.size !== 1) return { fault: unsupportedNodeShape(`${span.name} holds one ${key} attribute alone`) }
+  if (spelled === undefined || span.attributes.size !== 1) return { fault: unsupportedNodeShape(`${span.name} holds one ${key} attribute alone: this one does not`) }
   const spelling = spellStringAttribute(spelled.decoded)
   if (spelling !== spelled.spelling) return { fault: unsupportedNodeShape(`${span.name} spells its ${key} attribute as ${key}=${spelling}`) }
   return { value: spelled.decoded }

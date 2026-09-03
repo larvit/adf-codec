@@ -35,7 +35,7 @@ export function readBlockDirectiveNode(
   const attrs = readVocabulary(name, rest, directive.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
   if (argument !== undefined) {
-    if (argumentKey === undefined) return failure('unsupported-node-shape', `${name} takes no argument`, path)
+    if (argumentKey === undefined) return failure('unsupported-node-shape', `${name} takes no argument: this one spells one`, path)
     attrs.value[argumentKey] = argument
   }
   const spelled = attributes.get(marksAttribute)
@@ -53,13 +53,13 @@ export function readInlineDirectiveNode(
   const directive = inlineDirective(name)
   if (directive === undefined) return faulted(blockSpellingFault(name) ?? unknownDirectiveFault(name), path)
   const slot = directive.textAttribute
-  if (slot === undefined && content !== undefined) return failure('unsupported-node-shape', `${name} takes no content`, path)
+  if (slot === undefined && content !== undefined) return failure('unsupported-node-shape', `${name} takes no content: this one holds some`, path)
   const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }
   const attrs = readVocabulary(name, attributes, directive.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
   if (slot !== undefined && content !== undefined) {
     const text = slotText(content)
-    if (text === undefined) return failure('unsupported-node-shape', `the ${name} content slot holds one unmarked text node`, path)
+    if (text === undefined) return failure('unsupported-node-shape', `the ${name} content slot holds one unmarked text node: this one holds something else`, path)
     const spans = slotLineEndingFault(name, text)
     if (spans !== undefined) return faulted(spans, path)
     attrs.value[slot] = text
@@ -72,14 +72,14 @@ function inlineSpellingFault(name: string): ConvertFault | undefined {
   const mark = inlineMarkSpellingFault(name)
   if (mark !== undefined) return mark
   if (inlineDirective(name) === undefined && name !== textDirectiveName) return undefined
-  return { code: 'unsupported-node-shape', message: `${name} takes the inline form, :${name}{…}` }
+  return { code: 'unsupported-node-shape', message: `${name} takes the inline form, :${name}{…}, never the block form` }
 }
 
 function blockSpellingFault(name: string): ConvertFault | undefined {
   const directive = blockDirective(name)
   if (directive === undefined) return undefined
   const form = directive.contentModel === 'none' ? `::${name}` : `:::${name}`
-  return { code: 'unsupported-node-shape', message: `${name} takes the block form, ${form}` }
+  return { code: 'unsupported-node-shape', message: `${name} takes the block form, ${form}, never the inline form` }
 }
 
 // spec/flavour.md, Inline nodes: the slot is plain text, its adjacent nodes already merged.
@@ -94,7 +94,7 @@ function readMarks(type: string, spelled: DirectiveValue, path: ConvertErrorPath
   const read = attributeValue(spelled.decoded, 'json')
   const marks = read === undefined || spellAttributeValue(read) !== spelled.spelling ? undefined : readMarkValues(read.value)
   if (marks === undefined) {
-    return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} is its marks array in canonical JSON`, path)
+    return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} is its marks array in canonical JSON: this one is not`, path)
   }
   return success(marks)
 }
