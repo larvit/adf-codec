@@ -33,8 +33,10 @@ isAdfDocument(v: unknown): v is AdfDocument
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
-`ConvertError` is `{ code, message, path }`: a code from a closed set, and the path of the node it
-names, from the document root.
+`ConvertError` is `{ code, message, path, position? }`: a code from a closed set, the path of the
+node it names from the document root, and — parsing — a `{ line, offset }` into the string passed
+in, at the start of the line the refused block begins on, `line` counted from 1. Emitting reads no
+source, so an emit error carries no `position`.
 
 ## The guarantees
 

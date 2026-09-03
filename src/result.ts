@@ -17,13 +17,16 @@ export type ConvertErrorCode =
 
 export type ConvertErrorPath = readonly (number | string)[]
 
+export type SourcePosition = { line: number; offset: number }
+
 export type ConvertError = {
   code: ConvertErrorCode
   message: string
   path: ConvertErrorPath
+  position?: SourcePosition
 }
 
-export type ConvertFault = Omit<ConvertError, 'path'>
+export type ConvertFault = Omit<ConvertError, 'path' | 'position'>
 
 export type Result<T> = { error: ConvertError; ok: false } | { ok: true; value: T }
 
@@ -33,6 +36,11 @@ export function failure<T>(code: ConvertErrorCode, message: string, path: Conver
 
 export function faulted<T>(fault: ConvertFault, path: ConvertErrorPath): Result<T> {
   return failure(fault.code, fault.message, path)
+}
+
+export function positioned<T>(result: Result<T>, position: SourcePosition): Result<T> {
+  if (result.ok || result.error.position !== undefined) return result
+  return { error: { ...result.error, position }, ok: false }
 }
 
 export function success<T>(value: T): Result<T> {

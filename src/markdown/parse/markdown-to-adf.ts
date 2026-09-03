@@ -4,7 +4,7 @@ import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, positioned, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { parseBlocks } from './blocks.ts'
@@ -22,7 +22,7 @@ function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
-    const node = blockNode(block, definitions, [...path, 'content', index], depth)
+    const node = positioned(blockNode(block, definitions, [...path, 'content', index], depth), block.position)
     if (!node.ok) return node
     content.push(node.value)
   }

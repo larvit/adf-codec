@@ -192,11 +192,22 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
   })
 }
 
+// The position the input itself gives an offset: undefined where the offset starts no line.
+function lineStarting(markdown: string, offset: number): { line: number; offset: number } | undefined {
+  const before = markdown.slice(0, offset)
+  if (offset !== 0 && !/(?:\r\n|[\n\r])$/.test(before)) return undefined
+  return { line: before.split(/\r\n|[\n\r]/).length, offset }
+}
+
 for (const name of pairedNames(errorsRoot, '.md', '.error')) {
-  test(`errors/${name} is refused with the error it names`, () => {
-    const result = markdownToAdf(readFileSync(join(errorsRoot, `${name}.md`), 'utf8'))
+  test(`errors/${name} is refused with the error it names, at a line of its own input`, () => {
+    const markdown = readFileSync(join(errorsRoot, `${name}.md`), 'utf8')
+    const result = markdownToAdf(markdown)
     assert.ok(!result.ok, result.ok ? `built ${JSON.stringify(result.value)}` : '')
     assert.equal(result.error.code, readFileSync(join(errorsRoot, `${name}.error`), 'utf8').trimEnd())
+    const { position } = result.error
+    assert.ok(position !== undefined, 'the refusal names no position in the input')
+    assert.deepEqual(position, lineStarting(markdown, position.offset))
   })
 }
 

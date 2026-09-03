@@ -25,12 +25,17 @@ function path(result: Result<string>): readonly (number | string)[] {
   return result.ok ? ['emitted'] : result.error.path
 }
 
-test('names the node a refusal came from', () => {
+function position(result: Result<string>): unknown {
+  return result.ok ? 'emitted' : result.error.position
+}
+
+test('names the node a refusal came from, and no source the emitter never read', () => {
   const unspellable: AdfNode = { text: 'x', type: 'paragraph' }
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [unspellable], type: 'listItem' }], type: 'bulletList' }
   assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), ['content', 1, 'content', 1, 'content', 0])
   assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { type: 'text' })))), ['content', 0, 'content', 1])
   assert.deepEqual(path(adfToMarkdown({ type: 'doc', version: 2 })), [])
+  assert.equal(position(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), undefined)
 })
 
 test('refuses a value that is not an ADF document', () => {

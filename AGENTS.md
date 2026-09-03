@@ -88,10 +88,11 @@ The emitted markdown and HTML are contracts. After 1.0: previously-emitted outpu
 differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
 Pre-1.0, normal 0.x rules.
 
-The error surface is a contract too. `ConvertError` is `{ code, message, path }` — the code from a
-closed list a consumer may switch exhaustively, the message free text, the path the node's position
-from the document root. Adding, removing or renaming a code is breaking, so a milestone meeting a
-new failure cause reuses a code where one fits; the list is complete at `0.1.0`. A code names the
+The error surface is a contract too. `ConvertError` is `{ code, message, path, position? }` — the
+code from a closed list a consumer may switch exhaustively, the message free text, the path the
+node's place from the document root, the position where a parse read the refusal in its input.
+Adding, removing or renaming a code is breaking, so a milestone meeting a new failure cause
+reuses a code where one fits; the list is complete at `0.1.0`. A code names the
 cause; where one cause recurs across node types or across directions, one code covers them all and
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
 direction hits it. A claim code names the spelling claimed, never the node that spelling would have built:
@@ -102,10 +103,19 @@ apart from a typo is what a consumer switches on when a later MINOR gives the na
 the grammar itself refuses stays a claim code, key order among it; a well-formed directive the
 node tables refuse — an attribute a node does not hold or spells elsewhere, a value outside its
 kind or its canonical spelling, an argument or a body its content model does not take — is
-`unsupported-node-shape`, the emitter's code for the same mismatch read the other way. A
-refusal found before its position is known — the block walk's, a directive reader's — is a
-`ConvertFault`, the code and message without the path; the node walk attaches the path as it
+`unsupported-node-shape`, the emitter's code for the same mismatch read the other way — one code
+across both directions for good, since the call site knows which direction it called and parting
+them after `0.1.0` is MAJOR. `unmappable-html` names the version rather than the element: this one
+converts no raw HTML, so at `0.3.0` the mapped elements stop erroring and the code stays for what
+no ADF node carries. A refusal found before its path is known — the block walk's, a directive
+reader's — is a `ConvertFault`, the code and message alone; the node walk attaches the path as it
 descends, so a document reports its first error in document order.
+
+`position` is the parse side's alone: an emitter reads no source, so an emit error carries `path`
+and nothing more. It is `{ line, offset }` at the start of the line the block holding the refusal
+begins on — the offset indexing the string the caller passed, the line counted from 1 — minted by
+the block walk and attached as results return, so the innermost block wins, the emitter's own
+refusals the parser re-enters for the CommonMark spelling included.
 
 ## 9. Release automation
 
