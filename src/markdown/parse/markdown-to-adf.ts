@@ -2,7 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { carryName } from '../opaque-carry.ts'
+import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
@@ -135,7 +135,11 @@ function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDef
 }
 
 function codeBlockNode(language: string, text: string, path: ConvertErrorPath): Result<AdfNode> {
-  if (language === carryName) return failure('malformed-directive', `the info string ${carryName} is reserved for the opaque carry`, path)
+  if (language === carryName) {
+    const carried = readCarriedBlock(text)
+    if (carried.fault !== undefined) return faulted(carried.fault, path)
+    return success(carried.value)
+  }
   const node: AdfNode = language === '' ? { type: 'codeBlock' } : { attrs: { language }, type: 'codeBlock' }
   return success(text === '' ? node : { ...node, content: [{ text, type: 'text' }] })
 }

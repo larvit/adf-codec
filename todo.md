@@ -51,17 +51,7 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **3g — The node tables read backwards.**
   - [x] **3h — The block nodes.**
   - [x] **3i — The inline nodes and the marks.**
-  - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
-        the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
-        named error, a carry inside a mark spelling another, and the three carve-outs' escapes
-        reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
-        `codeBlock` from it; the refusal goes when the carry reads it. 3i left the slot parse
-        contextless, so the refusal a carry inside a mark spelling earns needs a channel — a reader
-        context in place of `parseInline`'s `strip` flag, or a return arm from the slot — and
-        `directiveNodes` takes its fourth reader beside it.
-        `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
-        last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
-        corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.
+  - [x] **3j — The carry and the combinations.**
   - [ ] **3k — The CommonMark spec suite (`0.2.0`).** Checked in at `corpus/commonmark-spec/`,
         pinned to the version it ships — the one `html-blocks.ts` names for its start
         conditions — `corpus/README.md` gaining the kind.

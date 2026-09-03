@@ -9,12 +9,13 @@ import { failure, faulted, success, type ConvertErrorPath, type Result } from '.
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
+import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirective } from '../directive-syntax.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
 import { readTextDirective } from '../text-directive.ts'
 
-export type InlineContent = { image: AdfNode; nodes?: undefined } | { image?: undefined; nodes: AdfNode[] }
+export type InlineContent = { carry?: undefined; image: AdfNode; nodes?: undefined } | { carry: boolean; image?: undefined; nodes: AdfNode[] }
 
 export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
 
@@ -24,6 +25,7 @@ type Pairing = EmphasisPairing<Run>
 
 type Piece =
   | Bracket
+  | { kind: 'carry'; node: AdfNode }
   | { alt: string; kind: 'image'; node: AdfNode }
   | { kind: 'nodes'; nodes: AdfNode[] }
   | { canClose: boolean; canOpen: boolean; character: string; kind: 'run'; length: number }
@@ -32,6 +34,9 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 
 type Scan = { definitions: LinkDefinitions; path: ConvertErrorPath; pending: string; pieces: Piece[]; source: string }
 
+type SlotContent = { carry: boolean; nodes: AdfNode[] }
+
+const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
 const imageAlone = 'an image fits only as a paragraph of its own'
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<InlineContent> {
@@ -152,38 +157,44 @@ function readDirective(scan: Scan, index: number): Result<number> {
     return success(index + 1)
   }
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
-  const nodes = directiveNodes(scan, directive.value)
-  if (!nodes.ok) return nodes
+  const piece = directivePiece(scan, directive.value)
+  if (!piece.ok) return piece
   flush(scan, false)
-  scan.pieces.push({ kind: 'nodes', nodes: nodes.value })
+  scan.pieces.push(piece.value)
   return success(index + directive.value.length)
 }
 
-function directiveNodes(scan: Scan, span: DirectiveSpan): Result<AdfNode[]> {
+function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
+  const carried = readCarriedInline(span)
+  if (carried !== undefined) {
+    if (carried.fault !== undefined) return faulted(carried.fault, scan.path)
+    return success({ kind: 'carry', node: carried.value })
+  }
   const text = readTextDirective(span)
   if (text?.fault !== undefined) return faulted(text.fault, scan.path)
-  if (text !== undefined) return success([{ text: text.value, type: 'text' }])
+  if (text !== undefined) return success({ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] })
   const slot = slotNodes(scan, span.content)
   if (!slot.ok) return slot
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
   if (mark !== undefined) {
     if (!mark.ok) return mark
-    if (slot.value === undefined || slot.value.length === 0) {
+    if (slot.value === undefined || slot.value.nodes.length === 0) {
       return failure('unsupported-node-shape', `the ${span.name} mark wraps the [content] it marks`, scan.path)
     }
-    return success(applyMark(slot.value, mark.value))
+    if (slot.value.carry) return failure('unsupported-node-shape', carriedInMark, scan.path)
+    return success({ kind: 'nodes', nodes: applyMark(slot.value.nodes, mark.value) })
   }
-  const node = readInlineDirectiveNode(span.name, span.attributes, slot.value, scan.path)
+  const node = readInlineDirectiveNode(span.name, span.attributes, slot.value?.nodes, scan.path)
   if (!node.ok) return node
-  return success([node.value])
+  return success({ kind: 'nodes', nodes: [node.value] })
 }
 
-function slotNodes(scan: Scan, content: string | undefined): Result<AdfNode[] | undefined> {
+function slotNodes(scan: Scan, content: string | undefined): Result<SlotContent | undefined> {
   if (content === undefined) return success(undefined)
   const parsed = parseInline(content, scan.definitions, scan.path, false)
   if (!parsed.ok) return parsed
   if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
-  return success(parsed.value.nodes)
+  return success(parsed.value)
 }
 
 function flush(scan: Scan, strip: boolean): void {
@@ -200,7 +211,13 @@ function assemble(scan: Scan): Result<InlineContent> {
   const only = scan.pieces[0]
   if (scan.pieces.length === 1 && only?.kind === 'image') return success({ image: only.node })
   if (holdsImage(scan.pieces)) return failure('unmappable-image', imageAlone, scan.path)
-  return success({ nodes: resolveNodes(scan.pieces) })
+  const nodes = resolveNodes(scan.pieces, scan.path)
+  if (!nodes.ok) return nodes
+  return success({ carry: holdsCarry(scan.pieces), nodes: nodes.value })
+}
+
+function holdsCarry(pieces: readonly Piece[]): boolean {
+  return pieces.some((piece) => piece.kind === 'carry')
 }
 
 function holdsImage(pieces: readonly Piece[]): boolean {
@@ -286,7 +303,10 @@ function resolveTarget(scan: Scan, bracket: Bracket, index: number): { definitio
 // `false` where the link text is empty: the mark has no node to ride, so the brackets stay text.
 function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<boolean> {
   if (holdsImage(inner)) return failure('unmappable-image', imageAlone, scan.path)
-  const nodes = resolveNodes(inner)
+  if (holdsCarry(inner)) return failure('unsupported-node-shape', carriedInMark, scan.path)
+  const resolved = resolveNodes(inner, scan.path)
+  if (!resolved.ok) return resolved
+  const nodes = resolved.value
   if (nodes.length === 0) return success(false)
   const attrs = definition.title === undefined ? { href: definition.destination } : { href: definition.destination, title: definition.title }
   scan.pieces.length = at
@@ -298,15 +318,19 @@ function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: 
 
 function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<null> {
   if (definition.title !== undefined) return failure('unmappable-image', 'no media node carries a link title', scan.path)
-  const alt = imageAlt(inner)
+  const resolved = imageAlt(inner, scan.path)
+  if (!resolved.ok) return resolved
+  const alt = resolved.value
   const attrs = alt === '' ? { type: 'external', url: definition.destination } : { alt, type: 'external', url: definition.destination }
   scan.pieces.length = at
   scan.pieces.push({ alt, kind: 'image', node: { attrs: { layout: 'center' }, content: [{ attrs, type: 'media' }], type: 'mediaSingle' } })
   return success(null)
 }
 
-function imageAlt(inner: readonly Piece[]): string {
-  return resolveNodes(inner).map(altText).join('')
+function imageAlt(inner: readonly Piece[], path: ConvertErrorPath): Result<string> {
+  const nodes = resolveNodes(inner, path)
+  if (!nodes.ok) return nodes
+  return success(nodes.value.map(altText).join(''))
 }
 
 // spec/flavour.md, The CommonMark image: the description's plain text, the content slot included.
@@ -317,18 +341,20 @@ function altText(node: AdfNode): string {
   return typeof spelled === 'string' ? spelled : (node.text ?? '')
 }
 
-function resolveNodes(pieces: readonly Piece[]): AdfNode[] {
+function resolveNodes(pieces: readonly Piece[], path: ConvertErrorPath): Result<AdfNode[]> {
   const nodes = pieces.map(pieceNodes)
   const runs = delimiterRuns(pieces)
   const pairings = matchEmphasis(runs)
   writeUnpaired(nodes, runs, pairings)
-  markPairings(nodes, pairings)
-  return mergeAdjacentText(nodes.flat())
+  if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', carriedInMark, path)
+  return success(mergeAdjacentText(nodes.flat()))
 }
 
 // Only `imageAlt` reaches the image arm: everywhere else an image amid other content is refused first.
 function pieceNodes(piece: Piece): AdfNode[] {
   switch (piece.kind) {
+    case 'carry':
+      return [piece.node]
     case 'image':
       return piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }]
     case 'nodes':
@@ -364,11 +390,15 @@ function writeUnpaired(nodes: AdfNode[][], runs: readonly Run[], pairings: reado
 }
 
 // Innermost pairing first, so prepending leaves the marks array outermost first (spec/flavour.md, Marks).
-function markPairings(nodes: AdfNode[][], pairings: readonly Pairing[]): void {
+function markPairings(pieces: readonly Piece[], nodes: AdfNode[][], pairings: readonly Pairing[]): boolean {
   for (const pairing of pairings) {
     const mark: AdfMark = { type: markType(pairing.opener.character, pairing.used) }
-    for (let index = pairing.opener.index + 1; index < pairing.closer.index; index += 1) nodes[index] = applyMark(nodes[index] ?? [], mark)
+    for (let index = pairing.opener.index + 1; index < pairing.closer.index; index += 1) {
+      if (pieces[index]?.kind === 'carry') return false
+      nodes[index] = applyMark(nodes[index] ?? [], mark)
+    }
   }
+  return true
 }
 
 function markType(character: string, used: number): string {
