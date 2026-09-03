@@ -100,7 +100,10 @@ reuses a code where one fits; the list is complete at `0.1.0`. A code names the
 cause; where one cause recurs across node types, across one mark's attributes or across
 directions, one code covers them all and
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
-direction hits it, `unspellable-link` the destination and the title alike. A claim code names the spelling claimed, never the node that spelling would have built:
+direction hits it, `unspellable-link` the destination and the title alike. Where two codes stay
+apart, the line between them is what they name: `unspellable-character` is a character CommonMark
+rewrites wherever text holds it, `unspellable-whitespace` the newline no inline directive's
+content slot spans, in either direction. A claim code names the spelling claimed, never the node that spelling would have built:
 a malformed `:::table` is a `malformed-directive`, and an alignment colon a `malformed-pipe-table` —
 the flavour's own delimiter row is `-` runs, so the grammar refuses the colon rather than ADF's
 missing column model doing it. A refusal no spelling recovers from is a gap in the flavour rather
@@ -108,7 +111,11 @@ than a code: give the flavour the spelling and the code goes, which the freeze i
 for. A cause the carry answers gets no code: a mark no
 spelling writes rides the carry with its node. A directive whose name reads back to no node is
 `unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
-apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. What
+apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
+reserved name is a known name, so never that code, and the two the flavour reserves part on form:
+a form the grammar does not have is a claim code — `::adf`, whose carry is the fence — and a
+well-formed form in the wrong place is `unsupported-node-shape`, `::listBreak` parting anything
+but two adjacent lists of one type. What
 the grammar itself refuses stays a claim code, key order among it; a well-formed directive the
 node tables refuse — an attribute a node does not hold or spells elsewhere, a value outside its
 kind or its canonical spelling, an argument or a body its content model does not take — is

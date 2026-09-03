@@ -26,7 +26,8 @@ normalizes to it through the round-trip.
   second list on merges instead: ADF records no tightness, so one `- ` spelling reads two
   adjacent lists of a kind back as one. The leaf `::listBreak` parts them, taking the separation
   any directive block takes where it sits. It builds no node, and it reads only between two
-  adjacent lists of one type: elsewhere, or carrying an argument or `{attrs}`, it is a named error.
+  adjacent lists of one type: elsewhere, or carrying an argument, `{attrs}` or a body, it is a
+  named error.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
@@ -296,9 +297,9 @@ takes the directive form instead. A pipe table parses back to exactly that shape
 Claiming at block level, symmetric with directives: a line opening with an unescaped `|` is
 claimed and must parse as part of a pipe table, else it is a named error — escape the pipe
 (`\|`) to keep it literal text. The shape a missing leading pipe leaves is claimed too: a line
-holding an unescaped `|`, followed inside one paragraph by a line whose cells are all `-` runs
-and match it in count — GFM's table without the outer pipes — is a named error rather than the
-prose it reads as. A pipe table is a header row, a delimiter row whose cells are
+holding an unescaped `|`, followed inside one paragraph by a line whose cells are all `-` runs,
+an alignment colon among them, and match it in count — GFM's table without the outer pipes — is
+a named error rather than the prose it reads as. A pipe table is a header row, a delimiter row whose cells are
 runs of one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
 Cells split on unescaped `|` before inline parsing — `\|` stays in the cell text, and the
 inline layer's ordinary CommonMark escaping yields the pipe; each cell is the inline content of
