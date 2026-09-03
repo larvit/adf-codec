@@ -203,6 +203,14 @@ test('names the pipe table whose rows open with no pipe', () => {
   assert.deepEqual(path(markdownToAdf('Part.\n\na | b\n--- | ---\n')), ['content', 1])
 })
 
+test('gives back the refusal an inline body holds, never the shape check above it', () => {
+  const bare = 'malformed-pipe-table: a pipe table opens every row with `|`: this one does not; \\| keeps a pipe literal text'
+  assert.equal(content(markdownToAdf(':::caption\na | b\n--- | ---\n:::\n')), bare)
+  assert.deepEqual(position(markdownToAdf(':::caption\na | b\n--- | ---\n:::\n')), { line: 2, offset: 11 })
+  assert.equal(code(markdownToAdf(':::caption\n| a |\n:::\n')), 'malformed-pipe-table')
+  assert.equal(content(markdownToAdf(':::caption\n- a\n:::\n')), 'unsupported-node-shape: caption takes one paragraph as its body: this body is not one')
+})
+
 test('reads the separator that parts two adjacent lists of one kind', () => {
   const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
   assert.deepEqual(content(markdownToAdf('- a\n\n::listBreak\n\n- b\n')), parted)

@@ -4,7 +4,7 @@ import { backslashEscape, claimsPipeLine, trimSpace } from './commonmark-grammar
 const alignmentCell = /^:-+:?$|^-+:$/
 const delimiterCell = /^-+$/
 
-// spec/flavour.md, Tables: the cells of a row the leading `|` no claim read, GFM's form without it.
+// spec/flavour.md, Tables: the cells of a row no leading `|` claimed — GFM's form without the outer pipes.
 export function barePipeCells(line: string): string[] | undefined {
   const cells = splitPipeCells(line, 0)
   return cells.length > 1 ? cells : undefined

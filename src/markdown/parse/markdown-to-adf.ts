@@ -134,6 +134,7 @@ function tableNode(rows: readonly string[][], definitions: LinkDefinitions, path
 function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
   if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} takes the leaf form, ::, never an empty container`, path)
   const only = blocks.length === 1 ? blocks[0] : undefined
+  if (only?.kind === 'fault') return positioned(faulted(only.fault, path), only.position)
   if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body: this body is not one`, path)
   return positioned(contentNode(node, only.text, definitions, path), only.position)
 }
