@@ -5,7 +5,8 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 → `0.3.0`.
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`; 6, 7 →
+`0.3.0`.
 The numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
@@ -139,6 +140,41 @@ The numbering is the order the work was planned in, not the order it ships.
       `0.1.0` keeps — 3e names three shapes that parse and then refuse — so the release narrows
       that sentence or lists them.
 - [x] **5a — Rename to `@larvit/adf-codec`.**
+- [ ] **5b — The consumer's error surface (`0.1.0`).** A product-owner read of the public surface
+      found the error result legible to the library and opaque to the consumer holding it, and the
+      README documenting no part of it. The sub-items are that read's answers, and they land before
+      5 because §8 freezes the code list at `0.1.0` and 5b3's table is what reads the list before
+      the freeze closes it.
+  - [ ] **5b1 — The error's source position.** A parse error names an ADF path into a document the
+        caller does not hold yet — `unmappable-html` at `["content", 5]` for a `<span>` on line
+        12 — and no coordinate into the markdown string it passed in. `ConvertError` gains an
+        optional `position` the parser carries to every parse-side mint, and the README's published
+        shape gains it.
+        **Settled** (the maintainer, 2026-09-03): the position is the parse side's alone — an
+        emitter has no source string to point into, so emit-side errors keep `path` unchanged. The
+        representation and where the position is captured are implementation judgment.
+  - [ ] **5b2 — The error messages.** Most state the rule and leave the violation to be inferred —
+        `a text node holds text` for a node holding none — so `rule: violation` becomes house style
+        across the sites that do. `not-an-adf-document` gives one sentence of eight words to `null`,
+        a string, a missing `version`, a `type` that is not `doc` and a REST envelope around the
+        document; naming the check that failed makes the highest-frequency integrator mistake
+        self-diagnosing without the library naming a REST shape (§7). The three carve-out claim
+        messages name the escape that unclaims the line — `\|`, `\~~`, `\:::` — which today only
+        `spec/flavour.md` holds. `unmappable-html` reads as §8 now frames it: this version converts
+        no raw HTML, never a permanent judgment on the element.
+  - [ ] **5b3 — The README's consumer surface.** §8 invites an exhaustive switch on `code` and no
+        code name appears in the README, so it gains a table — code, when it fires, what the
+        consumer does — grouped by direction; drafting it is the audit that reads the fifteen names
+        before 5 freezes them. Four things a reader who has not opened the code cannot know: raw
+        HTML is core CommonMark and every construct in input is an error until `0.3.0`, which the
+        guarantees' "three carve-outs and one gap" denies and which is the bot and LLM personas'
+        most common failure; `adfToHtml`, `htmlToAdf`, `markdownToHtml` and `htmlToMarkdown` sit
+        unmarked in the code block people copy from, as do the two HTML guarantee bullets, and take
+        a `0.3.0` mark or leave the block; `adfToMarkdown` is partial on valid ADF — two adjacent
+        `bulletList` nodes are an error result — which the viewer persona needs told along with
+        what to do about it; and GFM past tables and strikethrough is literal text, task lists
+        taking `:::taskList`. One sentence for the LLM persona: `code` is stable across minors,
+        `message` is free text.
 - [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
