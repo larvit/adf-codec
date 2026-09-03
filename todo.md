@@ -29,9 +29,8 @@ The numbering is the order the work was planned in, not the order it ships.
     - [x] **2e5 — Combined documents and the collision property.**
   - [x] **2f — The attributes CommonMark cannot hold.**
 - [ ] **3 — `markdownToAdf` (`0.1.0`).** Each sub-item lands the fixtures its own code reads, and
-      the runner grows a parse half as they do: `parsingDirectories` beside `emittingDirectories`, a
-      round-trip directory joining it only once every fixture in it reads back to its document,
-      and readers for `corpus/normalization/` (setext, indented code, loose lists, `*`/`+`
+      the runner grows a parse half as they do: readers for `corpus/normalization/` (setext,
+      indented code, loose lists, `*`/`+`
       bullets, entity references, soft wraps — one-way, the markdown not canonical) and
       `corpus/errors/` (a markdown input per named error, the code in a `.error` beside it) with
       the first fixture each. `commonmark-subset/` cannot be the first to green — `::paragraph`

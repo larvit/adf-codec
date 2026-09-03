@@ -173,7 +173,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
   const text = readTextDirective(span)
   if (text?.fault !== undefined) return faulted(text.fault, scan.path)
   if (text !== undefined) return success({ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] })
-  const slot = slotNodes(scan, span.content)
+  const slot = slotContent(scan, span.content)
   if (!slot.ok) return slot
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
   if (mark !== undefined) {
@@ -189,7 +189,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
   return success({ kind: 'nodes', nodes: [node.value] })
 }
 
-function slotNodes(scan: Scan, content: string | undefined): Result<SlotContent | undefined> {
+function slotContent(scan: Scan, content: string | undefined): Result<SlotContent | undefined> {
   if (content === undefined) return success(undefined)
   const parsed = parseInline(content, scan.definitions, scan.path, false)
   if (!parsed.ok) return parsed

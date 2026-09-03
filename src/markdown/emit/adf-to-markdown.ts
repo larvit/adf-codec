@@ -73,7 +73,7 @@ function interruptsParagraph(node: AdfNode): boolean {
 
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const directive = blockDirective(node.type)
-  if (directive === undefined) return commonMarkLine(carriedBlock(node, path))
+  if (directive === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   const readable = readableBlock(node, path, depth)
   if (readable !== undefined) return readable
   return emitDirectiveBlock(node, directive, path, depth)
@@ -114,9 +114,9 @@ function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: Conv
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text`, path)
   const content = node.content ?? []
   if (directive.contentModel === 'none' && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content`, path)
-  if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path)
+  if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path, depth)
   const header = spellDirectiveHeader(node, directive)
-  if (header === undefined) return commonMarkLine(carriedBlock(node, path))
+  if (header === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   if (directive.contentModel === 'none' || (directive.contentModel === 'inline' && content.length === 0)) {
     return success({ fenceColons: 2, spelling: 'directive', text: `::${header}` })
   }
@@ -154,10 +154,10 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlo
   return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
 }
 
-function emitCodeDirective(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath): Result<EmittedBlock> {
+function emitCodeDirective(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const slot = languageSlot(node.attrs?.['language'])
   const header = spellDirectiveHeader(node, directive, slot.kind === 'attribute' ? [] : ['language'])
-  if (header === undefined) return commonMarkLine(carriedBlock(node, path))
+  if (header === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   const text = codeBlockText(node, path)
   if (!text.ok) return text
   const info = slot.kind === 'fence' ? slot.info : ''

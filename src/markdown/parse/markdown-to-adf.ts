@@ -36,7 +36,7 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
     case 'bulletList':
       return listNode({ type: 'bulletList' }, block.items, definitions, path, depth)
     case 'code':
-      return codeBlockNode(block.language, block.text, path)
+      return codeBlockNode(block.language, block.text, path, depth)
     case 'directive':
       return directiveNode(block, definitions, path, depth)
     case 'fault':
@@ -134,9 +134,9 @@ function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDef
   return success({ ...node, content })
 }
 
-function codeBlockNode(language: string, text: string, path: ConvertErrorPath): Result<AdfNode> {
+function codeBlockNode(language: string, text: string, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   if (language === carryName) {
-    const carried = readCarriedBlock(text)
+    const carried = readCarriedBlock(text, depth)
     if (carried.fault !== undefined) return faulted(carried.fault, path)
     return success(carried.value)
   }

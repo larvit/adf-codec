@@ -2,13 +2,13 @@ import { largestNesting } from './nesting.ts'
 
 export type JsonValue = JsonValue[] | boolean | null | number | string | { [key: string]: JsonValue }
 
-export function isJsonValue(value: unknown): value is JsonValue {
+export function isJsonValue(value: unknown, levels: number = largestNesting): value is JsonValue {
   const pending: { depth: number; item: unknown }[] = [{ depth: 0, item: value }]
   while (pending.length > 0) {
     const entry = pending.pop()
     if (entry === undefined) continue
     const { depth, item } = entry
-    if (depth > largestNesting) return false
+    if (depth > levels) return false
     if (item === null || typeof item === 'boolean' || typeof item === 'string') continue
     if (typeof item === 'number') {
       if (!Number.isFinite(item)) return false

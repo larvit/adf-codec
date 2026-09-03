@@ -312,9 +312,19 @@ test('names the shape the inline carry reads alone', () => {
   assert.equal(content(markdownToAdf(':adf{json="null"}\n')), 'unsupported-node-shape: adf spells its json attribute as json=null')
 })
 
-test('holds a carried JSON value to the nesting the parser carries', () => {
-  const deep = `:adf{json="${'['.repeat(largestNesting + 2)}${']'.repeat(largestNesting + 2)}"}\n`
-  assert.equal(content(markdownToAdf(deep)), `unsupported-nesting-depth: a carried node's JSON nests deeper than the ${largestNesting} levels the parser carries`)
+test('holds a carried JSON value to the nesting its position leaves', () => {
+  const nested = (levels: number): string => `${'['.repeat(levels)}${']'.repeat(levels)}`
+  const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`adf\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
+  const deeper = `unsupported-nesting-depth: a carried node's JSON nests the input deeper than the ${largestNesting} levels the parser carries`
+  assert.equal(content(markdownToAdf(`:adf{json="${nested(largestNesting + 2)}"}\n`)), deeper)
+  assert.equal(code(markdownToAdf(fence('', largestNesting + 1))), 'unsupported-node-shape')
+  assert.equal(content(markdownToAdf(fence('> ', largestNesting + 1))), deeper)
+})
+
+test('names the number no JSON spelling carries in an opaque carry', () => {
+  const named = 'unsupported-node-shape: the opaque carry holds a number JSON cannot spell'
+  assert.equal(content(markdownToAdf(':adf{json="{\\"attrs\\":{\\"width\\":1e999},\\"type\\":\\"blockCard\\"}"}\n')), named)
+  assert.equal(content(markdownToAdf('```adf\n1e999\n```\n')), named)
 })
 
 test('names the mark spelling no opaque carry sits inside', () => {
