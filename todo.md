@@ -167,7 +167,10 @@ The numbering is the order the work was planned in, not the order it ships.
         `bulletList` nodes are an error result — which the viewer persona needs told along with
         what to do about it; and GFM past tables and strikethrough is literal text, task lists
         taking `:::taskList`. One sentence for the LLM persona: `code` is stable across minors,
-        `message` is free text.
+        `message` is free text. The type-level surface freezes at the same moment and gets the same
+        read: what `index.ts` exports and what it withholds, `ParseError` against `ConvertError`
+        where a direction reads a source, and `ConvertFault` staying internal — the README table
+        names the shapes a consumer switches on, so the two audits are one.
 - [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /

@@ -206,7 +206,6 @@ for (const name of pairedNames(errorsRoot, '.md', '.error')) {
     assert.ok(!result.ok, result.ok ? `built ${JSON.stringify(result.value)}` : '')
     assert.equal(result.error.code, readFileSync(join(errorsRoot, `${name}.error`), 'utf8').trimEnd())
     const { position } = result.error
-    assert.ok(position !== undefined, 'the refusal names no position in the input')
     assert.deepEqual(position, lineStarting(markdown, position.offset))
   })
 }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
-import type { Result, SourcePosition } from '../../result.ts'
+import type { ParseError, Result, SourcePosition } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markdownToAdf } from './markdown-to-adf.ts'
 
@@ -23,9 +23,8 @@ function path(result: Result<AdfDocument>): readonly (number | string)[] {
   return result.ok ? ['built'] : result.error.path
 }
 
-function position(result: Result<AdfDocument>): SourcePosition | string {
-  if (result.ok) return 'built'
-  return result.error.position ?? 'no position'
+function position(result: Result<AdfDocument, ParseError>): SourcePosition | string {
+  return result.ok ? 'built' : result.error.position
 }
 
 function text(value: string): AdfNode {
@@ -459,6 +458,9 @@ test('names the line and the offset in the input a refusal sits at, the innermos
   assert.deepEqual(position(markdownToAdf('x\n\n| a |\n')), { line: 3, offset: 3 })
   assert.deepEqual(position(markdownToAdf('a\nb <span>c</span>\n')), { line: 1, offset: 0 })
   assert.deepEqual(position(markdownToAdf('Part.\r\n\r\n<div>\r\n')), { line: 3, offset: 9 })
+  assert.deepEqual(position(markdownToAdf('a\u0000b\n\n<div>\n')), { line: 3, offset: 5 })
+  assert.deepEqual(position(markdownToAdf(':::caption\na <span>b</span>\n:::\n')), { line: 2, offset: 11 })
+  assert.deepEqual(position(markdownToAdf('x\n\n:::caption\n- a\n:::\n')), { line: 3, offset: 3 })
 })
 
 test('gives up the link reference definitions a paragraph opens with', () => {

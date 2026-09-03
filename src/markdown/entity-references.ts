@@ -5,7 +5,7 @@ const anchoredEntityReference = new RegExp(`(?:${entityReferenceSource})`, 'y')
 const decimalReference = /^&#(\d+);/
 const hexadecimalReference = /^&#[Xx]([A-Fa-f0-9]+);/
 const largestCodePoint = 0x10ffff
-const replacementCharacter = '\ufffd'
+export const replacementCharacter = '\ufffd'
 const surrogates = { first: 0xd800, last: 0xdfff }
 
 // HTML5's named character references (https://html.spec.whatwg.org/entities.json), the semicolon-terminated half

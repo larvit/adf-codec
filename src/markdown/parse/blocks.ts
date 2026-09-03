@@ -12,6 +12,7 @@ import {
   markerInterruptsParagraph,
   openingCodeFence,
   openingHtmlBlock,
+  replaceNullCharacters,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
 import { isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
@@ -424,22 +425,24 @@ function currentBlocks(walk: Walk): Block[] {
   return walk.stack.at(-1)?.blocks ?? walk.blocks
 }
 
-// The line ending stays as the input spells it: an offset indexes the string the caller passed.
 function sourceLines(markdown: string): { position: SourcePosition; text: string }[] {
-  const source = markdown.replaceAll('\u0000', '\ufffd')
   const lines: { position: SourcePosition; text: string }[] = []
   let line = 1
   let start = 0
-  for (let index = 0; index < source.length; index += 1) {
-    const character = source.charAt(index)
+  for (let index = 0; index < markdown.length; index += 1) {
+    const character = markdown.charAt(index)
     if (character !== '\n' && character !== '\r') continue
-    lines.push({ position: { line, offset: start }, text: source.slice(start, index) })
-    if (character === '\r' && source.charAt(index + 1) === '\n') index += 1
+    lines.push(sourceLine(markdown, line, start, index))
+    if (character === '\r' && markdown.charAt(index + 1) === '\n') index += 1
     line += 1
     start = index + 1
   }
-  if (start < source.length) lines.push({ position: { line, offset: start }, text: source.slice(start) })
+  if (start < markdown.length) lines.push(sourceLine(markdown, line, start, markdown.length))
   return lines
+}
+
+function sourceLine(markdown: string, line: number, start: number, end: number): { position: SourcePosition; text: string } {
+  return { position: { line, offset: start }, text: replaceNullCharacters(markdown.slice(start, end)) }
 }
 
 function leadingColumns(line: Line): number {

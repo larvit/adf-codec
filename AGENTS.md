@@ -117,6 +117,13 @@ begins on — the offset indexing the string the caller passed, the line counted
 the block walk and attached as results return, so the innermost block wins, the emitter's own
 refusals the parser re-enters for the CommonMark spelling included.
 
+A parse names a position for every refusal it returns, so the type says so rather than the prose:
+`Result<T, E extends ConvertError = ConvertError>`, and a direction reading a source returns
+`Result<T, ParseError>` — `ConvertError` with `position` required. An optional field a direction
+always fills is a branch a consumer cannot take, and the `!` §11 bans is how they take it anyway.
+`htmlToAdf` inherits this at `0.3.0`; the composed `markdownToHtml` and `htmlToMarkdown` keep the
+wide `Result<T>`, since half their refusals come from an emit stage that read no source.
+
 ## 9. Release automation
 
 - `package.json` version on `main` is the source of truth. CI on `main`: tests green and version
