@@ -192,7 +192,7 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
   })
 }
 
-// The position the input itself gives an offset: undefined where the offset starts no line.
+// The position the input itself gives an offset, recomputed rather than trusted from the parser.
 function lineStarting(markdown: string, offset: number): { line: number; offset: number } | undefined {
   const before = markdown.slice(0, offset)
   if (offset !== 0 && !/(?:\r\n|[\n\r])$/.test(before)) return undefined

@@ -400,10 +400,15 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         **Settled** (the maintainer, 2026-09-03): the position is the parse side's alone — an
         emitter has no source string to point into, so emit-side errors keep `path` unchanged. The
         representation and where the position is captured are implementation judgment.
-        The block walk mints it and the node walk attaches it as results return, one call in
-        `blockNodes`, so the innermost block wins and the emitter's own refusals — which the
-        parser re-enters for the CommonMark spelling — get an input coordinate too. Line endings
-        stay as the input spells them, so an offset indexes the string the caller passed rather
-        than a normalized copy of it. §8 records both framings the review settled beside it:
-        `unsupported-node-shape` stays one code across the two directions, and `unmappable-html`
-        names the version rather than the element.
+        The block walk mints it and the node walk attaches it as results return — at `blockNodes`,
+        and at the inline body a directive holds — so the innermost block wins and the emitter's
+        own refusals, which the parser re-enters for the CommonMark spelling, get an input
+        coordinate too. `markdownToAdf` wraps the walk once more, which is what turns the wide
+        `Result<T>` into the `Result<T, ParseError>` its signature promises rather than guarding
+        anything: the depth guard under it cannot fire at depth 0. A paragraph names the line its
+        kept text starts on, never a link reference definition it gave up. Line endings stay as
+        the input spells them, so an offset indexes the string the caller passed rather than a
+        normalized copy of it. §8 records the framings the review settled beside it:
+        `unsupported-node-shape` stays one code across the two directions, `unmappable-html` names
+        the version rather than the element, and a direction that reads a source returns the
+        narrowed error type.

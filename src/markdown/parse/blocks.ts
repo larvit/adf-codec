@@ -50,7 +50,7 @@ type OpenLeaf = { position: SourcePosition } & (
   | { closer: RegExp | undefined; construct: string; kind: 'html' }
   | { held: string[]; kind: 'indented-code'; lines: string[] }
   | { indentation: number; info: string; kind: 'fenced-code'; lines: string[]; marker: string }
-  | { kind: 'paragraph'; lines: string[] }
+  | { kind: 'paragraph'; lines: string[]; positions: SourcePosition[] }
   | { kind: 'pipe-table'; rows: [string[], ...string[][]] }
 )
 
@@ -377,8 +377,12 @@ function readLineBlock(walk: Walk, opener: string): boolean {
 function appendParagraph(walk: Walk, line: string): void {
   const leaf = walk.leaf
   const text = line.replace(/^[ \t]+/, '')
-  if (leaf?.kind === 'paragraph') leaf.lines.push(text)
-  else walk.leaf = { kind: 'paragraph', lines: [text], position: walk.position }
+  if (leaf?.kind !== 'paragraph') {
+    walk.leaf = { kind: 'paragraph', lines: [text], position: walk.position, positions: [walk.position] }
+    return
+  }
+  leaf.lines.push(text)
+  leaf.positions.push(walk.position)
 }
 
 function closeLeaf(walk: Walk): void {
@@ -413,32 +417,33 @@ function faultedBlock(message: string, position: SourcePosition): Block {
   return { fault: malformedPipeTable(message), kind: 'fault', position }
 }
 
+// The definitions a paragraph gives up are whole lines, so what is left starts at one this held.
 function takeParagraph(walk: Walk): Extract<Block, { kind: 'paragraph' }> | undefined {
   const leaf = walk.leaf
   if (leaf?.kind !== 'paragraph') return undefined
   walk.leaf = undefined
   const text = readLinkDefinitions(walk.definitions, leaf.lines.join('\n'))
-  return text === '' ? undefined : { kind: 'paragraph', position: leaf.position, text }
+  if (text === '') return undefined
+  const kept = leaf.positions[leaf.lines.length - text.split('\n').length]
+  return { kind: 'paragraph', position: kept ?? leaf.position, text }
 }
 
 function currentBlocks(walk: Walk): Block[] {
   return walk.stack.at(-1)?.blocks ?? walk.blocks
 }
 
-function sourceLines(markdown: string): { position: SourcePosition; text: string }[] {
-  const lines: { position: SourcePosition; text: string }[] = []
+function* sourceLines(markdown: string): Generator<{ position: SourcePosition; text: string }> {
   let line = 1
   let start = 0
   for (let index = 0; index < markdown.length; index += 1) {
     const character = markdown.charAt(index)
     if (character !== '\n' && character !== '\r') continue
-    lines.push(sourceLine(markdown, line, start, index))
+    yield sourceLine(markdown, line, start, index)
     if (character === '\r' && markdown.charAt(index + 1) === '\n') index += 1
     line += 1
     start = index + 1
   }
-  if (start < markdown.length) lines.push(sourceLine(markdown, line, start, markdown.length))
-  return lines
+  if (start < markdown.length) yield sourceLine(markdown, line, start, markdown.length)
 }
 
 function sourceLine(markdown: string, line: number, start: number, end: number): { position: SourcePosition; text: string } {

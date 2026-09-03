@@ -463,6 +463,14 @@ test('names the line and the offset in the input a refusal sits at, the innermos
   assert.deepEqual(position(markdownToAdf('x\n\n:::caption\n- a\n:::\n')), { line: 3, offset: 3 })
 })
 
+test('names the line the text a paragraph keeps starts on, never a definition line it gave up', () => {
+  assert.deepEqual(position(markdownToAdf('[a]: /url\n<span>b</span>\n')), { line: 2, offset: 10 })
+  assert.deepEqual(position(markdownToAdf('[a]: /a\n[b]: /b\n[c]: /c\n[d]: /d\n<span>x</span>\n')), { line: 5, offset: 32 })
+  assert.deepEqual(position(markdownToAdf('[a]:\n<the url>\n"Title"\n<span>b</span>\n')), { line: 4, offset: 23 })
+  assert.deepEqual(position(markdownToAdf('> [a]: /url\n> <span>b</span>\n')), { line: 2, offset: 12 })
+  assert.deepEqual(position(markdownToAdf(':::caption\n[a]: /url\n<span>b</span>\n:::\n')), { line: 3, offset: 21 })
+})
+
 test('gives up the link reference definitions a paragraph opens with', () => {
   assert.deepEqual(content(markdownToAdf('[a]: /url\n')), [])
   assert.deepEqual(content(markdownToAdf('[a]: /url\n[b]: /other\nPart.\n')), [paragraph('Part.')])
