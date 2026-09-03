@@ -167,11 +167,17 @@ test('breaks a mark run at the node it carries', () => {
   )
 })
 
-test('refuses a carried node nested deeper than the emitter carries', () => {
+test('refuses a carried node nested deeper than the levels its position leaves', () => {
   let node: AdfNode = { type: 'blockCard' }
   for (let depth = 0; depth < 600; depth += 1) node = { content: [node], type: 'blockCard' }
   assert.equal(code(adfToMarkdown(document(node))), 'unsupported-nesting-depth')
   assert.equal(code(adfToMarkdown(document(paragraph(node)))), 'unsupported-nesting-depth')
+  let shallow: AdfNode = { type: 'blockCard' }
+  for (let depth = 0; depth < 200; depth += 1) shallow = { content: [shallow], type: 'blockCard' }
+  assert.ok(adfToMarkdown(document(shallow)).ok)
+  let quoted: AdfNode = shallow
+  for (let depth = 0; depth < 150; depth += 1) quoted = { content: [quoted], type: 'blockquote' }
+  assert.equal(code(adfToMarkdown(document(quoted))), 'unsupported-nesting-depth')
 })
 
 test('refuses a node whose content model the canonical form cannot emit', () => {

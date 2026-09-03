@@ -375,3 +375,14 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
         CommonMark parsed to a document `adfToMarkdown` then refused. The edges that check covered
         are carried before the line is assembled, so narrowing it to spaces and tabs left it no
         cause and it goes with them.
+  - [x] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
+        the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
+        named error, a carry inside a mark spelling another, and the three carve-outs' escapes
+        reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
+        `codeBlock` from it; the refusal goes when the carry reads it. 3i left the slot parse
+        contextless, so the refusal a carry inside a mark spelling earns needs a channel — a reader
+        context in place of `parseInline`'s `strip` flag, or a return arm from the slot — and
+        `directiveNodes` takes its fourth reader beside it.
+        `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
+        last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
+        corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.

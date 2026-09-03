@@ -2,7 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { carryName } from '../opaque-carry.ts'
+import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
@@ -36,7 +36,7 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
     case 'bulletList':
       return listNode({ type: 'bulletList' }, block.items, definitions, path, depth)
     case 'code':
-      return codeBlockNode(block.language, block.text, path)
+      return codeBlockNode(block.language, block.text, path, depth)
     case 'directive':
       return directiveNode(block, definitions, path, depth)
     case 'fault':
@@ -134,8 +134,12 @@ function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDef
   return success({ ...node, content })
 }
 
-function codeBlockNode(language: string, text: string, path: ConvertErrorPath): Result<AdfNode> {
-  if (language === carryName) return failure('malformed-directive', `the info string ${carryName} is reserved for the opaque carry`, path)
+function codeBlockNode(language: string, text: string, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+  if (language === carryName) {
+    const carried = readCarriedBlock(text, depth)
+    if (carried.fault !== undefined) return faulted(carried.fault, path)
+    return success(carried.value)
+  }
   const node: AdfNode = language === '' ? { type: 'codeBlock' } : { attrs: { language }, type: 'codeBlock' }
   return success(text === '' ? node : { ...node, content: [{ text, type: 'text' }] })
 }

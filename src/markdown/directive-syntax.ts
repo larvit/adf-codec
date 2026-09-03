@@ -77,6 +77,15 @@ export function readInlineDirective(text: string, index: number): Read<Directive
   return readNestedDirective(text, index, 1)
 }
 
+export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<string> {
+  if (span.content !== undefined) return { fault: unsupportedNodeShape(`${span.name} takes no content`) }
+  const spelled = span.attributes.get(key)
+  if (spelled === undefined || span.attributes.size !== 1) return { fault: unsupportedNodeShape(`${span.name} holds one ${key} attribute alone`) }
+  const spelling = spellStringAttribute(spelled.decoded)
+  if (spelling !== spelled.spelling) return { fault: unsupportedNodeShape(`${span.name} spells its ${key} attribute as ${key}=${spelling}`) }
+  return { value: spelled.decoded }
+}
+
 // Both directions answer alike: an inline directive never spans lines, so no content slot holds a line ending.
 export function slotLineEndingFault(type: string, text: string): ConvertFault | undefined {
   if (!/[\n\r]/.test(text)) return undefined
@@ -114,6 +123,10 @@ export function spellVocabulary(pairs: readonly VocabularyPair[]): [string, stri
 
 export function unknownDirectiveFault(name: string): ConvertFault {
   return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node` }
+}
+
+export function unsupportedNodeShape(message: string): ConvertFault {
+  return { code: 'unsupported-node-shape', message }
 }
 
 function keyOrder(left: string, right: string): number {

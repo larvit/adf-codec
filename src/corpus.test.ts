@@ -15,9 +15,7 @@ const errorsRoot = join(corpusRoot, 'errors')
 const normalizationRoot = join(corpusRoot, 'normalization')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 
-const emittingDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
-// A directory joins once every fixture in it reads back to its document.
-const parsingDirectories = ['block-nodes', 'commonmark-subset', 'inline-nodes']
+const roundTripDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -63,11 +61,11 @@ test('every corpus directory is a kind the runner reads', () => {
   assert.deepEqual(directoryNames(corpusRoot), ['errors', 'normalization', 'round-trip'])
 })
 
-test('every round-trip directory emits', () => {
-  assert.deepEqual(directoryNames(roundTripRoot), [...emittingDirectories].sort())
+test('every round-trip directory is a kind the runner reads', () => {
+  assert.deepEqual(directoryNames(roundTripRoot), [...roundTripDirectories].sort())
 })
 
-for (const directory of emittingDirectories) {
+for (const directory of roundTripDirectories) {
   const names = [...new Set([...fixtureNames(directory, '.json'), ...fixtureNames(directory, '.md')])].sort()
 
   test(`${directory} pairs every .json with a .md`, () => {
@@ -89,14 +87,7 @@ for (const directory of emittingDirectories) {
   }
 }
 
-test('every parsing directory is one of the emitting directories', () => {
-  assert.deepEqual(
-    parsingDirectories.filter((directory) => emittingDirectories.includes(directory)),
-    parsingDirectories,
-  )
-})
-
-for (const directory of parsingDirectories) {
+for (const directory of roundTripDirectories) {
   for (const name of fixtureNames(directory, '.md')) {
     test(`${directory}/${name} reads its markdown back to the document beside it`, () => {
       const expected: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
@@ -109,7 +100,7 @@ for (const directory of parsingDirectories) {
 }
 
 function roundTripFixtures(): { name: string; path: string }[] {
-  return emittingDirectories.flatMap((directory) =>
+  return roundTripDirectories.flatMap((directory) =>
     fixtureNames(directory, '.json').map((name) => ({ name: `${directory}/${name}`, path: join(roundTripRoot, directory, `${name}.json`) })),
   )
 }
@@ -178,7 +169,7 @@ test('the fence nesting check catches a fence a container cannot hold', () => {
   assert.equal(fenceNestingFault(':::tableCell\n```text\n:::::::panel warning\n:::\n```\n:::'), undefined)
 })
 
-for (const directory of emittingDirectories) {
+for (const directory of roundTripDirectories) {
   for (const name of fixtureNames(directory, '.md')) {
     test(`${directory}/${name} fences every container longer than its body`, () => {
       assert.equal(fenceNestingFault(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8')), undefined)

@@ -29,9 +29,8 @@ The numbering is the order the work was planned in, not the order it ships.
     - [x] **2e5 — Combined documents and the collision property.**
   - [x] **2f — The attributes CommonMark cannot hold.**
 - [ ] **3 — `markdownToAdf` (`0.1.0`).** Each sub-item lands the fixtures its own code reads, and
-      the runner grows a parse half as they do: `parsingDirectories` beside `emittingDirectories`, a
-      round-trip directory joining it only once every fixture in it reads back to its document,
-      and readers for `corpus/normalization/` (setext, indented code, loose lists, `*`/`+`
+      the runner grows a parse half as they do: readers for `corpus/normalization/` (setext,
+      indented code, loose lists, `*`/`+`
       bullets, entity references, soft wraps — one-way, the markdown not canonical) and
       `corpus/errors/` (a markdown input per named error, the code in a `.error` beside it) with
       the first fixture each. `commonmark-subset/` cannot be the first to green — `::paragraph`
@@ -51,17 +50,7 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **3g — The node tables read backwards.**
   - [x] **3h — The block nodes.**
   - [x] **3i — The inline nodes and the marks.**
-  - [ ] **3j — The carry and the combinations.** `opaque-carry/` and `combinations/` read back:
-        the `adf` fence and `:adf{json="…"}` restoring a deep-equal node, invalid JSON in either a
-        named error, a carry inside a mark spelling another, and the three carve-outs' escapes
-        reading as the literal text they hold. 3g refuses the `adf` fence rather than reading a
-        `codeBlock` from it; the refusal goes when the carry reads it. 3i left the slot parse
-        contextless, so the refusal a carry inside a mark spelling earns needs a channel — a reader
-        context in place of `parseInline`'s `strip` flag, or a return arm from the slot — and
-        `directiveNodes` takes its fourth reader beside it.
-        `index.ts` gains `markdownToAdf` here, and the README's status line with it: this is the
-        last parser chunk, so `parsingDirectories` becomes `emittingDirectories` and the whole
-        corpus round-trips both ways — `0.1.0`'s proof, which 4 widens rather than replaces.
+  - [x] **3j — The carry and the combinations.**
   - [ ] **3k — The CommonMark spec suite (`0.2.0`).** Checked in at `corpus/commonmark-spec/`,
         pinned to the version it ships — the one `html-blocks.ts` names for its start
         conditions — `corpus/README.md` gaining the kind.
@@ -123,7 +112,9 @@ The numbering is the order the work was planned in, not the order it ships.
       landed the last decision `corpus/unspellable/` held and the directory went with it, so what
       the code list holds from here is permanent. The parser's own code
       additions are read here as one list before that freeze — nine sessions mint them
-      independently, and one cause wearing two codes is breaking to undo after `0.1.0`. That read
+      independently, and one cause wearing two codes is breaking to undo after `0.1.0` — one is
+      known already: a json attribute value past 500 levels reads `unsupported-node-shape` on
+      parse but `unsupported-nesting-depth` through the carry on emit. That read
       gets a test rather than an eye — every `ConvertErrorCode` member named at a production call
       site, the way `spec.test.ts` guards the node tables — since `unspelled-block-separation`
       outlived its cause until 3h went looking. `0.1.0`

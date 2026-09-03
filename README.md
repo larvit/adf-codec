@@ -3,7 +3,8 @@
 Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
 an HTML dialect.
 
-**Status: pre-release — `adfToMarkdown` only, and not yet every document.**
+**Status: pre-release — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML not
+yet.**
 Plan: `todo.md`. Decisions: `AGENTS.md`. The flavour's grammar:
 [`spec/flavour.md`](spec/flavour.md).
 
