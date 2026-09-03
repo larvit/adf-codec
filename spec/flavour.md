@@ -2,7 +2,7 @@
 
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
 CommonMark is a subset with three carve-outs: literal text that matches directive syntax below or
-opens a pipe table is claimed by the flavour, and a matched `~~` pair spells `strike` (escape the
+shapes a pipe table is claimed by the flavour, and a matched `~~` pair spells `strike` (escape the
 `:`, `|` or `~` to keep it literal) — and one gap: a CommonMark image fits only as its own
 title-less paragraph — mid-text and titled images are named errors. The emitted form is contract
 (AGENTS.md §8). Per-node syntaxes build on this grammar in the sections below.
@@ -23,8 +23,10 @@ normalizes to it through the round-trip.
   marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or a list
   whose first item is empty), whatever block sits above it. Blank lines between items normalize
   away, and no list opens beside one of its own kind — the marker change CommonMark starts a
-  second list on merges instead: ADF records no tightness, and one `- ` spelling leaves two
-  adjacent lists of a kind no way back.
+  second list on merges instead: ADF records no tightness, so one `- ` spelling reads two
+  adjacent lists of a kind back as one. The leaf `::listBreak` parts them, taking the separation
+  any directive block takes where it sits. It builds no node, and it reads only between two
+  adjacent lists of one type: elsewhere, or carrying an argument or `{attrs}`, it is a named error.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick
@@ -51,7 +53,8 @@ normalizes to it through the round-trip.
   `*not emphasis*` is `\*not emphasis\*` — no delimiter the emitter did not write reaches the
   matching below, which is what lets the emitter decide its own pairings.
 - Blocks separated by one blank line at document level, inside a blockquote and between CommonMark
-  blocks; two directive blocks inside a container take none. No trailing whitespace outside a code
+  blocks; inside a directive container a pair holding a directive block takes none. No trailing
+  whitespace outside a code
   block's
   content, single trailing newline; a document with no blocks is the empty string.
 
@@ -64,8 +67,9 @@ whether the name is known, and an unknown name is an error result naming it — 
 emitter escaped stays escaped, and erroring input gaining meaning later is MINOR, never a reparse
 (§8). Each name belongs to one position, and a name the other one spells — a mark or an inline
 node written as a block directive, a block node written inline — is a different error, naming the
-spelling it takes. The name `adf` is reserved for the opaque carry, as both directive name and fence info
-string.
+spelling it takes. Two reserved names read back to no node: `adf` for the opaque carry, as both
+directive name and fence info string, and `listBreak` for the leaf that parts two adjacent lists
+(Canonical form).
 
 **Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.
 `[content]` is inline markdown; brackets inside balance as in CommonMark link text, `\]` for a
@@ -291,7 +295,10 @@ takes the directive form instead. A pipe table parses back to exactly that shape
 
 Claiming at block level, symmetric with directives: a line opening with an unescaped `|` is
 claimed and must parse as part of a pipe table, else it is a named error — escape the pipe
-(`\|`) to keep it literal text. A pipe table is a header row, a delimiter row whose cells are
+(`\|`) to keep it literal text. The shape a missing leading pipe leaves is claimed too: a line
+holding an unescaped `|`, followed inside one paragraph by a line whose cells are all `-` runs
+and match it in count — GFM's table without the outer pipes — is a named error rather than the
+prose it reads as. A pipe table is a header row, a delimiter row whose cells are
 runs of one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
 Cells split on unescaped `|` before inline parsing — `\|` stays in the cell text, and the
 inline layer's ordinary CommonMark escaping yields the pipe; each cell is the inline content of

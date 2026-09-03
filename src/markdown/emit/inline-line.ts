@@ -220,7 +220,7 @@ function emitText(node: AdfNode, context: InlineContext, index: number, path: Co
   if (Object.keys(node.attrs ?? {}).length > 0) return success({ carry: { first: index, last: index } })
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
   if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
-  if (/\r/.test(node.text)) return failure('unspellable-whitespace', 'a text node holds a carriage return CommonMark rewrites', path)
+  if (/\r/.test(node.text)) return failure('unspellable-character', 'a text node holds a carriage return CommonMark rewrites', path)
   if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
   const parts = node.text.split(/(\n+)/).filter((part) => part !== '')

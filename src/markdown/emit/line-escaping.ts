@@ -1,6 +1,7 @@
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
+import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensInlineDirective } from '../directive-syntax.ts'
 import { readEntityReference } from '../entity-references.ts'
 
@@ -196,8 +197,11 @@ function opensConstruct(
   return claimsCharacter(scan, linkClose, index, inBrackets, container, escaped)
 }
 
+// A hard break is the one spelling that puts a delimiter row under a row of its own, so only a later line claims.
 function claimsLineStart(line: ScanLine, index: number, container: LineContainer): boolean {
-  return container === 'paragraph' && escapesLineClaim(line.text, index - line.start, line.position)
+  if (container !== 'paragraph') return false
+  if (index === line.start && line.position === 'later' && isBareDelimiterRow(line.text)) return true
+  return escapesLineClaim(line.text, index - line.start, line.position)
 }
 
 function scanLine(scan: string, start: number): ScanLine {

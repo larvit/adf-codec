@@ -1,0 +1,134 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Bolt",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Nut",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Cut",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Weld",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Left",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Right",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        }
+      ],
+      "type": "panel"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

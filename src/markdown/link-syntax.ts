@@ -91,26 +91,26 @@ export function skipLinkWhitespace(text: string, offset: number): number {
 }
 
 export function spellDestination(href: string, path: ConvertErrorPath): Result<string> {
-  if (holdsControlCharacter(href)) return failure('unspellable-link-destination', 'a link destination holds a control character', path)
-  if (href.includes('\\')) return failure('unspellable-link-destination', 'no canonical escape spells a backslash in a link destination', path)
+  if (holdsControlCharacter(href)) return failure('unspellable-link', 'a link destination holds a control character', path)
+  if (href.includes('\\')) return failure('unspellable-link', 'no canonical escape spells a backslash in a link destination', path)
   if (holdsEntityReference(href)) {
-    return failure('unspellable-link-destination', 'a link destination holds an entity reference that decodes on the way back', path)
+    return failure('unspellable-link', 'a link destination holds an entity reference that decodes on the way back', path)
   }
   if (href.includes(' ')) {
     if (/[<>]/.test(href)) {
-      return failure('unspellable-link-destination', 'no canonical escape spells an angle bracket beside a space in a link destination', path)
+      return failure('unspellable-link', 'no canonical escape spells an angle bracket beside a space in a link destination', path)
     }
     return success(`<${href}>`)
   }
-  if (href.startsWith('<')) return failure('unspellable-link-destination', 'a bare link destination cannot begin with an angle bracket', path)
+  if (href.startsWith('<')) return failure('unspellable-link', 'a bare link destination cannot begin with an angle bracket', path)
   return success(escapeUnbalanced(href))
 }
 
 export function spellTitle(title: string, path: ConvertErrorPath): Result<string> {
   if (/[\n\r\\]/.test(title)) {
-    return failure('unspellable-link-title', 'no canonical escape spells a backslash or newline in a link title', path)
+    return failure('unspellable-link', 'no canonical escape spells a backslash or newline in a link title', path)
   }
-  if (holdsEntityReference(title)) return failure('unspellable-link-title', 'a link title holds an entity reference that decodes on the way back', path)
+  if (holdsEntityReference(title)) return failure('unspellable-link', 'a link title holds an entity reference that decodes on the way back', path)
   return success(` "${title.replaceAll('"', '\\"')}"`)
 }
 

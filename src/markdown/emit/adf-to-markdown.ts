@@ -9,6 +9,7 @@ import { fencedCodeBlock } from '../backtick-runs.ts'
 import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { listBreakSpelling } from '../list-break.ts'
 import { spellDirectiveHeader } from './block-directive-spelling.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
@@ -17,7 +18,7 @@ type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBody = { fenceColons: number; text: string }
 type EmittedBlock = EmittedBody & { spelling: BlockSpelling }
-type PlacedBlock = EmittedBlock & { node: AdfNode; path: ConvertErrorPath }
+type PlacedBlock = EmittedBlock & { node: AdfNode }
 
 const largestListMarker = 999999999
 
@@ -34,35 +35,31 @@ function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: 
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
-    const nodePath = [...path, 'content', index]
-    const block = emitBlock(node, nodePath, depth)
+    const block = emitBlock(node, [...path, 'content', index], depth)
     if (!block.ok) return block
-    blocks.push({ ...block.value, node, path: nodePath })
+    blocks.push({ ...block.value, node })
   }
   let fenceColons = 0
   let text = ''
   for (const [index, block] of blocks.entries()) {
     const previous = blocks[index - 1]
-    if (previous !== undefined) {
-      const separation = separationBetween(previous, block, container)
-      if (!separation.ok) return separation
-      text += separation.value
-    }
+    if (previous !== undefined) text += separationBetween(previous, block, container)
     fenceColons = Math.max(fenceColons, block.fenceColons)
     text += block.text
   }
   return success({ fenceColons, text })
 }
 
-function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): Result<string> {
+function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
   const plainPair = previous.spelling !== 'directive' && next.spelling !== 'directive'
   if (plainPair && next.spelling === 'list') {
     if (previous.spelling === 'list' && previous.node.type === next.node.type) {
-      return failure('unspellable-adjacent-lists', `two adjacent ${next.node.type} nodes read back as one list`, next.path)
+      const gap = container === 'directive' ? '\n' : '\n\n'
+      return `${gap}${listBreakSpelling}${gap}`
     }
-    if (container === 'list-item') return success(interruptsParagraph(next.node) ? '\n' : '\n\n')
+    if (container === 'list-item') return interruptsParagraph(next.node) ? '\n' : '\n\n'
   }
-  return success(container === 'directive' && !plainPair ? '\n' : '\n\n')
+  return container === 'directive' && !plainPair ? '\n' : '\n\n'
 }
 
 function interruptsParagraph(node: AdfNode): boolean {
@@ -179,7 +176,7 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
     ) {
       return failure('unsupported-node-shape', `a codeBlock holds plain text nodes only: this ${child.type} node is not one`, childPath)
     }
-    if (/\r/.test(child.text)) return failure('unspellable-whitespace', 'a codeBlock holds no carriage return CommonMark keeps: this text holds one', childPath)
+    if (/\r/.test(child.text)) return failure('unspellable-character', 'a codeBlock holds no carriage return CommonMark keeps: this text holds one', childPath)
     if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
     text += child.text
   }

@@ -10,6 +10,7 @@ import { carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { inlineMarkSpellingFault } from './directive-marks.ts'
+import { listBreakName, listBreakSpelling } from '../list-break.ts'
 import { marksAttribute, readMarkValues } from '../block-directive-marks.ts'
 import { readVocabulary } from './directive-attributes.ts'
 import { slotLineEndingFault } from '../directive-syntax.ts'
@@ -76,6 +77,7 @@ function inlineSpellingFault(name: string): ConvertFault | undefined {
 }
 
 function blockSpellingFault(name: string): ConvertFault | undefined {
+  if (name === listBreakName) return { code: 'unsupported-node-shape', message: `${name} takes the block form, ${listBreakSpelling}, never the inline form` }
   const directive = blockDirective(name)
   if (directive === undefined) return undefined
   const form = directive.contentModel === 'none' ? `::${name}` : `:::${name}`
