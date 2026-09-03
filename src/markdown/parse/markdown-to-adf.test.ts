@@ -182,8 +182,8 @@ test('claims the line a pipe opens and gives the rest back to the block walk', (
 })
 
 test('names the pipe table a claimed line does not spell', () => {
-  assert.equal(content(markdownToAdf('| a | b |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| keeps the line literal text')
-  assert.equal(content(markdownToAdf('| a |\n| x |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| keeps the line literal text')
+  assert.equal(content(markdownToAdf('| a | b |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text')
+  assert.equal(content(markdownToAdf('| a |\n| x |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text')
   assert.equal(content(markdownToAdf('| a | b |\n| :--- | ---: |\n')), 'malformed-pipe-table: a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon')
   assert.equal(content(markdownToAdf('| a | b |\n| --- |\n')), 'malformed-pipe-table: a pipe table row holds 1 cell where its header holds 2 cells')
   assert.equal(content(markdownToAdf('| a |\n| --- |\n| b | c |\n')), 'malformed-pipe-table: a pipe table row holds 2 cells where its header holds 1 cell')

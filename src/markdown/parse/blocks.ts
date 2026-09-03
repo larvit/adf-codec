@@ -406,7 +406,7 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
     return faultedBlock('a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon', position)
   }
   if (delimiter === undefined || !delimiter.every(isPipeDelimiter)) {
-    return faultedBlock('a pipe table underlines its header with a row of `-` runs: this one has none; \\| keeps the line literal text', position)
+    return faultedBlock('a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text', position)
   }
   const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
   if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${cellCount(ragged.length)} where its header holds ${cellCount(header.length)}`, position)

@@ -19,6 +19,8 @@ test('names the check anything that is not a doc node failed', () => {
   assert.equal(fault(undefined), 'an ADF document is an object: found undefined')
   assert.equal(fault([]), 'an ADF document is an object: found an array')
   assert.equal(fault('doc'), 'an ADF document is an object: found "doc"')
+  assert.equal(fault('x'.repeat(200000)), `an ADF document is an object: found "${'x'.repeat(40)}…"`)
+  assert.equal(fault(function named(first: number, second: number) { return first + second }), 'an ADF document is an object: found a function')
   assert.equal(fault({ fields: { description: { type: 'doc', version: 1 } } }), 'an ADF document holds content, type and version alone: found the key fields')
   assert.equal(fault({ extra: 1, type: 'doc', version: 1 }), 'an ADF document holds content, type and version alone: found the key extra')
   assert.equal(fault({ version: 1 }), 'an ADF document holds type "doc": found no type field')
