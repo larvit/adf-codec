@@ -113,8 +113,11 @@ The numbering is the order the work was planned in, not the order it ships.
       guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
       nobody typed.
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo
-      public (§6), create the `NPM_TOKEN` secret, and open the bump PR that sets `version` to
-      `0.1.0` and drops `private: true`, the guard against any earlier publish. `0.1.0` is the
+      public (§6), create the `NPM_TOKEN` secret, confirm the Actions token may push tags — the
+      publish succeeds and the tag push then reddens the run, though the next push to `main`
+      retries the tag alone — and open the bump PR that sets `version` to `0.1.0` and drops
+      `private: true`, the guard against any earlier publish. The bump and the drop go in one
+      commit: dropping `private` alone publishes `0.0.0`, which also differs from npm's nothing. `0.1.0` is the
       markdown round-trip: both markdown directions, the types, `isAdfDocument`, proved over the
       checked-in corpus.
       **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
