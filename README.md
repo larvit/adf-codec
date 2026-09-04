@@ -101,7 +101,7 @@ emit refuses:
 | `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
 | `unspellable-link` | a link `href` or `title` holds what no canonical escape spells — a backslash, a newline, a control character, an entity reference, an angle bracket beside a space | percent-encode the destination (`%5C` for the backslash, `%26` for the `&` that opens the entity), or drop the title |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
-| `unsupported-nesting-depth` | blocks, marks or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
+| `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
 | `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take — or markdown writes as a directive a node the flavour spells as CommonMark | write the shape the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
@@ -112,7 +112,9 @@ emit refuses:
   carve-outs — literal text matching directive, pipe-table or strikethrough syntax is claimed
   (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as its own
   title-less paragraph; mid-text and titled images are error results. Converting back yields the
-  library's canonical spelling, which round-trips byte-identically.
+  library's canonical spelling, which round-trips byte-identically — where it converts back at
+  all: a parse succeeding is no promise of that, so keep the source until the way back succeeds.
+  `[a](/a\b)`, `<http://x?a=1&amp;b=2>` and `[a](/x&#10;y)` read cleanly and then refuse.
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
   processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.3.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding

@@ -9,10 +9,21 @@
     "url": "git+https://gitea.larvit.se/larvit/adf-codec.git"
   },
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "engines": {
     "node": ">=18"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-branches=98 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.build.json"
   },

@@ -16,7 +16,9 @@ less silently destroys content an editor could not represent, in a document it d
 When losslessness and readability conflict, losslessness wins.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
-back yields the library's canonical spelling, and that spelling round-trips byte-identically.
+back yields the library's canonical spelling, and that spelling round-trips byte-identically —
+where there is a way back. CommonMark spells link destinations the flavour has no escape for, so a
+parse succeeding does not imply a spellable document; `todo.md` 3k's exception list names those.
 
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
 merged, JSON number semantics, an empty attrs object, marks array or content array the absent
@@ -62,8 +64,8 @@ they never reach a consumer.
 
 - Runs on any ES2022 engine, not only Node — a browser as readily as a server. The shipped source
   is ECMAScript and nothing else: no host import, no host global, no DOM. `tsconfig.build.json` is
-  that gate, typechecking the shipped files alone, so `node:fs`, `process` and an ES2024 method are
-  compile errors here rather than a consumer's crash there. The standard is the line, never an
+  that gate, typechecking and emitting the shipped files alone, so `node:fs`, `process` and an
+  ES2024 method are compile errors here rather than a consumer's crash there. The standard is the line, never an
   engine list: one implementing it in part — Hermes is the live doubt, on §10's property escapes
   and on lookbehind — is out of scope rather than a bug. Node's test runner, the corpus reads and
   the build are the repo's own,
@@ -129,7 +131,17 @@ descends, so a document reports its first error in document order. `not-an-adf-d
 the document's own path throughout: eight of the guard's nine branches read the document's own
 shape, and threading a path to the ninth — a malformed node anywhere in the tree — wants the
 manual stack §11's no-recursion rule forces, whose empty half no input reaches. The message names
-the violation instead.
+the violation instead. Depth is not one of the nine: `adfDocumentFault` returns the code with the
+message, so an attribute value past 500 levels is `unsupported-nesting-depth` from the emitter as
+it already is from the parser, both directions refusing the same value. A node's attribute is
+counted from the value itself, never from the `attrs` object holding it; a mark's is counted three
+levels in, because the block directive spells the whole mark set as one JSON attribute and the
+parser reads the value at the bottom of array, mark and `attrs`. `isAdfDocument` is true for a depth fault:
+a deep document is a document, as the 2000-level blocks and the 600-deep marks the guard already
+waves through are, and depth is the walks' answer rather than the shape's. A non-finite number
+stays parted where depth is joined: the parse says `unsupported-node-shape` because the markdown is
+at fault, the emit `not-an-adf-document` because the input is, and unlike depth nothing round-trips
+inconsistently between them.
 
 `position` is the parse side's alone: an emitter reads no source, so an emit error carries `path`
 and nothing more. It is `{ line, offset }` at the start of the line the block holding the refusal
@@ -148,7 +160,16 @@ wide `Result<T>`, since half their refusals come from an emit stage that read no
 
 - `package.json` version on `main` is the source of truth. CI on `main`: tests green and version
   differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
-  deliberate semver judgment.
+  deliberate semver judgment. `publish.sh` is that job, and `private: true` stops it before it
+  reads the token, so the pipeline is live and silent until the maintainer's first bump drops the
+  field.
+- The publish and the tag each observe their own end state — the version on npm, the tag on the
+  remote — and neither gates the other, so a run that dies between them converges on the next push
+  to `main` rather than leaving npm ahead of the tags. An unanswered registry reads the same as an
+  unpublished version, which npm's own duplicate rejection is what catches. The job rebuilds rather
+  than taking the gate's `dist`: the lockfile is committed, the image is patch-pinned and `tsc` is
+  deterministic, so the two builds agree, and promoting an artifact would make the release path
+  depend on a store that the gate would then have to keep.
 - Renovate watches devDependencies, Docker pins and action tags; automerges everything on green CI.
 - Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`), as
   specific as the publisher tags: `oven/bun:1.4.0-alpine` pins Bun's patch and leaves the base
@@ -167,6 +188,14 @@ JavaScriptCore, the one engine of the three that is not V8, where the Unicode pr
 emphasis matching leans on can disagree. Both refuse a run matching no test, so Node's is the only
 vacuous-green guard, and a test may reach only for what all three `node:` shims carry — the price
 of proving those engines over the corpus rather than over a smoke import.
+
+The gate then packs the build and installs the tarball under `package-tests/`, so `files`,
+`exports` and `types` are proved on the artifact that ships rather than on the source tree a
+self-reference would resolve against. `consumer.ts` typechecks the emitted `.d.ts` from outside
+`tsconfig.build.json` — declaration emit leaves the `.ts` specifiers
+`rewriteRelativeImportExtensions` rewrites in the JavaScript, and this is what says a consumer's
+resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` stays unproven.
+`node-floor.js` round-trips the installed package under a Node pinned to `engines.node`'s floor.
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards

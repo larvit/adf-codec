@@ -3,7 +3,7 @@ import type { DirectiveSpan, Read } from './directive-syntax.ts'
 import type { JsonSpelling } from '../canonical-json.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
 import { isAdfNode } from '../adf/document.ts'
-import { isJsonValue } from '../json-value.ts'
+import { isJsonValue, overNested } from '../json-value.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
 import { largestNesting } from '../nesting.ts'
 import { malformedDirective, readSoleStringAttribute, spellAttributes, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
@@ -37,7 +37,7 @@ export function readCarriedInline(span: DirectiveSpan): Read<AdfNode> | undefine
 }
 
 function carriedJson(node: AdfNode, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<string> {
-  if (!isJsonValue(node, levels)) {
+  if (!isJsonValue(node) || overNested(node, levels)) {
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
   return success(serializeCanonicalJson(node, spelling))
@@ -47,9 +47,8 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number): R
   const parsed = parseJsonText(raw)
   if (parsed === undefined) return { fault: malformedDirective('the opaque carry holds invalid JSON') }
   const { value } = parsed
-  if (!isJsonValue(value, levels)) {
-    // Unbounded, the same walk parts the two causes one `false` holds (AGENTS.md §8).
-    if (!isJsonValue(value, Number.POSITIVE_INFINITY)) return { fault: unsupportedNodeShape('the opaque carry holds a number JSON cannot spell') }
+  if (!isJsonValue(value)) return { fault: unsupportedNodeShape('the opaque carry holds a number JSON cannot spell') }
+  if (overNested(value, levels)) {
     return { fault: { code: 'unsupported-nesting-depth', message: `a carried node's JSON nests deeper than the ${levels} levels its position leaves` } }
   }
   if (serializeCanonicalJson(value, spelling) !== raw) {

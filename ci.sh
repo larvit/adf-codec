@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-
-bun_image=oven/bun:1.4.0-alpine
-deno_image=denoland/deno:2.9.6
-node_image=node:24.19.0-alpine3.24
-in_image() {
-  local image=$1 entrypoint=$2
-  shift 2
-  docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
-}
+source ./docker-runner.sh
 
 in_image "$node_image" npm ci
 in_image "$node_image" npm run typecheck
@@ -26,3 +18,11 @@ fi
 
 in_image "$deno_image" deno test --allow-read --no-check src/
 in_image "$bun_image" bun test src/
+
+in_image "$node_image" npm run build
+in_image "$node_image" sh -c 'set -e
+  rm -rf package-tests/node_modules
+  npm pack --pack-destination /tmp >/dev/null
+  npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz >/dev/null'
+in_image "$node_image" npx tsc -p package-tests
+in_image "$floor_image" node package-tests/node-floor.js

@@ -7,9 +7,12 @@
     "types": [],
 
     "allowImportingTsExtensions": true,
+    "declaration": true,
     "erasableSyntaxOnly": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "outDir": "dist",
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "src",
     "verbatimModuleSyntax": true,
 
     "strict": true,

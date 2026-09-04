@@ -1,10 +1,26 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import type { JsonValue } from '../json-value.ts'
 import { adfDocumentFault, isAdfDocument } from './document.ts'
+import { largestNesting } from '../nesting.ts'
 
 function fault(value: unknown): string {
-  return adfDocumentFault(value) ?? 'accepted'
+  return adfDocumentFault(value)?.message ?? 'accepted'
+}
+
+function faultCode(value: unknown): string {
+  return adfDocumentFault(value)?.code ?? 'accepted'
+}
+
+function nested(levels: number): JsonValue {
+  let value: JsonValue = 1
+  for (let level = 0; level < levels; level += 1) value = [value]
+  return value
+}
+
+function withAttribute(value: JsonValue): unknown {
+  return { content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }
 }
 
 test('accepts an editor-normal document', () => {
@@ -42,6 +58,19 @@ test('rejects a node whose shape ProseMirror JSON cannot hold', () => {
   assert.equal(isAdfDocument({ content: [{ marks: [{ type: 1 }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
   assert.equal(isAdfDocument({ content: [{ attrs: { a: Number.POSITIVE_INFINITY }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
   assert.equal(isAdfDocument({ content: [{ attrs: [], type: 'paragraph' }], type: 'doc', version: 1 }), false)
+})
+
+test('names the attribute nesting past the levels the parser reads one at, and still calls the value a document', () => {
+  const deeper = (key: string, type: string, levels: number = largestNesting): string =>
+    `the ${key} attribute of ${type} nests deeper than the ${levels} levels an attribute carries`
+  assert.equal(fault(withAttribute(nested(largestNesting))), 'accepted')
+  assert.equal(fault(withAttribute(nested(largestNesting + 1))), deeper('a', 'paragraph'))
+  assert.equal(faultCode(withAttribute(nested(largestNesting + 1))), 'unsupported-nesting-depth')
+  assert.equal(isAdfDocument(withAttribute(nested(largestNesting + 1))), true)
+  const marked = (levels: number): unknown => ({ content: [{ marks: [{ attrs: { a: nested(levels) }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 })
+  assert.equal(fault(marked(largestNesting - 3)), 'accepted')
+  assert.equal(fault(marked(largestNesting - 2)), deeper('a', 'link', largestNesting - 3))
+  assert.equal(isAdfDocument(marked(largestNesting - 2)), true)
 })
 
 test('accepts the JSON values an attribute may hold', () => {
