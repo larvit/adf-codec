@@ -512,3 +512,18 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
       canonical-fixpoint sentence claiming more than `0.1.0` keeps — 3e names three shapes that
       parse and then refuse — so it now says a parse succeeding is no promise of a way back, and
       names them.
+- [x] **5d — The browser leg.** §6's browser half is checkable on the emitted `dist/index.js` a
+      browser can load — the compile gate names no host API, and a real page converting the corpus
+      is the other half. Headless Firefox is that page, settling both at once: the browser proof,
+      and the only SpiderMonkey there is, the gate's three engine legs being two V8s and a
+      JavaScriptCore that is not Safari's. The mechanism is the decision this item opens with: a
+      browser leg wants an image, a driver and a way to carry a verdict back out, none of which
+      the gate's plain `docker run` per engine has. The answer is `with_firefox`, which runs the
+      geckodriver image beside the node one in a shared network namespace, so the page's server and
+      the driver are each other's `127.0.0.1` and no user-defined network, container name or
+      geckodriver `--allow-hosts` entry is wanted. `browser-tests/run.js` serves the repo, drives
+      one `execute/sync` and asserts the results against the corpus with the Node-side
+      `assert.deepEqual` the corpus runner uses, so the browser page holds no second copy of the
+      comparison. The whole corpus fits: 118 fixtures in 2.9s warm, 14s cold, against a 120s
+      script timeout — no slice was worth choosing. A `try` around the dynamic import is what turns
+      a broken build into SpiderMonkey's own message rather than an undefined global.

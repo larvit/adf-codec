@@ -14,6 +14,15 @@
     {
       "customType": "regex",
       "datasourceTemplate": "docker",
+      "depNameTemplate": "instrumentisto/geckodriver",
+      "description": "Pin the Firefox image the gate's browser leg runs",
+      "managerFilePatterns": ["docker-runner.sh"],
+      "matchStrings": ["instrumentisto/geckodriver:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
       "depNameTemplate": "node",
       "description": "Pin the node image the gate runs",
       "managerFilePatterns": ["docker-runner.sh"],

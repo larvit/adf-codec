@@ -197,6 +197,13 @@ self-reference would resolve against. `consumer.ts` typechecks the emitted `.d.t
 resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` stays unproven.
 `node-floor.js` round-trips the installed package under a Node pinned to `engines.node`'s floor.
 
+A fourth engine reads the build rather than the source: a headless Firefox loads `dist/index.js`
+over HTTP and converts the whole corpus, which is §6's browser half and the only SpiderMonkey
+there is — the gate's other three engines are two V8s and a JavaScriptCore that is not Safari's.
+geckodriver is what carries a verdict back out, the driver and the page's server sharing one
+network namespace so each is the other's `127.0.0.1`; `--headless --screenshot` has no such
+channel, and loading `dist/index.js` in a globals-stripped realm buys one by not running a browser.
+
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
 `noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index

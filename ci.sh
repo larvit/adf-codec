@@ -26,3 +26,5 @@ in_image "$node_image" sh -c 'set -e
   npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz >/dev/null'
 in_image "$node_image" npx tsc -p package-tests
 in_image "$floor_image" node package-tests/node-floor.js
+
+with_firefox in_image "$node_image" node browser-tests/run.js
