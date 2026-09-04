@@ -5,7 +5,7 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0`; 4b and 4c → `0.1.1`; 4, 3k → `0.2.0`;
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0`; 4b, 4c and 4d → `0.1.1`; 4, 3k → `0.2.0`;
 6, 7 → `0.3.0`.
 The numbering is the order the work was planned in, not the order it ships.
 
@@ -112,6 +112,20 @@ The numbering is the order the work was planned in, not the order it ships.
       cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
       guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
       nobody typed.
+- [ ] **4d — What the gate says while it runs (`0.1.1`).** `ci.sh` runs nine legs and announces
+      none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
+      a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
+      own fix. The legs need markers: `plainpages`' `ci.sh` prints a `step()` header per leg and
+      this one prints nothing, so name the leg and the image before each. The longest leg is the
+      quietest: `test_output=$(… npm test 2>&1)` buffers the whole Node run to replay it after,
+      because the zero-test guard greps the count — stream it and grep a copy (`tee`), rather than
+      trading the output for the guard. And two legs are silenced outright, `npm pack` and the
+      tarball install, whose `>/dev/null` predates the offline install that made them quick and
+      quiet. `publish.sh` owes the same: today it says nothing between reading `private` and the
+      registry answering, which is where its `npm ci` and rebuild sit — the seconds §9 accepts
+      rather than promoting the gate's `dist`, and unmeasured until the log shows them. Per-leg
+      timing is what turns "slow or hung" from a guess into a reading; the browser leg's own
+      5.4–7.9s against a 17s warm gate is the number that made it obviously cheap.
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo
       public (§6), create the `NPM_TOKEN` secret, confirm the Actions token may push tags — the
       publish succeeds and the tag push then reddens the run, though the next push to `main`
