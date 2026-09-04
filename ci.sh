@@ -23,6 +23,6 @@ in_image "$node_image" npm run build
 in_image "$node_image" sh -c 'set -e
   rm -rf package-tests/node_modules
   npm pack --pack-destination /tmp >/dev/null
-  npm install --no-save --no-package-lock --prefix package-tests /tmp/*.tgz >/dev/null'
+  npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz >/dev/null'
 in_image "$node_image" npx tsc -p package-tests
 in_image "$floor_image" node package-tests/node-floor.js
