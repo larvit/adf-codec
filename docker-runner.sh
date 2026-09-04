@@ -14,7 +14,9 @@ with_firefox() {
   local container in_image_network status=0
   container=$(docker run -d --rm "$firefox_image")
   # The id is baked in: the trap fires after this function's locals are gone.
-  trap "docker rm -f $container >/dev/null 2>&1" EXIT INT TERM
+  trap "docker rm -f $container >/dev/null 2>&1" EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
   in_image_network="container:$container"
   "$@" || status=$?
   return $status
