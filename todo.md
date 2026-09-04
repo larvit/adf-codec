@@ -129,13 +129,7 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **5b3 — The code list and the flavour's gaps.**
   - [x] **5b4 — The README's consumer surface.**
 - [x] **5c — The build and the release pipeline.**
-- [ ] **5d — The browser leg (`0.1.0`).** §6's browser half is checkable on the emitted
-      `dist/index.js` a browser can load — the compile gate names no host API, and a real page
-      converting the corpus is the other half. Headless Firefox is that page, settling both at
-      once: the browser proof, and the only SpiderMonkey there is, the gate's three engine legs
-      being two V8s and a JavaScriptCore that is not Safari's. The mechanism is the decision this
-      item opens with: a browser leg wants an image, a driver and a way to carry a verdict back
-      out, none of which the gate's plain `docker run` per engine has.
+- [x] **5d — The browser leg.**
 - [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /

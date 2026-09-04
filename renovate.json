@@ -47,6 +47,15 @@
       "managerFilePatterns": [".gitea/workflows/renovate.yml"],
       "matchStrings": ["renovate/renovate:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "selenium/standalone-firefox",
+      "description": "Pin the Firefox image the gate's browser leg runs",
+      "managerFilePatterns": ["docker-runner.sh"],
+      "matchStrings": ["selenium/standalone-firefox:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
     }
   ],
   "extends": ["config:recommended"],
