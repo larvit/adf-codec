@@ -133,8 +133,10 @@ shape, and threading a path to the ninth — a malformed node anywhere in the tr
 manual stack §11's no-recursion rule forces, whose empty half no input reaches. The message names
 the violation instead. Depth is not one of the nine: `adfDocumentFault` returns the code with the
 message, so an attribute value past 500 levels is `unsupported-nesting-depth` from the emitter as
-it already is from the parser, both directions refusing the same value — the count is the levels
-an attribute holds, never the `attrs` object holding it. `isAdfDocument` is true for a depth fault:
+it already is from the parser, both directions refusing the same value. A node's attribute is
+counted from the value itself, never from the `attrs` object holding it; a mark's is counted three
+levels in, because the block directive spells the whole mark set as one JSON attribute and the
+parser reads the value at the bottom of array, mark and `attrs`. `isAdfDocument` is true for a depth fault:
 a deep document is a document, as the 2000-level blocks and the 600-deep marks the guard already
 waves through are, and depth is the walks' answer rather than the shape's. A non-finite number
 stays parted where depth is joined: the parse says `unsupported-node-shape` because the markdown is

@@ -336,19 +336,33 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
   let attrs: AdfMark['attrs'] = { depth: 'x' }
   for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
-  const deeper = (key: string, type: string): string =>
-    `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
-  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em'))
-  const card = (levels: number): AdfNode => {
-    let data: JsonValue = 1
-    for (let level = 0; level < levels; level += 1) data = [data]
-    return { attrs: { data, url: 'https://example.com/a' }, type: 'inlineCard' }
+  const deeper = (key: string, type: string, levels: number = largestNesting): string =>
+    `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${levels} levels an attribute carries`
+  const nested = (levels: number): JsonValue => {
+    let value: JsonValue = 1
+    for (let level = 0; level < levels; level += 1) value = [value]
+    return value
   }
+  const card = (levels: number): AdfNode => ({ attrs: { data: nested(levels), url: 'https://example.com/a' }, type: 'inlineCard' })
+  // A block directive spells the mark set as one JSON attribute, so a mark's value is read three levels in.
+  const marked = (levels: number): AdfNode => ({
+    attrs: { panelType: 'info' },
+    content: [paragraph({ text: 'x', type: 'text' })],
+    marks: [{ attrs: { deep: nested(levels) }, type: 'em' }],
+    type: 'panel',
+  })
+  const roundTrips = (node: AdfNode): void => {
+    const spelled = adfToMarkdown(document(node))
+    assert.ok(spelled.ok, spelled.ok ? '' : spelled.error.message)
+    assert.deepEqual(markdownToAdf(spelled.value), { ok: true, value: document(node) })
+  }
+
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em', largestNesting - 3))
   assert.equal(markdown(adfToMarkdown(document(paragraph(card(largestNesting + 1))))), deeper('data', 'inlineCard'))
   assert.deepEqual(path(adfToMarkdown(document(paragraph(card(largestNesting + 1))))), [])
-  const spelled = adfToMarkdown(document(paragraph(card(largestNesting))))
-  assert.ok(spelled.ok, spelled.ok ? '' : spelled.error.message)
-  assert.deepEqual(markdownToAdf(spelled.value), { ok: true, value: document(paragraph(card(largestNesting))) })
+  roundTrips(paragraph(card(largestNesting)))
+  assert.equal(markdown(adfToMarkdown(document(marked(largestNesting - 2)))), deeper('deep', 'em', largestNesting - 3))
+  roundTrips(marked(largestNesting - 3))
 })
 
 test('escapes a literal delimiter that would merge with an emitted one', () => {

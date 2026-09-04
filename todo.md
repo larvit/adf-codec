@@ -95,7 +95,11 @@ The numbering is the order the work was planned in, not the order it ships.
       fallback. Memoizing `emitBlock` is the shortcut, and the node reference is the wrong key: a
       caller may hold one node object at two positions, where the cached depth and path are
       another node's. `0.1.0` ships with the retry in it, so a deep document is slow rather than
-      wrong until the patch.
+      wrong until the patch. `adfDocumentFault` is the second site to look at: `isNodeArray` reads
+      every node and attribute value, then `nestingFault` reads them again, so the emit entry the
+      export persona runs in bulk walks the document twice. Both walks are linear, so this is a
+      constant factor rather than 4b's class change, and the parting is what gives depth its own
+      code (§8) — measure before joining them back.
 - [ ] **4c — The scanning rule's remaining sites (`0.1.1`).** A trailing-anchored regex re-walks
       its run from every start position, so an interior whitespace run costs quadratic time rather
       than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk

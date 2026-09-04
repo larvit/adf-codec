@@ -441,6 +441,7 @@ test('names the depth an attribute value nests past, never the kind the JSON rea
     `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
   assert.equal(content(markdownToAdf(`:::tableCell {colwidth="${nested(largestNesting + 1)}"}\n:::\n`)), deeper('colwidth', 'tableCell'))
   assert.equal(content(markdownToAdf(`::rule {marks="${nested(largestNesting + 1)}"}\n`)), deeper('marks', 'rule'))
+  assert.equal(content(markdownToAdf(`::rule {marks="[{\\"attrs\\":{\\"deep\\":${nested(largestNesting - 2)}},\\"type\\":\\"em\\"}]"}\n`)), deeper('marks', 'rule'))
   assert.equal(content(markdownToAdf(`::media {width="${nested(largestNesting + 1)}"}\n`)), 'unsupported-node-shape: the width attribute of media is no number')
 })
 

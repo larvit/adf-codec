@@ -19,9 +19,11 @@ fi
 
 name=$(read_field name)
 version=$(read_field version)
+published=$(published_version "$name" "$version")
+tagged=$(git ls-remote --tags origin "v$version")
 
 # Both steps observe their own end state, so a partial run converges on the next push to main.
-if [ -z "$(published_version "$name" "$version")" ]; then
+if [ -z "$published" ]; then
   : "${NPM_TOKEN:?the publish needs NPM_TOKEN}"
   in_image "$node_image" npm ci
   in_image "$node_image" npm run build
@@ -29,7 +31,7 @@ if [ -z "$(published_version "$name" "$version")" ]; then
     'printf "//registry.npmjs.org/:_authToken=%s\n" "$NPM_TOKEN" > "$HOME/.npmrc" && npm publish --access public'
 fi
 
-if [ -z "$(git ls-remote --tags origin "v$version")" ]; then
+if [ -z "$tagged" ]; then
   git tag "v$version"
   git push origin "v$version"
 fi

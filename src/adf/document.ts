@@ -23,6 +23,9 @@ export type AdfDocument = {
   version: number
 }
 
+// A block directive spells the whole mark set as one JSON attribute, so a mark's value sits three levels inside it.
+const markAttributeNesting = largestNesting - 3
+
 const documentKeys = ['content', 'type', 'version']
 const markKeys = ['attrs', 'type']
 const nodeKeys = ['attrs', 'content', 'marks', 'text', 'type']
@@ -44,8 +47,8 @@ export function adfDocumentFault(value: unknown): ConvertFault | undefined {
   return nestingFault(content)
 }
 
-export function attributeNestingMessage(key: string, type: string): string {
-  return `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
+export function attributeNestingMessage(key: string, type: string, levels: number = largestNesting): string {
+  return `the ${key} attribute of ${type} nests deeper than the ${levels} levels an attribute carries`
 }
 
 export function carriesOnly(node: AdfNode, attributes: readonly string[]): boolean {
@@ -101,15 +104,15 @@ function nestingFault(nodes: readonly AdfNode[]): ConvertFault | undefined {
 
 function marksFault(marks: readonly AdfMark[] | undefined): ConvertFault | undefined {
   for (const mark of marks ?? []) {
-    const fault = attributesFault(mark.attrs, mark.type)
+    const fault = attributesFault(mark.attrs, mark.type, markAttributeNesting)
     if (fault !== undefined) return fault
   }
   return undefined
 }
 
-function attributesFault(attrs: AdfAttributes | undefined, type: string): ConvertFault | undefined {
+function attributesFault(attrs: AdfAttributes | undefined, type: string, levels: number = largestNesting): ConvertFault | undefined {
   for (const [key, value] of Object.entries(attrs ?? {})) {
-    if (overNested(value)) return { code: 'unsupported-nesting-depth', message: attributeNestingMessage(key, type) }
+    if (overNested(value, levels)) return { code: 'unsupported-nesting-depth', message: attributeNestingMessage(key, type, levels) }
   }
   return undefined
 }
