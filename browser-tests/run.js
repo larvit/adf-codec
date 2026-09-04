@@ -9,7 +9,8 @@ const repoRoot = join(import.meta.dirname, '..')
 const corpusRoot = join(repoRoot, 'corpus')
 const corpusEntries = readdirSync(corpusRoot, { encoding: 'utf8', recursive: true })
 
-function checking(name, assertions) {
+function checking(name, result, assertions) {
+  assert.equal(result?.name, name, `the browser answered ${JSON.stringify(result?.name)} where ${name} was sent`)
   try {
     assertions()
   } catch (cause) {
@@ -57,7 +58,7 @@ async function whenDriverAnswers() {
   for (;;) {
     const status = await command('GET', '/status').catch(() => undefined)
     if (status?.ready === true) return
-    if (Date.now() > deadline) throw new Error(`no geckodriver answered ${driver}/status within 60s`)
+    if (Date.now() > deadline) throw new Error(`no WebDriver answered ${driver}/status within 60s`)
     await new Promise((resolve) => setTimeout(resolve, 200))
   }
 }
@@ -67,6 +68,14 @@ const corpus = {
   normalization: fixtureNames('normalization', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
   roundTrip: fixtureNames('round-trip', '.json').map((name) => ({ json: fixture(name, '.json'), markdown: fixture(name, '.md'), name })),
 }
+assert.deepEqual(
+  readdirSync(corpusRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort(),
+  ['errors', 'normalization', 'round-trip'],
+  'a corpus kind the browser leg does not convert',
+)
 for (const [kind, fixtures] of Object.entries(corpus)) assert.ok(fixtures.length > 0, `the browser leg found no ${kind} fixture to convert`)
 
 const server = createServer((request, response) => {
@@ -88,9 +97,9 @@ const results = await command('POST', `/session/${session.sessionId}/execute/syn
 })
 server.close()
 
-for (const [index, result] of results.roundTrip.entries()) {
-  const { json, markdown, name } = corpus.roundTrip[index]
-  checking(name, () => {
+for (const [index, { json, markdown, name }] of corpus.roundTrip.entries()) {
+  const result = results.roundTrip[index]
+  checking(name, result, () => {
     assert.ok(result.isDocument, `${name}.json is no ADF document`)
     assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
     assert.equal(result.emitted.value, markdown)
@@ -99,19 +108,19 @@ for (const [index, result] of results.roundTrip.entries()) {
   })
 }
 
-for (const [index, result] of results.normalization.entries()) {
-  const { name } = corpus.normalization[index]
-  checking(name, () => {
-    assert.ok(result.ok, `it did not parse — ${refusal(result)}`)
-    assert.deepEqual(result.value, JSON.parse(fixture(name, '.json')))
+for (const [index, { name }] of corpus.normalization.entries()) {
+  const result = results.normalization[index]
+  checking(name, result, () => {
+    assert.ok(result.parsed.ok, `it did not parse — ${refusal(result.parsed)}`)
+    assert.deepEqual(result.parsed.value, JSON.parse(fixture(name, '.json')))
   })
 }
 
-for (const [index, result] of results.errors.entries()) {
-  const { name } = corpus.errors[index]
-  checking(name, () => {
-    assert.ok(!result.ok, `it was not refused, it built ${JSON.stringify(result.value)}`)
-    assert.equal(result.error.code, fixture(name, '.error').trimEnd())
+for (const [index, { name }] of corpus.errors.entries()) {
+  const result = results.errors[index]
+  checking(name, result, () => {
+    assert.ok(!result.parsed.ok, `it was not refused, it built ${JSON.stringify(result.parsed.value)}`)
+    assert.equal(result.parsed.error.code, fixture(name, '.error').trimEnd())
   })
 }
 
