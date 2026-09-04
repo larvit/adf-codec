@@ -344,7 +344,6 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
     return value
   }
   const card = (levels: number): AdfNode => ({ attrs: { data: nested(levels), url: 'https://example.com/a' }, type: 'inlineCard' })
-  // A block directive spells the mark set as one JSON attribute, so a mark's value is read three levels in.
   const marked = (levels: number): AdfNode => ({
     attrs: { panelType: 'info' },
     content: [paragraph({ text: 'x', type: 'text' })],
