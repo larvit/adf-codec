@@ -6,7 +6,7 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 5e before 2027-01; 4b, 4c and 4d → `0.1.1`; 4, 3k → `0.2.0`;
-6, 7 → `0.3.0`.
+6, 7 → `0.3.0`; 9, 10, 11 → TBD.
 The numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
@@ -149,6 +149,9 @@ The numbering is the order the work was planned in, not the order it ships.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
       `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
+- [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
+- [ ] **10 — Lossy conversion.** A direction that only converts what Markdown actually supports, keeping the ADF's data while dropping what markdown cannot hold — format, design and the richer nodes.
+- [ ] **11 — Evaluate `@atlaskit/adf-schema`.** Whether to add `@atlaskit/adf-schema` as a dev dependency to use as truth for the ADF schema.
 
 ## The ADF inventory to cover
 
