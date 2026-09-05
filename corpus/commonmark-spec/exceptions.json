@@ -1,0 +1,322 @@
+[
+  {
+    "check": "text",
+    "example": 39,
+    "reason": "`&#10;` decodes to a newline kept literal in text; CommonMark reads it a soft break."
+  },
+  {
+    "check": "fixpoint",
+    "example": 196,
+    "reason": "The link title holds literal newlines no escape spells."
+  },
+  {
+    "check": "fixpoint",
+    "example": 202,
+    "reason": "The link destination holds a backslash the flavour cannot escape."
+  },
+  {
+    "check": "text",
+    "example": 300,
+    "reason": "A heading and the block after it join with no space where CommonMark breaks them."
+  },
+  {
+    "check": "count",
+    "example": 301,
+    "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
+  },
+  {
+    "check": "count",
+    "example": 302,
+    "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
+  },
+  {
+    "check": "fixpoint",
+    "example": 330,
+    "reason": "A paragraph opens with a code span whose backticks read back as a fence."
+  },
+  {
+    "check": "fixpoint",
+    "example": 331,
+    "reason": "A paragraph opens with a code span whose backticks read back as a fence."
+  },
+  {
+    "check": "fixpoint",
+    "example": 340,
+    "reason": "A paragraph opens with a code span whose backticks read back as a fence."
+  },
+  {
+    "check": "count",
+    "example": 369,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 373,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 389,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 393,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 394,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 395,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 399,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 404,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 406,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 407,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 408,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 409,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 410,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 411,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 413,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 414,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 415,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 417,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 418,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 422,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 424,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 425,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 426,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 427,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 428,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 429,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 430,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 431,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 432,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 433,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 461,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 463,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 464,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 465,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 466,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 468,
+    "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
+  },
+  {
+    "check": "count",
+    "example": 470,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 478,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 479,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 484,
+    "reason": "The empty link text stays literal text; CommonMark renders an empty link."
+  },
+  {
+    "check": "text",
+    "example": 484,
+    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
+  },
+  {
+    "check": "count",
+    "example": 487,
+    "reason": "The empty link text stays literal text; CommonMark renders an empty link."
+  },
+  {
+    "check": "text",
+    "example": 487,
+    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
+  },
+  {
+    "check": "fixpoint",
+    "example": 502,
+    "reason": "The link destination holds a backslash the flavour cannot escape."
+  },
+  {
+    "check": "count",
+    "example": 516,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 519,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 530,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 533,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 540,
+    "reason": "The case-folding shortcut reference is unresolved; CommonMark folds case and links."
+  },
+  {
+    "check": "text",
+    "example": 540,
+    "reason": "A case-folding shortcut reference is unresolved text; CommonMark folds case and links."
+  },
+  {
+    "check": "count",
+    "example": 554,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 558,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 559,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 638,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  },
+  {
+    "check": "count",
+    "example": 639,
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+  }
+]

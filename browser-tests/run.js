@@ -72,6 +72,7 @@ assert.deepEqual(
   readdirSync(corpusRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
+    .filter((name) => name !== 'commonmark-spec')
     .sort(),
   ['errors', 'normalization', 'round-trip'],
   'a corpus kind the browser leg does not convert',

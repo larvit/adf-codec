@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
-import { basename, dirname, join } from 'node:path'
+import { basename, dirname, join, sep } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
@@ -53,12 +53,13 @@ function pairedNames(root: string, first: string, second: string): string[] {
 function corpusJsonPaths(): string[] {
   return readdirSync(corpusRoot, { encoding: 'utf8', recursive: true })
     .filter((name) => name.endsWith('.json'))
+    .filter((name) => !name.startsWith(`commonmark-spec${sep}`))
     .map((name) => join(corpusRoot, name))
     .sort()
 }
 
 test('every corpus directory is a kind the runner reads', () => {
-  assert.deepEqual(directoryNames(corpusRoot), ['errors', 'normalization', 'round-trip'])
+  assert.deepEqual(directoryNames(corpusRoot), ['commonmark-spec', 'errors', 'normalization', 'round-trip'])
 })
 
 test('every round-trip directory is a kind the runner reads', () => {

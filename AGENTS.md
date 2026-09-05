@@ -57,8 +57,12 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 why ~20 lines of own code cannot do the job, who maintains it, and what auditing it costs. So the
 CommonMark and HTML parsers are written in this repo. A table a standard fixes is data rather than
 a dependency: HTML5's 2125 semicolon-terminated character references ship packed in their own
-module, so entity decoding is complete without one. `devDependencies`: few, each earning its keep;
-they never reach a consumer.
+module, so entity decoding is complete without one. The CommonMark spec suite is the same shape of
+data and ships vendored at `corpus/commonmark-spec/` rather than as the `commonmark-spec` dev
+dependency — that package is CommonJS-only, and Renovate auto-bumping a spec version would silently
+point the vendored exception list's example numbers at a renumbered suite. A spec bump is a
+deliberate re-pin, exceptions re-derived by hand beside it. `devDependencies`: few, each earning its
+keep; they never reach a consumer.
 
 ## 6. The package contract
 
