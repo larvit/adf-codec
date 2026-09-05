@@ -5,8 +5,8 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 5e before 2027-01; 4b, 4c and 4d → `0.1.1`; 4, 3k → `0.2.0`;
-6, 7 → `0.3.0`; 9, 10, 11 → TBD.
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 5e before 2027-01; 3k, 4, 4b, 4c, 5g, 10, 11, 12 → `0.2.0`; 4d, 5f → `0.2.1`;
+6, 7 → `0.3.0`; 9 → TBD.
 The numbering is the order the work was planned in, not the order it ships.
 
 - [x] **0 — Scaffold.**
@@ -84,7 +84,7 @@ The numbering is the order the work was planned in, not the order it ships.
       a document that round-trips proves no other document shares its spelling — so decide here
       whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
       no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
-- [ ] **4b — The block walk's retry (`0.1.1`).** `emitBlock` walks a subtree twice wherever
+- [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
       as a thematic break — and the walk below does the same, so the cost doubles per level:
       3.4kB of nested lists takes half a second, depth 20 about eight, depth 24 minutes. It
@@ -100,7 +100,7 @@ The numbering is the order the work was planned in, not the order it ships.
       export persona runs in bulk walks the document twice. Both walks are linear, so this is a
       constant factor rather than 4b's class change, and the parting is what gives depth its own
       code (§8) — measure before joining them back.
-- [ ] **4c — The scanning rule's remaining sites (`0.1.1`).** A trailing-anchored regex re-walks
+- [ ] **4c — The scanning rule's remaining sites (`0.2.0`).** A trailing-anchored regex re-walks
       its run from every start position, so an interior whitespace run costs quadratic time rather
       than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk
       replaced the regex. Three sites the same sweep did not reach: `normalizeLabel` in
@@ -112,7 +112,7 @@ The numbering is the order the work was planned in, not the order it ships.
       cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
       guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
       nobody typed.
-- [ ] **4d — What the gate says while it runs (`0.1.1`).** `ci.sh` runs nine legs and announces
+- [ ] **4d — What the gate says while it runs (`0.2.1`).** `ci.sh` runs nine legs and announces
       none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
       a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
       own fix. The legs need markers: `plainpages`' `ci.sh` prints a `step()` header per leg and
@@ -136,6 +136,25 @@ The numbering is the order the work was planned in, not the order it ships.
       the deadline: whether npm has added Gitea or self-hosted OIDC, and otherwise whether the
       release moves to a human-approved staged publish — which fits badly with publish-on-merge,
       and is the trade to weigh rather than discover on a red release run.
+- [ ] **5f — Publish the bundle size (`0.2.1`).** Measure the shipped artifact and put the number in the
+      README, kept honest by the release pipeline rather than by a human re-reading it. The
+      quantity is what a consumer downloads and loads: the tarball `npm pack` produces, its
+      unpacked `dist`, and the built JavaScript minified + gzipped — the figure the competitors
+      advertise (marklassian's "12kb") and the only apple-to-apple one, since ours ships tsc's
+      unminified output and no minifier yet (decide here whether to minify for the build or report
+      the unminified gzip). A publish/pipeline leg measures it and fails when the README figure
+      drifts, so the number can't rot; the figure lands in README §The package beside the
+      "no runtime dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked
+      221.5 kB, JS gzipped 45.6 kB.
+- [ ] **5g — Reweight the README for the reader (`0.2.0`).** It opens with the pre-launch rationale —
+      Atlassian's REST APIs, `pf-editor-service/convert` being decommissioned, a link to
+      JRACLOUD-77436 — where a shipped package should answer what it is, what it does and for whom
+      first, then the shortest runnable example; the reader's top seconds go to "why this exists"
+      instead of "what I can do with it". Demote the Jira/endpoint background to a later "why
+      losslessness" note or drop it — the internal references (the `jira.atlassian.com` URL,
+      `pf-editor-service/convert`) don't belong in published text at all, no ticket IDs or internal
+      URLs. The `0.3.0` HTML future should read as an aside, not the lede: the package reads as a
+      shipped `0.1.0`, not a work-in-progress.
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**
@@ -150,8 +169,38 @@ The numbering is the order the work was planned in, not the order it ships.
       `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
-- [ ] **10 — Lossy conversion.** A direction that only converts what Markdown actually supports, keeping the ADF's data while dropping what markdown cannot hold — format, design and the richer nodes.
-- [ ] **11 — Evaluate `@atlaskit/adf-schema`.** Whether to add `@atlaskit/adf-schema` as a dev dependency to use as truth for the ADF schema.
+- [ ] **10 — Lossy conversion (`0.2.0`).** A direction that only converts what Markdown actually supports, keeping the ADF's data while dropping what markdown cannot hold — format, design and the richer nodes.
+- [ ] **11 — Evaluate `@atlaskit/adf-schema` (`0.2.0`).** Whether to add `@atlaskit/adf-schema` as a dev dependency to use as truth for the ADF schema.
+- [ ] **12 — The `!adf:` re-spelling (`0.2.0`).** Replace the colon directive grammar with the
+      namespaced prefix, a breaking change to the emitted contract (shipped `0.1.0`, so §8 makes it
+      `0.2.0`). Forms: block container `!adf:name arg {attrs}` … `!adf:/name` — the `/` parts open
+      from close, nestable without a fence-length discipline, so the `::::`/`:::::` runs and their
+      length rule go and every container opens the constant `!adf:`; block leaf `!adf:name arg
+      {attrs}` with no closer; inline node `!adf:name[content]{attrs}`; directive marks
+      `!adf:border`/`subsup`/`textColor`/`underline` `[content]{attrs}`. Attributes and their
+      escaping stay `{key=value}`; the literal escape is `\!adf:`; a line opening `!adf:` claims as
+      today's colon-run does. Leaf vs container is decided by the node's content model rather than
+      syntax — the `::`/`:::` split and §4's name-set-independent recognition go, a simplification
+      the carry makes safe (an unknown *block* node already rides the fence, not the directive).
+      The carry's reserved name becomes `carry`, both spellings — the block fence info string
+      `` `carry` `` and the inline `!adf:carry{json="…"}` — named for what it does: it carries a node
+      verbatim, never "unknown-node", since a known node no section spells where it stands rides it
+      too. A spelling change, not a semantic one: no `ConvertErrorCode` is added, removed or renamed,
+      the round-trip guarantee and the carry both hold through it. Mechanical surface: the grammar in
+      `spec/flavour.md`, `src/adf/block-directives.ts` + `inline-directives.ts`, `src/markdown/`'s
+      `directive-syntax.ts`, `opaque-carry.ts` and the `emit/` + `parse/` readers, every corpus
+      fixture (round-trip, normalization and `errors/`), `spec.test.ts`'s prose reader, and the
+      README's examples.
+  - [ ] **12a — The spec and the decision.** Rewrite `spec/flavour.md` to the `!adf:` grammar, and
+        record the departures in `AGENTS.md` §4 (leaf/container by content model, carry renamed
+        `carry`).
+  - [ ] **12b — The emit side.** `adfToMarkdown` spells `!adf:` / `!adf:/name` / `!adf:carry`; its
+        fixtures re-spelled, green.
+  - [ ] **12c — The parse side and the round-trip.** `markdownToAdf` reads it back; the round-trip
+        corpus, the `errors/` fixtures and the CommonMark spec suite re-spelled,
+        `markdownToAdf(adfToMarkdown(doc))` still equals `doc`.
+  - [ ] **12d — The README and the sweep.** The README's examples follow; sweep docs and fixtures
+        for any stale `::`/`:name` spelling.
 
 ## The ADF inventory to cover
 
