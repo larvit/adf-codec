@@ -532,3 +532,23 @@ Under **3 — `markdownToAdf` (`0.1.0`)**:
       `instrumentisto/geckodriver`, currency over size — the leg's whole worth is a real
       SpiderMonkey, which decays the moment the pin stops moving, and the smaller image was four
       Firefox majors behind with a publisher that may go quiet while Renovate stays silent.
+
+## 5 — Ship `0.1.0`
+
+- [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo
+      public (§6), create the `NPM_TOKEN` secret, confirm the Actions token may push tags — the
+      publish succeeds and the tag push then reddens the run, though the next push to `main`
+      retries the tag alone — and open the bump PR that sets `version` to `0.1.0` and drops
+      `private: true`, the guard against any earlier publish. The bump and the drop go in one
+      commit: dropping `private` alone publishes `0.0.0`, which also differs from npm's nothing. `0.1.0` is the
+      markdown round-trip: both markdown directions, the types, `isAdfDocument`, proved over the
+      checked-in corpus.
+      **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
+      is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
+      3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry
+      `0.1.1`. A consumer using the library is worth more than a wider proof nobody has needed
+      yet, and §8's pre-1.0 rules cover what the wider proof then finds.
+
+**Shipped** 2026-09-05: `@larvit/adf-codec@0.1.0` published and `v0.1.0` tagged on `8a847de`. Publishing needed a
+bypass-2FA token — the account carrying no write-2FA requirement was not enough, npm demanded an
+OTP until the token itself bypassed it.

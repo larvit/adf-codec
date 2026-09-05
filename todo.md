@@ -5,7 +5,7 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0`; 4b, 4c and 4d → `0.1.1`; 4, 3k → `0.2.0`;
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 5e before 2027-01; 4b, 4c and 4d → `0.1.1`; 4, 3k → `0.2.0`;
 6, 7 → `0.3.0`.
 The numbering is the order the work was planned in, not the order it ships.
 
@@ -126,19 +126,16 @@ The numbering is the order the work was planned in, not the order it ships.
       rather than promoting the gate's `dist`, and unmeasured until the log shows them. Per-leg
       timing is what turns "slow or hung" from a guess into a reading; the browser leg's own
       5.4–7.9s against a 17s warm gate is the number that made it obviously cheap.
-- [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo
-      public (§6), create the `NPM_TOKEN` secret, confirm the Actions token may push tags — the
-      publish succeeds and the tag push then reddens the run, though the next push to `main`
-      retries the tag alone — and open the bump PR that sets `version` to `0.1.0` and drops
-      `private: true`, the guard against any earlier publish. The bump and the drop go in one
-      commit: dropping `private` alone publishes `0.0.0`, which also differs from npm's nothing. `0.1.0` is the
-      markdown round-trip: both markdown directions, the types, `isAdfDocument`, proved over the
-      checked-in corpus.
-      **Settled** (the maintainer, 2026-09-01): the round-trip proved over the checked-in corpus
-      is what `0.1.0` ships on, and the open-ended proof work follows it rather than gating it —
-      3k's spec suite and 4's generators and maintainer-supplied payloads are `0.2.0`, 4b's retry
-      `0.1.1`. A consumer using the library is worth more than a wider proof nobody has needed
-      yet, and §8's pre-1.0 rules cover what the wider proof then finds.
+- [x] **5 — Ship `0.1.0`.**
+- [ ] **5e — The publish token's deadline (before 2027-01).** `0.1.0` published only once the npm
+      token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
+      answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct
+      publishing around January 2027, and its replacement — trusted publishing over OIDC —
+      supports GitHub Actions, GitLab CI, CircleCI and Buildkite, not Gitea or self-hosted
+      runners. So the release path has an expiry date and no drop-in successor yet. Revisit before
+      the deadline: whether npm has added Gitea or self-hosted OIDC, and otherwise whether the
+      release moves to a human-approved staged publish — which fits badly with publish-on-merge,
+      and is the trade to weigh rather than discover on a red release run.
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**
