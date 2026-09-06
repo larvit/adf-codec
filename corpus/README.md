@@ -12,12 +12,9 @@ One directory per contract kind, each landing with its milestone:
   pins which error.
 - `real-payloads/` — `<name>.json`: sanitized live ADF, round-tripped ADF→markdown→ADF. No
   expected markdown.
-- `commonmark-spec/` — `spec.json` (the pinned CommonMark suite, read as corpus data per
-  AGENTS.md §1) and `exceptions.json` (examples a documented divergence exempts, keyed by
-  `check` and `example` with a `reason`). Three checks an example must pass: the §2 canonical
-  fixpoint — a named error, or markdown that parses and emits back to itself; the reference HTML's
-  text, tags stripped and entities decoded, against the parsed document's concatenated text; and a
-  count of the CommonMark subset's elements against the nodes and marks they map to.
+- `commonmark-spec/` — `spec.json` (the CommonMark 0.31.2 suite, vendored byte-exact) and
+  `exceptions.json` (the examples a known divergence exempts, keyed by `check` and `example` with
+  a `reason`).
 
 JSON is editor-normal (AGENTS.md §2), two-space indent, keys sorted. `spec.json` is the vendored,
 upstream machine-readable suite (CommonMark 0.31.2, CC-BY-SA-4.0, © John MacFarlane) and is not

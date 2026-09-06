@@ -56,8 +56,8 @@ const spec = readSpec()
 const exceptions = readExceptions()
 const exceptionIndex = new Map(exceptions.map((entry) => [`${entry.example}:${entry.check}`, entry.reason]))
 
-test('the CommonMark spec suite is the version the parser names', () => {
-  assert.ok(spec.length > 600, `spec.json holds ${spec.length} examples, not a full suite`)
+test('the CommonMark spec suite is the pinned 0.31.2 run', () => {
+  assert.equal(spec.length, 652)
 })
 
 test('the exception list is unique per example and check', () => {

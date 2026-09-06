@@ -53,7 +53,7 @@ function pairedNames(root: string, first: string, second: string): string[] {
 function corpusJsonPaths(): string[] {
   return readdirSync(corpusRoot, { encoding: 'utf8', recursive: true })
     .filter((name) => name.endsWith('.json'))
-    .filter((name) => !name.startsWith(`commonmark-spec${sep}`))
+    .filter((name) => name !== `commonmark-spec${sep}spec.json`)
     .map((name) => join(corpusRoot, name))
     .sort()
 }
