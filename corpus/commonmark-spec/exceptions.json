@@ -1,322 +1,436 @@
 [
   {
-    "check": "text",
-    "example": 39,
-    "reason": "`&#10;` decodes to a newline kept literal in text; CommonMark reads it a soft break."
-  },
-  {
     "check": "fixpoint",
+    "divergence": "unspellable-link",
     "example": 196,
+    "kind": "unspellable",
     "reason": "The link title holds literal newlines no escape spells."
   },
   {
     "check": "fixpoint",
+    "divergence": "unspellable-link",
     "example": 202,
+    "kind": "unspellable",
     "reason": "The link destination holds a backslash the flavour cannot escape."
   },
   {
-    "check": "text",
-    "example": 300,
-    "reason": "A heading and the block after it join with no space where CommonMark breaks them."
-  },
-  {
     "check": "count",
+    "divergence": "ul 2/1",
     "example": 301,
+    "kind": "pending",
     "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
   },
   {
     "check": "count",
+    "divergence": "ol 2/1",
     "example": 302,
+    "kind": "pending",
     "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
   },
   {
     "check": "fixpoint",
+    "divergence": "unspellable-line-start",
     "example": 330,
+    "kind": "unspellable",
     "reason": "A paragraph opens with a code span whose backticks read back as a fence."
   },
   {
     "check": "fixpoint",
+    "divergence": "unspellable-line-start",
     "example": 331,
+    "kind": "unspellable",
     "reason": "A paragraph opens with a code span whose backticks read back as a fence."
   },
   {
     "check": "fixpoint",
+    "divergence": "unspellable-line-start",
     "example": 340,
+    "kind": "unspellable",
     "reason": "A paragraph opens with a code span whose backticks read back as a fence."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 369,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 373,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 389,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 393,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/5",
     "example": 394,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/3",
     "example": 395,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 399,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 404,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 406,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 407,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 408,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 409,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 410,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 411,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 413,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 414,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 415,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 3/1",
     "example": 417,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 2/5 strong 1/3",
     "example": 418,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/2",
     "example": 422,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/3",
     "example": 424,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 425,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 426,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 427,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 1/3",
     "example": 428,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/3",
     "example": 429,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/2",
     "example": 430,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/2",
     "example": 431,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/3 strong 2/5",
     "example": 432,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "strong 1/2",
     "example": 433,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 461,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 2/1",
     "example": 463,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 464,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 465,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 3/1",
     "example": 466,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "strong 2/1",
     "example": 468,
+    "kind": "mark-model",
     "reason": "CommonMark nests same-kind elements; the single mark collapses them to one."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 470,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 478,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 479,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "a 1/0",
     "example": 484,
-    "reason": "The empty link text stays literal text; CommonMark renders an empty link."
+    "kind": "pending",
+    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
   },
   {
     "check": "text",
+    "divergence": "\"\" against \"[](./target.md)\"",
     "example": 484,
+    "kind": "pending",
     "reason": "An empty link text stays literal text; CommonMark renders an empty link."
   },
   {
     "check": "count",
+    "divergence": "a 1/0",
     "example": 487,
-    "reason": "The empty link text stays literal text; CommonMark renders an empty link."
+    "kind": "pending",
+    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
   },
   {
     "check": "text",
+    "divergence": "\"\" against \"[]()\"",
     "example": 487,
+    "kind": "pending",
     "reason": "An empty link text stays literal text; CommonMark renders an empty link."
   },
   {
     "check": "fixpoint",
+    "divergence": "unspellable-link",
     "example": 502,
+    "kind": "unspellable",
     "reason": "The link destination holds a backslash the flavour cannot escape."
   },
   {
     "check": "count",
+    "divergence": "a 1/5 em 1/4",
     "example": 516,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/3",
     "example": 519,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "a 1/5 em 1/4",
     "example": 530,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 533,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "a 1/0",
     "example": 540,
+    "kind": "pending",
     "reason": "The case-folding shortcut reference is unresolved; CommonMark folds case and links."
   },
   {
     "check": "text",
+    "divergence": "\"ẞ\" against \"[ẞ]\"",
     "example": 540,
-    "reason": "A case-folding shortcut reference is unresolved text; CommonMark folds case and links."
+    "kind": "pending",
+    "reason": "A case-folding shortcut reference is unresolved; CommonMark folds case and links."
   },
   {
     "check": "count",
+    "divergence": "a 1/2",
     "example": 554,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "a 1/2",
     "example": 558,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "a 1/2",
     "example": 559,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 638,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
+    "divergence": "em 1/2",
     "example": 639,
+    "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   }
 ]

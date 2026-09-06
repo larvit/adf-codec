@@ -17,8 +17,10 @@ When losslessness and readability conflict, losslessness wins.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
 back yields the library's canonical spelling, and that spelling round-trips byte-identically —
-where there is a way back. CommonMark spells link destinations the flavour has no escape for, so a
-parse succeeding does not imply a spellable document; `todo.md` 3k's exception list names those.
+where there is a way back. CommonMark spells some things the flavour has no escape for — a link
+destination or title holding a backslash or newline, a paragraph opening with a code span whose
+backticks read back as a fence — so a parse succeeding does not imply a spellable document;
+`corpus/commonmark-spec/exceptions.json` names those.
 
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
 merged, JSON number semantics, an empty attrs object, marks array or content array the absent
@@ -202,7 +204,8 @@ resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` s
 `node-floor.js` round-trips the installed package under a Node pinned to `engines.node`'s floor.
 
 A fourth engine reads the build rather than the source: a headless Firefox loads `dist/index.js`
-over HTTP and converts the whole corpus, which is §6's browser half and the only SpiderMonkey
+over HTTP and converts the round-trip, normalization and error fixtures — the `commonmark-spec`
+sort is the Node suite's to check — which is §6's browser half and the only SpiderMonkey
 there is — the gate's other three engines are two V8s and a JavaScriptCore that is not Safari's.
 A WebDriver session is what carries a verdict back out, the driver and the page's server sharing
 one network namespace so each is the other's `127.0.0.1`; `--headless --screenshot` has no such

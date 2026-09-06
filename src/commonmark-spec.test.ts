@@ -5,17 +5,19 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 import type { AdfNode } from './adf/document.ts'
-import { readEntityReference } from './markdown/entity-references.ts'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus', 'commonmark-spec')
 
 type Check = 'count' | 'fixpoint' | 'text'
+type ExceptionKind = 'mark-model' | 'pending' | 'unspellable'
 
 type SpecExample = { example: number; html: string; markdown: string; section: string }
 
-type Exception = { check: Check; example: number; reason: string }
+type Exception = { check: Check; divergence: string; example: number; kind: ExceptionKind; reason: string }
+
+type Refusal = { code: string; example: number }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -25,38 +27,50 @@ function isCheck(value: unknown): value is Check {
   return value === 'count' || value === 'fixpoint' || value === 'text'
 }
 
+function isKind(value: unknown): value is ExceptionKind {
+  return value === 'mark-model' || value === 'pending' || value === 'unspellable'
+}
+
 function isSpecExample(value: unknown): value is SpecExample {
   if (!isRecord(value)) return false
   return typeof value['example'] === 'number' && typeof value['html'] === 'string' && typeof value['markdown'] === 'string' && typeof value['section'] === 'string'
 }
 
 function isException(value: unknown): value is Exception {
-  return isRecord(value) && isCheck(value['check']) && typeof value['example'] === 'number' && typeof value['reason'] === 'string'
+  if (!isRecord(value)) return false
+  return (
+    isCheck(value['check']) &&
+    typeof value['divergence'] === 'string' &&
+    value['divergence'].length > 0 &&
+    typeof value['example'] === 'number' &&
+    isKind(value['kind']) &&
+    typeof value['reason'] === 'string' &&
+    value['reason'].length > 0
+  )
 }
 
-function readSpec(): SpecExample[] {
-  const parsed: unknown = JSON.parse(readFileSync(join(root, 'spec.json'), 'utf8'))
-  assert.ok(Array.isArray(parsed), 'spec.json is not an array of examples')
-  return parsed.map((value) => {
-    assert.ok(isSpecExample(value), 'spec.json holds an example with the wrong shape')
-    return value
-  })
+function isRefusal(value: unknown): value is Refusal {
+  if (!isRecord(value)) return false
+  return typeof value['code'] === 'string' && value['code'].length > 0 && typeof value['example'] === 'number'
 }
 
-function readExceptions(): Exception[] {
-  const parsed: unknown = JSON.parse(readFileSync(join(root, 'exceptions.json'), 'utf8'))
-  assert.ok(Array.isArray(parsed), 'exceptions.json is not an array')
+function readJson<T>(name: string, guard: (value: unknown) => value is T, shape: string): T[] {
+  const parsed: unknown = JSON.parse(readFileSync(join(root, name), 'utf8'))
+  assert.ok(Array.isArray(parsed), `${name} is not an array`)
   return parsed.map((value, index) => {
-    assert.ok(isException(value), `exception ${index} is not an exception`)
+    assert.ok(guard(value), `${name} holds a ${shape} with the wrong shape at ${index}`)
     return value
   })
 }
 
-const spec = readSpec()
-const exceptions = readExceptions()
-const exceptionIndex = new Map(exceptions.map((entry) => [`${entry.example}:${entry.check}`, entry.reason]))
+const spec = readJson('spec.json', isSpecExample, 'spec example')
+const exceptions = readJson('exceptions.json', isException, 'exception')
+const refusals = readJson('refusals.json', isRefusal, 'refusal')
 
-test('the CommonMark spec suite is the pinned 0.31.2 run', () => {
+const exampleToRefusal = new Map(refusals.map((refusal) => [refusal.example, refusal.code]))
+const exceptionIndex = new Map(exceptions.map((entry) => [`${entry.example}:${entry.check}`, entry]))
+
+test('the CommonMark spec suite holds the full 652-example 0.31.2 run', () => {
   assert.equal(spec.length, 652)
 })
 
@@ -64,14 +78,20 @@ test('the exception list is unique per example and check', () => {
   assert.equal(exceptionIndex.size, exceptions.length, 'one exception repeats an example and check another holds')
 })
 
-// A mark is counted once per text node it touches: 3e's collapse makes `*(*a*)*` one `em` against two `<em>`.
-const countKeys = ['a', 'blockquote', 'br', 'code', 'em', 'heading', 'hr', 'img', 'li', 'ol', 'pre', 'strong', 'ul']
+test('the refusal list is unique per example and names real examples', () => {
+  assert.equal(exampleToRefusal.size, refusals.length, 'one refusal repeats an example another holds')
+  for (const example of exampleToRefusal.keys()) assert.ok(spec.some((entry) => entry.example === example), `refusal ${example} names no example in the suite`)
+})
+
+// The reference HTML is corpus data, never converted (AGENTS.md §1): its element names are counted against
+// the nodes and marks the CommonMark subset maps to. A mark is counted once per text node it touches — 3e
+// collapses a spelling nested inside its own kind, so `*(*a*)*` is one `em` mark against two `<em>` elements.
+const countKeys = ['a', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'pre', 'strong', 'ul']
 const nodeElement: Record<string, string> = {
   blockquote: 'blockquote',
   bulletList: 'ul',
   codeBlock: 'pre',
   hardBreak: 'br',
-  heading: 'heading',
   listItem: 'li',
   media: 'img',
   mediaInline: 'img',
@@ -108,8 +128,6 @@ function referenceCounts(html: string): Record<string, number> {
       counts['pre'] = (counts['pre'] ?? 0) + 1
     } else if (name === 'code' && inPre) {
       // A code block's `<code>` is the `<pre>`'s body, already counted.
-    } else if (/^h[1-6]$/.test(name)) {
-      counts['heading'] = (counts['heading'] ?? 0) + 1
     } else if (countKeys.includes(name)) {
       counts[name] = (counts[name] ?? 0) + 1
     }
@@ -133,6 +151,12 @@ function nodeCounts(document: AdfNode): Record<string, number> {
       for (const element of seen) counts[element] = (counts[element] ?? 0) + 1
       continue
     }
+    if (node.type === 'heading') {
+      const level = node.attrs?.['level']
+      if (typeof level === 'number') counts[`h${level}`] = (counts[`h${level}`] ?? 0) + 1
+      pending.push(...(node.content ?? []))
+      continue
+    }
     const element = nodeElement[node.type]
     if (element !== undefined) counts[element] = (counts[element] ?? 0) + 1
     pending.push(...(node.content ?? []))
@@ -140,19 +164,45 @@ function nodeCounts(document: AdfNode): Record<string, number> {
   return counts
 }
 
+// The reference HTML's own entity set is the four cmark emits; this decoder is independent of the library's
+// (finding: a bug in the shared decoder would corrupt both sides of the comparison). Named and numeric cover a
+// future re-pin; the current suite holds only the named four.
+const namedEntity: Record<string, string> = { amp: '&', apos: "'", gt: '>', lt: '<', quot: '"' }
+
+function decodeHtmlEntity(text: string, index: number): { length: number; text: string } | undefined {
+  if (text[index] !== '&') return undefined
+  const end = text.indexOf(';', index)
+  if (end === -1 || end - index > 8) return undefined
+  const reference = text.slice(index, end + 1)
+  const named = namedEntity[reference.slice(1, -1)]
+  if (named !== undefined) return { length: reference.length, text: named }
+  const decimal = /^&#(\d+)$/.exec(reference)
+  if (decimal?.[1] !== undefined) return { length: reference.length, text: characterOf(Number(decimal[1])) }
+  const hexadecimal = /^&#[xX]([0-9A-Fa-f]+)$/.exec(reference)
+  if (hexadecimal?.[1] !== undefined) return { length: reference.length, text: characterOf(Number.parseInt(hexadecimal[1], 16)) }
+  return undefined
+}
+
+function characterOf(codePoint: number): string {
+  if (codePoint === 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) return '\ufffd'
+  return String.fromCodePoint(codePoint)
+}
+
 function referenceText(html: string): string {
-  let out = ''
+  const parts: string[] = []
   let preDepth = 0
+  let atBoundary = true
   let skipNewline = false
   for (let index = 0; index < html.length; index += 1) {
-    const character = html[index]
+    const character = html.charAt(index)
     if (character === '<') {
       const close = html.indexOf('>', index)
       if (close === -1) break
       const tag = html.slice(index, close + 1)
       const name = tagName(tag)
       if (name === 'br') {
-        out += '\n'
+        parts.push(' ')
+        atBoundary = false
         skipNewline = true
         index = close
         continue
@@ -160,10 +210,13 @@ function referenceText(html: string): string {
       if (name === 'pre') {
         if (tag.startsWith('</')) {
           preDepth -= 1
-          out = out.replace(/\n$/, '')
+          trimTrailingNewline(parts)
         } else {
           preDepth += 1
         }
+        atBoundary = true
+      } else {
+        atBoundary = blockTags.has(name)
       }
       index = close
       continue
@@ -174,51 +227,62 @@ function referenceText(html: string): string {
         continue
       }
       if (preDepth > 0) {
-        out += '\n'
+        parts.push('\n')
         continue
       }
-      let next = index + 1
-      while (next < html.length && (html[next] === '\n' || html[next] === ' ' || html[next] === '\t')) next += 1
-      if (next >= html.length) continue
-      if (html[next] === '<') {
-        const close = html.indexOf('>', next)
-        if (close === -1) continue
-        if (!blockTags.has(tagName(html.slice(next, close + 1)))) out += ' '
-      } else {
-        out += ' '
-      }
+      if (!atBoundary && !followedByBlock(html, index + 1)) parts.push(' ')
       continue
     }
-    skipNewline = false
-    const reference = readEntityReference(html, index)
+    const reference = decodeHtmlEntity(html, index)
     if (reference !== undefined) {
-      out += reference.text
+      parts.push(reference.text)
+      atBoundary = false
       index += reference.length - 1
       continue
     }
-    out += character
+    parts.push(character)
+    atBoundary = false
   }
-  return out
+  return parts.join('')
+}
+
+function trimTrailingNewline(parts: string[]): void {
+  const last = parts[parts.length - 1]
+  if (last === undefined) return
+  parts[parts.length - 1] = last.endsWith('\n') ? last.slice(0, -1) : last
+}
+
+// A newline is a soft break only between inline content on both sides; one beside a block open/close
+// (a nested list, a following heading) is a block boundary and contributes nothing.
+function followedByBlock(html: string, index: number): boolean {
+  let next = index
+  while (next < html.length && (html[next] === '\n' || html[next] === ' ' || html[next] === '\t')) next += 1
+  if (next >= html.length) return true
+  if (html[next] !== '<') return false
+  const close = html.indexOf('>', next)
+  return close !== -1 && blockTags.has(tagName(html.slice(next, close + 1)))
 }
 
 function concatenatedText(document: AdfNode): string {
   const parts: string[] = []
-  const pending: AdfNode[] = [document]
+  const pending: { inCode: boolean; node: AdfNode }[] = [{ inCode: false, node: document }]
   while (pending.length > 0) {
-    const node = pending.pop()
-    if (node === undefined) continue
+    const frame = pending.pop()
+    if (frame === undefined) continue
+    const { inCode, node } = frame
     if (node.text !== undefined) {
-      parts.push(node.text)
+      parts.push(inCode ? node.text : node.text.replace(/\n/g, ' '))
       continue
     }
     if (node.type === 'hardBreak') {
-      parts.push('\n')
+      parts.push(' ')
       continue
     }
+    const childInCode = inCode || node.type === 'codeBlock'
     const content = node.content ?? []
     for (let index = content.length - 1; index >= 0; index -= 1) {
       const child = content[index]
-      if (child !== undefined) pending.push(child)
+      if (child !== undefined) pending.push({ inCode: childInCode, node: child })
     }
   }
   return parts.join('')
@@ -226,18 +290,18 @@ function concatenatedText(document: AdfNode): string {
 
 function fixpointRefused(example: SpecExample): string | undefined {
   const parsed = markdownToAdf(example.markdown)
-  assert.ok(parsed.ok, `example ${example.example} parsed to no document, not an error`)
+  assert.ok(parsed.ok, `example ${example.example} parsed to no document`)
   const emitted = adfToMarkdown(parsed.value)
   if (!emitted.ok) return emitted.error.code
   const again = markdownToAdf(emitted.value)
   assert.ok(again.ok, `example ${example.example} emits markdown it cannot read back`)
-  assert.deepStrictEqual(again.value, parsed.value, `example ${example.example} does not hold its own round-trip`)
+  assert.deepEqual(again.value, parsed.value, `example ${example.example} does not hold its own round-trip`)
   return undefined
 }
 
 function textMismatch(example: SpecExample): string | undefined {
   const parsed = markdownToAdf(example.markdown)
-  assert.ok(parsed.ok)
+  assert.ok(parsed.ok, `example ${example.example} parsed to no document`)
   const expected = referenceText(example.html)
   const actual = concatenatedText(parsed.value)
   return expected === actual ? undefined : `${JSON.stringify(expected)} against ${JSON.stringify(actual)}`
@@ -245,7 +309,7 @@ function textMismatch(example: SpecExample): string | undefined {
 
 function countMismatch(example: SpecExample): string | undefined {
   const parsed = markdownToAdf(example.markdown)
-  assert.ok(parsed.ok)
+  assert.ok(parsed.ok, `example ${example.example} parsed to no document`)
   const expected = referenceCounts(example.html)
   const actual = nodeCounts(parsed.value)
   const names = countKeys.filter((key) => expected[key] !== actual[key])
@@ -255,34 +319,38 @@ function countMismatch(example: SpecExample): string | undefined {
 for (const example of spec) {
   test(`CommonMark example ${example.example} => ${example.section}`, () => {
     const parse = markdownToAdf(example.markdown)
-    if (!parse.ok) {
-      assert.equal(exceptionIndex.get(`${example.example}:fixpoint`), undefined, `example ${example.example} is a named error but files a fixpoint exception`)
+    const refused = exampleToRefusal.get(example.example)
+    if (refused !== undefined) {
+      assert.ok(!parse.ok, `example ${example.example} was expected to refuse with ${refused} but parsed`)
+      assert.equal(parse.error.code, refused, `example ${example.example} refused with a different code`)
       return
     }
+    if (!parse.ok) assert.fail(`example ${example.example} was expected to parse but refused with ${parse.error.code}`)
 
-    const failures: Record<Check, string | undefined> = {
+    const divergences: Record<Check, string | undefined> = {
+      count: countMismatch(example),
       fixpoint: fixpointRefused(example),
       text: textMismatch(example),
-      count: countMismatch(example),
     }
-
-    for (const check of ['fixpoint', 'text', 'count'] as const) {
-      const filed = exceptionIndex.get(`${example.example}:${check}`)
-      const result = failures[check]
-      if (result === undefined) {
-        assert.equal(filed, undefined, `example ${example.example} passes its ${check} check but files an exception`)
+    for (const check of ['count', 'fixpoint', 'text'] as const) {
+      const entry = exceptionIndex.get(`${example.example}:${check}`)
+      const divergence = divergences[check]
+      if (divergence === undefined) {
+        assert.equal(entry, undefined, `example ${example.example} passes its ${check} check but files an exception`)
       } else {
-        assert.equal(typeof filed, 'string', `example ${example.example} ${check} check fails: ${result}`)
+        assert.ok(entry !== undefined, `example ${example.example} ${check} check fails: ${divergence}`)
+        assert.equal(entry.divergence, divergence, `example ${example.example} ${check} diverged differently than filed`)
       }
     }
   })
 }
 
 for (const entry of exceptions) {
-  test(`exception ${entry.example} ${entry.check} still diverges`, () => {
+  test(`exception ${entry.example} ${entry.check} still diverges as filed`, () => {
     const example = spec.find((candidate) => candidate.example === entry.example)
     assert.ok(example !== undefined, `exception ${entry.example} names no example in the suite`)
-    const failure = entry.check === 'fixpoint' ? fixpointRefused(example) : entry.check === 'text' ? textMismatch(example) : countMismatch(example)
-    assert.equal(typeof failure, 'string', `exception ${entry.example} ${entry.check} no longer diverges: ${entry.reason}`)
+    assert.equal(exampleToRefusal.get(entry.example), undefined, `exception ${entry.example} is on the refusal list, not an exception`)
+    const divergence = entry.check === 'fixpoint' ? fixpointRefused(example) : entry.check === 'text' ? textMismatch(example) : countMismatch(example)
+    assert.equal(divergence, entry.divergence, `exception ${entry.example} ${entry.check} changed from ${entry.divergence} to ${divergence ?? 'no divergence'}`)
   })
 }

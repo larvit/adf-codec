@@ -67,9 +67,11 @@ The numbering is the order the work was planned in, not the order it ships.
         counts close both. The exception list stays the maintainer's, and one entry is owed
         already: 3h continues a list across the marker change CommonMark splits on, so an example
         the reference HTML gives two `<ul>` counts one `bulletList`. One outcome is no
-        exception and must not be filed as one: valid CommonMark parsing to a document
-        `adfToMarkdown` refuses is a §2 hole, which is what `corpus/unspellable/` held until 3c,
-        3e and 3h landed their answers and emptied it.
+        exception and must not be filed as one: a fixable §2 hole — valid CommonMark parsing to a
+        document `adfToMarkdown` refuses — which is what `corpus/unspellable/` held until 3c, 3e
+        and 3h landed their answers and emptied it. The permanent ones — a link destination or
+        title no escape spells, a paragraph opening with a code span — are the exceptions, named
+        by AGENTS.md §2.
 - [ ] **4 — Round-trip property tests (`0.2.0`)**, widening 3j's corpus round-trip past the
       documents a human wrote — the thing that proves 2 and 3 beyond them. Editor-normal (§2) is
       finished here, on 3i's merging — `toEditorNormal(doc)` and the equality the round-trip
