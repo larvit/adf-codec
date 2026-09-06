@@ -83,9 +83,8 @@ test('the refusal list is unique per example and names real examples', () => {
   for (const example of exampleToRefusal.keys()) assert.ok(spec.some((entry) => entry.example === example), `refusal ${example} names no example in the suite`)
 })
 
-// The reference HTML is corpus data, never converted (AGENTS.md §1): its element names are counted against
-// the nodes and marks the CommonMark subset maps to. A mark is counted once per text node it touches — 3e
-// collapses a spelling nested inside its own kind, so `*(*a*)*` is one `em` mark against two `<em>` elements.
+// A mark is counted once per text node it touches: nesting inside its own kind names the mark once, so
+// `*(*a*)*` is one `em` against two `<em>` elements (AGENTS.md §14).
 const countKeys = ['a', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'pre', 'strong', 'ul']
 const nodeElement: Record<string, string> = {
   blockquote: 'blockquote',
