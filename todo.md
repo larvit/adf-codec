@@ -53,7 +53,7 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **3i — The inline nodes and the marks.**
   - [x] **3j — The carry and the combinations.**
   - [ ] **3k — The CommonMark spec suite (`0.2.0`).** Checked in at `corpus/commonmark-spec/`,
-        pinned to the version it ships — the one `html-blocks.ts` names for its start
+        pinned to the version it ships — the one `commonmark-grammar.ts` names for its start
         conditions — `corpus/README.md` gaining the kind.
         **Settled** (the maintainer, 2026-08-27): three checks an example must pass, the reference
         HTML each ships read as corpus data — which adds no format and no direction (§1). §2's

@@ -13,12 +13,12 @@ One directory per contract kind, each landing with its milestone:
 - `real-payloads/` — `<name>.json`: sanitized live ADF, round-tripped ADF→markdown→ADF. No
   expected markdown.
 - `commonmark-spec/` — the CommonMark suite run against `markdownToAdf` by three checks. `spec.json`
-  (0.31.2, vendored byte-exact) is the suite; `refusals.json` pins each refusing example to its
-  error `code`; `exceptions.json` pins each known divergence by `check`, `example`, `kind` and the
-  exact `divergence`, with a `reason`. `kind` is `mark-model` (the permanent count divergence from
-  ADF's mark-per-text-node model), `unspellable` (parses but the flavour has no spelling) or
-  `pending` (a parser gap a later milestone may close).
+  is the suite; `refusals.json` pins each refusing example to its error `code`; `exceptions.json`
+  pins each known divergence by `check`, `example`, `kind` and the exact `divergence`, with a
+  `reason`. `kind` is `mark-model` (the permanent count divergence from ADF's mark-per-text-node
+  model), `unspellable` (parses but the flavour has no spelling) or `pending` (a parser gap a later
+  milestone may close).
 
 JSON is editor-normal (AGENTS.md §2), two-space indent, keys sorted. `spec.json` is the vendored,
-upstream machine-readable suite (CommonMark 0.31.2, CC-BY-SA-4.0, © John MacFarlane) and is not
-re-serialized by the corpus gate.
+upstream machine-readable suite, byte-exact (CommonMark 0.31.2, CC-BY-SA-4.0, © John MacFarlane),
+and is not re-serialized by the corpus gate.

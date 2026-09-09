@@ -10,8 +10,9 @@ import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus', 'commonmark-spec')
+const checks = ['count', 'fixpoint', 'text'] as const
 
-type Check = 'count' | 'fixpoint' | 'text'
+type Check = (typeof checks)[number]
 type ExceptionKind = 'mark-model' | 'pending' | 'unspellable'
 
 type SpecExample = { example: number; html: string; markdown: string; section: string }
@@ -25,7 +26,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isCheck(value: unknown): value is Check {
-  return value === 'count' || value === 'fixpoint' || value === 'text'
+  return checks.some((check) => check === value)
 }
 
 function isKind(value: unknown): value is ExceptionKind {
@@ -325,7 +326,7 @@ for (const example of spec) {
       fixpoint: fixpointRefused(example, parse.value),
       text: textMismatch(example, parse.value),
     }
-    for (const check of ['count', 'fixpoint', 'text'] as const) {
+    for (const check of checks) {
       const entry = exceptionIndex.get(`${example.example}:${check}`)
       const divergence = divergences[check]
       if (divergence === undefined) {
