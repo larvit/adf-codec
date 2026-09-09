@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import type { AdfNode } from './adf/document.ts'
+import type { AdfDocument, AdfNode } from './adf/document.ts'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 
@@ -70,12 +71,18 @@ const refusals = readJson('refusals.json', isRefusal, 'refusal')
 const exampleToRefusal = new Map(refusals.map((refusal) => [refusal.example, refusal.code]))
 const exceptionIndex = new Map(exceptions.map((entry) => [`${entry.example}:${entry.check}`, entry]))
 
-test('the CommonMark spec suite holds the full 652-example 0.31.2 run', () => {
-  assert.equal(spec.length, 652)
+test('the CommonMark spec suite is 0.31.2, vendored byte-exact', () => {
+  const digest = createHash('sha256').update(readFileSync(join(root, 'spec.json'))).digest('hex')
+  assert.equal(digest, 'd431b29d97b6f73e69d547109cf5081578fac931e72afe95639ebe766c1b2a20')
 })
 
-test('the exception list is unique per example and check', () => {
+test('every exception is unique, names a parsing example, and files a fixpoint only as unspellable', () => {
   assert.equal(exceptionIndex.size, exceptions.length, 'one exception repeats an example and check another holds')
+  for (const entry of exceptions) {
+    assert.ok(spec.some((candidate) => candidate.example === entry.example), `exception ${entry.example} names no example in the suite`)
+    assert.equal(exampleToRefusal.get(entry.example), undefined, `exception ${entry.example} is on the refusal list, not an exception`)
+    if (entry.check === 'fixpoint') assert.equal(entry.kind, 'unspellable', `exception ${entry.example} files a fixpoint divergence as ${entry.kind}; a fixable hole is given the spelling instead`)
+  }
 })
 
 test('the refusal list is unique per example and names real examples', () => {
@@ -83,8 +90,7 @@ test('the refusal list is unique per example and names real examples', () => {
   for (const example of exampleToRefusal.keys()) assert.ok(spec.some((entry) => entry.example === example), `refusal ${example} names no example in the suite`)
 })
 
-// A mark is counted once per text node it touches: nesting inside its own kind names the mark once, so
-// `*(*a*)*` is one `em` against two `<em>` elements (AGENTS.md §14).
+// A mark is counted once per text node it touches (AGENTS.md §14).
 const countKeys = ['a', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'pre', 'strong', 'ul']
 const nodeElement: Record<string, string> = {
   blockquote: 'blockquote',
@@ -163,10 +169,7 @@ function nodeCounts(document: AdfNode): Record<string, number> {
   return counts
 }
 
-// The reference HTML's own entity set is the four cmark emits; this decoder is independent of the library's
-// (finding: a bug in the shared decoder would corrupt both sides of the comparison). Named and numeric cover a
-// future re-pin; the current suite holds only the named four.
-const namedEntity: Record<string, string> = { amp: '&', apos: "'", gt: '>', lt: '<', quot: '"' }
+const namedEntity: Record<string, string> = { amp: '&', gt: '>', lt: '<', ouml: 'ö', quot: '"' }
 
 function decodeHtmlEntity(text: string, index: number): { length: number; text: string } | undefined {
   if (text[index] !== '&') return undefined
@@ -174,18 +177,16 @@ function decodeHtmlEntity(text: string, index: number): { length: number; text: 
   if (end === -1 || end - index > 8) return undefined
   const reference = text.slice(index, end + 1)
   const named = namedEntity[reference.slice(1, -1)]
-  if (named !== undefined) return { length: reference.length, text: named }
-  const decimal = /^&#(\d+)$/.exec(reference)
-  if (decimal?.[1] !== undefined) return { length: reference.length, text: characterOf(Number(decimal[1])) }
-  const hexadecimal = /^&#[xX]([0-9A-Fa-f]+)$/.exec(reference)
-  if (hexadecimal?.[1] !== undefined) return { length: reference.length, text: characterOf(Number.parseInt(hexadecimal[1], 16)) }
-  return undefined
+  return named === undefined ? undefined : { length: reference.length, text: named }
 }
 
-function characterOf(codePoint: number): string {
-  if (codePoint === 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) return '\ufffd'
-  return String.fromCodePoint(codePoint)
-}
+test('the oracle decodes every entity the reference HTML holds', () => {
+  for (const example of spec) {
+    for (const [reference] of example.html.matchAll(/&#?[0-9A-Za-z]+;/g)) {
+      assert.ok(decodeHtmlEntity(reference, 0) !== undefined, `example ${example.example} holds ${reference}, which the oracle would leave literal`)
+    }
+  }
+})
 
 function referenceText(html: string): string {
   const parts: string[] = []
@@ -251,8 +252,7 @@ function trimTrailingNewline(parts: string[]): void {
   parts[parts.length - 1] = last.endsWith('\n') ? last.slice(0, -1) : last
 }
 
-// A newline is a soft break only between inline content on both sides; one beside a block open/close
-// (a nested list, a following heading) is a block boundary and contributes nothing.
+// A newline beside a block open or close is a boundary rather than a soft break, so it spells no space.
 function followedByBlock(html: string, index: number): boolean {
   let next = index
   while (next < html.length && (html[next] === '\n' || html[next] === ' ' || html[next] === '\t')) next += 1
@@ -287,30 +287,24 @@ function concatenatedText(document: AdfNode): string {
   return parts.join('')
 }
 
-function fixpointRefused(example: SpecExample): string | undefined {
-  const parsed = markdownToAdf(example.markdown)
-  assert.ok(parsed.ok, `example ${example.example} parsed to no document`)
-  const emitted = adfToMarkdown(parsed.value)
+function fixpointRefused(example: SpecExample, document: AdfDocument): string | undefined {
+  const emitted = adfToMarkdown(document)
   if (!emitted.ok) return emitted.error.code
   const again = markdownToAdf(emitted.value)
   assert.ok(again.ok, `example ${example.example} emits markdown it cannot read back`)
-  assert.deepEqual(again.value, parsed.value, `example ${example.example} does not hold its own round-trip`)
+  assert.deepEqual(again.value, document, `example ${example.example} does not hold its own round-trip`)
   return undefined
 }
 
-function textMismatch(example: SpecExample): string | undefined {
-  const parsed = markdownToAdf(example.markdown)
-  assert.ok(parsed.ok, `example ${example.example} parsed to no document`)
+function textMismatch(example: SpecExample, document: AdfDocument): string | undefined {
   const expected = referenceText(example.html)
-  const actual = concatenatedText(parsed.value)
+  const actual = concatenatedText(document)
   return expected === actual ? undefined : `${JSON.stringify(expected)} against ${JSON.stringify(actual)}`
 }
 
-function countMismatch(example: SpecExample): string | undefined {
-  const parsed = markdownToAdf(example.markdown)
-  assert.ok(parsed.ok, `example ${example.example} parsed to no document`)
+function countMismatch(example: SpecExample, document: AdfDocument): string | undefined {
   const expected = referenceCounts(example.html)
-  const actual = nodeCounts(parsed.value)
+  const actual = nodeCounts(document)
   const names = countKeys.filter((key) => expected[key] !== actual[key])
   return names.length === 0 ? undefined : names.map((name) => `${name} ${expected[name]}/${actual[name]}`).join(' ')
 }
@@ -327,9 +321,9 @@ for (const example of spec) {
     if (!parse.ok) assert.fail(`example ${example.example} was expected to parse but refused with ${parse.error.code}`)
 
     const divergences: Record<Check, string | undefined> = {
-      count: countMismatch(example),
-      fixpoint: fixpointRefused(example),
-      text: textMismatch(example),
+      count: countMismatch(example, parse.value),
+      fixpoint: fixpointRefused(example, parse.value),
+      text: textMismatch(example, parse.value),
     }
     for (const check of ['count', 'fixpoint', 'text'] as const) {
       const entry = exceptionIndex.get(`${example.example}:${check}`)
@@ -341,15 +335,5 @@ for (const example of spec) {
         assert.equal(entry.divergence, divergence, `example ${example.example} ${check} diverged differently than filed`)
       }
     }
-  })
-}
-
-for (const entry of exceptions) {
-  test(`exception ${entry.example} ${entry.check} still diverges as filed`, () => {
-    const example = spec.find((candidate) => candidate.example === entry.example)
-    assert.ok(example !== undefined, `exception ${entry.example} names no example in the suite`)
-    assert.equal(exampleToRefusal.get(entry.example), undefined, `exception ${entry.example} is on the refusal list, not an exception`)
-    const divergence = entry.check === 'fixpoint' ? fixpointRefused(example) : entry.check === 'text' ? textMismatch(example) : countMismatch(example)
-    assert.equal(divergence, entry.divergence, `exception ${entry.example} ${entry.check} changed from ${entry.divergence} to ${divergence ?? 'no divergence'}`)
   })
 }

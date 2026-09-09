@@ -17,8 +17,7 @@ One directory per contract kind, each landing with its milestone:
   error `code`; `exceptions.json` pins each known divergence by `check`, `example`, `kind` and the
   exact `divergence`, with a `reason`. `kind` is `mark-model` (the permanent count divergence from
   ADF's mark-per-text-node model), `unspellable` (parses but the flavour has no spelling) or
-  `pending` (a parser gap a later milestone may close). The two lists are derived and labelled,
-  not hand-picked — regenerate them rather than hand-edit when re-pinning.
+  `pending` (a parser gap a later milestone may close).
 
 JSON is editor-normal (AGENTS.md §2), two-space indent, keys sorted. `spec.json` is the vendored,
 upstream machine-readable suite (CommonMark 0.31.2, CC-BY-SA-4.0, © John MacFarlane) and is not
