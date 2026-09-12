@@ -20,5 +20,7 @@ One directory per contract kind, each landing with its milestone:
   milestone may close).
 
 JSON is editor-normal (AGENTS.md §2), two-space indent, keys sorted. `spec.json` is the vendored,
-upstream machine-readable suite, byte-exact (CommonMark 0.31.2, CC-BY-SA-4.0, © John MacFarlane),
-and is not re-serialized by the corpus gate.
+upstream machine-readable suite, byte-exact from
+[spec.commonmark.org](https://spec.commonmark.org/0.31.2/spec.json) (CommonMark 0.31.2, © John
+MacFarlane, [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/)), and is not
+re-serialized by the corpus gate.
