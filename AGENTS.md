@@ -323,17 +323,16 @@ worth deliberating; what matters is that nothing is left undone in the end. Per 
    gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
-3. Merge the PR (standing authorization, this repo only, granted through the `0.1.0` release —
-   PR #3), check the box in `todo.md` and move the item's text to `todo-history.md`, leaving its
-   title behind, report, stop. The next chunk gets a fresh session.
+3. Merge the PR (standing authorization, this repo only, granted through the `0.2.0` release —
+   the maintainer, 2026-09-13), check the box in `todo.md` and move the item's text to
+   `todo-history.md`, leaving its title behind, report, stop. The next chunk gets a fresh session.
 
 Ask, don't guess: any choice where what the maintainer would pick is not near-certain gets asked,
 and the answer lands as a decision in this file. The confidence bar is very high — asking too
 often is the accepted cost, guessing wrong is not.
 
 Reserved for the maintainer, never the agent: changing `version` in `package.json` (a bump on
-`main` publishes, §9 — every release including `0.1.0` is the maintainer's), making the repo
-public, and creating the `NPM_TOKEN` secret.
+`main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
 
 A continuous loop session (`/loop`) counts as a chain of sessions: one chunk per iteration, each
 iteration starting by re-reading `AGENTS.md` and `todo.md` and trusting them over anything
