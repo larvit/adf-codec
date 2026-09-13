@@ -5,11 +5,11 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 4b, 4c, 10, 5g → `0.2.0`; 4d, 5f → `0.2.1`;
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 10, 5g → `0.2.0`; 4d, 5f → `0.2.1`;
 6, 7 → `0.3.0`; 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
 (the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
-proves 12, and 12 rewrites code 4b and 4c change.
+proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c change.
 
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
@@ -57,6 +57,10 @@ proves 12, and 12 rewrites code 4b and 4c change.
       a document that round-trips proves no other document shares its spelling — so decide here
       whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
       no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
+      **Settled** (the maintainer, 2026-09-13): the generators draw from the node tables — each
+      node's content model and attribute vocabulary as `adf/` records them, which 11 holds to
+      Atlassian's schema — and misplace a share of nodes so the carry (§3) is exercised; no JSON
+      Schema walker enters the tests.
 - [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
       as a thematic break — and the walk below does the same, so the cost doubles per level:
@@ -146,7 +150,27 @@ proves 12, and 12 rewrites code 4b and 4c change.
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
 - [ ] **10 — Lossy conversion (`0.2.0`).** A direction that only converts what Markdown actually supports, keeping the ADF's data while dropping what markdown cannot hold — format, design and the richer nodes.
-- [ ] **11 — Evaluate `@atlaskit/adf-schema` (`0.2.0`).** Whether to add `@atlaskit/adf-schema` as a dev dependency to use as truth for the ADF schema.
+- [ ] **11 — Atlassian's ADF schema as the tables' truth (`0.2.0`).** `@atlaskit/adf-schema`'s two
+      JSON Schemas vendored rather than the package installed (AGENTS.md §5), and the node tables
+      gated against them (§10). **Settled** (the maintainer, 2026-09-13): vendored at
+      `spec/adf-schema/` and re-pinned by hand when a need shows; the gate compares attribute names
+      and kinds, never value sets, over `full.json` and `stage-0.json` together.
+  - [ ] **11a — The vendored schema.** `full.json` and `stage-0.json`, byte-exact from
+        `@atlaskit/adf-schema@57.4.9`'s `dist/json-schema/v1/`, at `spec/adf-schema/`, each pinned
+        by its SHA-256 in a test the way `spec.json` is. The version, the source and the Apache-2.0
+        attribution sit beside them with the licence text; no gate re-serializes either file.
+  - [ ] **11b — The gate.** For each node and mark type the tables spell, the attribute names and
+        kinds equal the union over every definition in both files whose `type` enum names it,
+        `anyOf`/`allOf` branches included, the argument slot (`panelType`, `state`) counting as
+        spelled. Kinds: `string`; `number`, `integer` included; `boolean`; `json` for an object, an
+        array or an untyped value; an `enum`-only attribute takes its values' kind. What the schema
+        holds past the tables is pinned in two exact lists — an entry the schema no longer needs is
+        red, like a difference neither list names: gaps, attributes of a spelled type (57.4.9:
+        `link` `collection` `id` `occurrenceKey`, `rule` `color` `style` `weight`, `layoutSection`
+        `columnRuleStyle`), emptied by 13; and carried, types the tables do not spell (`alignment`
+        `annotation` `backgroundColor` `blockCard` `bodiedRule` `breakout` `dataConsumer`
+        `embedCard` `fontSize` `fragment` `indentation` `inlineExtension` `placeholder`), `doc` and
+        `text` counting as the grammar's own.
 - [ ] **12 — The `!adf:` re-spelling (`0.2.0`).** Replace the colon directive grammar with the
       namespaced prefix, a breaking change to the emitted contract (shipped `0.1.0`, so §8 makes it
       `0.2.0`). Forms: block container `!adf:name arg {attrs}` … `!adf:/name` — the `/` parts open
@@ -177,6 +201,11 @@ proves 12, and 12 rewrites code 4b and 4c change.
         `markdownToAdf(adfToMarkdown(doc))` still equals `doc`.
   - [ ] **12d — The README and the sweep.** The README's examples follow; sweep docs and fixtures
         for any stale `::`/`:name` spelling.
+- [ ] **13 — The schema's gap attributes (`0.2.0`).** Spell the attributes 11b pins as gaps, in
+      12's grammar, and empty the list. `rule`'s `color`, `style` and `weight` and
+      `layoutSection`'s `columnRuleStyle` join their tables and `spec/flavour.md` bullets. `link`'s
+      `collection`, `id` and `occurrenceKey` have no slot in `[text](url)`, so a link carrying one
+      rides the inline carry whole today; the spelling it takes instead is designed here.
 
 ## The ADF inventory to cover
 

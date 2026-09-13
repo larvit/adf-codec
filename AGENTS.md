@@ -63,8 +63,11 @@ module, so entity decoding is complete without one. The CommonMark spec suite is
 data and ships vendored at `corpus/commonmark-spec/` rather than as the `commonmark-spec` dev
 dependency — that package is CommonJS-only, and Renovate auto-bumping a spec version would silently
 point the vendored exception list's example numbers at a renumbered suite. A spec bump is a
-deliberate re-pin, exceptions re-derived by hand beside it. `devDependencies`: few, each earning its
-keep; they never reach a consumer.
+deliberate re-pin, exceptions re-derived by hand beside it. Atlassian's ADF JSON Schemas ship
+vendored the same way, at `spec/adf-schema/`, rather than as the `@atlaskit/adf-schema` dev
+dependency — CommonJS-only, some fifty packages with React among them, and a release most days for
+Renovate to automerge — re-pinned by hand when a payload or a report shows the need.
+`devDependencies`: few, each earning its keep; they never reach a consumer.
 
 ## 6. The package contract
 
@@ -230,6 +233,12 @@ value set reading `string` — and must equal the tables in `adf/`. Keep prose i
 of a bullet; fenced examples are skipped. It guards the attributes alone: nodes that differ in
 content model share a bullet, and the argument attribute is spelled ahead of `Attributes: `, so
 both answer to the round-trip corpus and to nothing else where a node has no fixture.
+
+The tables answer to Atlassian's schema too (§5): for every node and mark they spell, the attribute
+names and kinds equal what `full.json` and `stage-0.json` hold between them. Value sets stay
+documentation, since any value round-trips. What the schema holds and the tables do not spell is
+pinned by name — an attribute as a gap, a type as carried — so a re-pin adding either goes red until
+someone spells it or pins it.
 
 ## 11. Code rules
 
