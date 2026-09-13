@@ -5,9 +5,11 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 5e before 2027-01; 3k, 4, 4b, 4c, 5g, 10, 11, 12 → `0.2.0`; 4d, 5f → `0.2.1`;
-6, 7 → `0.3.0`; 9 → TBD.
-The numbering is the order the work was planned in, not the order it ships.
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 4b, 4c, 10, 5g → `0.2.0`; 4d, 5f → `0.2.1`;
+6, 7 → `0.3.0`; 9 → TBD; 5e last.
+The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
+(the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
+proves 12, and 12 rewrites code 4b and 4c change.
 
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
@@ -98,15 +100,18 @@ The numbering is the order the work was planned in, not the order it ships.
       timing is what turns "slow or hung" from a guess into a reading; the browser leg's own
       5.4–7.9s against a 17s warm gate is the number that made it obviously cheap.
 - [x] **5 — Ship `0.1.0`.**
-- [ ] **5e — The publish token's deadline (before 2027-01).** `0.1.0` published only once the npm
+- [ ] **5e — The publish token's deadline.** `0.1.0` published only once the npm
       token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
       answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct
-      publishing around January 2027, and its replacement — trusted publishing over OIDC —
-      supports GitHub Actions, GitLab CI, CircleCI and Buildkite, not Gitea or self-hosted
-      runners. So the release path has an expiry date and no drop-in successor yet. Revisit before
-      the deadline: whether npm has added Gitea or self-hosted OIDC, and otherwise whether the
-      release moves to a human-approved staged publish — which fits badly with publish-on-merge,
+      publishing around January 2027, leaving them `npm stage publish`, which a maintainer
+      approves with 2FA; its replacement — trusted publishing over OIDC — supports GitHub-hosted
+      Actions, GitLab.com's shared runners and CircleCI's cloud, self-hosted runners planned
+      without a date. So the release path has an expiry date and no drop-in successor yet. Revisit:
+      whether npm has added Gitea or self-hosted OIDC, and otherwise whether the
+      release moves to the staged publish — which fits badly with publish-on-merge,
       and is the trade to weigh rather than discover on a red release run.
+      **Settled** (the maintainer, 2026-09-13): last of the known work, clear of `0.2.0`, placed
+      there knowing the cutoff may land before `0.2.0` ships.
 - [ ] **5f — Publish the bundle size (`0.2.1`).** Measure the shipped artifact and put the number in the
       README, kept honest by the release pipeline rather than by a human re-reading it. The
       quantity is what a consumer downloads and loads: the tarball `npm pack` produces, its
