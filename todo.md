@@ -29,19 +29,7 @@ The numbering is the order the work was planned in, not the order it ships.
     - [x] **2e4 — The carry's fallback triggers.**
     - [x] **2e5 — Combined documents and the collision property.**
   - [x] **2f — The attributes CommonMark cannot hold.**
-- [ ] **3 — `markdownToAdf` (`0.1.0`).** Each sub-item lands the fixtures its own code reads, and
-      the runner grows a parse half as they do: readers for `corpus/normalization/` (setext,
-      indented code, loose lists, `*`/`+`
-      bullets, entity references, soft wraps — one-way, the markdown not canonical) and
-      `corpus/errors/` (a markdown input per named error, the code in a `.error` beside it) with
-      the first fixture each. `commonmark-subset/` cannot be the first to green — `::paragraph`
-      and `:hardBreak{}` sit in it — so 3b through 3f answer to their own tests and the one-way
-      fixtures they land, and 3g is where the first directory reads back. The raw-HTML element
-      mapping is empty until milestone 6, so at `0.1.0` every raw-HTML construct in input — a
-      block, an inline tag, a comment, a processing instruction — is a named error. Input is where
-      unbounded nesting actually arrives, so §11's 500 binds all three of the emitter's guards
-      here: block depth at 3c and again at 3f's container fences, inline and mark depth at 3f and
-      3i, a carried value's JSON at 3j, where `isJsonValue` already bounds it.
+- [x] **3 — `markdownToAdf`.**
   - [x] **3a — The hierarchy.**
   - [x] **3b — The leaf blocks.**
   - [x] **3c — The container blocks.**
@@ -52,26 +40,7 @@ The numbering is the order the work was planned in, not the order it ships.
   - [x] **3h — The block nodes.**
   - [x] **3i — The inline nodes and the marks.**
   - [x] **3j — The carry and the combinations.**
-  - [ ] **3k — The CommonMark spec suite (`0.2.0`).** Checked in at `corpus/commonmark-spec/`,
-        pinned to the version it ships — the one `commonmark-grammar.ts` names for its start
-        conditions — `corpus/README.md` gaining the kind.
-        **Settled** (the maintainer, 2026-08-27): three checks an example must pass, the reference
-        HTML each ships read as corpus data — which adds no format and no direction (§1). §2's
-        canonical fixpoint: a named error, or markdown that parses and emits to itself byte for
-        byte. That HTML's text, tags stripped and entities decoded, against the parsed document's
-        concatenated `text`. And a count of the dozen elements the CommonMark subset covers
-        against the marks and nodes they map to — counting distinct mark types per text node, since
-        3e collapses a spelling nested inside its own kind and `*(*a*)*` is two `<em>` against one
-        `em`. The fixpoint alone is self-consistency a parser
-        returning the empty document passes, and the text alone one dropping every emphasis; the
-        counts close both. The exception list stays the maintainer's, and one entry is owed
-        already: 3h continues a list across the marker change CommonMark splits on, so an example
-        the reference HTML gives two `<ul>` counts one `bulletList`. One outcome is no
-        exception and must not be filed as one: a fixable §2 hole — valid CommonMark parsing to a
-        document `adfToMarkdown` refuses — which is what `corpus/unspellable/` held until 3c, 3e
-        and 3h landed their answers and emptied it. The permanent ones — a link destination or
-        title no escape spells, a paragraph opening with a code span — are the exceptions, named
-        by AGENTS.md §2.
+  - [x] **3k — The CommonMark spec suite.**
 - [ ] **4 — Round-trip property tests (`0.2.0`)**, widening 3j's corpus round-trip past the
       documents a human wrote — the thing that proves 2 and 3 beyond them. Editor-normal (§2) is
       finished here, on 3i's merging — `toEditorNormal(doc)` and the equality the round-trip
