@@ -141,13 +141,11 @@ const positions = fc.letrec<Positions>((tie) => {
       .record({ content: listItems, order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 4 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 1 }) })
       .map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
   ]
+  const flatBlocks = [...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)]
   return {
     block: fc.oneof(
       { depthIdentifier, depthSize: 'small', maxDepth: 4 },
-      {
-        arbitrary: fc.oneof(...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)),
-        weight: leafBlocks.length * 2 + flatCommonMarkShapes.length * flatCommonMarkShapeWeight,
-      },
+      { arbitrary: fc.oneof(...flatBlocks), weight: flatBlocks.reduce((sum, entry) => sum + entry.weight, 0) },
       { arbitrary: fc.oneof(...containerBlocks), weight: containerBlocks.length * 2 },
       { arbitrary: fc.oneof(textNode, ...inlineNodes, unknownNode), weight: misplacedWeight },
       { arbitrary: fc.oneof(...nestingCommonMarkShapes), weight: nestingCommonMarkShapes.length * nestingCommonMarkShapeWeight },
