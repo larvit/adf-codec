@@ -54,16 +54,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       enters the tests. `toEditorNormal` stays internal. 2e5's collision test goes, since a
       collision already fails the round-trip on the same fixtures; the fixture-duplicate test
       stays.
-  - [ ] **4.1 — Editor-normal and the node accessors.** `toEditorNormal(doc)` in
-        `src/adf/editor-normal.ts`, on 3i's merging: adjacent text nodes carrying identical marks and
-        no attributes merged, an empty `attrs`, `marks` or `content` the absent key, `-0` read as `0`
-        (§2); the round-trip tests compare the parser's output through it, and `serializeCanonicalJson`
-        beneath it walks iteratively. `nodeContent`/`nodeAttrs`/`nodeMarks` replace the 46 inline
-        `?? []`/`?? {}` reads in `src/` (23 `content`, 12 `marks`, 11 `attrs`) and the `attrs?.[key]`
-        reads, and the branch floor rises to the integer floor of what the suite then measures.
-        **Settled** (the maintainer, 2026-09-14): a text node carrying attributes never merges —
-        `0.1.0` merged a carried one into its neighbour on read-back — and the fix lands here, as does
-        the iterative serializer.
+  - [x] **4.1 — Editor-normal and the node accessors.**
   - [ ] **4.2 — The ADF property.** `fast-check` joins `devDependencies`, AGENTS.md §5 naming what
         it earns — shrinking a failing document to the nodes that break it — and §10 the properties
         beside the corpus. A generated editor-normal document either refuses in `adfToMarkdown`
@@ -74,7 +65,8 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         spelling parses and emits to itself byte for byte (§2).
   - [ ] **4.4 — The real payloads.** `corpus/real-payloads/` holds the maintainer's sanitized
         payloads, each round-tripped ADF→markdown→ADF with no expected markdown. It waits on the
-        maintainer placing the files.
+        maintainer dropping the `.json` files untracked into the main checkout's
+        `corpus/real-payloads/` (the maintainer, 2026-09-14); the chunk moves them onto its branch.
 - [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
       as a thematic break — and the walk below does the same, so the cost doubles per level:

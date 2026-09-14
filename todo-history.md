@@ -416,6 +416,17 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         and 3h landed their answers and emptied it. The permanent ones — a link destination or
         title no escape spells, a paragraph opening with a code span — are the exceptions, named
         by AGENTS.md §2.
+- [ ] **4 — Round-trip property tests (`0.2.0`).**
+  - [x] **4.1 — Editor-normal and the node accessors.** `toEditorNormal(doc)` in
+        `src/adf/editor-normal.ts`, on 3i's merging: adjacent text nodes carrying identical marks and
+        no attributes merged, an empty `attrs`, `marks` or `content` the absent key, `-0` read as `0`
+        (§2); the round-trip tests compare the parser's output through it, and `serializeCanonicalJson`
+        beneath it walks iteratively. `nodeContent`/`nodeAttrs`/`nodeMarks` replace the 46 inline
+        `?? []`/`?? {}` reads in `src/` (23 `content`, 12 `marks`, 11 `attrs`) and the `attrs?.[key]`
+        reads, and the branch floor rises to the integer floor of what the suite then measures.
+        **Settled** (the maintainer, 2026-09-14): a text node carrying attributes never merges —
+        `0.1.0` merged a carried one into its neighbour on read-back — and the fix lands here, as does
+        the iterative serializer.
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.
