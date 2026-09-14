@@ -1,0 +1,50 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "attrs": {
+                "href": "http://a`b"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "http://a`b",
+          "type": "text"
+        },
+        {
+          "text": "`c",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "attrs": {
+                "href": "http://d`e"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "http://d`e",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

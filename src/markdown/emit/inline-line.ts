@@ -284,8 +284,8 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   if (typeof href !== 'string') return success({ carry: range })
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
-  const balanced = !context.bracketed || escapeUnbalanced(href, '[', ']') === href
-  if (bare && balanced && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
+  const autolinkHolds = !context.bracketed || (!href.includes('`') && escapeUnbalanced(href, '[', ']') === href)
+  if (bare && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
   const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, path)
   if (!target.ok) return target
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
