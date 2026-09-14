@@ -55,11 +55,15 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       collision already fails the round-trip on the same fixtures; the fixture-duplicate test
       stays.
   - [ ] **4.1 — Editor-normal and the node accessors.** `toEditorNormal(doc)` in
-        `src/adf/editor-normal.ts`, on 3i's merging: adjacent text nodes carrying identical marks
-        merged, an empty `attrs`, `marks` or `content` the absent key (§2), and the round-trip
-        tests compare through it. `nodeContent`/`nodeAttrs`/`nodeMarks` replace the 49 inline
-        `?? []`/`?? {}` reads in `src/` (27 `content`, 12 `marks`, 10 `attrs`), and the branch floor
-        rises to what the suite then measures.
+        `src/adf/editor-normal.ts`, on 3i's merging: adjacent text nodes carrying identical marks and
+        no attributes merged, an empty `attrs`, `marks` or `content` the absent key, `-0` read as `0`
+        (§2); the round-trip tests compare the parser's output through it, and `serializeCanonicalJson`
+        beneath it walks iteratively. `nodeContent`/`nodeAttrs`/`nodeMarks` replace the 46 inline
+        `?? []`/`?? {}` reads in `src/` (23 `content`, 12 `marks`, 11 `attrs`) and the `attrs?.[key]`
+        reads, and the branch floor rises to the integer floor of what the suite then measures.
+        **Settled** (the maintainer, 2026-09-14): a text node carrying attributes never merges —
+        `0.1.0` merged a carried one into its neighbour on read-back — and the fix lands here, as does
+        the iterative serializer.
   - [ ] **4.2 — The ADF property.** `fast-check` joins `devDependencies`, AGENTS.md §5 naming what
         it earns — shrinking a failing document to the nodes that break it — and §10 the properties
         beside the corpus. A generated editor-normal document either refuses in `adfToMarkdown`
@@ -205,24 +209,9 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         4.2's generators: it refuses only the guard's codes, and its output reads back through
         `markdownToAdf` holding no node or mark the flavour spells as a directive. AGENTS.md §1
         records the reduction as what keeps the conversions at four.
-- [ ] **11 — Atlassian's ADF schema as the tables' truth (`0.2.0`).** `@atlaskit/adf-schema`'s two
-      JSON Schemas vendored rather than the package installed (AGENTS.md §5), and the node tables
-      gated against them (§10). **Settled** (the maintainer, 2026-09-13): vendored at
-      `spec/adf-schema/` and re-pinned by hand when a need shows; the gate compares attribute names
-      and kinds, never value sets, over `full.json` and `stage-0.json` together.
+- [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
-  - [ ] **11b — The gate.** For each node and mark type the tables spell, the attribute names and
-        kinds equal the union over every definition in both files whose `type` enum names it,
-        `anyOf`/`allOf` branches included, the argument slot (`panelType`, `state`) counting as
-        spelled. Kinds: `string`; `number`, `integer` included; `boolean`; `json` for an object, an
-        array or an untyped value; an `enum`-only attribute takes its values' kind. What the schema
-        holds past the tables is pinned in two exact lists — an entry the schema no longer needs is
-        red, like a difference neither list names: gaps, attributes of a spelled type (57.4.9:
-        `link` `collection` `id` `occurrenceKey`, `rule` `color` `style` `weight`, `layoutSection`
-        `columnRuleStyle`), emptied by 13; and carried, types the tables do not spell (`alignment`
-        `annotation` `backgroundColor` `blockCard` `bodiedRule` `breakout` `dataConsumer`
-        `embedCard` `fontSize` `fragment` `indentation` `inlineExtension` `placeholder`), `doc` and
-        `text` counting as the grammar's own.
+  - [x] **11b — The gate.**
 - [ ] **12 — The `!adf:` re-spelling (`0.2.0`).** Replace the colon directive grammar with the
       namespaced prefix, a breaking change to the emitted contract (shipped `0.1.0`, so §8 makes it
       `0.2.0`). Forms: block container `!adf:name arg {attrs}` … `!adf:/name` — the `/` parts open

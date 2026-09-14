@@ -562,11 +562,27 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       `instrumentisto/geckodriver`, currency over size — the leg's whole worth is a real
       SpiderMonkey, which decays the moment the pin stops moving, and the smaller image was four
       Firefox majors behind with a publisher that may go quiet while Renovate stays silent.
-- [ ] **11 — Atlassian's ADF schema as the tables' truth (`0.2.0`).**
+- [x] **11 — Atlassian's ADF schema as the tables' truth (`0.2.0`).** `@atlaskit/adf-schema`'s two
+      JSON Schemas vendored rather than the package installed (AGENTS.md §5), and the node tables
+      gated against them (§10). **Settled** (the maintainer, 2026-09-13): vendored at
+      `spec/adf-schema/` and re-pinned by hand when a need shows; the gate compares attribute names
+      and kinds, never value sets, over `full.json` and `stage-0.json` together.
   - [x] **11a — The vendored schema.** `full.json` and `stage-0.json`, byte-exact from
         `@atlaskit/adf-schema@57.4.9`'s `dist/json-schema/v1/`, at `spec/adf-schema/`, each pinned
         by its SHA-256 in a test the way `spec.json` is. The version, the source and the Apache-2.0
         attribution sit beside them with the licence text; no gate re-serializes either file.
+  - [x] **11b — The gate.** For each node and mark type the tables spell, the attribute names and
+        kinds equal the union over every definition in both files whose `type` enum names it,
+        `anyOf`/`allOf` branches included, the argument slot (`panelType`, `state`) counting as
+        spelled. Kinds: `string`; `number`, `integer` included; `boolean`; `json` for an object, an
+        array or an untyped value; an `enum`-only attribute takes its values' kind. What the schema
+        holds past the tables is pinned in two exact lists — an entry the schema no longer needs is
+        red, like a difference neither list names: gaps, attributes of a spelled type (57.4.9:
+        `link` `collection` `id` `occurrenceKey`, `rule` `color` `style` `weight`, `layoutSection`
+        `columnRuleStyle`), emptied by 13; and carried, types the tables do not spell (`alignment`
+        `annotation` `backgroundColor` `blockCard` `bodiedRule` `breakout` `dataConsumer`
+        `embedCard` `fontSize` `fragment` `indentation` `inlineExtension` `placeholder`), `doc` and
+        `text` counting as the grammar's own.
 
 ## 5 — Ship `0.1.0`
 
