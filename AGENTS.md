@@ -223,8 +223,7 @@ functions, and a branch floor that only ever moves upward. It sits below 100 bec
 compared against `undefined` — have a half no valid document reaches.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real sanitized ADF from
-live Atlassian APIs; property-generated ADF trees; the CommonMark spec suite against
-`markdownToAdf` and `markdownToHtml`.
+live Atlassian APIs; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
 
 `spec/flavour.md` is read as a source too, so the node tables cannot drift from the prose they
 copy: each `- ` bullet in `## Block nodes`, `## Inline nodes` and `## Marks` declares the nodes

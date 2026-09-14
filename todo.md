@@ -44,23 +44,33 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [x] **3j — The carry and the combinations.**
   - [x] **3k — The CommonMark spec suite.**
 - [ ] **4 — Round-trip property tests (`0.2.0`)**, widening 3j's corpus round-trip past the
-      documents a human wrote — the thing that proves 2 and 3 beyond them. Editor-normal (§2) is
-      finished here, on 3i's merging — `toEditorNormal(doc)` and the equality the round-trip
-      asserts, which over normalized input is the canonical serializer's compact spelling —
-      rather than staying spelled inline as `?? []` at every reader. The
-      reading half is `nodeContent`/`nodeAttrs`/`nodeMarks` over the ~28 sites spelling it
-      inline today, which also lifts the branch floor §10 keeps below 100 for exactly those
-      halves.
-      Generators emit editor-normal ADF (§2). Real sanitized ADF from live Atlassian APIs lands
-      here too (§10), in `corpus/real-payloads/`: an ADF→markdown→ADF check with no expected
-      markdown, the payloads supplied by the maintainer. This subsumes 2e5's collision property —
-      a document that round-trips proves no other document shares its spelling — so decide here
-      whether that gate stays as the parser-free, faster-failing signal or goes; the half holding
-      no fixture duplicates is hygiene rather than a round-trip claim, and stays either way.
-      **Settled** (the maintainer, 2026-09-13): the generators draw from the node tables — each
-      node's content model and attribute vocabulary as `adf/` records them, which 11 holds to
-      Atlassian's schema — and misplace a share of nodes so the carry (§3) is exercised; no JSON
-      Schema walker enters the tests.
+      documents a human wrote — the thing that proves 2 and 3 beyond them.
+      **Settled** (the maintainer, 2026-09-13): `fast-check` generates and shrinks. The gate runs a
+      fixed seed, the properties together adding about five seconds per engine; an environment
+      variable raises the runs and randomizes the seed for local digging, and a counterexample
+      found becomes a round-trip fixture. The generators draw from the node tables — each node's
+      content model and attribute vocabulary as `adf/` records them, which 11 holds to Atlassian's
+      schema — and misplace a share of nodes so the carry (§3) is exercised; no JSON Schema walker
+      enters the tests. `toEditorNormal` stays internal. 2e5's collision test goes, since a
+      collision already fails the round-trip on the same fixtures; the fixture-duplicate test
+      stays.
+  - [ ] **4.1 — Editor-normal and the node accessors.** `toEditorNormal(doc)` in
+        `src/adf/editor-normal.ts`, on 3i's merging: adjacent text nodes carrying identical marks
+        merged, an empty `attrs`, `marks` or `content` the absent key (§2), and the round-trip
+        tests compare through it. `nodeContent`/`nodeAttrs`/`nodeMarks` replace the 49 inline
+        `?? []`/`?? {}` reads in `src/` (27 `content`, 12 `marks`, 10 `attrs`), and the branch floor
+        rises to what the suite then measures.
+  - [ ] **4.2 — The ADF property.** `fast-check` joins `devDependencies`, AGENTS.md §5 naming what
+        it earns — shrinking a failing document to the nodes that break it — and §10 the properties
+        beside the corpus. A generated editor-normal document either refuses in `adfToMarkdown`
+        with a `ConvertError` or reads back through `markdownToAdf` to an equal document, and
+        nothing throws, under Node, Deno and Bun alike. 2e5's collision test is deleted.
+  - [ ] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
+        and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
+        spelling parses and emits to itself byte for byte (§2).
+  - [ ] **4.4 — The real payloads.** `corpus/real-payloads/` holds the maintainer's sanitized
+        payloads, each round-tripped ADF→markdown→ADF with no expected markdown. It waits on the
+        maintainer placing the files.
 - [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
       as a thematic break — and the walk below does the same, so the cost doubles per level:
