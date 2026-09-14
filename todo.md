@@ -139,12 +139,15 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
 - [ ] **5g — Reweight the README for the reader (`0.2.0`).** It opens with the pre-launch rationale —
       Atlassian's REST APIs, `pf-editor-service/convert` being decommissioned, a link to
       JRACLOUD-77436 — where a shipped package should answer what it is, what it does and for whom
-      first, then the shortest runnable example; the reader's top seconds go to "why this exists"
-      instead of "what I can do with it". Demote the Jira/endpoint background to a later "why
-      losslessness" note or drop it — the internal references (the `jira.atlassian.com` URL,
-      `pf-editor-service/convert`) don't belong in published text at all, no ticket IDs or internal
-      URLs. The `0.3.0` HTML future should read as an aside, not the lede: the package reads as a
-      shipped `0.1.0`, not a work-in-progress.
+      first, then the shortest runnable example.
+      **Settled** (the maintainer, 2026-09-13): the background goes entirely, no endpoint, ticket or
+      "why" note left. The top follows the package-README order: an npm version badge and the Gitea
+      Actions badge, a tagline that is also `package.json`'s `description`, a feature list and a
+      one-line table of contents, then install and the shortest runnable example; a table of
+      everything exported sits near the bottom. The HTML directions are one aside line under the API
+      until `0.3.0` ships them, the `// 0.3.0` signatures and the `0.3.0` guarantee going until then.
+      The tagline and `description` read "Lossless conversion between Atlassian Document Format and
+      extended markdown" until 7 restores HTML.
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**
@@ -156,7 +159,8 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
 - [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
 - [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
-      `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10).
+      `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10). The
+      README's tagline and `package.json`'s `description` regain HTML (5g).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
 - [ ] **10 — Lossy conversion (`0.2.0`).** A direction that only converts what Markdown actually
