@@ -427,6 +427,28 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         **Settled** (the maintainer, 2026-09-14): a text node carrying attributes never merges —
         `0.1.0` merged a carried one into its neighbour on read-back — and the fix lands here, as does
         the iterative serializer.
+  - [x] **4.2 — The ADF property.** `fast-check` joins `devDependencies`, AGENTS.md §5 naming what
+        it earns — shrinking a failing document to the nodes that break it — and §10 the properties
+        beside the corpus. A generated editor-normal document either refuses in `adfToMarkdown`
+        with a `ConvertError` or reads back through `markdownToAdf` to an equal document, and
+        nothing throws, under Node, Deno and Bun alike. 2e5's collision test is deleted.
+        **Settled** (the maintainer, 2026-09-14): about half the block positions draw attribute-less
+        CommonMark shapes — single-type lists, headings, blockquotes, pipe-table-shaped tables — where
+        the escaping lives. A round-trip break the property finds is fixed inside 4.2, one commit per
+        break with its round-trip fixture seen red first, and 4.2 lands when a deep run of about
+        10,000 per engine passes clean; a break needing design goes to the maintainer. The first two,
+        both shipped in `0.1.0`: an empty `href` with a title spelled `[a]( "")`, which reads back as
+        the href `""`, and a `[` or `]` in a link's destination or title inside a directive mark,
+        refused as the emitter's own output or, with `]`, losing the link. Later, settled the same
+        day: an autolink whose href holds a backtick takes the `[text](url)` form inside a
+        directive's content; and a V8 fault the deep runs hit — once `JSON.parse` has read a key
+        holding an escaped backslash, a later escaped quote or newline key comes back as that
+        backslash, on Node and Deno but not Bun — is accepted rather than worked around, since the
+        library only refuses such a document, so the generators' JSON keys avoid those characters; the
+        fault is reported upstream (https://issues.chromium.org/issues/521080746, nodejs/node#63785),
+        where the maintainer added to both on 2026-09-14. The review found one more break of the
+        same class, fixed the same way: a would-be inline directive in a link target inside a
+        directive's content.
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.

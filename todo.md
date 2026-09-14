@@ -55,25 +55,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       collision already fails the round-trip on the same fixtures; the fixture-duplicate test
       stays.
   - [x] **4.1 — Editor-normal and the node accessors.**
-  - [ ] **4.2 — The ADF property.** `fast-check` joins `devDependencies`, AGENTS.md §5 naming what
-        it earns — shrinking a failing document to the nodes that break it — and §10 the properties
-        beside the corpus. A generated editor-normal document either refuses in `adfToMarkdown`
-        with a `ConvertError` or reads back through `markdownToAdf` to an equal document, and
-        nothing throws, under Node, Deno and Bun alike. 2e5's collision test is deleted.
-        **Settled** (the maintainer, 2026-09-14): about half the block positions draw attribute-less
-        CommonMark shapes — single-type lists, headings, blockquotes, pipe-table-shaped tables — where
-        the escaping lives. A round-trip break the property finds is fixed inside 4.2, one commit per
-        break with its round-trip fixture seen red first, and 4.2 lands when a deep run of about
-        10,000 per engine passes clean; a break needing design goes to the maintainer. The first two,
-        both shipped in `0.1.0`: an empty `href` with a title spelled `[a]( "")`, which reads back as
-        the href `""`, and a `[` or `]` in a link's destination or title inside a directive mark,
-        refused as the emitter's own output or, with `]`, losing the link. Later, settled the same
-        day: an autolink whose href holds a backtick takes the `[text](url)` form inside a
-        directive's content; and a V8 fault the deep runs hit — once `JSON.parse` has read a key
-        holding an escaped backslash, a later escaped quote or newline key comes back as that
-        backslash, on Node and Deno but not Bun — is accepted rather than worked around, since the
-        library only refuses such a document, so the generators' JSON keys avoid those characters and
-        the maintainer reports the fault upstream.
+  - [x] **4.2 — The ADF property.**
   - [ ] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
         and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
         spelling parses and emits to itself byte for byte (§2).
@@ -311,7 +293,9 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         fixture per trigger, `spec/flavour.md`'s Marks section following; `unspellable-link` removed
         from the code list, its `errors/` fixtures and the CommonMark suite's `unspellable`
         exceptions it cures re-derived, and the README's code table and its "not every document
-        converts back" guarantee following; the gap list is empty.
+        converts back" guarantee following; the gap list is empty. A round-trip fixture holds the
+        shape 4.2's review left refused until then: an autolink-shaped link under a directive mark
+        whose href holds `\:name{`.
 
 ## The ADF inventory to cover
 
