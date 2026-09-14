@@ -167,6 +167,10 @@ export function isAutolink(text: string): boolean {
   return autolink.test(text)
 }
 
+export function isBlankLine(line: string): boolean {
+  return /^[ \t]*$/.test(line)
+}
+
 export function isThematicBreak(line: string): boolean {
   return thematicBreak.test(line)
 }

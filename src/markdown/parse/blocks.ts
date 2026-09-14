@@ -7,6 +7,7 @@ import {
   claimsPipeLine,
   closingCodeFence,
   decodeTextEscapes,
+  isBlankLine,
   isThematicBreak,
   listMarker,
   markerInterruptsParagraph,
@@ -61,7 +62,6 @@ type Line = { column: number; text: string }
 
 type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; position: SourcePosition; stack: OpenContainer[] }
 
-const blankLine = /^[ \t]*$/
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const leafColons = 2
@@ -117,7 +117,7 @@ function continuesContainer(walk: Walk, container: OpenContainer, line: Line): L
   // A directive container has no continuation marker: only its own fence closes it.
   if (container.kind === 'directive') return line
   // A list item begins with at most one blank line: an empty one gives the second up.
-  if (blankLine.test(line.text)) {
+  if (isBlankLine(line.text)) {
     return container.blocks.length === 0 && walk.leaf === undefined ? undefined : { column: line.column, text: '' }
   }
   return leadingColumns(line) < container.indentation ? undefined : removeColumns(line, container.indentation)
@@ -155,7 +155,7 @@ function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: 
   const marker = listMarker(opener.text)
   if (marker === undefined) return undefined
   const after: Line = { column: opener.column + marker.width, text: opener.text.slice(marker.width) }
-  const blank = blankLine.test(after.text)
+  const blank = isBlankLine(after.text)
   if (paragraphOpen && !markerInterruptsParagraph(marker.start, blank)) return undefined
   const spaces = leadingColumns(after)
   const padding = blank || spaces > indentedCodeColumns ? 1 : spaces
@@ -268,7 +268,7 @@ function pushFault(walk: Walk, fault: ConvertFault): void {
 
 // A claimed line ends the lazy continuation CommonMark would fold it into (spec/flavour.md).
 function continuesLazily(walk: Walk, line: Line): boolean {
-  if (walk.leaf?.kind !== 'paragraph' || blankLine.test(line.text)) return false
+  if (walk.leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = removeColumns(line, largestOpenerIndentation).text
   if (claimsDirectiveLine(opener) || claimsPipeLine(opener) || isThematicBreak(opener)) return false
@@ -283,7 +283,7 @@ function readBlockLine(walk: Walk, line: Line): void {
     return
   }
   if (leaf?.kind === 'html') {
-    if (leaf.closer === undefined ? blankLine.test(line.text) : leaf.closer.test(line.text)) closeLeaf(walk)
+    if (leaf.closer === undefined ? isBlankLine(line.text) : leaf.closer.test(line.text)) closeLeaf(walk)
     return
   }
   if (leaf?.kind === 'pipe-table') {
@@ -298,7 +298,7 @@ function readBlockLine(walk: Walk, line: Line): void {
     if (readIndentedCodeLine(leaf, line)) return
     closeLeaf(walk)
   }
-  if (blankLine.test(line.text)) {
+  if (isBlankLine(line.text)) {
     closeLeaf(walk)
     return
   }
@@ -310,7 +310,7 @@ function readBlockLine(walk: Walk, line: Line): void {
 }
 
 function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>, line: Line): boolean {
-  if (blankLine.test(line.text)) {
+  if (isBlankLine(line.text)) {
     leaf.held.push(removeColumns(line, indentedCodeColumns).text)
     return true
   }

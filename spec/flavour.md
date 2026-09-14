@@ -28,7 +28,8 @@ normalizes to it through the round-trip.
   adjacent lists of a kind back as one. The leaf `::listBreak` parts them, taking the separation
   any directive block takes where it sits. It builds no node, and it reads only between two
   adjacent lists of one type: elsewhere, or carrying an argument, `{attrs}` or a body, it is a
-  named error.
+  named error. A list whose item holds a line of spaces or tabs alone, which a list item reads
+  back empty, takes the directive form.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick

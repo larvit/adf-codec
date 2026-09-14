@@ -6,7 +6,7 @@ import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../backtick-runs.ts'
-import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
+import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark-grammar.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { listBreakSpelling } from '../list-break.ts'
@@ -225,8 +225,10 @@ function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath, dep
   const inner = emitBlocks(nodeContent(item), 'list-item', path, depth + 1)
   if (!inner.ok) return inner
   if (inner.value.text === '') return success({ fenceColons: 0, text: marker.trimEnd() })
+  const body = inner.value.text.split('\n')
+  if (body.some((line) => line !== '' && isBlankLine(line))) return undefined
   const indent = ' '.repeat(marker.length)
-  const lines = inner.value.text.split('\n').map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
+  const lines = body.map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
   if (isThematicBreak(lines[0] ?? '')) return undefined
   return success({ fenceColons: inner.value.fenceColons, text: lines.join('\n') })
 }
