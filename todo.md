@@ -67,7 +67,13 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         10,000 per engine passes clean; a break needing design goes to the maintainer. The first two,
         both shipped in `0.1.0`: an empty `href` with a title spelled `[a]( "")`, which reads back as
         the href `""`, and a `[` or `]` in a link's destination or title inside a directive mark,
-        refused as the emitter's own output or, with `]`, losing the link.
+        refused as the emitter's own output or, with `]`, losing the link. Later, settled the same
+        day: an autolink whose href holds a backtick takes the `[text](url)` form inside a
+        directive's content; and a V8 fault the deep runs hit — once `JSON.parse` has read a key
+        holding an escaped backslash, a later escaped quote or newline key comes back as that
+        backslash, on Node and Deno but not Bun — is accepted rather than worked around, since the
+        library only refuses such a document, so the generators' JSON keys avoid those characters and
+        the maintainer reports the fault upstream.
   - [ ] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
         and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
         spelling parses and emits to itself byte for byte (§2).
