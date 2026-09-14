@@ -161,6 +161,8 @@ function propertyKinds(property: SchemaObject, where: string): AttributeKind[] {
   if (type === 'string') return ['string']
   if (type === 'array' || type === 'object') return ['json']
   if (type !== undefined) return assert.fail(`${where}: the schema types it ${JSON.stringify(type)}, which reads as no attribute kind`)
+  const combinator = ['$ref', 'allOf', 'anyOf'].find((keyword) => property[keyword] !== undefined)
+  if (combinator !== undefined) return assert.fail(`${where}: the schema holds the keyword ${combinator}, which the gate reads as no attribute kind`)
   const values = property['enum']
   return Array.isArray(values) ? values.map(valueKind) : ['json']
 }
