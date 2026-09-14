@@ -60,6 +60,14 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         beside the corpus. A generated editor-normal document either refuses in `adfToMarkdown`
         with a `ConvertError` or reads back through `markdownToAdf` to an equal document, and
         nothing throws, under Node, Deno and Bun alike. 2e5's collision test is deleted.
+        **Settled** (the maintainer, 2026-09-14): about half the block positions draw attribute-less
+        CommonMark shapes — single-type lists, headings, blockquotes, pipe-table-shaped tables — where
+        the escaping lives. A round-trip break the property finds is fixed inside 4.2, one commit per
+        break with its round-trip fixture seen red first, and 4.2 lands when a deep run of about
+        10,000 per engine passes clean; a break needing design goes to the maintainer. The first two,
+        both shipped in `0.1.0`: an empty `href` with a title spelled `[a]( "")`, which reads back as
+        the href `""`, and a `[` or `]` in a link's destination or title inside a directive mark,
+        refused as the emitter's own output or, with `]`, losing the link.
   - [ ] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
         and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
         spelling parses and emits to itself byte for byte (§2).
