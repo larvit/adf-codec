@@ -14,6 +14,7 @@ test('merges adjacent text nodes carrying identical marks, at every level', () =
     { text: 'e', type: 'text' },
     { attrs: { localId: '01a0a06b-5281-7f27-9022-8d3a74b0ab0d' }, text: 'f', type: 'text' },
     { text: 'g', type: 'text' },
+    { attrs: {}, text: 'h', type: 'text' },
   ]
   assert.deepEqual(toEditorNormal({ content: [{ attrs: { panelType: 'info' }, content: [{ content, type: 'paragraph' }], type: 'panel' }], type: 'doc', version: 1 }), {
     content: [
@@ -27,7 +28,7 @@ test('merges adjacent text nodes carrying identical marks, at every level', () =
               { type: 'hardBreak' },
               { text: 'e', type: 'text' },
               { attrs: { localId: '01a0a06b-5281-7f27-9022-8d3a74b0ab0d' }, text: 'f', type: 'text' },
-              { text: 'g', type: 'text' },
+              { text: 'gh', type: 'text' },
             ],
             type: 'paragraph',
           },

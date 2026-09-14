@@ -50,25 +50,6 @@
         }
       ],
       "type": "paragraph"
-    },
-    {
-      "content": [
-        {
-          "attrs": {
-            "localId": "01a0a067-68cf-78af-abd6-c660ec0d189b"
-          },
-          "text": "Two ",
-          "type": "text"
-        },
-        {
-          "attrs": {
-            "localId": "01a0a067-68d9-73fa-9b9a-caa42061993c"
-          },
-          "text": "anchors",
-          "type": "text"
-        }
-      ],
-      "type": "paragraph"
     }
   ],
   "type": "doc",

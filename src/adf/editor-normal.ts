@@ -11,7 +11,6 @@ export function sameMark(candidate: AdfMark, mark: AdfMark): boolean {
   return markKey(candidate) === markKey(mark)
 }
 
-// AGENTS.md §2: adjacent text nodes carrying identical marks and no attributes are one node.
 export function mergeAdjacentText(nodes: readonly AdfNode[]): AdfNode[] {
   const merged: AdfNode[] = []
   for (const node of nodes) {

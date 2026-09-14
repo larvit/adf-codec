@@ -72,7 +72,7 @@ export function isAdfMark(value: unknown): value is AdfMark {
   return !('attrs' in value) || isAttributes(value['attrs'])
 }
 
-export function nodeAttrs(node: { attrs?: AdfAttributes }): AdfAttributes {
+export function nodeAttrs(node: { attrs?: AdfAttributes }): Readonly<AdfAttributes> {
   return node.attrs ?? {}
 }
 

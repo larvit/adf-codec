@@ -356,7 +356,7 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
     assert.ok(spelled.ok, spelled.ok ? '' : spelled.error.message)
     const read = markdownToAdf(spelled.value)
     assert.ok(read.ok, read.ok ? '' : read.error.message)
-    assert.deepEqual(toEditorNormal(read.value), toEditorNormal(document(node)))
+    assert.deepEqual(toEditorNormal(read.value), document(node))
   }
 
   assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em', largestNesting - 3))
