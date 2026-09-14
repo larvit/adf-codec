@@ -51,6 +51,7 @@ const htmlBlockConditions: HtmlBlockCondition[] = [
 ]
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const atxHeadingOpener = /^(#{1,6})(?:[ \t]|$)/
+const blankLine = /^[ \t]*$/
 const codeFenceOpener = /^(`{3,}|~{3,})/
 const directiveClaim = /^:{2,}(?:[A-Za-z0-9]|[ \t]*$)/
 const pipeClaim = /^\|/
@@ -168,7 +169,7 @@ export function isAutolink(text: string): boolean {
 }
 
 export function isBlankLine(line: string): boolean {
-  return /^[ \t]*$/.test(line)
+  return blankLine.test(line)
 }
 
 export function isThematicBreak(line: string): boolean {

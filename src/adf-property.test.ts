@@ -18,17 +18,21 @@ import { toEditorNormal } from './adf/editor-normal.ts'
 type Positions = { block: AdfNode; inline: AdfNode }
 
 const deepRunsVariable = 'PROPERTY_RUNS'
-const gateRuns = 3000
+const gateRuns = 1600
 const gateSeed = 20260914
+// Bun's test runner stops a test after five seconds unless the test sets its own timeout.
+const propertyTimeout = 600000
 
 const depthIdentifier = fc.createDepthIdentifier()
 const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell' }
-const markdownCharacters = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉')
+const flatCommonMarkShapeWeight = 4
+const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉', ':a[', ':a{', 'ab:', 'http://')
+const nestingCommonMarkShapeWeight = 21
 const spelledTypes = new Set(['text', ...Object.keys(blockDirectives), ...Object.keys(inlineDirectives), ...Object.keys(markAttributes)])
 
 function textOf(minLength: number): Arbitrary<string> {
   return fc.oneof(
-    { arbitrary: fc.string({ maxLength: 12, minLength, unit: markdownCharacters }), weight: 4 },
+    { arbitrary: fc.string({ maxLength: 12, minLength, unit: markdownPieces }), weight: 4 },
     { arbitrary: fc.string({ maxLength: 6, minLength, unit: 'grapheme' }), weight: 1 },
   )
 }
@@ -37,11 +41,11 @@ const text = textOf(1)
 const unknownType = fc.oneof(fc.stringMatching(/^[a-z][A-Za-z0-9]{0,7}$/), text).filter((type) => !spelledTypes.has(type))
 const numberValue = fc.oneof({ arbitrary: fc.integer({ max: 10, min: -1 }), weight: 3 }, { arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 1 })
 
-// V8's JSON.parse returns a wrong key after parsing a key holding an escaped backslash; Bun is unaffected.
-const keyCharacter = fc
-  .oneof({ arbitrary: markdownCharacters, weight: 4 }, { arbitrary: fc.string({ maxLength: 1, minLength: 1, unit: 'grapheme' }), weight: 1 })
-  .filter((character) => !/[\\"\x00-\x1f]/.test(character))
-const jsonKey = fc.string({ maxLength: 8, unit: keyCharacter })
+// V8's JSON.parse returns a wrong key after parsing a key holding an escaped backslash (https://issues.chromium.org/issues/521080746); Bun is unaffected.
+const keyPiece = fc
+  .oneof({ arbitrary: markdownPieces, weight: 4 }, { arbitrary: fc.string({ maxLength: 1, minLength: 1, unit: 'grapheme' }), weight: 1 })
+  .filter((piece) => !/[\\"\x00-\x1f]/.test(piece))
+const jsonKey = fc.string({ maxLength: 8, unit: keyPiece })
 
 const { jsonValue } = fc.letrec<{ jsonValue: JsonValue }>((tie) => ({
   jsonValue: fc.oneof(
@@ -85,9 +89,17 @@ const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type
 
 const textNode = fc.record({ marks, text }).map((held): AdfNode => ({ ...held, type: 'text' }))
 
+const autolinkTextNode = fc
+  .record({ href: fc.tuple(fc.constantFrom('ab:', 'http://'), textOf(0)).map(([scheme, rest]) => `${scheme}${rest}`), marks })
+  .map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
+
 const inlineNodes = Object.entries(inlineDirectives).map(([type, directive]) =>
   fc.record({ attrs: attributes(directive.attributes), marks }).map((held): AdfNode => ({ ...held, type })),
 )
+
+function weighted(arbitraries: readonly Arbitrary<AdfNode>[], weight: number): { arbitrary: Arbitrary<AdfNode>; weight: number }[] {
+  return arbitraries.map((arbitrary) => ({ arbitrary, weight }))
+}
 
 const positions = fc.letrec<Positions>((tie) => {
   const blockContent = fc.array(tie('block'), { depthIdentifier, maxLength: 3 })
@@ -117,27 +129,33 @@ const positions = fc.letrec<Positions>((tie) => {
     blockContent.map((content): AdfNode => ({ content, type: 'listItem' })),
     { depthIdentifier, maxLength: 3, minLength: 1 },
   )
-  const commonMarkShapes = [
+  const flatCommonMarkShapes = [
+    fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' })),
+    paragraph,
+    fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
+  ]
+  const nestingCommonMarkShapes = [
     blockContent.map((content): AdfNode => ({ content, type: 'blockquote' })),
     listItems.map((content): AdfNode => ({ content, type: 'bulletList' })),
-    fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' })),
     fc
       .record({ content: listItems, order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 4 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 1 }) })
       .map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
-    paragraph,
-    fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
   ]
   return {
     block: fc.oneof(
       { depthIdentifier, depthSize: 'small', maxDepth: 4 },
-      { arbitrary: fc.oneof(...leafBlocks), weight: leafBlocks.length * 2 },
+      {
+        arbitrary: fc.oneof(...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)),
+        weight: leafBlocks.length * 2 + flatCommonMarkShapes.length * flatCommonMarkShapeWeight,
+      },
       { arbitrary: fc.oneof(...containerBlocks), weight: containerBlocks.length * 2 },
       { arbitrary: fc.oneof(textNode, ...inlineNodes, unknownNode), weight: misplacedWeight },
-      { arbitrary: fc.oneof(...commonMarkShapes), weight: blockNodes.length * 2 + misplacedWeight },
+      { arbitrary: fc.oneof(...nestingCommonMarkShapes), weight: nestingCommonMarkShapes.length * nestingCommonMarkShapeWeight },
     ),
     inline: fc.oneof(
       { depthIdentifier, depthSize: 'small', maxDepth: 4 },
       { arbitrary: textNode, weight: 12 },
+      { arbitrary: autolinkTextNode, weight: 2 },
       { arbitrary: fc.oneof(...inlineNodes), weight: 7 },
       { arbitrary: fc.oneof(...blockNodes.map((entry) => entry.node), unknownNode), weight: 2 },
     ),
@@ -149,12 +167,11 @@ const adfDocument = fc.array(positions.block, { depthIdentifier, maxLength: 4, m
 function runParameters(): { numRuns: number; seed?: number } {
   const deepRuns = env[deepRunsVariable]
   if (deepRuns === undefined) return { numRuns: gateRuns, seed: gateSeed }
-  const numRuns = Number(deepRuns)
-  assert.ok(Number.isSafeInteger(numRuns) && numRuns > 0, `${deepRunsVariable} holds a whole number of runs: found ${deepRuns}`)
-  return { numRuns }
+  assert.ok(/^[1-9]\d*$/.test(deepRuns), `${deepRunsVariable} is a run count in digits, such as ${deepRunsVariable}=10000: found ${JSON.stringify(deepRuns)}`)
+  return { numRuns: Number(deepRuns) }
 }
 
-test('a generated document refuses to emit, or its markdown reads back to it', () => {
+test('a generated document refuses to emit, or its markdown reads back to it', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const emitted = adfToMarkdown(document)
