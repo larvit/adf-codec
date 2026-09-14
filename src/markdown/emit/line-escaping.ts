@@ -7,7 +7,7 @@ import { readEntityReference } from '../entity-references.ts'
 
 export type EmphasisRole = 'close' | 'open'
 
-export type InlineEscaping = 'backslash' | 'bracketed' | 'none'
+export type InlineEscaping = 'backslash' | 'bracketed' | 'bracketed-link-target' | 'none'
 
 export type NodeRange = { first: number; last: number }
 
@@ -77,10 +77,11 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
     if (
-      escapable &&
-      (claimsLineStart(line, index, container) ||
-        mergesWithSyntax(scan, escapings, index) ||
-        opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))
+      (escapable &&
+        (claimsLineStart(line, index, container) ||
+          mergesWithSyntax(scan, escapings, index) ||
+          opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))) ||
+      (escaping === 'bracketed-link-target' && scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped))
     ) {
       output += '\\'
       escaped.add(index)
@@ -181,8 +182,8 @@ function touchesSyntax(scan: string, escapings: readonly (InlineEscaping | undef
   return scan.charAt(cursor) === character && isSyntax(escapings[cursor])
 }
 
-function isSyntax(escaping: InlineEscaping | undefined): boolean {
-  return escaping === 'none'
+export function isSyntax(escaping: InlineEscaping | undefined): boolean {
+  return escaping === 'none' || escaping === 'bracketed-link-target'
 }
 
 function opensConstruct(

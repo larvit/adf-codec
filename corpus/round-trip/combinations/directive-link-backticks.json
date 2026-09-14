@@ -1,0 +1,83 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": ""
+              },
+              "type": "textColor"
+            },
+            {
+              "attrs": {
+                "href": "`"
+              },
+              "type": "link"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "text": "`a",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "attrs": {
+                "href": "c",
+                "title": "`"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "b",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "c",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "attrs": {
+                "href": "e`f"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "d",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

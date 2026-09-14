@@ -1,6 +1,6 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineDirective } from '../../adf/inline-directives.ts'
-import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
+import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
@@ -41,7 +41,7 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): string | undefined {
   const emitted = emitLine(nodes, 'table-cell', path)
   if (!emitted.ok) return undefined
-  if (emitted.value.segments.some((segment) => segment.escaping === 'none' && segment.text.includes('|'))) return undefined
+  if (emitted.value.segments.some((segment) => isSyntax(segment.escaping) && segment.text.includes('|'))) return undefined
   return emitted.value.line
 }
 
@@ -291,7 +291,7 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  const spelledTarget = context.bracketed ? escapeUnbalanced(target.value, '[', ']') : target.value
-  return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${spelledTarget})`)] })
+  const spelledTarget: InlineSegment = context.bracketed ? { escaping: 'bracketed-link-target', text: escapeUnbalanced(target.value, '[', ']') } : syntax(target.value)
+  return success({ segments: [syntax('['), ...inner.value.segments, syntax(']('), spelledTarget, syntax(')')] })
 }
 

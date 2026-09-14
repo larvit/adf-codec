@@ -132,9 +132,9 @@ each a named error naming the spelling to write instead.
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — the leading `:` of a would-be directive, `]` inside content, a bracket a link's
 destination and title inside content leave unbalanced (an autolink holding one takes the
-`[text](url)` form), a `{` right after a directive's closing `]`, which would otherwise be read as
-the attributes it has none of; outside code spans and code blocks, a backslash before `:` in input
-yields a literal colon.
+`[text](url)` form) and a backtick there that would open a code span, a `{` right after a
+directive's closing `]`, which would otherwise be read as the attributes it has none of; outside
+code spans and code blocks, a backslash before `:` in input yields a literal colon.
 
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
 fence line of the container's length or longer, a bare colon-run line outside any container or
