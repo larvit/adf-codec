@@ -18,8 +18,9 @@ type Spelled = [string, Map<string, AttributeKind>]
 
 const carried = ['alignment', 'annotation', 'backgroundColor', 'blockCard', 'bodiedRule', 'breakout', 'dataConsumer', 'embedCard', 'fontSize', 'fragment', 'indentation', 'inlineExtension', 'placeholder']
 const definitionReference = '#/definitions/'
-const gaps = new Map(Object.entries({ layoutSection: ['columnRuleStyle'], link: ['collection', 'id', 'occurrenceKey'], rule: ['color', 'style', 'weight'] }))
+const gaps = ['layoutSection.columnRuleStyle', 'link.collection', 'link.id', 'link.occurrenceKey', 'rule.color', 'rule.style', 'rule.weight']
 const grammarOwn = ['doc', 'text']
+const readKeywords = ['$ref', 'additionalProperties', 'allOf', 'anyOf', 'enum', 'items', 'maxItems', 'maximum', 'minItems', 'minLength', 'minimum', 'pattern', 'properties', 'required', 'type']
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'spec', 'adf-schema')
 const schemaFiles = ['full.json', 'stage-0.json']
 
@@ -33,25 +34,31 @@ test('the tables spell the attribute names and kinds the ADF JSON Schemas give e
   const held = schemaTypes()
   const spelledTypes = spelled()
   const found: string[] = []
+  const gapsHeld = new Set<string>()
   for (const [type, spelledKinds] of spelledTypes) {
     const kinds = held.get(type)
     if (kinds === undefined) {
       found.push(`${type}: the tables spell the type, the schema holds no definition of it`)
       continue
     }
-    const pinned = gaps.get(type) ?? []
     for (const [attribute, schemaKinds] of kinds) {
       const kind = spelledKinds.get(attribute)
       const holds = [...schemaKinds].sort().join(' or ')
-      if (kind === undefined && !pinned.includes(attribute)) found.push(`${type}.${attribute}: the schema holds ${holds}, the tables spell nothing and the gaps list does not name it`)
-      if (kind !== undefined && pinned.includes(attribute)) found.push(`${type}.${attribute}: the tables spell ${kind}, and the gaps list still names it`)
-      if (kind !== undefined && (schemaKinds.size !== 1 || !schemaKinds.has(kind))) found.push(`${type}.${attribute}: the tables spell ${kind}, the schema holds ${holds}`)
+      if (kind === undefined && gaps.includes(`${type}.${attribute}`)) gapsHeld.add(`${type}.${attribute}`)
+      else if (kind === undefined) found.push(`${type}.${attribute}: the schema holds ${holds}, the tables spell nothing and the gaps list does not name it`)
+      else if (schemaKinds.size !== 1 || !schemaKinds.has(kind)) found.push(`${type}.${attribute}: the tables spell ${kind}, the schema holds ${holds}`)
     }
     for (const [attribute, kind] of spelledKinds) if (!kinds.has(attribute)) found.push(`${type}.${attribute}: the tables spell ${kind}, the schema holds nothing`)
-    for (const attribute of pinned) if (!kinds.has(attribute)) found.push(`${type}.${attribute}: the gaps list names it, the schema holds nothing`)
   }
-  const spelledNames = new Set(spelledTypes.map(([type]) => type))
-  for (const type of gaps.keys()) if (!spelledNames.has(type)) found.push(`${type}: the gaps list names the type, the tables spell none of it`)
+  for (const gap of gaps) {
+    if (gapsHeld.has(gap)) continue
+    const [type = '', attribute = ''] = gap.split('.')
+    const spelledKinds = spelledTypes.find(([name]) => name === type)?.[1]
+    const kind = spelledKinds?.get(attribute)
+    if (spelledKinds === undefined) found.push(`${gap}: the gaps list names it, the tables spell no ${type} type`)
+    else if (kind === undefined) found.push(`${gap}: the gaps list names it, the schema holds nothing`)
+    else found.push(`${gap}: the gaps list names it, the tables spell ${kind}`)
+  }
   assert.deepEqual(found, [])
 })
 
@@ -91,7 +98,7 @@ function schemaTypes(): Map<string, Held> {
       const where = `${file} ${name}`
       for (const properties of alternatives(schemaObject(definition, where), definitions, where)) {
         const attributes = (properties.get('attrs') ?? []).flatMap((attrs) => alternatives(attrs, definitions, `${where} attrs`)).flatMap((alternative) => [...alternative])
-        for (const type of (properties.get('type') ?? []).flatMap(enumStrings)) {
+        for (const type of (properties.get('type') ?? []).flatMap((schema) => enumStrings(schema, `${where} type`))) {
           const kinds = held.get(type) ?? new Map<string, Set<AttributeKind>>()
           held.set(type, kinds)
           for (const [attribute, schemas] of attributes) {
@@ -107,12 +114,19 @@ function schemaTypes(): Map<string, Held> {
 }
 
 function alternatives(schema: SchemaObject, definitions: SchemaObject, where: string): Properties[] {
-  const own = Object.entries(schemaObject(schema['properties'] ?? {}, `${where} properties`))
-  let found: Properties[] = [new Map(own.map(([name, property]): [string, SchemaObject[]] => [name, [schemaObject(property, `${where} ${name}`)]]))]
-  if (schema['$ref'] !== undefined) found = intersect(found, alternatives(referenced(schema['$ref'], definitions, where), definitions, `${where} $ref`))
+  const own = Object.entries(schemaObject(readSchema(schema, where)['properties'] ?? {}, `${where} properties`))
+  let found: Properties[] = [new Map(own.map(([name, property]): [string, SchemaObject[]] => [name, [readSchema(schemaObject(property, `${where} ${name}`), `${where} ${name}`)]]))]
+  if (schema['$ref'] !== undefined) found = intersect(found, alternatives(referenced(schema['$ref'], definitions, where), definitions, `${where} ${String(schema['$ref'])}`))
   for (const branch of branches(schema['allOf'], `${where} allOf`)) found = intersect(found, alternatives(branch, definitions, `${where} allOf`))
   if (schema['anyOf'] !== undefined) found = intersect(found, branches(schema['anyOf'], `${where} anyOf`).flatMap((branch) => alternatives(branch, definitions, `${where} anyOf`)))
   return found
+}
+
+function readSchema(schema: SchemaObject, where: string): SchemaObject {
+  const unread = Object.keys(schema).find((keyword) => !readKeywords.includes(keyword))
+  if (unread !== undefined) return assert.fail(`${where}: the schema holds the keyword ${unread}, which the gate does not read`)
+  const extra = schema['additionalProperties']
+  return extra === undefined || typeof extra === 'boolean' ? schema : assert.fail(`${where}: additionalProperties holds a schema, which the gate does not read`)
 }
 
 function intersect(left: readonly Properties[], right: readonly Properties[]): Properties[] {
@@ -135,9 +149,9 @@ function branches(value: unknown, where: string): SchemaObject[] {
   return Array.isArray(value) ? value.map((branch, index) => schemaObject(branch, `${where} ${index}`)) : assert.fail(`${where} is no array of schemas`)
 }
 
-function enumStrings(schema: SchemaObject): string[] {
+function enumStrings(schema: SchemaObject, where: string): string[] {
   const values = schema['enum']
-  return Array.isArray(values) ? values.filter((value: unknown): value is string => typeof value === 'string') : []
+  return Array.isArray(values) ? values.filter((value: unknown): value is string => typeof value === 'string') : assert.fail(`${where}: the type property holds no enum naming the type`)
 }
 
 function propertyKinds(property: SchemaObject, where: string): AttributeKind[] {
