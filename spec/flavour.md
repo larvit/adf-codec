@@ -43,10 +43,11 @@ normalizes to it through the round-trip.
   CommonMark admits no spelling — the end of a block, inside an ATX heading — or where the node
   carries an attribute, it is the inline directive.
 - An empty paragraph — real payloads carry them — is `::paragraph`.
-- Links `[text](url)`; `<…>` around a destination containing spaces; title in double quotes. A
-  backslash escapes a parenthesis the destination leaves unbalanced, and a quote inside the title;
-  a balanced pair stays bare. `<url>` autolink form only when the text equals the destination and
-  the destination is a valid CommonMark autolink (absolute URI).
+- Links `[text](url)`; `<…>` around a destination containing spaces, `<>` an empty one beside a
+  title; title in double quotes. A backslash escapes a parenthesis the destination leaves
+  unbalanced, and a quote inside the title; a balanced pair stays bare. `<url>` autolink form only
+  when the text equals the destination and the destination is a valid CommonMark autolink
+  (absolute URI).
 - Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape

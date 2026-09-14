@@ -12,7 +12,7 @@ import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
 import { slotLineEndingFault, spellLeafDirective } from '../directive-syntax.ts'
-import { spellDestination, spellTitle } from '../link-syntax.ts'
+import { spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
 
@@ -285,13 +285,11 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
   if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
-  const destination = spellDestination(href, path)
-  if (!destination.ok) return destination
-  const spelledTitle = typeof title === 'string' ? spellTitle(title, path) : success('')
-  if (!spelledTitle.ok) return spelledTitle
+  const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, path)
+  if (!target.ok) return target
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${destination.value}${spelledTitle.value})`)] })
+  return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${target.value})`)] })
 }
 

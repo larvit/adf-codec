@@ -106,7 +106,15 @@ export function spellDestination(href: string, path: ConvertErrorPath): Result<s
   return success(escapeUnbalanced(href))
 }
 
-export function spellTitle(title: string, path: ConvertErrorPath): Result<string> {
+export function spellLinkTarget(href: string, title: string | undefined, path: ConvertErrorPath): Result<string> {
+  const destination = spellDestination(href, path)
+  if (!destination.ok || title === undefined) return destination
+  const spelledTitle = spellTitle(title, path)
+  if (!spelledTitle.ok) return spelledTitle
+  return success(`${destination.value === '' ? '<>' : destination.value}${spelledTitle.value}`)
+}
+
+function spellTitle(title: string, path: ConvertErrorPath): Result<string> {
   if (/[\n\r\\]/.test(title)) {
     return failure('unspellable-link', 'no canonical escape spells a backslash or newline in a link title', path)
   }
