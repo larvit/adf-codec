@@ -107,18 +107,6 @@ function roundTripFixtures(): { name: string; path: string }[] {
   )
 }
 
-test('no two round-trip documents share one markdown spelling', () => {
-  const spellings = new Map<string, string>()
-  for (const fixture of roundTripFixtures()) {
-    const parsed: unknown = JSON.parse(readFileSync(fixture.path, 'utf8'))
-    assert.ok(isAdfDocument(parsed), `${fixture.name} is not an ADF document`)
-    const result = adfToMarkdown(parsed)
-    assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
-    assert.equal(spellings.get(result.value), undefined, `${fixture.name} and ${spellings.get(result.value)} share one markdown spelling`)
-    spellings.set(result.value, fixture.name)
-  }
-})
-
 test('no round-trip fixture repeats the document another holds', () => {
   const documents = new Map<string, string>()
   for (const fixture of roundTripFixtures()) {

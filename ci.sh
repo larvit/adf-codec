@@ -16,7 +16,7 @@ if printf '%s' "$test_output" | grep -q 'ℹ tests 0'; then
   exit 1
 fi
 
-in_image "$deno_image" deno test --allow-read --no-check src/
+in_image "$deno_image" deno test --allow-env=PROPERTY_RUNS --allow-read --no-check src/
 in_image "$bun_image" bun test src/
 
 in_image "$node_image" npm run build

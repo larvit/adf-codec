@@ -67,7 +67,8 @@ deliberate re-pin, exceptions re-derived by hand beside it. Atlassian's ADF JSON
 vendored the same way, at `spec/adf-schema/`, rather than as the `@atlaskit/adf-schema` dev
 dependency — CommonJS-only, some fifty packages with React among them, and a release most days for
 Renovate to automerge — re-pinned by hand when a payload or a report shows the need.
-`devDependencies`: few, each earning its keep; they never reach a consumer.
+`devDependencies`: few, each earning its keep; they never reach a consumer. `fast-check` earns its
+place shrinking a failing generated document to the nodes that break it.
 
 ## 6. The package contract
 
@@ -224,6 +225,10 @@ compared against `undefined` — have a half no valid document reaches.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real sanitized ADF from
 live Atlassian APIs; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
+
+Beside the corpus, properties run over documents generated from the node tables, on a fixed seed in
+the gate; `PROPERTY_RUNS=<runs>` raises the runs and randomizes the seed for local digging, and a
+counterexample found becomes a round-trip fixture.
 
 `spec/flavour.md` is read as a source too, so the node tables cannot drift from the prose they
 copy: each `- ` bullet in `## Block nodes`, `## Inline nodes` and `## Marks` declares the nodes
