@@ -185,34 +185,69 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       length rule go and every container opens the constant `!adf:`; block leaf `!adf:name arg
       {attrs}` with no closer; inline node `!adf:name[content]{attrs}`; directive marks
       `!adf:border`/`subsup`/`textColor`/`underline` `[content]{attrs}`. Attributes and their
-      escaping stay `{key=value}`; the literal escape is `\!adf:`; a line opening `!adf:` claims as
-      today's colon-run does. Leaf vs container is decided by the node's content model rather than
-      syntax — the `::`/`:::` split and §4's name-set-independent recognition go, a simplification
-      the carry makes safe (an unknown *block* node already rides the fence, not the directive).
-      The carry's reserved name becomes `carry`, both spellings — the block fence info string
-      `` `carry` `` and the inline `!adf:carry{json="…"}` — named for what it does: it carries a node
-      verbatim, never "unknown-node", since a known node no section spells where it stands rides it
-      too. A spelling change, not a semantic one: no `ConvertErrorCode` is added, removed or renamed,
-      the round-trip guarantee and the carry both hold through it. Mechanical surface: the grammar in
-      `spec/flavour.md`, `src/adf/block-directives.ts` + `inline-directives.ts`, `src/markdown/`'s
+      escaping stay `{key=value}`; the literal escape is `\!adf:`. Leaf vs container is decided by
+      the node's content model rather than syntax — the `::`/`:::` split goes, a simplification the
+      carry makes safe (an unknown *block* node already rides the fence, not the directive). The
+      carry's reserved name becomes `carry`, both spellings — the block fence info string `carry`
+      and the inline `!adf:carry{json="…"}` — named for what it does: it carries a node verbatim,
+      never "unknown-node", since a known node no section spells where it stands rides it too. No
+      `ConvertErrorCode` is added, removed or renamed, and the round-trip guarantee and the carry
+      both hold through it. Mechanical surface: the grammar in `spec/flavour.md`,
+      `src/adf/block-directives.ts` + `inline-directives.ts`, `src/markdown/`'s
       `directive-syntax.ts`, `opaque-carry.ts` and the `emit/` + `parse/` readers, every corpus
-      fixture (round-trip, normalization and `errors/`), `spec.test.ts`'s prose reader, and the
-      README's examples.
-  - [ ] **12a — The spec and the decision.** Rewrite `spec/flavour.md` to the `!adf:` grammar, and
-        record the departures in `AGENTS.md` §4 (leaf/container by content model, carry renamed
-        `carry`).
-  - [ ] **12b — The emit side.** `adfToMarkdown` spells `!adf:` / `!adf:/name` / `!adf:carry`; its
-        fixtures re-spelled, green.
-  - [ ] **12c — The parse side and the round-trip.** `markdownToAdf` reads it back; the round-trip
-        corpus, the `errors/` fixtures and the CommonMark spec suite re-spelled,
-        `markdownToAdf(adfToMarkdown(doc))` still equals `doc`.
-  - [ ] **12d — The README and the sweep.** The README's examples follow; sweep docs and fixtures
-        for any stale `::`/`:name` spelling.
+      fixture (round-trip, normalization and `errors/`), the prose reader over `spec/flavour.md`,
+      and the README's examples.
+      **Settled** (the maintainer, 2026-09-13):
+      - A line opening `!adf:name` is a block line when a space or the line's end follows the name,
+        and a paragraph when `[` or `{` does. Claiming stays syntactic and structure comes from the
+        tables: an unknown name is `unknown-directive-name` at the opener, whatever follows it.
+      - An unescaped `!adf:` claims on its own anywhere inline: one completing no directive is
+        `malformed-directive`, the emitter escapes every literal `!adf:`, and `!adf:hardBreak{}`
+        keeps its braces. Block and inline share the one `\!adf:` escape hint.
+      - A closer names the innermost open container, crosses no list-item or blockquote edge,
+        indents as a fence does and carries nothing after the name; anything else is
+        `malformed-directive`.
+      - A node holding no content whose content model takes some is an empty opener–closer pair,
+        never a leaf.
+      - A spelled node's content model is frozen with its spelling: changing it is MAJOR (§8).
+      - The colon spellings are dropped, not refused: `0.1.0` markdown reads back as prose, `adf`
+        is no longer a reserved language, and `MIGRATION.md` tells a consumer to convert stored
+        markdown through `0.1.0`'s parser and `0.2.0`'s emitter.
+      - Inputs moving between codes ride the break: a leaf given a body, a container missing its
+        closer and `listBreak` with a body are `malformed-directive`, and an empty inline-body
+        container parses.
+      - Split by construct, each sub-item both directions: 55 of 78 round-trip fixtures feed both
+        the emit and the read-back test, so an emit-only chunk cannot land green.
+  - [ ] **12a — The spec and the decision.** `spec/flavour.md` rewritten to the `!adf:` grammar and
+        the settled answers above, no colon directive form left in it; AGENTS.md §4's directive
+        bullet and prior-art line, and §8's escape hints and `::adf`/`::listBreak` examples, name
+        the new forms, §8 gaining the frozen content model.
+  - [ ] **12b — The inline form.** Inline nodes, directive marks, `text` and the inline carry
+        `!adf:carry{json=…}` spelled and read as `!adf:name[content]{attrs}`, with the prefix claim
+        and its escape; the round-trip, normalization and `errors/` fixtures holding inline forms
+        re-spelled, and the gate green.
+  - [ ] **12c — The block form.** Openers and `!adf:/name` closers, leaf vs container by content
+        model, empty pairs, `listBreak` and the `carry` fence, spelled and read; the fence-length
+        rule and the corpus test's fence nesting check deleted; the remaining fixtures re-spelled
+        and `errors/` re-derived under the shifted codes, and the gate green.
+  - [ ] **12d — The README, `MIGRATION.md` and the sweep.** The README's examples and error tables
+        follow, `MIGRATION.md` linked from one README line; docs and fixtures swept for any stale
+        `::`/`:name` spelling.
 - [ ] **13 — The schema's gap attributes (`0.2.0`).** Spell the attributes 11b pins as gaps, in
-      12's grammar, and empty the list. `rule`'s `color`, `style` and `weight` and
-      `layoutSection`'s `columnRuleStyle` join their tables and `spec/flavour.md` bullets. `link`'s
-      `collection`, `id` and `occurrenceKey` have no slot in `[text](url)`, so a link carrying one
-      rides the inline carry whole today; the spelling it takes instead is designed here.
+      12's grammar, and empty the list.
+      **Settled** (the maintainer, 2026-09-13): a link `[text](url "title")` cannot hold takes the
+      directive mark `!adf:link[text]{attrs}` — one carrying `collection`, `id` or `occurrenceKey`,
+      or an `href` or `title` no CommonMark escape writes — and a directive link CommonMark could
+      spell is `unsupported-node-shape`. That leaves `unspellable-link` no cause, so it leaves
+      `ConvertErrorCode` in `0.2.0`, §8 recording the removal.
+  - [ ] **13a — `rule` and `layoutSection`.** `rule`'s `color`, `style` and `weight` and
+        `layoutSection`'s `columnRuleStyle` join their tables and `spec/flavour.md` bullets, with
+        round-trip fixtures; their gap entries go.
+  - [ ] **13b — The directive link.** `link` spelled as above in both directions, with a round-trip
+        fixture per trigger, `spec/flavour.md`'s Marks section following; `unspellable-link` removed
+        from the code list, its `errors/` fixtures and the CommonMark suite's `unspellable`
+        exceptions it cures re-derived, and the README's code table and its "not every document
+        converts back" guarantee following; the gap list is empty.
 
 ## The ADF inventory to cover
 
