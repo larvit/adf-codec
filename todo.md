@@ -159,7 +159,48 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
-- [ ] **10 — Lossy conversion (`0.2.0`).** A direction that only converts what Markdown actually supports, keeping the ADF's data while dropping what markdown cannot hold — format, design and the richer nodes.
+- [ ] **10 — Lossy conversion (`0.2.0`).** A direction that only converts what Markdown actually
+      supports, keeping the ADF's data while dropping what markdown cannot hold — format, design
+      and the richer nodes.
+      **Settled** (the maintainer, 2026-09-13): `adfToPlainMarkdown(doc)` is one export whose body
+      reduces the document ADF→ADF in `src/adf/` and hands the result to `adfToMarkdown`, so §1's
+      four conversions stay four. Its markdown is the flavour without directives — CommonMark, the
+      pipe table and `~~` — and it refuses only what the document guard refuses
+      (`not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`); every
+      other shape degrades. The reduction:
+      - `panel`, `layoutSection`/`layoutColumn`, `bodiedExtension`, `bodiedSyncBlock`,
+        `multiBodiedExtension` and `extensionFrame` unwrap to their body blocks in order; `expand`
+        and `nestedExpand` put their title first as a strong paragraph.
+      - The CommonMark blocks keep their spelling, attributes dropped.
+      - `taskList` and `decisionList` become bullet lists, a task item's state leading its text as
+        `[x]` or `[ ]`, the way Obsidian and GFM write a checkbox: `- [x] Write the spec`.
+      - `mention` and `status` become their text, `emoji` its text or else its `shortName`, and
+        `date` its ISO date in UTC (`2026-09-13`).
+      - `inlineCard`, `blockCard` and `embedCard` become a link to their `url`, dropped when they
+        carry only `data`; a `mediaSingle` holding an external image stays `![alt](url)`; `media`,
+        `mediaGroup` and `mediaInline` become their `alt` text or nothing; `caption` its text as a
+        paragraph; `extension`, `inlineExtension` and `syncBlock` their `text` attribute or nothing;
+        `placeholder` nothing; a node no row names, or one standing where no spelling holds it, its
+        blocks or its text.
+      - A table stays a pipe table: the first row becomes the header, a cell's blocks join on one
+        line with spaces, and spans and the cells they cover drop.
+      - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text;
+        a link no CommonMark escape writes becomes its text, and a mark run CommonMark's flanking or
+        matching cannot spell drops its mark.
+      - A newline in text becomes a hard break and edge whitespace is trimmed; carriage returns and
+        null characters are removed; a paragraph line opening with a code span whose backticks would
+        read as a fence loses the code mark; an empty paragraph drops, and adjacent lists of one type
+        merge.
+  - [ ] **10a — Obsidian's formats.** Look up the formats Obsidian-flavoured markdown adds —
+        callouts, highlights, embeds, task states and whatever else it writes — and propose which
+        of the reduction's rows should adopt one; the maintainer settles the proposal, revising the
+        rows above, before 10b starts (the maintainer's request, 2026-09-13).
+  - [ ] **10b — The reduction.** The reduction in `src/adf/`, tests first, a test per row as 10a
+        leaves them.
+  - [ ] **10c — `adfToPlainMarkdown`.** The export and its README section, and a property over
+        4.2's generators: it refuses only the guard's codes, and its output reads back through
+        `markdownToAdf` holding no node or mark the flavour spells as a directive. AGENTS.md §1
+        records the reduction as what keeps the conversions at four.
 - [ ] **11 — Atlassian's ADF schema as the tables' truth (`0.2.0`).** `@atlaskit/adf-schema`'s two
       JSON Schemas vendored rather than the package installed (AGENTS.md §5), and the node tables
       gated against them (§10). **Settled** (the maintainer, 2026-09-13): vendored at
