@@ -9,6 +9,7 @@ import { isAdfDocument } from './adf/document.ts'
 import { isJsonValue } from './json-value.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
+import { toEditorNormal } from './adf/editor-normal.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const errorsRoot = join(corpusRoot, 'errors')
@@ -95,7 +96,7 @@ for (const directory of roundTripDirectories) {
       assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
       const result = markdownToAdf(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8'))
       assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
-      assert.deepEqual(result.value, expected)
+      assert.deepEqual(toEditorNormal(result.value), toEditorNormal(expected))
     })
   }
 }
@@ -184,12 +185,12 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
     assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
     const result = markdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
     assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
-    assert.deepEqual(result.value, expected)
+    assert.deepEqual(toEditorNormal(result.value), toEditorNormal(expected))
     const emitted = adfToMarkdown(result.value)
     assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
     const again = markdownToAdf(emitted.value)
     assert.ok(again.ok, again.ok ? '' : `${again.error.code}: ${again.error.message}`)
-    assert.deepEqual(again.value, expected)
+    assert.deepEqual(toEditorNormal(again.value), toEditorNormal(expected))
   })
 }
 

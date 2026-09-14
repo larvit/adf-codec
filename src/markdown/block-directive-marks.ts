@@ -1,13 +1,13 @@
 import type { AdfMark } from '../adf/document.ts'
 import type { JsonValue } from '../json-value.ts'
-import { isAdfMark } from '../adf/document.ts'
+import { isAdfMark, nodeAttrs } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export const marksAttribute = 'marks'
 
 export function markValues(marks: readonly AdfMark[]): JsonValue {
   return marks.map((mark) => {
-    const attrs = mark.attrs ?? {}
+    const attrs = nodeAttrs(mark)
     return Object.keys(attrs).length === 0 ? { type: mark.type } : { attrs, type: mark.type }
   })
 }

@@ -1,5 +1,5 @@
 import type { AdfNode } from '../../adf/document.ts'
-import { carriesOnly } from '../../adf/document.ts'
+import { carriesOnly, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import type { ConvertErrorPath } from '../../result.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 import { tryImageLine } from './inline-line.ts'
@@ -14,11 +14,11 @@ export function tryImage(node: AdfNode, path: ConvertErrorPath): string | undefi
 }
 
 function imageShape(node: AdfNode): { alt: string | undefined; url: string } | undefined {
-  const content = node.content ?? []
+  const content = nodeContent(node)
   const media = content[0]
-  if (!carriesOnly(node, ['layout']) || serializeCanonicalJson(node.attrs ?? {}, 'compact') !== centeredMediaSingle) return undefined
-  if (media === undefined || content.length !== 1 || media.type !== 'media' || !carriesOnly(media, imageAttributes) || (media.content ?? []).length > 0) return undefined
-  const attrs = media.attrs ?? {}
+  if (!carriesOnly(node, ['layout']) || serializeCanonicalJson(nodeAttrs(node), 'compact') !== centeredMediaSingle) return undefined
+  if (media === undefined || content.length !== 1 || media.type !== 'media' || !carriesOnly(media, imageAttributes) || nodeContent(media).length > 0) return undefined
+  const attrs = nodeAttrs(media)
   const alt = attrs['alt']
   const url = attrs['url']
   if (attrs['type'] !== 'external' || typeof url !== 'string') return undefined

@@ -8,6 +8,7 @@ import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.t
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
+import { nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
@@ -337,7 +338,7 @@ function imageAlt(inner: readonly Piece[], path: ConvertErrorPath): Result<strin
 function altText(node: AdfNode): string {
   if (node.type === 'hardBreak') return ' '
   const slot = inlineDirective(node.type)?.textAttribute
-  const spelled = slot === undefined ? undefined : node.attrs?.[slot]
+  const spelled = slot === undefined ? undefined : nodeAttrs(node)[slot]
   return typeof spelled === 'string' ? spelled : (node.text ?? '')
 }
 
@@ -409,7 +410,7 @@ function markType(character: string, used: number): string {
 // A node cannot carry one mark type twice (AGENTS.md §14).
 function applyMark(nodes: readonly AdfNode[], mark: AdfMark): AdfNode[] {
   return nodes.map((node) => {
-    const marks = node.marks ?? []
+    const marks = nodeMarks(node)
     return marks.some((carried) => carried.type === mark.type) ? node : { ...node, marks: [mark, ...marks] }
   })
 }

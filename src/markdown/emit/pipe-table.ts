@@ -1,5 +1,5 @@
 import type { AdfNode } from '../../adf/document.ts'
-import { carriesOnly } from '../../adf/document.ts'
+import { carriesOnly, nodeContent } from '../../adf/document.ts'
 import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
 import type { ConvertErrorPath } from '../../result.ts'
@@ -11,7 +11,7 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | un
   for (const [rowIndex, row] of rows.entries()) {
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
-      const content = paragraph.content ?? []
+      const content = nodeContent(paragraph)
       const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
       if (line === undefined) return undefined
       cells.push(line)
@@ -23,12 +23,12 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | un
 }
 
 function pipeRows(node: AdfNode): AdfNode[][] | undefined {
-  const rows = node.content ?? []
-  const columns = (rows[0]?.content ?? []).length
+  const rows = nodeContent(node)
+  const columns = rows[0] === undefined ? 0 : nodeContent(rows[0]).length
   if (!carriesOnly(node, []) || columns === 0) return undefined
   const grid: AdfNode[][] = []
   for (const [index, row] of rows.entries()) {
-    const cells = row.content ?? []
+    const cells = nodeContent(row)
     if (row.type !== 'tableRow' || !carriesOnly(row, []) || cells.length !== columns) return undefined
     const wanted = index === 0 ? 'tableHeader' : 'tableCell'
     const paragraphs: AdfNode[] = []
@@ -43,7 +43,7 @@ function pipeRows(node: AdfNode): AdfNode[][] | undefined {
 }
 
 function plainParagraph(cell: AdfNode): AdfNode | undefined {
-  const content = cell.content ?? []
+  const content = nodeContent(cell)
   const paragraph = content[0]
   if (paragraph === undefined || content.length !== 1 || paragraph.type !== 'paragraph' || !carriesOnly(paragraph, [])) return undefined
   return paragraph

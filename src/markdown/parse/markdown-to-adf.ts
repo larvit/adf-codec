@@ -9,6 +9,7 @@ import { failure, faulted, positioned, success, type ConvertErrorPath, type Pars
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { listBreakName, listBreakSpelling } from '../list-break.ts'
+import { nodeAttrs } from '../../adf/document.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
@@ -106,7 +107,7 @@ function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, de
 function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
   const only = blocks.length === 1 ? blocks[0] : undefined
   if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one code block as its body: this body is not one`, path)
-  const attribute = node.attrs?.['language']
+  const attribute = nodeAttrs(node)['language']
   const fromFence = only.language !== ''
   const slot = languageSlot(fromFence ? only.language : attribute)
   if ((slot.kind === 'fence') !== fromFence || (fromFence && attribute !== undefined)) {

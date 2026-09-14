@@ -9,6 +9,7 @@ import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
 import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
+import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
 import { slotLineEndingFault, spellLeafDirective } from '../directive-syntax.ts'
 import { spellDestination, spellTitle } from '../link-syntax.ts'
@@ -127,7 +128,7 @@ function syntax(text: string): InlineSegment {
 }
 
 function refuseContentAndText(node: AdfNode, path: ConvertErrorPath): Result<null> {
-  const holdsContent = (node.content ?? []).length > 0
+  const holdsContent = nodeContent(node).length > 0
   if (holdsContent || node.text !== undefined) {
     const held = holdsContent ? 'content' : 'text'
     return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text: this one holds ${held}`, path)
@@ -156,7 +157,7 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
   for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
     // spec/flavour.md, Marks.
-    const mark = carries(node, carried, index) ? undefined : (node.marks ?? [])[depth]
+    const mark = carries(node, carried, index) ? undefined : nodeMarks(node)[depth]
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
       continue
@@ -184,7 +185,7 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
     if (!carried.ok) return carried
     return success({ segments: [syntax(carried.value)] })
   }
-  const types = (node.marks ?? []).map((mark) => mark.type)
+  const types = nodeMarks(node).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   const directive = inlineDirective(node.type)
   if (directive === undefined) return emitText(node, context, index, path)
@@ -206,7 +207,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   if (!empty.ok) return empty
   const attributes = spellInlineNodeAttributes(node, directive)
   if (attributes === undefined) return success({ carry: { first: index, last: index } })
-  const slot = directive.textAttribute === undefined ? undefined : node.attrs?.[directive.textAttribute]
+  const slot = directive.textAttribute === undefined ? undefined : nodeAttrs(node)[directive.textAttribute]
   if (slot === undefined) return success({ segments: [syntax(spellLeafDirective(node.type, attributes))] })
   if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
   const spans = slotLineEndingFault(node.type, slot)
@@ -217,9 +218,9 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
 }
 
 function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
-  if (Object.keys(node.attrs ?? {}).length > 0) return success({ carry: { first: index, last: index } })
+  if (Object.keys(nodeAttrs(node)).length > 0) return success({ carry: { first: index, last: index } })
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
-  if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
+  if (nodeContent(node).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
   if (/\r/.test(node.text)) return failure('unspellable-character', 'a text node holds a carriage return CommonMark rewrites', path)
   if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
@@ -260,9 +261,9 @@ function emitEmphasis(nodes: readonly AdfNode[], spelling: string, depth: number
 function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange, path: ConvertErrorPath): Result<Emission> {
   let text = ''
   for (const node of nodes) {
-    if (node.type !== 'text' || (node.marks ?? []).length !== depth + 1) return success({ carry: range })
+    if (node.type !== 'text' || nodeMarks(node).length !== depth + 1) return success({ carry: range })
     if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
-    if ((node.content ?? []).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
+    if (nodeContent(node).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
     text += node.text
   }
   if (/[\n\r]/.test(text)) return success({ carry: range })
@@ -278,11 +279,11 @@ function needsPadding(text: string): boolean {
 }
 
 function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
-  const href = mark.attrs?.['href']
-  const title = mark.attrs?.['title']
+  const href = nodeAttrs(mark)['href']
+  const title = nodeAttrs(mark)['title']
   if (typeof href !== 'string') return success({ carry: range })
   const node = nodes[0]
-  const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && (node.marks ?? []).length === depth + 1
+  const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
   if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
   const destination = spellDestination(href, path)
   if (!destination.ok) return destination

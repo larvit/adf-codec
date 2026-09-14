@@ -2,6 +2,7 @@ import type { AdfMark } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
 import { isMarkType, markAttributes } from '../adf/mark-attributes.ts'
+import { nodeAttrs } from '../adf/document.ts'
 import { spellAttributes, spellVocabulary } from './directive-syntax.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
@@ -30,6 +31,6 @@ export function markSpelling(type: string): MarkSpelling | undefined {
 }
 
 export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {
-  const pairs = vocabularyPairs(mark.attrs ?? {}, vocabulary, [])
+  const pairs = vocabularyPairs(nodeAttrs(mark), vocabulary, [])
   return pairs === undefined ? undefined : spellAttributes(spellVocabulary(pairs))
 }

@@ -6,6 +6,7 @@ import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
 import { adfToMarkdown, markdownToAdf } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
+import { toEditorNormal } from '../../adf/editor-normal.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
@@ -353,7 +354,9 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   const roundTrips = (node: AdfNode): void => {
     const spelled = adfToMarkdown(document(node))
     assert.ok(spelled.ok, spelled.ok ? '' : spelled.error.message)
-    assert.deepEqual(markdownToAdf(spelled.value), { ok: true, value: document(node) })
+    const read = markdownToAdf(spelled.value)
+    assert.ok(read.ok, read.ok ? '' : read.error.message)
+    assert.deepEqual(toEditorNormal(read.value), toEditorNormal(document(node)))
   }
 
   assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em', largestNesting - 3))

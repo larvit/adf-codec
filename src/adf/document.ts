@@ -52,8 +52,8 @@ export function attributeNestingMessage(key: string, type: string, levels: numbe
 }
 
 export function carriesOnly(node: AdfNode, attributes: readonly string[]): boolean {
-  if ((node.marks ?? []).length > 0 || node.text !== undefined) return false
-  return holdsOnly(node.attrs ?? {}, attributes)
+  if (nodeMarks(node).length > 0 || node.text !== undefined) return false
+  return holdsOnly(nodeAttrs(node), attributes)
 }
 
 // Depth is the walks' business, not the shape's: the guard waves a deep document through as blocks and marks do.
@@ -70,6 +70,18 @@ export function isAdfMark(value: unknown): value is AdfMark {
   if (!isRecord(value) || !holdsOnly(value, markKeys)) return false
   if (typeof value['type'] !== 'string') return false
   return !('attrs' in value) || isAttributes(value['attrs'])
+}
+
+export function nodeAttrs(node: { attrs?: AdfAttributes }): AdfAttributes {
+  return node.attrs ?? {}
+}
+
+export function nodeContent(node: { content?: AdfNode[] }): readonly AdfNode[] {
+  return node.content ?? []
+}
+
+export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
+  return node.marks ?? []
 }
 
 function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {
@@ -95,23 +107,23 @@ function nestingFault(nodes: readonly AdfNode[]): ConvertFault | undefined {
   while (pending.length > 0) {
     const node = pending.pop()
     if (node === undefined) continue
-    const fault = attributesFault(node.attrs, node.type) ?? marksFault(node.marks)
+    const fault = attributesFault(nodeAttrs(node), node.type) ?? marksFault(nodeMarks(node))
     if (fault !== undefined) return fault
-    pending.push(...(node.content ?? []))
+    pending.push(...nodeContent(node))
   }
   return undefined
 }
 
-function marksFault(marks: readonly AdfMark[] | undefined): ConvertFault | undefined {
-  for (const mark of marks ?? []) {
-    const fault = attributesFault(mark.attrs, mark.type, markAttributeNesting)
+function marksFault(marks: readonly AdfMark[]): ConvertFault | undefined {
+  for (const mark of marks) {
+    const fault = attributesFault(nodeAttrs(mark), mark.type, markAttributeNesting)
     if (fault !== undefined) return fault
   }
   return undefined
 }
 
-function attributesFault(attrs: AdfAttributes | undefined, type: string, levels: number = largestNesting): ConvertFault | undefined {
-  for (const [key, value] of Object.entries(attrs ?? {})) {
+function attributesFault(attrs: AdfAttributes, type: string, levels: number = largestNesting): ConvertFault | undefined {
+  for (const [key, value] of Object.entries(attrs)) {
     if (overNested(value, levels)) return { code: 'unsupported-nesting-depth', message: attributeNestingMessage(key, type, levels) }
   }
   return undefined
