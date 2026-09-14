@@ -562,6 +562,11 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       `instrumentisto/geckodriver`, currency over size — the leg's whole worth is a real
       SpiderMonkey, which decays the moment the pin stops moving, and the smaller image was four
       Firefox majors behind with a publisher that may go quiet while Renovate stays silent.
+- [ ] **11 — Atlassian's ADF schema as the tables' truth (`0.2.0`).**
+  - [x] **11a — The vendored schema.** `full.json` and `stage-0.json`, byte-exact from
+        `@atlaskit/adf-schema@57.4.9`'s `dist/json-schema/v1/`, at `spec/adf-schema/`, each pinned
+        by its SHA-256 in a test the way `spec.json` is. The version, the source and the Apache-2.0
+        attribution sit beside them with the licence text; no gate re-serializes either file.
 
 ## 5 — Ship `0.1.0`
 

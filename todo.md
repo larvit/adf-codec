@@ -155,10 +155,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       gated against them (§10). **Settled** (the maintainer, 2026-09-13): vendored at
       `spec/adf-schema/` and re-pinned by hand when a need shows; the gate compares attribute names
       and kinds, never value sets, over `full.json` and `stage-0.json` together.
-  - [ ] **11a — The vendored schema.** `full.json` and `stage-0.json`, byte-exact from
-        `@atlaskit/adf-schema@57.4.9`'s `dist/json-schema/v1/`, at `spec/adf-schema/`, each pinned
-        by its SHA-256 in a test the way `spec.json` is. The version, the source and the Apache-2.0
-        attribution sit beside them with the licence text; no gate re-serializes either file.
+  - [x] **11a — The vendored schema.**
   - [ ] **11b — The gate.** For each node and mark type the tables spell, the attribute names and
         kinds equal the union over every definition in both files whose `type` enum names it,
         `anyOf`/`allOf` branches included, the argument slot (`panelType`, `state`) counting as
