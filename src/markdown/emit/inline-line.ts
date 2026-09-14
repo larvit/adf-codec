@@ -3,6 +3,7 @@ import type { InlineDirective } from '../../adf/inline-directives.ts'
 import { assembleInlineLine, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
+import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { holdsEntityReference } from '../entity-references.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
@@ -12,7 +13,6 @@ import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
 import { slotLineEndingFault, spellLeafDirective } from '../directive-syntax.ts'
-import { spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
 
@@ -284,12 +284,14 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   if (typeof href !== 'string') return success({ carry: range })
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
-  if (bare && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
+  const balanced = !context.bracketed || escapeUnbalanced(href, '[', ']') === href
+  if (bare && balanced && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
   const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, path)
   if (!target.ok) return target
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${target.value})`)] })
+  const spelledTarget = context.bracketed ? escapeUnbalanced(target.value, '[', ']') : target.value
+  return success({ segments: [syntax('['), ...inner.value.segments, syntax(`](${spelledTarget})`)] })
 }
 

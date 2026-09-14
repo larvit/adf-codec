@@ -103,7 +103,7 @@ export function spellDestination(href: string, path: ConvertErrorPath): Result<s
     return success(`<${href}>`)
   }
   if (href.startsWith('<')) return failure('unspellable-link', 'a bare link destination cannot begin with an angle bracket', path)
-  return success(escapeUnbalanced(href))
+  return success(escapeUnbalanced(href, '(', ')'))
 }
 
 export function spellLinkTarget(href: string, title: string | undefined, path: ConvertErrorPath): Result<string> {
@@ -114,24 +114,24 @@ export function spellLinkTarget(href: string, title: string | undefined, path: C
   return success(`${destination.value === '' ? '<>' : destination.value}${spelledTitle.value}`)
 }
 
+export function escapeUnbalanced(spelling: string, opener: string, closer: string): string {
+  const open: number[] = []
+  const unbalanced = new Set<number>()
+  for (let index = 0; index < spelling.length; index += backslashEscape(spelling, index) === undefined ? 1 : 2) {
+    const character = spelling.charAt(index)
+    if (character === opener) open.push(index)
+    if (character === closer && open.pop() === undefined) unbalanced.add(index)
+  }
+  for (const index of open) unbalanced.add(index)
+  let spelled = ''
+  for (let index = 0; index < spelling.length; index += 1) spelled += (unbalanced.has(index) ? '\\' : '') + spelling.charAt(index)
+  return spelled
+}
+
 function spellTitle(title: string, path: ConvertErrorPath): Result<string> {
   if (/[\n\r\\]/.test(title)) {
     return failure('unspellable-link', 'no canonical escape spells a backslash or newline in a link title', path)
   }
   if (holdsEntityReference(title)) return failure('unspellable-link', 'a link title holds an entity reference that decodes on the way back', path)
   return success(` "${title.replaceAll('"', '\\"')}"`)
-}
-
-function escapeUnbalanced(href: string): string {
-  const open: number[] = []
-  const unbalanced = new Set<number>()
-  for (let index = 0; index < href.length; index += 1) {
-    const character = href.charAt(index)
-    if (character === '(') open.push(index)
-    if (character === ')' && open.pop() === undefined) unbalanced.add(index)
-  }
-  for (const index of open) unbalanced.add(index)
-  let spelled = ''
-  for (let index = 0; index < href.length; index += 1) spelled += (unbalanced.has(index) ? '\\' : '') + href.charAt(index)
-  return spelled
 }
