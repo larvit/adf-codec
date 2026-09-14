@@ -56,6 +56,11 @@ export function attributeValue(text: string, kind: AttributeKind): AttributeRead
   return overNested(parsed) ? { refusal: 'nesting' } : { value: { kind, value: parsed } }
 }
 
+export function holdsInlineDirectiveOpener(text: string): boolean {
+  for (let index = text.indexOf(':'); index !== -1; index = text.indexOf(':', index + 1)) if (opensInlineDirective(text, index)) return true
+  return false
+}
+
 export function isBareToken(text: string): boolean {
   return bareToken.test(text)
 }

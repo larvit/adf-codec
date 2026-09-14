@@ -6,13 +6,13 @@ import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-gramma
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { holdsEntityReference } from '../entity-references.ts'
+import { holdsInlineDirectiveOpener, slotLineEndingFault, spellLeafDirective } from '../directive-syntax.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
 import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
-import { slotLineEndingFault, spellLeafDirective } from '../directive-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
 
@@ -284,7 +284,7 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   if (typeof href !== 'string') return success({ carry: range })
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
-  const autolinkHolds = !context.bracketed || (!href.includes('`') && escapeUnbalanced(href, '[', ']') === href)
+  const autolinkHolds = !context.bracketed || (!href.includes('`') && !holdsInlineDirectiveOpener(href) && escapeUnbalanced(href, '[', ']') === href)
   if (bare && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
   const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, path)
   if (!target.ok) return target

@@ -81,7 +81,8 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
         (claimsLineStart(line, index, container) ||
           mergesWithSyntax(scan, escapings, index) ||
           opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))) ||
-      (escaping === 'bracketed-link-target' && scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped))
+      (escaping === 'bracketed-link-target' &&
+        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || (scan.charAt(index) === ':' && opensInlineDirective(scan, index))))
     ) {
       output += '\\'
       escaped.add(index)

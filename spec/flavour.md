@@ -48,8 +48,8 @@ normalizes to it through the round-trip.
   title; title in double quotes. A backslash escapes a parenthesis the destination leaves
   unbalanced, and a quote inside the title; a balanced pair stays bare. `<url>` autolink form only
   when the text equals the destination and the destination is a valid CommonMark autolink
-  (absolute URI) — inside an inline directive's `[content]`, one holding no backtick and no
-  unbalanced bracket.
+  (absolute URI) — inside an inline directive's `[content]`, one holding no backtick, no
+  unbalanced bracket and no inline directive opener.
 - Paragraphs on one line — no soft wrapping; a soft line break in input becomes a single space.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
@@ -132,10 +132,10 @@ each a named error naming the spelling to write instead.
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — the leading `:` of a would-be directive, `]` inside content, a bracket a link's
-destination and title inside content leave unbalanced and a backtick there that would open a code
-span, a `{` right after a directive's closing `]`, which would otherwise be read as the attributes
-it has none of; outside code spans and code blocks, a backslash before `:` in input yields a
-literal colon.
+destination and title inside content leave unbalanced, a backtick there that would open a code span
+and a `:` there that would open an inline directive, a `{` right after a directive's closing `]`,
+which would otherwise be read as the attributes it has none of; outside code spans and code blocks,
+a backslash before `:` in input yields a literal colon.
 
 **Malformed directives are error results**, named: an unclosed container at end of input, a body
 fence line of the container's length or longer, a bare colon-run line outside any container or
