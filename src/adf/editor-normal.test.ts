@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfNode } from './document.ts'
+import type { JsonValue } from '../json-value.ts'
 import { toEditorNormal } from './editor-normal.ts'
 
 test('merges adjacent text nodes carrying identical marks, at every level', () => {
@@ -59,7 +60,7 @@ test('reads an empty attrs object, marks array or content array as the absent ke
   assert.deepEqual(toEditorNormal({ content: [], type: 'doc', version: 1 }), { type: 'doc', version: 1 })
 })
 
-test('normalizes a document nesting far past the levels a recursive walk survives', () => {
+test('normalizes blocks and mark attributes nesting far past the levels a recursive walk survives', () => {
   const levels = 100000
   let node: AdfNode = { content: [], type: 'paragraph' }
   for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
@@ -68,4 +69,9 @@ test('normalizes a document nesting far past the levels a recursive walk survive
   for (; normal?.content !== undefined; depth += 1) normal = normal.content[0]
   assert.equal(depth, levels)
   assert.deepEqual(normal, { type: 'paragraph' })
+  let deep: JsonValue = 1
+  for (let level = 0; level < 2 * levels; level += 1) deep = [deep]
+  const marks = [{ attrs: { deep }, type: 'textColor' }]
+  const merged = toEditorNormal({ content: [{ content: [{ marks, text: 'a', type: 'text' }, { marks, text: 'b', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 })
+  assert.deepEqual(merged.content?.[0]?.content?.map((text) => text.text), ['ab'])
 })

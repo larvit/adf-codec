@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import type { JsonValue } from './json-value.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 
 test('sorts object keys recursively', () => {
@@ -38,4 +39,16 @@ test('leaves non-ASCII raw', () => {
 
 test('spells scalars in canonical JSON', () => {
   assert.equal(serializeCanonicalJson([null, true, false, 0, -1.5, 'a"b'], 'compact'), '[null,true,false,0,-1.5,"a\\"b"]')
+})
+
+test('spells a value nesting far past the levels a recursive walk survives', () => {
+  const levels = 200000
+  let array: JsonValue = 1
+  let object: JsonValue = 1
+  for (let level = 0; level < levels; level += 1) {
+    array = [array]
+    object = { a: object }
+  }
+  assert.equal(serializeCanonicalJson(array, 'compact'), `${'['.repeat(levels)}1${']'.repeat(levels)}`)
+  assert.equal(serializeCanonicalJson(object, 'compact'), `${'{"a":'.repeat(levels)}1${'}'.repeat(levels)}`)
 })

@@ -2,28 +2,42 @@ import type { JsonValue } from './json-value.ts'
 
 export type JsonSpelling = 'compact' | 'two-space'
 
+type Member = { label: string; value: JsonValue }
+
+type Pending = string | { depth: number; value: JsonValue }
+
 export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling): string {
-  return serialize(value, spelling === 'compact' ? '' : '  ', 0)
+  const indent = spelling === 'compact' ? '' : '  '
+  const text: string[] = []
+  const pending: Pending[] = [{ depth: 0, value }]
+  for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
+    if (typeof next === 'string') {
+      text.push(next)
+      continue
+    }
+    const { depth, value: held } = next
+    if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ label: '', value: item })), ']', indent, depth)
+    else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held, indent), '}', indent, depth)
+    else text.push(JSON.stringify(held))
+  }
+  return text.join('')
 }
 
-function serialize(value: JsonValue, indent: string, depth: number): string {
-  if (Array.isArray(value)) {
-    if (value.length === 0) return '[]'
-    const items = value.map((item) => serialize(item, indent, depth + 1))
-    return `[${join(items, indent, depth)}]`
-  }
-  if (value !== null && typeof value === 'object') {
-    const keys = Object.keys(value).sort()
-    if (keys.length === 0) return '{}'
-    const separator = indent === '' ? ':' : ': '
-    const entries = keys.map((key) => `${JSON.stringify(key)}${separator}${serialize(value[key] ?? null, indent, depth + 1)}`)
-    return `{${join(entries, indent, depth)}}`
-  }
-  return JSON.stringify(value)
+function objectMembers(value: { [key: string]: JsonValue }, indent: string): Member[] {
+  const separator = indent === '' ? ':' : ': '
+  return Object.keys(value)
+    .sort()
+    .map((key) => ({ label: `${JSON.stringify(key)}${separator}`, value: value[key] ?? null }))
 }
 
-function join(parts: readonly string[], indent: string, depth: number): string {
-  if (indent === '') return parts.join(',')
-  const inner = `\n${indent.repeat(depth + 1)}`
-  return `${inner}${parts.join(`,${inner}`)}\n${indent.repeat(depth)}`
+function schedule(pending: Pending[], open: string, members: readonly Member[], close: string, indent: string, depth: number): void {
+  if (members.length === 0) {
+    pending.push(`${open}${close}`)
+    return
+  }
+  const inner = indent === '' ? '' : `\n${indent.repeat(depth + 1)}`
+  const scheduled: Pending[] = []
+  for (const [index, member] of members.entries()) scheduled.push(`${index === 0 ? open : ','}${inner}${member.label}`, { depth: depth + 1, value: member.value })
+  scheduled.push(indent === '' ? close : `\n${indent.repeat(depth)}${close}`)
+  for (const item of scheduled.reverse()) pending.push(item)
 }
