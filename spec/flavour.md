@@ -404,10 +404,10 @@ Right.
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
 the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot
 as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
-parsing to anything but one unmarked text node — adjacent identical-mark text nodes merged first —
-is a named error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach
-into the slot. The rest take no content, `:text` included; content on a node that takes none is a
-named error.
+parsing to anything but one unmarked text node — adjacent text nodes with identical marks and no
+attributes merged first — is a named error, and so is a `text` key in `{attrs}`. An enclosing mark
+spelling does not reach into the slot. The rest take no content, `:text` included; content on a
+node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — Attributes: `id` (string), `localId` (string), `shortName` (string, `:name:`), `text`
@@ -434,10 +434,10 @@ CommonMark strips or refuses one — a block's inline content edges, either side
 an em, strong or strike spelling's inner edges, a pipe cell's edges — is spelled
 `:text{text="…"}`, the reserved key carrying the node's text, escaped by the attribute grammar
 and never literal: pipe cells trim and pad. The emitter wraps the whitespace run alone and leaves
-the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identical marks
-(AGENTS.md §2). Input reads that spelling alone: the value is one run of spaces and tabs, or one
-run of newlines, and anything else — a mixed run, or text CommonMark carries plainly — is a named
-error.
+the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identical marks and no
+attributes (AGENTS.md §2). Input reads that spelling alone: the value is one run of spaces and
+tabs, or one run of newlines, and anything else — a mixed run, or text CommonMark carries plainly —
+is a named error.
 
 ```
 :text{text="  "}Two leading spaces held, and one text node split:text{text="\n"}over two lines.

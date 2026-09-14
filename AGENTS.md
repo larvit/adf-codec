@@ -23,8 +23,8 @@ backticks read back as a fence — so a parse succeeding does not imply a spella
 `corpus/commonmark-spec/exceptions.json` names those.
 
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
-merged, JSON number semantics, an empty attrs object, marks array or content array the absent
-key — the only domain markdown can restore.
+and no attributes merged, JSON number semantics, an empty attrs object, marks array or content
+array the absent key — the only domain markdown can restore.
 
 Round-trip equality is a property tested over a corpus, not a claim made in prose.
 
