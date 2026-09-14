@@ -167,48 +167,70 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       README's tagline and `package.json`'s `description` regain HTML (5g).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
-- [ ] **10 — Lossy conversion (`0.2.0`).** A direction that only converts what Markdown actually
-      supports, keeping the ADF's data while dropping what markdown cannot hold — format, design
-      and the richer nodes.
-      **Settled** (the maintainer, 2026-09-13): `adfToPlainMarkdown(doc)` is one export whose body
-      reduces the document ADF→ADF in `src/adf/` and hands the result to `adfToMarkdown`, so §1's
-      four conversions stay four. Its markdown is the flavour without directives — CommonMark, the
-      pipe table and `~~` — and it refuses only what the document guard refuses
-      (`not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`); every
-      other shape degrades. The reduction:
-      - `panel`, `layoutSection`/`layoutColumn`, `bodiedExtension`, `bodiedSyncBlock`,
-        `multiBodiedExtension` and `extensionFrame` unwrap to their body blocks in order; `expand`
-        and `nestedExpand` put their title first as a strong paragraph.
-      - The CommonMark blocks keep their spelling, attributes dropped.
-      - `taskList` and `decisionList` become bullet lists, a task item's state leading its text as
-        `[x]` or `[ ]`, the way Obsidian and GFM write a checkbox: `- [x] Write the spec`.
-      - `mention` and `status` become their text, `emoji` its text or else its `shortName`, and
-        `date` its ISO date in UTC (`2026-09-13`).
-      - `inlineCard`, `blockCard` and `embedCard` become a link to their `url`, dropped when they
-        carry only `data`; a `mediaSingle` holding an external image stays `![alt](url)`; `media`,
-        `mediaGroup` and `mediaInline` become their `alt` text or nothing; `caption` its text as a
-        paragraph; `extension`, `inlineExtension` and `syncBlock` their `text` attribute or nothing;
-        `placeholder` nothing; a node no row names, or one standing where no spelling holds it, its
-        blocks or its text.
-      - A table stays a pipe table: the first row becomes the header, a cell's blocks join on one
-        line with spaces, and spans and the cells they cover drop.
-      - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text;
-        a link no CommonMark escape writes becomes its text, and a mark run CommonMark's flanking or
-        matching cannot spell drops its mark.
+- [ ] **10 — Lossy conversion (`0.2.0`).** Markdown other tools render readably, to and from ADF,
+      keeping the content while dropping what markdown cannot hold — format, design and the richer
+      nodes.
+      **Settled** (the maintainer, 2026-09-14): two exports composed around the lossless pair, so §1's
+      four conversions stay four. `adfToPlainMarkdown(doc)` reduces the document ADF→ADF and hands it
+      to `adfToMarkdown`; `plainMarkdownToAdf(markdown)` hands the markdown to `markdownToAdf` and
+      lifts the result ADF→ADF. Both carry markdown conventions, so the reduction sits in
+      `src/markdown/emit/`, the lift in `src/markdown/parse/` and what both read in `src/markdown/`
+      (§11). The markdown is the flavour without directives — CommonMark, the pipe table and `~~` —
+      plus the conventions below, chosen for readability from a survey of GitHub, GitLab, Gitea,
+      Obsidian, Pandoc, MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and
+      Discord, GitHub's renderer confirming each shape. Writing refuses only what the document guard
+      refuses (`not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`)
+      and degrades every other shape; reading refuses what `markdownToAdf` refuses. A lifted node
+      carries no `localId`. The lift also reads other tools' spellings — type words in any case,
+      Obsidian's aliases, `[X]` — since it reads their output and never writes those spellings.
+      - A `panel` is an alert: the marker alone on the quote's first line, a blank `>`, then the body
+        (`> [!WARNING]`), in GitHub's five words by colour — info `NOTE`, note `IMPORTANT`, tip and
+        success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE`. The lift reads those words
+        back (`NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error) and
+        Obsidian's by meaning (hint tip; success, check and done success; attention warning; danger,
+        failure, fail, missing and bug error; any other word info). Text after a marker in its
+        paragraph is the panel's first body paragraph.
+      - An `expand` or `nestedExpand` is Obsidian's folded callout, `> [!NOTE]- Title`, a blank `>`,
+        then the body. The lift reads a fold sign (`-` or `+`) as an expand whatever the word, the
+        rest of the marker's paragraph as its title, and an expand inside an expand as a
+        `nestedExpand`.
+      - A `taskList` is a bullet list whose items lead with `[x]` or `[ ]` (`- [x] Write the spec`).
+        The lift reads a list whose every item is so marked back as a `taskList` — a `blockTaskItem`
+        where an item holds more than one block, a nested task list moved beside its item — and
+        leaves mixed and ordered lists plain. A `decisionList` is a plain bullet list.
+      - `backgroundColor` is `==text==`, and the lift gives `==text==` the Atlassian editor's default
+        highlight colour.
+      - `layoutSection`/`layoutColumn`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`
+        and `extensionFrame` unwrap to their body blocks in order; the CommonMark blocks keep their
+        spelling, attributes dropped.
+      - `mention` and `status` become their text, the mention's `@` kept; `emoji` its text or else its
+        `shortName`; `date` its ISO date in UTC (`2026-09-13`); `inlineCard`, `blockCard` and
+        `embedCard` a link to their `url`, dropped when they carry only `data`; a `mediaSingle`
+        holding an external image stays `![alt](url)`; `media`, `mediaGroup` and `mediaInline` their
+        `alt` text or nothing; `caption` its text as a paragraph; `extension`, `inlineExtension` and
+        `syncBlock` their `text` attribute or nothing; `placeholder` nothing; a node no row names, or
+        one standing where no spelling holds it, its blocks or its text.
+      - A table stays a pipe table: the first row becomes the header, a cell's blocks join on one line
+        with spaces, and spans and the cells they cover drop.
+      - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text —
+        `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes becomes its
+        text, and a mark run CommonMark's flanking or matching cannot spell drops its mark.
       - A newline in text becomes a hard break and edge whitespace is trimmed; carriage returns and
         null characters are removed; a paragraph line opening with a code span whose backticks would
         read as a fence loses the code mark; an empty paragraph drops, and adjacent lists of one type
         merge.
-  - [ ] **10a — Obsidian's formats.** Look up the formats Obsidian-flavoured markdown adds —
-        callouts, highlights, embeds, task states and whatever else it writes — and propose which
-        of the reduction's rows should adopt one; the maintainer settles the proposal, revising the
-        rows above, before 10b starts (the maintainer's request, 2026-09-13).
-  - [ ] **10b — The reduction.** The reduction in `src/adf/`, tests first, a test per row as 10a
-        leaves them.
-  - [ ] **10c — `adfToPlainMarkdown`.** The export and its README section, and a property over
-        4.2's generators: it refuses only the guard's codes, and its output reads back through
-        `markdownToAdf` holding no node or mark the flavour spells as a directive. AGENTS.md §1
-        records the reduction as what keeps the conversions at four.
+      - Rejected in the survey: `~sub~` and `^sup^`, underline and colour spellings, raw HTML
+        (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admonition family, footnotes, definition
+        lists, wikilinks, embeds, tags, comments, TOC tokens, spoilers, task states past `[x]`/`[ ]`,
+        and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
+  - [ ] **10a — The reduction.** `adfToPlainMarkdown`'s ADF→ADF reduction, tests first, a test per
+        row above.
+  - [ ] **10b — The lift.** `plainMarkdownToAdf`'s ADF→ADF lift, tests first, a test per row it reads,
+        other tools' spellings included; the editor's default highlight colour looked up and cited.
+  - [ ] **10c — The exports.** `adfToPlainMarkdown` and `plainMarkdownToAdf` exported with their README
+        sections, and two properties over 4.2's generators: writing refuses only the guard's codes,
+        and markdown `adfToPlainMarkdown` wrote reads back through `plainMarkdownToAdf` and writes
+        again byte for byte. AGENTS.md §1 records the pair as composed around the lossless one.
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
   - [x] **11b — The gate.**
@@ -259,7 +281,9 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [ ] **12b — The inline form.** Inline nodes, directive marks, `text` and the inline carry
         `!adf:carry{json=…}` spelled and read as `!adf:name[content]{attrs}`, with the prefix claim
         and its escape; the round-trip, normalization and `errors/` fixtures holding inline forms
-        re-spelled, and the gate green.
+        re-spelled, and the gate green. The content slot of `emoji`, `mention` and `status` refuses a
+        text node carrying attributes as `unsupported-node-shape`, which it drops silently today (the
+        maintainer, 2026-09-14).
   - [ ] **12c — The block form.** Openers and `!adf:/name` closers, leaf vs container by content
         model, empty pairs, `listBreak` and the `carry` fence, spelled and read; the fence-length
         rule and the corpus test's fence nesting check deleted; the remaining fixtures re-spelled
