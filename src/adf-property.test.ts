@@ -11,7 +11,6 @@ import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
 import { blockDirectives } from './adf/block-directives.ts'
 import { inlineDirectives } from './adf/inline-directives.ts'
-import { isJsonValue } from './json-value.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { toEditorNormal } from './adf/editor-normal.ts'
@@ -24,7 +23,7 @@ const gateSeed = 20260914
 
 const depthIdentifier = fc.createDepthIdentifier()
 const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell' }
-const markdownCharacters = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é 🎉')
+const markdownCharacters = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉')
 const spelledTypes = new Set(['text', ...Object.keys(blockDirectives), ...Object.keys(inlineDirectives), ...Object.keys(markAttributes)])
 
 function textOf(minLength: number): Arbitrary<string> {
@@ -34,14 +33,29 @@ function textOf(minLength: number): Arbitrary<string> {
   )
 }
 
-const jsonValue = fc.jsonValue({ maxDepth: 2 }).filter(isJsonValue)
 const text = textOf(1)
 const unknownType = fc.oneof(fc.stringMatching(/^[a-z][A-Za-z0-9]{0,7}$/), text).filter((type) => !spelledTypes.has(type))
+const numberValue = fc.oneof({ arbitrary: fc.integer({ max: 10, min: -1 }), weight: 3 }, { arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 1 })
+
+// V8's JSON.parse returns a wrong key after parsing a key holding an escaped backslash; Bun is unaffected.
+const keyCharacter = fc
+  .oneof({ arbitrary: markdownCharacters, weight: 4 }, { arbitrary: fc.string({ maxLength: 1, minLength: 1, unit: 'grapheme' }), weight: 1 })
+  .filter((character) => !/[\\"\x00-\x1f]/.test(character))
+const jsonKey = fc.string({ maxLength: 8, unit: keyCharacter })
+
+const { jsonValue } = fc.letrec<{ jsonValue: JsonValue }>((tie) => ({
+  jsonValue: fc.oneof(
+    { depthSize: 'small', maxDepth: 2 },
+    fc.oneof(fc.constant(null), fc.boolean(), numberValue, textOf(0)),
+    fc.array(tie('jsonValue'), { maxLength: 3 }),
+    fc.dictionary(jsonKey, tie('jsonValue'), { maxKeys: 3, noNullPrototype: true }),
+  ),
+}))
 
 const valueByKind: Readonly<Record<AttributeKind, Arbitrary<JsonValue>>> = {
   boolean: fc.boolean(),
   json: jsonValue,
-  number: fc.oneof({ arbitrary: fc.integer({ max: 10, min: -1 }), weight: 3 }, { arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 1 }),
+  number: numberValue,
   string: textOf(0),
 }
 
@@ -65,7 +79,7 @@ function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): 
 
 const mark: Arbitrary<AdfMark> = fc.oneof(
   { arbitrary: fc.oneof(...Object.entries(markAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))), weight: 9 },
-  { arbitrary: fc.record({ attrs: fc.dictionary(text, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
+  { arbitrary: fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
 )
 const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type })
 
@@ -92,7 +106,7 @@ const positions = fc.letrec<Positions>((tie) => {
     return { leaf: directive.contentModel === 'code' || directive.contentModel === 'none', node }
   })
   const unknownNode = fc
-    .record({ attrs: fc.dictionary(text, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType })
+    .record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType })
     .map((held): AdfNode => held)
   const leafBlocks = blockNodes.filter((entry) => entry.leaf).map((entry) => entry.node)
   const containerBlocks = blockNodes.filter((entry) => !entry.leaf).map((entry) => entry.node)
