@@ -64,10 +64,12 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         10c's properties as its third user. Under the gate seed the property asserts floors on the
         runs reaching the fixpoint and on the directive-shaped ones. It lands when hunts of several
         hundred thousand runs per engine pass clean, since the breaks hit once per ~150,000 runs,
-        past a 10,000-run bar. Two breaks, both shipped in `0.1.0`, are fixed inside it. An escaped
-        backtick closed an earlier lone backtick's code span, since CommonMark reads no escape
-        inside one: a backtick run now escapes whole, and a lone backtick escapes wherever an
-        escaped one follows it in the same inline content. A paragraph's opening read as a link
+        past a 10,000-run bar. Two breaks, both shipped in `0.1.0`, are fixed inside it. A backtick
+        string an escape formed closed an earlier bare run's code span, since CommonMark reads no
+        escape inside one: an escaped backtick alone or, as the review found, one joined to the bare
+        run after it. A backtick run now escapes whole, and a bare run escapes wherever a later
+        string of its length forms around an escape in the same inline content: the generalized pass
+        the maintainer chose (2026-09-15). A paragraph's opening read as a link
         reference definition across a `]` the emitter spelled: the emitter now escapes the opening
         `[` exactly when the parser's own definition reader accepts the paragraph, and a link
         opening it rides the carry until 13b.
