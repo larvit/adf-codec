@@ -32,6 +32,9 @@ type InlineMarkdown = { destination: Arbitrary<string>; inlines: Arbitrary<strin
 
 type LeafMarkdown = { fencedCode: Arbitrary<string>; leafBlock: Arbitrary<string> }
 
+const directiveShapedFloor = 350
+const directiveSpelling = /(?<!\\):[a-z][A-Za-z0-9]*[[{]|^[\t >*+.)0-9-]*::+[a-z]/m
+const fixpointFloor = 600
 const gateRuns = 1000
 
 const vocabularies = [...Object.values(blockDirectives).map((directive) => directive.attributes), ...Object.values(inlineDirectives).map((directive) => directive.attributes), ...Object.values(markAttributes)]
@@ -390,12 +393,17 @@ const document = fc
   .map(([held, ending, trailing]) => `${held}${trailing}`.replaceAll('\n', ending))
 
 test('generated markdown refuses, or what it parses to refuses to emit, or its spelling reads back and spells itself', { timeout: propertyTimeout }, () => {
+  const parameters = propertyRuns(gateRuns)
+  let directiveShaped = 0
+  let fixpoints = 0
   fc.assert(
     fc.property(document, (input) => {
       const parsed = markdownToAdf(input)
       if (!parsed.ok) return
       const emitted = adfToMarkdown(parsed.value)
       if (!emitted.ok) return
+      fixpoints += 1
+      if (directiveSpelling.test(emitted.value)) directiveShaped += 1
       const read = markdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
       assert.deepEqual(toEditorNormal(read.value), toEditorNormal(parsed.value), `reading ${JSON.stringify(emitted.value)}`)
@@ -403,7 +411,10 @@ test('generated markdown refuses, or what it parses to refuses to emit, or its s
       assert.ok(respelled.ok, respelled.ok ? '' : `${respelled.error.code}: ${respelled.error.message} — spelling ${JSON.stringify(emitted.value)} again`)
       assert.equal(respelled.value, emitted.value)
     }),
-    propertyRuns(gateRuns),
+    parameters,
   )
+  if (parameters.seed === undefined) return
+  assert.ok(fixpoints >= fixpointFloor, `${fixpoints} of ${gateRuns} runs reached the fixpoint, under the floor of ${fixpointFloor}`)
+  assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint spelled a directive, under the floor of ${directiveShapedFloor}`)
 })
 
