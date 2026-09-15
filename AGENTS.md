@@ -227,9 +227,9 @@ compared against `undefined` — have a half no valid document reaches.
 The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
 editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
 
-Beside the corpus, properties run over documents generated from the node tables, on a fixed seed in
-the gate; `PROPERTY_RUNS=<runs>` raises the runs and randomizes the seed for local digging, and a
-counterexample found becomes a round-trip fixture.
+Beside the corpus, properties run over documents generated from the node tables and over generated
+markdown, on a fixed seed in the gate; `PROPERTY_RUNS=<runs>` raises the runs and randomizes the
+seed for local digging, and a counterexample found becomes a round-trip fixture.
 
 `spec/flavour.md` is read as a source too, so the node tables cannot drift from the prose they
 copy: each `- ` bullet in `## Block nodes`, `## Inline nodes` and `## Marks` declares the nodes
