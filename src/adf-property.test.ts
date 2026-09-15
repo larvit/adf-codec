@@ -2,7 +2,7 @@ import fc from 'fast-check'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { adfDocument, propertyRuns, propertyTimeout } from './property-generators.ts'
+import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { toEditorNormal } from './adf/editor-normal.ts'

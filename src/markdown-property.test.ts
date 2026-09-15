@@ -5,7 +5,8 @@ import test from 'node:test'
 import type { Arbitrary, DepthIdentifier } from 'fast-check'
 import type { AttributeVocabulary } from './adf/attribute-vocabulary.ts'
 import type { JsonValue } from './json-value.ts'
-import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-generators.ts'
+import type { Result } from './result.ts'
+import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
 import { blockDirectives } from './adf/block-directives.ts'
@@ -360,10 +361,10 @@ function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, {
 const cleanMarkdown = markdownOf(false)
 const hostileMarkdown = markdownOf(true)
 
-const canonical = adfDocument.map((document) => {
-  const emitted = adfToMarkdown(document)
-  return emitted.ok ? emitted.value : ''
-})
+const canonical = adfDocument
+  .map((document) => adfToMarkdown(document))
+  .filter((emitted): emitted is Extract<Result<string>, { ok: true }> => emitted.ok)
+  .map((emitted) => emitted.value)
 
 function edited(markdown: string, edits: readonly Edit[]): string {
   let text = markdown
