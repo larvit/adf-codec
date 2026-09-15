@@ -2,6 +2,7 @@ import fc from 'fast-check'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import type { AdfDocument } from './adf/document.ts'
 import type { Arbitrary, DepthIdentifier } from 'fast-check'
 import type { AttributeVocabulary } from './adf/attribute-vocabulary.ts'
 import type { JsonValue } from './json-value.ts'
@@ -18,6 +19,7 @@ import { markAttributes } from './adf/mark-attributes.ts'
 import { markSpelling } from './markdown/mark-spellings.ts'
 import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { marksAttribute } from './markdown/block-directive-marks.ts'
+import { nodeContent, nodeMarks } from './adf/document.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 import { spellAttributes, spellJsonAttribute, spellLeafDirective, spellStringAttribute, spellVocabulary } from './markdown/directive-syntax.ts'
 import { textDirectiveName } from './markdown/text-directive.ts'
@@ -32,10 +34,11 @@ type InlineMarkdown = { destination: Arbitrary<string>; inlines: Arbitrary<strin
 
 type LeafMarkdown = { fencedCode: Arbitrary<string>; leafBlock: Arbitrary<string> }
 
-const directiveShapedFloor = 350
-const directiveSpelling = /(?<!\\):[a-z][A-Za-z0-9]*[[{]|^[\t >*+.)0-9-]*::+[a-z]/m
+const commonMarkTypes = new Set(['blockquote', 'bulletList', 'codeBlock', 'hardBreak', 'heading', 'listItem', 'orderedList', 'paragraph', 'rule', 'text'])
+const directiveShapedFloor = 330
 const fixpointFloor = 600
 const gateRuns = 1000
+const markdownMarkTypes = new Set(Object.keys(markAttributes).filter((type) => markSpelling(type)?.kind !== 'directive'))
 
 const vocabularies = [...Object.values(blockDirectives).map((directive) => directive.attributes), ...Object.values(inlineDirectives).map((directive) => directive.attributes), ...Object.values(markAttributes)]
 const attributeKeys = [
@@ -392,6 +395,15 @@ const document = fc
   .tuple(markdown, fc.oneof({ arbitrary: fc.constant('\n'), weight: 8 }, { arbitrary: fc.constantFrom('\r\n', '\r'), weight: 1 }), fc.constantFrom('', '', '\n', '  \n'))
   .map(([held, ending, trailing]) => `${held}${trailing}`.replaceAll('\n', ending))
 
+function holdsDirectiveShape(document: AdfDocument): boolean {
+  const pending = [...nodeContent(document)]
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (!commonMarkTypes.has(node.type) || nodeMarks(node).some((mark) => !markdownMarkTypes.has(mark.type))) return true
+    pending.push(...nodeContent(node))
+  }
+  return false
+}
+
 test('generated markdown refuses, or what it parses to refuses to emit, or its spelling reads back and spells itself', { timeout: propertyTimeout }, () => {
   const parameters = propertyRuns(gateRuns)
   let directiveShaped = 0
@@ -403,7 +415,7 @@ test('generated markdown refuses, or what it parses to refuses to emit, or its s
       const emitted = adfToMarkdown(parsed.value)
       if (!emitted.ok) return
       fixpoints += 1
-      if (directiveSpelling.test(emitted.value)) directiveShaped += 1
+      if (holdsDirectiveShape(parsed.value)) directiveShaped += 1
       const read = markdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
       assert.deepEqual(toEditorNormal(read.value), toEditorNormal(parsed.value), `reading ${JSON.stringify(emitted.value)}`)
@@ -413,8 +425,8 @@ test('generated markdown refuses, or what it parses to refuses to emit, or its s
     }),
     parameters,
   )
-  if (parameters.seed === undefined) return
+  if (!parameters.gate) return
   assert.ok(fixpoints >= fixpointFloor, `${fixpoints} of ${gateRuns} runs reached the fixpoint, under the floor of ${fixpointFloor}`)
-  assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint spelled a directive, under the floor of ${directiveShapedFloor}`)
+  assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark only a directive or the carry spells, under the floor of ${directiveShapedFloor}`)
 })
 

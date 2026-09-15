@@ -158,9 +158,9 @@ const positions = fc.letrec<Positions>((tie) => {
 
 export const adfDocument = fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => toEditorNormal({ content, type: 'doc', version: 1 }))
 
-export function propertyRuns(gateRuns: number): { numRuns: number; seed?: number } {
+export function propertyRuns(gateRuns: number): { gate: boolean; numRuns: number; seed?: number } {
   const deepRuns = env[deepRunsVariable]
-  if (deepRuns === undefined) return { numRuns: gateRuns, seed: gateSeed }
+  if (deepRuns === undefined) return { gate: true, numRuns: gateRuns, seed: gateSeed }
   assert.ok(/^[1-9]\d*$/.test(deepRuns), `${deepRunsVariable} is a run count in digits, such as ${deepRunsVariable}=10000: found ${JSON.stringify(deepRuns)}`)
-  return { numRuns: Number(deepRuns) }
+  return { gate: false, numRuns: Number(deepRuns) }
 }
