@@ -9,7 +9,8 @@ Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 
 6, 7 → `0.3.0`; 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
 (the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
-proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c change.
+proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c change. 4.4 alone
+may follow 12 while its payloads are not ready (the maintainer, 2026-09-15).
 
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
@@ -59,10 +60,12 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [ ] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
         and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
         spelling parses and emits to itself byte for byte (§2).
-  - [ ] **4.4 — The real payloads.** `corpus/real-payloads/` holds the maintainer's sanitized
-        payloads, each round-tripped ADF→markdown→ADF with no expected markdown. It waits on the
-        maintainer dropping the `.json` files untracked into the main checkout's
-        `corpus/real-payloads/` (the maintainer, 2026-09-14); the chunk moves them onto its branch.
+  - [ ] **4.4 — The real payloads.** `corpus/real-payloads/` holds ADF Atlassian's editor wrote,
+        each round-tripped ADF→markdown→ADF with no expected markdown.
+        **Settled** (the maintainer, 2026-09-15): the chunk authors the payloads itself on the
+        maintainer's Atlassian test site — invented content, so nothing needs sanitizing — driving the
+        editor with Playwright, and reads the ADF back over REST. Only the documents are committed; no
+        client or fetch script enters the repo (§7).
 - [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
       as a thematic break — and the walk below does the same, so the cost doubles per level:

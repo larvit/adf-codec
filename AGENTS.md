@@ -223,8 +223,8 @@ functions, and a branch floor that only ever moves upward. It sits below 100 bec
 `noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index
 compared against `undefined` — have a half no valid document reaches.
 
-The corpus, all checked in: hand-built fixtures per node and combination; real sanitized ADF from
-live Atlassian APIs; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
+The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
+editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
 
 Beside the corpus, properties run over documents generated from the node tables, on a fixed seed in
 the gate; `PROPERTY_RUNS=<runs>` raises the runs and randomizes the seed for local digging, and a
