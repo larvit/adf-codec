@@ -27,6 +27,10 @@ type Choice = { arbitrary: Arbitrary<string>; hostile?: true; weight: number }
 
 type Edit = [at: number, removed: number, inserted: string]
 
+type InlineMarkdown = { destination: Arbitrary<string>; inlines: Arbitrary<string>; label: Arbitrary<string>; oneLine: Arbitrary<string>; text: Arbitrary<string>; word: Arbitrary<string> }
+
+type LeafMarkdown = { fencedCode: Arbitrary<string>; leafBlock: Arbitrary<string> }
+
 const gateRuns = 1000
 
 const vocabularies = [...Object.values(blockDirectives).map((directive) => directive.attributes), ...Object.values(inlineDirectives).map((directive) => directive.attributes), ...Object.values(markAttributes)]
@@ -179,7 +183,11 @@ const indentDrift = fc.oneof({ arbitrary: fc.constant(0), weight: 6 }, { arbitra
 const closerDrift = fc.option(fc.integer({ max: 5, min: 2 }), { freq: 6 })
 
 function markdownOf(hostile: boolean): Arbitrary<string> {
-  const blockDepth = fc.createDepthIdentifier()
+  const inline = inlineMarkdown(hostile)
+  return blockMarkdown(hostile, inline, leafBlocks(hostile, inline))
+}
+
+function inlineMarkdown(hostile: boolean): InlineMarkdown {
   const inlineDepth = fc.createDepthIdentifier()
   const text = hostile ? fc.oneof(cleanText, textOf(0)) : cleanText
   const word = fc.oneof({ arbitrary: prose, weight: 3 }, { arbitrary: text.filter((held) => held !== ''), weight: 2 })
@@ -228,8 +236,10 @@ function markdownOf(hostile: boolean): Arbitrary<string> {
     ),
     inlines: fc.array(tie('inline'), { depthIdentifier: inlineDepth, maxLength: 4, minLength: 1 }).map((parts) => parts.join('')),
   }))
+  return { destination, inlines, label, oneLine: inlines.map((held) => held.replace(/[\n\r]/g, ' ')), text, word }
+}
 
-  const oneLine = inlines.map((held) => held.replace(/[\n\r]/g, ' '))
+function leafBlocks(hostile: boolean, { destination, inlines, label, oneLine, text, word }: InlineMarkdown): LeafMarkdown {
   const fencedCode = fc
     .tuple(
       fc.constantFrom('```', '```', '~~~', '````', '``'),
@@ -287,7 +297,11 @@ function markdownOf(hostile: boolean): Arbitrary<string> {
     },
     { arbitrary: fc.constantFrom(':::', '::', '::::', ':::panel', '::: panel', ':::panel info extra'), hostile: true, weight: 1 },
   ])
+  return { fencedCode, leafBlock }
+}
 
+function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, { fencedCode, leafBlock }: LeafMarkdown): Arbitrary<string> {
+  const blockDepth = fc.createDepthIdentifier()
   const { blocks } = fc.letrec<{ block: string; blocks: string }>((tie) => {
     const bodyByModel = { block: fc.oneof(tie('blocks'), fc.constant('')), code: fencedCode, inline: fc.oneof(oneLine, fc.constant('')) }
     const tableDirectives = Object.entries(blockDirectives).map(([name, directive]) => {
