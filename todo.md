@@ -59,6 +59,18 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [ ] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
         and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
         spelling parses and emits to itself byte for byte (§2).
+        **Settled** (the maintainer, 2026-09-15): the generators and run parameters 4.2 and 4.3
+        share live in one test-only module in `src/`, kept out of the build and coverage, with
+        10c's properties as its third user. Under the gate seed the property asserts floors on the
+        runs reaching the fixpoint and on the directive-shaped ones. It lands when hunts of several
+        hundred thousand runs per engine pass clean, since the breaks hit once per ~150,000 runs,
+        past a 10,000-run bar. Two breaks, both shipped in `0.1.0`, are fixed inside it. An escaped
+        backtick closed an earlier lone backtick's code span, since CommonMark reads no escape
+        inside one: a backtick run now escapes whole, and a lone backtick escapes wherever an
+        escaped one follows it in the same inline content. A paragraph's opening read as a link
+        reference definition across a `]` the emitter spelled: the emitter now escapes the opening
+        `[` exactly when the parser's own definition reader accepts the paragraph, and a link
+        opening it rides the carry until 13b.
   - [x] **4.4 — The real payloads.**
 - [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
       `readableBlock` reads it whole and then gives up — a list item whose first line reads back
@@ -237,7 +249,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       `src/adf/block-directives.ts` + `inline-directives.ts`, `src/markdown/`'s
       `directive-syntax.ts`, `opaque-carry.ts` and the `emit/` + `parse/` readers, every corpus
       fixture (round-trip, normalization and `errors/`), the prose reader over `spec/flavour.md`,
-      and the README's examples.
+      the markdown property's generator, and the README's examples.
       **Settled** (the maintainer, 2026-09-13):
       - A line opening `!adf:name` is a block line when a space or the line's end follows the name,
         and a paragraph when `[` or `{` does. Claiming stays syntactic and structure comes from the
@@ -292,7 +304,9 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         exceptions it cures re-derived, and the README's code table and its "not every document
         converts back" guarantee following; the gap list is empty. A round-trip fixture holds the
         shape 4.2's review left refused until then: an autolink-shaped link under a directive mark
-        whose href holds `\:name{`.
+        whose href holds `\:name{`. A link opening a paragraph whose opening reads as a link
+        reference definition, which 4.3 leaves riding the carry, takes the directive link too, with
+        its round-trip fixture (the maintainer, 2026-09-15).
 
 ## The ADF inventory to cover
 
