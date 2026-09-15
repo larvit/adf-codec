@@ -427,6 +427,6 @@ test('generated markdown refuses, or what it parses to refuses to emit, or its s
   )
   if (!parameters.gate) return
   assert.ok(fixpoints >= fixpointFloor, `${fixpoints} of ${gateRuns} runs reached the fixpoint, under the floor of ${fixpointFloor}`)
-  assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark only a directive or the carry spells, under the floor of ${directiveShapedFloor}`)
+  assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark outside CommonMark's own types, under the floor of ${directiveShapedFloor}`)
 })
 

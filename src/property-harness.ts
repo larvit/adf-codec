@@ -85,6 +85,10 @@ const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type
 
 const textNode = fc.record({ marks, text }).map((held): AdfNode => ({ ...held, type: 'text' }))
 
+const backtickRunNode = fc
+  .record({ marks: fc.oneof(fc.constant<AdfMark[]>([]), fc.constant<AdfMark[]>([{ type: 'code' }]), marks), text: fc.string({ maxLength: 6, minLength: 1, unit: fc.constantFrom('`', '``', ' ', 'a') }) })
+  .map((held): AdfNode => ({ ...held, type: 'text' }))
+
 const autolinkTextNode = fc
   .record({ href: fc.tuple(fc.constantFrom('ab:', 'http://'), textOf(0)).map(([scheme, rest]) => `${scheme}${rest}`), marks })
   .map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
@@ -119,7 +123,7 @@ const positions = fc.letrec<Positions>((tie) => {
   const leafBlocks = blockNodes.filter((entry) => entry.leaf).map((entry) => entry.node)
   const containerBlocks = blockNodes.filter((entry) => !entry.leaf).map((entry) => entry.node)
   const misplacedWeight = 7
-  const paragraph = inlineContent.map((content): AdfNode => ({ content, type: 'paragraph' }))
+  const paragraph = fc.oneof({ arbitrary: inlineContent, weight: 3 }, { arbitrary: fc.array(backtickRunNode, { maxLength: 4, minLength: 2 }), weight: 1 }).map((content): AdfNode => ({ content, type: 'paragraph' }))
   const cell = (type: string) => paragraph.map((held): AdfNode => ({ content: [held], type }))
   const listItems = fc.array(
     blockContent.map((content): AdfNode => ({ content, type: 'listItem' })),
@@ -150,6 +154,7 @@ const positions = fc.letrec<Positions>((tie) => {
       { depthIdentifier, depthSize: 'small', maxDepth: 4 },
       { arbitrary: textNode, weight: 12 },
       { arbitrary: autolinkTextNode, weight: 2 },
+      { arbitrary: backtickRunNode, weight: 3 },
       { arbitrary: fc.oneof(...inlineNodes), weight: 7 },
       { arbitrary: fc.oneof(...blockNodes.map((entry) => entry.node), unknownNode), weight: 2 },
     ),
