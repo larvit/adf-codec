@@ -54,6 +54,8 @@ normalizes to it through the round-trip.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
   the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat.
+  A paragraph's opening `[` escapes wherever its line reads as a link reference definition, which
+  resolves before any inline construct binds: a `]` inside a code span or `{attrs}` counts.
   An emphasis delimiter run in text escapes where CommonMark can open **or** close with it, so
   `*not emphasis*` is `\*not emphasis\*` — no delimiter the emitter did not write reaches the
   matching below, which is what lets the emitter decide its own pairings.

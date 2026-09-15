@@ -18,7 +18,7 @@ import {
 } from '../commonmark-grammar.ts'
 import { directiveLineEscape, malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
-import { readLinkDefinitions } from './link-reference-definitions.ts'
+import { readLinkDefinitions } from '../link-reference-definitions.ts'
 
 export type Block = { position: SourcePosition } & (
   | { argument: string | undefined; attributes: DirectiveAttributes; blocks: Block[] | undefined; kind: 'directive'; name: string }

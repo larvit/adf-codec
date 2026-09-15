@@ -1,9 +1,13 @@
-import type { LinkDefinition, LinkPart } from '../link-syntax.ts'
-import { normalizeLabel, readDestination, readLabel, readTitle, skipLinkWhitespace } from '../link-syntax.ts'
+import type { LinkDefinition, LinkPart } from './link-syntax.ts'
+import { normalizeLabel, readDestination, readLabel, readTitle, skipLinkWhitespace } from './link-syntax.ts'
 
 type ReadDefinition = { definition: LinkDefinition; label: string; length: number }
 
 const restOfLine = /^[ \t]*(?:\n|$)/
+
+export function opensLinkDefinition(text: string): boolean {
+  return readDefinition(text) !== undefined
+}
 
 export function readLinkDefinitions(definitions: Map<string, LinkDefinition>, text: string): string {
   let rest = text

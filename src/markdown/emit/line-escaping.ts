@@ -3,6 +3,7 @@ import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../em
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensInlineDirective } from '../directive-syntax.ts'
+import { opensLinkDefinition } from '../link-reference-definitions.ts'
 import { readEntityReference } from '../entity-references.ts'
 
 export type EmphasisRole = 'close' | 'open'
@@ -27,8 +28,7 @@ type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; deli
 
 const delimiters = ['*', '_', '`', '~']
 
-// The `:` keeps a `[label]: url` line escaped: unescaped, the parser swallows it as a link reference definition.
-const followsLinkText = /[([:]/
+const followsLinkText = /[([]/
 
 export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
   return escape(resolveEmphasis(segments), container)
@@ -90,7 +90,8 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
     placements.push(output.length)
     output += scan.charAt(index)
   }
-  return { line: output, unspellableRun: unspellableRun(segments, output, placements) }
+  const spelled = container === 'paragraph' && opensLinkDefinition(output) ? `\\${output}` : output
+  return { line: spelled, unspellableRun: unspellableRun(segments, output, placements) }
 }
 
 function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
