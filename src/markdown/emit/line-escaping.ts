@@ -67,9 +67,20 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
   const scan = segments.map((segment) => segment.text).join('')
   const escapings: InlineEscaping[] = []
   for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) escapings.push(segment.escaping)
-  const escaped = new Set<number>()
+  const escaped = escapedIndexes(scan, escapings, container)
   const placements: number[] = []
   let output = ''
+  for (let index = 0; index < scan.length; index += 1) {
+    if (escaped.has(index)) output += '\\'
+    placements.push(output.length)
+    output += scan.charAt(index)
+  }
+  const line = container === 'paragraph' && opensLinkDefinition(output) ? `\\${output}` : output
+  return { line, unspellableRun: unspellableRun(segments, output, placements) }
+}
+
+function escapedIndexes(scan: string, escapings: readonly InlineEscaping[], container: LineContainer): Set<number> {
+  const escaped = new Set<number>()
   const linkClose = lastLinkClose(scan, escapings)
   let line = scanLine(scan, 0)
   for (let index = 0; index < scan.length; index += 1) {
@@ -84,14 +95,21 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
       (escaping === 'bracketed-link-target' &&
         ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || (scan.charAt(index) === ':' && opensInlineDirective(scan, index))))
     ) {
-      output += '\\'
       escaped.add(index)
     }
-    placements.push(output.length)
-    output += scan.charAt(index)
   }
-  const spelled = container === 'paragraph' && opensLinkDefinition(output) ? `\\${output}` : output
-  return { line: spelled, unspellableRun: unspellableRun(segments, output, placements) }
+  escapeLoneBackticks(scan, escapings, escaped)
+  return escaped
+}
+
+// CommonMark reads no escape inside a code span, so an escaped backtick still closes one a bare lone backtick before it opens.
+function escapeLoneBackticks(scan: string, escapings: readonly InlineEscaping[], escaped: Set<number>): void {
+  let escapedAfter = false
+  for (let index = scan.length - 1; index >= 0; index -= 1) {
+    if (scan.charAt(index) !== '`') continue
+    if (escapedAfter && escapings[index] !== 'none' && scan.charAt(index - 1) !== '`' && scan.charAt(index + 1) !== '`') escaped.add(index)
+    if (escaped.has(index)) escapedAfter = true
+  }
 }
 
 function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
@@ -248,6 +266,8 @@ function lastLinkClose(scan: string, escapings: readonly (InlineEscaping | undef
 }
 
 function opensCodeSpan(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
+  // A run escapes whole: a rest left bare would be a raw run of another length for a closer.
+  if (scan.charAt(index - 1) === '`' && escaped.has(index - 1)) return true
   if (!startsRun(scan, index, escaped)) return false
   const opener = backtickRun(scan, index)
   return closingBacktickRun(scan, index + opener, opener) !== undefined
