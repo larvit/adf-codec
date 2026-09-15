@@ -103,17 +103,33 @@ function escapedIndexes(scan: string, escapings: readonly InlineEscaping[], cont
       escaped.add(index)
     }
   }
-  escapeLoneBackticks(scan, escapings, escaped)
+  escapeClosedRuns(scan, escapings, escaped)
   return escaped
 }
 
-// CommonMark reads no escape inside a code span, so an escaped backtick still closes one a bare lone backtick before it opens.
-function escapeLoneBackticks(scan: string, escapings: readonly InlineEscaping[], escaped: Set<number>): void {
-  let escapedAfter = false
-  for (let index = scan.length - 1; index >= 0; index -= 1) {
-    if (scan.charAt(index) !== '`') continue
-    if (escapedAfter && escapings[index] !== 'none' && scan.charAt(index - 1) !== '`' && scan.charAt(index + 1) !== '`') escaped.add(index)
-    if (escaped.has(index)) escapedAfter = true
+// CommonMark reads no escape inside a code span, so a backtick string an escape forms or splits off still closes one an earlier bare run opens.
+function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], escaped: Set<number>): void {
+  const formed = new Set<number>()
+  let end = scan.length - 1
+  while (end >= 0) {
+    if (scan.charAt(end) !== '`') {
+      end -= 1
+      continue
+    }
+    let start = end
+    while (scan.charAt(start - 1) === '`') start -= 1
+    let segmentEnd = end
+    for (let index = end; index > start; index -= 1) {
+      if (!escaped.has(index)) continue
+      formed.add(segmentEnd - index + 1)
+      segmentEnd = index - 1
+    }
+    if (segmentEnd !== end || escaped.has(start)) formed.add(segmentEnd - start + 1)
+    else if (escapings[start] !== 'none' && formed.has(end - start + 1)) {
+      for (let index = start; index <= end; index += 1) escaped.add(index)
+      formed.add(1)
+    }
+    end = start - 1
   }
 }
 
