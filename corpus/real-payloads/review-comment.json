@@ -1,0 +1,118 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "3e9517d02129"
+      },
+      "content": [
+        {
+          "text": "Looks good to me. Two small things:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "5738867bf15d",
+        "order": 1
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "ccd8d283e36d"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "638111edfab4"
+              },
+              "content": [
+                {
+                  "text": "Rename ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ],
+                  "text": "beta.enabled",
+                  "type": "text"
+                },
+                {
+                  "text": " before the launch",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "0adfb25bb321"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "980750fad0fe"
+              },
+              "content": [
+                {
+                  "text": "Move the demo to the ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "large",
+                  "type": "text"
+                },
+                {
+                  "text": " room",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "localId": "40e080c7acd4"
+      },
+      "content": [
+        {
+          "text": "Thanks ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "712020:78bf5058-bc76-4783-99af-6d70cb593cee",
+            "localId": "c4e073cd-8b3a-48b2-93a0-ade57b4ec2cf",
+            "text": "@Larvit Developer"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " !",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
