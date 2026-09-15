@@ -1,0 +1,527 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 1,
+        "localId": "cfdcc54363d9"
+      },
+      "content": [
+        {
+          "text": "Project handbook",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "91177a27b0ff"
+      },
+      "content": [
+        {
+          "text": "Welcome to the handbook for the spring project.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "7e7d9113a89b"
+      },
+      "content": [
+        {
+          "text": "Getting started",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "e65711ca96b6"
+      },
+      "content": [
+        {
+          "text": "Pack the following before the first day:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "b5c36c57fe79"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "1f4aa02de452"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "8993e22a13aa"
+              },
+              "content": [
+                {
+                  "text": "Laptop",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "2b335a4504ab"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "c9180347caf0"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "60990e48da32"
+                      },
+                      "content": [
+                        {
+                          "text": "Charger",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "attrs": {
+                    "localId": "fc5d4c8a875d"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "3b8ec5318463"
+                      },
+                      "content": [
+                        {
+                          "text": "Mouse",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "90f5f37a8a8f"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "90fab5a310c5"
+              },
+              "content": [
+                {
+                  "text": "Notebook",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "46840b8bd24b",
+                "order": 1
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "b4f06fbd15ef"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "93db4583bdba"
+                      },
+                      "content": [
+                        {
+                          "text": "Lined for notes",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "attrs": {
+                    "localId": "6904c80dd06d"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "0bc1c819d38d"
+                      },
+                      "content": [
+                        {
+                          "text": "Squared for sketches",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "65bd0afce26e"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "a753e5ecdad3"
+              },
+              "content": [
+                {
+                  "text": "Water bottle",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 3,
+        "localId": "5b6a671499c5"
+      },
+      "content": [
+        {
+          "text": "Unpacking",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "f460abd3a962"
+      },
+      "content": [
+        {
+          "text": "The first two steps happen at reception, so ours start at three:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "baf0046a0432",
+        "order": 3
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "b4df865a31a9"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "3f1b32f952d0"
+              },
+              "content": [
+                {
+                  "text": "Unpack the boxes",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "f64930d87d4e"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "d953389c865a"
+              },
+              "content": [
+                {
+                  "text": "Label the shelves",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "840daad9cb43"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "8708b8c7aeec"
+              },
+              "content": [
+                {
+                  "text": "Recycle the cardboard",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 4,
+        "localId": "27d1d408ae3e"
+      },
+      "content": [
+        {
+          "text": "Shelf labels",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "8b5cf239dbb5",
+        "order": 1
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "0948562abdc3"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "4da9d4f45923"
+              },
+              "content": [
+                {
+                  "text": "Top shelf",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "36edf97d8e2c"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "7915e252429c"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "9b15cc9fa8a1"
+                      },
+                      "content": [
+                        {
+                          "text": "Binders",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "attrs": {
+                    "localId": "efe607ab9e41"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "d559a2f29321"
+                      },
+                      "content": [
+                        {
+                          "text": "Archive boxes",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "229692097876"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "928b1862c273"
+              },
+              "content": [
+                {
+                  "text": "Bottom shelf",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 5,
+        "localId": "353a84ef9126"
+      },
+      "content": [
+        {
+          "text": "Quiet hours",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "9c11b949ed48"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "bd576489e8b6"
+          },
+          "content": [
+            {
+              "text": "Good tools make good work, and quiet rooms make good thinking.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "localId": "727fda576a9d"
+          },
+          "content": [
+            {
+              "text": "Please keep calls in the booths.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "blockquote"
+    },
+    {
+      "attrs": {
+        "level": 6,
+        "localId": "b12277440bc7"
+      },
+      "content": [
+        {
+          "text": "Small print",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "9f6fbb5a19af"
+      },
+      "type": "rule"
+    },
+    {
+      "attrs": {
+        "localId": "8a6e253c110e"
+      },
+      "content": [
+        {
+          "text": "Office hours:",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Monday to Thursday, eight to five",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Friday, eight to three",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "b9c3f5daa373"
+      },
+      "content": [
+        {
+          "text": "That is all for now.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

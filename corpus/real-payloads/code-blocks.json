@@ -1,0 +1,173 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "0d42e7ff24ba"
+      },
+      "content": [
+        {
+          "text": "Code blocks",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "a971506228e7"
+      },
+      "content": [
+        {
+          "text": "Run the setup once, then start the server with ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "npm start",
+          "type": "text"
+        },
+        {
+          "text": " and open the page.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "language": "javascript",
+        "localId": "eaf42046-6454-451d-ab13-8bd5ed2333bb",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "function greet(name) {\n  return `Hello, ${name}!`\n}",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "localId": "d69616dee641"
+      },
+      "content": [
+        {
+          "text": "The same idea in Python:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "language": "python",
+        "localId": "2094b559-280a-49d5-9be3-182572e5d2d8",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "def total(prices):\n    return sum(prices)\n\nprint(total([3, 4.5]))",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "localId": "abe1971d1f18"
+      },
+      "content": [
+        {
+          "text": "A query that lists visitors by city:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "language": "sql",
+        "localId": "5551dc8e-8fe0-455e-a9cf-22e48b589fe8",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "SELECT name, city\nFROM visitors\nWHERE city = 'Lund'\nORDER BY name;",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "localId": "51efdd2f1f02"
+      },
+      "content": [
+        {
+          "text": "Plain output, no language chosen:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "d0f83c92-c252-4a70-9e31-dfb5ac255cd1",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "$ ./setup\nChecking folders... done\n  3 files copied",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "localId": "3dac57e146fa"
+      },
+      "content": [
+        {
+          "text": "Keep ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": ".env",
+          "type": "text"
+        },
+        {
+          "text": " files out of version control, and never paste a ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "password",
+          "type": "text"
+        },
+        {
+          "text": " into a ticket.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

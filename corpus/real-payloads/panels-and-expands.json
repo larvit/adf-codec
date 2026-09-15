@@ -1,0 +1,292 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "d483ec27f809"
+      },
+      "content": [
+        {
+          "text": "Panels",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "cb02f8e9812b"
+      },
+      "content": [
+        {
+          "text": "Each colour of panel below holds a short note for the visiting team.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "b6d76c21e77e",
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "2d871d80f6e1"
+          },
+          "content": [
+            {
+              "text": "The workshop starts at nine in the morning.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "localId": "cbaab515445c",
+        "panelType": "note"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "13cafc26c42d"
+          },
+          "content": [
+            {
+              "text": "Bring your own laptop charger.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "localId": "c5fa8b34e2aa",
+        "panelType": "success"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "e186fca354d9"
+          },
+          "content": [
+            {
+              "text": "All rooms are booked for the week.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "localId": "ee223a0f886e",
+        "panelType": "warning"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "e0006fb2b972"
+          },
+          "content": [
+            {
+              "text": "The east entrance closes early on Fridays.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "localId": "ea6a56b9c863"
+          },
+          "content": [
+            {
+              "text": "Use the main door after four.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "localId": "fedbadc6d1c7",
+        "panelType": "error"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "c0f6122d81b7"
+          },
+          "content": [
+            {
+              "text": "The projector in room two is out of order.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "afe638de11c5"
+      },
+      "content": [
+        {
+          "text": "Expands",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "e635bf2eac43",
+        "title": "Agenda for the first day"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "c8beb4c392ee"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "6d6ff472d878"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "d1186101c5a1"
+                  },
+                  "content": [
+                    {
+                      "text": "Welcome and introductions",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "attrs": {
+                "localId": "01d203b97343"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "61bfec91218d"
+                  },
+                  "content": [
+                    {
+                      "text": "Tour of the building",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "attrs": {
+                "localId": "004e47604c2a"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "726aa40e1e38"
+                  },
+                  "content": [
+                    {
+                      "text": "Lunch in the courtyard",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        }
+      ],
+      "type": "expand"
+    },
+    {
+      "attrs": {
+        "localId": "cb6e48b9d746"
+      },
+      "content": [
+        {
+          "text": "Questions go to the organisers before the event.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "32a8832682b2",
+        "title": "Travel details"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "00b05814cccb"
+          },
+          "content": [
+            {
+              "text": "Trains leave the central station every twenty minutes.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "localId": "eec0df0ed4f1",
+            "panelType": "note"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "712c49fa7ecc"
+              },
+              "content": [
+                {
+                  "text": "Tickets are cheaper before seven.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "panel"
+        }
+      ],
+      "type": "expand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

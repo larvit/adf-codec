@@ -1,0 +1,106 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "d5c3a2503683"
+      },
+      "content": [
+        {
+          "text": "Media and attachments",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "f71287760586"
+      },
+      "content": [
+        {
+          "text": "A photo of the meadow behind the office:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "align-start",
+        "localId": "95de25bcdecc",
+        "width": 320,
+        "widthType": "pixel"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "Green meadow under a yellow sun",
+            "collection": "",
+            "height": 180,
+            "id": "8c586460-fb0d-44f6-949f-d800d5dd0f45",
+            "localId": "630d0d0457b8",
+            "type": "file",
+            "width": 320
+          },
+          "marks": [
+            {
+              "attrs": {
+                "color": "#091e4224",
+                "size": 2
+              },
+              "type": "border"
+            }
+          ],
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "localId": "b4bfee3ad3ec"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "ffe5710ea995"
+      },
+      "content": [
+        {
+          "text": "The packing list is attached as a file:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "collection": "",
+            "id": "8dfd7046-2382-4377-b3ba-ec31e34cd01a",
+            "type": "file"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaGroup"
+    },
+    {
+      "attrs": {
+        "localId": "77fcb609f709"
+      },
+      "content": [
+        {
+          "text": "Both were uploaded from the editor.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

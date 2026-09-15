@@ -208,9 +208,10 @@ resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` s
 `node-floor.js` round-trips the installed package under a Node pinned to `engines.node`'s floor.
 
 A fourth engine reads the build rather than the source: a headless Firefox loads `dist/index.js`
-over HTTP and converts the round-trip, normalization and error fixtures — the `commonmark-spec`
-sort is the Node suite's to check — which is §6's browser half and the only SpiderMonkey
-there is — the gate's other three engines are two V8s and a JavaScriptCore that is not Safari's.
+over HTTP and converts the round-trip, normalization and error fixtures and the real payloads —
+the `commonmark-spec` sort is the Node suite's to check — which is §6's browser half and the only
+SpiderMonkey there is — the gate's other three engines are two V8s and a JavaScriptCore that is
+not Safari's.
 A WebDriver session is what carries a verdict back out, the driver and the page's server sharing
 one network namespace so each is the other's `127.0.0.1`; `--headless --screenshot` has no such
 channel, and loading `dist/index.js` in a globals-stripped realm buys one by not running a browser.

@@ -1,0 +1,124 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "e632994a13ae"
+      },
+      "content": [
+        {
+          "text": "Smart links",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "dcfa975dde87"
+      },
+      "content": [
+        {
+          "text": "An inline card sits in a sentence, like ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "042b9a548674",
+            "url": "https://en.wikipedia.org/wiki/Markdown"
+          },
+          "type": "inlineCard"
+        },
+        {
+          "text": "   which keeps the text flowing.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "c138d931a131"
+      },
+      "content": [
+        {
+          "text": "A block card stands on its own line:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "9e527ae5f2bd"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "88bd10974ec6",
+        "url": "https://spec.commonmark.org/"
+      },
+      "type": "blockCard"
+    },
+    {
+      "attrs": {
+        "localId": "9879bb1368ea"
+      },
+      "content": [
+        {
+          "text": " An embed shows the page itself, where the site allows it:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "ccbed18139bb"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "wide",
+        "localId": "8320cf243168",
+        "originalHeight": 480,
+        "originalWidth": 853.344,
+        "url": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+        "width": 100
+      },
+      "type": "embedCard"
+    },
+    {
+      "attrs": {
+        "localId": "22f60b236c1c"
+      },
+      "content": [
+        {
+          "text": " And a plain address stays a link: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://www.markdownguide.org/"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://www.markdownguide.org/",
+          "type": "text"
+        },
+        {
+          "text": " for reference.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

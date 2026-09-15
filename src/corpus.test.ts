@@ -14,6 +14,7 @@ import { toEditorNormal } from './adf/editor-normal.ts'
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
 const errorsRoot = join(corpusRoot, 'errors')
 const normalizationRoot = join(corpusRoot, 'normalization')
+const realPayloadsRoot = join(corpusRoot, 'real-payloads')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 
 const roundTripDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
@@ -60,7 +61,7 @@ function corpusJsonPaths(): string[] {
 }
 
 test('every corpus directory is a kind the runner reads', () => {
-  assert.deepEqual(directoryNames(corpusRoot), ['commonmark-spec', 'errors', 'normalization', 'round-trip'])
+  assert.deepEqual(directoryNames(corpusRoot), ['commonmark-spec', 'errors', 'normalization', 'real-payloads', 'round-trip'])
 })
 
 test('every round-trip directory is a kind the runner reads', () => {
@@ -179,6 +180,22 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
     const again = markdownToAdf(emitted.value)
     assert.ok(again.ok, again.ok ? '' : `${again.error.code}: ${again.error.message}`)
     assert.deepEqual(toEditorNormal(again.value), expected)
+  })
+}
+
+test('real-payloads holds payloads', () => {
+  assert.ok(names(realPayloadsRoot, '.json').length > 0)
+})
+
+for (const name of names(realPayloadsRoot, '.json')) {
+  test(`real-payloads/${name} emits markdown that reads back to it`, () => {
+    const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
+    assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+    const emitted = adfToMarkdown(payload)
+    assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
+    const parsed = markdownToAdf(emitted.value)
+    assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
+    assert.deepEqual(toEditorNormal(parsed.value), payload)
   })
 }
 

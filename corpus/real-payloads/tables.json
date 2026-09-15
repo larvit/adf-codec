@@ -1,0 +1,620 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "a0c750451c14"
+      },
+      "content": [
+        {
+          "text": "A simple table",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "944306a6da33"
+      },
+      "content": [
+        {
+          "text": "Rooms for the week:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "isNumberColumnEnabled": false,
+        "layout": "align-start",
+        "localId": "92b28760-e51b-436d-82f0-45c6b6bf5b60"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "d53d5ad740cb"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "a8c82e01543e"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "00c1bde1a44d"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Room",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "c736c185bcd0"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "3dc846d8aaf9"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Capacity",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "b484834a890d"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "5b0671aadeed"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Notes",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "45395ea36f04"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "8b19b08b6a93"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "363cf87d44be"
+                  },
+                  "content": [
+                    {
+                      "text": "North",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "e189034484f3"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "42a5bad514ea"
+                  },
+                  "content": [
+                    {
+                      "text": "12",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "9cfc78f9a553"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "2ae747c00211"
+                  },
+                  "content": [
+                    {
+                      "text": "Projector",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "8bc7abba3229"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "0e7980a31697"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "a001411b475e"
+                  },
+                  "content": [
+                    {
+                      "text": "South",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "e61493f2b3d9"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "79c522faf7e8"
+                  },
+                  "content": [
+                    {
+                      "text": "8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "db911772081a"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "6721e0a4f29f"
+                  },
+                  "content": [
+                    {
+                      "text": "Quiet corner",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "c21221cbaeda"
+      },
+      "content": [
+        {
+          "text": "A richer table",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "b9cdc4e693ca"
+      },
+      "content": [
+        {
+          "text": "Budget by season, with merged, coloured and resized cells:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "isNumberColumnEnabled": false,
+        "layout": "align-start",
+        "localId": "ac1b1f4b-3d7a-4cd2-a0a7-05ece633ba69"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "c411338ed251"
+          },
+          "content": [
+            {
+              "attrs": {
+                "background": "#b3d4ff",
+                "colwidth": [
+                  135
+                ],
+                "localId": "798f1dea331f"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "b605b3c1f598"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Item",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colwidth": [
+                  233
+                ],
+                "localId": "db4768c076d4"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "b4890b2d833e"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Spring",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colwidth": [
+                  184
+                ],
+                "localId": "4dde2fbfb921"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "7986b41ed947"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Autumn",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "b4ac97bec992"
+          },
+          "content": [
+            {
+              "attrs": {
+                "colwidth": [
+                  135
+                ],
+                "localId": "ba92b57558d8"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "f23f030e9233"
+                  },
+                  "content": [
+                    {
+                      "text": "Venue",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "background": "#abf5d1",
+                "colspan": 2,
+                "colwidth": [
+                  233,
+                  184
+                ],
+                "localId": "51af31d44baa"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "ba55f45dc035"
+                  },
+                  "content": [
+                    {
+                      "text": "Booked for both",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "e911af70b656"
+          },
+          "content": [
+            {
+              "attrs": {
+                "colwidth": [
+                  135
+                ],
+                "localId": "50a820456456"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "b04d0749aee7"
+                  },
+                  "content": [
+                    {
+                      "text": "Catering",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colwidth": [
+                  233
+                ],
+                "localId": "d0cc276de239"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "90211ae7a504"
+                  },
+                  "content": [
+                    {
+                      "text": "400",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colwidth": [
+                  184
+                ],
+                "localId": "1962d05e8763"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "221cf059e38d"
+                  },
+                  "content": [
+                    {
+                      "text": "450",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "2c8a06942ac4"
+          },
+          "content": [
+            {
+              "attrs": {
+                "colwidth": [
+                  135
+                ],
+                "localId": "ba4e1cb93e92"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "e6bb346c5fd4"
+                  },
+                  "content": [
+                    {
+                      "text": "Notes",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colwidth": [
+                  233
+                ],
+                "localId": "d7a1dec97b03"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "5cbd8813deab"
+                  },
+                  "content": [
+                    {
+                      "text": "Spring is confirmed.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colwidth": [
+                  184
+                ],
+                "localId": "85f9a8dab00b"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "da90346e9a26",
+                    "title": "Payment terms"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "ef6c6f374bca"
+                      },
+                      "content": [
+                        {
+                          "text": "Invoices arrive monthly.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "nestedExpand"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "localId": "10d03e65eff2"
+      },
+      "content": [
+        {
+          "text": "Figures are estimates.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

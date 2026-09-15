@@ -1,0 +1,124 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "3265660b5792"
+      },
+      "content": [
+        {
+          "text": "Shared checklist",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "c7d94ae59a47"
+      },
+      "content": [
+        {
+          "text": "The block below is synced, so an edit shows up wherever it is used.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "72651b28-757c-44a1-be0b-586c3e6df546",
+        "resourceId": "03a667ab-4c6b-402d-adae-0c55582e32eb"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "0eb44ec3924b"
+          },
+          "content": [
+            {
+              "text": "Before every release:",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "localId": "4beeefa0c6fa"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "07d19212447f"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "2fd9fc0e5d71"
+                  },
+                  "content": [
+                    {
+                      "text": "Run the tests",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "attrs": {
+                "localId": "7f5f50f7642c"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "14d3435ce5f4"
+                  },
+                  "content": [
+                    {
+                      "text": "Update the changelog",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        },
+        {
+          "attrs": {
+            "localId": "e405ebea5e00"
+          },
+          "content": [
+            {
+              "text": "Ask for a second pair of eyes.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "bodiedSyncBlock"
+    },
+    {
+      "attrs": {
+        "localId": "73b5f0a1ef05"
+      },
+      "content": [
+        {
+          "text": "Anything specific to this release goes below the synced block.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

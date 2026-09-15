@@ -67,6 +67,7 @@ async function whenDriverAnswers() {
 const corpus = {
   errors: fixtureNames('errors', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
   normalization: fixtureNames('normalization', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
+  realPayloads: fixtureNames('real-payloads', '.json').map((name) => ({ json: fixture(name, '.json'), name })),
   roundTrip: fixtureNames('round-trip', '.json').map((name) => ({ json: fixture(name, '.json'), markdown: fixture(name, '.md'), name })),
 }
 assert.deepEqual(
@@ -75,7 +76,7 @@ assert.deepEqual(
     .map((entry) => entry.name)
     .filter((name) => name !== 'commonmark-spec')
     .sort(),
-  ['errors', 'normalization', 'round-trip'],
+  ['errors', 'normalization', 'real-payloads', 'round-trip'],
   'a corpus kind the browser leg does not convert',
 )
 for (const [kind, fixtures] of Object.entries(corpus)) assert.ok(fixtures.length > 0, `the browser leg found no ${kind} fixture to convert`)
@@ -118,6 +119,16 @@ for (const [index, { name }] of corpus.normalization.entries()) {
   })
 }
 
+for (const [index, { json, name }] of corpus.realPayloads.entries()) {
+  const result = results.realPayloads[index]
+  checking(name, result, () => {
+    assert.ok(result.isDocument, `${name}.json is no ADF document`)
+    assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
+    assert.ok(result.parsed.ok, `it did not parse back — ${refusal(result.parsed)}`)
+    assert.deepEqual(toEditorNormal(result.parsed.value), JSON.parse(json))
+  })
+}
+
 for (const [index, { name }] of corpus.errors.entries()) {
   const result = results.errors[index]
   checking(name, result, () => {
@@ -127,5 +138,5 @@ for (const [index, { name }] of corpus.errors.entries()) {
 }
 
 console.log(
-  `Firefox ${session.capabilities.browserVersion} converted ${corpus.roundTrip.length} round-trip, ${corpus.normalization.length} normalization and ${corpus.errors.length} error fixtures`,
+  `Firefox ${session.capabilities.browserVersion} converted ${corpus.roundTrip.length} round-trip, ${corpus.normalization.length} normalization and ${corpus.errors.length} error fixtures and ${corpus.realPayloads.length} real payloads`,
 )

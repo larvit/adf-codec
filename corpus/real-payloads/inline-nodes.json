@@ -1,0 +1,254 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "0fcbc98aec1f"
+      },
+      "content": [
+        {
+          "text": "Where things stand",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "32b6266eb05c"
+      },
+      "content": [
+        {
+          "text": "Office move ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "blue",
+            "localId": "1ab19511-a0fa-41a1-b6d0-6729813c0526",
+            "style": "mixedCase",
+            "text": "In progress"
+          },
+          "type": "status"
+        },
+        {
+          "text": "  since ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "493624162706",
+            "timestamp": "1790812800000"
+          },
+          "type": "date"
+        },
+        {
+          "text": " , owned by ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "712020:78bf5058-bc76-4783-99af-6d70cb593cee",
+            "localId": "604060e1-e533-4019-aa28-21952dfdea19",
+            "text": "@Larvit Developer"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " .",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "73a94328c89f"
+      },
+      "content": [
+        {
+          "text": "Furniture ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "green",
+            "localId": "7b27ff33-1483-452b-8982-311cf9429023",
+            "style": "mixedCase",
+            "text": "Done"
+          },
+          "type": "status"
+        },
+        {
+          "text": " , cabling ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "red",
+            "localId": "b6eb05a9-e0e7-4269-9cbd-e912640364a6",
+            "style": "mixedCase",
+            "text": "Blocked"
+          },
+          "type": "status"
+        },
+        {
+          "text": " , signage ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "yellow",
+            "localId": "ff7ed7fb-1846-48cb-b5ea-8be6b598ccc6",
+            "style": "mixedCase",
+            "text": "Waiting"
+          },
+          "type": "status"
+        },
+        {
+          "text": " , parking ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "purple",
+            "localId": "e9218ff4-6fcb-4e43-b36a-b1bef8a19376",
+            "style": "mixedCase",
+            "text": "Maybe"
+          },
+          "type": "status"
+        },
+        {
+          "text": "  and keys ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "neutral",
+            "localId": "f1455340-2469-4bc6-a371-ed6b1f54386c",
+            "style": "mixedCase",
+            "text": "Not started"
+          },
+          "type": "status"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "8d9e2dc70265"
+      },
+      "content": [
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "712020:78bf5058-bc76-4783-99af-6d70cb593cee",
+            "localId": "ab5b7997-43ce-4238-b540-db3864e0965c",
+            "text": "@Larvit Developer"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " please confirm the handover on ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "77e2bdefa7fd",
+            "timestamp": "1795132800000"
+          },
+          "type": "date"
+        },
+        {
+          "text": "  before lunch.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "f7fb8a7527a3"
+      },
+      "content": [
+        {
+          "text": "Great work so far ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "1f44d",
+            "localId": "8fe9a02e94ce",
+            "shortName": ":thumbsup:",
+            "text": "👍"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " and thanks for the snacks ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "1f389",
+            "localId": "c19496cc742f",
+            "shortName": ":tada:",
+            "text": "🎉"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "1f600",
+            "localId": "c05a6757d0ee",
+            "shortName": ":grinning:",
+            "text": "😀"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "b75918031ebd"
+      },
+      "content": [
+        {
+          "text": "Deliveries go to:",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Building C, third floor",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Ring the bell twice",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

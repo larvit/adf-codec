@@ -1,0 +1,630 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "3b911072ce78"
+      },
+      "content": [
+        {
+          "text": "Summary of the planning session on Thursday. Attendees: ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "712020:78bf5058-bc76-4783-99af-6d70cb593cee",
+            "localId": "c8b64b9f-d396-4525-9456-38cf690ade1e",
+            "text": "@Larvit Developer"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " and two guests from the design team.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "3e97ef36cbc3"
+      },
+      "content": [
+        {
+          "text": "Where we are",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "530e0e3aa621"
+      },
+      "content": [
+        {
+          "text": "The beta is ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "color": "green",
+            "localId": "ac0975eb-fafe-44ad-8293-8a12fdbcaebc",
+            "style": "mixedCase",
+            "text": "On track"
+          },
+          "type": "status"
+        },
+        {
+          "text": "  and the public launch is set for ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "84d9a1cde860",
+            "timestamp": "1793664000000"
+          },
+          "type": "date"
+        },
+        {
+          "text": " .",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "ffcd53578640",
+        "panelType": "warning"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "0f0e8b9e13bb"
+          },
+          "content": [
+            {
+              "text": "Translation files are still ",
+              "type": "text"
+            },
+            {
+              "marks": [
+                {
+                  "type": "strong"
+                }
+              ],
+              "text": "missing",
+              "type": "text"
+            },
+            {
+              "text": " for two languages.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "d9b590d479ad"
+      },
+      "content": [
+        {
+          "text": "Decisions",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "69dc2d52-34f7-43bb-8d6c-36d52a47179e"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "852a35a7-f660-4161-85dd-2d54adaf662b",
+            "state": "DECIDED"
+          },
+          "content": [
+            {
+              "text": "Ship the beta to internal users first",
+              "type": "text"
+            }
+          ],
+          "type": "decisionItem"
+        },
+        {
+          "attrs": {
+            "localId": "2df16457-331f-4d26-90ba-539f82949d70",
+            "state": "DECIDED"
+          },
+          "content": [
+            {
+              "text": "Keep the old export for one more release",
+              "type": "text"
+            }
+          ],
+          "type": "decisionItem"
+        }
+      ],
+      "type": "decisionList"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "7813370b5e89"
+      },
+      "content": [
+        {
+          "text": "Next steps",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "21a7a33c-199d-4396-a148-c8404f70554f"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "5343dfdb-e70d-4ce6-bca5-8a382123c7bd",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "text": "Draft the release notes",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "67d65eb8-17e9-4cd6-93cb-7d495f84e01d",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "text": "Book the demo room",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "e5806b037d61"
+      },
+      "content": [
+        {
+          "text": "Numbers",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "isNumberColumnEnabled": false,
+        "layout": "align-start",
+        "localId": "cbae6bea-3c35-42b9-9a8f-3b37749e1a87"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "e4d343447bf5"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "4fcec7ad0a0f"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "974849d6e63c"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Metric",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "42df5203769e"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "8b0da0854a0a"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Beta",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "cbdae6c8508d"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "2584f222d6c3"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Goal",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "65e4d7a700c0"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "a37175350eea"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "7efe32972497"
+                  },
+                  "content": [
+                    {
+                      "text": "Sign-ups",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "e0a95cdbd3c5"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "4628a3afe71b"
+                  },
+                  "content": [
+                    {
+                      "text": "140",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "b802fc652961"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "94c6ec93acb2"
+                  },
+                  "content": [
+                    {
+                      "text": "200",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "bd6465cc546d"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "b6dcef3c6ac5"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "ba5c99353d30"
+                  },
+                  "content": [
+                    {
+                      "text": "Crash reports",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "554b7b5a8e71"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "569a134488bc"
+                  },
+                  "content": [
+                    {
+                      "text": "3",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "fb03db2017b1"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "c0ce0ada482c"
+                  },
+                  "content": [
+                    {
+                      "text": "0",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "localId": "b4eb1362eb9f"
+      },
+      "content": [
+        {
+          "text": "The flag that turns the beta on:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "language": "yaml",
+        "localId": "14298a36-6632-458f-a548-7fccd4b7186b",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "beta:\n  enabled: true\n  audience: internal",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "localId": "a98274e22eaa"
+      },
+      "content": [
+        {
+          "text": "Risks we talked about:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "fb3e387688ff"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "fdeee4ce0678"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "5ff2e05f1c7e"
+              },
+              "content": [
+                {
+                  "text": "Late translations",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "043a7ded718e"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "73a4d8e4ef0d"
+              },
+              "content": [
+                {
+                  "text": "The holiday week",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "3e32c1b868a1"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "98969cd5548e"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "3b9989413325"
+                      },
+                      "content": [
+                        {
+                          "text": "Half the team is away",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "localId": "ba7d8422f4c6"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "a6837cfad3f5"
+          },
+          "content": [
+            {
+              "text": "Small steps, shipped often.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "blockquote"
+    },
+    {
+      "attrs": {
+        "localId": "6ec9ef8df224"
+      },
+      "content": [
+        {
+          "text": "Thanks, everyone ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "1f389",
+            "localId": "2481c60576e0",
+            "shortName": ":tada:",
+            "text": "🎉"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "782129bf30c1",
+        "title": "Raw notes"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "e9614e389875"
+          },
+          "content": [
+            {
+              "text": "We spent twenty minutes on the colour of the launch banner.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "expand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

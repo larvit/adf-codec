@@ -1,0 +1,195 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "26d50a5240c3"
+      },
+      "content": [
+        {
+          "text": "Action items",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "f8b236b2-3b7c-412a-a0df-6c523af43a76"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "eebe3cb9-5773-4753-b6a3-5a5df104b6e8",
+            "state": "DONE"
+          },
+          "content": [
+            {
+              "text": "Book the meeting room",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "2263a39a-c49c-4711-8f00-cca6e8f3ea35",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "text": "Order name badges",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "e323e762-8880-43c0-945d-17a7341fdefb"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "55523903-9f79-4711-b276-ec1bc98be977",
+                "state": "DONE"
+              },
+              "content": [
+                {
+                  "text": "Print a spare set for the front desk",
+                  "type": "text"
+                }
+              ],
+              "type": "taskItem"
+            }
+          ],
+          "type": "taskList"
+        },
+        {
+          "attrs": {
+            "localId": "680d665a-a859-4345-b032-d5a46fd6db0d",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "text": "Send the agenda to everyone",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "48d45b93-2180-4b80-b0ed-f9eb458ed1ed",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "text": "Ask ",
+              "type": "text"
+            },
+            {
+              "attrs": {
+                "accessLevel": "",
+                "id": "712020:78bf5058-bc76-4783-99af-6d70cb593cee",
+                "localId": "09321e9b-b551-48ee-8868-5339e8b86863",
+                "text": "@Larvit Developer"
+              },
+              "type": "mention"
+            },
+            {
+              "text": " about parking by ",
+              "type": "text"
+            },
+            {
+              "attrs": {
+                "localId": "16c6b2a1718e",
+                "timestamp": "1792022400000"
+              },
+              "type": "date"
+            },
+            {
+              "text": " ",
+              "type": "text"
+            }
+          ],
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "attrs": {
+        "localId": "90a7d38e3ed7"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "8c510497da2e"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "3b52fc685167"
+      },
+      "content": [
+        {
+          "text": "Decisions",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "82dbc28b-49c8-428c-8c21-65cc000ef7c5"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "2f7a7680-2c41-4b45-9162-29d97f922a7b",
+            "state": "DECIDED"
+          },
+          "content": [
+            {
+              "text": "Hold the kickoff on the second floor",
+              "type": "text"
+            }
+          ],
+          "type": "decisionItem"
+        },
+        {
+          "attrs": {
+            "localId": "c94ef59b-6db4-4ddc-8d22-576821020306",
+            "state": "DECIDED"
+          },
+          "content": [
+            {
+              "text": "Keep the budget under the agreed limit",
+              "type": "text"
+            }
+          ],
+          "type": "decisionItem"
+        }
+      ],
+      "type": "decisionList"
+    },
+    {
+      "attrs": {
+        "localId": "562121f961a8"
+      },
+      "content": [
+        {
+          "text": "Done items are ticked; the rest are still open.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
