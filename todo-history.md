@@ -416,7 +416,17 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         and 3h landed their answers and emptied it. The permanent ones — a link destination or
         title no escape spells, a paragraph opening with a code span — are the exceptions, named
         by AGENTS.md §2.
-- [ ] **4 — Round-trip property tests (`0.2.0`).**
+- [x] **4 — Round-trip property tests (`0.2.0`)**, widening 3j's corpus round-trip past the
+      documents a human wrote — the thing that proves 2 and 3 beyond them.
+      **Settled** (the maintainer, 2026-09-13): `fast-check` generates and shrinks. The gate runs a
+      fixed seed, the properties together adding about five seconds per engine; an environment
+      variable raises the runs and randomizes the seed for local digging, and a counterexample
+      found becomes a round-trip fixture. The generators draw from the node tables — each node's
+      content model and attribute vocabulary as `adf/` records them, which 11 holds to Atlassian's
+      schema — and misplace a share of nodes so the carry (§3) is exercised; no JSON Schema walker
+      enters the tests. `toEditorNormal` stays internal. 2e5's collision test goes, since a
+      collision already fails the round-trip on the same fixtures; the fixture-duplicate test
+      stays.
   - [x] **4.1 — Editor-normal and the node accessors.** `toEditorNormal(doc)` in
         `src/adf/editor-normal.ts`, on 3i's merging: adjacent text nodes carrying identical marks and
         no attributes merged, an empty `attrs`, `marks` or `content` the absent key, `-0` read as `0`
@@ -449,6 +459,23 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         where the maintainer added to both on 2026-09-14. The review found one more break of the
         same class, fixed the same way: a would-be inline directive in a link target inside a
         directive's content.
+  - [x] **4.3 — The markdown property.** Generated markdown through `markdownToAdf` never throws,
+        and the runs fit the budget; where it parses and `adfToMarkdown` spells the result, that
+        spelling parses and emits to itself byte for byte (§2).
+        **Settled** (the maintainer, 2026-09-15): the generators and run parameters 4.2 and 4.3
+        share live in one test-only module in `src/`, kept out of the build and coverage, with
+        10c's properties as its third user. Under the gate seed the property asserts floors on the
+        runs reaching the fixpoint and on the directive-shaped ones. It lands when hunts of several
+        hundred thousand runs per engine pass clean, since the breaks hit once per ~150,000 runs,
+        past a 10,000-run bar. Two breaks, both shipped in `0.1.0`, are fixed inside it. A backtick
+        string an escape formed closed an earlier bare run's code span, since CommonMark reads no
+        escape inside one: an escaped backtick alone or, as the review found, one joined to the bare
+        run after it. A backtick run now escapes whole, and a bare run escapes wherever a later
+        string of its length forms around an escape in the same inline content: the generalized pass
+        the maintainer chose (2026-09-15). A paragraph's opening read as a link
+        reference definition across a `]` the emitter spelled: the emitter now escapes the opening
+        `[` exactly when the parser's own definition reader accepts the paragraph, and a link
+        opening it rides the carry until 13b.
   - [x] **4.4 — The real payloads.** `corpus/real-payloads/` holds ADF Atlassian's editor wrote,
         each round-tripped ADF→markdown→ADF with no expected markdown.
         **Settled** (the maintainer, 2026-09-15): the chunk authors the payloads itself on the
