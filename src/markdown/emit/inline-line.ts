@@ -292,6 +292,6 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
   const spelledTarget: InlineSegment = context.bracketed ? { escaping: 'bracketed-link-target', text: escapeUnbalanced(target.value, '[', ']') } : syntax(target.value)
-  return success({ segments: [syntax('['), ...inner.value.segments, syntax(']('), spelledTarget, syntax(')')] })
+  return success({ segments: [{ escaping: 'none', nodes: range, text: '[' }, ...inner.value.segments, syntax(']('), spelledTarget, syntax(')')] })
 }
 

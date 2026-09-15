@@ -1,0 +1,45 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "/u"
+              },
+              "type": "link"
+            },
+            {
+              "type": "code"
+            }
+          ],
+          "text": "]: a",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "timestamp": "]:a"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "href": "/u"
+              },
+              "type": "link"
+            }
+          ],
+          "type": "date"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

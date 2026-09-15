@@ -14,7 +14,8 @@ export type NodeRange = { first: number; last: number }
 
 export type InlineSegment =
   | { emphasis: EmphasisRole; escaping: 'none'; nodes: NodeRange; text: string }
-  | { emphasis?: undefined; escaping: InlineEscaping; text: string }
+  | { emphasis?: undefined; escaping: 'none'; nodes: NodeRange; text: string }
+  | { emphasis?: undefined; escaping: InlineEscaping; nodes?: undefined; text: string }
 
 export type AssembledLine = { line: string; unspellableRun: NodeRange | undefined }
 
@@ -75,8 +76,12 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
     placements.push(output.length)
     output += scan.charAt(index)
   }
-  const line = container === 'paragraph' && opensLinkDefinition(output) ? `\\${output}` : output
-  return { line, unspellableRun: unspellableRun(segments, output, placements) }
+  if (container === 'paragraph' && opensLinkDefinition(output)) {
+    const opener = segments[0]?.nodes
+    if (opener !== undefined) return { line: output, unspellableRun: opener }
+    return { line: `\\${output}`, unspellableRun: unspellableRun(segments, output, placements) }
+  }
+  return { line: output, unspellableRun: unspellableRun(segments, output, placements) }
 }
 
 function escapedIndexes(scan: string, escapings: readonly InlineEscaping[], container: LineContainer): Set<number> {

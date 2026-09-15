@@ -56,8 +56,9 @@ normalizes to it through the round-trip.
   the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat.
   A backtick run escapes whole, and a lone backtick escapes wherever an escaped one follows it in
   the same inline content: CommonMark reads no escape inside a code span, so `` \` `` closes one.
-  A paragraph's opening `[` escapes wherever its line reads as a link reference definition, which
-  resolves before any inline construct binds: a `]` inside a code span or `{attrs}` counts.
+  Where a paragraph opens with what reads as a link reference definition, which resolves before
+  any inline construct binds (a `]` inside a code span or `{attrs}` counts), an opening text `[`
+  escapes and an opening link's nodes ride the carry.
   An emphasis delimiter run in text escapes where CommonMark can open **or** close with it, so
   `*not emphasis*` is `\*not emphasis\*` — no delimiter the emitter did not write reaches the
   matching below, which is what lets the emitter decide its own pairings.
