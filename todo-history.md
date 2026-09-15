@@ -449,6 +449,13 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         where the maintainer added to both on 2026-09-14. The review found one more break of the
         same class, fixed the same way: a would-be inline directive in a link target inside a
         directive's content.
+  - [x] **4.4 — The real payloads.** `corpus/real-payloads/` holds ADF Atlassian's editor wrote,
+        each round-tripped ADF→markdown→ADF with no expected markdown.
+        **Settled** (the maintainer, 2026-09-15): the chunk authors the payloads itself on the
+        maintainer's Atlassian test site — invented content, so nothing needs sanitizing — driving the
+        editor with Playwright, and reads the ADF back over REST. Only the documents are committed; no
+        client or fetch script enters the repo (§7). Later, settled the same day: the mentions keep
+        the test user's real account id (the maintainer, 2026-09-15).
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.
