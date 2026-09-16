@@ -3,11 +3,11 @@ import type { BlockDirective } from '../../adf/block-directives.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
-import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
+import { attributeNestingMessage, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { attributeValue, directiveLineEscape, directivePrefix, inlineDirectiveEscape, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
-import { carryName } from '../opaque-carry.ts'
+import { carryFence, carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { inlineMarkSpellingFault } from './directive-marks.ts'
@@ -26,7 +26,7 @@ export function readBlockDirectiveNode(
   path: ConvertErrorPath,
 ): Result<BlockDirectiveNode> {
   if (name === carryName) {
-    return failure('malformed-directive', `the name ${carryName} is reserved for the opaque carry, whose block form is the fence`, path)
+    return failure('malformed-directive', `the name ${carryName} is reserved for the opaque carry, whose block form is the ${carryFence} fence`, path)
   }
   const directive = blockDirective(name)
   if (directive === undefined) return faulted(inlineSpellingFault(name) ?? unknownDirectiveFault(name, directiveLineEscape), path)
@@ -62,7 +62,7 @@ export function readInlineDirectiveNode(
   if (slot !== undefined && content !== undefined) {
     const text = slotText(content)
     if (text === undefined) {
-      return failure('unsupported-node-shape', `the ${name} content slot holds one text node carrying neither marks nor attributes: this one holds something else`, path)
+      return failure('unsupported-node-shape', `the ${name} content slot holds one text node carrying neither marks, attributes nor content: this one holds something else`, path)
     }
     const spans = slotLineEndingFault(name, text)
     if (spans !== undefined) return faulted(spans, path)
@@ -91,7 +91,7 @@ function blockSpellingFault(name: string): ConvertFault | undefined {
 function slotText(content: readonly AdfNode[]): string | undefined {
   if (content.length === 0) return ''
   const only = content.length === 1 ? content[0] : undefined
-  if (only?.type !== 'text' || nodeMarks(only).length > 0 || Object.keys(nodeAttrs(only)).length > 0 || typeof only.text !== 'string') return undefined
+  if (only?.type !== 'text' || nodeMarks(only).length > 0 || Object.keys(nodeAttrs(only)).length > 0 || nodeContent(only).length > 0 || typeof only.text !== 'string') return undefined
   return only.text
 }
 

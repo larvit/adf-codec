@@ -87,8 +87,11 @@ info string, and `listBreak` for the leaf that parts two adjacent lists (Canonic
 **Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`
 closes a container, and a name picks by what follows it in turn — a space or the line's end a block
 line, `[` or `{` an inline directive. A `!adf:` completing none of the three is a named error, and
-`\!adf:` is the literal, block and inline alike. A claimed block line also ends a lazy continuation:
-the blockquote or list item whose paragraph CommonMark would fold it into closes instead.
+`\!adf:` is the literal, block and inline alike. A construct CommonMark binds first — a code span,
+an autolink URI, a link destination or title — holds its `!adf:` as content; a directive's
+`[content]`, which binds ahead of bracket matching, does not. A claimed block line also ends a lazy
+continuation: the blockquote or list item whose paragraph CommonMark would fold it into closes
+instead.
 
 **Inline**: `!adf:name[content]{attrs}`, on one line — an inline directive never spans lines.
 `[content]` is inline markdown; brackets inside balance as in CommonMark link text, `\]` for a
@@ -416,11 +419,11 @@ Right.
 ## Inline nodes
 
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
-the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot
-as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
-parsing to anything but one text node carrying neither marks nor attributes — adjacent text nodes
-with identical marks and no attributes merged first — is a named error, and so is a `text` key in
-`{attrs}`. An enclosing mark spelling does not reach into the slot. The rest take no content,
+the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot as
+plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
+parsing to anything but one text node carrying neither marks, attributes nor content — adjacent text
+nodes with identical marks and no attributes merged first — is a named error, and so is a `text` key
+in `{attrs}`. An enclosing mark spelling does not reach into the slot. The rest take no content,
 `!adf:text` included; content on a node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).

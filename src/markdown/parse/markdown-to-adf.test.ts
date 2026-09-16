@@ -312,7 +312,7 @@ test('names the position a directive name the other one spells belongs to', () =
 })
 
 test('names the reserved carry name a block directive spells', () => {
-  const reserved = 'malformed-directive: the name carry is reserved for the opaque carry, whose block form is the fence'
+  const reserved = 'malformed-directive: the name carry is reserved for the opaque carry, whose block form is the adf fence'
   assert.equal(content(markdownToAdf('::carry\n')), reserved)
   assert.equal(content(markdownToAdf(':::carry\nx\n:::\n')), reserved)
   assert.deepEqual(content(markdownToAdf('```adfx\nx\n```\n')), [{ attrs: { language: 'adfx' }, content: [text('x')], type: 'codeBlock' }])
@@ -876,9 +876,10 @@ test('reads the content slot as the text attribute the node spells there', () =>
 })
 
 test('names the content slot no lone plain text node reads back from', () => {
-  const named = 'unsupported-node-shape: the status content slot holds one text node carrying neither marks nor attributes: this one holds something else'
+  const named = 'unsupported-node-shape: the status content slot holds one text node carrying neither marks, attributes nor content: this one holds something else'
   assert.equal(content(markdownToAdf('!adf:status[**A**]{color=yellow}\n')), named)
   assert.equal(content(markdownToAdf('!adf:status[!adf:carry{json="{\\"attrs\\":{\\"localId\\":\\"a\\"},\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n')), named)
+  assert.equal(content(markdownToAdf('!adf:status[!adf:carry{json="{\\"content\\":[{\\"text\\":\\"B\\",\\"type\\":\\"text\\"}],\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n')), named)
   assert.equal(code(markdownToAdf('!adf:status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(code(markdownToAdf('!adf:status[!adf:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(content(markdownToAdf('!adf:status[![a](/u)]{color=yellow}\n')), 'unmappable-image: an image fits only as a paragraph of its own: this one sits inside other content')
