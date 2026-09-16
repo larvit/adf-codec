@@ -225,9 +225,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       or an `href` or `title` no CommonMark escape writes — and a directive link CommonMark could
       spell is `unsupported-node-shape`. That leaves `unspellable-link` no cause, so it leaves
       `ConvertErrorCode` in `0.2.0`, §8 recording the removal.
-  - [ ] **13a — `rule` and `layoutSection`.** `rule`'s `color`, `style` and `weight` and
-        `layoutSection`'s `columnRuleStyle` join their tables and `spec/flavour.md` bullets, with
-        round-trip fixtures; their gap entries go.
+  - [x] **13a — `rule` and `layoutSection`.**
   - [ ] **13b — The directive link.** `link` spelled as above in both directions, with a round-trip
         fixture per trigger, `spec/flavour.md`'s Marks section following; `unspellable-link` removed
         from the code list, its `errors/` fixtures and the CommonMark suite's `unspellable`

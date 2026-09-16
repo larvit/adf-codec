@@ -718,6 +718,10 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
   - [x] **12d — The README, `MIGRATION.md` and the sweep.** The README's examples and error tables
         follow, `MIGRATION.md` linked from one README line; docs and fixtures swept for any stale
         `::`/`:name` spelling.
+- [ ] **13 — The schema's gap attributes (`0.2.0`).**
+  - [x] **13a — `rule` and `layoutSection`.** `rule`'s `color`, `style` and `weight` and
+        `layoutSection`'s `columnRuleStyle` join their tables and `spec/flavour.md` bullets, with
+        round-trip fixtures; their gap entries go.
 
 ## 5 — Ship `0.1.0`
 
