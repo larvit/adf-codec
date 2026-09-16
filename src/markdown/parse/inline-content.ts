@@ -64,13 +64,16 @@ function parseInline(source: string, definitions: LinkDefinitions, path: Convert
         index = angle.value
         break
       }
-      case ':': {
+      case '!': {
         const directive = readDirective(scan, index)
+        if (directive === undefined) {
+          index = openBracket(scan, index)
+          break
+        }
         if (!directive.ok) return directive
         index = directive.value
         break
       }
-      case '!':
       case '[':
         index = openBracket(scan, index)
         break
@@ -151,12 +154,9 @@ function openBracket(scan: Scan, index: number): number {
   return index + width
 }
 
-function readDirective(scan: Scan, index: number): Result<number> {
+function readDirective(scan: Scan, index: number): Result<number> | undefined {
   const directive = readInlineDirective(scan.source, index)
-  if (directive === undefined) {
-    scan.pending += ':'
-    return success(index + 1)
-  }
+  if (directive === undefined) return undefined
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
   const piece = directivePiece(scan, directive.value)
   if (!piece.ok) return piece

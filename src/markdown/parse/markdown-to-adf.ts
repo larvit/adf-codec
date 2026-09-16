@@ -3,7 +3,7 @@ import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { carryName, readCarriedBlock } from '../opaque-carry.ts'
+import { carryFence, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
@@ -161,7 +161,7 @@ function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDef
 }
 
 function codeBlockNode(language: string, text: string, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  if (language === carryName) {
+  if (language === carryFence) {
     const carried = readCarriedBlock(text, depth)
     if (carried.fault !== undefined) return faulted(carried.fault, path)
     return success(carried.value)

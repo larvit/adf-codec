@@ -2,6 +2,7 @@ import type { AdfMark } from '../../adf/document.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes } from '../directive-syntax.ts'
 import type { MarkSpelling } from '../mark-spellings.ts'
+import { directivePrefix } from '../directive-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { markSpelling } from '../mark-spellings.ts'
 import { readVocabulary } from './directive-attributes.ts'
@@ -19,7 +20,7 @@ export function readDirectiveMark(name: string, attributes: DirectiveAttributes,
 export function inlineMarkSpellingFault(name: string): ConvertFault | undefined {
   const spelling = markSpelling(name)
   if (spelling === undefined) return undefined
-  return { code: 'unsupported-node-shape', message: `${name} is spelled ${markdownForm(spelling) ?? `:${name}[…]`}, never as a block directive` }
+  return { code: 'unsupported-node-shape', message: `${name} is spelled ${markdownForm(spelling) ?? `${directivePrefix}${name}[…]`}, never as a block directive` }
 }
 
 function markdownForm(spelling: MarkSpelling): string | undefined {

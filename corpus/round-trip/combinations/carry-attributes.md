@@ -38,4 +38,4 @@
 }
 ```
 
-See :adf{json="{\"attrs\":{\"localId\":5,\"text\":\"In review\"},\"type\":\"status\"}"} now.
+See !adf:carry{json="{\"attrs\":{\"localId\":5,\"text\":\"In review\"},\"type\":\"status\"}"} now.

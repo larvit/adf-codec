@@ -5,8 +5,8 @@ import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { holdsDirectivePrefix, slotLineEndingFault, spellDirectiveOpener, spellLeafDirective } from '../directive-syntax.ts'
 import { holdsEntityReference } from '../entity-references.ts'
-import { holdsInlineDirectiveOpener, slotLineEndingFault, spellLeafDirective } from '../directive-syntax.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
@@ -214,7 +214,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   if (spans !== undefined) return faulted(spans, path)
   if (holdsNullCharacter(slot)) return failure('unspellable-character', `a ${node.type} content slot holds a null character CommonMark replaces`, path)
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
-  return success({ segments: [syntax(`:${node.type}[`), ...content, syntax(`]${attributes}`)] })
+  return success({ segments: [syntax(spellDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
 
 function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
@@ -241,7 +241,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  return success({ segments: [syntax(`:${mark.type}[`), ...inner.value.segments, syntax(`]${attributes}`)] })
+  return success({ segments: [syntax(spellDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })
 }
 
 function emitEmphasis(nodes: readonly AdfNode[], spelling: string, depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
@@ -284,7 +284,7 @@ function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range
   if (typeof href !== 'string') return success({ carry: range })
   const node = nodes[0]
   const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
-  const autolinkHolds = !context.bracketed || (!href.includes('`') && !holdsInlineDirectiveOpener(href) && escapeUnbalanced(href, '[', ']') === href)
+  const autolinkHolds = !context.bracketed || (!href.includes('`') && !holdsDirectivePrefix(href) && escapeUnbalanced(href, '[', ']') === href)
   if (bare && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
   const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, path)
   if (!target.ok) return target

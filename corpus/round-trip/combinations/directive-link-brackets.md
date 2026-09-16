@@ -1,7 +1,7 @@
-:subsup[[a](\[)]
+!adf:subsup[[a](\[)]
 
-:underline[[b](\]) [c](x "\[")]
+!adf:underline[[b](\]) [c](x "\[")]
 
-:underline[[d](e[f])]
+!adf:underline[[d](e[f])]
 
-:underline[[http://a\[b](http://a\[b)]
+!adf:underline[[http://a\[b](http://a\[b)]

@@ -418,10 +418,10 @@ Right.
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
 the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot
 as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
-parsing to anything but one unmarked text node — adjacent text nodes with identical marks and no
-attributes merged first — is a named error, and so is a `text` key in `{attrs}`. An enclosing mark
-spelling does not reach into the slot. The rest take no content, `!adf:text` included; content on a
-node that takes none is a named error.
+parsing to anything but one text node carrying neither marks nor attributes — adjacent text nodes
+with identical marks and no attributes merged first — is a named error, and so is a `text` key in
+`{attrs}`. An enclosing mark spelling does not reach into the slot. The rest take no content,
+`!adf:text` included; content on a node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — Attributes: `id` (string), `localId` (string), `shortName` (string, `:name:`), `text`

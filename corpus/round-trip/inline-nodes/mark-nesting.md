@@ -1,3 +1,3 @@
-_:underline[Rewired]_ at the mains.
+_!adf:underline[Rewired]_ at the mains.
 
-:underline[_Rewound_] by hand.
+!adf:underline[_Rewound_] by hand.

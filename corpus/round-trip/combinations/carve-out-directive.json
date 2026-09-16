@@ -3,7 +3,16 @@
     {
       "content": [
         {
-          "text": "Write :mention[@Mikael]{id=5b10a2} to tag someone.",
+          "text": "Write !adf:mention[@Mikael]{id=5b10a2} to tag someone.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Namespaced under !adf: alone.",
           "type": "text"
         }
       ],
@@ -54,7 +63,7 @@
     {
       "content": [
         {
-          "text": ":status[nope]{color=red} vs ",
+          "text": "!adf:status[nope]{color=red} vs ",
           "type": "text"
         },
         {

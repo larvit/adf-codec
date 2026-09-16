@@ -1,1 +1,1 @@
-Shipped :emoji[🎉]{id=1f389 localId=01a033ad-f00e-7acb-a009-37ddd25d7949 shortName=":tada:"} on Friday.
+Shipped !adf:emoji[🎉]{id=1f389 localId=01a033ad-f00e-7acb-a009-37ddd25d7949 shortName=":tada:"} on Friday.

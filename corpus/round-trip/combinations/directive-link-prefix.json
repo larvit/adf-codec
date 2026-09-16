@@ -9,7 +9,7 @@
             },
             {
               "attrs": {
-                "href": ":a{"
+                "href": "!adf:a{"
               },
               "type": "link"
             }
@@ -30,7 +30,7 @@
             {
               "attrs": {
                 "href": "y",
-                "title": ":a{"
+                "title": "!adf:a{"
               },
               "type": "link"
             }
@@ -50,7 +50,7 @@
             },
             {
               "attrs": {
-                "href": ":a[]{"
+                "href": "!adf:a[]{"
               },
               "type": "link"
             }
@@ -70,7 +70,7 @@
             },
             {
               "attrs": {
-                "href": "https://example.com/?q=:emoji{"
+                "href": "https://example.com/?q=!adf:emoji{"
               },
               "type": "link"
             }
@@ -90,12 +90,32 @@
             },
             {
               "attrs": {
-                "href": "ab:c{"
+                "href": "ab:!adf:c{"
               },
               "type": "link"
             }
           ],
-          "text": "ab:c{",
+          "text": "ab:!adf:c{",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "attrs": {
+                "href": "ab:!adf:d"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "ab:!adf:d",
           "type": "text"
         }
       ],

@@ -1,6 +1,6 @@
-\[:date{timestamp="]:a"}
+\[!adf:date{timestamp="]:a"}
 
 > \[`]: a`
 
-- \[:date{timestamp="]:a"}\
+- \[!adf:date{timestamp="]:a"}\
   b

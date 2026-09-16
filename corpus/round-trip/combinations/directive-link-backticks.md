@@ -1,5 +1,5 @@
-:textColor[[ ](\`)]{color=""}`a
+!adf:textColor[[ ](\`)]{color=""}`a
 
-:underline[[b](c "\`")]`c`
+!adf:underline[[b](c "\`")]`c`
 
-:underline[[d](e`f)]
+!adf:underline[[d](e`f)]

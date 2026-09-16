@@ -1,4 +1,6 @@
-Write \:mention[@Mikael]{id=5b10a2} to tag someone.
+Write \!adf:mention[@Mikael]{id=5b10a2} to tag someone.
+
+Namespaced under \!adf: alone.
 
 \::syncBlock {localId=x}
 
@@ -6,6 +8,6 @@ Write \:mention[@Mikael]{id=5b10a2} to tag someone.
 
 Stand-up at 10:30, shipped :tada:, {maxLevel} deep, a ::syncBlock mid-line.
 
-:status[In review]\{color} decides.
+!adf:status[In review]\{color} decides.
 
-\:status[nope]{color=red} vs :status[yep]{color=red}
+\!adf:status[nope]{color=red} vs !adf:status[yep]{color=red}

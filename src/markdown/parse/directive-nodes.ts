@@ -3,8 +3,8 @@ import type { BlockDirective } from '../../adf/block-directives.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
-import { attributeNestingMessage, nodeMarks } from '../../adf/document.ts'
-import { attributeValue, directiveLineEscape, inlineDirectiveEscape, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
+import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
+import { attributeValue, directiveLineEscape, directivePrefix, inlineDirectiveEscape, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
 import { carryName } from '../opaque-carry.ts'
@@ -61,7 +61,9 @@ export function readInlineDirectiveNode(
   if (!attrs.ok) return attrs
   if (slot !== undefined && content !== undefined) {
     const text = slotText(content)
-    if (text === undefined) return failure('unsupported-node-shape', `the ${name} content slot holds one unmarked text node: this one holds something else`, path)
+    if (text === undefined) {
+      return failure('unsupported-node-shape', `the ${name} content slot holds one text node carrying neither marks nor attributes: this one holds something else`, path)
+    }
     const spans = slotLineEndingFault(name, text)
     if (spans !== undefined) return faulted(spans, path)
     attrs.value[slot] = text
@@ -74,7 +76,7 @@ function inlineSpellingFault(name: string): ConvertFault | undefined {
   const mark = inlineMarkSpellingFault(name)
   if (mark !== undefined) return mark
   if (inlineDirective(name) === undefined && name !== textDirectiveName) return undefined
-  return { code: 'unsupported-node-shape', message: `${name} takes the inline form, :${name}{…}, never the block form` }
+  return { code: 'unsupported-node-shape', message: `${name} takes the inline form, ${directivePrefix}${name}{…}, never the block form` }
 }
 
 function blockSpellingFault(name: string): ConvertFault | undefined {
@@ -89,7 +91,7 @@ function blockSpellingFault(name: string): ConvertFault | undefined {
 function slotText(content: readonly AdfNode[]): string | undefined {
   if (content.length === 0) return ''
   const only = content.length === 1 ? content[0] : undefined
-  if (only?.type !== 'text' || nodeMarks(only).length > 0 || typeof only.text !== 'string') return undefined
+  if (only?.type !== 'text' || nodeMarks(only).length > 0 || Object.keys(nodeAttrs(only)).length > 0 || typeof only.text !== 'string') return undefined
   return only.text
 }
 

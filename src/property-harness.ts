@@ -8,6 +8,7 @@ import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabul
 import type { JsonValue } from './json-value.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
 import { blockDirectives } from './adf/block-directives.ts'
+import { directivePrefix } from './markdown/directive-syntax.ts'
 import { inlineDirectives } from './adf/inline-directives.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
 import { toEditorNormal } from './adf/editor-normal.ts'
@@ -22,7 +23,7 @@ export const propertyTimeout = 600000
 const depthIdentifier = fc.createDepthIdentifier()
 const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell' }
 const flatCommonMarkShapeWeight = 4
-export const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉', ':a[', ':a{', 'ab:', 'http://')
+export const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
 const nestingCommonMarkShapeWeight = 21
 const spelledTypes = new Set(['text', ...Object.keys(blockDirectives), ...Object.keys(inlineDirectives), ...Object.keys(markAttributes)])
 

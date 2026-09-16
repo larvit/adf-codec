@@ -73,8 +73,8 @@ test('spells an empty {attrs} only where the brace itself claims the directive',
   const omitted = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
   assert.equal(fault('::rule {}'), omitted)
   assert.equal(fault(':::panel info {}'), omitted)
-  assert.equal(inline(':underline[a]{}'), omitted)
-  spans(':hardBreak{}', 'hardBreak', undefined)
+  assert.equal(inline('!adf:underline[a]{}'), omitted)
+  spans('!adf:hardBreak{}', 'hardBreak', undefined)
 })
 
 test('names the directive line no spelling reads', () => {
@@ -98,7 +98,7 @@ test('names the attributes no spelling reads', () => {
   assert.equal(fault('::panel { a=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
   assert.equal(fault('::panel {a=1 }'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
   assert.equal(fault('::panel {a=1 a=2}'), 'the attribute key a is spelled twice')
-  assert.equal(inline(':mention[@A]{id}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\: keeps the colon literal')
+  assert.equal(inline('!adf:mention[@A]{id}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
 })
 
 test('breaks the directive on the raw characters a quoted value spells as escapes', () => {
@@ -108,41 +108,43 @@ test('breaks the directive on the raw characters a quoted value spells as escape
   assert.equal(fault('::panel {a="x|y"}'), 'a raw | inside {attrs} breaks the directive: spell it \\u007c')
 })
 
-test('reads an inline directive only where a bracket or a brace follows the name', () => {
+test('claims at the prefix, and reads a directive only where a bracket or a brace follows the name', () => {
+  const completes = 'an unescaped !adf: completes no directive; \\!adf: keeps the prefix literal'
   assert.equal(inline('Part.'), 'unclaimed')
-  assert.equal(inline(':10:30'), 'unclaimed')
-  assert.equal(inline(':smile:'), 'unclaimed')
-  assert.equal(inline(':Mention[@A]'), 'unclaimed')
-  assert.equal(inline(':mention @A'), 'unclaimed')
-  spans(':mention[@A]', 'mention', '@A')
-  spans(':date{timestamp=1756080000000}', 'date', undefined, ['timestamp', '1756080000000'])
-  spans(':emoji[]{shortName=":tada:"}', 'emoji', '', ['shortName', ':tada:', '":tada:"'])
-  spans(':underline[ a ]', 'underline', ' a ')
+  assert.equal(inline(':mention[@A]'), 'unclaimed')
+  assert.equal(inline('!adfx:mention[@A]'), 'unclaimed')
+  assert.equal(inline('!adf:'), completes)
+  assert.equal(inline('!adf:Mention[@A]'), completes)
+  assert.equal(inline('!adf:mention @A'), completes)
+  spans('!adf:mention[@A]', 'mention', '@A')
+  spans('!adf:date{timestamp=1756080000000}', 'date', undefined, ['timestamp', '1756080000000'])
+  spans('!adf:emoji[]{shortName=":tada:"}', 'emoji', '', ['shortName', ':tada:', '":tada:"'])
+  spans('!adf:underline[ a ]', 'underline', ' a ')
 })
 
 test('binds an inline directive as a unit, its content balancing brackets like link text', () => {
-  spans(':underline[a [b] c]', 'underline', 'a [b] c')
-  spans(':underline[a \\] b]', 'underline', 'a \\] b')
-  spans(':underline[a `]` b]', 'underline', 'a `]` b')
-  spans(':underline[a `b c]', 'underline', 'a `b c')
-  spans(':underline[:status[x]{color=red}]', 'underline', ':status[x]{color=red}')
-  spans(':status[x]{color=red style="bold "}', 'status', 'x', ['color', 'red'], ['style', 'bold ', '"bold "'])
-  assert.deepEqual(inline(':underline[a] {}'), { attributes: attributes(), content: 'a', length: 13, name: 'underline' })
-  assert.deepEqual(inline(':text{text=" "} and more'), { attributes: attributes(['text', ' ', '" "']), content: undefined, length: 15, name: 'text' })
+  spans('!adf:underline[a [b] c]', 'underline', 'a [b] c')
+  spans('!adf:underline[a \\] b]', 'underline', 'a \\] b')
+  spans('!adf:underline[a `]` b]', 'underline', 'a `]` b')
+  spans('!adf:underline[a `b c]', 'underline', 'a `b c')
+  spans('!adf:underline[!adf:status[x]{color=red}]', 'underline', '!adf:status[x]{color=red}')
+  spans('!adf:status[x]{color=red style="bold "}', 'status', 'x', ['color', 'red'], ['style', 'bold ', '"bold "'])
+  assert.deepEqual(inline('!adf:underline[a] {}'), { attributes: attributes(), content: 'a', length: 17, name: 'underline' })
+  assert.deepEqual(inline('!adf:text{text=" "} and more'), { attributes: attributes(['text', ' ', '" "']), content: undefined, length: 19, name: 'text' })
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {
-  assert.equal(inline(':mention[@A'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
-  assert.equal(inline(':mention[@A\nB]'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
-  assert.equal(inline(':mention[a `b\nc` d]'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
-  assert.equal(inline(':underline[:status[x'), 'an inline directive [content] is unclosed; \\: keeps the colon literal')
-  assert.equal(inline(':mention[@A]{id=1'), 'the {attrs} closing brace is missing')
-  assert.equal(inline(':mention{id=1'), 'the {attrs} closing brace is missing')
-  assert.equal(inline(':text{text="a\nb"}'), 'the {attrs} quoted value is not a JSON string')
+  assert.equal(inline('!adf:mention[@A'), 'an inline directive [content] is unclosed; \\!adf: keeps the prefix literal')
+  assert.equal(inline('!adf:mention[@A\nB]'), 'an inline directive [content] is unclosed; \\!adf: keeps the prefix literal')
+  assert.equal(inline('!adf:mention[a `b\nc` d]'), 'an inline directive [content] is unclosed; \\!adf: keeps the prefix literal')
+  assert.equal(inline('!adf:underline[!adf:status[x'), 'an inline directive [content] is unclosed; \\!adf: keeps the prefix literal')
+  assert.equal(inline('!adf:mention[@A]{id=1'), 'the {attrs} closing brace is missing')
+  assert.equal(inline('!adf:mention{id=1'), 'the {attrs} closing brace is missing')
+  assert.equal(inline('!adf:text{text="a\nb"}'), 'the {attrs} quoted value is not a JSON string')
 })
 
 test('refuses inline directives nested deeper than the parser carries', () => {
-  const nest = (depth: number): string => `${':underline['.repeat(depth)}x${']'.repeat(depth)}`
+  const nest = (depth: number): string => `${'!adf:underline['.repeat(depth)}x${']'.repeat(depth)}`
   spans(nest(largestNesting), 'underline', nest(largestNesting - 1))
   assert.equal(inline(nest(largestNesting + 1)), `the input nests inline directives deeper than the ${largestNesting} levels the parser carries`)
 })

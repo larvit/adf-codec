@@ -1,6 +1,6 @@
 Line one\
 Line two
 
-Trailing:hardBreak{}
+Trailing!adf:hardBreak{}
 
-## Two:hardBreak{}lines
+## Two!adf:hardBreak{}lines

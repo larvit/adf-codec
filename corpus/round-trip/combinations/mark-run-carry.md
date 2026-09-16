@@ -1,1 +1,1 @@
-_**Ready**_:adf{json="{\"attrs\":{\"extensionKey\":\"status-lozenge\",\"extensionType\":\"com.atlassian.confluence.macro.core\"},\"marks\":[{\"type\":\"em\"},{\"type\":\"strong\"}],\"type\":\"inlineExtension\"}"}_**to ship**_
+_**Ready**_!adf:carry{json="{\"attrs\":{\"extensionKey\":\"status-lozenge\",\"extensionType\":\"com.atlassian.confluence.macro.core\"},\"marks\":[{\"type\":\"em\"},{\"type\":\"strong\"}],\"type\":\"inlineExtension\"}"}_**to ship**_

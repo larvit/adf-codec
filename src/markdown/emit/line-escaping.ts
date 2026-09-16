@@ -1,8 +1,8 @@
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
+import { claimsDirectivePrefix } from '../directive-syntax.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
-import { opensInlineDirective } from '../directive-syntax.ts'
 import { opensLinkDefinition } from '../link-reference-definitions.ts'
 import { readEntityReference } from '../entity-references.ts'
 
@@ -98,7 +98,7 @@ function escapedIndexes(scan: string, escapings: readonly InlineEscaping[], cont
           mergesWithSyntax(scan, escapings, index) ||
           opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))) ||
       (escaping === 'bracketed-link-target' &&
-        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || (scan.charAt(index) === ':' && opensInlineDirective(scan, index))))
+        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || (scan.charAt(index) === '!' && claimsDirectivePrefix(scan, index))))
     ) {
       escaped.add(index)
     }
@@ -270,7 +270,7 @@ function claimsCharacter(
   if (character === '\\') return backslashEscape(scan, index) !== undefined
   if (character === '&') return readEntityReference(scan, index) !== undefined
   if (character === '<') return opensBracketedAutolink(scan, index) || opensEmailAutolink(scan, index) || inlineHtmlConstruct(scan, index) !== undefined
-  if (character === ':') return opensInlineDirective(scan, index)
+  if (character === '!') return claimsDirectivePrefix(scan, index)
   if (character === '[') return index < linkClose
   if (character === '`') return opensCodeSpan(scan, index, escaped)
   if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, escaped)

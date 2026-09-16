@@ -1,7 +1,7 @@
-Draft: :adf{json="{\"attrs\":{\"text\":\"Add a summary\"},\"type\":\"placeholder\"}"} — expected Friday.
+Draft: !adf:carry{json="{\"attrs\":{\"text\":\"Add a summary\"},\"type\":\"placeholder\"}"} — expected Friday.
 
-**Blocked** on :adf{json="{\"attrs\":{\"extensionKey\":\"jira-issue\",\"extensionType\":\"com.atlassian.jira.macro\"},\"marks\":[{\"type\":\"strong\"}],\"type\":\"inlineExtension\"}"} until the rebuild lands.
+**Blocked** on !adf:carry{json="{\"attrs\":{\"extensionKey\":\"jira-issue\",\"extensionType\":\"com.atlassian.jira.macro\"},\"marks\":[{\"type\":\"strong\"}],\"type\":\"inlineExtension\"}"} until the rebuild lands.
 
-\::adf{json="{\"type\":\"blockCard\"}"}
+\!adf:!adf:carry{json="{\"type\":\"blockCard\"}"}
 
-**a**:adf{json="{\"marks\":[{\"type\":\"strong\"}],\"type\":\"placeholder\"}"}**b**
+**a**!adf:carry{json="{\"marks\":[{\"type\":\"strong\"}],\"type\":\"placeholder\"}"}**b**

@@ -1,1 +1,1 @@
-Part :mention[**@Mikael**]{id=b1c2}.
+Part !adf:mention[**@Mikael**]{id=b1c2}.

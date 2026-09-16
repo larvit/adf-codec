@@ -26,11 +26,13 @@ type Attributes = { attributes: DirectiveAttributes; length: number }
 
 type AttributePair = { end: number; key: string; value: DirectiveValue }
 
+export const directivePrefix = '!adf:'
+
 const bareTokenSource = '[A-Za-z0-9_-]+'
 const bareRun = new RegExp(bareTokenSource, 'y')
 const bareToken = new RegExp(`^${bareTokenSource}$`)
 const directiveName = /[a-z][A-Za-z0-9]*/y
-const inlineDirectiveOpener = /:[a-z][A-Za-z0-9]*[[{]/y
+const inlineDirectiveOpener = new RegExp(`${directivePrefix}[a-z][A-Za-z0-9]*[[{]`, 'y')
 const lineEnd = /^[ \t]*$/
 // spec/flavour.md, Attributes.
 const reservedSource = '[&<`|]'
@@ -39,12 +41,13 @@ const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
 
 export const directiveLineEscape = '\\::: keeps the line literal text'
-export const inlineDirectiveEscape = '\\: keeps the colon literal'
+export const inlineDirectiveEscape = `\\${directivePrefix} keeps the prefix literal`
 
 const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
 const nameFault = `a directive name reads [a-z][A-Za-z0-9]*: this one does not; ${directiveLineEscape}`
 const orderFault = 'the {attrs} keys read in alphabetical order'
 const pairFault = 'an attribute reads key=value, the value bare or double-quoted: this one does not'
+const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${inlineDirectiveEscape}`
 const shapeFault = `a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveLineEscape}`
 
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
@@ -56,9 +59,12 @@ export function attributeValue(text: string, kind: AttributeKind): AttributeRead
   return overNested(parsed) ? { refusal: 'nesting' } : { value: { kind, value: parsed } }
 }
 
-export function holdsInlineDirectiveOpener(text: string): boolean {
-  for (let index = text.indexOf(':'); index !== -1; index = text.indexOf(':', index + 1)) if (opensInlineDirective(text, index)) return true
-  return false
+export function claimsDirectivePrefix(text: string, index: number): boolean {
+  return text.startsWith(directivePrefix, index)
+}
+
+export function holdsDirectivePrefix(text: string): boolean {
+  return text.includes(directivePrefix)
 }
 
 export function isBareToken(text: string): boolean {
@@ -67,10 +73,6 @@ export function isBareToken(text: string): boolean {
 
 export function malformedDirective(message: string): ConvertFault {
   return { code: 'malformed-directive', message }
-}
-
-export function opensInlineDirective(text: string, index: number): boolean {
-  return inlineDirectiveName(text, index) !== undefined
 }
 
 export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined {
@@ -112,8 +114,12 @@ export function spellJsonAttribute(value: JsonValue): string {
   return quote(serializeCanonicalJson(value, 'compact'))
 }
 
+export function spellDirectiveOpener(name: string): string {
+  return `${directivePrefix}${name}[`
+}
+
 export function spellLeafDirective(name: string, attributes: string): string {
-  return `:${name}${attributes === '' ? '{}' : attributes}`
+  return `${directivePrefix}${name}${attributes === '' ? '{}' : attributes}`
 }
 
 export function spellStringAttribute(text: string): string {
@@ -159,7 +165,7 @@ function escapeDigits(character: string): string {
 function inlineDirectiveName(text: string, index: number): string | undefined {
   inlineDirectiveOpener.lastIndex = index
   const opened = inlineDirectiveOpener.exec(text)?.[0]
-  return opened === undefined ? undefined : opened.slice(1, -1)
+  return opened === undefined ? undefined : opened.slice(directivePrefix.length, -1)
 }
 
 function readDirectiveHeader(rest: string): Read<{ argument: string | undefined; attributes: DirectiveAttributes; name: string }> {
@@ -187,12 +193,13 @@ function readDirectiveHeader(rest: string): Read<{ argument: string | undefined;
 }
 
 function readNestedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> | undefined {
+  if (!claimsDirectivePrefix(text, index)) return undefined
   const name = inlineDirectiveName(text, index)
-  if (name === undefined) return undefined
+  if (name === undefined) return { fault: malformedDirective(prefixFault) }
   if (depth > largestNesting) {
     return { fault: { code: 'unsupported-nesting-depth', message: `the input nests inline directives deeper than the ${largestNesting} levels the parser carries` } }
   }
-  let cursor = index + 1 + name.length
+  let cursor = index + directivePrefix.length + name.length
   let content: string | undefined
   if (text.charAt(cursor) === '[') {
     const end = readDirectiveContent(text, cursor + 1, depth)
@@ -227,7 +234,7 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
       cursor = span
       continue
     }
-    const nested = character === ':' ? readNestedDirective(text, cursor, depth + 1) : undefined
+    const nested = character === '!' ? readNestedDirective(text, cursor, depth + 1) : undefined
     if (nested !== undefined) {
       if (nested.fault !== undefined) return { fault: nested.fault }
       cursor += nested.value.length

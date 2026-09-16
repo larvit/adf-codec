@@ -1,4 +1,4 @@
 | Cell | Note |
 | --- | --- |
-| :text{text=" "}lead |  |
-| :status[ok]{style="a\u007cb"} | trail:text{text=" "} |
+| !adf:text{text=" "}lead |  |
+| !adf:status[ok]{style="a\u007cb"} | trail!adf:text{text=" "} |

@@ -1,1 +1,1 @@
-_a :adf{json="{\"type\":\"blockCard\"}"} b_
+_a !adf:carry{json="{\"type\":\"blockCard\"}"} b_

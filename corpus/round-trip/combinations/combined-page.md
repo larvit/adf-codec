@@ -1,6 +1,6 @@
 # Release 2.4
 
-Shipped :emoji[🚀]{shortName=":rocket:"} on :date{timestamp=1756080000000} — :mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4} owns the rollout, status :status[In review]{color=yellow}.
+Shipped !adf:emoji[🚀]{shortName=":rocket:"} on !adf:date{timestamp=1756080000000} — !adf:mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4} owns the rollout, status !adf:status[In review]{color=yellow}.
 
 | Part | Qty |
 | --- | --- |
@@ -11,7 +11,7 @@ Shipped :emoji[🚀]{shortName=":rocket:"} on :date{timestamp=1756080000000} —
 - Check the collation:
   - `mysqldump --default-character-set=utf8mb4`
 
-> Rolled back once, see the :underline[postmortem].
+> Rolled back once, see the !adf:underline[postmortem].
 
 ---
 
