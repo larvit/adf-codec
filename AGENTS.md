@@ -43,8 +43,11 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 
 ## 4. The flavour
 
-- Directives, one grammar for everything markdown lacks: `:::panel info` … `:::` blocks,
-  `:mention[@Mikael]{id=5b10a2}` inline. Prior art: CommonMark's generic-directives proposal.
+- Directives, one grammar for everything markdown lacks, namespaced under `!adf:`: `!adf:panel info`
+  … `!adf:/panel` blocks, `!adf:mention[@Mikael]{id=5b10a2}` inline, `\!adf:` the one escape. Not
+  CommonMark's generic-directives proposal: its `:::` claims a form prose writes, and its
+  fence-length discipline ties a container's opener to its own body, where closing from the opener
+  nests by itself and leaf versus container falls out of the node's content model.
 - Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
   directive, a pipe table or a `~~` pair is claimed — plus one image gap.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
@@ -98,15 +101,17 @@ against the README's personas.
 
 The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
 differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
-Pre-1.0, normal 0.x rules.
+Pre-1.0, normal 0.x rules. A spelled node's content model is part of that contract — leaf or
+container is the model, not the syntax — so giving a spelled node's model content it had not, or
+taking it away, is MAJOR whatever ADF's own schema does.
 
 The error surface is a contract too. `ConvertError` is `{ code, message, path, position? }` — the
 code from a closed list a consumer may switch exhaustively, the message free text, the path the
 node's place from the document root, the position where a parse read the refusal in its input.
 A message names the violation, not the rule alone — a rule by itself states a truth the reader
 must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose it
-names the escape that unclaims the form claimed: `\:::` for a directive line, `\|` for every pipe
-row, `\:` for an inline directive.
+names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and inline
+alike, `\|` for every pipe row.
 Adding, removing or renaming a code is breaking, so a milestone meeting a new failure cause
 reuses a code where one fits; the list is complete at `0.1.0`. A code names the
 cause; where one cause recurs across node types, across one mark's attributes or across
@@ -116,7 +121,7 @@ direction hits it, `unspellable-link` the destination and the title alike. Where
 apart, the line between them is what they name: `unspellable-character` is a character CommonMark
 rewrites wherever text holds it, `unspellable-whitespace` the newline no inline directive's
 content slot spans, in either direction. A claim code names the spelling claimed, never the node that spelling would have built:
-a malformed `:::table` is a `malformed-directive`, and an alignment colon a `malformed-pipe-table` —
+a malformed `!adf:table` is a `malformed-directive`, and an alignment colon a `malformed-pipe-table` —
 the flavour's own delimiter row is `-` runs, so the grammar refuses the colon rather than ADF's
 missing column model doing it. A refusal no spelling recovers from is a gap in the flavour rather
 than a code: give the flavour the spelling and the code goes, which the freeze is the last moment
@@ -125,8 +130,8 @@ spelling writes rides the carry with its node. A directive whose name reads back
 `unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
 apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
 reserved name is a known name, so never that code, and the two the flavour reserves part on form:
-a form the grammar does not have is a claim code — `::adf`, whose carry is the fence — and a
-well-formed form in the wrong place is `unsupported-node-shape`, `::listBreak` parting anything
+a form the grammar does not have is a claim code — `!adf:carry`, whose carry is the fence — and a
+well-formed form in the wrong place is `unsupported-node-shape`, `!adf:listBreak` parting anything
 but two adjacent lists of one type. What
 the grammar itself refuses stays a claim code, key order among it; a well-formed directive the
 node tables refuse — an attribute a node does not hold or spells elsewhere, a value outside its

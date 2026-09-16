@@ -3,7 +3,7 @@
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
 CommonMark is a subset apart from raw HTML (below), with three carve-outs: literal text that
 matches directive syntax below or reads as a pipe table is claimed by the flavour, and a matched
-`~~` pair spells `strike` (escape the `:`, `|` or `~` to keep it literal) — and one gap: a
+`~~` pair spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal) — and one gap: a
 CommonMark image fits only as its own
 title-less paragraph — mid-text and titled images are named errors. The emitted form is contract
 (AGENTS.md §8). Per-node syntaxes build on this grammar in the sections below.
@@ -25,7 +25,7 @@ normalizes to it through the round-trip.
   whose first item is empty), whatever block sits above it. Blank lines between items normalize
   away, and no list opens beside one of its own kind — the marker change CommonMark starts a
   second list on merges instead: ADF records no tightness, so one `- ` spelling reads two
-  adjacent lists of a kind back as one. The leaf `::listBreak` parts them, taking the separation
+  adjacent lists of a kind back as one. The leaf `!adf:listBreak` parts them, taking the separation
   any directive block takes where it sits. It builds no node, and it reads only between two
   adjacent lists of one type: elsewhere, or carrying an argument, `{attrs}` or a body, it is a
   named error. A list whose item holds a line of spaces or tabs alone, which a list item reads
@@ -43,7 +43,8 @@ normalizes to it through the round-trip.
 - Hard break: backslash at end of line (survives editors that trim trailing spaces). Where
   CommonMark admits no spelling — the end of a block, inside an ATX heading — or where the node
   carries an attribute, it is the inline directive.
-- An empty paragraph — real payloads carry them — is `::paragraph`.
+- An empty paragraph — real payloads carry them — is an `!adf:paragraph` … `!adf:/paragraph` pair
+  holding nothing.
 - Links `[text](url)`; `<…>` around a destination containing spaces, `<>` an empty one beside a
   title; title in double quotes. A backslash escapes a parenthesis the destination leaves
   unbalanced, and a quote inside the title; a balanced pair stays bare. `<url>` autolink form only
@@ -72,55 +73,58 @@ normalizes to it through the round-trip.
 
 ## Directives
 
-One grammar for everything CommonMark lacks. A directive name is `[a-z][A-Za-z0-9]*` — the ADF
-node and mark names the sections below spell as directives. Recognition is syntactic and
-name-set-independent: anything matching the forms below parses as a directive regardless of
-whether the name is known, and an unknown name is an error result naming it — so output an old
-emitter escaped stays escaped, and erroring input gaining meaning later is MINOR, never a reparse
-(§8). Each name belongs to one position, and a name the other one spells — a mark or an inline
-node written as a block directive, a block node written inline — is a different error, naming the
-spelling it takes. Two reserved names read back to no node: `adf` for the opaque carry, as both
-directive name and fence info string, and `listBreak` for the leaf that parts two adjacent lists
-(Canonical form).
+One grammar for everything CommonMark lacks, namespaced: every directive opens with the literal
+`!adf:`. A directive name is `[a-z][A-Za-z0-9]*` — the ADF node and mark names the sections below
+spell as directives. Recognition is syntactic and name-set-independent: anything matching the forms
+below parses as a directive regardless of whether the name is known, and an unknown name is an
+error result naming it at the opener, whatever follows it — so output an old emitter escaped stays
+escaped, and erroring input gaining meaning later is MINOR, never a reparse (§8). Each name belongs
+to one position, and a name the other one spells — a mark or an inline node written as a block
+directive, a block node written inline — is a different error, naming the spelling it takes. Two
+reserved names read back to no node: `carry` for the opaque carry, as both directive name and fence
+info string, and `listBreak` for the leaf that parts two adjacent lists (Canonical form).
 
-**Inline**: `:name[content]{attrs}`, on one line — an inline directive never spans lines.
+**Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`
+closes a container, and a name picks by what follows it in turn — a space or the line's end a block
+line, `[` or `{` an inline directive. A `!adf:` completing none of the three is a named error, and
+`\!adf:` is the literal, block and inline alike. A claimed block line also ends a lazy continuation:
+the blockquote or list item whose paragraph CommonMark would fold it into closes instead.
+
+**Inline**: `!adf:name[content]{attrs}`, on one line — an inline directive never spans lines.
 `[content]` is inline markdown; brackets inside balance as in CommonMark link text, `\]` for a
 literal bracket. Whitespace at either edge of `[content]`, space or tab, is part of it and
-survives inline parsing. Each section below says whether content is required. `:` opens a
-directive only when the name is followed immediately by `[` or `{`, and `{attrs}` must follow
-`]` (or the name) with no gap — anything else (`10:30`, `:smile:`, a stray `{…}` in text) is
-literal text. An inline directive binds as a unit before bracket matching, the way a code span
-does: a `]` or `(` inside its `{attrs}` is the directive's, never the enclosing content's, and a
-`(` after its closing `]` opens no link.
+survives inline parsing. Each section below says whether content is required, and `{attrs}` must
+follow `]` (or the name) with no gap. An inline directive binds as a unit before bracket matching,
+the way a code span does: a `]` or `(` inside its `{attrs}` is the directive's, never the enclosing
+content's, and a `(` after its closing `]` opens no link.
 
-**Container block**:
+**Block container**:
 
 ```
-:::name arg {attrs}
+!adf:name arg {attrs}
 block content
-:::
+!adf:/name
 ```
 
-The fence is three or more colons. `arg` is one optional bare token whose meaning each node
-defines (e.g. the panel type). The body is block markdown. The closing fence is a line of at
-least the opening's length and closes the innermost open container however long its run, and a
-container's fence is longer than every directive fence line anywhere in its body, however deeply a list item or blockquote nests it; a colon run inside a code
-fence or opaque carry is content. Canonical form uses minimal lengths.
-Directive fence lines follow code-fence indentation (up to three spaces relative to their
-container).
+`arg` is one optional bare token whose meaning each node defines (e.g. the panel type). The body is
+block markdown. The closer names the innermost open container and carries nothing after the name;
+one naming another node, or standing where no container is open, is a named error. Opening and
+closing is what nests, so the opener reads the same at every depth, and a closer crosses no list
+item or blockquote edge — a container opened inside one closes inside it. Directive block lines
+follow code-fence indentation (up to three spaces relative to their container); an `!adf:` inside a
+code fence or opaque carry is content.
 
-**Leaf block**: `::name arg {attrs}` — a block-position node with no body, `arg` reading as
-above.
+**Block leaf**: `!adf:name arg {attrs}` — the same opener with no closer, `arg` reading as above.
+
+Which of the two a node takes is its content model, never the spelling: a model taking content is
+written as an opener–closer pair and one taking none as a leaf, so a leaf given a body and a
+container missing its closer are each a named error. A node holding no content whose model takes
+some is an empty pair. A spelled node's content model is contract in consequence — changing one is
+MAJOR (AGENTS.md §8).
 
 Canonical spacing is the only spacing input reads: one space parts the name, `arg` and `{attrs}`,
 and one parts each attribute pair, with no padding inside the braces. Trailing whitespace on a
 directive block line is tolerated in input, never emitted.
-
-**Claiming at block level**, symmetric with inline: a line whose leading run of two or more
-colons is followed immediately by a name character is claimed and must parse fully as a container
-opening or a leaf, else it is a named error. A bare colon-run line is a closing fence while a
-container is open, a named error otherwise. A claimed line also ends a lazy continuation: the
-blockquote or list item whose paragraph CommonMark would fold it into closes instead.
 
 **Attributes**: `{key=value key2="two words"}`. `{attrs}` is optional in every form, and `{}` is
 valid — no attributes. A bare value matches `[A-Za-z0-9_-]+`; any other value is double-quoted
@@ -131,24 +135,23 @@ after a directive binds and stay raw. The closing `}` is the first one outside q
 quoted value holds `}` unescaped. All values are strings at the grammar level; each node's section
 assigns types.
 Canonical form orders keys alphabetically, spells values bare wherever allowed, escapes inside
-quotes in the shortest form each escape has, and omits empty `{attrs}` except where the `{` itself
-claims the directive (`:hardBreak{}`). Input reads that spelling alone: keys out of order, a value
-quoted where bare carries it, an escape longer than it need be, an empty `{attrs}` the name or the
-`[content]` already claims, and a number or `json` value outside its canonical JSON spelling are
-each a named error naming the spelling to write instead.
+quotes in the shortest form each escape has, and omits empty `{attrs}` except where the `{` is what
+ends the name (`!adf:hardBreak{}`). Input reads that spelling alone: keys out of order, a value
+quoted where bare carries it, an escape longer than it need be, an empty `{attrs}` on a block line
+or after a `[content]`, and a number or `json` value outside its canonical JSON spelling are each a
+named error naming the spelling to write instead.
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
-directive syntax — the leading `:` of a would-be directive, `]` inside content, a bracket a link's
-destination and title inside content leave unbalanced, a backtick there that would open a code span
-and a `:` there that would open an inline directive, a `{` right after a directive's closing `]`,
-which would otherwise be read as the attributes it has none of; outside code spans and code blocks,
-a backslash before `:` in input yields a literal colon.
+directive syntax — every literal `!adf:`, `]` inside content, a bracket a link's destination and
+title inside content leave unbalanced, a backtick there that would open a code span, a `{` right
+after a directive's closing `]`, which would otherwise be read as the attributes it has none of;
+outside code spans and code blocks, `\!adf:` in input yields the literal text.
 
-**Malformed directives are error results**, named: an unclosed container at end of input, a body
-fence line of the container's length or longer, a bare colon-run line outside any container or
-shorter than the fence it would close, an inline `[content]` or `{attrs}` left unclosed at end of
-line, unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent
-literal-text fallback — a typo that reparses as prose is the silent loss §2 refuses.
+**Malformed directives are error results**, named: an unclosed container at end of input, a closer
+naming no open container or a node other than the innermost open one, a leaf given a body, an
+`!adf:` completing no directive, an inline `[content]` or `{attrs}` left unclosed at end of line,
+unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent literal-text
+fallback — a typo that reparses as prose is the silent loss §2 refuses.
 
 ## The opaque carry (AGENTS.md §3)
 
@@ -158,16 +161,15 @@ a node the emitter spells natively: it restores unreinterpreted, and the next em
 canonically (AGENTS.md §2). Block and inline positions canonicalize differently, each fitting
 where it sits:
 
-- **Block position**: a fenced code block with info string `adf`, body = the node's JSON —
+- **Block position**: a fenced code block with info string `carry`, body = the node's JSON —
   two-space indent, object keys sorted.
-- **Inline position**: `:adf{json="…"}` — compact serialization (keys sorted, no whitespace),
+- **Inline position**: `!adf:carry{json="…"}` — compact serialization (keys sorted, no whitespace),
   JSON-string-escaped into the attribute.
 
-The info string `adf` is reserved: a genuine `codeBlock` whose `language` is exactly `adf` takes
+The info string `carry` is reserved: a genuine `codeBlock` whose `language` is exactly `carry` takes
 the attribute the section below keeps for a language no info string holds, so the reservation
 stays absolute.
-In block-directive positions (`::adf`, `:::adf`) the reserved name is a named error — the
-carry's block form is the fence.
+In block-directive position `!adf:carry` is a named error — the carry's block form is the fence.
 
 ## Raw HTML in input
 
@@ -193,9 +195,9 @@ editor-normal ADF reads an empty attrs object, marks array or content array as t
 (AGENTS.md §2) — the grammar's empty-`{attrs}` omission already collapses the two spellings.
 
 Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
-`json` value: `::::layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
+`json` value: `!adf:layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
 A section saying its body is inline takes at most one paragraph, whose inline content becomes
-the node's `content`; any other body is a named error, and a node holding no content is the leaf.
+the node's `content`; any other body is a named error, and an empty pair is a node holding none.
 
 A node the sections cannot spell rides the opaque carry: an attrs key its section does not
 list, a value that is not the section's type, or an arg-slot value that is no bare token. In
@@ -212,7 +214,7 @@ form.
 - `codeBlock` — container, body one fenced code block whose info string is the language and whose
   content is the node's. Attributes: `hideLineNumbers` (boolean), `language` (string), `localId`
   (string), `uniqueId` (string), `wrap` (boolean). A language no info string carries back — empty,
-  the reserved `adf`, or holding a backtick, a backslash, a control character, edge whitespace or
+  the reserved `carry`, or holding a backtick, a backslash, a control character, edge whitespace or
   an entity reference — rides the `language` attribute instead and the fence carries no info
   string; writing it in the slot that rule leaves empty, or in both, is a named error. The body is
   one ordinary code block, and a fence's info string decodes escapes and entity references as any
@@ -227,11 +229,11 @@ form.
 - `rule` — leaf. Attributes: `localId` (string).
 
 ````
-:::codeBlock {localId=01a03d5c-9b21-73f4-8e6a-0c47b1d9e2f8 wrap=true}
+!adf:codeBlock {localId=01a03d5c-9b21-73f4-8e6a-0c47b1d9e2f8 wrap=true}
 ```rust
 fn main() {}
 ```
-:::
+!adf:/codeBlock
 ````
 
 ### Panel
@@ -242,9 +244,9 @@ fn main() {}
   panels.
 
 ```
-:::panel warning
+!adf:panel warning
 Check the collation before importing.
-:::
+!adf:/panel
 ```
 
 ### Expand
@@ -253,9 +255,9 @@ Check the collation before importing.
   which. Attributes: `localId` (string), `title` (string).
 
 ```
-:::expand {title="Full build log"}
+!adf:expand {title="Full build log"}
 …
-:::
+!adf:/expand
 ```
 
 ### The media family
@@ -264,19 +266,19 @@ Check the collation before importing.
   (string), `localId` (string), `occurrenceKey` (string), `type` (`external` `file` `link`),
   `url` (string), `width` (number). `file` and `link` media carry `collection` + `id`;
   `external` media carry `url`.
-- `mediaSingle` — container: one `::media`, then optionally one `:::caption`. Attributes:
+- `mediaSingle` — container: one `!adf:media`, then optionally one `!adf:caption`. Attributes:
   `layout` (`align-end` `align-start` `center` `full-width` `wide` `wrap-left` `wrap-right`),
   `localId` (string), `width` (number), `widthType` (`percentage` `pixel`).
 - `caption` — container, inline body. Attributes: `localId` (string).
-- `mediaGroup` — container of `::media` leaves. Attributes: none.
+- `mediaGroup` — container of `!adf:media` leaves. Attributes: none.
 
 ```
-::::mediaSingle {layout=center width=50}
-::media {collection=MediaServicesSample id=4478e39c-cf9b-41d1-ba92-68589487cd75 type=file}
-:::caption
+!adf:mediaSingle {layout=center width=50}
+!adf:media {collection=MediaServicesSample id=4478e39c-cf9b-41d1-ba92-68589487cd75 type=file}
+!adf:caption
 The moon, at night.
-:::
-::::
+!adf:/caption
+!adf:/mediaSingle
 ```
 
 **The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
@@ -319,27 +321,27 @@ inline layer's ordinary CommonMark escaping yields the pipe; each cell is the in
 one paragraph, trimmed; canonical form pads cells with single spaces and ends rows with `|`
 (optional in input). Named errors: a delimiter or body row whose cell count differs from the
 header's, and an alignment colon in the delimiter row — ADF holds no column alignment. In a
-pipe cell a hard break is `:hardBreak{}` and a literal `|` is `\|`; a `|` inside a quoted
+pipe cell a hard break is `!adf:hardBreak{}` and a literal `|` is `\|`; a `|` inside a quoted
 attribute value is already `\u007c`, so the split never reaches it.
 
 The directive form nests cells as containers of block content inside `tableRow` containers:
 
 ```
-:::::table {isNumberColumnEnabled=true width=760}
-::::tableRow
-:::tableHeader {colspan=2 colwidth="[340,420]"}
+!adf:table {isNumberColumnEnabled=true width=760}
+!adf:tableRow
+!adf:tableHeader {colspan=2 colwidth="[340,420]"}
 Assembly
-:::
-::::
-::::tableRow
-:::tableCell {background="#deebff"}
+!adf:/tableHeader
+!adf:/tableRow
+!adf:tableRow
+!adf:tableCell {background="#deebff"}
 Bolt M8
-:::
-:::tableCell {valign=top}
+!adf:/tableCell
+!adf:tableCell {valign=top}
 40
-:::
-::::
-:::::
+!adf:/tableCell
+!adf:/tableRow
+!adf:/table
 ```
 
 - `table` — container of `tableRow` containers. Attributes: `displayMode` (`default` `fixed`),
@@ -363,14 +365,14 @@ Bolt M8
   free-form; the editor writes `DECIDED`).
 
 ```
-::::taskList {localId=0198f3a2-7c41-7f2e-9b3a-4d8e2c1a6b90}
-:::taskItem DONE {localId=0198f3a2-8d52-70b1-8c4f-5e9f3d2b7ca1}
+!adf:taskList {localId=0198f3a2-7c41-7f2e-9b3a-4d8e2c1a6b90}
+!adf:taskItem DONE {localId=0198f3a2-8d52-70b1-8c4f-5e9f3d2b7ca1}
 Write the spec
-:::
-:::taskItem TODO {localId=0198f3a2-9e63-7d80-a15b-6fa04e3c8db2}
+!adf:/taskItem
+!adf:taskItem TODO {localId=0198f3a2-9e63-7d80-a15b-6fa04e3c8db2}
 Ship it
-:::
-::::
+!adf:/taskItem
+!adf:/taskList
 ```
 
 ### Layout
@@ -380,14 +382,14 @@ Ship it
   `middle` `top`), `width` (number — percent).
 
 ```
-::::layoutSection
-:::layoutColumn {width=50}
+!adf:layoutSection
+!adf:layoutColumn {width=50}
 Left.
-:::
-:::layoutColumn {width=50}
+!adf:/layoutColumn
+!adf:layoutColumn {width=50}
 Right.
-:::
-::::
+!adf:/layoutColumn
+!adf:/layoutSection
 ```
 
 ### Extensions
@@ -399,7 +401,7 @@ Right.
 - `extensionFrame` — container, block body. Attributes: none.
 
 ```
-::extension {extensionKey=toc extensionType="com.atlassian.confluence.macro.core" parameters="{\"maxLevel\":2}"}
+!adf:extension {extensionKey=toc extensionType="com.atlassian.confluence.macro.core" parameters="{\"maxLevel\":2}"}
 ```
 
 ### Sync blocks
@@ -408,7 +410,7 @@ Right.
   `localId` (string), `resourceId` (string).
 
 ```
-::syncBlock {localId=0198f3a2-af74-7e91-b26c-70b15f4d9ec3 resourceId="ari:cloud:confluence:site/page/123"}
+!adf:syncBlock {localId=0198f3a2-af74-7e91-b26c-70b15f4d9ec3 resourceId="ari:cloud:confluence:site/page/123"}
 ```
 
 ## Inline nodes
@@ -418,7 +420,7 @@ the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in
 as plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
 parsing to anything but one unmarked text node — adjacent text nodes with identical marks and no
 attributes merged first — is a named error, and so is a `text` key in `{attrs}`. An enclosing mark
-spelling does not reach into the slot. The rest take no content, `:text` included; content on a
+spelling does not reach into the slot. The rest take no content, `!adf:text` included; content on a
 node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
@@ -436,15 +438,15 @@ node that takes none is a named error.
   (string), `style` (string), `text` (string).
 
 ```
-:status[In review]{color=yellow} — :mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4}
+!adf:status[In review]{color=yellow} — !adf:mention[@Mikael]{id=01a032c3-7a7c-775f-a730-2d79351338b4}
 
-Shipped :emoji[🎉]{shortName=":tada:"} on :date{timestamp=1756080000000}.
+Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=1756080000000}.
 ```
 
 **Whitespace CommonMark cannot hold.** A newline inside a text node, and a space or tab where
 CommonMark strips or refuses one — a block's inline content edges, either side of a line break,
 an em, strong or strike spelling's inner edges, a pipe cell's edges — is spelled
-`:text{text="…"}`, the reserved key carrying the node's text, escaped by the attribute grammar
+`!adf:text{text="…"}`, the reserved key carrying the node's text, escaped by the attribute grammar
 and never literal: pipe cells trim and pad. The emitter wraps the whitespace run alone and leaves
 the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identical marks and no
 attributes (AGENTS.md §2). Input reads that spelling alone: the value is one run of spaces and
@@ -452,14 +454,14 @@ tabs, or one run of newlines, and anything else — a mixed run, or text CommonM
 is a named error.
 
 ```
-:text{text="  "}Two leading spaces held, and one text node split:text{text="\n"}over two lines.
+!adf:text{text="  "}Two leading spaces held, and one text node split!adf:text{text="\n"}over two lines.
 ```
 
 ## Marks
 
 An inline node's marks ride the spelling wrapped around them, never the block sections' reserved
 `marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown spellings, and are
-not directive names: `:em[x]` is a named error. `border`, `subsup`, `textColor` and `underline`
+not directive names: `!adf:em[x]` is a named error. `border`, `subsup`, `textColor` and `underline`
 are inline directives, content required non-empty.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
@@ -470,7 +472,8 @@ are inline directives, content required non-empty.
 - `underline` — Attributes: none.
 
 A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
-outermost first: `_:underline[x]_` gives marks `[em, underline]`, `:underline[_x_]` the reverse.
+outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the
+reverse.
 `adfToMarkdown` nests in the order the array holds rather than sorting it — §2's equality
 restores the array, not a set — and opens each spelling once over the longest run of adjacent
 inline nodes carrying an identical mark, attributes included, at that depth. A run breaks at every
@@ -488,7 +491,7 @@ opaque carry inside a mark spelling is a named error in input: the carry restore
 exactly, marks included (AGENTS.md §3).
 
 ```
-:textColor[**Overdue**]{color="#ae2e24"}, H:subsup[2]{type=sub}O, :underline[signed].
+!adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].
 
-:border[:mediaInline{collection=contentId-98237 id=01a032c3-7a90-70c9-88f6-c60f710eda07}]{color="#091e42" size=2}
+!adf:border[!adf:mediaInline{collection=contentId-98237 id=01a032c3-7a90-70c9-88f6-c60f710eda07}]{color="#091e42" size=2}
 ```
