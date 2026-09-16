@@ -6,7 +6,7 @@ an HTML dialect.
 **Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
 `0.3.0`.**
 Plan: `todo.md`. Decisions: `AGENTS.md`. The flavour's grammar:
-[`spec/flavour.md`](spec/flavour.md).
+[`spec/flavour.md`](spec/flavour.md). Upgrading from `0.1.0`: [`MIGRATION.md`](MIGRATION.md).
 
 ## What it is for
 
@@ -27,7 +27,7 @@ npm install @larvit/adf-codec
 ```ts
 import { markdownToAdf } from '@larvit/adf-codec'
 
-const result = markdownToAdf('# Release notes\n\n:::panel info\nShipped on Tuesday.\n:::\n')
+const result = markdownToAdf('# Release notes\n\n!adf:panel info\nShipped on Tuesday.\n!adf:/panel\n')
 if (result.ok) {
   send(result.value)
 } else {
@@ -78,9 +78,9 @@ Parsing — `markdownToAdf`, and `htmlToAdf` at `0.3.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `malformed-directive` | a `:::` block or `:name[…]` inline directive the grammar cannot read — an unclosed fence or `[content]`, `{attrs}` out of order or duplicated, invalid JSON in an `adf` carry | write the spelling the message names, or escape the line — `\:::` for a block, `\:` for an inline one — to keep it literal text |
+| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container or `[content]`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in a `carry` | write the spelling the message names, or escape the prefix — `\!adf:`, block and inline alike — to keep it literal text |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
-| `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the colon; the spelling itself is well formed, so a later minor may give the name meaning |
+| `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the markdown holds a raw HTML tag, comment or processing instruction | remove it or write it in the flavour — ADF holds no raw-HTML node, and the element mapping lands at `0.3.0` |
 | `unmappable-image` | an image sits inside other content, or carries a title | give the image a paragraph of its own and drop the title |
 

@@ -275,12 +275,13 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [ ] **13b — The directive link.** `link` spelled as above in both directions, with a round-trip
         fixture per trigger, `spec/flavour.md`'s Marks section following; `unspellable-link` removed
         from the code list, its `errors/` fixtures and the CommonMark suite's `unspellable`
-        exceptions it cures re-derived, and the README's code table and its "not every document
-        converts back" guarantee following; the gap list is empty. A round-trip fixture holds the
-        shape 4.2's review left refused until then: an autolink-shaped link under a directive mark
-        whose href holds `\:name{`. A link opening a paragraph whose opening reads as a link
-        reference definition, which 4.3 leaves riding the carry, takes the directive link too, with
-        its round-trip fixture (the maintainer, 2026-09-15).
+        exceptions it cures re-derived, the README's code table and its "not every document
+        converts back" guarantee following, and `MIGRATION.md` naming the removed code; the gap
+        list is empty. A round-trip fixture holds the shape 4.2's review left refused until then:
+        an autolink-shaped link under a directive mark whose href holds `\!adf:name{`. A link
+        opening a paragraph whose opening reads as a link reference definition, which 4.3 leaves
+        riding the carry, takes the directive link too, with its round-trip fixture (the
+        maintainer, 2026-09-15).
 - [ ] **14 — The CommonMark subset's directory (`0.2.0`).** `src/markdown/` holds 16 source
       files at its root and 10 adds more there. The CommonMark subset moves under
       `src/markdown/commonmark/` — `backtick-runs.ts`, `commonmark-grammar.ts` as `grammar.ts`,
