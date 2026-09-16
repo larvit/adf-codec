@@ -650,6 +650,11 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         `annotation` `backgroundColor` `blockCard` `bodiedRule` `breakout` `dataConsumer`
         `embedCard` `fontSize` `fragment` `indentation` `inlineExtension` `placeholder`), `doc` and
         `text` counting as the grammar's own.
+- [ ] **12 — The `!adf:` re-spelling (`0.2.0`).**
+  - [x] **12a — The spec and the decision.** `spec/flavour.md` rewritten to the `!adf:` grammar and
+        the settled answers above, no colon directive form left in it; AGENTS.md §4's directive
+        bullet and prior-art line, and §8's escape hints and `::adf`/`::listBreak` examples, name
+        the new forms, §8 gaining the frozen content model.
 
 ## 5 — Ship `0.1.0`
 

@@ -247,10 +247,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         container parses.
       - Split by construct, each sub-item both directions: 55 of 78 round-trip fixtures feed both
         the emit and the read-back test, so an emit-only chunk cannot land green.
-  - [ ] **12a — The spec and the decision.** `spec/flavour.md` rewritten to the `!adf:` grammar and
-        the settled answers above, no colon directive form left in it; AGENTS.md §4's directive
-        bullet and prior-art line, and §8's escape hints and `::adf`/`::listBreak` examples, name
-        the new forms, §8 gaining the frozen content model.
+  - [x] **12a — The spec and the decision.**
   - [ ] **12b — The inline form.** Inline nodes, directive marks, `text` and the inline carry
         `!adf:carry{json=…}` spelled and read as `!adf:name[content]{attrs}`, with the prefix claim
         and its escape; the round-trip, normalization and `errors/` fixtures holding inline forms
