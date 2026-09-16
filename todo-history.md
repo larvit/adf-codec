@@ -661,6 +661,18 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         re-spelled, and the gate green. The content slot of `emoji`, `mention` and `status` refuses a
         text node carrying attributes as `unsupported-node-shape`, which it drops silently today (the
         maintainer, 2026-09-14).
+  - [x] **12c — The block form.** Openers and `!adf:/name` closers, leaf vs container by content
+        model, empty pairs, `listBreak` and the `carry` fence, spelled and read; the fence-length
+        rule and the corpus test's fence nesting check deleted; the remaining fixtures re-spelled
+        and `errors/` re-derived under the shifted codes, and the gate green.
+        12b's two temporary seams expire here: `carryFence` folds back into `carryName` once the
+        fence reads `carry`, and `directiveLineEscape` into `inlineDirectiveEscape` once one escape
+        serves both forms. `spellLeafDirective` takes the `Inline` its reader-side regex already
+        carries, and `header` versus `opener` settles as one word in spec and code. While
+        `readNestedDirective` is open, its `[content]` and `{attrs}` reads lift out as named steps,
+        and the two `charAt`-against-`!` fast paths ahead of `claimsDirectivePrefix` — in
+        `readDirectiveContent` and `line-escaping`'s `bracketed-link-target` arm — either earn a
+        reason or go (the systems-architect, 2026-09-16).
 
 ## 5 — Ship `0.1.0`
 

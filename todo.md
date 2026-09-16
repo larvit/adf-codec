@@ -5,7 +5,7 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 10, 5g → `0.2.0`; 4d, 5f → `0.2.1`;
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 14, 10, 5g → `0.2.0`; 4d, 5f → `0.2.1`;
 6, 7 → `0.3.0`; 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
 (the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
@@ -258,18 +258,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         in either without `todo.md` sees a gap that is the plan, not a defect.
   - [x] **12a — The spec and the decision.**
   - [x] **12b — The inline form.**
-  - [ ] **12c — The block form.** Openers and `!adf:/name` closers, leaf vs container by content
-        model, empty pairs, `listBreak` and the `carry` fence, spelled and read; the fence-length
-        rule and the corpus test's fence nesting check deleted; the remaining fixtures re-spelled
-        and `errors/` re-derived under the shifted codes, and the gate green.
-        12b's two temporary seams expire here: `carryFence` folds back into `carryName` once the
-        fence reads `carry`, and `directiveLineEscape` into `inlineDirectiveEscape` once one escape
-        serves both forms. `spellLeafDirective` takes the `Inline` its reader-side regex already
-        carries, and `header` versus `opener` settles as one word in spec and code. While
-        `readNestedDirective` is open, its `[content]` and `{attrs}` reads lift out as named steps,
-        and the two `charAt`-against-`!` fast paths ahead of `claimsDirectivePrefix` — in
-        `readDirectiveContent` and `line-escaping`'s `bracketed-link-target` arm — either earn a
-        reason or go (the systems-architect, 2026-09-16).
+  - [x] **12c — The block form.**
   - [ ] **12d — The README, `MIGRATION.md` and the sweep.** The README's examples and error tables
         follow, `MIGRATION.md` linked from one README line; docs and fixtures swept for any stale
         `::`/`:name` spelling.
@@ -292,6 +281,13 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         whose href holds `\:name{`. A link opening a paragraph whose opening reads as a link
         reference definition, which 4.3 leaves riding the carry, takes the directive link too, with
         its round-trip fixture (the maintainer, 2026-09-15).
+- [ ] **14 — The CommonMark subset's directory (`0.2.0`).** `src/markdown/` holds 16 source
+      files at its root and 10 adds more there. The CommonMark subset moves under
+      `src/markdown/commonmark/` — `backtick-runs.ts`, `commonmark-grammar.ts` as `grammar.ts`,
+      `emphasis-matching.ts`, `entity-references.ts` with its test, `link-reference-definitions.ts`
+      and `link-syntax.ts` — leaving the flavour's own constructs at the root, the split
+      `spec/flavour.md` draws between the subset and the flavour (the systems-architect and the
+      maintainer, 2026-09-16).
 
 ## The ADF inventory to cover
 
