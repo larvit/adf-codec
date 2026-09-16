@@ -650,7 +650,49 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         `annotation` `backgroundColor` `blockCard` `bodiedRule` `breakout` `dataConsumer`
         `embedCard` `fontSize` `fragment` `indentation` `inlineExtension` `placeholder`), `doc` and
         `text` counting as the grammar's own.
-- [ ] **12 — The `!adf:` re-spelling (`0.2.0`).**
+- [x] **12 — The `!adf:` re-spelling (`0.2.0`).** Replace the colon directive grammar with the
+      namespaced prefix, a breaking change to the emitted contract (shipped `0.1.0`, so §8 makes it
+      `0.2.0`). Forms: block container `!adf:name arg {attrs}` … `!adf:/name` — the `/` parts open
+      from close, nestable without a fence-length discipline, so the `::::`/`:::::` runs and their
+      length rule go and every container opens the constant `!adf:`; block leaf `!adf:name arg
+      {attrs}` with no closer; inline node `!adf:name[content]{attrs}`; directive marks
+      `!adf:border`/`subsup`/`textColor`/`underline` `[content]{attrs}`. Attributes and their
+      escaping stay `{key=value}`; the literal escape is `\!adf:`. Leaf vs container is decided by
+      the node's content model rather than syntax — the `::`/`:::` split goes, a simplification the
+      carry makes safe (an unknown *block* node already rides the fence, not the directive). The
+      carry's reserved name becomes `carry`, both spellings — the block fence info string `carry`
+      and the inline `!adf:carry{json="…"}` — named for what it does: it carries a node verbatim,
+      never "unknown-node", since a known node no section spells where it stands rides it too. No
+      `ConvertErrorCode` is added, removed or renamed, and the round-trip guarantee and the carry
+      both hold through it. Mechanical surface: the grammar in `spec/flavour.md`,
+      `src/adf/block-directives.ts` + `inline-directives.ts`, `src/markdown/`'s
+      `directive-syntax.ts`, `opaque-carry.ts` and the `emit/` + `parse/` readers, every corpus
+      fixture (round-trip, normalization and `errors/`), the prose reader over `spec/flavour.md`,
+      the markdown property's generator, and the README's examples.
+      **Settled** (the maintainer, 2026-09-13):
+      - A line opening `!adf:name` is a block line when a space or the line's end follows the name,
+        and a paragraph when `[` or `{` does. Claiming stays syntactic and structure comes from the
+        tables: an unknown name is `unknown-directive-name` at the opener, whatever follows it.
+      - An unescaped `!adf:` claims on its own anywhere inline: one completing no directive is
+        `malformed-directive`, the emitter escapes every literal `!adf:`, and `!adf:hardBreak{}`
+        keeps its braces. Block and inline share the one `\!adf:` escape hint.
+      - A closer names the innermost open container, crosses no list-item or blockquote edge,
+        indents as a fence does and carries nothing after the name; anything else is
+        `malformed-directive`.
+      - A node holding no content whose content model takes some is an empty opener–closer pair,
+        never a leaf.
+      - A spelled node's content model is frozen with its spelling: changing it is MAJOR (§8).
+      - The colon spellings are dropped, not refused: `0.1.0` markdown reads back as prose, `adf`
+        is no longer a reserved language, and `MIGRATION.md` tells a consumer to convert stored
+        markdown through `0.1.0`'s parser and `0.2.0`'s emitter.
+      - Inputs moving between codes ride the break: a leaf given a body, a container missing its
+        closer and `listBreak` with a body are `malformed-directive`, and an empty inline-body
+        container parses.
+      - Split by construct, each sub-item both directions: 55 of 78 round-trip fixtures feed both
+        the emit and the read-back test, so an emit-only chunk cannot land green.
+      - The spec leads the code from 12a to 12d: `spec/flavour.md` and `AGENTS.md` §4 spell the
+        `!adf:` grammar whole, while code and fixtures reach it one form at a time. A reader landing
+        in either without `todo.md` sees a gap that is the plan, not a defect.
   - [x] **12a — The spec and the decision.** `spec/flavour.md` rewritten to the `!adf:` grammar and
         the settled answers above, no colon directive form left in it; AGENTS.md §4's directive
         bullet and prior-art line, and §8's escape hints and `::adf`/`::listBreak` examples, name
@@ -673,6 +715,9 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         and the two `charAt`-against-`!` fast paths ahead of `claimsDirectivePrefix` — in
         `readDirectiveContent` and `line-escaping`'s `bracketed-link-target` arm — either earn a
         reason or go (the systems-architect, 2026-09-16).
+  - [x] **12d — The README, `MIGRATION.md` and the sweep.** The README's examples and error tables
+        follow, `MIGRATION.md` linked from one README line; docs and fixtures swept for any stale
+        `::`/`:name` spelling.
 
 ## 5 — Ship `0.1.0`
 
