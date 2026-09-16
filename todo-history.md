@@ -655,6 +655,12 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         the settled answers above, no colon directive form left in it; AGENTS.md §4's directive
         bullet and prior-art line, and §8's escape hints and `::adf`/`::listBreak` examples, name
         the new forms, §8 gaining the frozen content model.
+  - [x] **12b — The inline form.** Inline nodes, directive marks, `text` and the inline carry
+        `!adf:carry{json=…}` spelled and read as `!adf:name[content]{attrs}`, with the prefix claim
+        and its escape; the round-trip, normalization and `errors/` fixtures holding inline forms
+        re-spelled, and the gate green. The content slot of `emoji`, `mention` and `status` refuses a
+        text node carrying attributes as `unsupported-node-shape`, which it drops silently today (the
+        maintainer, 2026-09-14).
 
 ## 5 — Ship `0.1.0`
 

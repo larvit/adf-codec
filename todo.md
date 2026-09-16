@@ -251,12 +251,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         `!adf:` grammar whole, while code and fixtures reach it one form at a time. A reader landing
         in either without `todo.md` sees a gap that is the plan, not a defect.
   - [x] **12a — The spec and the decision.**
-  - [ ] **12b — The inline form.** Inline nodes, directive marks, `text` and the inline carry
-        `!adf:carry{json=…}` spelled and read as `!adf:name[content]{attrs}`, with the prefix claim
-        and its escape; the round-trip, normalization and `errors/` fixtures holding inline forms
-        re-spelled, and the gate green. The content slot of `emoji`, `mention` and `status` refuses a
-        text node carrying attributes as `unsupported-node-shape`, which it drops silently today (the
-        maintainer, 2026-09-14).
+  - [x] **12b — The inline form.**
   - [ ] **12c — The block form.** Openers and `!adf:/name` closers, leaf vs container by content
         model, empty pairs, `listBreak` and the `carry` fence, spelled and read; the fence-length
         rule and the corpus test's fence nesting check deleted; the remaining fixtures re-spelled
