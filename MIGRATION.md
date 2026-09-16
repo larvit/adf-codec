@@ -2,11 +2,13 @@
 
 ## From `0.1.0` to `0.2.0`
 
-Directives moved under the `!adf:` prefix. `0.2.0` reads markdown `0.1.0` wrote without an error
-and turns every directive in it into plain text, so convert stored markdown before `0.2.0` reads
-it. Stored ADF needs no change.
+Directives moved under the `!adf:` prefix. `0.2.0` reads `0.1.0`'s spelling without an error,
+turning each directive into text and each carried node into an `adf` code block. Before `0.2.0`
+reads any `0.1.0` markdown, convert what is stored or in flight (an open editor, a queue) with the
+recipe below, and rewrite markdown your code writes (templates, prompts, patterns matching
+directives) by the spelling table. Stored ADF needs no change.
 
-### Convert stored markdown
+### Convert markdown
 
 Read it with `0.1.0` and write it with `0.2.0`, installed side by side:
 
@@ -24,23 +26,31 @@ function migrateMarkdown(stored: string) {
 }
 ```
 
+- Convert each document once: a second pass also returns ok, and turns the directives into text.
+  Stop `0.1.0` writing first, and record which documents are converted.
+- A refusal carrying `position` is `0.1.0`'s parse, which refused that markdown before too. One
+  without is `0.2.0`'s emit: store the document `markdownToAdf010` read as ADF rather than keeping
+  the unconverted markdown.
+
 ### Spellings
 
 | `0.1.0` | `0.2.0` |
 | --- | --- |
 | `:::panel info` … `:::`, the fence longer per nesting level | `!adf:panel info` … `!adf:/panel` at any depth |
 | `::media {id=a type=file}` | `!adf:media {id=a type=file}` |
-| `::paragraph`, the empty paragraph | `!adf:paragraph` then `!adf:/paragraph` |
+| `::taskItem TODO {localId=i}`, an empty `caption`, `decisionItem`, `heading`, `paragraph` or `taskItem` | `!adf:taskItem TODO {localId=i}` then `!adf:/taskItem` |
 | `:mention[@Mikael]{id=5b10a2}` | `!adf:mention[@Mikael]{id=5b10a2}` |
 | the `adf` code fence and `:adf{json="…"}` | the `carry` code fence and `!adf:carry{json="…"}` |
 | `\:` keeps a directive literal | `\!adf:` keeps a directive literal |
 
-A colon run and `:name[` are plain text now, and `adf` is an ordinary code block language.
+A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; a literal
+`!adf:` and a `carry` fence are claimed instead.
 
 ### Error codes
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
-| a leaf node given a body, `listBreak` included: `:::media {…}` … `:::`, `!adf:media {…}` … `!adf:/media` | `unsupported-node-shape` | `malformed-directive` |
-| a container node with no closer: `::panel info`, `!adf:panel info` | `unsupported-node-shape` | `malformed-directive` |
-| an empty paragraph with a closer: `:::paragraph` … `:::`, `!adf:paragraph` … `!adf:/paragraph` | `unsupported-node-shape` | parses |
+| a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
+| a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
+| an empty `caption`, `decisionItem`, `heading`, `paragraph` or `taskItem` written as a leaf | parses | `malformed-directive` |
+| an empty `caption`, `decisionItem`, `heading`, `paragraph` or `taskItem` written with a closer | `unsupported-node-shape` | parses |
