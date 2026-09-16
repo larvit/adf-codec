@@ -31,5 +31,7 @@ Loosen the clamp
 
 !adf:rule {localId=01a0431d-2019-76b7-bf6f-13841363b111}
 
+!adf:rule {color="#ff5630" style=dashed weight=2}
+
 !adf:paragraph {localId=01a0431d-201a-7a65-bea7-84b441c85bd6}
 !adf:/paragraph

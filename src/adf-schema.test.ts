@@ -18,7 +18,7 @@ type Spelled = [string, Map<string, AttributeKind>]
 
 const carried = ['alignment', 'annotation', 'backgroundColor', 'blockCard', 'bodiedRule', 'breakout', 'dataConsumer', 'embedCard', 'fontSize', 'fragment', 'indentation', 'inlineExtension', 'placeholder']
 const definitionReference = '#/definitions/'
-const gaps = ['layoutSection.columnRuleStyle', 'link.collection', 'link.id', 'link.occurrenceKey', 'rule.color', 'rule.style', 'rule.weight']
+const gaps = ['link.collection', 'link.id', 'link.occurrenceKey']
 const grammarOwn = ['doc', 'text']
 const readKeywords = ['$ref', 'additionalProperties', 'allOf', 'anyOf', 'enum', 'items', 'maxItems', 'maximum', 'minItems', 'minLength', 'minimum', 'pattern', 'properties', 'required', 'type']
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'spec', 'adf-schema')

@@ -229,7 +229,8 @@ form.
   (number). `order` is the first marker, so a list carrying none, one that is no whole number
   from 0, or one whose markers would run past 999999999, has no CommonMark spelling.
 - `paragraph` — container, inline body. Attributes: `localId` (string).
-- `rule` — leaf. Attributes: `localId` (string).
+- `rule` — leaf. Attributes: `color` (string, `#rrggbb`), `localId` (string), `style` (`dashed`
+  `dotted` `fade` `sketch` `solid`), `weight` (number, 1–3).
 
 ````
 !adf:codeBlock {localId=01a03d5c-9b21-73f4-8e6a-0c47b1d9e2f8 wrap=true}
@@ -380,7 +381,8 @@ Ship it
 
 ### Layout
 
-- `layoutSection` — container of `layoutColumn` containers. Attributes: `localId` (string).
+- `layoutSection` — container of `layoutColumn` containers. Attributes: `columnRuleStyle` (`solid`),
+  `localId` (string).
 - `layoutColumn` — container, block body. Attributes: `localId` (string), `valign` (`bottom`
   `middle` `top`), `width` (number — percent).
 
