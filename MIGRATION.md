@@ -5,8 +5,8 @@
 Directives moved under the `!adf:` prefix. `0.2.0` reads `0.1.0`'s spelling without an error,
 turning each directive into text and each carried node into an `adf` code block. Before `0.2.0`
 reads any `0.1.0` markdown, convert what is stored or in flight (an open editor, a queue) with the
-recipe below, and rewrite markdown your code writes (templates, prompts, patterns matching
-directives) by the spelling table. Stored ADF needs no change.
+recipe below, and rewrite markdown your code writes or matches (templates, prompts, patterns) by
+the spelling table. Stored ADF needs no change.
 
 ### Convert markdown
 
@@ -26,7 +26,7 @@ function migrateMarkdown(stored: string) {
 }
 ```
 
-- Convert each document once: a second pass also returns ok, and turns the directives into text.
+- Convert each document once: a second pass can return ok while turning the directives into text.
   Stop `0.1.0` writing first, and record which documents are converted.
 - A refusal carrying `position` is `0.1.0`'s parse, which refused that markdown before too. One
   without is `0.2.0`'s emit: store the document `markdownToAdf010` read as ADF rather than keeping
@@ -38,13 +38,13 @@ function migrateMarkdown(stored: string) {
 | --- | --- |
 | `:::panel info` … `:::`, the fence longer per nesting level | `!adf:panel info` … `!adf:/panel` at any depth |
 | `::media {id=a type=file}` | `!adf:media {id=a type=file}` |
-| `::taskItem TODO {localId=i}`, an empty `caption`, `decisionItem`, `heading`, `paragraph` or `taskItem` | `!adf:taskItem TODO {localId=i}` then `!adf:/taskItem` |
+| `::taskItem TODO {localId=i}`: an empty `caption`, `decisionItem`, `paragraph` or `taskItem`, or an empty `heading` carrying `localId` | `!adf:taskItem TODO {localId=i}` then `!adf:/taskItem` |
 | `:mention[@Mikael]{id=5b10a2}` | `!adf:mention[@Mikael]{id=5b10a2}` |
 | the `adf` code fence and `:adf{json="…"}` | the `carry` code fence and `!adf:carry{json="…"}` |
 | `\:` keeps a directive literal | `\!adf:` keeps a directive literal |
 
-A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; a literal
-`!adf:` and a `carry` fence are claimed instead.
+A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
+holding an unescaped `!adf:` and a `carry` fence are claimed instead.
 
 ### Error codes
 
@@ -52,5 +52,5 @@ A colon run and `:name[` are plain text now, and `adf` an ordinary code block la
 | --- | --- | --- |
 | a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
-| an empty `caption`, `decisionItem`, `heading`, `paragraph` or `taskItem` written as a leaf | parses | `malformed-directive` |
-| an empty `caption`, `decisionItem`, `heading`, `paragraph` or `taskItem` written with a closer | `unsupported-node-shape` | parses |
+| an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |
+| an empty node the `::taskItem` spelling row names, written with a closer | `unsupported-node-shape` | parses |
