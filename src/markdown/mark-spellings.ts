@@ -35,7 +35,7 @@ export function markSpelling(type: string): MarkSpelling | undefined {
   return { attributes, kind: spelling.kind }
 }
 
-// spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's depth, the parser's none.
+// spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's depth + 1, the parser's 0.
 export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], marksInside: number, bracketed: boolean): CommonMarkLink | undefined {
   if (Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   const title = attrs['title']

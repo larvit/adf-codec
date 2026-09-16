@@ -36,7 +36,7 @@ type Piece =
 
 type Run = { canClose: boolean; canOpen: boolean; character: string; index: number; length: number }
 
-// `container` is the emitter's line container, `undefined` inside a directive's content slot; `openingSpellableLink` defers a directive link at offset 0 to `assemble`.
+// `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
   container: LineContainer | undefined
   definitions: LinkDefinitions

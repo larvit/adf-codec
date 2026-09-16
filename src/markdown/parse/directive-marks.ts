@@ -20,7 +20,9 @@ export function readDirectiveMark(name: string, attributes: DirectiveAttributes,
 export function inlineMarkSpellingFault(name: string): ConvertFault | undefined {
   const spelling = markSpelling(name)
   if (spelling === undefined) return undefined
-  return { code: 'unsupported-node-shape', message: `${name} is spelled ${markdownForm(spelling) ?? `${directivePrefix}${name}[…]`}, never as a block directive` }
+  const directive = `${directivePrefix}${name}[…]`
+  const forms = spelling.kind === 'link' ? `[x](url) or ${directive}` : (markdownForm(spelling) ?? directive)
+  return { code: 'unsupported-node-shape', message: `${name} is spelled ${forms}, never as a block directive` }
 }
 
 function markdownForm(spelling: MarkSpelling): string | undefined {

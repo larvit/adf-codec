@@ -17,9 +17,9 @@ When losslessness and readability conflict, losslessness wins.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
 back yields the library's canonical spelling, and that spelling round-trips byte-identically —
-where there is a way back. CommonMark spells some things the flavour has no escape for — a link
-destination or title holding a backslash or newline, a paragraph opening with a code span whose
-backticks read back as a fence — so a parse succeeding does not imply a spellable document;
+where there is a way back. CommonMark spells some things the flavour has no escape for — a
+paragraph opening with a code span whose backticks read back as a fence — so a parse succeeding
+does not imply a spellable document;
 `corpus/commonmark-spec/exceptions.json` names those.
 
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks

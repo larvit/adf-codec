@@ -102,7 +102,7 @@ emit refuses:
 | `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take — or markdown writes as a directive a node the flavour spells as CommonMark | write the shape the message names; `spec/flavour.md` lists every type's attributes and body |
+| `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take — or markdown writes as a directive a node or mark the flavour spells as CommonMark | write the shape the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
 
@@ -114,7 +114,7 @@ emit refuses:
   title-less paragraph; mid-text and titled images are error results. Converting back yields the
   library's canonical spelling, which round-trips byte-identically — where it converts back at
   all: a parse succeeding is no promise of that, so keep the source until the way back succeeds.
-  `` ` `` ` `` reads cleanly and then refuses.
+  ``` ` `` ` ``` reads cleanly and then refuses.
 - Three CommonMark spellings parse without an error and build a document the reference renders
   differently: `[](/url)` and `[]()` stay literal text against CommonMark's empty link, a list
   continuing past a marker change stays one list against CommonMark's two, and a shortcut

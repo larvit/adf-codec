@@ -333,6 +333,7 @@ test('names the leaf given a body at its opener, ahead of any refusal the leaf h
 test('names the position a directive name the other one spells belongs to', () => {
   assert.equal(content(markdownToAdf('!adf:em\na\n!adf:/em\n')), 'unsupported-node-shape: em is spelled _x_, never as a block directive')
   assert.equal(content(markdownToAdf('!adf:underline\n')), 'unsupported-node-shape: underline is spelled !adf:underline[…], never as a block directive')
+  assert.equal(content(markdownToAdf('!adf:link\n')), 'unsupported-node-shape: link is spelled [x](url) or !adf:link[…], never as a block directive')
   assert.equal(content(markdownToAdf('!adf:text {text=" "}\n')), 'unsupported-node-shape: text takes the inline form, !adf:text{…}, never the block form')
   assert.equal(content(markdownToAdf('!adf:date {timestamp=1}\n')), 'unsupported-node-shape: date takes the inline form, !adf:date{…}, never the block form')
   assert.equal(content(markdownToAdf('!adf:paragraph[a]\n')), 'unsupported-node-shape: paragraph takes the block form, !adf:paragraph, never the inline form')
@@ -968,7 +969,6 @@ test('names the mark markdown spells, never a directive', () => {
   assert.equal(content(markdownToAdf('!adf:code[a]\n')), 'unsupported-node-shape: code is spelled `x`, never as a directive')
 })
 
-// spec/flavour.md, Marks: the directive link is refused wherever the emitter would pick the markdown spelling.
 test('refuses the directive link CommonMark could spell, and reads the one it could not', () => {
   const refused = 'unsupported-node-shape: link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
   assert.equal(content(markdownToAdf('!adf:link[a]{href="/u"}\n')), refused)

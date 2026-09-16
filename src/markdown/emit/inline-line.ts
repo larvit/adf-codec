@@ -41,7 +41,6 @@ export function emitInlineLine(nodes: readonly AdfNode[], container: LineContain
   return success(emitted.value.line)
 }
 
-// The parser asks which form a paragraph's opening link takes rather than restating the line rule (AGENTS.md §11).
 export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<boolean> {
   const emitted = emitLine(nodes, 'paragraph', path)
   if (!emitted.ok) return emitted
@@ -64,7 +63,7 @@ export function tryImageLine(alt: string | undefined, href: string, path: Conver
   return attempt.ok ? attempt.value.line : undefined
 }
 
-// A carried node joins no run and the opening link turns directive once, so every pass carries at least one more node.
+// Every pass carries at least one more node, or flips openingLinkAsDirective, which happens once — so the loop ends.
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<EmittedLine> {
   const carried = new Set<number>()
   let openingLinkAsDirective = false
