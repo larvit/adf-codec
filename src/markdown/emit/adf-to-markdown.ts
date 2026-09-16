@@ -113,13 +113,16 @@ function directivePair(node: AdfNode, opener: string, body: string): EmittedBloc
 
 function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
-  const content = nodeContent(node)
-  const leaf = blockDirectiveForm(node.type) === 'leaf'
-  if (leaf && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
+  if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path, depth)
   const opener = spellBlockDirectiveOpener(node, directive)
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  if (leaf) return success({ spelling: 'directive', text: opener })
+  return emitDirectiveBody(node, directive, opener, path, depth)
+}
+
+function emitDirectiveBody(node: AdfNode, directive: BlockDirective, opener: string, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
+  if (blockDirectiveForm(node.type) === 'leaf') return success({ spelling: 'directive', text: opener })
+  const content = nodeContent(node)
   const body = directive.contentModel === 'inline' ? emitInlineLine(content, 'paragraph', path) : emitBlocks(content, 'directive', path, depth + 1)
   if (!body.ok) return body
   return success(directivePair(node, opener, body.value))

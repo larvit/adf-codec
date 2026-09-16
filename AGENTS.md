@@ -133,9 +133,11 @@ reserved name is a known name, so never that code, and the two the flavour reser
 a form the grammar does not have is a claim code — `!adf:carry`, whose carry is the fence — and a
 well-formed form in the wrong place is `unsupported-node-shape`, `!adf:listBreak` parting anything
 but two adjacent lists of one type. What
-the grammar itself refuses stays a claim code, key order among it; a well-formed directive the
-node tables refuse — an attribute a node does not hold or spells elsewhere, a value outside its
-kind or its canonical spelling, an argument or a body its content model does not take — is
+the grammar itself refuses stays a claim code, key order among it, and a leaf given a body is refused
+at its opener, as a container missing its closer is (the maintainer, 2026-09-16); a well-formed
+directive the node tables refuse — an attribute a node does not hold or spells elsewhere, a value
+outside its kind or its canonical spelling, an argument, or a body of a shape its content model does
+not take — is
 `unsupported-node-shape`, the emitter's code for the same mismatch read the other way — one code
 across both directions for good, since the call site knows which direction it called and parting
 them after `0.1.0` is MAJOR. `unmappable-html` names the version rather than the element: this one

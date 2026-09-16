@@ -77,17 +77,7 @@ export function malformedDirective(message: string): ConvertFault {
 
 export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined {
   if (!claimsDirectivePrefix(line, 0)) return undefined
-  const closer = line.charAt(directivePrefix.length) === '/'
-  const start = directivePrefix.length + (closer ? 1 : 0)
-  directiveName.lastIndex = start
-  const name = directiveName.exec(line)?.[0]
-  if (name === undefined) return undefined
-  const rest = line.slice(start + name.length)
-  if (closer) return lineEnd.test(rest) ? { value: { kind: 'closer', name } } : { fault: malformedDirective(closerFault) }
-  if (!rest.startsWith(' ') && !lineEnd.test(rest)) return undefined
-  const opener = readOpenerRest(rest)
-  if (opener.fault !== undefined) return { fault: opener.fault }
-  return { value: { argument: opener.value.argument, attributes: opener.value.attributes, kind: 'opener', name } }
+  return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
 export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> | undefined {
@@ -117,6 +107,10 @@ export function spellAttributes(pairs: readonly (readonly [string, string])[]): 
 
 export function spellDirectiveCloser(name: string): string {
   return `${directivePrefix}/${name}`
+}
+
+export function spellDirectiveOpener(name: string, argument: string | undefined, attributes: string): string {
+  return `${directivePrefix}${name}${argument === undefined ? '' : ` ${argument}`}${attributes === '' ? '' : ` ${attributes}`}`
 }
 
 export function spellJsonAttribute(value: JsonValue): string {
@@ -173,24 +167,39 @@ function inlineDirectiveName(text: string, index: number): string | undefined {
   return opened === undefined ? undefined : opened.slice(directivePrefix.length, -1)
 }
 
+function readCloserLine(line: string): Read<DirectiveLine> | undefined {
+  const start = directivePrefix.length + 1
+  const name = readDirectiveName(line, start)
+  if (name === undefined) return undefined
+  return lineEnd.test(line.slice(start + name.length)) ? { value: { kind: 'closer', name } } : { fault: malformedDirective(closerFault) }
+}
+
+function readOpenerLine(line: string): Read<DirectiveLine> | undefined {
+  const name = readDirectiveName(line, directivePrefix.length)
+  if (name === undefined) return undefined
+  const rest = line.slice(directivePrefix.length + name.length)
+  if (!rest.startsWith(' ') && !lineEnd.test(rest)) return undefined
+  const opener = readOpenerRest(rest)
+  if (opener.fault !== undefined) return { fault: opener.fault }
+  return { value: { argument: opener.value.argument, attributes: opener.value.attributes, kind: 'opener', name } }
+}
+
+function readDirectiveName(text: string, index: number): string | undefined {
+  directiveName.lastIndex = index
+  return directiveName.exec(text)?.[0]
+}
+
 function readOpenerRest(rest: string): Read<{ argument: string | undefined; attributes: DirectiveAttributes }> {
-  let cursor = 0
-  let argument: string | undefined
-  let attributes = noAttributes
-  if (rest.charAt(0) === ' ' && rest.charAt(1) !== '{' && !lineEnd.test(rest)) {
-    bareRun.lastIndex = 1
-    argument = bareRun.exec(rest)?.[0]
-    if (argument === undefined) return { fault: malformedDirective(openerFault) }
-    cursor = 1 + argument.length
-  }
-  if (rest.charAt(cursor) === ' ' && rest.charAt(cursor + 1) === '{') {
-    const read = readAttributesAt(rest, cursor + 1, false)
-    if (read.fault !== undefined) return { fault: read.fault }
-    attributes = read.value.attributes
-    cursor = read.value.end
-  }
-  if (!lineEnd.test(rest.slice(cursor))) return { fault: malformedDirective(openerFault) }
-  return { value: { argument, attributes } }
+  bareRun.lastIndex = 1
+  const argument = bareRun.exec(rest)?.[0]
+  const attributes = readOpenerAttributes(rest, argument === undefined ? 0 : 1 + argument.length)
+  if (attributes.fault !== undefined) return { fault: attributes.fault }
+  if (!lineEnd.test(rest.slice(attributes.value.end))) return { fault: malformedDirective(openerFault) }
+  return { value: { argument, attributes: attributes.value.attributes } }
+}
+
+function readOpenerAttributes(rest: string, index: number): Read<Attributes> {
+  return rest.charAt(index) === ' ' ? readAttributesAt(rest, index + 1, false) : { value: { attributes: noAttributes, end: index } }
 }
 
 function readNestedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> | undefined {

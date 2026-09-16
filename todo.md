@@ -75,7 +75,8 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       re-scans the region below it and nested inline directives cost O(depth × content) — 3f's
       cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
       guard. §11's scanning rule is the whole argument; the pipeline persona feeds documents
-      nobody typed.
+      nobody typed. `readDirectiveContent`'s scan splits into named steps with that fix rather
+      than keeping its complexity (the maintainer, 2026-09-16).
 - [ ] **4d — What the gate says while it runs (`0.2.1`).** `ci.sh` runs nine legs and announces
       none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
       a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its

@@ -1,5 +1,5 @@
-import { directivePrefix } from './directive-syntax.ts'
+import { spellDirectiveOpener } from './directive-syntax.ts'
 
 export const listBreakName = 'listBreak'
 
-export const listBreakSpelling = `${directivePrefix}${listBreakName}`
+export const listBreakSpelling = spellDirectiveOpener(listBreakName, undefined, '')
