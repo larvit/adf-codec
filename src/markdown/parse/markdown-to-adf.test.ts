@@ -228,7 +228,7 @@ test('refuses the list separator that parts anything else', () => {
   const bare = 'unsupported-node-shape: listBreak spells the bare leaf form, !adf:listBreak: this one spells more'
   assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak x\n\n- b\n')), bare)
   assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak {id=x}\n\n- b\n')), bare)
-  assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak\n- b\n!adf:/listBreak\n')), 'malformed-directive: listBreak takes no body, so no !adf:/listBreak closes it')
+  assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak\n- b\n!adf:/listBreak\n')), 'malformed-directive: listBreak takes no body, so no !adf:/listBreak closes it; \\!adf: keeps the prefix literal')
   assert.equal(content(markdownToAdf('!adf:listBreak{}\n')), 'unsupported-node-shape: listBreak takes the block form, !adf:listBreak, never the inline form')
   assert.deepEqual(path(markdownToAdf('Part.\n\n!adf:listBreak\n')), ['content', 1])
 })
@@ -300,7 +300,7 @@ test('names the directive name no node reads back to', () => {
 })
 
 test('names the container no closer closes inside the block holding it', () => {
-  const unclosed = (name: string): string => `malformed-directive: the ${name} container is unclosed: no !adf:/${name} follows inside the block holding it`
+  const unclosed = (name: string): string => `malformed-directive: the ${name} container is unclosed: no !adf:/${name} follows inside the block holding it; \\!adf: keeps the prefix literal`
   assert.equal(content(markdownToAdf('Part.\n!adf:expand\n')), unclosed('expand'))
   assert.deepEqual(path(markdownToAdf('Part.\n!adf:expand\n')), ['content', 1])
   assert.equal(content(markdownToAdf('!adf:bulletList\n')), unclosed('bulletList'))
@@ -318,7 +318,7 @@ test('names the closer that finds no container open where it stands', () => {
 })
 
 test('names the leaf given a body at its opener, ahead of any refusal the leaf holds itself', () => {
-  const body = (name: string): string => `malformed-directive: ${name} takes no body, so no !adf:/${name} closes it`
+  const body = (name: string): string => `malformed-directive: ${name} takes no body, so no !adf:/${name} closes it; \\!adf: keeps the prefix literal`
   assert.equal(content(markdownToAdf('!adf:rule\nPart.\n!adf:/rule\n')), body('rule'))
   assert.deepEqual(position(markdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
   assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak\n!adf:/listBreak\n\n- b\n')), body('listBreak'))
@@ -668,6 +668,13 @@ test('refuses input nested deeper than the parser carries', () => {
   const marks = (levels: number): string => `${'!adf:underline['.repeat(levels)}a${']'.repeat(levels)}\n`
   assert.equal(code(markdownToAdf(marks(largestNesting + 1))), 'unsupported-nesting-depth')
   assert.deepEqual(content(markdownToAdf(marks(largestNesting))), [{ content: [marked('a', underline)], type: 'paragraph' }])
+  const panels = (levels: number, body: string): string => `${'!adf:panel\n'.repeat(levels)}${body}${'!adf:/panel\n'.repeat(levels)}`
+  assert.equal(code(markdownToAdf(panels(1000, ''))), 'unsupported-nesting-depth')
+  assert.ok(markdownToAdf(panels(largestNesting, '!adf:paragraph {localId=a-1}\nPart.\n!adf:/paragraph\n')).ok)
+  assert.equal(
+    content(markdownToAdf(panels(largestNesting, '!adf:paragraph {localId=a-1}\n!adf:panel\n!adf:/paragraph\n'))),
+    `unsupported-nesting-depth: the input nests directive containers deeper than the ${largestNesting} levels the parser carries`,
+  )
 })
 
 test('decodes the backslash escapes CommonMark spells, and keeps the rest literal', () => {

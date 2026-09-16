@@ -106,7 +106,7 @@ test('opens a container where the content model takes content, and holds it open
 })
 
 test('closes the containers a closer names past as unclosed, and crosses no list item or blockquote edge', () => {
-  const unclosed = (name: string): string => `the ${name} container is unclosed: no !adf:/${name} follows inside the block holding it`
+  const unclosed = (name: string): string => `the ${name} container is unclosed: no !adf:/${name} follows inside the block holding it; \\!adf: keeps the prefix literal`
   const unopened = (name: string): string => `the closer !adf:/${name} closes no ${name} container open where it stands; \\!adf: keeps the prefix literal`
   assert.deepEqual(faults('!adf:panel info\n!adf:expand\nPart.\n!adf:/expand\n!adf:/panel\n'), [])
   assert.deepEqual(faults('!adf:panel info\n!adf:expand\n!adf:layoutSection\nPart.\n!adf:/panel\n'), [unclosed('expand')])

@@ -17,6 +17,7 @@ import {
 } from '../commonmark-grammar.ts'
 import { blockDirectiveForm } from '../block-directive-forms.ts'
 import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
+import { largestNesting } from '../../nesting.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { readLinkDefinitions } from '../link-reference-definitions.ts'
 
@@ -115,7 +116,7 @@ function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } 
 
 function continuesContainer(walk: Walk, container: OpenContainer, line: Line): Line | undefined {
   if (container.kind === 'blockquote') return blockquoteRest(removeColumns(line, largestOpenerIndentation))
-  // A directive container has no continuation marker: only its own closer closes it.
+  // A directive container has no continuation marker.
   if (container.kind === 'directive') return line
   // A list item begins with at most one blank line: an empty one gives the second up.
   if (isBlankLine(line.text)) {
@@ -203,7 +204,7 @@ function closeContainers(walk: Walk, depth: number): void {
   for (const container of walk.stack.slice(depth)) {
     if (container.kind !== 'directive') continue
     container.parent[container.index] = {
-      fault: malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it`),
+      fault: malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it; ${directiveEscape}`),
       kind: 'fault',
       position: container.position,
     }
@@ -222,6 +223,11 @@ function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
 
 function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'opener' }>): void {
   const { name } = directive
+  // The node walk refuses this depth anyway; a deeper stack only makes every later line walk it.
+  if (walk.stack.length > largestNesting && blockDirectiveForm(name) === 'container') {
+    pushFault(walk, { code: 'unsupported-nesting-depth', message: `the input nests directive containers deeper than the ${largestNesting} levels the parser carries` })
+    return
+  }
   const block: DirectiveBlock = {
     argument: directive.argument,
     attributes: directive.attributes,
@@ -240,7 +246,7 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'op
 function closeDirective(walk: Walk, name: string): void {
   const closer = spellDirectiveCloser(name)
   if (blockDirectiveForm(name) === 'leaf') {
-    faultLeafOpener(walk, name, malformedDirective(`${name} takes no body, so no ${closer} closes it`))
+    faultLeafOpener(walk, name, malformedDirective(`${name} takes no body, so no ${closer} closes it; ${directiveEscape}`))
     return
   }
   const depth = openDirectiveDepth(walk, name)
@@ -262,7 +268,6 @@ function openDirectiveDepth(walk: Walk, name: string): number | undefined {
   return undefined
 }
 
-// A leaf given a body faults at its opener, as a container missing its closer does.
 function faultLeafOpener(walk: Walk, name: string, fault: ConvertFault): void {
   const blocks = currentBlocks(walk)
   const openers = walk.leafOpeners.get(blocks)
