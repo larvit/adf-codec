@@ -718,10 +718,26 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
   - [x] **12d — The README, `MIGRATION.md` and the sweep.** The README's examples and error tables
         follow, `MIGRATION.md` linked from one README line; docs and fixtures swept for any stale
         `::`/`:name` spelling.
-- [ ] **13 — The schema's gap attributes (`0.2.0`).**
+- [x] **13 — The schema's gap attributes (`0.2.0`).** Spell the attributes 11b pins as gaps, in
+      12's grammar, and empty the list.
+      **Settled** (the maintainer, 2026-09-13): a link `[text](url "title")` cannot hold takes the
+      directive mark `!adf:link[text]{attrs}` — one carrying `collection`, `id` or `occurrenceKey`,
+      or an `href` or `title` no CommonMark escape writes — and a directive link CommonMark could
+      spell is `unsupported-node-shape`. That leaves `unspellable-link` no cause, so it leaves
+      `ConvertErrorCode` in `0.2.0`, §8 recording the removal.
   - [x] **13a — `rule` and `layoutSection`.** `rule`'s `color`, `style` and `weight` and
         `layoutSection`'s `columnRuleStyle` join their tables and `spec/flavour.md` bullets, with
         round-trip fixtures; their gap entries go.
+  - [x] **13b — The directive link.** `link` spelled as above in both directions, with a round-trip
+        fixture per trigger, `spec/flavour.md`'s Marks section following; `unspellable-link` removed
+        from the code list, its `errors/` fixtures and the CommonMark suite's `unspellable`
+        exceptions it cures re-derived, the README's code table and its "not every document
+        converts back" guarantee following, and `MIGRATION.md` naming the removed code; the gap
+        list is empty. A round-trip fixture holds the shape 4.2's review left refused until then:
+        an autolink-shaped link under a directive mark whose href holds `\!adf:name{`. A link
+        opening a paragraph whose opening reads as a link reference definition, which 4.3 leaves
+        riding the carry, takes the directive link too, with its round-trip fixture (the
+        maintainer, 2026-09-15).
 
 ## 5 — Ship `0.1.0`
 
