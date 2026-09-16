@@ -247,6 +247,9 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         container parses.
       - Split by construct, each sub-item both directions: 55 of 78 round-trip fixtures feed both
         the emit and the read-back test, so an emit-only chunk cannot land green.
+      - The spec leads the code from 12a to 12d: `spec/flavour.md` and `AGENTS.md` §4 spell the
+        `!adf:` grammar whole, while code and fixtures reach it one form at a time. A reader landing
+        in either without `todo.md` sees a gap that is the plan, not a defect.
   - [x] **12a — The spec and the decision.**
   - [ ] **12b — The inline form.** Inline nodes, directive marks, `text` and the inline carry
         `!adf:carry{json=…}` spelled and read as `!adf:name[content]{attrs}`, with the prefix claim
@@ -258,6 +261,14 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
         model, empty pairs, `listBreak` and the `carry` fence, spelled and read; the fence-length
         rule and the corpus test's fence nesting check deleted; the remaining fixtures re-spelled
         and `errors/` re-derived under the shifted codes, and the gate green.
+        12b's two temporary seams expire here: `carryFence` folds back into `carryName` once the
+        fence reads `carry`, and `directiveLineEscape` into `inlineDirectiveEscape` once one escape
+        serves both forms. `spellLeafDirective` takes the `Inline` its reader-side regex already
+        carries, and `header` versus `opener` settles as one word in spec and code. While
+        `readNestedDirective` is open, its `[content]` and `{attrs}` reads lift out as named steps,
+        and the two `charAt`-against-`!` fast paths ahead of `claimsDirectivePrefix` — in
+        `readDirectiveContent` and `line-escaping`'s `bracketed-link-target` arm — either earn a
+        reason or go (the systems-architect, 2026-09-16).
   - [ ] **12d — The README, `MIGRATION.md` and the sweep.** The README's examples and error tables
         follow, `MIGRATION.md` linked from one README line; docs and fixtures swept for any stale
         `::`/`:name` spelling.

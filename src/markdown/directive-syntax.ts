@@ -114,7 +114,7 @@ export function spellJsonAttribute(value: JsonValue): string {
   return quote(serializeCanonicalJson(value, 'compact'))
 }
 
-export function spellDirectiveOpener(name: string): string {
+export function spellInlineDirectiveOpener(name: string): string {
   return `${directivePrefix}${name}[`
 }
 

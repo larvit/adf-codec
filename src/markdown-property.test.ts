@@ -12,7 +12,7 @@ import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
 import { blockDirectives } from './adf/block-directives.ts'
 import { carryFence, carryName } from './markdown/opaque-carry.ts'
-import { directivePrefix, spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellLeafDirective, spellStringAttribute, spellVocabulary } from './markdown/directive-syntax.ts'
+import { directivePrefix, spellAttributes, spellInlineDirectiveOpener, spellJsonAttribute, spellLeafDirective, spellStringAttribute, spellVocabulary } from './markdown/directive-syntax.ts'
 import { fencedCodeBlock } from './markdown/backtick-runs.ts'
 import { inlineDirectives } from './adf/inline-directives.ts'
 import { listBreakName } from './markdown/list-break.ts'
@@ -227,11 +227,11 @@ function inlineMarkdown(hostile: boolean): InlineMarkdown {
             ...Object.entries(inlineDirectives).map(([name, directive]) =>
               fc
                 .tuple(directive.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(directive.attributes, directive.textAttribute))
-                .map(([slot, attrs]) => (slot === null ? spellLeafDirective(name, attrs) : `${spellDirectiveOpener(name)}${slot}]${attrs}`)),
+                .map(([slot, attrs]) => (slot === null ? spellLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
             ),
             ...Object.entries(markAttributes)
               .filter(([name]) => hostile || markSpelling(name)?.kind === 'directive')
-              .map(([name, vocabulary]) => fc.tuple(tie('inlines'), tableAttributes(vocabulary)).map(([content, attrs]) => `${spellDirectiveOpener(name)}${content}]${attrs}`)),
+              .map(([name, vocabulary]) => fc.tuple(tie('inlines'), tableAttributes(vocabulary)).map(([content, attrs]) => `${spellInlineDirectiveOpener(name)}${content}]${attrs}`)),
           ),
           weight: 2,
         },

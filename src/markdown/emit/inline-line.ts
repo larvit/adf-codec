@@ -5,7 +5,7 @@ import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { holdsDirectivePrefix, slotLineEndingFault, spellDirectiveOpener, spellLeafDirective } from '../directive-syntax.ts'
+import { holdsDirectivePrefix, slotLineEndingFault, spellInlineDirectiveOpener, spellLeafDirective } from '../directive-syntax.ts'
 import { holdsEntityReference } from '../entity-references.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -214,7 +214,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   if (spans !== undefined) return faulted(spans, path)
   if (holdsNullCharacter(slot)) return failure('unspellable-character', `a ${node.type} content slot holds a null character CommonMark replaces`, path)
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
-  return success({ segments: [syntax(spellDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
+  return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
 
 function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
@@ -241,7 +241,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  return success({ segments: [syntax(spellDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })
+  return success({ segments: [syntax(spellInlineDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })
 }
 
 function emitEmphasis(nodes: readonly AdfNode[], spelling: string, depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
