@@ -60,14 +60,16 @@ type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; ind
 // The line from an absolute column on: a tab a cut splits keeps the stop it is measured against.
 type Line = { column: number; text: string }
 
-type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; position: SourcePosition; stack: OpenContainer[] }
+type LeafOpener = { index: number; position: SourcePosition }
+
+type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; leafOpeners: Map<Block[], Map<string, LeafOpener>>; position: SourcePosition; stack: OpenContainer[] }
 
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
 
 export function parseBlocks(markdown: string): ParsedBlocks {
-  const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, position: { line: 1, offset: 0 }, stack: [] }
+  const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, leafOpeners: new Map(), position: { line: 1, offset: 0 }, stack: [] }
   for (const line of sourceLines(markdown)) {
     walk.position = line.position
     readLine(walk, { column: 0, text: line.text })
@@ -229,15 +231,16 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'op
     position: walk.position,
   }
   const parent = currentBlocks(walk)
-  parent.push(block)
+  const index = parent.push(block) - 1
   const { position } = block
-  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, index: parent.length - 1, kind: 'directive', name, parent, position })
+  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, index, kind: 'directive', name, parent, position })
+  else leafOpenersIn(walk, parent).set(name, { index, position })
 }
 
 function closeDirective(walk: Walk, name: string): void {
   const closer = spellDirectiveCloser(name)
   if (blockDirectiveForm(name) === 'leaf') {
-    pushFault(walk, malformedDirective(`${name} takes no body, so no ${closer} closes it`))
+    faultLeafOpener(walk, name, malformedDirective(`${name} takes no body, so no ${closer} closes it`))
     return
   }
   const depth = openDirectiveDepth(walk, name)
@@ -257,6 +260,27 @@ function openDirectiveDepth(walk: Walk, name: string): number | undefined {
     if (container.name === name) return depth
   }
   return undefined
+}
+
+// A leaf given a body faults at its opener, as a container missing its closer does.
+function faultLeafOpener(walk: Walk, name: string, fault: ConvertFault): void {
+  const blocks = currentBlocks(walk)
+  const openers = walk.leafOpeners.get(blocks)
+  const opener = openers?.get(name)
+  if (openers === undefined || opener === undefined) {
+    pushFault(walk, fault)
+    return
+  }
+  openers.delete(name)
+  blocks[opener.index] = { fault, kind: 'fault', position: opener.position }
+}
+
+function leafOpenersIn(walk: Walk, blocks: Block[]): Map<string, LeafOpener> {
+  const known = walk.leafOpeners.get(blocks)
+  if (known !== undefined) return known
+  const openers = new Map<string, LeafOpener>()
+  walk.leafOpeners.set(blocks, openers)
+  return openers
 }
 
 function pushFault(walk: Walk, fault: ConvertFault): void {

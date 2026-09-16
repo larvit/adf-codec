@@ -115,5 +115,6 @@ test('closes the containers a closer names past as unclosed, and crosses no list
   assert.deepEqual(faults('> !adf:panel info\n> Part.\n!adf:/panel\n'), [unclosed('panel'), unopened('panel')])
   assert.deepEqual(faults('!adf:panel info\n> !adf:/panel\n!adf:/panel\n'), [unopened('panel')])
   assert.deepEqual(faults('Part.\n\n!adf:/panel\n'), [unopened('panel')])
-  assert.deepEqual(faults('!adf:rule {localId=a-1}\nPart.\n!adf:/rule\n'), ['rule takes no body, so no !adf:/rule closes it'])
+  assert.deepEqual(kinds('!adf:rule {localId=a-1}\nPart.\n!adf:/rule\n'), ['fault', 'paragraph'])
+  assert.deepEqual(kinds('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n'), ['fault', 'fault'])
 })

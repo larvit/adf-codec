@@ -315,7 +315,18 @@ test('names the closer that finds no container open where it stands', () => {
   assert.equal(content(markdownToAdf('!adf:panel info\n> !adf:/panel\n!adf:/panel\n')), unopened('panel'))
   assert.equal(content(markdownToAdf('!adf:panel info\n- !adf:/panel\n!adf:/panel\n')), unopened('panel'))
   assert.equal(content(markdownToAdf('!adf:panel info\nPart.\n!adf:/expand\n!adf:/panel\n')), unopened('expand'))
-  assert.equal(content(markdownToAdf('!adf:rule {localId=a-1}\nPart.\n!adf:/rule\n')), 'malformed-directive: rule takes no body, so no !adf:/rule closes it')
+})
+
+test('names the leaf given a body at its opener, ahead of any refusal the leaf holds itself', () => {
+  const body = (name: string): string => `malformed-directive: ${name} takes no body, so no !adf:/${name} closes it`
+  assert.equal(content(markdownToAdf('!adf:rule\nPart.\n!adf:/rule\n')), body('rule'))
+  assert.deepEqual(position(markdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
+  assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak\n!adf:/listBreak\n\n- b\n')), body('listBreak'))
+  assert.equal(content(markdownToAdf('- a\n\n!adf:listBreak\nPart.\n!adf:/listBreak\n\n- b\n')), body('listBreak'))
+  assert.deepEqual(path(markdownToAdf('!adf:rule {localId=a-1}\n!adf:rule {localId=a-2}\nPart.\n!adf:/rule\n')), ['content', 1])
+  assert.deepEqual(path(markdownToAdf('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n')), ['content', 0])
+  assert.deepEqual(path(markdownToAdf('Part.\n\n!adf:/rule\n')), ['content', 1])
+  assert.deepEqual(path(markdownToAdf('!adf:panel info\n!adf:rule {localId=a-1}\n!adf:/panel\n!adf:/rule\n')), ['content', 1])
 })
 
 test('names the position a directive name the other one spells belongs to', () => {
