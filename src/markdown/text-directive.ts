@@ -1,5 +1,5 @@
 import type { DirectiveSpan, Read } from './directive-syntax.ts'
-import { readSoleStringAttribute, spellAttributes, spellLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
+import { readSoleStringAttribute, spellAttributes, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 
 const name = 'text'
 const whitespaceRun = /^(?:[ \t]+|\n+)$/
@@ -7,7 +7,7 @@ const whitespaceRun = /^(?:[ \t]+|\n+)$/
 export const textDirectiveName = name
 
 export function spellTextDirective(text: string): string {
-  return spellLeafDirective(name, spellAttributes([[name, spellStringAttribute(text)]]))
+  return spellInlineLeafDirective(name, spellAttributes([[name, spellStringAttribute(text)]]))
 }
 
 export function readTextDirective(span: DirectiveSpan): Read<string> | undefined {

@@ -15,6 +15,6 @@ Shipped !adf:emoji[🚀]{shortName=":rocket:"} on !adf:date{timestamp=1756080000
 
 ---
 
-:::panel warning
+!adf:panel warning
 Do not skip the pre-flight.
-:::
+!adf:/panel

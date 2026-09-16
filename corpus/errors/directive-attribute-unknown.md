@@ -1,3 +1,3 @@
-:::panel info {bogus=1}
+!adf:panel info {bogus=1}
 Part.
-:::
+!adf:/panel

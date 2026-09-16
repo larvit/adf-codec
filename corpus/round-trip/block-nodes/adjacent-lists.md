@@ -1,23 +1,23 @@
 - Bolt
 
-::listBreak
+!adf:listBreak
 
 - Nut
 
 1. Cut
 
-::listBreak
+!adf:listBreak
 
 1. Weld
 
-:::panel info
+!adf:panel info
 - Left
-::listBreak
+!adf:listBreak
 - Right
-:::
+!adf:/panel
 
 - - Head
 
-  ::listBreak
+  !adf:listBreak
 
   - Tail

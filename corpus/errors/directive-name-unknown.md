@@ -1,3 +1,3 @@
-:::widget info
+!adf:widget info
 Part.
-:::
+!adf:/widget

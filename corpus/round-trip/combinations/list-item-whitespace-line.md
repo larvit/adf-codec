@@ -1,20 +1,20 @@
-::::bulletList
-:::listItem
+!adf:bulletList
+!adf:listItem
 ```
  
 a
 ```
-:::
-::::
+!adf:/listItem
+!adf:/bulletList
 
-::::::orderedList {order=1}
-:::::listItem
-::::bulletList
-:::listItem
+!adf:orderedList {order=1}
+!adf:listItem
+!adf:bulletList
+!adf:listItem
 ```
 	
 ```
-:::
-::::
-:::::
-::::::
+!adf:/listItem
+!adf:/bulletList
+!adf:/listItem
+!adf:/orderedList

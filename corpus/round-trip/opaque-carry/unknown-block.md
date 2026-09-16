@@ -1,4 +1,4 @@
-```adf
+```carry
 {
   "attrs": {
     "url": "https://example.com/roadmap"
@@ -7,10 +7,10 @@
 }
 ```
 
-:::panel info
+!adf:panel info
 The card below has no spelling yet.
 
-```adf
+```carry
 {
   "attrs": {
     "layout": "wide",
@@ -20,4 +20,4 @@ The card below has no spelling yet.
   "type": "embedCard"
 }
 ```
-:::
+!adf:/panel

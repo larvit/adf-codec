@@ -1,31 +1,31 @@
-:::codeBlock {hideLineNumbers=true localId=01a0431d-201b-70a7-81fa-8d0072e09eab uniqueId=4478e39c wrap=true}
+!adf:codeBlock {hideLineNumbers=true localId=01a0431d-201b-70a7-81fa-8d0072e09eab uniqueId=4478e39c wrap=true}
 ```rust
 fn main() {}
 ```
-:::
+!adf:/codeBlock
 
-:::codeBlock {language="a\u0060b"}
+!adf:codeBlock {language="a\u0060b"}
 ```
 x
 ```
-:::
+!adf:/codeBlock
 
-:::codeBlock {language=" sql"}
+!adf:codeBlock {language=" sql"}
 ```
 SELECT 1
 ```
-:::
+!adf:/codeBlock
 
-:::codeBlock {language="\u0026#97;df"}
+!adf:codeBlock {language="\u0026#97;df"}
 ```
 y
 ```
-:::
+!adf:/codeBlock
 
-::::panel info
-:::codeBlock {wrap=true}
+!adf:panel info
+!adf:codeBlock {wrap=true}
 ```text
-:::
+!adf:/codeBlock
 ```
-:::
-::::
+!adf:/codeBlock
+!adf:/panel

@@ -6,10 +6,9 @@ import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, overNested } from '../json-value.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
 import { largestNesting } from '../nesting.ts'
-import { malformedDirective, readSoleStringAttribute, spellAttributes, spellLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
+import { malformedDirective, readSoleStringAttribute, spellAttributes, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
-export const carryFence = 'adf'
 export const carryName = 'carry'
 
 const jsonAttribute = 'json'
@@ -17,13 +16,13 @@ const jsonAttribute = 'json'
 export function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
   const json = carriedJson(node, 'two-space', path, largestNesting - depth)
   if (!json.ok) return json
-  return success(fencedCodeBlock(carryFence, json.value))
+  return success(fencedCodeBlock(carryName, json.value))
 }
 
 export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<string> {
   const json = carriedJson(node, 'compact', path, largestNesting)
   if (!json.ok) return json
-  return success(spellLeafDirective(carryName, spellAttributes([[jsonAttribute, spellStringAttribute(json.value)]])))
+  return success(spellInlineLeafDirective(carryName, spellAttributes([[jsonAttribute, spellStringAttribute(json.value)]])))
 }
 
 export function readCarriedBlock(body: string, depth: number): Read<AdfNode> {

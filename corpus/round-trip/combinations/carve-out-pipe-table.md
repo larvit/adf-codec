@@ -4,6 +4,6 @@ Pass a | b to the shell.
 
 - \| --- | --- |
 
-:::panel info
+!adf:panel info
 \| a | b |
-:::
+!adf:/panel

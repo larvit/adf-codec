@@ -1,4 +1,4 @@
-> ```adf
+> ```carry
 > {
 >   "attrs": {
 >     "url": "https://example.com/quoted"
@@ -7,7 +7,7 @@
 > }
 > ```
 
-- ```adf
+- ```carry
   {
     "attrs": {
       "url": "https://example.com/listed"

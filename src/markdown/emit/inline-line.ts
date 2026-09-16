@@ -5,7 +5,7 @@ import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { holdsDirectivePrefix, slotLineEndingFault, spellInlineDirectiveOpener, spellLeafDirective } from '../directive-syntax.ts'
+import { holdsDirectivePrefix, slotLineEndingFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
 import { holdsEntityReference } from '../entity-references.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -199,7 +199,7 @@ function emitHardBreak(node: AdfNode, directive: InlineDirective, context: Inlin
   const attributes = spellInlineNodeAttributes(node, directive)
   if (attributes === undefined) return success({ carry: { first: index, last: index } })
   if (attributes === '' && context.spansLines && !context.atBlockEnd) return success({ segments: [syntax('\\\n')] })
-  return success({ segments: [syntax(spellLeafDirective('hardBreak', attributes))] })
+  return success({ segments: [syntax(spellInlineLeafDirective('hardBreak', attributes))] })
 }
 
 function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: number, path: ConvertErrorPath): Result<Emission> {
@@ -208,7 +208,7 @@ function emitInlineDirective(node: AdfNode, directive: InlineDirective, index: n
   const attributes = spellInlineNodeAttributes(node, directive)
   if (attributes === undefined) return success({ carry: { first: index, last: index } })
   const slot = directive.textAttribute === undefined ? undefined : nodeAttrs(node)[directive.textAttribute]
-  if (slot === undefined) return success({ segments: [syntax(spellLeafDirective(node.type, attributes))] })
+  if (slot === undefined) return success({ segments: [syntax(spellInlineLeafDirective(node.type, attributes))] })
   if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
   const spans = slotLineEndingFault(node.type, slot)
   if (spans !== undefined) return faulted(spans, path)

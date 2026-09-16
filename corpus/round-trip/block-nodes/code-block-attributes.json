@@ -64,7 +64,7 @@
           },
           "content": [
             {
-              "text": ":::",
+              "text": "!adf:/codeBlock",
               "type": "text"
             }
           ],

@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockDirective } from '../../adf/block-directives.ts'
 import { adfDocumentFault, carriesOnly, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockDirective } from '../../adf/block-directives.ts'
+import { blockDirectiveForm } from '../block-directive-forms.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -10,14 +11,14 @@ import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParag
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { listBreakSpelling } from '../list-break.ts'
-import { spellDirectiveHeader } from './block-directive-spelling.ts'
+import { spellBlockDirectiveOpener } from './block-directive-spelling.ts'
+import { spellDirectiveCloser } from '../directive-syntax.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive' | 'list'
-type EmittedBody = { fenceColons: number; text: string }
-type EmittedBlock = EmittedBody & { spelling: BlockSpelling }
+type EmittedBlock = { spelling: BlockSpelling; text: string }
 type PlacedBlock = EmittedBlock & { node: AdfNode }
 
 const largestListMarker = 999999999
@@ -28,10 +29,10 @@ export function adfToMarkdown(document: AdfDocument): Result<string> {
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   const blocks = emitBlocks(nodeContent(document), 'document', [], 0)
   if (!blocks.ok) return blocks
-  return success(blocks.value.text === '' ? '' : `${blocks.value.text}\n`)
+  return success(blocks.value === '' ? '' : `${blocks.value}\n`)
 }
 
-function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: ConvertErrorPath, depth: number): Result<EmittedBody> {
+function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: ConvertErrorPath, depth: number): Result<string> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
@@ -39,15 +40,13 @@ function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: 
     if (!block.ok) return block
     blocks.push({ ...block.value, node })
   }
-  let fenceColons = 0
   let text = ''
   for (const [index, block] of blocks.entries()) {
     const previous = blocks[index - 1]
     if (previous !== undefined) text += separationBetween(previous, block, container)
-    fenceColons = Math.max(fenceColons, block.fenceColons)
     text += block.text
   }
-  return success({ fenceColons, text })
+  return success(text)
 }
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
@@ -105,42 +104,36 @@ function commonMarkLine(text: Result<string>): Result<EmittedBlock> {
 }
 
 function commonMarkText(text: string): EmittedBlock {
-  return { fenceColons: 0, spelling: 'commonmark', text }
+  return { spelling: 'commonmark', text }
+}
+
+function directivePair(node: AdfNode, opener: string, body: string): EmittedBlock {
+  return { spelling: 'directive', text: `${opener}\n${body === '' ? '' : `${body}\n`}${spellDirectiveCloser(node.type)}` }
 }
 
 function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
   const content = nodeContent(node)
-  if (directive.contentModel === 'none' && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
+  const leaf = blockDirectiveForm(node.type) === 'leaf'
+  if (leaf && content.length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path, depth)
-  const header = spellDirectiveHeader(node, directive)
-  if (header === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  if (directive.contentModel === 'none' || (directive.contentModel === 'inline' && content.length === 0)) {
-    return success({ fenceColons: 2, spelling: 'directive', text: `::${header}` })
-  }
-  const body = directive.contentModel === 'inline' ? emitInlineBody(content, path) : emitBlocks(content, 'directive', path, depth + 1)
+  const opener = spellBlockDirectiveOpener(node, directive)
+  if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  if (leaf) return success({ spelling: 'directive', text: opener })
+  const body = directive.contentModel === 'inline' ? emitInlineLine(content, 'paragraph', path) : emitBlocks(content, 'directive', path, depth + 1)
   if (!body.ok) return body
-  const fenceColons = Math.max(3, body.value.fenceColons + 1)
-  const fence = ':'.repeat(fenceColons)
-  const lines = body.value.text === '' ? '' : `${body.value.text}\n`
-  return success({ fenceColons, spelling: 'directive', text: `${fence}${header}\n${lines}${fence}` })
-}
-
-function emitInlineBody(content: readonly AdfNode[], path: ConvertErrorPath): Result<EmittedBody> {
-  const line = emitInlineLine(content, 'paragraph', path)
-  if (!line.ok) return line
-  return success({ fenceColons: 0, text: line.value })
+  return success(directivePair(node, opener, body.value))
 }
 
 function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, [])) return undefined
   const inner = emitBlocks(nodeContent(node), 'document', path, depth + 1)
   if (!inner.ok) return inner
-  const text = inner.value.text
+  const text = inner.value
     .split('\n')
     .map((line) => (line === '' ? '>' : `> ${line}`))
     .join('\n')
-  return success({ fenceColons: inner.value.fenceColons, spelling: 'commonmark', text })
+  return success(commonMarkText(text))
 }
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
@@ -154,12 +147,11 @@ function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlo
 
 function emitCodeDirective(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const slot = languageSlot(nodeAttrs(node)['language'])
-  const header = spellDirectiveHeader(node, directive, slot.kind === 'attribute' ? [] : ['language'])
-  if (header === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  const opener = spellBlockDirectiveOpener(node, directive, slot.kind === 'attribute' ? [] : ['language'])
+  if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   const text = codeBlockText(node, path)
   if (!text.ok) return text
-  const info = slot.kind === 'fence' ? slot.info : ''
-  return success({ fenceColons: 3, spelling: 'directive', text: `:::${header}\n${fencedCodeBlock(info, text.value)}\n:::` })
+  return success(directivePair(node, opener, fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
 }
 
 function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
@@ -203,15 +195,13 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<
   if (start === undefined || items.length === 0) return undefined
   if (items.some((item) => item.type !== 'listItem' || !carriesOnly(item, []))) return undefined
   const lines: string[] = []
-  let fenceColons = 0
   for (const [offset, item] of items.entries()) {
     const emitted = emitListItem(item, ordered ? `${start + offset}. ` : '- ', [...path, 'content', offset], depth)
     if (emitted === undefined) return undefined
     if (!emitted.ok) return emitted
-    fenceColons = Math.max(fenceColons, emitted.value.fenceColons)
-    lines.push(emitted.value.text)
+    lines.push(emitted.value)
   }
-  return success({ fenceColons, spelling: 'list', text: lines.join('\n') })
+  return success({ spelling: 'list', text: lines.join('\n') })
 }
 
 function listStart(node: AdfNode, items: number): number | undefined {
@@ -221,16 +211,16 @@ function listStart(node: AdfNode, items: number): number | undefined {
   return start + items - 1 > largestListMarker ? undefined : start
 }
 
-function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath, depth: number): Result<EmittedBody> | undefined {
+function emitListItem(item: AdfNode, marker: string, path: ConvertErrorPath, depth: number): Result<string> | undefined {
   const inner = emitBlocks(nodeContent(item), 'list-item', path, depth + 1)
   if (!inner.ok) return inner
-  if (inner.value.text === '') return success({ fenceColons: 0, text: marker.trimEnd() })
-  const body = inner.value.text.split('\n')
+  if (inner.value === '') return success(marker.trimEnd())
+  const body = inner.value.split('\n')
   if (body.some((line) => line !== '' && isBlankLine(line))) return undefined
   const indent = ' '.repeat(marker.length)
   const lines = body.map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
   if (isThematicBreak(lines[0] ?? '')) return undefined
-  return success({ fenceColons: inner.value.fenceColons, text: lines.join('\n') })
+  return success(lines.join('\n'))
 }
 
 function emitParagraph(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {

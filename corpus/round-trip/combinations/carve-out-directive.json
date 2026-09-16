@@ -21,7 +21,7 @@
     {
       "content": [
         {
-          "text": "::syncBlock {localId=x}",
+          "text": "!adf:syncBlock {localId=x}",
           "type": "text"
         }
       ],

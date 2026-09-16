@@ -34,7 +34,7 @@
                   },
                   "content": [
                     {
-                      "text": ":::::::panel warning\n:::",
+                      "text": "!adf:panel warning\n!adf:/panel",
                       "type": "text"
                     }
                   ],

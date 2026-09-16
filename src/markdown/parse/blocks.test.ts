@@ -69,44 +69,51 @@ test('leaves the paragraph a line no definition spells', () => {
 
 test('swallows an HTML block to the end condition its start sets', () => {
   assert.deepEqual(kinds('<div>\nx\n\nPart.\n'), ['html', 'paragraph'])
-  assert.deepEqual(kinds('<!--\n:::\n-->\nPart.\n'), ['html', 'paragraph'])
+  assert.deepEqual(kinds('<!--\n!adf:/panel\n-->\nPart.\n'), ['html', 'paragraph'])
   assert.deepEqual(kinds('<pre>x</pre>\nPart.\n'), ['html', 'paragraph'])
   assert.deepEqual(kinds('<div>\nx\n'), ['html'])
   assert.deepEqual(kinds('Part.\n<div>\n'), ['paragraph', 'html'])
 })
 
 test('carries a claimed line as the block it opens, the refusal the node layer builds', () => {
-  assert.deepEqual(kinds(':::\nPart.\n'), ['fault', 'paragraph'])
+  assert.deepEqual(kinds('!adf:/panel\nPart.\n'), ['fault', 'paragraph'])
   assert.deepEqual(kinds('Part.\n| x |\n'), ['paragraph', 'fault'])
 })
 
-test('holds a directive container open until the fence that closes it', () => {
-  assert.deepEqual(kinds(':::panel info\nPart.\n:::\nMore.\n'), ['directive', 'paragraph'])
-  assert.deepEqual(kinds('::rule\nPart.\n'), ['directive', 'paragraph'])
-  assert.deepEqual(faults(':::panel info\n\nPart.\n\n:::\n'), [])
-  assert.deepEqual(faults(':::panel info\n> Part.\n> :::\n'), [])
-  assert.deepEqual(faults('::::panel info\n- :::expand\n  Part.\n  :::\n::::\n'), [])
-  assert.deepEqual(faults(':::panel info\n```\n:::\n```\n:::\n'), [])
-  assert.deepEqual(parseBlocks(':::panel info {panelColor="#ff0000"}\nPart.\n:::\n').blocks, [
+test('opens a container where the content model takes content, and holds it open until the closer naming it', () => {
+  assert.deepEqual(kinds('!adf:panel info\nPart.\n!adf:/panel\nMore.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(kinds('!adf:rule\nPart.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(kinds('!adf:listBreak\nPart.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(kinds('!adf:widget\nPart.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(kinds('!adf:mention\nPart.\n'), ['directive', 'paragraph'])
+  assert.deepEqual(faults('!adf:panel info\n\nPart.\n\n!adf:/panel\n'), [])
+  assert.deepEqual(faults('!adf:panel info\n> Part.\n!adf:/panel\n'), [])
+  assert.deepEqual(faults('!adf:panel info\n- !adf:panel warning\n  Part.\n  !adf:/panel\n!adf:/panel\n'), [])
+  assert.deepEqual(faults('!adf:panel info\n```\n!adf:/panel\n```\n!adf:/panel\n'), [])
+  assert.deepEqual(parseBlocks('!adf:panel info {panelColor="#ff0000"}\nPart.\n!adf:/panel\n').blocks, [
     {
       argument: 'info',
       attributes: new Map([['panelColor', { decoded: '#ff0000', spelling: '"#ff0000"' }]]),
-      blocks: [{ kind: 'paragraph', position: { line: 2, offset: 37 }, text: 'Part.' }],
+      blocks: [{ kind: 'paragraph', position: { line: 2, offset: 39 }, text: 'Part.' }],
       kind: 'directive',
       name: 'panel',
       position: { line: 1, offset: 0 },
     },
   ])
-  assert.deepEqual(parseBlocks('::rule\n').blocks, [
+  assert.deepEqual(parseBlocks('!adf:rule\n').blocks, [
     { argument: undefined, attributes: new Map(), blocks: undefined, kind: 'directive', name: 'rule', position: { line: 1, offset: 0 } },
   ])
 })
 
-test('names the directive fence a container does not sit longer than', () => {
-  assert.deepEqual(faults(':::panel info\n:::expand\nPart.\n:::\n'), ["a directive fence line is at least as long as the container's 3 colons"])
-  assert.deepEqual(faults('::::panel info\n:::\n::::\n'), ['a closing fence is shorter than the 4 colons it would close'])
-  assert.deepEqual(faults('::::panel info\n:::expand\nPart.\n:::::\n::::\n'), [])
-  assert.deepEqual(faults(':::panel info\nPart.\n'), ['a container fenced with 3 colons is unclosed'])
-  assert.deepEqual(faults('- :::panel info\n\nPart.\n'), ['a container fenced with 3 colons is unclosed'])
-  assert.deepEqual(faults('Part.\n\n:::\n'), ['a closing fence closes no open container; \\::: keeps the line literal text'])
+test('closes the containers a closer names past as unclosed, and crosses no list item or blockquote edge', () => {
+  const unclosed = (name: string): string => `the ${name} container is unclosed: no !adf:/${name} follows inside the block holding it`
+  const unopened = (name: string): string => `the closer !adf:/${name} closes no ${name} container open where it stands; \\!adf: keeps the prefix literal`
+  assert.deepEqual(faults('!adf:panel info\n!adf:expand\nPart.\n!adf:/expand\n!adf:/panel\n'), [])
+  assert.deepEqual(faults('!adf:panel info\n!adf:expand\n!adf:layoutSection\nPart.\n!adf:/panel\n'), [unclosed('expand')])
+  assert.deepEqual(faults('!adf:panel info\nPart.\n'), [unclosed('panel')])
+  assert.deepEqual(faults('- !adf:panel info\n\nPart.\n'), [unclosed('panel')])
+  assert.deepEqual(faults('> !adf:panel info\n> Part.\n!adf:/panel\n'), [unclosed('panel'), unopened('panel')])
+  assert.deepEqual(faults('!adf:panel info\n> !adf:/panel\n!adf:/panel\n'), [unopened('panel')])
+  assert.deepEqual(faults('Part.\n\n!adf:/panel\n'), [unopened('panel')])
+  assert.deepEqual(faults('!adf:rule {localId=a-1}\nPart.\n!adf:/rule\n'), ['rule takes no body, so no !adf:/rule closes it'])
 })

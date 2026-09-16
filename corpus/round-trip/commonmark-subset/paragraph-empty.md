@@ -1,5 +1,6 @@
 First.
 
-::paragraph
+!adf:paragraph
+!adf:/paragraph
 
 Second.

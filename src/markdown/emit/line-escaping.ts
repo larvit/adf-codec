@@ -98,7 +98,7 @@ function escapedIndexes(scan: string, escapings: readonly InlineEscaping[], cont
           mergesWithSyntax(scan, escapings, index) ||
           opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))) ||
       (escaping === 'bracketed-link-target' &&
-        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || (scan.charAt(index) === '!' && claimsDirectivePrefix(scan, index))))
+        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || claimsDirectivePrefix(scan, index)))
     ) {
       escaped.add(index)
     }

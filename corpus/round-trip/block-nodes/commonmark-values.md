@@ -1,19 +1,19 @@
-:::heading {level=7}
+!adf:heading {level=7}
 Seventh
-:::
+!adf:/heading
 
-:::heading
+!adf:heading
 Levelless
-:::
+!adf:/heading
 
-::::orderedList {order=999999998}
-:::listItem
+!adf:orderedList {order=999999998}
+!adf:listItem
 One
-:::
-:::listItem
+!adf:/listItem
+!adf:listItem
 Two
-:::
-:::listItem
+!adf:/listItem
+!adf:listItem
 Three
-:::
-::::
+!adf:/listItem
+!adf:/orderedList

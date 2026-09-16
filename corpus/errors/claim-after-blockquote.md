@@ -1,2 +1,2 @@
 > Part.
-:::
+!adf:/panel

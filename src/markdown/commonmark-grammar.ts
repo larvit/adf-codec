@@ -53,11 +53,10 @@ const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const atxHeadingOpener = /^(#{1,6})(?:[ \t]|$)/
 const blankLine = /^[ \t]*$/
 const codeFenceOpener = /^(`{3,}|~{3,})/
-const directiveClaim = /^:{2,}(?:[A-Za-z0-9]|[ \t]*$)/
 const pipeClaim = /^\|/
 const bulletListOpener = /^[*+-](?:[ \t]|$)/
 // A superset of what the parser claims: over-escaping a line is safe, under-escaping one breaks the round-trip.
-const firstCharacterOpeners = [atxHeadingOpener, /^>/, bulletListOpener, codeFenceOpener, /^:{2,}/, pipeClaim]
+const firstCharacterOpeners = [atxHeadingOpener, /^>/, bulletListOpener, codeFenceOpener, pipeClaim]
 // CommonMark 0.31.2, Autolinks: the email production, whose label may not open or close with a hyphen.
 const emailNameSource = "[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+"
 const emailLabelSource = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
@@ -79,10 +78,6 @@ export function backslashEscape(text: string, index: number): string | undefined
   if (text.charAt(index) !== '\\') return undefined
   const escaped = text.charAt(index + 1)
   return isAsciiPunctuation(escaped) ? escaped : undefined
-}
-
-export function claimsDirectiveLine(line: string): boolean {
-  return directiveClaim.test(line)
 }
 
 export function claimsLine(line: string, position: LinePosition): boolean {

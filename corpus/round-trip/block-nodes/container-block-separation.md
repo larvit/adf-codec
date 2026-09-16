@@ -1,6 +1,6 @@
-::::expand {title="Full build log"}
+!adf:expand {title="Full build log"}
 The build ran for 11 minutes.
-:::panel warning
+!adf:panel warning
 Three warnings went unread.
-:::
-::::
+!adf:/panel
+!adf:/expand

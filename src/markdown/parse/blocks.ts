@@ -3,7 +3,6 @@ import type { DirectiveAttributes, DirectiveLine } from '../directive-syntax.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
 import {
   atxHeading,
-  claimsDirectiveLine,
   claimsPipeLine,
   closingCodeFence,
   decodeTextEscapes,
@@ -16,7 +15,8 @@ import {
   replaceNullCharacters,
   setextHeadingLevel,
 } from '../commonmark-grammar.ts'
-import { directiveLineEscape, malformedDirective, readDirectiveLine } from '../directive-syntax.ts'
+import { blockDirectiveForm } from '../block-directive-forms.ts'
+import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { readLinkDefinitions } from '../link-reference-definitions.ts'
 
@@ -40,7 +40,7 @@ export type DirectiveBlock = Extract<Block, { kind: 'directive' }>
 
 type ListBlock = Extract<Block, { items: Block[][] }>
 
-type OpenDirective = { blocks: Block[]; colons: number; index: number; kind: 'directive'; parent: Block[]; position: SourcePosition }
+type OpenDirective = { blocks: Block[]; index: number; kind: 'directive'; name: string; parent: Block[]; position: SourcePosition }
 
 type OpenContainer =
   | Extract<Block, { kind: 'blockquote' }>
@@ -64,7 +64,6 @@ type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; position: SourcePositio
 
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
-const leafColons = 2
 const tabStop = 4
 
 export function parseBlocks(markdown: string): ParsedBlocks {
@@ -114,7 +113,7 @@ function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } 
 
 function continuesContainer(walk: Walk, container: OpenContainer, line: Line): Line | undefined {
   if (container.kind === 'blockquote') return blockquoteRest(removeColumns(line, largestOpenerIndentation))
-  // A directive container has no continuation marker: only its own fence closes it.
+  // A directive container has no continuation marker: only its own closer closes it.
   if (container.kind === 'directive') return line
   // A list item begins with at most one blank line: an empty one gives the second up.
   if (isBlankLine(line.text)) {
@@ -202,7 +201,7 @@ function closeContainers(walk: Walk, depth: number): void {
   for (const container of walk.stack.slice(depth)) {
     if (container.kind !== 'directive') continue
     container.parent[container.index] = {
-      fault: malformedDirective(`a container fenced with ${container.colons} colons is unclosed`),
+      fault: malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it`),
       kind: 'fault',
       position: container.position,
     }
@@ -214,50 +213,48 @@ function dropContainers(walk: Walk, depth: number): void {
   walk.stack.length = depth
 }
 
-function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'header' }>): void {
+function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
+  if (directive.kind === 'closer') closeDirective(walk, directive.name)
+  else openDirective(walk, directive)
+}
+
+function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'opener' }>): void {
+  const { name } = directive
   const block: DirectiveBlock = {
     argument: directive.argument,
     attributes: directive.attributes,
-    blocks: directive.colons > leafColons ? [] : undefined,
+    blocks: blockDirectiveForm(name) === 'container' ? [] : undefined,
     kind: 'directive',
-    name: directive.name,
+    name,
     position: walk.position,
   }
   const parent = currentBlocks(walk)
   parent.push(block)
   const { position } = block
-  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, colons: directive.colons, index: parent.length - 1, kind: 'directive', parent, position })
+  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, index: parent.length - 1, kind: 'directive', name, parent, position })
 }
 
-function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
-  const enclosing = innermostDirective(walk)
-  if (directive.kind === 'closing') {
-    closeDirective(walk, directive.colons, enclosing)
+function closeDirective(walk: Walk, name: string): void {
+  const closer = spellDirectiveCloser(name)
+  if (blockDirectiveForm(name) === 'leaf') {
+    pushFault(walk, malformedDirective(`${name} takes no body, so no ${closer} closes it`))
     return
   }
-  if (enclosing !== undefined && directive.colons >= enclosing.container.colons) {
-    pushFault(walk, malformedDirective(`a directive fence line is at least as long as the container's ${enclosing.container.colons} colons`))
+  const depth = openDirectiveDepth(walk, name)
+  if (depth === undefined) {
+    pushFault(walk, malformedDirective(`the closer ${closer} closes no ${name} container open where it stands; ${directiveEscape}`))
     return
   }
-  openDirective(walk, directive)
+  closeContainers(walk, depth + 1)
+  dropContainers(walk, depth)
 }
 
-function closeDirective(walk: Walk, colons: number, enclosing: { container: OpenDirective; depth: number } | undefined): void {
-  if (enclosing === undefined) {
-    pushFault(walk, malformedDirective(`a closing fence closes no open container; ${directiveLineEscape}`))
-    return
-  }
-  if (colons < enclosing.container.colons) {
-    pushFault(walk, malformedDirective(`a closing fence is shorter than the ${enclosing.container.colons} colons it would close`))
-    return
-  }
-  dropContainers(walk, enclosing.depth)
-}
-
-function innermostDirective(walk: Walk): { container: OpenDirective; depth: number } | undefined {
+// A closer crosses no list item or blockquote edge.
+function openDirectiveDepth(walk: Walk, name: string): number | undefined {
   for (let depth = walk.stack.length - 1; depth >= 0; depth -= 1) {
     const container = walk.stack[depth]
-    if (container?.kind === 'directive') return { container, depth }
+    if (container?.kind !== 'directive') return undefined
+    if (container.name === name) return depth
   }
   return undefined
 }
@@ -271,7 +268,7 @@ function continuesLazily(walk: Walk, line: Line): boolean {
   if (walk.leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = removeColumns(line, largestOpenerIndentation).text
-  if (claimsDirectiveLine(opener) || claimsPipeLine(opener) || isThematicBreak(opener)) return false
+  if (readDirectiveLine(opener) !== undefined || claimsPipeLine(opener) || isThematicBreak(opener)) return false
   return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, true) === undefined
 }
 

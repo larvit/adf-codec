@@ -3,7 +3,7 @@ import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { carryFence, readCarriedBlock } from '../opaque-carry.ts'
+import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
@@ -43,7 +43,7 @@ function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path
 
 // spec/flavour.md, Directives: the separator builds no node, so only the pair it parts spells it.
 function listBreakFault(block: DirectiveBlock, previous: Block | undefined, next: Block | undefined): ConvertFault | undefined {
-  if (block.blocks !== undefined || block.argument !== undefined || block.attributes.size > 0) {
+  if (block.argument !== undefined || block.attributes.size > 0) {
     return unsupportedNodeShape(`${listBreakName} spells the bare leaf form, ${listBreakSpelling}: this one spells more`)
   }
   if (previous?.kind !== 'bulletList' && previous?.kind !== 'orderedList') return partsFault()
@@ -94,14 +94,10 @@ function directiveNode(block: DirectiveBlock, definitions: LinkDefinitions, path
 
 function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const { contentModel, node } = read
-  if (blocks === undefined) {
-    if (contentModel === 'none' || contentModel === 'inline') return success(node)
-    return failure('unsupported-node-shape', `${node.type} spells its body in the container form, :::, never the leaf form`, path)
-  }
-  if (contentModel === 'none') return failure('unsupported-node-shape', `${node.type} holds no content: this one holds some`, path)
+  if (blocks === undefined) return success(node)
   if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
-  if (contentModel === 'block') return containerNode(node, blocks, definitions, path, depth)
-  return inlineBodyNode(node, blocks, definitions, path)
+  if (contentModel === 'inline') return inlineBodyNode(node, blocks, definitions, path)
+  return containerNode(node, blocks, definitions, path, depth)
 }
 
 function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
@@ -133,7 +129,7 @@ function tableNode(rows: readonly string[][], definitions: LinkDefinitions, path
 }
 
 function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
-  if (blocks.length === 0) return failure('unsupported-node-shape', `an empty ${node.type} takes the leaf form, ::, never an empty container`, path)
+  if (blocks.length === 0) return success(node)
   const only = blocks.length === 1 ? blocks[0] : undefined
   if (only?.kind === 'fault') return positioned(faulted(only.fault, path), only.position)
   if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body: this body is not one`, path)
@@ -161,7 +157,7 @@ function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDef
 }
 
 function codeBlockNode(language: string, text: string, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  if (language === carryFence) {
+  if (language === carryName) {
     const carried = readCarriedBlock(text, depth)
     if (carried.fault !== undefined) return faulted(carried.fault, path)
     return success(carried.value)

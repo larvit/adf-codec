@@ -1,1 +1,1 @@
-::rule
+!adf:rule

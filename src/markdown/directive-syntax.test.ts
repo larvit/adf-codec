@@ -12,8 +12,8 @@ function attributes(...pairs: Pair[]): DirectiveAttributes {
   return new Map(pairs.map(([key, decoded, spelling]) => [key, { decoded, spelling: spelling ?? decoded }]))
 }
 
-function header(colons: number, name: string, argument?: string, ...pairs: Pair[]): { value: DirectiveLine } {
-  return { value: { argument, attributes: attributes(...pairs), colons, kind: 'header', name } }
+function opener(name: string, argument?: string, ...pairs: Pair[]): { value: DirectiveLine } {
+  return { value: { argument, attributes: attributes(...pairs), kind: 'opener', name } }
 }
 
 function fault(line: string): string {
@@ -32,80 +32,87 @@ function spans(text: string, name: string, content: string | undefined, ...pairs
   assert.deepEqual(inline(text), { attributes: attributes(...pairs), content, length: text.length, name })
 }
 
-test('claims a colon-run line only where a name or nothing follows the colons', () => {
+test('claims a prefixed line only where a closer, or a name a space or the line end follows, opens it', () => {
   assert.equal(readDirectiveLine('Part.'), undefined)
-  assert.equal(readDirectiveLine(':: two'), undefined)
-  assert.equal(readDirectiveLine(':panel'), undefined)
-  assert.equal(readDirectiveLine('  ::rule'), undefined)
+  assert.equal(readDirectiveLine(':::panel info'), undefined)
+  assert.equal(readDirectiveLine('  !adf:rule'), undefined)
+  assert.equal(readDirectiveLine('!adf:mention[@A]'), undefined)
+  assert.equal(readDirectiveLine('!adf:hardBreak{}'), undefined)
+  assert.equal(readDirectiveLine('!adf:panel{}'), undefined)
+  assert.equal(readDirectiveLine('!adf:'), undefined)
+  assert.equal(readDirectiveLine('!adf:/'), undefined)
+  assert.equal(readDirectiveLine('!adf:Panel'), undefined)
+  assert.equal(readDirectiveLine('!adf:panel\tinfo'), undefined)
 })
 
-test('reads a bare colon run as the fence that closes a container', () => {
-  assert.deepEqual(readDirectiveLine(':::'), { value: { colons: 3, kind: 'closing' } })
-  assert.deepEqual(readDirectiveLine('::'), { value: { colons: 2, kind: 'closing' } })
-  assert.deepEqual(readDirectiveLine('::::::  \t'), { value: { colons: 6, kind: 'closing' } })
+test('reads a closer as the name it closes, and nothing after the name', () => {
+  assert.deepEqual(readDirectiveLine('!adf:/panel'), { value: { kind: 'closer', name: 'panel' } })
+  assert.deepEqual(readDirectiveLine('!adf:/panel \t'), { value: { kind: 'closer', name: 'panel' } })
+  const closer = 'a closer carries nothing after its name: this one does; \\!adf: keeps the prefix literal'
+  assert.equal(fault('!adf:/panel info'), closer)
+  assert.equal(fault('!adf:/panel{}'), closer)
 })
 
-test('reads the leaf and container forms, their argument and their attributes', () => {
-  assert.deepEqual(readDirectiveLine('::rule'), header(2, 'rule'))
-  assert.deepEqual(readDirectiveLine('::rule  '), header(2, 'rule'))
-  assert.deepEqual(readDirectiveLine('::taskItem TODO'), header(2, 'taskItem', 'TODO'))
-  assert.deepEqual(readDirectiveLine('::media {id=a-1 type=file}'), header(2, 'media', undefined, ['id', 'a-1'], ['type', 'file']))
-  assert.deepEqual(readDirectiveLine('::panel info {panelColor="#ff0000"} '), header(2, 'panel', 'info', ['panelColor', '#ff0000', '"#ff0000"']))
-  assert.deepEqual(readDirectiveLine(':::panel info'), header(3, 'panel', 'info'))
+test('reads the opener, its argument and its attributes', () => {
+  assert.deepEqual(readDirectiveLine('!adf:rule'), opener('rule'))
+  assert.deepEqual(readDirectiveLine('!adf:rule \t'), opener('rule'))
+  assert.deepEqual(readDirectiveLine('!adf:rule\t'), opener('rule'))
+  assert.deepEqual(readDirectiveLine('!adf:taskItem TODO'), opener('taskItem', 'TODO'))
+  assert.deepEqual(readDirectiveLine('!adf:media {id=a-1 type=file}'), opener('media', undefined, ['id', 'a-1'], ['type', 'file']))
+  assert.deepEqual(readDirectiveLine('!adf:panel info {panelColor="#ff0000"} '), opener('panel', 'info', ['panelColor', '#ff0000', '"#ff0000"']))
 })
 
 test('decodes a quoted attribute value, the escapes {attrs} reserves included', () => {
-  assert.deepEqual(readDirectiveLine('::extension {text="two words"}'), header(2, 'extension', undefined, ['text', 'two words', '"two words"']))
+  assert.deepEqual(readDirectiveLine('!adf:extension {text="two words"}'), opener('extension', undefined, ['text', 'two words', '"two words"']))
   assert.deepEqual(
-    readDirectiveLine('::extension {text="a\\u0060b\\u0026c\\u003cd\\u007ce"}'),
-    header(2, 'extension', undefined, ['text', 'a`b&c<d|e', '"a\\u0060b\\u0026c\\u003cd\\u007ce"']),
+    readDirectiveLine('!adf:extension {text="a\\u0060b\\u0026c\\u003cd\\u007ce"}'),
+    opener('extension', undefined, ['text', 'a`b&c<d|e', '"a\\u0060b\\u0026c\\u003cd\\u007ce"']),
   )
-  assert.deepEqual(readDirectiveLine('::extension {text="a\\"b\\\\c\\nd"}'), header(2, 'extension', undefined, ['text', 'a"b\\c\nd', '"a\\"b\\\\c\\nd"']))
-  assert.deepEqual(readDirectiveLine('::extension {text="}{"}'), header(2, 'extension', undefined, ['text', '}{', '"}{"']))
+  assert.deepEqual(readDirectiveLine('!adf:extension {text="a\\"b\\\\c\\nd"}'), opener('extension', undefined, ['text', 'a"b\\c\nd', '"a\\"b\\\\c\\nd"']))
+  assert.deepEqual(readDirectiveLine('!adf:extension {text="}{"}'), opener('extension', undefined, ['text', '}{', '"}{"']))
 })
 
 test('names the {attrs} keys read out of the alphabetical order canonical form spells', () => {
-  assert.equal(fault('::media {type=file id=a-1}'), 'the {attrs} keys read in alphabetical order: id before type')
-  assert.deepEqual(readDirectiveLine('::media {id=a-1 type=file}'), header(2, 'media', undefined, ['id', 'a-1'], ['type', 'file']))
+  assert.equal(fault('!adf:media {type=file id=a-1}'), 'the {attrs} keys read in alphabetical order: id before type')
+  assert.deepEqual(readDirectiveLine('!adf:media {id=a-1 type=file}'), opener('media', undefined, ['id', 'a-1'], ['type', 'file']))
 })
 
 test('spells an empty {attrs} only where the brace itself claims the directive', () => {
   const omitted = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
-  assert.equal(fault('::rule {}'), omitted)
-  assert.equal(fault(':::panel info {}'), omitted)
+  assert.equal(fault('!adf:rule {}'), omitted)
+  assert.equal(fault('!adf:panel info {}'), omitted)
   assert.equal(inline('!adf:underline[a]{}'), omitted)
   spans('!adf:hardBreak{}', 'hardBreak', undefined)
 })
 
-test('names the directive line no spelling reads', () => {
-  assert.equal(fault('::Panel'), 'a directive name reads [a-z][A-Za-z0-9]*: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::1panel'), 'a directive name reads [a-z][A-Za-z0-9]*: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel  info'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel info extra'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel info{}'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel {a=1} x'), 'a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; \\::: keeps the line literal text')
+test('names the opener no spelling reads', () => {
+  const shape = 'a directive opener reads a name, one bare argument and {attrs}, one space apart: this one does not; \\!adf: keeps the prefix literal'
+  assert.equal(fault('!adf:panel  info'), shape)
+  assert.equal(fault('!adf:panel info extra'), shape)
+  assert.equal(fault('!adf:panel "info"'), shape)
+  assert.equal(fault('!adf:panel info{}'), shape)
+  assert.equal(fault('!adf:panel {a=1} x'), shape)
 })
 
 test('names the attributes no spelling reads', () => {
-  assert.equal(fault('::panel {a=1'), 'the {attrs} closing brace is missing')
-  assert.equal(fault('::panel {a="x}'), 'the {attrs} quoted value is unclosed')
-  assert.equal(fault('::panel {a="\\uzzzz"}'), 'the {attrs} quoted value is not a JSON string')
-  assert.equal(fault('::panel {a}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel {a=}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel {=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel {a=1  b=2}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel { a=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel {a=1 }'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\::: keeps the line literal text')
-  assert.equal(fault('::panel {a=1 a=2}'), 'the attribute key a is spelled twice')
+  assert.equal(fault('!adf:panel {a=1'), 'the {attrs} closing brace is missing')
+  assert.equal(fault('!adf:panel {a="x}'), 'the {attrs} quoted value is unclosed')
+  assert.equal(fault('!adf:panel {a="\\uzzzz"}'), 'the {attrs} quoted value is not a JSON string')
+  assert.equal(fault('!adf:panel {a}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  assert.equal(fault('!adf:panel {a=}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  assert.equal(fault('!adf:panel {=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  assert.equal(fault('!adf:panel {a=1  b=2}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  assert.equal(fault('!adf:panel { a=1}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  assert.equal(fault('!adf:panel {a=1 }'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  assert.equal(fault('!adf:panel {a=1 a=2}'), 'the attribute key a is spelled twice')
   assert.equal(inline('!adf:mention[@A]{id}'), 'an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
 })
 
 test('breaks the directive on the raw characters a quoted value spells as escapes', () => {
-  assert.equal(fault('::panel {a="x`y"}'), 'a raw ` inside {attrs} breaks the directive: spell it \\u0060')
-  assert.equal(fault('::panel {a="x&y"}'), 'a raw & inside {attrs} breaks the directive: spell it \\u0026')
-  assert.equal(fault('::panel {a="x<y"}'), 'a raw < inside {attrs} breaks the directive: spell it \\u003c')
-  assert.equal(fault('::panel {a="x|y"}'), 'a raw | inside {attrs} breaks the directive: spell it \\u007c')
+  assert.equal(fault('!adf:panel {a="x`y"}'), 'a raw ` inside {attrs} breaks the directive: spell it \\u0060')
+  assert.equal(fault('!adf:panel {a="x&y"}'), 'a raw & inside {attrs} breaks the directive: spell it \\u0026')
+  assert.equal(fault('!adf:panel {a="x<y"}'), 'a raw < inside {attrs} breaks the directive: spell it \\u003c')
+  assert.equal(fault('!adf:panel {a="x|y"}'), 'a raw | inside {attrs} breaks the directive: spell it \\u007c')
 })
 
 test('claims at the prefix, and reads a directive only where a bracket or a brace follows the name', () => {

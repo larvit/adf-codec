@@ -1,1 +1,1 @@
-::rule {localId="a-1"}
+!adf:rule {localId="a-1"}

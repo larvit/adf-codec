@@ -1,11 +1,10 @@
 import type { AttributeKind, VocabularyPair, VocabularyValue } from '../adf/attribute-vocabulary.ts'
 import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
-import { backslashEscape, claimsDirectiveLine } from './commonmark-grammar.ts'
+import { backslashEscape } from './commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from './backtick-runs.ts'
 import { isJsonValue, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
-import { runLength } from './emphasis-matching.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
@@ -15,16 +14,18 @@ export type DirectiveValue = { decoded: string; spelling: string }
 export type DirectiveAttributes = ReadonlyMap<string, DirectiveValue>
 
 export type DirectiveLine =
-  | { argument: string | undefined; attributes: DirectiveAttributes; colons: number; kind: 'header'; name: string }
-  | { colons: number; kind: 'closing' }
+  | { argument: string | undefined; attributes: DirectiveAttributes; kind: 'opener'; name: string }
+  | { kind: 'closer'; name: string }
 
 export type DirectiveSpan = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string }
 
 export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
 
-type Attributes = { attributes: DirectiveAttributes; length: number }
+type Attributes = { attributes: DirectiveAttributes; end: number }
 
 type AttributePair = { end: number; key: string; value: DirectiveValue }
+
+type Content = { content: string | undefined; end: number }
 
 export const directivePrefix = '!adf:'
 
@@ -40,15 +41,14 @@ const quotedEscapes = new RegExp(reservedSource, 'g')
 const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
 
-export const directiveLineEscape = '\\::: keeps the line literal text'
-export const inlineDirectiveEscape = `\\${directivePrefix} keeps the prefix literal`
+export const directiveEscape = `\\${directivePrefix} keeps the prefix literal`
 
+const closerFault = `a closer carries nothing after its name: this one does; ${directiveEscape}`
 const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
-const nameFault = `a directive name reads [a-z][A-Za-z0-9]*: this one does not; ${directiveLineEscape}`
+const openerFault = `a directive opener reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveEscape}`
 const orderFault = 'the {attrs} keys read in alphabetical order'
-const pairFault = 'an attribute reads key=value, the value bare or double-quoted: this one does not'
-const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${inlineDirectiveEscape}`
-const shapeFault = `a directive line reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveLineEscape}`
+const pairFault = `an attribute reads key=value, the value bare or double-quoted: this one does not; ${directiveEscape}`
+const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${directiveEscape}`
 
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
   if (kind === 'string') return { value: { kind, value: text } }
@@ -76,13 +76,18 @@ export function malformedDirective(message: string): ConvertFault {
 }
 
 export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined {
-  if (!claimsDirectiveLine(line)) return undefined
-  const colons = runLength(line, 0)
-  const rest = line.slice(colons)
-  if (lineEnd.test(rest)) return { value: { colons, kind: 'closing' } }
-  const header = readDirectiveHeader(rest)
-  if (header.fault !== undefined) return { fault: header.fault }
-  return { value: { argument: header.value.argument, attributes: header.value.attributes, colons, kind: 'header', name: header.value.name } }
+  if (!claimsDirectivePrefix(line, 0)) return undefined
+  const closer = line.charAt(directivePrefix.length) === '/'
+  const start = directivePrefix.length + (closer ? 1 : 0)
+  directiveName.lastIndex = start
+  const name = directiveName.exec(line)?.[0]
+  if (name === undefined) return undefined
+  const rest = line.slice(start + name.length)
+  if (closer) return lineEnd.test(rest) ? { value: { kind: 'closer', name } } : { fault: malformedDirective(closerFault) }
+  if (!rest.startsWith(' ') && !lineEnd.test(rest)) return undefined
+  const opener = readOpenerRest(rest)
+  if (opener.fault !== undefined) return { fault: opener.fault }
+  return { value: { argument: opener.value.argument, attributes: opener.value.attributes, kind: 'opener', name } }
 }
 
 export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> | undefined {
@@ -110,6 +115,10 @@ export function spellAttributes(pairs: readonly (readonly [string, string])[]): 
   return `{${spelled.join(' ')}}`
 }
 
+export function spellDirectiveCloser(name: string): string {
+  return `${directivePrefix}/${name}`
+}
+
 export function spellJsonAttribute(value: JsonValue): string {
   return quote(serializeCanonicalJson(value, 'compact'))
 }
@@ -118,7 +127,7 @@ export function spellInlineDirectiveOpener(name: string): string {
   return `${directivePrefix}${name}[`
 }
 
-export function spellLeafDirective(name: string, attributes: string): string {
+export function spellInlineLeafDirective(name: string, attributes: string): string {
   return `${directivePrefix}${name}${attributes === '' ? '{}' : attributes}`
 }
 
@@ -137,16 +146,12 @@ export function spellVocabulary(pairs: readonly VocabularyPair[]): [string, stri
   return pairs.map((pair): [string, string] => [pair.key, spellAttributeValue(pair)])
 }
 
-export function unknownDirectiveFault(name: string, escape: string): ConvertFault {
-  return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node; ${escape}` }
+export function unknownDirectiveFault(name: string): ConvertFault {
+  return { code: 'unknown-directive-name', message: `the directive name ${name} reads back to no node; ${directiveEscape}` }
 }
 
 export function unsupportedNodeShape(message: string): ConvertFault {
   return { code: 'unsupported-node-shape', message }
-}
-
-function attributePairFault(escape: string): ConvertFault {
-  return malformedDirective(`${pairFault}; ${escape}`)
 }
 
 function keyOrder(left: string, right: string): number {
@@ -168,28 +173,24 @@ function inlineDirectiveName(text: string, index: number): string | undefined {
   return opened === undefined ? undefined : opened.slice(directivePrefix.length, -1)
 }
 
-function readDirectiveHeader(rest: string): Read<{ argument: string | undefined; attributes: DirectiveAttributes; name: string }> {
-  directiveName.lastIndex = 0
-  const name = directiveName.exec(rest)?.[0]
-  if (name === undefined) return { fault: malformedDirective(nameFault) }
-  let cursor = name.length
+function readOpenerRest(rest: string): Read<{ argument: string | undefined; attributes: DirectiveAttributes }> {
+  let cursor = 0
   let argument: string | undefined
   let attributes = noAttributes
-  if (rest.charAt(cursor) === ' ' && rest.charAt(cursor + 1) !== '{' && !lineEnd.test(rest.slice(cursor))) {
-    bareRun.lastIndex = cursor + 1
+  if (rest.charAt(0) === ' ' && rest.charAt(1) !== '{' && !lineEnd.test(rest)) {
+    bareRun.lastIndex = 1
     argument = bareRun.exec(rest)?.[0]
-    if (argument === undefined) return { fault: malformedDirective(shapeFault) }
-    cursor += 1 + argument.length
+    if (argument === undefined) return { fault: malformedDirective(openerFault) }
+    cursor = 1 + argument.length
   }
   if (rest.charAt(cursor) === ' ' && rest.charAt(cursor + 1) === '{') {
-    const read = readAttributes(rest, cursor + 1, directiveLineEscape)
+    const read = readAttributesAt(rest, cursor + 1, false)
     if (read.fault !== undefined) return { fault: read.fault }
-    if (read.value.attributes.size === 0) return { fault: malformedDirective(emptyFault) }
     attributes = read.value.attributes
-    cursor += 1 + read.value.length
+    cursor = read.value.end
   }
-  if (!lineEnd.test(rest.slice(cursor))) return { fault: malformedDirective(shapeFault) }
-  return { value: { argument, attributes, name } }
+  if (!lineEnd.test(rest.slice(cursor))) return { fault: malformedDirective(openerFault) }
+  return { value: { argument, attributes } }
 }
 
 function readNestedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> | undefined {
@@ -199,23 +200,25 @@ function readNestedDirective(text: string, index: number, depth: number): Read<D
   if (depth > largestNesting) {
     return { fault: { code: 'unsupported-nesting-depth', message: `the input nests inline directives deeper than the ${largestNesting} levels the parser carries` } }
   }
-  let cursor = index + directivePrefix.length + name.length
-  let content: string | undefined
-  if (text.charAt(cursor) === '[') {
-    const end = readDirectiveContent(text, cursor + 1, depth)
-    if (end.fault !== undefined) return { fault: end.fault }
-    content = text.slice(cursor + 1, end.value)
-    cursor = end.value + 1
-  }
-  let attributes = noAttributes
-  if (text.charAt(cursor) === '{') {
-    const read = readAttributes(text, cursor, inlineDirectiveEscape)
-    if (read.fault !== undefined) return { fault: read.fault }
-    if (read.value.attributes.size === 0 && content !== undefined) return { fault: malformedDirective(emptyFault) }
-    attributes = read.value.attributes
-    cursor += read.value.length
-  }
-  return { value: { attributes, content, length: cursor - index, name } }
+  const slot = readContentSlot(text, index + directivePrefix.length + name.length, depth)
+  if (slot.fault !== undefined) return { fault: slot.fault }
+  const attributes = readAttributesAt(text, slot.value.end, slot.value.content === undefined)
+  if (attributes.fault !== undefined) return { fault: attributes.fault }
+  return { value: { attributes: attributes.value.attributes, content: slot.value.content, length: attributes.value.end - index, name } }
+}
+
+function readContentSlot(text: string, index: number, depth: number): Read<Content> {
+  if (text.charAt(index) !== '[') return { value: { content: undefined, end: index } }
+  const close = readDirectiveContent(text, index + 1, depth)
+  if (close.fault !== undefined) return { fault: close.fault }
+  return { value: { content: text.slice(index + 1, close.value), end: close.value + 1 } }
+}
+
+function readAttributesAt(text: string, index: number, braceClaims: boolean): Read<Attributes> {
+  if (text.charAt(index) !== '{') return { value: { attributes: noAttributes, end: index } }
+  const read = readAttributes(text, index)
+  if (read.fault !== undefined || braceClaims || read.value.attributes.size > 0) return read
+  return { fault: malformedDirective(emptyFault) }
 }
 
 // A code span, an escape and a nested directive each bind before the content's own closing bracket.
@@ -234,7 +237,7 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
       cursor = span
       continue
     }
-    const nested = character === '!' ? readNestedDirective(text, cursor, depth + 1) : undefined
+    const nested = readNestedDirective(text, cursor, depth + 1)
     if (nested !== undefined) {
       if (nested.fault !== undefined) return { fault: nested.fault }
       cursor += nested.value.length
@@ -245,7 +248,7 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
     if (character === ']') brackets -= 1
     cursor += 1
   }
-  return { fault: malformedDirective(`an inline directive [content] is unclosed; ${inlineDirectiveEscape}`) }
+  return { fault: malformedDirective(`an inline directive [content] is unclosed; ${directiveEscape}`) }
 }
 
 // `undefined` where the span crosses the line ending an inline directive may not cross.
@@ -256,16 +259,16 @@ function readCodeSpanEnd(text: string, index: number): number | undefined {
   return text.slice(index, closer + opener).includes('\n') ? undefined : closer + opener
 }
 
-function readAttributes(text: string, index: number, escape: string): Read<Attributes> {
+function readAttributes(text: string, index: number): Read<Attributes> {
   const attributes = new Map<string, DirectiveValue>()
   let cursor = index + 1
   let previous = ''
   while (cursor < text.length && text.charAt(cursor) !== '}') {
     if (attributes.size > 0) {
-      if (text.charAt(cursor) !== ' ') return { fault: attributePairFault(escape) }
+      if (text.charAt(cursor) !== ' ') return { fault: malformedDirective(pairFault) }
       cursor += 1
     }
-    const pair = readAttributePair(text, cursor, escape)
+    const pair = readAttributePair(text, cursor)
     if (pair.fault !== undefined) return { fault: pair.fault }
     const key = pair.value.key
     if (attributes.has(key)) return { fault: malformedDirective(`the attribute key ${key} is spelled twice`) }
@@ -275,13 +278,13 @@ function readAttributes(text: string, index: number, escape: string): Read<Attri
     cursor = pair.value.end
   }
   if (text.charAt(cursor) !== '}') return { fault: malformedDirective('the {attrs} closing brace is missing') }
-  return { value: { attributes, length: cursor + 1 - index } }
+  return { value: { attributes, end: cursor + 1 } }
 }
 
-function readAttributePair(text: string, index: number, escape: string): Read<AttributePair> {
+function readAttributePair(text: string, index: number): Read<AttributePair> {
   bareRun.lastIndex = index
   const key = bareRun.exec(text)?.[0]
-  if (key === undefined || text.charAt(index + key.length) !== '=') return { fault: attributePairFault(escape) }
+  if (key === undefined || text.charAt(index + key.length) !== '=') return { fault: malformedDirective(pairFault) }
   const start = index + key.length + 1
   if (text.charAt(start) === '"') {
     const quoted = readQuotedValue(text, start)
@@ -290,7 +293,7 @@ function readAttributePair(text: string, index: number, escape: string): Read<At
   }
   bareRun.lastIndex = start
   const bare = bareRun.exec(text)?.[0]
-  if (bare === undefined) return { fault: attributePairFault(escape) }
+  if (bare === undefined) return { fault: malformedDirective(pairFault) }
   return { value: { end: start + bare.length, key, value: { decoded: bare, spelling: bare } } }
 }
 

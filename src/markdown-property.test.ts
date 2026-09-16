@@ -11,8 +11,17 @@ import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRu
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
 import { blockDirectives } from './adf/block-directives.ts'
-import { carryFence, carryName } from './markdown/opaque-carry.ts'
-import { directivePrefix, spellAttributes, spellInlineDirectiveOpener, spellJsonAttribute, spellLeafDirective, spellStringAttribute, spellVocabulary } from './markdown/directive-syntax.ts'
+import { carryName } from './markdown/opaque-carry.ts'
+import {
+  directivePrefix,
+  spellAttributes,
+  spellDirectiveCloser,
+  spellInlineDirectiveOpener,
+  spellInlineLeafDirective,
+  spellJsonAttribute,
+  spellStringAttribute,
+  spellVocabulary,
+} from './markdown/directive-syntax.ts'
 import { fencedCodeBlock } from './markdown/backtick-runs.ts'
 import { inlineDirectives } from './adf/inline-directives.ts'
 import { listBreakName } from './markdown/list-break.ts'
@@ -73,8 +82,8 @@ const syntaxTokens = fc.constantFrom(
   '![',
   '](',
   '{}',
-  '::',
-  ':::',
+  `${directivePrefix}/`,
+  `${directivePrefix}panel `,
   '> ',
   '- ',
   '* ',
@@ -107,8 +116,8 @@ const autolink = fc.oneof(
 )
 const hostileAutolink = fc.tuple(fc.constantFrom('http://', 'ab:', 'a:'), textOf(0)).map(([scheme, rest]) => `<${scheme}${rest}>`)
 const inlineHtml = fc.constantFrom('<span>', '</span>', '<a href="x">', "<b class='y'/>", '<!-- c -->', '<!---->', '<?x?>', '<![CDATA[x]]>', '<!X y>', '<br/>', '<b', '<3', '< a>')
-const hardBreak = fc.constantFrom('\\\n', '  \n', '\n', spellLeafDirective('hardBreak', ''))
-const spellTextDirective = (held: string) => spellLeafDirective(textDirectiveName, `{${textDirectiveName}=${spellStringAttribute(held)}}`)
+const hardBreak = fc.constantFrom('\\\n', '  \n', '\n', spellInlineLeafDirective('hardBreak', ''))
+const spellTextDirective = (held: string) => spellInlineLeafDirective(textDirectiveName, `{${textDirectiveName}=${spellStringAttribute(held)}}`)
 const textDirective = fc.constantFrom(' ', '  ', '\t', '\n', '\n\n').map(spellTextDirective)
 const hostileTextDirective = fc.constantFrom(' \n', 'a', '').map(spellTextDirective)
 
@@ -151,24 +160,23 @@ const hostileArgument = fc.oneof(
   { arbitrary: fc.oneof(bareToken.map((held) => ` ${held}`), fc.constantFrom('  info', ' a b', ' "a"')), weight: 1 },
 )
 
-function directiveHeader(colons: number, name: string, argument: string, attrs: string): string {
-  return `${':'.repeat(colons)}${name}${argument}${attrs === '' ? '' : ` ${attrs}`}`
+function directiveOpener(name: string, argument: string, attrs: string): string {
+  return `${directivePrefix}${name}${argument}${attrs === '' ? '' : ` ${attrs}`}`
 }
 
-function container(header: (colons: number) => string, body: string, closer: number | null): string {
-  const colons = Math.max(2, ...[...body.matchAll(/:{2,}/g)].map(([run]) => run.length)) + 1
-  return [header(colons), ...(body === '' ? [] : [body]), ':'.repeat(closer ?? colons)].join('\n')
+function container(opener: string, body: string, closer: string): string {
+  return [opener, body, closer].filter((line) => line !== '').join('\n')
 }
 
 const carriedNode = fc.oneof(
   fc.tuple(fc.constantFrom('mention', 'paragraph', 'status', 'widget'), fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true })).map(([type, attrs]): JsonValue => ({ attrs, type })),
   textOf(1).map((held): JsonValue => ({ text: held, type: 'text' })),
 )
-const spellCarry = (json: string) => spellLeafDirective(carryName, `{json=${spellStringAttribute(json)}}`)
+const spellCarry = (json: string) => spellInlineLeafDirective(carryName, `{json=${spellStringAttribute(json)}}`)
 const inlineCarry = carriedNode.map((node) => spellCarry(serializeCanonicalJson(node, 'compact')))
 const hostileInlineCarry = fc.oneof(carriedNode, jsonValue).map((node) => spellCarry(JSON.stringify(node, null, 1)))
-const blockCarry = carriedNode.map((node) => fencedCodeBlock(carryFence, serializeCanonicalJson(node, 'two-space')))
-const hostileBlockCarry = fc.oneof(carriedNode, jsonValue).map((node) => fencedCodeBlock(carryFence, JSON.stringify(node)))
+const blockCarry = carriedNode.map((node) => fencedCodeBlock(carryName, serializeCanonicalJson(node, 'two-space')))
+const hostileBlockCarry = fc.oneof(carriedNode, jsonValue).map((node) => fencedCodeBlock(carryName, JSON.stringify(node)))
 
 function prefixLines(body: string, first: string, rest: (index: number) => string): string {
   return body
@@ -189,7 +197,7 @@ const listMarker = fc.oneof(
   },
 )
 const indentDrift = fc.oneof({ arbitrary: fc.constant(0), weight: 6 }, { arbitrary: fc.integer({ max: 2, min: -2 }), weight: 1 })
-const closerDrift = fc.option(fc.integer({ max: 5, min: 2 }), { freq: 6 })
+const closerDrift = fc.option(fc.oneof(directiveName.map(spellDirectiveCloser), fc.constantFrom('', `${spellDirectiveCloser('panel')} x`)), { freq: 6 })
 
 function markdownOf(hostile: boolean): Arbitrary<string> {
   const inline = inlineMarkdown(hostile)
@@ -227,7 +235,7 @@ function inlineMarkdown(hostile: boolean): InlineMarkdown {
             ...Object.entries(inlineDirectives).map(([name, directive]) =>
               fc
                 .tuple(directive.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(directive.attributes, directive.textAttribute))
-                .map(([slot, attrs]) => (slot === null ? spellLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
+                .map(([slot, attrs]) => (slot === null ? spellInlineLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
             ),
             ...Object.entries(markAttributes)
               .filter(([name]) => hostile || markSpelling(name)?.kind === 'directive')
@@ -255,7 +263,7 @@ function leafBlocks(hostile: boolean, { destination, inlines, label, oneLine, te
     .tuple(
       fc.constantFrom('```', '```', '~~~', '````', '``'),
       fc.oneof(fc.constant(''), bareToken, text),
-      fc.array(fc.oneof(prose, text, fc.constantFrom('```', '~~~', ':::', '    x')), { maxLength: 3 }),
+      fc.array(fc.oneof(prose, text, fc.constantFrom('```', '~~~', spellDirectiveCloser('panel'), '    x')), { maxLength: 3 }),
       fc.constantFrom('', '', '`', '~', 'none'),
     )
     .map(([fence, info, lines, closer]) => [`${fence}${info}`, ...lines, ...(closer === 'none' ? [] : [`${fence}${closer}`])].join('\n'))
@@ -302,11 +310,15 @@ function leafBlocks(hostile: boolean, { destination, inlines, label, oneLine, te
       weight: 1,
     },
     {
-      arbitrary: fc.tuple(fc.constantFrom(2, 2, 3, 1, 4), directiveName, hostileArgument, hostileAttributes).map(([colons, name, argument, attrs]) => directiveHeader(colons, name, argument, attrs)),
+      arbitrary: fc.tuple(directiveName, hostileArgument, hostileAttributes).map(([name, argument, attrs]) => directiveOpener(name, argument, attrs)),
       hostile: true,
       weight: 1,
     },
-    { arbitrary: fc.constantFrom(':::', '::', '::::', ':::panel', '::: panel', ':::panel info extra'), hostile: true, weight: 1 },
+    {
+      arbitrary: fc.constantFrom(`${directivePrefix}/`, spellDirectiveCloser('panel'), `${directivePrefix}panel`, `${directivePrefix} panel`, `${directivePrefix}panel info extra`, `${directivePrefix}Panel`),
+      hostile: true,
+      weight: 1,
+    },
   ])
   return { fencedCode, leafBlock }
 }
@@ -321,10 +333,10 @@ function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, {
           ? fc.constant('')
           : fc.oneof({ arbitrary: fc.constantFrom(' DONE', ' TODO', ' custom', ' info', ' warning'), weight: 3 }, { arbitrary: bareToken.map((held) => ` ${held}`), weight: 1 })
       const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(directive.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(directive.attributes)
-      if (directive.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => directiveHeader(2, name, held, spelled))
+      if (directive.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => directiveOpener(name, held, spelled))
       return fc
         .tuple(argument, attrs, bodyByModel[directive.contentModel], hostile ? closerDrift : fc.constant(null))
-        .map(([held, spelled, body, closer]) => container((colons) => directiveHeader(colons, name, held, spelled), body, closer))
+        .map(([held, spelled, body, closer]) => container(directiveOpener(name, held, spelled), body, closer ?? spellDirectiveCloser(name)))
     })
     return {
       block: choose(
@@ -352,8 +364,8 @@ function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, {
           { arbitrary: fc.oneof(...tableDirectives), weight: 3 },
           {
             arbitrary: fc
-              .tuple(directiveName, hostileArgument, hostileAttributes, tie('blocks'), fc.option(fc.integer({ max: 5, min: 3 }), { freq: 2 }), closerDrift)
-              .map(([name, argument, attrs, body, opener, closer]) => container((colons) => directiveHeader(opener ?? colons, name, argument, attrs), body, closer)),
+              .tuple(directiveName, hostileArgument, hostileAttributes, tie('blocks'), closerDrift)
+              .map(([name, argument, attrs, body, closer]) => container(directiveOpener(name, argument, attrs), body, closer ?? spellDirectiveCloser(name))),
             hostile: true,
             weight: 1,
           },

@@ -1,1 +1,1 @@
-::media {type=file id=a-1}
+!adf:media {type=file id=a-1}
