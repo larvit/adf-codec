@@ -305,6 +305,7 @@ test('names the container no closer closes inside the block holding it', () => {
   assert.deepEqual(path(markdownToAdf('Part.\n!adf:expand\n')), ['content', 1])
   assert.equal(content(markdownToAdf('!adf:bulletList\n')), unclosed('bulletList'))
   assert.equal(content(markdownToAdf('- !adf:panel info\n  Part.\n!adf:/panel\n')), unclosed('panel'))
+  assert.equal(content(markdownToAdf('> !adf:panel info\n> - a\n>   !adf:/panel\n')), unclosed('panel'))
   assert.equal(content(markdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n')), unclosed('expand'))
   assert.deepEqual(path(markdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n')), ['content', 0, 'content', 0])
 })

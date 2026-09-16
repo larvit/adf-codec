@@ -74,9 +74,11 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       them: `readNestedDirective` restarts its depth counter per level, so each parse level
       re-scans the region below it and nested inline directives cost O(depth × content) — 3f's
       cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
-      guard. A fifth predates 12c: a blank line continues every open list item without consuming
-      input, so the block walk visits the whole item stack per line — `d` nested items and `4d`
-      blank lines take 11s at 59 KB (the stability-reviewer, 2026-09-16). §11's scanning rule is
+      guard. A fifth predates 12c: the list-item walk re-scans the rest of a line once per item
+      level — `isThematicBreak` in `containerStart` on an opener line, `isBlankLine` and
+      `leadingColumns` in `continuesContainer` on a continuation line, and a blank line
+      continues every open item without consuming input; 30000 nested items take 4.4s at 59 KB
+      (the stability-reviewer, 2026-09-16). §11's scanning rule is
       the whole argument; the pipeline persona feeds documents nobody typed.
       `readDirectiveContent`'s scan splits into named steps with that fix rather than keeping its
       complexity (the maintainer, 2026-09-16).
