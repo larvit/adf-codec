@@ -970,7 +970,7 @@ test('names the mark markdown spells, never a directive', () => {
 
 // spec/flavour.md, Marks: the directive link is refused wherever the emitter would pick the markdown spelling.
 test('refuses the directive link CommonMark could spell, and reads the one it could not', () => {
-  const refused = 'unsupported-node-shape: link takes the directive form only where CommonMark cannot spell it: this one it can'
+  const refused = 'unsupported-node-shape: link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
   assert.equal(content(markdownToAdf('!adf:link[a]{href="/u"}\n')), refused)
   assert.equal(content(markdownToAdf('See !adf:link[a]{href="/u"}.\n')), refused)
   assert.equal(content(markdownToAdf('!adf:link[https://example.com/]{href="https://example.com/"}\n')), refused)

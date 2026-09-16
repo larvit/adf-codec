@@ -1,4 +1,4 @@
-import type { AdfAttributes, AdfMark } from '../adf/document.ts'
+import type { AdfAttributes, AdfMark, AdfNode } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
 import { escapeUnbalanced, spellLinkTarget } from './link-syntax.ts'
@@ -6,7 +6,7 @@ import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './direct
 import { holdsEntityReference } from './entity-references.ts'
 import { isAutolink } from './commonmark-grammar.ts'
 import { isMarkType, markAttributes } from '../adf/mark-attributes.ts'
-import { nodeAttrs } from '../adf/document.ts'
+import { nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | { kind: 'emphasis'; spelling: string }
@@ -35,14 +35,19 @@ export function markSpelling(type: string): MarkSpelling | undefined {
   return { attributes, kind: spelling.kind }
 }
 
-// spec/flavour.md, Marks. `bare`: one text node reading exactly `href`, the link innermost.
-export function commonMarkLink(attrs: AdfAttributes, href: string, bare: boolean, bracketed: boolean): CommonMarkLink | undefined {
+// spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's depth, the parser's none.
+export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], marksInside: number, bracketed: boolean): CommonMarkLink | undefined {
   if (Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   const title = attrs['title']
   const autolinkHolds = !bracketed || (!href.includes('`') && !holdsDirectivePrefix(href) && escapeUnbalanced(href, '[', ']') === href)
-  if (bare && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return { form: 'autolink' }
+  if (isBareLink(nodes, href, marksInside) && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return { form: 'autolink' }
   const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined)
   return target === undefined ? undefined : { form: 'inline', target }
+}
+
+function isBareLink(nodes: readonly AdfNode[], href: string, marksInside: number): boolean {
+  const node = nodes[0]
+  return nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === marksInside
 }
 
 export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {

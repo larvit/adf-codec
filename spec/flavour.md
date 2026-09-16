@@ -61,7 +61,7 @@ normalizes to it through the round-trip.
   code span, so such a string still closes one.
   Where a paragraph opens with what reads as a link reference definition, which resolves before
   any inline construct binds (a `]` inside a code span or `{attrs}` counts), an opening text `[`
-  escapes and an opening link's nodes ride the carry.
+  escapes and an opening link takes the directive link (Marks).
   An emphasis delimiter run in text escapes where CommonMark can open **or** close with it, so
   `*not emphasis*` is `\*not emphasis\*` — no delimiter the emitter did not write reaches the
   matching below, which is what lets the emitter decide its own pairings.

@@ -51,7 +51,7 @@ type SlotContent = { carry: boolean; nodes: AdfNode[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
-const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can'
+const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer): Result<InlineContent> {
   return parseInline(source, definitions, path, container)
@@ -190,28 +190,27 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
   const slot = slotContent(scan, span.content)
   if (!slot.ok) return slot
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
-  if (mark !== undefined) {
-    if (!mark.ok) return mark
-    if (slot.value === undefined || slot.value.nodes.length === 0) {
-      return failure('unsupported-node-shape', `the ${span.name} mark wraps the [content] it marks: this one wraps none`, scan.path)
-    }
-    if (slot.value.carry) return failure('unsupported-node-shape', carriedInMark, scan.path)
-    const refused = mark.value.type === 'link' ? refuseSpellableLink(scan, mark.value, slot.value.nodes, index) : undefined
-    if (refused !== undefined) return refused
-    return success({ kind: 'nodes', nodes: applyMark(slot.value.nodes, mark.value) })
-  }
+  if (mark !== undefined) return mark.ok ? directiveMarkPiece(scan, span.name, mark.value, slot.value, index) : mark
   const node = readInlineDirectiveNode(span.name, span.attributes, slot.value?.nodes, scan.path)
   if (!node.ok) return node
   return success({ kind: 'nodes', nodes: [node.value] })
+}
+
+function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotContent | undefined, index: number): Result<Piece> {
+  if (slot === undefined || slot.nodes.length === 0) {
+    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.path)
+  }
+  if (slot.carry) return failure('unsupported-node-shape', carriedInMark, scan.path)
+  const refused = mark.type === 'link' ? refuseSpellableLink(scan, mark, slot.nodes, index) : undefined
+  if (refused !== undefined) return refused
+  return success({ kind: 'nodes', nodes: applyMark(slot.nodes, mark) })
 }
 
 // spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
 function refuseSpellableLink(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
   const href = nodeAttrs(mark)['href']
   if (typeof href !== 'string') return undefined
-  const only = nodes[0]
-  const bare = nodes.length === 1 && only !== undefined && only.type === 'text' && only.text === href && nodeMarks(only).length === 0
-  if (commonMarkLink(nodeAttrs(mark), href, bare, scan.container === undefined) === undefined) return undefined
+  if (commonMarkLink(nodeAttrs(mark), href, nodes, 0, scan.container === undefined) === undefined) return undefined
   if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.path)
   scan.openingSpellableLink = true
   return undefined

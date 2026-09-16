@@ -3,7 +3,7 @@ import type { InlineDirective } from '../../adf/inline-directives.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter } from '../commonmark-grammar.ts'
-import { commonMarkLink, markSpelling, spellMarkAttributes, type CommonMarkLink } from '../mark-spellings.ts'
+import { commonMarkLink, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
@@ -257,13 +257,8 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (attributes === undefined) return success({ carry: range })
   if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, range, path)
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
-  if (spelling.kind === 'link') {
-    const href = nodeAttrs(mark)['href']
-    if (typeof href !== 'string') return success({ carry: range })
-    const opening = depth === 0 && index === 0 && context.openingLinkAsDirective
-    const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, isBareLink(nodes, href, depth), context.bracketed)
-    if (commonMark !== undefined) return emitLink(nodes, href, commonMark, depth, range, context)
-  }
+  const link = spelling.kind === 'link' ? emitLink(nodes, mark, depth, range, context) : undefined
+  if (link !== undefined) return link
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
@@ -304,12 +299,13 @@ function needsPadding(text: string): boolean {
   return text.startsWith(' ') && text.endsWith(' ') && /[^ ]/.test(text)
 }
 
-function isBareLink(nodes: readonly AdfNode[], href: string, depth: number): boolean {
-  const node = nodes[0]
-  return nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
-}
-
-function emitLink(nodes: readonly AdfNode[], href: string, commonMark: CommonMarkLink, depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
+// `undefined` where the link takes the directive form the caller spells.
+function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext): Result<Emission> | undefined {
+  const href = nodeAttrs(mark)['href']
+  if (typeof href !== 'string') return success({ carry: range })
+  const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective
+  const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes, depth + 1, context.bracketed)
+  if (commonMark === undefined) return undefined
   if (commonMark.form === 'autolink') return success({ segments: [syntax(`<${href}>`)] })
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
