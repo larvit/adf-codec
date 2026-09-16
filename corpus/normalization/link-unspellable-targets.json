@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "/a\\b"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "a",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "http://x?a=1&amp;b=2"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "http://x?a=1&amp;b=2",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "/x\ny"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "a",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

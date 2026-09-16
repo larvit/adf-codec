@@ -2,21 +2,20 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineDirective } from '../../adf/inline-directives.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
-import { claimsLine, holdsNullCharacter, isAutolink } from '../commonmark-grammar.ts'
-import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../link-syntax.ts'
+import { claimsLine, holdsNullCharacter } from '../commonmark-grammar.ts'
+import { commonMarkLink, markSpelling, spellMarkAttributes, type CommonMarkLink } from '../mark-spellings.ts'
+import { escapeUnbalanced, spellDestination } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { holdsDirectivePrefix, slotLineEndingFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
-import { holdsEntityReference } from '../entity-references.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../backtick-runs.ts'
-import { markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { sameMark } from '../../adf/editor-normal.ts'
+import { slotLineEndingFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
 
-type EmittedLine = { line: string; segments: InlineSegment[] }
+type EmittedLine = { line: string; openingLinkAsDirective: boolean; segments: InlineSegment[] }
 
 type Emission = { carry: NodeRange; segments?: undefined } | { carry?: undefined; segments: InlineSegment[] }
 
@@ -24,18 +23,29 @@ type InlineContext = {
   atBlockEnd: boolean
   bracketed: boolean
   carried: ReadonlySet<number>
+  openingLinkAsDirective: boolean
   path: ConvertErrorPath
   spansLines: boolean
 }
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
 
-type LineAttempt = { carry: NodeRange; line?: undefined } | { carry?: undefined; line: string }
+type LineAttempt =
+  | { carry: NodeRange; line?: undefined; openingLinkAsDirective?: undefined }
+  | { carry?: undefined; line?: undefined; openingLinkAsDirective: true }
+  | { carry?: undefined; line: string; openingLinkAsDirective?: undefined }
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const emitted = emitLine(nodes, container, path)
   if (!emitted.ok) return emitted
   return success(emitted.value.line)
+}
+
+// The parser asks which form a paragraph's opening link takes rather than restating the line rule (AGENTS.md §11).
+export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<boolean> {
+  const emitted = emitLine(nodes, 'paragraph', path)
+  if (!emitted.ok) return emitted
+  return success(emitted.value.openingLinkAsDirective)
 }
 
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): string | undefined {
@@ -47,18 +57,19 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): 
 
 export function tryImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): string | undefined {
   if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
-  const destination = spellDestination(href, path)
-  if (!destination.ok) return undefined
+  const destination = spellDestination(href)
+  if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
-  const attempt = attemptLine([syntax('!['), ...description, syntax(`](${destination.value})`)], 'paragraph', path)
+  const attempt = attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', path)
   return attempt.ok ? attempt.value.line : undefined
 }
 
-// A carried node joins no run, so every pass carries at least one more node.
+// A carried node joins no run and the opening link turns directive once, so every pass carries at least one more node.
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<EmittedLine> {
   const carried = new Set<number>()
+  let openingLinkAsDirective = false
   for (;;) {
-    const emission = lineSegments(nodes, container, path, carried)
+    const emission = lineSegments(nodes, container, path, carried, openingLinkAsDirective)
     if (!emission.ok) return emission
     if (emission.value.carry !== undefined) {
       carryRange(carried, emission.value.carry)
@@ -66,8 +77,9 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     }
     const attempt = attemptLine(emission.value.segments, container, path)
     if (!attempt.ok) return attempt
-    if (attempt.value.carry === undefined) return success({ line: attempt.value.line, segments: emission.value.segments })
-    carryRange(carried, attempt.value.carry)
+    if (attempt.value.line !== undefined) return success({ line: attempt.value.line, openingLinkAsDirective, segments: emission.value.segments })
+    if (attempt.value.carry !== undefined) carryRange(carried, attempt.value.carry)
+    else openingLinkAsDirective = true
   }
 }
 
@@ -75,8 +87,15 @@ function carryRange(carried: Set<number>, range: NodeRange): void {
   for (let index = range.first; index <= range.last; index += 1) carried.add(index)
 }
 
-function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, carried: ReadonlySet<number>): Result<Emission> {
-  const emission = emitRun(nodes, 0, 0, { atBlockEnd: true, bracketed: false, carried, path, spansLines: container === 'paragraph' })
+function lineSegments(
+  nodes: readonly AdfNode[],
+  container: LineContainer,
+  path: ConvertErrorPath,
+  carried: ReadonlySet<number>,
+  openingLinkAsDirective: boolean,
+): Result<Emission> {
+  const context: InlineContext = { atBlockEnd: true, bracketed: false, carried, openingLinkAsDirective, path, spansLines: container === 'paragraph' }
+  const emission = emitRun(nodes, 0, 0, context)
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return emission
   return success({ segments: carryStrippedWhitespace(emission.value.segments) })
@@ -84,6 +103,7 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
 
 function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath): Result<LineAttempt> {
   const assembled = assembleInlineLine(segments, container)
+  if (assembled.openingLinkAsDirective) return success({ openingLinkAsDirective: true })
   if (assembled.unspellableRun !== undefined) return success({ carry: assembled.unspellableRun })
   for (const [index, single] of assembled.line.split('\n').entries()) {
     if (container === 'paragraph' && claimsLine(single, index === 0 ? 'first' : 'later')) {
@@ -237,7 +257,13 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (attributes === undefined) return success({ carry: range })
   if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, range, path)
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
-  if (spelling.kind === 'link') return emitLink(nodes, mark, depth, range, context, path)
+  if (spelling.kind === 'link') {
+    const href = nodeAttrs(mark)['href']
+    if (typeof href !== 'string') return success({ carry: range })
+    const opening = depth === 0 && index === 0 && context.openingLinkAsDirective
+    const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, isBareLink(nodes, href, depth), context.bracketed)
+    if (commonMark !== undefined) return emitLink(nodes, href, commonMark, depth, range, context)
+  }
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
@@ -278,20 +304,17 @@ function needsPadding(text: string): boolean {
   return text.startsWith(' ') && text.endsWith(' ') && /[^ ]/.test(text)
 }
 
-function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext, path: ConvertErrorPath): Result<Emission> {
-  const href = nodeAttrs(mark)['href']
-  const title = nodeAttrs(mark)['title']
-  if (typeof href !== 'string') return success({ carry: range })
+function isBareLink(nodes: readonly AdfNode[], href: string, depth: number): boolean {
   const node = nodes[0]
-  const bare = nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
-  const autolinkHolds = !context.bracketed || (!href.includes('`') && !holdsDirectivePrefix(href) && escapeUnbalanced(href, '[', ']') === href)
-  if (bare && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return success({ segments: [syntax(`<${href}>`)] })
-  const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, path)
-  if (!target.ok) return target
+  return nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === depth + 1
+}
+
+function emitLink(nodes: readonly AdfNode[], href: string, commonMark: CommonMarkLink, depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
+  if (commonMark.form === 'autolink') return success({ segments: [syntax(`<${href}>`)] })
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  const spelledTarget: InlineSegment = context.bracketed ? { escaping: 'bracketed-link-target', text: escapeUnbalanced(target.value, '[', ']') } : syntax(target.value)
-  return success({ segments: [{ escaping: 'none', nodes: range, text: '[' }, ...inner.value.segments, syntax(']('), spelledTarget, syntax(')')] })
+  const target: InlineSegment = context.bracketed ? { escaping: 'bracketed-link-target', text: escapeUnbalanced(commonMark.target, '[', ']') } : syntax(commonMark.target)
+  return success({ segments: [{ escaping: 'none', nodes: range, text: '[' }, ...inner.value.segments, syntax(']('), target, syntax(')')] })
 }
 

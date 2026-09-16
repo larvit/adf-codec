@@ -7,7 +7,6 @@ export type ConvertErrorCode =
   | 'unmappable-image'
   | 'unspellable-character'
   | 'unspellable-line-start'
-  | 'unspellable-link'
   | 'unspellable-whitespace'
   | 'unsupported-document-version'
   | 'unsupported-nesting-depth'

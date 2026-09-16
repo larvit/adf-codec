@@ -42,14 +42,19 @@ function migrateMarkdown(stored: string) {
 | `:mention[@Mikael]{id=5b10a2}` | `!adf:mention[@Mikael]{id=5b10a2}` |
 | the `adf` code fence and `:adf{json="…"}` | the `carry` code fence and `!adf:carry{json="…"}` |
 | `\:` keeps a directive literal | `\!adf:` keeps a directive literal |
+| `:adf{json="…"}` carrying a link for its `collection`, `id` or `occurrenceKey` | `!adf:link[text]{attrs}` |
 
 A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
 holding an unescaped `!adf:` and a `carry` fence are claimed instead.
 
 ### Error codes
 
+`unspellable-link` leaves `ConvertErrorCode`: a `switch` naming it stops compiling, and the link
+it named converts.
+
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
+| a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |
 | a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |

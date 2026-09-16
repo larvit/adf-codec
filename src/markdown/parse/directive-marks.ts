@@ -28,10 +28,9 @@ function markdownForm(spelling: MarkSpelling): string | undefined {
     case 'code':
       return '`x`'
     case 'directive':
+    case 'link':
       return undefined
     case 'emphasis':
       return `${spelling.spelling}x${spelling.spelling}`
-    case 'link':
-      return '[x](url)'
   }
 }

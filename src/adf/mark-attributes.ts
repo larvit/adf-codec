@@ -4,7 +4,7 @@ export const markAttributes = {
   border: { color: 'string', size: 'number' },
   code: {},
   em: {},
-  link: { href: 'string', title: 'string' },
+  link: { collection: 'string', href: 'string', id: 'string', occurrenceKey: 'string', title: 'string' },
   strike: {},
   strong: {},
   subsup: { type: 'string' },

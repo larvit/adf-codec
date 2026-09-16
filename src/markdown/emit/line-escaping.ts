@@ -17,7 +17,7 @@ export type InlineSegment =
   | { emphasis?: undefined; escaping: 'none'; nodes: NodeRange; text: string }
   | { emphasis?: undefined; escaping: InlineEscaping; nodes?: undefined; text: string }
 
-export type AssembledLine = { line: string; unspellableRun: NodeRange | undefined }
+export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: NodeRange | undefined }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
@@ -77,8 +77,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
     output += scan.charAt(index)
   }
   if (container === 'paragraph' && opensLinkDefinition(output)) {
-    const opener = segments[0]?.nodes
-    if (opener !== undefined) return { line: output, unspellableRun: opener }
+    if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRun: undefined }
     return { line: `\\${output}`, unspellableRun: unspellableRun(segments, output, placements) }
   }
   return { line: output, unspellableRun: unspellableRun(segments, output, placements) }

@@ -1,5 +1,4 @@
 import { backslashEscape, decodeTextEscapes, holdsControlCharacter } from './commonmark-grammar.ts'
-import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
 import { holdsEntityReference } from './entity-references.ts'
 
 export type LinkDefinition = { destination: string; title?: string }
@@ -90,28 +89,17 @@ export function skipLinkWhitespace(text: string, offset: number): number {
   return offset + rest.length - rest.replace(/^[ \t]*\n?[ \t]*/, '').length
 }
 
-export function spellDestination(href: string, path: ConvertErrorPath): Result<string> {
-  if (holdsControlCharacter(href)) return failure('unspellable-link', 'a link destination holds a control character', path)
-  if (href.includes('\\')) return failure('unspellable-link', 'no canonical escape spells a backslash in a link destination', path)
-  if (holdsEntityReference(href)) {
-    return failure('unspellable-link', 'a link destination holds an entity reference that decodes on the way back', path)
-  }
-  if (href.includes(' ')) {
-    if (/[<>]/.test(href)) {
-      return failure('unspellable-link', 'no canonical escape spells an angle bracket beside a space in a link destination', path)
-    }
-    return success(`<${href}>`)
-  }
-  if (href.startsWith('<')) return failure('unspellable-link', 'a bare link destination cannot begin with an angle bracket', path)
-  return success(escapeUnbalanced(href, '(', ')'))
+export function spellDestination(href: string): string | undefined {
+  if (holdsControlCharacter(href) || href.includes('\\') || holdsEntityReference(href)) return undefined
+  if (href.includes(' ')) return /[<>]/.test(href) ? undefined : `<${href}>`
+  return href.startsWith('<') ? undefined : escapeUnbalanced(href, '(', ')')
 }
 
-export function spellLinkTarget(href: string, title: string | undefined, path: ConvertErrorPath): Result<string> {
-  const destination = spellDestination(href, path)
-  if (!destination.ok || title === undefined) return destination
-  const spelledTitle = spellTitle(title, path)
-  if (!spelledTitle.ok) return spelledTitle
-  return success(`${destination.value === '' ? '<>' : destination.value}${spelledTitle.value}`)
+export function spellLinkTarget(href: string, title: string | undefined): string | undefined {
+  const destination = spellDestination(href)
+  if (destination === undefined || title === undefined) return destination
+  const spelledTitle = spellTitle(title)
+  return spelledTitle === undefined ? undefined : `${destination === '' ? '<>' : destination}${spelledTitle}`
 }
 
 export function escapeUnbalanced(spelling: string, opener: string, closer: string): string {
@@ -128,10 +116,6 @@ export function escapeUnbalanced(spelling: string, opener: string, closer: strin
   return spelled
 }
 
-function spellTitle(title: string, path: ConvertErrorPath): Result<string> {
-  if (/[\n\r\\]/.test(title)) {
-    return failure('unspellable-link', 'no canonical escape spells a backslash or newline in a link title', path)
-  }
-  if (holdsEntityReference(title)) return failure('unspellable-link', 'a link title holds an entity reference that decodes on the way back', path)
-  return success(` "${title.replaceAll('"', '\\"')}"`)
+function spellTitle(title: string): string | undefined {
+  return /[\n\r\\]/.test(title) || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
 }

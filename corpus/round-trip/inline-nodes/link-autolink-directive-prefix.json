@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#ae2e24"
+              },
+              "type": "textColor"
+            },
+            {
+              "attrs": {
+                "href": "ab:\\!adf:name{"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "ab:\\!adf:name{",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

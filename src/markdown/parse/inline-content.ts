@@ -1,15 +1,18 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { DirectiveSpan } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../emphasis-matching.ts'
+import type { LineContainer } from '../emit/line-escaping.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark-grammar.ts'
 import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
+import { commonMarkLink } from '../mark-spellings.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
+import { openingLinkTakesDirective } from '../emit/inline-line.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirective } from '../directive-syntax.ts'
@@ -33,19 +36,29 @@ type Piece =
 
 type Run = { canClose: boolean; canOpen: boolean; character: string; index: number; length: number }
 
-type Scan = { definitions: LinkDefinitions; path: ConvertErrorPath; pending: string; pieces: Piece[]; source: string }
+// `container` is the emitter's line container, `undefined` inside a directive's content slot; `openingSpellableLink` defers a directive link at offset 0 to `assemble`.
+type Scan = {
+  container: LineContainer | undefined
+  definitions: LinkDefinitions
+  openingSpellableLink: boolean
+  path: ConvertErrorPath
+  pending: string
+  pieces: Piece[]
+  source: string
+}
 
 type SlotContent = { carry: boolean; nodes: AdfNode[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
+const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can'
 
-export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<InlineContent> {
-  return parseInline(source, definitions, path, true)
+export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer): Result<InlineContent> {
+  return parseInline(source, definitions, path, container)
 }
 
-function parseInline(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, strip: boolean): Result<InlineContent> {
-  const scan: Scan = { definitions, path, pending: '', pieces: [], source }
+function parseInline(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer | undefined): Result<InlineContent> {
+  const scan: Scan = { container, definitions, openingSpellableLink: false, path, pending: '', pieces: [], source }
   let index = 0
   while (index < source.length) {
     switch (source.charAt(index)) {
@@ -93,7 +106,7 @@ function parseInline(source: string, definitions: LinkDefinitions, path: Convert
         index += 1
     }
   }
-  flush(scan, strip)
+  flush(scan, container !== undefined)
   return assemble(scan)
 }
 
@@ -158,14 +171,14 @@ function readDirective(scan: Scan, index: number): Result<number> | undefined {
   const directive = readInlineDirective(scan.source, index)
   if (directive === undefined) return undefined
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
-  const piece = directivePiece(scan, directive.value)
+  const piece = directivePiece(scan, directive.value, index)
   if (!piece.ok) return piece
   flush(scan, false)
   scan.pieces.push(piece.value)
   return success(index + directive.value.length)
 }
 
-function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
+function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<Piece> {
   const carried = readCarriedInline(span)
   if (carried !== undefined) {
     if (carried.fault !== undefined) return faulted(carried.fault, scan.path)
@@ -183,6 +196,8 @@ function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
       return failure('unsupported-node-shape', `the ${span.name} mark wraps the [content] it marks: this one wraps none`, scan.path)
     }
     if (slot.value.carry) return failure('unsupported-node-shape', carriedInMark, scan.path)
+    const refused = mark.value.type === 'link' ? refuseSpellableLink(scan, mark.value, slot.value.nodes, index) : undefined
+    if (refused !== undefined) return refused
     return success({ kind: 'nodes', nodes: applyMark(slot.value.nodes, mark.value) })
   }
   const node = readInlineDirectiveNode(span.name, span.attributes, slot.value?.nodes, scan.path)
@@ -190,9 +205,21 @@ function directivePiece(scan: Scan, span: DirectiveSpan): Result<Piece> {
   return success({ kind: 'nodes', nodes: [node.value] })
 }
 
+// spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
+function refuseSpellableLink(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
+  const href = nodeAttrs(mark)['href']
+  if (typeof href !== 'string') return undefined
+  const only = nodes[0]
+  const bare = nodes.length === 1 && only !== undefined && only.type === 'text' && only.text === href && nodeMarks(only).length === 0
+  if (commonMarkLink(nodeAttrs(mark), href, bare, scan.container === undefined) === undefined) return undefined
+  if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.path)
+  scan.openingSpellableLink = true
+  return undefined
+}
+
 function slotContent(scan: Scan, content: string | undefined): Result<SlotContent | undefined> {
   if (content === undefined) return success(undefined)
-  const parsed = parseInline(content, scan.definitions, scan.path, false)
+  const parsed = parseInline(content, scan.definitions, scan.path, undefined)
   if (!parsed.ok) return parsed
   if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
   return success(parsed.value)
@@ -214,6 +241,11 @@ function assemble(scan: Scan): Result<InlineContent> {
   if (holdsImage(scan.pieces)) return failure('unmappable-image', imageAlone, scan.path)
   const nodes = resolveNodes(scan.pieces, scan.path)
   if (!nodes.ok) return nodes
+  if (scan.openingSpellableLink) {
+    const takesDirective = openingLinkTakesDirective(nodes.value, scan.path)
+    if (!takesDirective.ok) return takesDirective
+    if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, scan.path)
+  }
   return success({ carry: holdsCarry(scan.pieces), nodes: nodes.value })
 }
 

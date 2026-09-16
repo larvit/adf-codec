@@ -1,0 +1,28 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "collection": "contentId-98237",
+                "href": "https://example.com/docs"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the docs",
+          "type": "text"
+        },
+        {
+          "text": " explain it.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -51,6 +51,11 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
 - Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
   directive, a pipe table or a `~~` pair is claimed — plus one image gap.
 - Tables: one header row plus plain inline cells → pipe table; anything richer → directive form.
+- Links: `[text](url "title")`, or `<url>` for a bare autolink-shaped text, wherever CommonMark
+  spells the mark; `!adf:link[text]{attrs}` where it does not — an attribute CommonMark cannot
+  hold, an `href` or `title` no canonical escape spells, a paragraph opening whose CommonMark
+  spelling would read as a link reference definition — and a directive link CommonMark could spell
+  is refused (the maintainer, 2026-09-13).
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.
 - The HTML dialect mirrors this: semantic elements, stable `adf-*` classes, `data-*` for what HTML
@@ -117,7 +122,7 @@ reuses a code where one fits; the list is complete at `0.1.0`. A code names the
 cause; where one cause recurs across node types, across one mark's attributes or across
 directions, one code covers them all and
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
-direction hits it, `unspellable-link` the destination and the title alike. Where two codes stay
+direction hits it, `unspellable-character` the text node and the code block alike. Where two codes stay
 apart, the line between them is what they name: `unspellable-character` is a character CommonMark
 rewrites wherever text holds it, `unspellable-whitespace` the newline no inline directive's
 content slot spans, in either direction. A claim code names the spelling claimed, never the node that spelling would have built:
@@ -125,7 +130,8 @@ a malformed `!adf:table` is a `malformed-directive`, and an alignment colon a `m
 the flavour's own delimiter row is `-` runs, so the grammar refuses the colon rather than ADF's
 missing column model doing it. A refusal no spelling recovers from is a gap in the flavour rather
 than a code: give the flavour the spelling and the code goes, which the freeze is the last moment
-for. A cause the carry answers gets no code: a mark no
+for — `unspellable-link` went at `0.2.0`, the directive link spelling the `href` and `title` it
+refused and the attributes the carry held (the maintainer, 2026-09-13). A cause the carry answers gets no code: a mark no
 spelling writes rides the carry with its node. A directive whose name reads back to no node is
 `unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
 apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
@@ -298,8 +304,10 @@ someone spells it or pins it.
   directions must answer alike — whether a list marker interrupts a paragraph — is one function
   there too, never a copy per direction, however conservative the copy would be. Where the rule is
   the emitter's own choice, input consults it rather than restating it: the parser asks
-  `commonMarkSpelling` which form the emitter picks, so no fixture the emitter writes can be
-  refused, and a spelling the emitter refuses gives its own error rather than a second name for it.
+  `commonMarkSpelling` which form the emitter picks, and `openingLinkTakesDirective` whether the
+  line a paragraph's opening link starts forces the directive link, so no fixture the emitter
+  writes can be refused, and a spelling the emitter refuses gives its own error rather than a
+  second name for it.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
   Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so

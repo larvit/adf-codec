@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from './directive-nodes.ts'
 import type { ConvertFault } from '../../result.ts'
+import type { LineContainer } from '../emit/line-escaping.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
@@ -67,7 +68,7 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
     case 'fault':
       return faulted(block.fault, path)
     case 'heading':
-      return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, definitions, path)
+      return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, definitions, path, 'heading')
     case 'html':
       return failure('unmappable-html', `no raw HTML converts at this version: ${block.construct}`, path)
     case 'orderedList':
@@ -119,7 +120,7 @@ function tableNode(rows: readonly string[][], definitions: LinkDefinitions, path
     const type = rowIndex === 0 ? 'tableHeader' : 'tableCell'
     const row: AdfNode[] = []
     for (const [cellIndex, cell] of cells.entries()) {
-      const paragraph = contentNode({ type: 'paragraph' }, cell, definitions, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
+      const paragraph = contentNode({ type: 'paragraph' }, cell, definitions, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0], 'table-cell')
       if (!paragraph.ok) return paragraph
       row.push({ content: [paragraph.value], type })
     }
@@ -133,7 +134,7 @@ function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: Li
   const only = blocks.length === 1 ? blocks[0] : undefined
   if (only?.kind === 'fault') return positioned(faulted(only.fault, path), only.position)
   if (only?.kind !== 'paragraph') return failure('unsupported-node-shape', `${node.type} takes one paragraph as its body: this body is not one`, path)
-  return positioned(contentNode(node, only.text, definitions, path), only.position)
+  return positioned(contentNode(node, only.text, definitions, path, 'paragraph'), only.position)
 }
 
 function containerNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
@@ -168,14 +169,14 @@ function codeBlockNode(language: string, text: string, path: ConvertErrorPath, d
 
 // spec/flavour.md, The CommonMark image: only a plain paragraph gives an image the block it needs.
 function paragraphNode(text: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
-  const content = parseInlineContent(text, definitions, path)
+  const content = parseInlineContent(text, definitions, path, 'paragraph')
   if (!content.ok) return content
   const image = content.value.image
   return success(image === undefined ? withContent({ type: 'paragraph' }, content.value.nodes) : image)
 }
 
-function contentNode(node: AdfNode, text: string, definitions: LinkDefinitions, path: ConvertErrorPath): Result<AdfNode> {
-  const content = parseInlineContent(text, definitions, path)
+function contentNode(node: AdfNode, text: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer): Result<AdfNode> {
+  const content = parseInlineContent(text, definitions, path, container)
   if (!content.ok) return content
   if (content.value.image !== undefined) return failure('unmappable-image', `no ADF node carries an image inside a ${node.type}`, path)
   return success(withContent(node, content.value.nodes))

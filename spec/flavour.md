@@ -465,13 +465,20 @@ is a named error.
 ## Marks
 
 An inline node's marks ride the spelling wrapped around them, never the block sections' reserved
-`marks` key. `code`, `em`, `link`, `strike` and `strong` keep their markdown spellings, and are
-not directive names: `!adf:em[x]` is a named error. `border`, `subsup`, `textColor` and `underline`
-are inline directives, content required non-empty.
+`marks` key. `code`, `em`, `strike` and `strong` keep their markdown spellings, and are not
+directive names: `!adf:em[x]` is a named error. `border`, `subsup`, `textColor` and `underline`
+are inline directives, content required non-empty. `link` keeps its markdown spelling wherever
+CommonMark holds it — `<url>` for a bare autolink-shaped text, else `[text](url "title")` — and is
+the inline directive `!adf:link[text]{attrs}` only where CommonMark does not: an attribute besides
+`href` and `title`, an `href` or `title` no canonical escape spells (a control character, a
+backslash, an entity reference, an angle bracket beside a space or opening a bare destination, a
+newline in the title), or a link opening a paragraph whose markdown spelling would read as a link
+reference definition. A directive link CommonMark could spell is a named error.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.
-- `link` — Attributes: `href` (string), `title` (string).
+- `link` — Attributes: `collection` (string), `href` (string), `id` (string), `occurrenceKey`
+  (string), `title` (string).
 - `subsup` — Attributes: `type` (`sub` `sup`).
 - `textColor` — Attributes: `color` (string, `#rrggbb`).
 - `underline` — Attributes: none.
@@ -490,13 +497,14 @@ and the mark lacks, an order putting a code span outside another mark, `code` ov
 text node or over text holding a newline, or a spelling CommonMark's flanking rules cannot open or
 close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere — the
 intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave the
-merged run's pairing to another delimiter — rides the inline carry whole. A value the spelling
-holds but CommonMark cannot write — a link destination or title — is a named error instead. An
-opaque carry inside a mark spelling is a named error in input: the carry restores its node
-exactly, marks included (AGENTS.md §3).
+merged run's pairing to another delimiter — rides the inline carry whole. An opaque carry inside a
+mark spelling is a named error in input: the carry restores its node exactly, marks included
+(AGENTS.md §3).
 
 ```
 !adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].
+
+!adf:link[the release]{collection=contentId-98237 href="https://example.com/release notes"}
 
 !adf:border[!adf:mediaInline{collection=contentId-98237 id=01a032c3-7a90-70c9-88f6-c60f710eda07}]{color="#091e42" size=2}
 ```

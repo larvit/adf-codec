@@ -100,7 +100,6 @@ emit refuses:
 | --- | --- | --- |
 | `unspellable-character` | text or a code block holds a carriage return or a null character, which CommonMark rewrites wherever it sits | strip or replace the character; no escape carries it through the round-trip |
 | `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
-| `unspellable-link` | a link `href` or `title` holds what no canonical escape spells — a backslash, a newline, a control character, an entity reference, an angle bracket beside a space | percent-encode the destination (`%5C` for the backslash, `%26` for the `&` that opens the entity), or drop the title |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
 | `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take — or markdown writes as a directive a node the flavour spells as CommonMark | write the shape the message names; `spec/flavour.md` lists every type's attributes and body |
@@ -115,7 +114,7 @@ emit refuses:
   title-less paragraph; mid-text and titled images are error results. Converting back yields the
   library's canonical spelling, which round-trips byte-identically — where it converts back at
   all: a parse succeeding is no promise of that, so keep the source until the way back succeeds.
-  `[a](/a\b)`, `<http://x?a=1&amp;b=2>` and `[a](/x&#10;y)` read cleanly and then refuse.
+  `` ` `` ` `` reads cleanly and then refuses.
 - Three CommonMark spellings parse without an error and build a document the reference renders
   differently: `[](/url)` and `[]()` stay literal text against CommonMark's empty link, a list
   continuing past a marker change stays one list against CommonMark's two, and a shortcut
@@ -124,10 +123,9 @@ emit refuses:
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
   processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.3.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding
-  a carriage return, a link destination or title no canonical escape spells, a paragraph line
-  beginning with a code span whose backticks read back as a fence. Show the refusal and keep the
-  document read-only; saving markdown you could not produce is the loss the round-trip exists to
-  stop.
+  a carriage return, or a paragraph line beginning with a code span whose backticks read back as a
+  fence. Show the refusal and keep the document read-only; saving markdown you could not produce
+  is the loss the round-trip exists to stop.
 - The pipe table narrows GFM's twice: every row opens with a pipe, so GFM's bare form is an error
   result rather than the prose it reads as, and an alignment colon in the delimiter row is an
   error too — ADF holds no column alignment. The trailing pipe is canonical output, optional in

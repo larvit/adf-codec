@@ -1,0 +1,32 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "See ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/docs",
+                "title": "Setup &amp; guide"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the docs",
+          "type": "text"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

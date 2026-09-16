@@ -287,8 +287,8 @@ test('names the directive form a node CommonMark spells refuses', () => {
 
 // The spelling the emitter refuses gives the emitter's own error, never a second name for it.
 test('gives back the refusal the CommonMark spelling itself raises', () => {
-  const destination = '!adf:blockquote\n[t](https://example.com/a\\b)\n!adf:/blockquote\n'
-  assert.equal(content(markdownToAdf(destination)), 'unspellable-link: no canonical escape spells a backslash in a link destination')
+  const lineStart = '!adf:blockquote\n` `` `\n!adf:/blockquote\n'
+  assert.equal(content(markdownToAdf(lineStart)), 'unspellable-line-start: block parsing would claim the emitted line "``` `` ```"')
 })
 
 test('names the directive name no node reads back to', () => {
@@ -966,7 +966,25 @@ test('names the mark markdown spells, never a directive', () => {
   assert.equal(content(markdownToAdf('!adf:strong[a]\n')), 'unsupported-node-shape: strong is spelled **x**, never as a directive')
   assert.equal(content(markdownToAdf('!adf:strike[a]\n')), 'unsupported-node-shape: strike is spelled ~~x~~, never as a directive')
   assert.equal(content(markdownToAdf('!adf:code[a]\n')), 'unsupported-node-shape: code is spelled `x`, never as a directive')
-  assert.equal(content(markdownToAdf('!adf:link[a]{href="/u"}\n')), 'unsupported-node-shape: link is spelled [x](url), never as a directive')
+})
+
+// spec/flavour.md, Marks: the directive link is refused wherever the emitter would pick the markdown spelling.
+test('refuses the directive link CommonMark could spell, and reads the one it could not', () => {
+  const refused = 'unsupported-node-shape: link takes the directive form only where CommonMark cannot spell it: this one it can'
+  assert.equal(content(markdownToAdf('!adf:link[a]{href="/u"}\n')), refused)
+  assert.equal(content(markdownToAdf('See !adf:link[a]{href="/u"}.\n')), refused)
+  assert.equal(content(markdownToAdf('!adf:link[https://example.com/]{href="https://example.com/"}\n')), refused)
+  assert.equal(content(markdownToAdf('# !adf:link[`]: a`]{href="/u"}\n')), refused)
+  assert.equal(content(markdownToAdf('| !adf:link[`]: a`]{href="/u"} |\n| --- |\n')), refused)
+  assert.equal(content(markdownToAdf('!adf:underline[!adf:link[a]{href="/u"}]\n')), refused)
+  assert.deepEqual(path(markdownToAdf('Part.\n\nSee !adf:link[a]{href="/u"}.\n')), ['content', 1])
+  const titled: AdfNode = { marks: [{ attrs: { title: 't' }, type: 'link' }], text: 'a', type: 'text' }
+  assert.deepEqual(content(markdownToAdf('!adf:link[a]{title=t}\n')), [{ content: [titled], type: 'paragraph' }])
+  const opening: AdfNode = { marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: ']: a', type: 'text' }
+  assert.deepEqual(content(markdownToAdf('!adf:link[`]: a`]{href="/u"}\n')), [{ content: [opening], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('!adf:heading {level=1 localId=h}\n!adf:link[`]: a`]{href="/u"}\n!adf:/heading\n')), [
+    { attrs: { level: 1, localId: 'h' }, content: [opening], type: 'heading' },
+  ])
 })
 
 test('names the directive mark left without the content it wraps', () => {

@@ -82,15 +82,25 @@ test('spells a code block language no info string holds as an attribute', () => 
   assert.equal(language('a\tb'), '!adf:codeBlock {language="a\\tb"}\n```\n```\n!adf:/codeBlock\n')
 })
 
-test('refuses a link destination CommonMark cannot spell', () => {
-  const link = (href: string): AdfDocument => document(paragraph({ marks: [{ attrs: { href }, type: 'link' }], text: 't', type: 'text' }))
-  assert.equal(code(adfToMarkdown(link('https://example.com/a b>c'))), 'unspellable-link')
-  assert.equal(code(adfToMarkdown(link('<https://example.com/'))), 'unspellable-link')
-  assert.equal(code(adfToMarkdown(link('https://example.com/a\\b'))), 'unspellable-link')
-  assert.equal(code(adfToMarkdown(link('https://example.com/?a=1&amp;b=2'))), 'unspellable-link')
-  assert.equal(code(adfToMarkdown(link('https://example.com/a\nb'))), 'unspellable-link')
+test('spells a link destination CommonMark cannot as the directive link', () => {
+  const link = (href: string): string => markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href }, type: 'link' }], text: 't', type: 'text' }))))
+  assert.equal(link('https://example.com/a b>c'), '!adf:link[t]{href="https://example.com/a b>c"}\n')
+  assert.equal(link('<https://example.com/'), '!adf:link[t]{href="\\u003chttps://example.com/"}\n')
+  assert.equal(link('https://example.com/a\\b'), '!adf:link[t]{href="https://example.com/a\\\\b"}\n')
+  assert.equal(link('https://example.com/?a=1&amp;b=2'), '!adf:link[t]{href="https://example.com/?a=1\\u0026amp;b=2"}\n')
+  assert.equal(link('https://example.com/a\nb'), '!adf:link[t]{href="https://example.com/a\\nb"}\n')
   const entity = 'https://example.com/?a=1&amp;b=2'
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: entity }, type: 'link' }], text: entity, type: 'text' })))), 'unspellable-link')
+  const autolinkShaped = document(paragraph({ marks: [{ attrs: { href: entity }, type: 'link' }], text: entity, type: 'text' }))
+  assert.equal(markdown(adfToMarkdown(autolinkShaped)), '!adf:link[https://example.com/?a=1\\&amp;b=2]{href="https://example.com/?a=1\\u0026amp;b=2"}\n')
+})
+
+test('spells a link carrying an attribute CommonMark cannot as the directive link, and refuses none', () => {
+  const link = (attrs: Record<string, string>): string =>
+    markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'link' }], text: 't', type: 'text' }))))
+  assert.equal(link({ collection: 'c', href: 'https://example.com/' }), '!adf:link[t]{collection=c href="https://example.com/"}\n')
+  assert.equal(link({ href: 'https://example.com/', id: 'i' }), '!adf:link[t]{href="https://example.com/" id=i}\n')
+  assert.equal(link({ href: 'https://example.com/', occurrenceKey: 'k' }), '!adf:link[t]{href="https://example.com/" occurrenceKey=k}\n')
+  assert.equal(link({ href: 'https://example.com/', id: 'i', title: 'a\nb' }), '!adf:link[t]{href="https://example.com/" id=i title="a\\nb"}\n')
 })
 
 test('escapes the parenthesis a link destination leaves unbalanced, and no other', () => {
@@ -102,19 +112,20 @@ test('escapes the parenthesis a link destination leaves unbalanced, and no other
   assert.equal(link('https://example.com/a (b'), '[t](<https://example.com/a (b>)\n')
 })
 
-test('escapes the quote a link title holds, and refuses the rest', () => {
-  const titled = (title: string): AdfDocument =>
-    document(paragraph({ marks: [{ attrs: { href: 'https://example.com/', title }, type: 'link' }], text: 't', type: 'text' }))
-  assert.equal(markdown(adfToMarkdown(titled('He said "hi"'))), '[t](https://example.com/ "He said \\"hi\\"")\n')
-  assert.equal(code(adfToMarkdown(titled('a\nb'))), 'unspellable-link')
-  assert.equal(code(adfToMarkdown(titled('a\\b'))), 'unspellable-link')
+test('escapes the quote a link title holds, and spells the rest as the directive link', () => {
+  const titled = (title: string): string =>
+    markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs: { href: 'https://example.com/', title }, type: 'link' }], text: 't', type: 'text' }))))
+  assert.equal(titled('He said "hi"'), '[t](https://example.com/ "He said \\"hi\\"")\n')
+  assert.equal(titled('a\nb'), '!adf:link[t]{href="https://example.com/" title="a\\nb"}\n')
+  assert.equal(titled('a\\b'), '!adf:link[t]{href="https://example.com/" title="a\\\\b"}\n')
+  assert.equal(titled('a &amp; b'), '!adf:link[t]{href="https://example.com/" title="a \\u0026amp; b"}\n')
 })
 
 test('carries a link mark the link spelling cannot write', () => {
   const carried = (mark: AdfMark): string => markdown(adfToMarkdown(document(paragraph({ marks: [mark], text: 't', type: 'text' }))))
   assert.equal(
-    carried({ attrs: { href: 'x', id: 'y' }, type: 'link' }),
-    '!adf:carry{json="{\\"marks\\":[{\\"attrs\\":{\\"href\\":\\"x\\",\\"id\\":\\"y\\"},\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n',
+    carried({ attrs: { href: 'x', rel: 'y' }, type: 'link' }),
+    '!adf:carry{json="{\\"marks\\":[{\\"attrs\\":{\\"href\\":\\"x\\",\\"rel\\":\\"y\\"},\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n',
   )
   assert.equal(carried({ attrs: { href: 4 }, type: 'link' }), '!adf:carry{json="{\\"marks\\":[{\\"attrs\\":{\\"href\\":4},\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n')
   assert.equal(carried({ type: 'link' }), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"link\\"}],\\"text\\":\\"t\\",\\"type\\":\\"text\\"}"}\n')
