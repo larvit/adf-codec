@@ -180,6 +180,9 @@ wide `Result<T>`, since half their refusals come from an emit stage that read no
   deliberate semver judgment. `publish.sh` is that job, and `private: true` stops it before it
   reads the token, so the pipeline is live and silent until the maintainer's first bump drops the
   field.
+- Docs on `main` describe the release being built rather than the version npm holds, so they match
+  it the moment the bump publishes; add no interim note marking the gap (the maintainer,
+  2026-09-16).
 - The publish and the tag each observe their own end state — the version on npm, the tag on the
   remote — and neither gates the other, so a run that dies between them converges on the next push
   to `main` rather than leaving npm ahead of the tags. An unanswered registry reads the same as an
