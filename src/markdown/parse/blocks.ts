@@ -17,7 +17,6 @@ import {
 } from '../commonmark-grammar.ts'
 import { blockDirectiveForm } from '../block-directive-forms.ts'
 import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
-import { largestNesting } from '../../nesting.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { readLinkDefinitions } from '../link-reference-definitions.ts'
 
@@ -41,12 +40,11 @@ export type DirectiveBlock = Extract<Block, { kind: 'directive' }>
 
 type ListBlock = Extract<Block, { items: Block[][] }>
 
-type OpenDirective = { blocks: Block[]; index: number; kind: 'directive'; name: string; parent: Block[]; position: SourcePosition }
+type OpenDirective = { blocks: Block[]; depths: number[]; index: number; kind: 'directive'; name: string; parent: Block[]; position: SourcePosition }
 
-type OpenContainer =
-  | Extract<Block, { kind: 'blockquote' }>
-  | OpenDirective
-  | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock }
+type EdgeContainer = Extract<Block, { kind: 'blockquote' }> | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock }
+
+type OpenContainer = EdgeContainer | OpenDirective
 
 type OpenLeaf = { position: SourcePosition } & (
   | { closer: RegExp | undefined; construct: string; kind: 'html' }
@@ -63,14 +61,30 @@ type Line = { column: number; text: string }
 
 type LeafOpener = { index: number; position: SourcePosition }
 
-type Walk = ParsedBlocks & { leaf: OpenLeaf | undefined; leafOpeners: Map<Block[], Map<string, LeafOpener>>; position: SourcePosition; stack: OpenContainer[] }
+type Walk = ParsedBlocks & {
+  directiveDepths: Map<string, number[]>
+  edges: { container: EdgeContainer; depth: number }[]
+  leaf: OpenLeaf | undefined
+  leafOpeners: Map<Block[], Map<string, LeafOpener>>
+  position: SourcePosition
+  stack: OpenContainer[]
+}
 
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
 
 export function parseBlocks(markdown: string): ParsedBlocks {
-  const walk: Walk = { blocks: [], definitions: new Map(), leaf: undefined, leafOpeners: new Map(), position: { line: 1, offset: 0 }, stack: [] }
+  const walk: Walk = {
+    blocks: [],
+    definitions: new Map(),
+    directiveDepths: new Map(),
+    edges: [],
+    leaf: undefined,
+    leafOpeners: new Map(),
+    position: { line: 1, offset: 0 },
+    stack: [],
+  }
   for (const line of sourceLines(markdown)) {
     walk.position = line.position
     readLine(walk, { column: 0, text: line.text })
@@ -102,22 +116,19 @@ function swallowsLines(leaf: OpenLeaf | undefined): boolean {
   return leaf?.kind === 'fenced-code' || leaf?.kind === 'html'
 }
 
+// A directive container has no continuation marker, so every line continues it.
 function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } {
-  let depth = 0
   let rest = line
-  for (const container of walk.stack) {
+  for (const { container, depth } of walk.edges) {
     const next = continuesContainer(walk, container, rest)
-    if (next === undefined) break
-    depth += 1
+    if (next === undefined) return { depth, rest }
     rest = next
   }
-  return { depth, rest }
+  return { depth: walk.stack.length, rest }
 }
 
-function continuesContainer(walk: Walk, container: OpenContainer, line: Line): Line | undefined {
+function continuesContainer(walk: Walk, container: EdgeContainer, line: Line): Line | undefined {
   if (container.kind === 'blockquote') return blockquoteRest(removeColumns(line, largestOpenerIndentation))
-  // A directive container has no continuation marker.
-  if (container.kind === 'directive') return line
   // A list item begins with at most one blank line: an empty one gives the second up.
   if (isBlankLine(line.text)) {
     return container.blocks.length === 0 && walk.leaf === undefined ? undefined : { column: line.column, text: '' }
@@ -179,14 +190,18 @@ function openList(start: number | undefined, position: SourcePosition): ListBloc
 function openContainer(walk: Walk, start: ContainerStart): void {
   const blocks: Block[] = []
   if (start.kind === 'blockquote') {
-    const blockquote: OpenContainer = { blocks, kind: 'blockquote', position: walk.position }
+    const blockquote: EdgeContainer = { blocks, kind: 'blockquote', position: walk.position }
     currentBlocks(walk).push(blockquote)
-    walk.stack.push(blockquote)
+    pushEdge(walk, blockquote)
     return
   }
   const list = openedList(walk, start)
   list.items.push(blocks)
-  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
+  pushEdge(walk, { blocks, indentation: start.indentation, kind: 'item', list })
+}
+
+function pushEdge(walk: Walk, container: EdgeContainer): void {
+  walk.edges.push({ container, depth: walk.stack.push(container) - 1 })
 }
 
 // Two lists of a kind never sit adjacent: one `- ` spelling reads them back as one (spec/flavour.md).
@@ -201,7 +216,7 @@ function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>
 
 function closeContainers(walk: Walk, depth: number): void {
   closeLeaf(walk)
-  for (const container of walk.stack.slice(depth)) {
+  for (const container of dropContainers(walk, depth)) {
     if (container.kind !== 'directive') continue
     container.parent[container.index] = {
       fault: malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it; ${directiveEscape}`),
@@ -209,11 +224,15 @@ function closeContainers(walk: Walk, depth: number): void {
       position: container.position,
     }
   }
-  dropContainers(walk, depth)
 }
 
-function dropContainers(walk: Walk, depth: number): void {
-  walk.stack.length = depth
+function dropContainers(walk: Walk, depth: number): OpenContainer[] {
+  const dropped = walk.stack.splice(depth)
+  for (const container of dropped) {
+    if (container.kind === 'directive') container.depths.pop()
+    else walk.edges.pop()
+  }
+  return dropped
 }
 
 function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
@@ -223,11 +242,6 @@ function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
 
 function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'opener' }>): void {
   const { name } = directive
-  // The node walk refuses this depth anyway; a deeper stack only makes every later line walk it.
-  if (walk.stack.length > largestNesting && blockDirectiveForm(name) === 'container') {
-    pushFault(walk, { code: 'unsupported-nesting-depth', message: `the input nests directive containers deeper than the ${largestNesting} levels the parser carries` })
-    return
-  }
   const block: DirectiveBlock = {
     argument: directive.argument,
     attributes: directive.attributes,
@@ -239,8 +253,12 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'op
   const parent = currentBlocks(walk)
   const index = parent.push(block) - 1
   const { position } = block
-  if (block.blocks !== undefined) walk.stack.push({ blocks: block.blocks, index, kind: 'directive', name, parent, position })
-  else leafOpenersIn(walk, parent).set(name, { index, position })
+  if (block.blocks === undefined) {
+    entryOf(walk.leafOpeners, parent, () => new Map<string, LeafOpener>()).set(name, { index, position })
+    return
+  }
+  const depths = entryOf(walk.directiveDepths, name, (): number[] => [])
+  depths.push(walk.stack.push({ blocks: block.blocks, depths, index, kind: 'directive', name, parent, position }) - 1)
 }
 
 function closeDirective(walk: Walk, name: string): void {
@@ -260,12 +278,8 @@ function closeDirective(walk: Walk, name: string): void {
 
 // A closer crosses no list item or blockquote edge.
 function openDirectiveDepth(walk: Walk, name: string): number | undefined {
-  for (let depth = walk.stack.length - 1; depth >= 0; depth -= 1) {
-    const container = walk.stack[depth]
-    if (container?.kind !== 'directive') return undefined
-    if (container.name === name) return depth
-  }
-  return undefined
+  const depth = walk.directiveDepths.get(name)?.at(-1)
+  return depth === undefined || depth < (walk.edges.at(-1)?.depth ?? -1) ? undefined : depth
 }
 
 function faultLeafOpener(walk: Walk, name: string, fault: ConvertFault): void {
@@ -280,12 +294,12 @@ function faultLeafOpener(walk: Walk, name: string, fault: ConvertFault): void {
   blocks[opener.index] = { fault, kind: 'fault', position: opener.position }
 }
 
-function leafOpenersIn(walk: Walk, blocks: Block[]): Map<string, LeafOpener> {
-  const known = walk.leafOpeners.get(blocks)
+function entryOf<K, V>(map: Map<K, V>, key: K, create: () => V): V {
+  const known = map.get(key)
   if (known !== undefined) return known
-  const openers = new Map<string, LeafOpener>()
-  walk.leafOpeners.set(blocks, openers)
-  return openers
+  const created = create()
+  map.set(key, created)
+  return created
 }
 
 function pushFault(walk: Walk, fault: ConvertFault): void {

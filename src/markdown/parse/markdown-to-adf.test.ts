@@ -668,13 +668,11 @@ test('refuses input nested deeper than the parser carries', () => {
   const marks = (levels: number): string => `${'!adf:underline['.repeat(levels)}a${']'.repeat(levels)}\n`
   assert.equal(code(markdownToAdf(marks(largestNesting + 1))), 'unsupported-nesting-depth')
   assert.deepEqual(content(markdownToAdf(marks(largestNesting))), [{ content: [marked('a', underline)], type: 'paragraph' }])
-  const panels = (levels: number, body: string): string => `${'!adf:panel\n'.repeat(levels)}${body}${'!adf:/panel\n'.repeat(levels)}`
-  assert.equal(code(markdownToAdf(panels(1000, ''))), 'unsupported-nesting-depth')
-  assert.ok(markdownToAdf(panels(largestNesting, '!adf:paragraph {localId=a-1}\nPart.\n!adf:/paragraph\n')).ok)
-  assert.equal(
-    content(markdownToAdf(panels(largestNesting, '!adf:paragraph {localId=a-1}\n!adf:panel\n!adf:/paragraph\n'))),
-    `unsupported-nesting-depth: the input nests directive containers deeper than the ${largestNesting} levels the parser carries`,
-  )
+  const nest = (names: readonly string[], body: string): string => [...names.map((name) => `!adf:${name}\n`), body, ...names.map((name) => `!adf:/${name}\n`).reverse()].join('')
+  const repeated = (name: string): string[] => Array.from({ length: largestNesting }, () => name)
+  assert.ok(markdownToAdf(nest(repeated('panel'), '!adf:paragraph {localId=a-1}\nPart.\n!adf:/paragraph\n')).ok)
+  assert.deepEqual(position(markdownToAdf(nest(['expand', ...repeated('panel'), 'expand'], 'Part.\n'))), { line: 501, offset: 5501 })
+  assert.equal(code(markdownToAdf(nest(['panel', ...repeated('expand'), 'panel'], 'Part.\n'))), 'unsupported-nesting-depth')
 })
 
 test('decodes the backslash escapes CommonMark spells, and keeps the rest literal', () => {
