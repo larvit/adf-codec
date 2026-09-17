@@ -520,6 +520,7 @@ test('refuses a document nested deeper than the emitter carries', () => {
   const deep = document(listed(directiveLists, [{ type: 'rule' }]))
   assert.deepEqual(markdownToAdf(markdown(adfToMarkdown(deep))), { ok: true, value: deep })
   assert.equal(code(adfToMarkdown(document(listed(directiveLists + 1, [{ type: 'rule' }])))), 'unsupported-nesting-depth')
+  assert.equal(code(adfToMarkdown(document({ content: [listed(directiveLists, [{ type: 'rule' }])], type: 'panel' }))), 'unsupported-nesting-depth')
   const chain = (levels: number): AdfNode => {
     let card: AdfNode = { type: 'blockCard' }
     for (let level = 0; level < levels; level += 1) card = { content: [card], type: 'blockCard' }

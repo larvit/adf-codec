@@ -31,18 +31,13 @@ export function adfToMarkdown(document: AdfDocument): Result<string> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  const blocks = emitBlocks(nodeContent(document), 'document', [], 0)
-  if (!blocks.ok) return blocks
-  return success(blocks.value === '' ? '' : `${blocks.value}\n`)
-}
-
-function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: ConvertErrorPath, depth: number): Result<string> {
-  const walk = walkBlocks(nodes, path, depth)
+  const walk = walkBlocks(nodeContent(document), [], 0)
   if (!walk.ok) return walk
-  return success(joinBlocks(walk.value.blocks, container))
+  const text = joinBlocks(walk.value.blocks, 'document')
+  return success(text === '' ? '' : `${text}\n`)
 }
 
-// The walk's headroom is the least slack any depth guard below it has, so a spelling that sinks the walked blocks a level can refuse rather than walk again.
+// headroom: the least slack any depth guard below the walk has.
 function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number): Result<Walk> {
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
@@ -224,25 +219,28 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<
   if (start === undefined || items.length === 0) return undefined
   if (items.some((item) => item.type !== 'listItem' || !carriesOnly(item, []))) return undefined
   const walked: WalkedItem[] = []
+  let headroom = Number.POSITIVE_INFINITY
   for (const [offset, item] of items.entries()) {
     const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1)
     if (!walk.ok) return walk
+    headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })
   }
-  const headroom = Math.min(...walked.map((item) => item.walk.headroom))
   const lines: string[] = []
   for (const [offset, item] of walked.entries()) {
     const line = listItemLines(item.walk.blocks, ordered ? `${start + offset}. ` : '- ')
-    if (line === undefined) return headroom < 1 ? tooDeep(path) : emitDirectiveBlock(node, ordered ? blockDirectives.orderedList : blockDirectives.bulletList, path, depth, () => success(directiveItems(walked)))
+    if (line === undefined) {
+      if (headroom < 1) return tooDeep(path)
+      return emitDirectiveBlock(node, ordered ? blockDirectives.orderedList : blockDirectives.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
+    }
     lines.push(line)
   }
   return success({ headroom, spelling: 'list', text: lines.join('\n') })
 }
 
 // The directive form sinks each item's blocks a level below where the walk read them.
-function directiveItems(items: readonly WalkedItem[]): Walk {
-  const blocks = items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.walk.blocks, 'directive'), item.walk.headroom - 1), node: item.node }))
-  return { blocks, headroom: Math.min(...blocks.map((block) => block.headroom)) }
+function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {
+  return items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.walk.blocks, 'directive'), item.walk.headroom - 1), node: item.node }))
 }
 
 function listStart(node: AdfNode, items: number): number | undefined {
