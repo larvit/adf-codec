@@ -5,8 +5,8 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 14, 10, 5g → `0.2.0`; 4d, 5f → `0.2.1`;
-6, 7 → `0.3.0`; 9 → TBD; 5e last.
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 14, 15, 16, 10, 5g → `0.2.0`;
+4d, 5f → `0.2.1`; 6, 7 → `0.3.0`; 9, 17 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
 (the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
 proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c change.
@@ -228,6 +228,20 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       and `link-syntax.ts` — leaving the flavour's own constructs at the root, the split
       `spec/flavour.md` draws between the subset and the flavour (the systems-architect and the
       maintainer, 2026-09-16).
+- [ ] **15 — The href-less directive link (`0.2.0`).** Refuse `!adf:link[text]` spelling no `href`
+      with `unsupported-node-shape` naming the attribute, so the mark has one spelling: today it
+      parses to a mark the emitter writes back as a carry, while the schema requires `href` and
+      every other directive mark spells without attributes in both directions alike (the
+      stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
+- [ ] **16 — The link wrapping a link (`0.2.0`).** Read `[<http://x/>](/v)` and
+      `[!adf:link[a]{href="/u"}](/v)` as `[[a](/u)](/v)` reads — the inner link wins and the outer
+      brackets stay literal text, CommonMark's rule that no link holds another — rather than
+      dropping the outer link silently as `closeLink`'s `applyMark` does today, with a normalization
+      fixture per shape (the stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
+- [ ] **17 — A machine-enforced size guardrail.** Add a per-function complexity check to the gate —
+      branch count or size — so the fits-in-your-head guardrail fails the build rather than
+      waiting for a review to catch it (the systems-architect, 2026-09-16); placed after `0.3.0`
+      (the maintainer, 2026-09-17).
 
 ## The ADF inventory to cover
 
