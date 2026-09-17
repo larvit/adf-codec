@@ -18,11 +18,13 @@ import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive' | 'list'
-type EmittedBlock = { spelling: BlockSpelling; text: string }
+type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
 type PlacedBlock = EmittedBlock & { node: AdfNode }
-type WalkedItem = { blocks: readonly PlacedBlock[]; node: AdfNode }
+type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
+type WalkedItem = { node: AdfNode; walk: Walk }
 
 const largestListMarker = 999999999
+// Bare because emitList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
@@ -35,20 +37,27 @@ export function adfToMarkdown(document: AdfDocument): Result<string> {
 }
 
 function emitBlocks(nodes: readonly AdfNode[], container: BlockContainer, path: ConvertErrorPath, depth: number): Result<string> {
-  const blocks = walkBlocks(nodes, path, depth)
-  if (!blocks.ok) return blocks
-  return success(joinBlocks(blocks.value, container))
+  const walk = walkBlocks(nodes, path, depth)
+  if (!walk.ok) return walk
+  return success(joinBlocks(walk.value.blocks, container))
 }
 
-function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number): Result<PlacedBlock[]> {
-  if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
+// The walk's headroom is the least slack any depth guard below it has, so a spelling that sinks the walked blocks a level can refuse rather than walk again.
+function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number): Result<Walk> {
+  let headroom = largestNesting - depth
+  if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth)
     if (!block.ok) return block
+    headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
   }
-  return success(blocks)
+  return success({ blocks, headroom })
+}
+
+function tooDeep(path: ConvertErrorPath): Result<never> {
+  return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
 }
 
 function joinBlocks(blocks: readonly PlacedBlock[], container: BlockContainer): string {
@@ -111,20 +120,20 @@ function readableText(text: string | undefined): Result<EmittedBlock> | undefine
   return text === undefined ? undefined : success(commonMarkText(text))
 }
 
-function commonMarkLine(text: Result<string>): Result<EmittedBlock> {
-  if (!text.ok) return text
-  return success(commonMarkText(text.value))
+function commonMarkLine(carried: Result<{ headroom: number; text: string }>): Result<EmittedBlock> {
+  if (!carried.ok) return carried
+  return success({ ...carried.value, spelling: 'commonmark' })
 }
 
-function commonMarkText(text: string): EmittedBlock {
-  return { spelling: 'commonmark', text }
+function commonMarkText(text: string, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
+  return { headroom, spelling: 'commonmark', text }
 }
 
-function directivePair(node: AdfNode, opener: string, body: string): EmittedBlock {
-  return { spelling: 'directive', text: `${opener}\n${body === '' ? '' : `${body}\n`}${spellDirectiveCloser(node.type)}` }
+function directivePair(node: AdfNode, opener: string, body: string, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
+  return { headroom, spelling: 'directive', text: `${opener}\n${body === '' ? '' : `${body}\n`}${spellDirectiveCloser(node.type)}` }
 }
 
-function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number, walkBody: () => Result<PlacedBlock[]>): Result<EmittedBlock> {
+function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: ConvertErrorPath, depth: number, walkBody: () => Result<Walk>): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
   if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (directive.contentModel === 'code') return emitCodeDirective(node, directive, path, depth)
@@ -133,27 +142,27 @@ function emitDirectiveBlock(node: AdfNode, directive: BlockDirective, path: Conv
   return emitDirectiveBody(node, directive, opener, path, walkBody)
 }
 
-function emitDirectiveBody(node: AdfNode, directive: BlockDirective, opener: string, path: ConvertErrorPath, walkBody: () => Result<PlacedBlock[]>): Result<EmittedBlock> {
-  if (blockDirectiveForm(node.type) === 'leaf') return success({ spelling: 'directive', text: opener })
+function emitDirectiveBody(node: AdfNode, directive: BlockDirective, opener: string, path: ConvertErrorPath, walkBody: () => Result<Walk>): Result<EmittedBlock> {
+  if (blockDirectiveForm(node.type) === 'leaf') return success({ headroom: Number.POSITIVE_INFINITY, spelling: 'directive', text: opener })
   if (directive.contentModel === 'inline') {
     const line = emitInlineLine(nodeContent(node), 'paragraph', path)
     if (!line.ok) return line
     return success(directivePair(node, opener, line.value))
   }
-  const blocks = walkBody()
-  if (!blocks.ok) return blocks
-  return success(directivePair(node, opener, joinBlocks(blocks.value, 'directive')))
+  const walk = walkBody()
+  if (!walk.ok) return walk
+  return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
 function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, [])) return undefined
-  const inner = emitBlocks(nodeContent(node), 'document', path, depth + 1)
+  const inner = walkBlocks(nodeContent(node), path, depth + 1)
   if (!inner.ok) return inner
-  const text = inner.value
+  const text = joinBlocks(inner.value.blocks, 'document')
     .split('\n')
     .map((line) => (line === '' ? '>' : `> ${line}`))
     .join('\n')
-  return success(commonMarkText(text))
+  return success(commonMarkText(text, inner.value.headroom))
 }
 
 function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
@@ -216,21 +225,24 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<
   if (items.some((item) => item.type !== 'listItem' || !carriesOnly(item, []))) return undefined
   const walked: WalkedItem[] = []
   for (const [offset, item] of items.entries()) {
-    const blocks = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 2)
-    if (!blocks.ok) return blocks
-    walked.push({ blocks: blocks.value, node: item })
+    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1)
+    if (!walk.ok) return walk
+    walked.push({ node: item, walk: walk.value })
   }
+  const headroom = Math.min(...walked.map((item) => item.walk.headroom))
   const lines: string[] = []
   for (const [offset, item] of walked.entries()) {
-    const line = listItemLines(item.blocks, ordered ? `${start + offset}. ` : '- ')
-    if (line === undefined) return emitDirectiveBlock(node, ordered ? blockDirectives.orderedList : blockDirectives.bulletList, path, depth, () => success(directiveItems(walked)))
+    const line = listItemLines(item.walk.blocks, ordered ? `${start + offset}. ` : '- ')
+    if (line === undefined) return headroom < 1 ? tooDeep(path) : emitDirectiveBlock(node, ordered ? blockDirectives.orderedList : blockDirectives.bulletList, path, depth, () => success(directiveItems(walked)))
     lines.push(line)
   }
-  return success({ spelling: 'list', text: lines.join('\n') })
+  return success({ headroom, spelling: 'list', text: lines.join('\n') })
 }
 
-function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {
-  return items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.blocks, 'directive')), node: item.node }))
+// The directive form sinks each item's blocks a level below where the walk read them.
+function directiveItems(items: readonly WalkedItem[]): Walk {
+  const blocks = items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.walk.blocks, 'directive'), item.walk.headroom - 1), node: item.node }))
+  return { blocks, headroom: Math.min(...blocks.map((block) => block.headroom)) }
 }
 
 function listStart(node: AdfNode, items: number): number | undefined {

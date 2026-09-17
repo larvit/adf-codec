@@ -290,10 +290,13 @@ someone spells it or pins it.
   again at every level, doubling per level (4b).
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
-  `Result` rather than the stack overflow that waits near 2000. A block's level is its count of
-  block ancestors — a list item's children two below the list — in either direction and whichever
-  spelling holds them, so the guards agree at the boundary and no spelling recurses twice per
-  level it counts once (the maintainer, 2026-09-18).
+  `Result` rather than the stack overflow that waits near 2000. A level is one block-list
+  recursion in either direction: a readable list's items sit one below it, its directive
+  spelling's two. So a list giving way after its walk owes the directive form a level the walk
+  did not count, and the walk reports its headroom — the least slack any depth guard below it
+  has — for the fallback to refuse at zero rather than walk again; counting every list twice
+  halved the list limit, counting the directive form once doubled the parser's frames per level
+  (the maintainer, 2026-09-18).
 - A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the
   line before it reads, `indexOf` — never a fresh slice per character, and a per-character walk
   hoists the scan that does not vary with the character. The pipeline persona feeds documents

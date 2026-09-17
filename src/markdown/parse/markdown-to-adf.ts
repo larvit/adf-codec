@@ -150,7 +150,7 @@ function withContent(node: AdfNode, content: readonly AdfNode[]): AdfNode {
 function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const content: AdfNode[] = []
   for (const [index, blocks] of items.entries()) {
-    const item = containerNode({ type: 'listItem' }, blocks, definitions, [...path, 'content', index], depth + 1)
+    const item = containerNode({ type: 'listItem' }, blocks, definitions, [...path, 'content', index], depth)
     if (!item.ok) return item
     content.push(item.value)
   }

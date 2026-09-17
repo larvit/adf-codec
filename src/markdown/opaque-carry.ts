@@ -3,7 +3,7 @@ import type { DirectiveSpan, Read } from './directive-syntax.ts'
 import type { JsonSpelling } from '../canonical-json.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
 import { isAdfNode } from '../adf/document.ts'
-import { isJsonValue, overNested } from '../json-value.ts'
+import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { fencedCodeBlock } from './backtick-runs.ts'
 import { largestNesting } from '../nesting.ts'
 import { malformedDirective, readSoleStringAttribute, spellAttributes, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
@@ -13,16 +13,16 @@ export const carryName = 'carry'
 
 const jsonAttribute = 'json'
 
-export function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
+export function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<{ headroom: number; text: string }> {
   const json = carriedJson(node, 'two-space', path, largestNesting - depth)
   if (!json.ok) return json
-  return success(fencedCodeBlock(carryName, json.value))
+  return success({ headroom: json.value.headroom, text: fencedCodeBlock(carryName, json.value.json) })
 }
 
 export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<string> {
   const json = carriedJson(node, 'compact', path, largestNesting)
   if (!json.ok) return json
-  return success(spellInlineLeafDirective(carryName, spellAttributes([[jsonAttribute, spellStringAttribute(json.value)]])))
+  return success(spellInlineLeafDirective(carryName, spellAttributes([[jsonAttribute, spellStringAttribute(json.value.json)]])))
 }
 
 export function readCarriedBlock(body: string, depth: number): Read<AdfNode> {
@@ -36,11 +36,12 @@ export function readCarriedInline(span: DirectiveSpan): Read<AdfNode> | undefine
   return readCarriedJson(spelled.value, 'compact', largestNesting)
 }
 
-function carriedJson(node: AdfNode, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<string> {
-  if (!isJsonValue(node) || overNested(node, levels)) {
+function carriedJson(node: AdfNode, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
+  const headroom = levels - nestingDepth(node)
+  if (!isJsonValue(node) || headroom < 0) {
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
-  return success(serializeCanonicalJson(node, spelling))
+  return success({ headroom, json: serializeCanonicalJson(node, spelling) })
 }
 
 function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number): Read<AdfNode> {

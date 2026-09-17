@@ -676,11 +676,11 @@ test('refuses input nested deeper than the parser carries', () => {
   assert.deepEqual(position(markdownToAdf(nest(['expand', ...repeated('panel'), 'expand'], 'Part.\n'))), { line: 501, offset: 5501 })
   assert.equal(code(markdownToAdf(nest(['panel', ...repeated('expand'), 'panel'], 'Part.\n'))), 'unsupported-nesting-depth')
   const listed = (levels: number): string => `${'!adf:bulletList\n!adf:listItem\n---\n'.repeat(levels)}${'!adf:/listItem\n!adf:/bulletList\n'.repeat(levels)}`
-  const lists = largestNesting / 2
-  assert.ok(markdownToAdf(listed(lists)).ok)
-  assert.equal(code(markdownToAdf(listed(lists + 1))), 'unsupported-nesting-depth')
-  assert.ok(markdownToAdf(`${'- '.repeat(lists)}a\n`).ok)
-  assert.equal(code(markdownToAdf(`${'- '.repeat(lists + 1)}a\n`)), 'unsupported-nesting-depth')
+  const directiveLists = largestNesting / 2
+  assert.ok(markdownToAdf(listed(directiveLists)).ok)
+  assert.equal(code(markdownToAdf(listed(directiveLists + 1))), 'unsupported-nesting-depth')
+  assert.ok(markdownToAdf(`${'- '.repeat(largestNesting)}a\n`).ok)
+  assert.equal(code(markdownToAdf(`${'- '.repeat(largestNesting + 1)}a\n`)), 'unsupported-nesting-depth')
 })
 
 test('decodes the backslash escapes CommonMark spells, and keeps the rest literal', () => {

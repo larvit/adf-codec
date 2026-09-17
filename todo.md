@@ -64,10 +64,11 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       export persona runs in bulk walks the document twice. Both walks are linear, so this is a
       constant factor rather than 4b's class change, and the parting is what gives depth its own
       code (§8) — measure before joining them back.
-      **Settled** (the maintainer, 2026-09-18): the one walk cannot know the spelling it will take,
-      so a list and its item count two levels in every spelling and both directions — the readable
-      list counted one and the directive form two, and letting the directive form count one put
-      twice the frames on the stack at 500 — leaving 250 nested lists the limit.
+      **Settled** (the maintainer, 2026-09-18): the limit stays 500 readable lists. The one walk
+      counts items one below the list, as the readable form does, and reports its headroom; a
+      list falling back to the directive form refuses when that form's extra level no longer
+      fits. Counting every list twice was rejected for halving the limit, counting the directive
+      form once for doubling the parser's frames per level.
       **Measured** (2026-09-18): `adfDocumentFault` walks a 9 MB document in 52 ms against 314 ms
       for the emit, so its two walks stay parted.
 - [ ] **4c — The scanning rule's remaining sites (`0.2.0`).** A trailing-anchored regex re-walks
@@ -90,7 +91,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       complexity (the maintainer, 2026-09-16). A sixth 4b leaves behind: the parser asks
       `commonMarkSpelling` at every directive-spelled list it reads, and the answer spells the whole
       subtree below, so nested directive lists cost O(depth × subtree) — 250 rule-first levels parse
-      in 1.3 s at 16.5 kB, 1.5 MB of the same shape in 0.6 s — bounded by the depth guard like
+      in 1.3 s at 16.5 kB, 1.5 MB of that shape at 250 levels in 0.6 s — bounded by the depth guard like
       `readNestedDirective` (the maintainer, 2026-09-18).
 - [ ] **4d — What the gate says while it runs (`0.2.1`).** `ci.sh` runs nine legs and announces
       none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from

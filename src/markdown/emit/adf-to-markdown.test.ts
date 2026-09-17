@@ -514,12 +514,20 @@ test('refuses a document nested deeper than the emitter carries', () => {
     for (let level = 1; level < levels; level += 1) list = { content: [{ content: [...first, list], type: 'listItem' }], type: 'bulletList' }
     return list
   }
-  const lists = largestNesting / 2
-  assert.ok(adfToMarkdown(document(listed(lists, []))).ok)
-  assert.equal(code(adfToMarkdown(document(listed(lists + 1, [])))), 'unsupported-nesting-depth')
-  const deep = document(listed(lists, [{ type: 'rule' }]))
+  assert.ok(adfToMarkdown(document(listed(largestNesting, [paragraph({ text: 'x', type: 'text' })]))).ok)
+  assert.equal(code(adfToMarkdown(document(listed(largestNesting + 1, [paragraph({ text: 'x', type: 'text' })])))), 'unsupported-nesting-depth')
+  const directiveLists = largestNesting / 2
+  const deep = document(listed(directiveLists, [{ type: 'rule' }]))
   assert.deepEqual(markdownToAdf(markdown(adfToMarkdown(deep))), { ok: true, value: deep })
-  assert.equal(code(adfToMarkdown(document(listed(lists + 1, [{ type: 'rule' }])))), 'unsupported-nesting-depth')
+  assert.equal(code(adfToMarkdown(document(listed(directiveLists + 1, [{ type: 'rule' }])))), 'unsupported-nesting-depth')
+  const chain = (levels: number): AdfNode => {
+    let card: AdfNode = { type: 'blockCard' }
+    for (let level = 0; level < levels; level += 1) card = { content: [card], type: 'blockCard' }
+    return card
+  }
+  const carriedInItem = (levels: number): AdfDocument => document(listed(1, [{ type: 'rule' }, chain(levels)]))
+  assert.deepEqual(markdownToAdf(markdown(adfToMarkdown(carriedInItem(248)))), { ok: true, value: carriedInItem(248) })
+  assert.equal(code(adfToMarkdown(carriedInItem(249))), 'unsupported-nesting-depth')
 })
 
 test('emits an empty list item without trailing whitespace', () => {

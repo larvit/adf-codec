@@ -19,15 +19,20 @@ export function isJsonValue(value: unknown): value is JsonValue {
   return true
 }
 
-export function overNested(value: JsonValue, levels: number = largestNesting): boolean {
-  const pending: { depth: number; item: JsonValue }[] = [{ depth: 0, item: value }]
+export function nestingDepth(value: unknown): number {
+  const pending: { depth: number; item: unknown }[] = [{ depth: 0, item: value }]
+  let deepest = 0
   while (pending.length > 0) {
     const entry = pending.pop()
     if (entry === undefined) continue
     const { depth, item } = entry
-    if (depth > levels) return true
+    deepest = Math.max(deepest, depth)
     if (Array.isArray(item)) for (const child of item) pending.push({ depth: depth + 1, item: child })
     else if (item !== null && typeof item === 'object') for (const child of Object.values(item)) pending.push({ depth: depth + 1, item: child })
   }
-  return false
+  return deepest
+}
+
+export function overNested(value: unknown, levels: number = largestNesting): boolean {
+  return nestingDepth(value) > levels
 }
