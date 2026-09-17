@@ -284,10 +284,16 @@ someone spells it or pins it.
   where the general form fails on the same node. Refusing there refuses a document the general
   form spells, so a refusal the general form does not share belongs in the general form or
   nowhere — save the nested list a tight spelling would swallow, whose refusal the
-  tight-versus-blank answer owns (`todo.md` 2b).
+  tight-versus-blank answer owns (`todo.md` 2b). A readable spelling that must spell its subtree
+  before it can give way — the list, whose thematic-break first line and blank lines exist only
+  spelled — hands that one walk to the general form instead: giving way after the walk walks
+  again at every level, doubling per level (4b).
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
-  `Result` rather than the stack overflow that waits near 2000.
+  `Result` rather than the stack overflow that waits near 2000. A block's level is its count of
+  block ancestors — a list item's children two below the list — in either direction and whichever
+  spelling holds them, so the guards agree at the boundary and no spelling recurses twice per
+  level it counts once (the maintainer, 2026-09-18).
 - A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the
   line before it reads, `indexOf` — never a fresh slice per character, and a per-character walk
   hoists the scan that does not vary with the character. The pipeline persona feeds documents

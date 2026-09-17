@@ -440,6 +440,15 @@ test('spells a list item whose marker completes a thematic break as a directive'
   const nested: AdfNode = { content: [item({ content: [item()], type: 'bulletList' })], type: 'bulletList' }
   assert.equal(markdown(adfToMarkdown(document(nested))), '- -\n')
   assert.equal(markdown(adfToMarkdown(document({ content: [item(nested)], type: 'bulletList' }))), '!adf:bulletList\n!adf:listItem\n- -\n!adf:/listItem\n!adf:/bulletList\n')
+  assert.equal(
+    markdown(adfToMarkdown(document({ content: [item(paragraph({ text: 'a', type: 'text' }), nested), item({ type: 'rule' })], type: 'bulletList' }))),
+    '!adf:bulletList\n!adf:listItem\na\n\n- -\n!adf:/listItem\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n',
+  )
+  const spaced: AdfNode = { content: [{ text: 'a\n \nb', type: 'text' }], type: 'codeBlock' }
+  assert.equal(
+    markdown(adfToMarkdown(document({ attrs: { order: 3 }, content: [item(spaced)], type: 'orderedList' }))),
+    '!adf:orderedList {order=3}\n!adf:listItem\n```\na\n \nb\n```\n!adf:/listItem\n!adf:/orderedList\n',
+  )
 })
 
 test('refuses the characters CommonMark rewrites', () => {
@@ -500,6 +509,17 @@ test('refuses a document nested deeper than the emitter carries', () => {
   let carried: AdfNode = paragraph({ text: 'x', type: 'text' })
   for (let depth = 0; depth < 500; depth += 1) carried = { content: [carried], type: 'blockquote' }
   assert.ok(adfToMarkdown(document(carried)).ok)
+  const listed = (levels: number, first: readonly AdfNode[]): AdfNode => {
+    let list: AdfNode = { content: [{ content: [...first], type: 'listItem' }], type: 'bulletList' }
+    for (let level = 1; level < levels; level += 1) list = { content: [{ content: [...first, list], type: 'listItem' }], type: 'bulletList' }
+    return list
+  }
+  const lists = largestNesting / 2
+  assert.ok(adfToMarkdown(document(listed(lists, []))).ok)
+  assert.equal(code(adfToMarkdown(document(listed(lists + 1, [])))), 'unsupported-nesting-depth')
+  const deep = document(listed(lists, [{ type: 'rule' }]))
+  assert.deepEqual(markdownToAdf(markdown(adfToMarkdown(deep))), { ok: true, value: deep })
+  assert.equal(code(adfToMarkdown(document(listed(lists + 1, [{ type: 'rule' }])))), 'unsupported-nesting-depth')
 })
 
 test('emits an empty list item without trailing whitespace', () => {
