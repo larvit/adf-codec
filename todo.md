@@ -91,7 +91,10 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       subtree below, itself quadratic in the depth left, so nested directive lists cost about the
       cube of their depth — 250 rule-first levels parse in 1.3 s at 16.5 kB, 1.5 MB of that shape
       at 250 levels in 0.6 s — bounded by the depth guard like `readNestedDirective` (the
-      maintainer, 2026-09-18).
+      maintainer, 2026-09-18). A seventh is a throw rather than a cost: `adfDocumentFault` pushes a
+      node's content with a spread, so past about 125k sibling nodes the guard throws a
+      `RangeError` where §11 owes a `Result` — a loop over the content closes it (the
+      stability-reviewer and the maintainer, 2026-09-18).
 - [ ] **4d — What the gate says while it runs (`0.2.1`).** `ci.sh` runs nine legs and announces
       none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
       a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
