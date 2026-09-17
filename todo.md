@@ -48,27 +48,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [x] **4.2 — The ADF property.**
   - [x] **4.3 — The markdown property.**
   - [x] **4.4 — The real payloads.**
-- [ ] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
-      `readableBlock` reads it whole and then gives up — a list item whose first line reads back
-      as a thematic break — and the walk below does the same, so the cost doubles per level:
-      3.4kB of nested lists takes half a second, depth 20 about eight, depth 24 minutes. It
-      predates 3g on both directions, and 3g's `commonMarkSpelling` gave it a second entry point.
-      The README's bot and pipeline personas feed markdown nobody typed, so this ships as a hang
-      on a small input; §11's scanning rule is the same argument one shape further in. The retry
-      is what to remove — one walk answering both the readable question and the directive
-      fallback. Memoizing `emitBlock` is the shortcut, and the node reference is the wrong key: a
-      caller may hold one node object at two positions, where the cached depth and path are
-      another node's. `0.1.0` ships with the retry in it, so a deep document is slow rather than
-      wrong until the patch. `adfDocumentFault` is the second site to look at: `isNodeArray` reads
-      every node and attribute value, then `nestingFault` reads them again, so the emit entry the
-      export persona runs in bulk walks the document twice. Both walks are linear, so this is a
-      constant factor rather than 4b's class change, and the parting is what gives depth its own
-      code (§8) — measure before joining them back.
-      **Settled** (the maintainer, 2026-09-18): the limit stays 500 readable lists, the walk
-      reporting its headroom (§11). Counting every list twice was rejected for halving the limit,
-      counting the directive form once for doubling the parser's frames per level.
-      **Measured** (2026-09-18): `adfDocumentFault` walks a 9 MB document in 52 ms against 314 ms
-      for the emit, so its two walks stay parted.
+- [x] **4b — The block walk's retry (`0.2.0`).**
 - [ ] **4c — The scanning rule's remaining sites (`0.2.0`).** A trailing-anchored regex re-walks
       its run from every start position, so an interior whitespace run costs quadratic time rather
       than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk

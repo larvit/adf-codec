@@ -483,6 +483,27 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         editor with Playwright, and reads the ADF back over REST. Only the documents are committed; no
         client or fetch script enters the repo (§7). Later, settled the same day: the mentions keep
         the test user's real account id (the maintainer, 2026-09-15).
+- [x] **4b — The block walk's retry (`0.2.0`).** `emitBlock` walks a subtree twice wherever
+      `readableBlock` reads it whole and then gives up — a list item whose first line reads back
+      as a thematic break — and the walk below does the same, so the cost doubles per level:
+      3.4kB of nested lists takes half a second, depth 20 about eight, depth 24 minutes. It
+      predates 3g on both directions, and 3g's `commonMarkSpelling` gave it a second entry point.
+      The README's bot and pipeline personas feed markdown nobody typed, so this ships as a hang
+      on a small input; §11's scanning rule is the same argument one shape further in. The retry
+      is what to remove — one walk answering both the readable question and the directive
+      fallback. Memoizing `emitBlock` is the shortcut, and the node reference is the wrong key: a
+      caller may hold one node object at two positions, where the cached depth and path are
+      another node's. `0.1.0` ships with the retry in it, so a deep document is slow rather than
+      wrong until the patch. `adfDocumentFault` is the second site to look at: `isNodeArray` reads
+      every node and attribute value, then `nestingFault` reads them again, so the emit entry the
+      export persona runs in bulk walks the document twice. Both walks are linear, so this is a
+      constant factor rather than 4b's class change, and the parting is what gives depth its own
+      code (§8) — measure before joining them back.
+      **Settled** (the maintainer, 2026-09-18): the limit stays 500 readable lists, the walk
+      reporting its headroom (§11). Counting every list twice was rejected for halving the limit,
+      counting the directive form once for doubling the parser's frames per level.
+      **Measured** (2026-09-18): `adfDocumentFault` walks a 9 MB document in 52 ms against 314 ms
+      for the emit, so its two walks stay parted.
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.
