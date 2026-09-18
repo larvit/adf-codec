@@ -809,6 +809,11 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       and `link-syntax.ts` — leaving the flavour's own constructs at the root, the split
       `spec/flavour.md` draws between the subset and the flavour (the systems-architect and the
       maintainer, 2026-09-16).
+- [x] **15 — The href-less directive link (`0.2.0`).** Refuse `!adf:link[text]` spelling no `href`
+      with `unsupported-node-shape` naming the attribute, so the mark has one spelling: today it
+      parses to a mark the emitter writes back as a carry, while the schema requires `href` and
+      every other directive mark spells without attributes in both directions alike (the
+      stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
 
 ## 5 — Ship `0.1.0`
 

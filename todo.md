@@ -7,16 +7,13 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 
 Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next session" says.`
 
-1. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
+1. `git fetch origin` first and read this file at `origin/main`, then branch off it, not the
+   worktree left behind: a checkout behind the remote reads a merged item as unchecked, which sent
+   this session at 14 after it had shipped.
+2. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
    release, the planning chunk §15 describes.
-2. In flight: nothing.
-3. `git fetch origin` and branch off `origin/main`, not the worktree left behind.
-4. Ask before touching code: §11 sorts alphabetically "wherever order carries no meaning" without
-   naming the key an import line sorts on. The code sorts by first binding, type imports ahead of
-   value imports, so a module rename reorders nothing — 14 leaned on that, and four files have
-   drifted from it. `src/html/` (6, 7) writes the next large body of imports. Candidate §11 rule:
-   an import line sorts on its first binding, type imports ahead of value imports.
-5. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
+3. In flight: nothing.
+4. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
    session found it wrong or short.
 
 ## Milestones
@@ -213,11 +210,7 @@ bundle size and the tagline.
   - [x] **13a — `rule` and `layoutSection`.**
   - [x] **13b — The directive link.**
 - [x] **14 — The CommonMark subset's directory (`0.2.0`).**
-- [ ] **15 — The href-less directive link (`0.2.0`).** Refuse `!adf:link[text]` spelling no `href`
-      with `unsupported-node-shape` naming the attribute, so the mark has one spelling: today it
-      parses to a mark the emitter writes back as a carry, while the schema requires `href` and
-      every other directive mark spells without attributes in both directions alike (the
-      stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
+- [x] **15 — The href-less directive link (`0.2.0`).**
 - [ ] **16 — The link wrapping a link (`0.2.0`).** Read `[<http://x/>](/v)` and
       `[!adf:link[a]{href="/u"}](/v)` as `[[a](/u)](/v)` reads — the inner link wins and the outer
       brackets stay literal text, CommonMark's rule that no link holds another — rather than
