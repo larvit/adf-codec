@@ -55,7 +55,9 @@ Round-trip equality is a property tested over a corpus, not a claim made in pros
   spells the mark; `!adf:link[text]{attrs}` where it does not — an attribute CommonMark cannot
   hold, an `href` or `title` no canonical escape spells, a paragraph opening whose CommonMark
   spelling would read as a link reference definition — and a directive link CommonMark could spell
-  is refused (the maintainer, 2026-09-13).
+  is refused (the maintainer, 2026-09-13). No link wraps a link, so a `[text]` holding one leaves
+  the outer brackets literal text and the directive form is refused, following CommonMark's prose
+  where its reference implementation nests one `<a>` in another (the maintainer, 2026-09-17).
 - Identity-bearing nodes carry their ids in attributes; a document is only portable within its
   site — accepted.
 - The HTML dialect mirrors this: semantic elements, stable `adf-*` classes, `data-*` for what HTML

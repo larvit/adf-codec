@@ -825,6 +825,22 @@ test('leaves the bracket pair no link parses as the text it holds', () => {
   ])
 })
 
+test('leaves the brackets of a link whose text already holds one the text they are', () => {
+  const held: AdfMark = { attrs: { collection: 'c', href: '/u' }, type: 'link' }
+  assert.deepEqual(content(markdownToAdf('[<http://x/>](/v)\n')), [
+    { content: [text('['), marked('http://x/', link('http://x/')), text('](/v)')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('[a<http://x/>b](/v)\n')), [
+    { content: [text('[a'), marked('http://x/', link('http://x/')), text('b](/v)')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('[!adf:link[a]{collection=c href="/u"}](/v)\n')), [
+    { content: [text('['), marked('a', held), text('](/v)')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('[<http://x/>][r]\n\n[r]: /v\n')), [
+    { content: [text('['), marked('http://x/', link('http://x/')), text(']'), marked('r', link('/v'))], type: 'paragraph' },
+  ])
+})
+
 test('reads the reference links a definition resolves, and leaves the rest literal', () => {
   assert.deepEqual(content(markdownToAdf('[a][r]\n\n[r]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
   assert.deepEqual(content(markdownToAdf('[a][]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
@@ -996,6 +1012,14 @@ test('names the href the directive link spells no value for', () => {
   assert.equal(content(markdownToAdf('!adf:link[a]\n')), named)
   assert.equal(content(markdownToAdf('!adf:link[a]{title=t}\n')), named)
   assert.equal(content(markdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n')), named)
+  assert.equal(content(markdownToAdf('!adf:link[<http://x/>]{collection=c}\n')), named)
+})
+
+test('names the link a directive link wraps, no link holding another', () => {
+  const named = 'unsupported-node-shape: no link wraps a link: the [content] this one marks already holds one'
+  assert.equal(content(markdownToAdf('!adf:link[<http://x/>]{collection=c href="/u"}\n')), named)
+  assert.equal(content(markdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n')), named)
+  assert.equal(content(markdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n')), named)
 })
 
 test('names the directive mark left without the content it wraps', () => {

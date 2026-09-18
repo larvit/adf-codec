@@ -814,6 +814,12 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       parses to a mark the emitter writes back as a carry, while the schema requires `href` and
       every other directive mark spells without attributes in both directions alike (the
       stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
+- [x] **16 — The link wrapping a link (`0.2.0`).** Read `[<http://x/>](/v)` and
+      `[!adf:link[a]{href="/u"}](/v)` as `[[a](/u)](/v)` reads — the inner link wins and the outer
+      brackets stay literal text, CommonMark's rule that no link holds another — rather than
+      dropping the outer link silently as `closeLink`'s `applyMark` does today, with a
+      normalization fixture per shape (the stability-reviewer, 2026-09-16; the maintainer,
+      2026-09-17).
 
 ## 5 — Ship `0.1.0`
 

@@ -1,0 +1,107 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "[",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://example.com/",
+          "type": "text"
+        },
+        {
+          "text": "](/v)",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "[a",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/b"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://example.com/b",
+          "type": "text"
+        },
+        {
+          "text": "c](/v)",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "[",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "collection": "contentId-98237",
+                "href": "/docs"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the docs",
+          "type": "text"
+        },
+        {
+          "text": "](/v)",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "[",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "/u"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "a",
+          "type": "text"
+        },
+        {
+          "text": "](/v)",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

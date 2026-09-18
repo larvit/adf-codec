@@ -210,11 +210,7 @@ bundle size and the tagline.
   - [x] **13b — The directive link.**
 - [x] **14 — The CommonMark subset's directory (`0.2.0`).**
 - [x] **15 — The href-less directive link (`0.2.0`).**
-- [ ] **16 — The link wrapping a link (`0.2.0`).** Read `[<http://x/>](/v)` and
-      `[!adf:link[a]{href="/u"}](/v)` as `[[a](/u)](/v)` reads — the inner link wins and the outer
-      brackets stay literal text, CommonMark's rule that no link holds another — rather than
-      dropping the outer link silently as `closeLink`'s `applyMark` does today, with a normalization
-      fixture per shape (the stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
+- [x] **16 — The link wrapping a link (`0.2.0`).**
 - [ ] **17 — A machine-enforced size guardrail (`0.2.0`).** Add a per-function complexity check to
       the gate — branch count or size — so the fits-in-your-head guardrail fails the build rather
       than waiting for a review to catch it (the systems-architect, 2026-09-16). It reads ahead of

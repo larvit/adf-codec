@@ -53,6 +53,7 @@ type SlotContent = { carry: boolean; nodes: AdfNode[] }
 const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
 const hreflessLink = 'the link mark spells its href: this one spells none'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
+const linkInLink = 'no link wraps a link: the [content] this one marks already holds one'
 const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer): Result<InlineContent> {
@@ -218,6 +219,7 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
 function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.path)
+  if (holdsLink(nodes)) return failure('unsupported-node-shape', linkInLink, scan.path)
   if (commonMarkLink(nodeAttrs(mark), href, nodes, 0, scan.container === undefined) === undefined) return undefined
   if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.path)
   scan.openingSpellableLink = true
@@ -262,6 +264,10 @@ function holdsCarry(pieces: readonly Piece[]): boolean {
 
 function holdsImage(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'image')
+}
+
+function holdsLink(nodes: readonly AdfNode[]): boolean {
+  return nodes.some((node) => nodeMarks(node).some((mark) => mark.type === 'link'))
 }
 
 function readDelimiterRun(scan: Scan, index: number): number {
@@ -340,14 +346,14 @@ function resolveTarget(scan: Scan, bracket: Bracket, index: number): { definitio
   return { definition, length: label?.length ?? 0 }
 }
 
-// `false` where the link text is empty: the mark has no node to ride, so the brackets stay text.
+// `false` keeps the brackets text: an empty link text gives the mark no node to ride, and a linked one no room for a second.
 function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<boolean> {
   if (holdsImage(inner)) return failure('unmappable-image', imageAlone, scan.path)
   if (holdsCarry(inner)) return failure('unsupported-node-shape', carriedInMark, scan.path)
   const resolved = resolveNodes(inner, scan.path)
   if (!resolved.ok) return resolved
   const nodes = resolved.value
-  if (nodes.length === 0) return success(false)
+  if (nodes.length === 0 || holdsLink(nodes)) return success(false)
   const attrs = definition.title === undefined ? { href: definition.destination } : { href: definition.destination, title: definition.title }
   scan.pieces.length = at
   // CommonMark: no link nests inside another, though an image's description holds one.

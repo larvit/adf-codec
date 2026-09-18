@@ -115,11 +115,14 @@ emit refuses:
   library's canonical spelling, which round-trips byte-identically — where it converts back at
   all: a parse succeeding is no promise of that, so keep the source until the way back succeeds.
   ``` ` `` ` ``` reads cleanly and then refuses.
-- Three CommonMark spellings parse without an error and build a document the reference renders
+- Four CommonMark spellings parse without an error and build a document the reference renders
   differently: `[](/url)` and `[]()` stay literal text against CommonMark's empty link, a list
-  continuing past a marker change stays one list against CommonMark's two, and a shortcut
-  reference matching its definition only under Unicode case folding stays unresolved. Each is
-  pinned `pending` in `corpus/commonmark-spec/exceptions.json`.
+  continuing past a marker change stays one list against CommonMark's two, a shortcut
+  reference matching its definition only under Unicode case folding stays unresolved, and a link
+  whose text holds an autolink keeps the inner link and leaves the outer brackets literal text,
+  where the reference nests one `<a>` inside another against the spec's own prose. The first three
+  are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite holds no example of
+  the fourth, which a normalization fixture pins instead.
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
   processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.2.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding
