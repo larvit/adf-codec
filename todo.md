@@ -3,6 +3,17 @@
 The plan. Design questions are settled in `AGENTS.md`; remaining spec detail is settled at its own
 milestone. A done item shrinks to its title here; its full text moves to `todo-history.md`.
 
+## Next session
+
+Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next session" says.`
+
+1. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
+   release, the planning chunk §15 describes.
+2. In flight: 4c has uncommitted work in `.claude/worktrees/scanning-rule-sites` (branch
+   `4c-scanning-rule-sites`) and a stray `bench-4c.ts` that does not ship; continue from the diff.
+3. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
+   session found it wrong or short.
+
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 14, 15, 16, 10, 5g → `0.2.0`;

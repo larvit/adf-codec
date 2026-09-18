@@ -373,6 +373,27 @@ Ask, don't guess: any choice where what the maintainer would pick is not near-ce
 and the answer lands as a decision in this file. The confidence bar is very high — asking too
 often is the accepted cost, guessing wrong is not.
 
+An ask is a gap in this file, and its answer is the rule that closes the gap, never the instance
+alone. Before asking, name the class the question belongs to and the earlier `(the maintainer, …)`
+entries of that class; where a rule already decides it, apply it without asking, and where the rule
+reads two ways on this input, that reading is the ask. Never ask "A or B?": state the gap, the
+earlier asks of its class, the nearest text here, a candidate rule in this file's voice and section,
+and the instance it yields, and ask for the rule. The maintainer answers the rule, the rule lands
+here, and the instance follows from it in the chunk. A rule that keeps collecting instances is
+wrong: rewrite it rather than append to it. `version` and `NPM_TOKEN` stay the maintainer's
+whatever any rule says.
+
+Rules the loop has settled (the maintainer, 2026-09-18):
+
+- A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always
+  in a release, weighed against every item on that release by the personas and §1–§3 — an item it
+  outweighs moves later. A weighing no rule decides is asked as a gap.
+- A stated number — 500 levels, the gate's seconds, the branch floor — is kept; a chunk that cannot
+  keep it asks, naming the number it can reach. A number the code needs and no rule states is a gap.
+- Where the shipping order names no release for the next unchecked item, the chunk is planning that
+  release: every unscheduled item weighed as above, the order written in `todo.md`, and the
+  maintainer's approval taken before any code.
+
 Reserved for the maintainer, never the agent: changing `version` in `package.json` (a bump on
 `main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
 
