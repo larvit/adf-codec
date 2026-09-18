@@ -3,7 +3,7 @@ import type { InlineDirective } from '../../adf/inline-directives.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
-import { commonMarkLink, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
+import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
@@ -300,8 +300,8 @@ function needsPadding(text: string): boolean {
 
 // `undefined` where the link takes the directive form the caller spells.
 function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext): Result<Emission> | undefined {
-  const href = nodeAttrs(mark)['href']
-  if (typeof href !== 'string') return success({ carry: range })
+  const href = linkHref(nodeAttrs(mark))
+  if (href === undefined) return success({ carry: range })
   const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective
   const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes, depth + 1, context.bracketed)
   if (commonMark === undefined) return undefined

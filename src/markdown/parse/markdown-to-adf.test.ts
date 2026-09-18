@@ -984,13 +984,20 @@ test('refuses the directive link CommonMark could spell, and reads the one it co
   assert.equal(content(markdownToAdf('| !adf:link[`]: a`]{href="/u"} |\n| --- |\n')), refused)
   assert.equal(content(markdownToAdf('!adf:underline[!adf:link[a]{href="/u"}]\n')), refused)
   assert.deepEqual(path(markdownToAdf('Part.\n\nSee !adf:link[a]{href="/u"}.\n')), ['content', 1])
-  const titled: AdfNode = { marks: [{ attrs: { title: 't' }, type: 'link' }], text: 'a', type: 'text' }
-  assert.deepEqual(content(markdownToAdf('!adf:link[a]{title=t}\n')), [{ content: [titled], type: 'paragraph' }])
   const opening: AdfNode = { marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: ']: a', type: 'text' }
   assert.deepEqual(content(markdownToAdf('!adf:link[`]: a`]{href="/u"}\n')), [{ content: [opening], type: 'paragraph' }])
   assert.deepEqual(content(markdownToAdf('!adf:heading {level=1 localId=h}\n!adf:link[`]: a`]{href="/u"}\n!adf:/heading\n')), [
     { attrs: { level: 1, localId: 'h' }, content: [opening], type: 'heading' },
   ])
+})
+
+test('names the href the directive link spells no value for', () => {
+  const named = 'unsupported-node-shape: the link mark spells its href: this one spells none'
+  assert.equal(content(markdownToAdf('!adf:link[a]\n')), named)
+  assert.equal(content(markdownToAdf('!adf:link[a]{title=t}\n')), named)
+  assert.equal(content(markdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n')), named)
+  assert.equal(content(markdownToAdf('!adf:underline[!adf:link[a]{title=t}]\n')), named)
+  assert.deepEqual(path(markdownToAdf('Part.\n\nSee !adf:link[a]{title=t}.\n')), ['content', 1])
 })
 
 test('names the directive mark left without the content it wraps', () => {

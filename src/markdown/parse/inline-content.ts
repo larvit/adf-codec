@@ -5,7 +5,7 @@ import type { LineContainer } from '../emit/line-escaping.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
-import { commonMarkLink } from '../mark-spellings.ts'
+import { commonMarkLink, linkHref } from '../mark-spellings.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
@@ -51,6 +51,7 @@ type Scan = {
 type SlotContent = { carry: boolean; nodes: AdfNode[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
+const hreflessLink = 'the link mark spells its href: this one spells none'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
 const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
 
@@ -208,15 +209,15 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
     return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.path)
   }
   if (slot.carry) return failure('unsupported-node-shape', carriedInMark, scan.path)
-  const refused = mark.type === 'link' ? refuseSpellableLink(scan, mark, slot.nodes, index) : undefined
+  const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
   if (refused !== undefined) return refused
   return success({ kind: 'nodes', nodes: applyMark(slot.nodes, mark) })
 }
 
 // spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
-function refuseSpellableLink(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
-  const href = nodeAttrs(mark)['href']
-  if (typeof href !== 'string') return undefined
+function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
+  const href = linkHref(nodeAttrs(mark))
+  if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.path)
   if (commonMarkLink(nodeAttrs(mark), href, nodes, 0, scan.container === undefined) === undefined) return undefined
   if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.path)
   scan.openingSpellableLink = true
