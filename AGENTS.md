@@ -313,10 +313,10 @@ someone spells it or pins it.
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
 - `src/adf/` holds ADF's own knowledge and imports no format. Each format directory (`markdown/`,
-  `html/`) parts into `emit/` (ADF→format) and `parse/` (format→ADF), its root holding what both
-  directions read. A construct's reader lives in that root beside the regex the emitter escapes
+  `html/`) parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest of it holding what
+  both directions read. A construct's reader lives there beside the regex the emitter escapes
   against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`, unless it is
-  part of a construct the root already holds — a grammar stays in one file rather than splitting
+  part of a construct that side already holds — a grammar stays in one file rather than splitting
   across the seam. A rule both
   directions must answer alike — whether a list marker interrupts a paragraph — is one function
   there too, never a copy per direction, however conservative the copy would be. Where the rule is
