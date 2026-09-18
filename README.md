@@ -4,7 +4,7 @@ Lossless conversion between **Atlassian Document Format** (ADF), an extended mar
 an HTML dialect.
 
 **Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
-`0.3.0`.**
+`0.2.0`.**
 Plan: `todo.md`. Decisions: `AGENTS.md`. The flavour's grammar:
 [`spec/flavour.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/spec/flavour.md).
 Upgrading from `0.1.0`: [convert your markdown first](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/MIGRATION.md).
@@ -44,10 +44,10 @@ adfToMarkdown(doc: AdfDocument): Result<string>
 markdownToAdf(markdown: string): Result<AdfDocument, ParseError>
 isAdfDocument(v: unknown): v is AdfDocument
 
-adfToHtml(doc: AdfDocument): Result<string>               // 0.3.0
-htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.3.0
-markdownToHtml(markdown: string): Result<string>          // 0.3.0, via ADF
-htmlToMarkdown(html: string): Result<string>              // 0.3.0, via ADF
+adfToHtml(doc: AdfDocument): Result<string>               // 0.2.0
+htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.2.0
+markdownToHtml(markdown: string): Result<string>          // 0.2.0, via ADF
+htmlToMarkdown(html: string): Result<string>              // 0.2.0, via ADF
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
@@ -75,17 +75,17 @@ UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte of
 or before the refusal — currently the start of the line the enclosing block begins on; a later
 minor may narrow that, never widen it.
 
-Parsing — `markdownToAdf`, and `htmlToAdf` at `0.3.0`:
+Parsing — `markdownToAdf`, and `htmlToAdf` at `0.2.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in a `carry` | write the spelling the message names, or escape the prefix — `\!adf:`, block and inline alike — to keep it literal text |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the markdown holds a raw HTML tag, comment or processing instruction | remove it or write it in the flavour — ADF holds no raw-HTML node, and the element mapping lands at `0.3.0` |
+| `unmappable-html` | the markdown holds a raw HTML tag, comment or processing instruction | remove it or write it in the flavour — ADF holds no raw-HTML node, and the element mapping lands at `0.2.0` |
 | `unmappable-image` | an image sits inside other content, or carries a title | give the image a paragraph of its own and drop the title |
 
-Emitting — `adfToMarkdown`, and `adfToHtml` at `0.3.0`:
+Emitting — `adfToMarkdown`, and `adfToHtml` at `0.2.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -121,7 +121,7 @@ emit refuses:
   reference matching its definition only under Unicode case folding stays unresolved. Each is
   pinned `pending` in `corpus/commonmark-spec/exceptions.json`.
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
-  processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.3.0`.
+  processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.2.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding
   a carriage return, or a paragraph line beginning with a code span whose backticks read back as a
   fence. Show the refusal and keep the document read-only; saving markdown you could not produce
@@ -134,7 +134,7 @@ emit refuses:
   is the `taskList` directive.
 - A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
-- **`0.3.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
+- **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
   `data-*` attributes. Foreign HTML maps a documented element set, an unmappable element is an
   error, and well-formed HTML only — no tag-soup recovery.
 

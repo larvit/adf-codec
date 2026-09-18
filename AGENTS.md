@@ -148,7 +148,7 @@ not take — is
 `unsupported-node-shape`, the emitter's code for the same mismatch read the other way — one code
 across both directions for good, since the call site knows which direction it called and parting
 them after `0.1.0` is MAJOR. `unmappable-html` names the version rather than the element: this one
-converts no raw HTML, so at `0.3.0` the mapped elements stop erroring and the code stays for what
+converts no raw HTML, so at `0.2.0` the mapped elements stop erroring and the code stays for what
 no ADF node carries. A refusal found before its path is known — the block walk's, a directive
 reader's — is a `ConvertFault`, the code and message alone; the node walk attaches the path as it
 descends, so a document reports its first error in document order. `not-an-adf-document` carries
@@ -177,7 +177,7 @@ A parse names a position for every refusal it returns, so the type says so rathe
 `Result<T, E extends ConvertError = ConvertError>`, and a direction reading a source returns
 `Result<T, ParseError>` — `ConvertError` with `position` required. An optional field a direction
 always fills is a branch a consumer cannot take, and the `!` §11 bans is how they take it anyway.
-`htmlToAdf` inherits this at `0.3.0`; the composed `markdownToHtml` and `htmlToMarkdown` keep the
+`htmlToAdf` inherits this at `0.2.0`; the composed `markdownToHtml` and `htmlToMarkdown` keep the
 wide `Result<T>`, since half their refusals come from an emit stage that read no source.
 
 ## 9. Release automation

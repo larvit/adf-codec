@@ -16,11 +16,18 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 
 ## Milestones
 
-Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 14, 15, 16, 10, 5g → `0.2.0`;
-4d, 5f, 18 → `0.2.1`; 6, 7 → `0.3.0`; 9, 17 → TBD; 5e last.
-The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
-(the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
-proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c change.
+Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
+4c, 14, 15, 16, 18, 4d, 17, 10, 6, 7, 5f, 5g → `0.2.0`; 8, 9 → TBD; 5e last.
+The numbering is the order the work was planned in, not the order it ships. Everything known and
+shaped ships in one release rather than a string of them: nothing waits on a version, and no
+consumer is served by the churn (the maintainer, 2026-09-18). So `0.2.0` completes §1's three
+formats, and `0.2.1` and `0.3.0` are gone. `8` and `9` stay out as the two goals nothing has shaped
+yet. `0.2.0`'s order is settled (the maintainer, 2026-09-13, extended 2026-09-18): 11 makes the
+tables 4 generates from answer to Atlassian's schema, 4 proves 12, 13 spells 11's gaps in 12's
+grammar, and 12 rewrites code 4b and 4c change; then 14 moves the files 15, 16 and 10 edit and HTML
+is written against that layout, 4d marks the gate legs before 17 adds one, 17 puts the complexity
+guardrail under the largest body of new code, and 5f and 5g read last because 7 is what changes the
+bundle size and the tagline.
 
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
@@ -61,7 +68,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [x] **4.4 — The real payloads.**
 - [x] **4b — The block walk's retry (`0.2.0`).**
 - [x] **4c — The scanning rule's remaining sites (`0.2.0`).**
-- [ ] **4d — What the gate says while it runs (`0.2.1`).** `ci.sh` runs nine legs and announces
+- [ ] **4d — What the gate says while it runs (`0.2.0`).** `ci.sh` runs nine legs and announces
       none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
       a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
       own fix. The legs need markers: `plainpages`' `ci.sh` prints a `step()` header per leg and
@@ -88,7 +95,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       and is the trade to weigh rather than discover on a red release run.
       **Settled** (the maintainer, 2026-09-13): last of the known work, clear of `0.2.0`, placed
       there knowing the cutoff may land before `0.2.0` ships.
-- [ ] **5f — Publish the bundle size (`0.2.1`).** Measure the shipped artifact and put the number in the
+- [ ] **5f — Publish the bundle size (`0.2.0`).** Measure the shipped artifact and put the number in the
       README, kept honest by the release pipeline rather than by a human re-reading it. The
       quantity is what a consumer downloads and loads: the tarball `npm pack` produces, its
       unpacked `dist`, and the built JavaScript minified + gzipped — the figure the competitors
@@ -106,10 +113,10 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       "why" note left. The top follows the package-README order: an npm version badge and the Gitea
       Actions badge, a tagline that is also `package.json`'s `description`, a feature list and a
       one-line table of contents, then install and the shortest runnable example; a table of
-      everything exported sits near the bottom. The HTML directions are one aside line under the API
-      until `0.3.0` ships them, the `// 0.3.0` signatures and the `0.3.0` guarantee going until then.
-      The tagline and `description` read "Lossless conversion between Atlassian Document Format and
-      extended markdown" until 7 restores HTML.
+      everything exported sits near the bottom. The HTML directions were to stay an aside until a
+      later release shipped them; 7 now ships in this one and reads ahead of this item, so the
+      README documents HTML as it documents markdown, the tagline and `description` naming both
+      (the maintainer, 2026-09-13, revised 2026-09-18).
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**
@@ -118,11 +125,11 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [x] **5b4 — The README's consumer surface.**
 - [x] **5c — The build and the release pipeline.**
 - [x] **5d — The browser leg.**
-- [ ] **6 — The HTML dialect spec (`0.3.0`).** Element-by-element mapping, the `data-*` fidelity
+- [ ] **6 — The HTML dialect spec (`0.2.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
-- [ ] **7 — HTML, ship `0.3.0`.** `adfToHtml`, `htmlToAdf`, the composed `markdownToHtml` /
-      `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from here (§10). The
-      README's tagline and `package.json`'s `description` regain HTML (5g).
+- [ ] **7 — HTML, the third format (`0.2.0`).** `adfToHtml`, `htmlToAdf`, the composed
+      `markdownToHtml` / `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from
+      here (§10). The README's tagline and `package.json`'s `description` regain HTML (5g).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
 - [ ] **10 — Lossy conversion (`0.2.0`).** Markdown other tools render readably, to and from ADF,
@@ -217,11 +224,15 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       brackets stay literal text, CommonMark's rule that no link holds another — rather than
       dropping the outer link silently as `closeLink`'s `applyMark` does today, with a normalization
       fixture per shape (the stability-reviewer, 2026-09-16; the maintainer, 2026-09-17).
-- [ ] **17 — A machine-enforced size guardrail.** Add a per-function complexity check to the gate —
-      branch count or size — so the fits-in-your-head guardrail fails the build rather than
-      waiting for a review to catch it (the systems-architect, 2026-09-16); placed after `0.3.0`
-      (the maintainer, 2026-09-17).
-- [ ] **18 — The subtree the directive spelling asks about (`0.2.1`).** The parser asks
+- [ ] **17 — A machine-enforced size guardrail (`0.2.0`).** Add a per-function complexity check to
+      the gate — branch count or size — so the fits-in-your-head guardrail fails the build rather
+      than waiting for a review to catch it (the systems-architect, 2026-09-16). It reads ahead of
+      6, 7 and 10 so the largest body of new code is written under it, which is also what decides
+      the threshold: today's worst is `readDirectiveContent`, 27 lines and about 12 decision points
+      over four concerns in one loop — escape, code span, nested directive, bracket balance — which
+      4c left half-split and this item either passes or forces apart (the systems-architect and the
+      maintainer, 2026-09-18).
+- [ ] **18 — The subtree the directive spelling asks about (`0.2.0`).** The parser asks
       `commonMarkSpelling` at every directive-spelled block and the answer emits the whole subtree
       below, so a node at depth d is spelled d times: three nested rule-first directive lists cost
       18 asks over 10 nodes, and 250 levels parse in 1.2 s at 16.4 kB, 4.9 s at 261 kB with a
