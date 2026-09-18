@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { Block } from './blocks.ts'
-import type { LinkDefinition } from '../link-syntax.ts'
+import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { parseBlocks } from './blocks.ts'
 
 function definitions(markdown: string): [string, LinkDefinition][] {

@@ -1,5 +1,5 @@
 import type { ConvertFault } from '../result.ts'
-import { backslashEscape, claimsPipeLine, trimSpace } from './commonmark-grammar.ts'
+import { backslashEscape, claimsPipeLine, trimSpace } from './commonmark/grammar.ts'
 
 const alignmentCell = /^:-+:?$|^-+:$/
 const delimiterCell = /^-+$/

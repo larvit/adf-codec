@@ -1,4 +1,4 @@
-import { backslashEscape, decodeTextEscapes, holdsControlCharacter } from './commonmark-grammar.ts'
+import { backslashEscape, decodeTextEscapes, holdsControlCharacter } from './grammar.ts'
 import { holdsEntityReference } from './entity-references.ts'
 
 export type LinkDefinition = { destination: string; title?: string }

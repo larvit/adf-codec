@@ -1,6 +1,6 @@
 import type { ConvertFault, SourcePosition } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveLine } from '../directive-syntax.ts'
-import type { LinkDefinition } from '../link-syntax.ts'
+import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import {
   atxHeading,
   claimsPipeLine,
@@ -17,11 +17,11 @@ import {
   setextHeadingLevel,
   thematicBreakTail,
   type ThematicBreakTail,
-} from '../commonmark-grammar.ts'
+} from '../commonmark/grammar.ts'
 import { blockDirectiveForm } from '../block-directive-forms.ts'
 import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
-import { readLinkDefinitions } from '../link-reference-definitions.ts'
+import { readLinkDefinitions } from '../commonmark/link-reference-definitions.ts'
 
 export type Block = { position: SourcePosition } & (
   | { argument: string | undefined; attributes: DirectiveAttributes; blocks: Block[] | undefined; kind: 'directive'; name: string }

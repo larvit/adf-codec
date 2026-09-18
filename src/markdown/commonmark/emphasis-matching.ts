@@ -1,4 +1,4 @@
-import { isUnicodeWhitespace } from './commonmark-grammar.ts'
+import { isUnicodeWhitespace } from './grammar.ts'
 
 type DelimiterRun = { canClose: boolean; canOpen: boolean; character: string; length: number }
 

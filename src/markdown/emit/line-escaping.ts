@@ -1,10 +1,10 @@
-import { backtickRun, closingBacktickRun } from '../backtick-runs.ts'
-import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../emphasis-matching.ts'
-import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark-grammar.ts'
+import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
+import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
+import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark/grammar.ts'
 import { claimsDirectivePrefix } from '../directive-syntax.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
-import { opensLinkDefinition } from '../link-reference-definitions.ts'
-import { readEntityReference } from '../entity-references.ts'
+import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
+import { readEntityReference } from '../commonmark/entity-references.ts'
 
 export type EmphasisRole = 'close' | 'open'
 

@@ -1,7 +1,7 @@
 import type { JsonValue } from '../json-value.ts'
 import { carryName } from './opaque-carry.ts'
-import { holdsControlCharacter } from './commonmark-grammar.ts'
-import { holdsEntityReference } from './entity-references.ts'
+import { holdsControlCharacter } from './commonmark/grammar.ts'
+import { holdsEntityReference } from './commonmark/entity-references.ts'
 
 export type LanguageSlot = { info: string; kind: 'fence' } | { kind: 'attribute' } | { kind: 'none' }
 

@@ -23,7 +23,7 @@ import {
   spellStringAttribute,
   spellVocabulary,
 } from './markdown/directive-syntax.ts'
-import { fencedCodeBlock } from './markdown/backtick-runs.ts'
+import { fencedCodeBlock } from './markdown/commonmark/backtick-runs.ts'
 import { inlineDirectives } from './adf/inline-directives.ts'
 import { listBreakName } from './markdown/list-break.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
