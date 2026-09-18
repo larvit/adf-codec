@@ -17,7 +17,10 @@ export type DirectiveLine =
   | { argument: string | undefined; attributes: DirectiveAttributes; kind: 'opener'; name: string }
   | { kind: 'closer'; name: string }
 
-export type DirectiveSpan = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string }
+// spans: the directives the content holds, at their offset in it, so reading the slot back never scans them again.
+export type DirectiveSpan = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string; spans: NestedSpans }
+
+export type NestedSpans = ReadonlyMap<number, DirectiveSpan>
 
 export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
 
@@ -25,7 +28,9 @@ type Attributes = { attributes: DirectiveAttributes; end: number }
 
 type AttributePair = { end: number; key: string; value: DirectiveValue }
 
-type Content = { content: string | undefined; end: number }
+type Content = { content: string | undefined; end: number; spans: NestedSpans }
+
+type DirectiveContent = { end: number; spans: NestedSpans }
 
 export const directivePrefix = '!adf:'
 
@@ -40,6 +45,8 @@ const reservedSource = '[&<`|]'
 const quotedEscapes = new RegExp(reservedSource, 'g')
 const rawReserved = new RegExp(reservedSource)
 const noAttributes: DirectiveAttributes = new Map()
+
+export const noSpans: NestedSpans = new Map()
 
 export const directiveEscape = `\\${directivePrefix} keeps the prefix literal`
 
@@ -213,14 +220,14 @@ function readNestedDirective(text: string, index: number, depth: number): Read<D
   if (slot.fault !== undefined) return { fault: slot.fault }
   const attributes = readAttributesAt(text, slot.value.end, slot.value.content === undefined)
   if (attributes.fault !== undefined) return { fault: attributes.fault }
-  return { value: { attributes: attributes.value.attributes, content: slot.value.content, length: attributes.value.end - index, name } }
+  return { value: { attributes: attributes.value.attributes, content: slot.value.content, length: attributes.value.end - index, name, spans: slot.value.spans } }
 }
 
 function readContentSlot(text: string, index: number, depth: number): Read<Content> {
-  if (text.charAt(index) !== '[') return { value: { content: undefined, end: index } }
+  if (text.charAt(index) !== '[') return { value: { content: undefined, end: index, spans: noSpans } }
   const close = readDirectiveContent(text, index + 1, depth)
   if (close.fault !== undefined) return { fault: close.fault }
-  return { value: { content: text.slice(index + 1, close.value), end: close.value + 1 } }
+  return { value: { content: text.slice(index + 1, close.value.end), end: close.value.end + 1, spans: close.value.spans } }
 }
 
 function readAttributesAt(text: string, index: number, braceClaims: boolean): Read<Attributes> {
@@ -231,7 +238,8 @@ function readAttributesAt(text: string, index: number, braceClaims: boolean): Re
 }
 
 // A code span, an escape and a nested directive each bind before the content's own closing bracket.
-function readDirectiveContent(text: string, start: number, depth: number): Read<number> {
+function readDirectiveContent(text: string, start: number, depth: number): Read<DirectiveContent> {
+  const spans = new Map<number, DirectiveSpan>()
   let brackets = 0
   let cursor = start
   while (cursor < text.length && text.charAt(cursor) !== '\n') {
@@ -246,18 +254,26 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
       cursor = span
       continue
     }
-    const nested = readNestedDirective(text, cursor, depth + 1)
+    const nested = keepNestedSpan(text, cursor, depth, start, spans)
+    if (nested?.fault !== undefined) return { fault: nested.fault }
     if (nested !== undefined) {
-      if (nested.fault !== undefined) return { fault: nested.fault }
-      cursor += nested.value.length
+      cursor = nested.value
       continue
     }
-    if (character === ']' && brackets === 0) return { value: cursor }
+    if (character === ']' && brackets === 0) return { value: { end: cursor, spans } }
     if (character === '[') brackets += 1
     if (character === ']') brackets -= 1
     cursor += 1
   }
   return { fault: malformedDirective(`an inline directive [content] is unclosed; ${directiveEscape}`) }
+}
+
+function keepNestedSpan(text: string, cursor: number, depth: number, start: number, spans: Map<number, DirectiveSpan>): Read<number> | undefined {
+  const nested = readNestedDirective(text, cursor, depth + 1)
+  if (nested === undefined) return undefined
+  if (nested.fault !== undefined) return { fault: nested.fault }
+  spans.set(cursor - start, nested.value)
+  return { value: cursor + nested.value.length }
 }
 
 // `undefined` where the span crosses the line ending an inline directive may not cross.

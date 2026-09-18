@@ -1,5 +1,5 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
-import type { DirectiveSpan } from '../directive-syntax.ts'
+import type { DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../emphasis-matching.ts'
 import type { LineContainer } from '../emit/line-escaping.ts'
 import type { LinkDefinition } from '../link-syntax.ts'
@@ -15,7 +15,7 @@ import { normalizeLabel, readInlineTarget, readLabel } from '../link-syntax.ts'
 import { openingLinkTakesDirective } from '../emit/inline-line.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
-import { readInlineDirective } from '../directive-syntax.ts'
+import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
 import { readTextDirective } from '../text-directive.ts'
 
@@ -45,6 +45,7 @@ type Scan = {
   pending: string
   pieces: Piece[]
   source: string
+  spans: NestedSpans
 }
 
 type SlotContent = { carry: boolean; nodes: AdfNode[] }
@@ -54,11 +55,11 @@ const imageAlone = 'an image fits only as a paragraph of its own: this one sits 
 const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
 
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer): Result<InlineContent> {
-  return parseInline(source, definitions, path, container)
+  return parseInline(source, definitions, path, container, noSpans)
 }
 
-function parseInline(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer | undefined): Result<InlineContent> {
-  const scan: Scan = { container, definitions, openingSpellableLink: false, path, pending: '', pieces: [], source }
+function parseInline(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer | undefined, spans: NestedSpans): Result<InlineContent> {
+  const scan: Scan = { container, definitions, openingSpellableLink: false, path, pending: '', pieces: [], source, spans }
   let index = 0
   while (index < source.length) {
     switch (source.charAt(index)) {
@@ -168,14 +169,20 @@ function openBracket(scan: Scan, index: number): number {
 }
 
 function readDirective(scan: Scan, index: number): Result<number> | undefined {
+  const held = scan.spans.get(index)
+  if (held !== undefined) return pushDirective(scan, held, index)
   const directive = readInlineDirective(scan.source, index)
   if (directive === undefined) return undefined
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
-  const piece = directivePiece(scan, directive.value, index)
+  return pushDirective(scan, directive.value, index)
+}
+
+function pushDirective(scan: Scan, span: DirectiveSpan, index: number): Result<number> {
+  const piece = directivePiece(scan, span, index)
   if (!piece.ok) return piece
   flush(scan, false)
   scan.pieces.push(piece.value)
-  return success(index + directive.value.length)
+  return success(index + span.length)
 }
 
 function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<Piece> {
@@ -187,7 +194,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
   const text = readTextDirective(span)
   if (text?.fault !== undefined) return faulted(text.fault, scan.path)
   if (text !== undefined) return success({ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] })
-  const slot = slotContent(scan, span.content)
+  const slot = slotContent(scan, span)
   if (!slot.ok) return slot
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
   if (mark !== undefined) return mark.ok ? directiveMarkPiece(scan, span.name, mark.value, slot.value, index) : mark
@@ -216,9 +223,9 @@ function refuseSpellableLink(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[
   return undefined
 }
 
-function slotContent(scan: Scan, content: string | undefined): Result<SlotContent | undefined> {
-  if (content === undefined) return success(undefined)
-  const parsed = parseInline(content, scan.definitions, scan.path, undefined)
+function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | undefined> {
+  if (span.content === undefined) return success(undefined)
+  const parsed = parseInline(span.content, scan.definitions, scan.path, undefined, span.spans)
   if (!parsed.ok) return parsed
   if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
   return success(parsed.value)
