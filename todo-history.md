@@ -513,9 +513,11 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       shape joins them: `readNestedDirective` restarts its depth counter per level, so each parse
       level re-scans the region below it and nested inline directives cost O(depth × content),
       bounded by the 500-level guard. A fourth predates 12c: the list-item walk re-scans the rest
-      of a line once per item level, 30000 nested items taking 4.4s at 59 KB (the
-      stability-reviewer, 2026-09-16). §11's scanning rule is the whole argument; the pipeline
-      persona feeds documents nobody typed. A fifth is a throw rather than a cost:
+      of a line once per item level — `isThematicBreak` in `containerStart` on an opener line,
+      `isBlankLine` and `leadingColumns` in `continuesContainer` on a continuation line, and a
+      blank line continues every open item without consuming input; 30000 nested items take 4.4s
+      at 59 KB (the stability-reviewer, 2026-09-16). §11's scanning rule is the whole argument; the
+      pipeline persona feeds documents nobody typed. A fifth is a throw rather than a cost:
       `adfDocumentFault` pushes a node's content with a spread, so past about 125k sibling nodes
       the guard throws a `RangeError` where §11 owes a `Result` (the stability-reviewer and the
       maintainer, 2026-09-18).
@@ -534,6 +536,11 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       38 ms where the tail scan alone would have left it quadratic.
       The sixth site the sweep found went to 18 rather than landing here (the maintainer,
       2026-09-18).
+      **Left as is** (the stability-reviewer, 2026-09-18): of the list-item walk's three re-scans
+      only `containerStart`'s is fixed. `continuesContainer`'s pair costs the same either way — 400
+      levels at 627 kB read 469 ms before and 448 ms after, linear in the line count and only
+      mildly superlinear in a depth the 500-level guard bounds — so it is measured and left rather
+      than made an item.
       **Widened** (the systems-architect, 2026-09-18): the guard's spread was a class rather than a
       site, and two more threw out of the public API — `readIndentedCodeLine` releasing the blank
       lines an indented code block held (200k of them at 200 kB), and `emitRun` joining a mark
