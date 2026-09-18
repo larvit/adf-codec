@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import test from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
 
 import type { AdfDocument, AdfNode } from './adf/document.ts'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'

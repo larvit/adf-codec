@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { extname, join } from 'node:path'
+import { readFileSync, readdirSync } from 'node:fs'
 import { toEditorNormal } from '../dist/adf/editor-normal.js'
 
 const contentTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript' }

@@ -1,8 +1,8 @@
 import type { AdfNode } from '../../adf/document.ts'
+import type { ConvertErrorPath } from '../../result.ts'
 import { carriesOnly, nodeContent } from '../../adf/document.ts'
 import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
-import type { ConvertErrorPath } from '../../result.ts'
 
 export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | undefined {
   const rows = pipeRows(node)

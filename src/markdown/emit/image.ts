@@ -1,6 +1,6 @@
 import type { AdfNode } from '../../adf/document.ts'
-import { carriesOnly, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import type { ConvertErrorPath } from '../../result.ts'
+import { carriesOnly, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 import { tryImageLine } from './inline-line.ts'
 

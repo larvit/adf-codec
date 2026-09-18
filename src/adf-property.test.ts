@@ -1,5 +1,5 @@
-import fc from 'fast-check'
 import assert from 'node:assert/strict'
+import fc from 'fast-check'
 import test from 'node:test'
 
 import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'

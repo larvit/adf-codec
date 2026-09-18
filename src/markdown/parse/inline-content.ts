@@ -10,12 +10,12 @@ import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineDirective } from '../../adf/inline-directives.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
+import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
 import { openingLinkTakesDirective } from '../emit/inline-line.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
-import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
 import { readTextDirective } from '../text-directive.ts'
 

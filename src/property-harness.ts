@@ -1,6 +1,6 @@
-import fc from 'fast-check'
 import assert from 'node:assert/strict'
 import { env } from 'node:process'
+import fc from 'fast-check'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './adf/document.ts'
 import type { Arbitrary } from 'fast-check'

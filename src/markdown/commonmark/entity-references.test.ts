@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import test from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
 
 import { readEntityReference } from './entity-references.ts'
 

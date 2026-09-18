@@ -266,7 +266,9 @@ someone spells it or pins it.
 ## 11. Code rules
 
 - Two-space indent, strict TypeScript, English everywhere. Alphabetical order wherever order
-  carries no meaning.
+  carries no meaning, keyed on the name a line introduces rather than where it came from: an
+  import sorts on its first binding, type imports ahead of value imports, so moving or renaming a
+  module reorders nothing (the maintainer, 2026-09-18).
 - Failures are values: everything returns
   `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
   `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on

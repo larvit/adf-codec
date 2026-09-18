@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import test from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import test from 'node:test'
 
 import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
+import { blockArgument } from './markdown/block-directive-arguments.ts'
 import { blockDirectives } from './adf/block-directives.ts'
 import { inlineDirectives } from './adf/inline-directives.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
-import { blockArgument } from './markdown/block-directive-arguments.ts'
 
 type Held = Map<string, Set<AttributeKind>>
 type Properties = Map<string, SchemaObject[]>
