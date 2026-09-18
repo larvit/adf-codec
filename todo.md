@@ -9,9 +9,10 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 
 1. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
    release, the planning chunk §15 describes.
-2. In flight: 4c has uncommitted work in `.claude/worktrees/scanning-rule-sites` (branch
-   `4c-scanning-rule-sites`) and a stray `bench-4c.ts` that does not ship; continue from the diff.
-3. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
+2. In flight: nothing.
+3. `git fetch origin` and branch off `origin/main`, not the worktree left behind: `main` moved
+   under 4c mid-chunk and the branch needed a rebase before it could merge.
+4. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
    session found it wrong or short.
 
 ## Milestones
