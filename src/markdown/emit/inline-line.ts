@@ -2,7 +2,7 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineDirective } from '../../adf/inline-directives.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
-import { claimsLine, holdsNullCharacter } from '../commonmark-grammar.ts'
+import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark-grammar.ts'
 import { commonMarkLink, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination } from '../link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -129,8 +129,8 @@ function carryEdges(segment: InlineSegment, leading: boolean, trailing: boolean)
   if (segment.escaping !== 'backslash' && segment.escaping !== 'bracketed') return [segment]
   const head = leading ? (/^[ \t]+/.exec(segment.text)?.[0] ?? '') : ''
   const body = segment.text.slice(head.length)
-  const tail = trailing ? (/[ \t]+$/.exec(body)?.[0] ?? '') : ''
-  const middle = body.slice(0, body.length - tail.length)
+  const middle = trailing ? trimTrailingSpace(body) : body
+  const tail = body.slice(middle.length)
   const edges: InlineSegment[] = []
   if (head !== '') edges.push(carriedText(head))
   if (middle !== '') edges.push({ escaping: segment.escaping, text: middle })

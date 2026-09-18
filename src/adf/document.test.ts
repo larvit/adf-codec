@@ -77,3 +77,9 @@ test('accepts the JSON values an attribute may hold', () => {
   assert.equal(isAdfDocument({ content: [{ attrs: { a: [1, 'x', null, true, { b: 2 }] }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
   assert.equal(isAdfDocument({ content: [{ attrs: { a: [() => 1] }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
 })
+
+test("reads a node's siblings as a walk rather than as one call's arguments", () => {
+  const wide = { content: [{ content: Array.from({ length: 200000 }, () => ({ type: 'rule' })), type: 'blockquote' }], type: 'doc', version: 1 }
+  assert.equal(isAdfDocument(wide), true)
+  assert.equal(fault(wide), 'accepted')
+})

@@ -17,10 +17,10 @@ export function readLabel(text: string, offset: number): LinkPart | undefined {
 }
 
 export function normalizeLabel(raw: string): string {
-  return raw
-    .replace(/^[ \t\n]+|[ \t\n]+$/g, '')
-    .replace(/[ \t\n]+/g, ' ')
-    .toLowerCase()
+  const collapsed = raw.replace(/[ \t\n]+/g, ' ')
+  const start = collapsed.startsWith(' ') ? 1 : 0
+  const end = collapsed.endsWith(' ') ? collapsed.length - 1 : collapsed.length
+  return collapsed.slice(start, end).toLowerCase()
 }
 
 export function readDestination(text: string, offset: number): LinkPart | undefined {

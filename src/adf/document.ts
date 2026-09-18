@@ -96,7 +96,7 @@ function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {
     if ('content' in node) {
       const content = node['content']
       if (!Array.isArray(content)) return false
-      pending.push(...content)
+      for (const child of content) pending.push(child)
     }
   }
   return true
@@ -109,7 +109,7 @@ function nestingFault(nodes: readonly AdfNode[]): ConvertFault | undefined {
     if (node === undefined) continue
     const fault = attributesFault(nodeAttrs(node), node.type) ?? marksFault(nodeMarks(node))
     if (fault !== undefined) return fault
-    pending.push(...nodeContent(node))
+    for (const child of nodeContent(node)) pending.push(child)
   }
   return undefined
 }

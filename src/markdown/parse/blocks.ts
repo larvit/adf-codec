@@ -6,6 +6,7 @@ import {
   claimsPipeLine,
   closingCodeFence,
   decodeTextEscapes,
+  holdsThematicBreak,
   isBlankLine,
   isThematicBreak,
   listMarker,
@@ -14,6 +15,8 @@ import {
   openingHtmlBlock,
   replaceNullCharacters,
   setextHeadingLevel,
+  thematicBreakTail,
+  type ThematicBreakTail,
 } from '../commonmark-grammar.ts'
 import { blockDirectiveForm } from '../block-directive-forms.ts'
 import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
@@ -143,10 +146,11 @@ function blockquoteRest(opener: Line): Line | undefined {
 
 function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: number): { opened: boolean; rest: Line } {
   const unmatched = walk.stack[depth]
+  const tail = thematicBreakTail(line.text)
   let opened = false
   let rest = line
   while (leadingColumns(rest) < indentedCodeColumns) {
-    const start = containerStart(rest, opened ? false : paragraphOpen, opened ? undefined : unmatched, walk.position)
+    const start = containerStart(rest, tail, opened ? false : paragraphOpen, opened ? undefined : unmatched, walk.position)
     if (start === undefined) break
     if (!opened) closeContainers(walk, depth)
     opened = true
@@ -156,11 +160,17 @@ function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: n
   return { opened, rest }
 }
 
-function containerStart(line: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined, position: SourcePosition): ContainerStart | undefined {
+function containerStart(
+  line: Line,
+  tail: ThematicBreakTail | undefined,
+  paragraphOpen: boolean,
+  enclosing: OpenContainer | undefined,
+  position: SourcePosition,
+): ContainerStart | undefined {
   const opener = removeColumns(line, largestOpenerIndentation)
   const blockquote = blockquoteRest(opener)
   if (blockquote !== undefined) return { kind: 'blockquote', rest: blockquote }
-  if (isThematicBreak(opener.text)) return undefined
+  if (holdsThematicBreak(tail, opener.text)) return undefined
   return itemStart(line, opener, paragraphOpen, enclosing, position)
 }
 

@@ -2,6 +2,9 @@ import { readEntityReference, replacementCharacter } from './entity-references.t
 
 export type LinePosition = 'first' | 'later'
 
+// The suffix lengths of a text that spell a thematic break, and the marker each of them opens with.
+export type ThematicBreakTail = { longest: number; marker: string; shortest: number }
+
 type OpenHtmlBlock = { closer: RegExp | undefined; construct: string }
 
 type HtmlBlockCondition = { closer: RegExp | undefined; construct: string | undefined; interrupts: boolean; start: RegExp }
@@ -52,6 +55,7 @@ const htmlBlockConditions: HtmlBlockCondition[] = [
 const asciiPunctuation = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
 const atxHeadingOpener = /^(#{1,6})(?:[ \t]|$)/
 const blankLine = /^[ \t]*$/
+const breakMarkers = '*-_'
 const codeFenceOpener = /^(`{3,}|~{3,})/
 const pipeClaim = /^\|/
 const bulletListOpener = /^[*+-](?:[ \t]|$)/
@@ -63,7 +67,6 @@ const emailLabelSource = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
 const emailAutolink = new RegExp(`<${emailNameSource}@${emailLabelSource}(?:\\.${emailLabelSource})*>`, 'y')
 const orderedListOpener = /^(\d{1,9})(?:[.)])(?:[ \t]|$)/
 const setextUnderline = /^(=+|-+)[ \t]*$/
-const thematicBreak = /^(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$/
 const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u
 
 export function atxHeading(line: string): { level: number; text: string } | undefined {
@@ -118,7 +121,7 @@ export function decodeTextEscapes(text: string): string {
 
 export function escapesLineClaim(line: string, offset: number, position: LinePosition): boolean {
   if (offset === 0) {
-    if (firstCharacterOpeners.some((opener) => opener.test(line)) || thematicBreak.test(line)) return true
+    if (firstCharacterOpeners.some((opener) => opener.test(line)) || isThematicBreak(line)) return true
     if (openingHtmlBlock(line, position === 'later') !== undefined) return true
     return position === 'later' && setextUnderline.test(line)
   }
@@ -168,7 +171,33 @@ export function isBlankLine(line: string): boolean {
 }
 
 export function isThematicBreak(line: string): boolean {
-  return thematicBreak.test(line)
+  return holdsThematicBreak(thematicBreakTail(line), line)
+}
+
+// A break runs to the line's end, so one scan of that run answers every level the list walk opens.
+export function thematicBreakTail(text: string): ThematicBreakTail | undefined {
+  let marker: string | undefined
+  let markers = 0
+  let first = text.length
+  let third = text.length
+  let cursor = text.length
+  while (cursor > 0) {
+    const character = text.charAt(cursor - 1)
+    if (marker === undefined ? breakMarkers.includes(character) : character === marker) {
+      marker = character
+      markers += 1
+      first = cursor - 1
+      if (markers === 3) third = cursor - 1
+    } else if (!spaceOrTab(character)) break
+    cursor -= 1
+  }
+  if (marker === undefined || markers < 3) return undefined
+  return { longest: text.length - first, marker, shortest: text.length - third }
+}
+
+export function holdsThematicBreak(tail: ThematicBreakTail | undefined, text: string): boolean {
+  if (tail === undefined) return false
+  return text.length >= tail.shortest && text.length <= tail.longest && text.charAt(0) === tail.marker
 }
 
 export function isUnicodeWhitespace(character: string): boolean {
