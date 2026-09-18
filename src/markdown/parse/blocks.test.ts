@@ -118,3 +118,7 @@ test('closes the containers a closer names past as unclosed, and crosses no list
   assert.deepEqual(kinds('!adf:rule {localId=a-1}\nPart.\n!adf:/rule\n'), ['fault', 'paragraph'])
   assert.deepEqual(kinds('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n'), ['fault', 'fault'])
 })
+
+test("releases an indented code block's held blank lines as a walk rather than as one call's arguments", () => {
+  assert.deepEqual(kinds(`    a\n${'\n'.repeat(200000)}    b\n`), ['code'])
+})

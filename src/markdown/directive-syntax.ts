@@ -17,7 +17,7 @@ export type DirectiveLine =
   | { argument: string | undefined; attributes: DirectiveAttributes; kind: 'opener'; name: string }
   | { kind: 'closer'; name: string }
 
-// spans: the directives the content holds, at their offset in it, so reading the slot back never scans them again.
+// spans keys index content, so the two travel together: separate them and every offset is wrong.
 export type DirectiveSpan = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string; spans: NestedSpans }
 
 export type NestedSpans = ReadonlyMap<number, DirectiveSpan>
@@ -254,10 +254,11 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
       cursor = span
       continue
     }
-    const nested = keepNestedSpan(text, cursor, depth, start, spans)
+    const nested = readNestedDirective(text, cursor, depth + 1)
     if (nested?.fault !== undefined) return { fault: nested.fault }
     if (nested !== undefined) {
-      cursor = nested.value
+      spans.set(cursor - start, nested.value)
+      cursor += nested.value.length
       continue
     }
     if (character === ']' && brackets === 0) return { value: { end: cursor, spans } }
@@ -266,14 +267,6 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
     cursor += 1
   }
   return { fault: malformedDirective(`an inline directive [content] is unclosed; ${directiveEscape}`) }
-}
-
-function keepNestedSpan(text: string, cursor: number, depth: number, start: number, spans: Map<number, DirectiveSpan>): Read<number> | undefined {
-  const nested = readNestedDirective(text, cursor, depth + 1)
-  if (nested === undefined) return undefined
-  if (nested.fault !== undefined) return { fault: nested.fault }
-  spans.set(cursor - start, nested.value)
-  return { value: cursor + nested.value.length }
 }
 
 // `undefined` where the span crosses the line ending an inline directive may not cross.

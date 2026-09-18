@@ -365,7 +365,8 @@ function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>
     return true
   }
   if (leadingColumns(line) < indentedCodeColumns) return false
-  leaf.lines.push(...leaf.held, removeColumns(line, indentedCodeColumns).text)
+  for (const held of leaf.held) leaf.lines.push(held)
+  leaf.lines.push(removeColumns(line, indentedCodeColumns).text)
   leaf.held.length = 0
   return true
 }

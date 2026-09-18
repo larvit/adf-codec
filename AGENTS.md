@@ -298,10 +298,17 @@ someone spells it or pins it.
   has — for the fallback to refuse at zero rather than walk again; counting every list twice
   halved the list limit, counting the directive form once doubled the parser's frames per level
   (the maintainer, 2026-09-18).
+- Nothing spreads an unbounded array into a call — a node's siblings, a code block's held lines, a
+  mark run's segments: the argument list caps near 125k and throws a `RangeError` where a `Result`
+  is owed. A walk pushes one at a time. A literal spread (`[...value]`) is not the same thing and
+  is fine (4c).
 - A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the
   line before it reads, `indexOf` — never a fresh slice per character, and a per-character walk
   hoists the scan that does not vary with the character. The pipeline persona feeds documents
-  nobody typed, and a megabyte through a quadratic walk is a minute rather than a millisecond.
+  nobody typed, and a megabyte through a quadratic walk is a minute rather than a millisecond. A
+  scan may keep what it read for a later walk of the same text, and the fallback where it kept
+  nothing must be the same reader over the same text at the same index, so the two cannot disagree
+  — which is what makes the kept value a memo rather than a second spelling (4c).
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.

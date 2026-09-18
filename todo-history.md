@@ -534,6 +534,11 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       38 ms where the tail scan alone would have left it quadratic.
       The sixth site the sweep found went to 18 rather than landing here (the maintainer,
       2026-09-18).
+      **Widened** (the systems-architect, 2026-09-18): the guard's spread was a class rather than a
+      site, and two more threw out of the public API — `readIndentedCodeLine` releasing the blank
+      lines an indented code block held (200k of them at 200 kB), and `emitRun` joining a mark
+      run's segments (200k nodes under one mark). Both fixed here with the same loop and a test
+      each, and §11 gained the rule so the spelling cannot walk back in.
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.

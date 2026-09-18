@@ -166,7 +166,7 @@ function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, c
     const emitted = run.kind === 'plain' ? emitLeaf(run.node, runContext, run.index) : emitMarkedRun(run.nodes, run.mark, depth, run.index, runContext)
     if (!emitted.ok) return emitted
     if (emitted.value.carry !== undefined) return emitted
-    segments.push(...emitted.value.segments)
+    for (const segment of emitted.value.segments) segments.push(segment)
   }
   return success({ segments })
 }

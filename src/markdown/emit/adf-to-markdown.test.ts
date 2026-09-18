@@ -736,3 +736,8 @@ test('carries whitespace CommonMark strips in the reserved text directive', () =
   // CommonMark strips spaces and tabs alone, so the whitespace beside them is plain text.
   assert.equal(emitted({ text: '\va\f', type: 'text' }), '\va\f\n')
 })
+
+test("joins a mark run's segments as a walk rather than as one call's arguments", () => {
+  const run = Array.from({ length: 200000 }, (): AdfNode => ({ marks: [{ type: 'strong' }], text: 'a', type: 'text' }))
+  assert.equal(markdown(adfToMarkdown(document({ content: run, type: 'paragraph' }))), `**${'a'.repeat(200000)}**\n`)
+})

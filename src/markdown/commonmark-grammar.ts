@@ -174,7 +174,6 @@ export function isThematicBreak(line: string): boolean {
   return holdsThematicBreak(thematicBreakTail(line), line)
 }
 
-// A break runs to the line's end, so one scan of that run answers every level the list walk opens.
 export function thematicBreakTail(text: string): ThematicBreakTail | undefined {
   let marker: string | undefined
   let markers = 0
@@ -195,6 +194,8 @@ export function thematicBreakTail(text: string): ThematicBreakTail | undefined {
   return { longest: text.length - first, marker, shortest: text.length - third }
 }
 
+// `text` is a suffix of what `tail` was read from, or opens with a space: a length alone names a
+// suffix, and the marker check is what refuses one starting mid-run — `--- ---` holds ` ---`.
 export function holdsThematicBreak(tail: ThematicBreakTail | undefined, text: string): boolean {
   if (tail === undefined) return false
   return text.length >= tail.shortest && text.length <= tail.longest && text.charAt(0) === tail.marker
