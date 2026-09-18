@@ -10,9 +10,13 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 1. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
    release, the planning chunk §15 describes.
 2. In flight: nothing.
-3. `git fetch origin` and branch off `origin/main`, not the worktree left behind: `main` moved
-   under 4c mid-chunk and the branch needed a rebase before it could merge.
-4. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
+3. `git fetch origin` and branch off `origin/main`, not the worktree left behind.
+4. Ask before touching code: §11 sorts alphabetically "wherever order carries no meaning" without
+   naming the key an import line sorts on. The code sorts by first binding, type imports ahead of
+   value imports, so a module rename reorders nothing — 14 leaned on that, and four files have
+   drifted from it. `src/html/` (6, 7) writes the next large body of imports. Candidate §11 rule:
+   an import line sorts on its first binding, type imports ahead of value imports.
+5. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
    session found it wrong or short.
 
 ## Milestones
@@ -208,13 +212,7 @@ bundle size and the tagline.
 - [x] **13 — The schema's gap attributes (`0.2.0`).**
   - [x] **13a — `rule` and `layoutSection`.**
   - [x] **13b — The directive link.**
-- [ ] **14 — The CommonMark subset's directory (`0.2.0`).** `src/markdown/` holds 16 source
-      files at its root and 10 adds more there. The CommonMark subset moves under
-      `src/markdown/commonmark/` — `backtick-runs.ts`, `commonmark-grammar.ts` as `grammar.ts`,
-      `emphasis-matching.ts`, `entity-references.ts` with its test, `link-reference-definitions.ts`
-      and `link-syntax.ts` — leaving the flavour's own constructs at the root, the split
-      `spec/flavour.md` draws between the subset and the flavour (the systems-architect and the
-      maintainer, 2026-09-16).
+- [x] **14 — The CommonMark subset's directory (`0.2.0`).**
 - [ ] **15 — The href-less directive link (`0.2.0`).** Refuse `!adf:link[text]` spelling no `href`
       with `unsupported-node-shape` naming the attribute, so the mark has one spelling: today it
       parses to a mark the emitter writes back as a carry, while the schema requires `href` and

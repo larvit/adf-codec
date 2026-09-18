@@ -802,6 +802,14 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
         riding the carry, takes the directive link too, with its round-trip fixture (the
         maintainer, 2026-09-15).
 
+- [x] **14 — The CommonMark subset's directory (`0.2.0`).** `src/markdown/` holds 16 source
+      files at its root and 10 adds more there. The CommonMark subset moves under
+      `src/markdown/commonmark/` — `backtick-runs.ts`, `commonmark-grammar.ts` as `grammar.ts`,
+      `emphasis-matching.ts`, `entity-references.ts` with its test, `link-reference-definitions.ts`
+      and `link-syntax.ts` — leaving the flavour's own constructs at the root, the split
+      `spec/flavour.md` draws between the subset and the flavour (the systems-architect and the
+      maintainer, 2026-09-16).
+
 ## 5 — Ship `0.1.0`
 
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo
