@@ -17,7 +17,7 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b, 4c, 14, 15, 16, 10, 5g → `0.2.0`;
-4d, 5f → `0.2.1`; 6, 7 → `0.3.0`; 9, 17 → TBD; 5e last.
+4d, 5f, 18 → `0.2.1`; 6, 7 → `0.3.0`; 9, 17 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. `0.2.0`'s order is settled
 (the maintainer, 2026-09-13): 11 makes the tables 4 generates from answer to Atlassian's schema, 4
 proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c change.
@@ -60,32 +60,7 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
   - [x] **4.3 — The markdown property.**
   - [x] **4.4 — The real payloads.**
 - [x] **4b — The block walk's retry (`0.2.0`).**
-- [ ] **4c — The scanning rule's remaining sites (`0.2.0`).** A trailing-anchored regex re-walks
-      its run from every start position, so an interior whitespace run costs quadratic time rather
-      than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk
-      replaced the regex. Three sites the same sweep did not reach: `normalizeLabel` in
-      `link-syntax.ts`, whose shortcut-reference input is `scan.source.slice(...)` rather than the
-      999-capped `readLabel` value, and two in `emit/inline-line.ts`. The fix is the one 3h used —
-      an index walk, `trimTrailingSpace` where the ends match. A fourth of another shape joins
-      them: `readNestedDirective` restarts its depth counter per level, so each parse level
-      re-scans the region below it and nested inline directives cost O(depth × content) — 3f's
-      cost, which 3i's slot parse doubles rather than changes in class, bounded by the 500-level
-      guard. A fifth predates 12c: the list-item walk re-scans the rest of a line once per item
-      level — `isThematicBreak` in `containerStart` on an opener line, `isBlankLine` and
-      `leadingColumns` in `continuesContainer` on a continuation line, and a blank line
-      continues every open item without consuming input; 30000 nested items take 4.4s at 59 KB
-      (the stability-reviewer, 2026-09-16). §11's scanning rule is
-      the whole argument; the pipeline persona feeds documents nobody typed.
-      `readDirectiveContent`'s scan splits into named steps with that fix rather than keeping its
-      complexity (the maintainer, 2026-09-16). A sixth 4b leaves behind: the parser asks
-      `commonMarkSpelling` at every directive-spelled list it reads, and the answer spells the whole
-      subtree below, itself quadratic in the depth left, so nested directive lists cost about the
-      cube of their depth — 250 rule-first levels parse in 1.3 s at 16.5 kB, 1.5 MB of that shape
-      at 250 levels in 0.6 s — bounded by the depth guard like `readNestedDirective` (the
-      maintainer, 2026-09-18). A seventh is a throw rather than a cost: `adfDocumentFault` pushes a
-      node's content with a spread, so past about 125k sibling nodes the guard throws a
-      `RangeError` where §11 owes a `Result` — a loop over the content closes it (the
-      stability-reviewer and the maintainer, 2026-09-18).
+- [x] **4c — The scanning rule's remaining sites (`0.2.0`).**
 - [ ] **4d — What the gate says while it runs (`0.2.1`).** `ci.sh` runs nine legs and announces
       none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
       a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
@@ -246,6 +221,22 @@ proves 12, 13 spells 11's gaps in 12's grammar, and 12 rewrites code 4b and 4c c
       branch count or size — so the fits-in-your-head guardrail fails the build rather than
       waiting for a review to catch it (the systems-architect, 2026-09-16); placed after `0.3.0`
       (the maintainer, 2026-09-17).
+- [ ] **18 — The subtree the directive spelling asks about (`0.2.1`).** The parser asks
+      `commonMarkSpelling` at every directive-spelled block and the answer emits the whole subtree
+      below, so a node at depth d is spelled d times: three nested rule-first directive lists cost
+      18 asks over 10 nodes, and 250 levels parse in 1.2 s at 16.4 kB, 4.9 s at 261 kB with a
+      kilobyte of content per level. The depth guard bounds the levels at about 250, never the
+      content, so this is the pipeline persona's hang on an input nobody typed (§11). Keeping each
+      child's emitted result for its parent's ask is not a straight handover: the same node object
+      is asked at different depths — 4, 3 and 2 for the innermost list of three — because the
+      parser counts a list and its item as two levels where the emitter's readable list counts one
+      (4b), and `headroom` is that guard's slack. The parts that survive the measurement: the paths
+      agree, `text` and `spelling` carry no depth, `headroom` is affine in it, and the parser asks
+      first at the deepest of them, so a kept result rebases by the difference. Either rebase and
+      record that argument in `AGENTS.md`, or give both directions one list accounting so a node
+      has one depth and nothing needs rebasing — which reopens 4b. A single post-build walk was
+      rejected: it reports the outer offender where the build reports the inner one (the
+      maintainer, 2026-09-18).
 
 ## The ADF inventory to cover
 

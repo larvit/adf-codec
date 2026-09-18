@@ -504,6 +504,36 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       counting the directive form once for doubling the parser's frames per level.
       **Measured** (2026-09-18): `adfDocumentFault` walks a 9 MB document in 52 ms against 314 ms
       for the emit, so its two walks stay parted.
+- [x] **4c — The scanning rule's remaining sites (`0.2.0`).** A trailing-anchored regex re-walks
+      its run from every start position, so an interior whitespace run costs quadratic time rather
+      than linear — 3h measured 80k spaces inside an ATX heading at 11.3s, and 3ms once the walk
+      replaced the regex. The sites the same sweep did not reach: `normalizeLabel` in
+      `link-syntax.ts`, whose shortcut-reference input is `scan.source.slice(...)` rather than the
+      999-capped `readLabel` value, and `carryEdges` in `emit/inline-line.ts`. A third of another
+      shape joins them: `readNestedDirective` restarts its depth counter per level, so each parse
+      level re-scans the region below it and nested inline directives cost O(depth × content),
+      bounded by the 500-level guard. A fourth predates 12c: the list-item walk re-scans the rest
+      of a line once per item level, 30000 nested items taking 4.4s at 59 KB (the
+      stability-reviewer, 2026-09-16). §11's scanning rule is the whole argument; the pipeline
+      persona feeds documents nobody typed. A fifth is a throw rather than a cost:
+      `adfDocumentFault` pushes a node's content with a spread, so past about 125k sibling nodes
+      the guard throws a `RangeError` where §11 owes a `Result` (the stability-reviewer and the
+      maintainer, 2026-09-18).
+      **Settled** (the maintainer, 2026-09-18): the five sites land in one PR rather than split
+      into sub-items, and a behaviour-preserving cost fix is accepted on the suite staying green
+      with no fixture output changed, plus the measurement below — §14 promises no figure, so
+      nothing times the gate. The guard's spread is the one behavioural fix and carries a test.
+      **Corrected** (2026-09-18): the entry filed two sites in `emit/inline-line.ts` on 2026-09-01
+      and the file has changed since — `tryImageLine`'s alternation measures linear (3.4 / 1.9 /
+      5.3 ms over 10k / 20k / 40k spaces), leaving `carryEdges`' trailing trim the only one.
+      **Measured** (2026-09-18), each at the size its filing named: `normalizeLabel` 1026 ms → 5 ms
+      at 40k interior spaces, `carryEdges` 1024 ms → 7 ms (its heading path 978 ms → 5 ms),
+      `readNestedDirective` 434 ms → 10 ms at 397 kB and 200 levels, the list-item walk 4196 ms →
+      39 ms at 30000 items, and the document guard a `RangeError` → 42 ms at 200k siblings under
+      one node. The list-item walk's mixed-marker shape, which the fix had to answer too, reads
+      38 ms where the tail scan alone would have left it quadratic.
+      The sixth site the sweep found went to 18 rather than landing here (the maintainer,
+      2026-09-18).
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.
