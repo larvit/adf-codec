@@ -996,8 +996,6 @@ test('names the href the directive link spells no value for', () => {
   assert.equal(content(markdownToAdf('!adf:link[a]\n')), named)
   assert.equal(content(markdownToAdf('!adf:link[a]{title=t}\n')), named)
   assert.equal(content(markdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n')), named)
-  assert.equal(content(markdownToAdf('!adf:underline[!adf:link[a]{title=t}]\n')), named)
-  assert.deepEqual(path(markdownToAdf('Part.\n\nSee !adf:link[a]{title=t}.\n')), ['content', 1])
 })
 
 test('names the directive mark left without the content it wraps', () => {

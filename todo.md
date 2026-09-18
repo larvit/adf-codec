@@ -8,8 +8,7 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next session" says.`
 
 1. `git fetch origin` first and read this file at `origin/main`, then branch off it, not the
-   worktree left behind: a checkout behind the remote reads a merged item as unchecked, which sent
-   this session at 14 after it had shipped.
+   worktree left behind: a checkout behind the remote reads a merged item as unchecked.
 2. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
    release, the planning chunk §15 describes.
 3. In flight: nothing.

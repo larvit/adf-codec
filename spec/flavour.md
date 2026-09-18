@@ -474,7 +474,7 @@ the inline directive `!adf:link[text]{attrs}` only where CommonMark does not: an
 backslash, an entity reference, an angle bracket beside a space or opening a bare destination, a
 newline in the title), or a link opening a paragraph whose markdown spelling would read as a link
 reference definition. Every such spelling carries an `href`: a directive link CommonMark could
-spell is a named error, and so is one spelling no `href`, the mark without one riding the carry.
+spell is a named error, and so is one spelling none.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.
