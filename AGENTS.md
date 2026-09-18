@@ -117,8 +117,9 @@ A message names the violation, not the rule alone — a rule by itself states a 
 must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose it
 names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and inline
 alike, `\|` for every pipe row.
-Adding, removing or renaming a code is breaking, so a milestone meeting a new failure cause
-reuses a code where one fits; the list is complete at `0.1.0`. A code names the
+Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
+name reads true of it in both directions; where none does and a plain name exists, a new code — in
+any 0.x minor, and after 1.0 only in a MAJOR (the maintainer, 2026-09-18). A code names the
 cause; where one cause recurs across node types, across one mark's attributes or across
 directions, one code covers them all and
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
@@ -324,7 +325,9 @@ someone spells it or pins it.
   number is the markdown flavour's choice, not ADF's.
 - Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a
   file does not repeat its directory in its name — `adf/document.ts`, never
-  `adf/adf-document.ts`.
+  `adf/adf-document.ts`. A name is the noun `spec/flavour.md` or ADF's schema uses for the
+  thing; a directory follows a split the spec draws; a placement these rules leave open goes
+  beside its only reader, or in what both read where there are two (the maintainer, 2026-09-18).
 - Reuse before adding; the smallest sufficient diff is the benchmark; no speculative generality —
   a second consumer, or it goes.
 
