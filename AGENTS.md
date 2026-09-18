@@ -403,6 +403,9 @@ Rules the loop has settled (the maintainer, 2026-09-18):
 - Where the shipping order names no release for the next unchecked item, the chunk is planning that
   release: every unscheduled item weighed as above, the order written in `todo.md`, and the
   maintainer's approval taken before any code.
+- A session works one chunk and stops, whatever it was asked to finish. A release is a chain of
+  sessions, and `todo.md`'s "Next session" is the handover; an instruction to work until a release
+  is checked names the chain, not the session.
 
 Reserved for the maintainer, never the agent: changing `version` in `package.json` (a bump on
 `main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
