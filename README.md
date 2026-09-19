@@ -111,17 +111,17 @@ emit refuses:
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML below, with three
   carve-outs — literal text matching directive, pipe-table or strikethrough syntax is claimed
   (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as its own
-  title-less paragraph; mid-text and titled images are error results. Converting back yields the
+  title-less paragraph; mid-text and titled images are error results, save an image inside
+  another's description, which flattens into the alt text. Converting back yields the
   library's canonical spelling, which round-trips byte-identically — where it converts back at
   all: a parse succeeding is no promise of that, so keep the source until the way back succeeds.
   ``` ` `` ` ``` reads cleanly and then refuses.
-- Four CommonMark spellings parse without an error and build a document the reference renders
-  differently: `[](/url)` and `[]()` stay literal text against CommonMark's empty link, a list
-  continuing past a marker change stays one list against CommonMark's two, a shortcut
-  reference matching its definition only under Unicode case folding stays unresolved, and a link
-  whose text holds an autolink keeps the inner link and leaves the outer brackets literal text,
-  which the spec requires and the reference implementation itself breaks, nesting one `<a>` in the
-  other. The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the
+- Four CommonMark spellings parse without an error and build a document the reference
+  implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
+  empty link, a list continuing past a marker change stays one list against CommonMark's two, a
+  shortcut reference matching its definition only under Unicode case folding stays unresolved, and
+  a link whose text holds an autolink keeps the inner link and leaves the outer brackets literal
+  text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other. The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the
   suite holds no example of the fourth.
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
   processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.2.0`.

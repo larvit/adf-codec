@@ -49,11 +49,11 @@ holding an unescaped `!adf:` and a `carry` fence are claimed instead.
 
 ### Readings
 
-Markdown the spelling table leaves alone, reading to a different document.
+Markdown the spelling table leaves alone, which `0.2.0` reads as a different document.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
-| a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text |
+| a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
 
 ### Error codes
 
