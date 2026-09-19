@@ -69,20 +69,7 @@ bundle size and the tagline.
   - [x] **4.4 — The real payloads.**
 - [x] **4b — The block walk's retry (`0.2.0`).**
 - [x] **4c — The scanning rule's remaining sites (`0.2.0`).**
-- [ ] **4d — What the gate says while it runs (`0.2.0`).** `ci.sh` runs nine legs and announces
-      none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
-      a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
-      own fix. The legs need markers: `plainpages`' `ci.sh` prints a `step()` header per leg and
-      this one prints nothing, so name the leg and the image before each. The longest leg is the
-      quietest: `test_output=$(… npm test 2>&1)` buffers the whole Node run to replay it after,
-      because the zero-test guard greps the count — stream it and grep a copy (`tee`), rather than
-      trading the output for the guard. And two legs are silenced outright, `npm pack` and the
-      tarball install, whose `>/dev/null` predates the offline install that made them quick and
-      quiet. `publish.sh` owes the same: today it says nothing between reading `private` and the
-      registry answering, which is where its `npm ci` and rebuild sit — the seconds §9 accepts
-      rather than promoting the gate's `dist`, and unmeasured until the log shows them. Per-leg
-      timing is what turns "slow or hung" from a guess into a reading; the browser leg's own
-      5.4–7.9s against a 17s warm gate is the number that made it obviously cheap.
+- [x] **4d — What the gate says while it runs (`0.2.0`).**
 - [x] **5 — Ship `0.1.0`.**
 - [ ] **5e — The publish token's deadline.** `0.1.0` published only once the npm
       token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm

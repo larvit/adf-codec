@@ -546,6 +546,34 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       lines an indented code block held (200k of them at 200 kB), and `emitRun` joining a mark
       run's segments (200k nodes under one mark). Both fixed here with the same loop and a test
       each, and §11 gained the rule so the spelling cannot walk back in.
+- [x] **4d — What the gate says while it runs (`0.2.0`).** `ci.sh` runs nine legs and announces
+      none of them, so five minutes of a Gitea run read as silence and a hang cannot be told from
+      a slow pull — the maintainer hit exactly this on the `0.1.0` release. Three causes, each its
+      own fix. The legs need markers: `plainpages`' `ci.sh` prints a `step()` header per leg and
+      this one prints nothing, so name the leg and the image before each. The longest leg is the
+      quietest: `test_output=$(… npm test 2>&1)` buffers the whole Node run to replay it after,
+      because the zero-test guard greps the count — stream it and grep a copy (`tee`), rather than
+      trading the output for the guard. And two legs are silenced outright, `npm pack` and the
+      tarball install, whose `>/dev/null` predates the offline install that made them quick and
+      quiet. `publish.sh` owes the same: today it says nothing between reading `private` and the
+      registry answering, which is where its `npm ci` and rebuild sit — the seconds §9 accepts
+      rather than promoting the gate's `dist`, and unmeasured until the log shows them. Per-leg
+      timing is what turns "slow or hung" from a guess into a reading; the browser leg's own
+      5.4–7.9s against a 17s warm gate is the number that made it obviously cheap.
+      **Measured** (2026-09-19): ten legs, not the nine counted above, each naming its image, on a
+      27.9 s warm gate — install 1.5 s, typecheck 1.1 s, Node tests 4.6 s, Deno 6.3 s, Bun 3.9 s,
+      build 1.0 s, pack and install 1.6 s, consumer typecheck 1.0 s, engines floor 0.5 s, browser
+      5.7 s. The browser leg lands in the 5.4–7.9 s the item quotes, and the markers cost nothing
+      measurable: 28.9 s before against 27.9 s after. `publish.sh` reads its fields in 2.5 s and the
+      registry in 1.4 s; its `npm ci` and rebuild are the gate's own 1.5 s and 1.0 s, so the seconds
+      §9 accepts for rebuilding rather than promoting the gate's `dist` are about 2.5.
+      Three things the writing turned up. The markers print to stderr, so a leg whose value is read —
+      `publish.sh` asking npmjs — stays capturable. `leg`'s locals carry its own name because bash
+      scopes them into whatever the leg runs: unprefixed, `name` was swallowed by the leg reading
+      `package.json`. And `leg` returns its command's status the way `with_firefox` already did,
+      because the bare call swallowed a non-zero one wherever `set -e` is suspended, which also gets
+      the elapsed time printed for the leg that failed.
+
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its
       remote, the README title, §6's published-as line, the checkout directory.
