@@ -39,7 +39,7 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
   container: LineContainer | undefined
-  // Pieces below this have been walked for openers to deactivate: one left active reaches closeLink, whose image and carry guards refuse what literal brackets hold fine.
+  // Pieces below this have been walked for openers to deactivate: one left active reaches closeLink, whose image and carry guards refuse a span going literal anyway.
   deactivatedBefore: number
   definitions: LinkDefinitions
   openingSpellableLink: boolean
@@ -369,7 +369,7 @@ function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: 
 
 // CommonMark: no link nests inside another, though an image's description holds one.
 function deactivateOpeners(scan: Scan, before: number): void {
-  for (let index = Math.min(scan.deactivatedBefore, before); index < before; index += 1) {
+  for (let index = scan.deactivatedBefore; index < before; index += 1) {
     const piece = scan.pieces[index]
     if (piece?.kind === 'open' && !piece.image) piece.active = false
   }
