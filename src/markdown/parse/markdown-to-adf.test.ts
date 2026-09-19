@@ -672,7 +672,7 @@ test('refuses input nested deeper than the parser carries', () => {
   assert.equal(code(markdownToAdf(marks(largestNesting + 1))), 'unsupported-nesting-depth')
   assert.deepEqual(content(markdownToAdf(marks(largestNesting))), [{ content: [marked('a', underline)], type: 'paragraph' }])
   const nest = (names: readonly string[], body: string): string => [...names.map((name) => `!adf:${name}\n`), body, ...names.map((name) => `!adf:/${name}\n`).reverse()].join('')
-  const repeated = (name: string): string[] => Array.from({ length: largestNesting }, () => name)
+  const repeated = (name: string, levels: number = largestNesting): string[] => Array.from({ length: levels }, () => name)
   assert.ok(markdownToAdf(nest(repeated('panel'), '!adf:paragraph {localId=a-1}\nPart.\n!adf:/paragraph\n')).ok)
   assert.deepEqual(position(markdownToAdf(nest(['expand', ...repeated('panel'), 'expand'], 'Part.\n'))), { line: 501, offset: 5501 })
   assert.equal(code(markdownToAdf(nest(['panel', ...repeated('expand'), 'panel'], 'Part.\n'))), 'unsupported-nesting-depth')
@@ -680,6 +680,16 @@ test('refuses input nested deeper than the parser carries', () => {
   const directiveLists = largestNesting / 2
   assert.ok(markdownToAdf(listed(directiveLists)).ok)
   assert.equal(code(markdownToAdf(listed(directiveLists + 1))), 'unsupported-nesting-depth')
+  const asking = (body: string): string => `!adf:bulletList\n!adf:listItem\n${body}!adf:/listItem\n!adf:/bulletList\n`
+  // Two items past the largest list marker leave the list no readable spelling, so the emitter
+  // walks it as list plus item where the parser counted one level.
+  const overflowing = (body: string): string => {
+    const marker = '999999999. '
+    return `${marker}${body.replace(/^(?!$)/gm, ' '.repeat(marker.length)).slice(marker.length)}\n${marker}z\n`
+  }
+  const overflowed = (panels: number): string => asking(overflowing(overflowing(asking(`---\n${nest(repeated('panel', panels), 'Part.\n')}`))))
+  assert.equal(code(markdownToAdf(overflowed(493))), 'unsupported-node-shape')
+  assert.equal(code(markdownToAdf(overflowed(494))), 'unsupported-nesting-depth')
   assert.ok(markdownToAdf(`${'- '.repeat(largestNesting)}a\n`).ok)
   assert.equal(code(markdownToAdf(`${'- '.repeat(largestNesting + 1)}a\n`)), 'unsupported-nesting-depth')
 })

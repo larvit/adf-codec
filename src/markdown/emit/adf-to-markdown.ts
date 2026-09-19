@@ -103,8 +103,11 @@ export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth:
 
 function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
   const kept = memo?.get(node)
-  // A reuse sits no deeper than the fill it reads, so the kept headroom only ever grows (AGENTS.md §11).
-  if (kept !== undefined) return kept.block === undefined ? undefined : success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
+  if (kept !== undefined) {
+    if (kept.block === undefined) return undefined
+    // A read below the fill would skip the depth guards the walk it replaces runs (AGENTS.md §11).
+    if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
+  }
   const spelled = spellReadableBlock(node, path, depth, memo)
   if (spelled === undefined) memo?.set(node, { block: undefined, depth })
   else if (spelled.ok) memo?.set(node, { block: spelled.value, depth })
