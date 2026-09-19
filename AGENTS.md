@@ -313,15 +313,15 @@ someone spells it or pins it.
   scan may keep what it read for a later walk of the same text, and the fallback where it kept
   nothing must be the same reader over the same text at the same index, so the two cannot disagree
   — which is what makes the kept value a memo rather than a second spelling (4c).
-- The parse keeps each node's readable spelling in a memo, so the `commonMarkSpelling` ask spells a
-  node once rather than once per level above it (18). The node reference is the key, which holds
+- The parse keeps each node's readable spelling in a memo, so the `commonMarkSpelling` ask stops
+  spelling a node once per level above it (18). The node reference is the key, which holds
   because the parse builds one object per position; `adfToMarkdown` passes no memo, where a
   consumer's document may hold one node at two positions (4b). `text` and `spelling` carry no depth
-  and `headroom` is affine in it, so a read at or above the depth that filled the entry rebases; a read
-  below re-spells, because a hit skips the depth guards the walk it replaces runs and an ordered
-  list past the marker cap gives way, spending two emitter levels where the parser spent one. A
-  give-way is kept too and serves any depth, reading the node's shape alone. Only what succeeded is
-  kept, so no path minted at another position is ever read.
+  and `headroom` is affine in it, so a read at or above the depth that filled the entry rebases; a
+  read below re-spells, because a hit skips the depth guards the walk it replaces runs and an
+  ordered list past the marker cap gives way, spending two emitter levels where the parser spent
+  one. A give-way is kept too and serves any depth, reading the node's shape alone. Only what
+  succeeded is kept, so no path minted at another position is ever read.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
