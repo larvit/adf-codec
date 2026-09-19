@@ -5,7 +5,7 @@ import type { ConvertFault } from '../../result.ts'
 import type { LineContainer } from '../emit/line-escaping.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryName, readCarriedBlock } from '../opaque-carry.ts'
-import { commonMarkSpelling } from '../emit/adf-to-markdown.ts'
+import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -20,12 +20,12 @@ const documentStart: SourcePosition = { line: 1, offset: 0 }
 
 export function markdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   const parsed = parseBlocks(markdown)
-  const content = positioned(blockNodes(parsed.blocks, parsed.definitions, [], 0), documentStart)
+  const content = positioned(blockNodes(parsed.blocks, parsed.definitions, [], 0, new Map()), documentStart)
   if (!content.ok) return content
   return success(content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 })
 }
 
-function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
@@ -35,7 +35,7 @@ function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path
       if (fault !== undefined) return positioned(faulted(fault, nodePath), block.position)
       continue
     }
-    const node = positioned(blockNode(block, definitions, nodePath, depth), block.position)
+    const node = positioned(blockNode(block, definitions, nodePath, depth, memo), block.position)
     if (!node.ok) return node
     content.push(node.value)
   }
@@ -55,16 +55,16 @@ function partsFault(): ConvertFault {
   return unsupportedNodeShape(`${listBreakName} parts two adjacent lists of one type: this one parts something else`)
 }
 
-function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':
-      return containerNode({ type: 'blockquote' }, block.blocks, definitions, path, depth)
+      return containerNode({ type: 'blockquote' }, block.blocks, definitions, path, depth, memo)
     case 'bulletList':
-      return listNode({ type: 'bulletList' }, block.items, definitions, path, depth)
+      return listNode({ type: 'bulletList' }, block.items, definitions, path, depth, memo)
     case 'code':
       return codeBlockNode(block.language, block.text, path, depth)
     case 'directive':
-      return directiveNode(block, definitions, path, depth)
+      return directiveNode(block, definitions, path, depth, memo)
     case 'fault':
       return faulted(block.fault, path)
     case 'heading':
@@ -72,7 +72,7 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
     case 'html':
       return failure('unmappable-html', `no raw HTML converts at this version: ${block.construct}`, path)
     case 'orderedList':
-      return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, definitions, path, depth)
+      return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, definitions, path, depth, memo)
     case 'paragraph':
       return paragraphNode(block.text, definitions, path)
     case 'rule':
@@ -82,23 +82,23 @@ function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErro
   }
 }
 
-function directiveNode(block: DirectiveBlock, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function directiveNode(block: DirectiveBlock, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
   const read = readBlockDirectiveNode(block.name, block.argument, block.attributes, path)
   if (!read.ok) return read
-  const built = directiveBody(read.value, block.blocks, definitions, path, depth)
+  const built = directiveBody(read.value, block.blocks, definitions, path, depth, memo)
   if (!built.ok) return built
-  const readable = commonMarkSpelling(built.value, path, depth)
+  const readable = commonMarkSpelling(built.value, path, depth, memo)
   if (readable === undefined) return built
   if (!readable.ok) return readable
   return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)
 }
 
-function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
   const { contentModel, node } = read
   if (blocks === undefined) return success(node)
   if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
   if (contentModel === 'inline') return inlineBodyNode(node, blocks, definitions, path)
-  return containerNode(node, blocks, definitions, path, depth)
+  return containerNode(node, blocks, definitions, path, depth, memo)
 }
 
 function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
@@ -137,8 +137,8 @@ function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: Li
   return positioned(contentNode(node, only.text, definitions, path, 'paragraph'), only.position)
 }
 
-function containerNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const content = blockNodes(blocks, definitions, path, depth + 1)
+function containerNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
+  const content = blockNodes(blocks, definitions, path, depth + 1, memo)
   if (!content.ok) return content
   return success(withContent(node, content.value))
 }
@@ -147,10 +147,10 @@ function withContent(node: AdfNode, content: readonly AdfNode[]): AdfNode {
   return content.length === 0 ? node : { ...node, content: [...content] }
 }
 
-function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function listNode(node: AdfNode, items: readonly Block[][], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
   const content: AdfNode[] = []
   for (const [index, blocks] of items.entries()) {
-    const item = containerNode({ type: 'listItem' }, blocks, definitions, [...path, 'content', index], depth)
+    const item = containerNode({ type: 'listItem' }, blocks, definitions, [...path, 'content', index], depth, memo)
     if (!item.ok) return item
     content.push(item.value)
   }

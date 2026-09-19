@@ -19,7 +19,9 @@ import { tryPipeTable } from './pipe-table.ts'
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
+type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = EmittedBlock & { node: AdfNode }
+export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
 type WalkedItem = { node: AdfNode; walk: Walk }
 
@@ -31,19 +33,19 @@ export function adfToMarkdown(document: AdfDocument): Result<string> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  const walk = walkBlocks(nodeContent(document), [], 0)
+  const walk = walkBlocks(nodeContent(document), [], 0, undefined)
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
   return success(text === '' ? '' : `${text}\n`)
 }
 
 // headroom: the least slack any depth guard below the walk has.
-function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number): Result<Walk> {
+function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<Walk> {
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
-    const block = emitBlock(node, [...path, 'content', index], depth)
+    const block = emitBlock(node, [...path, 'content', index], depth, memo)
     if (!block.ok) return block
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
@@ -84,24 +86,34 @@ function interruptsParagraph(node: AdfNode): boolean {
   return markerInterruptsParagraph(listStart(node, items.length) ?? 0, empty)
 }
 
-function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
+function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> {
   const directive = blockDirective(node.type)
   if (directive === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  const readable = readableBlock(node, path, depth)
+  const readable = readableBlock(node, path, depth, memo)
   if (readable !== undefined) return readable
-  return emitDirectiveBlock(node, directive, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1))
+  return emitDirectiveBlock(node, directive, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, memo))
 }
 
-export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number): Result<null> | undefined {
-  const readable = readableBlock(node, path, depth)
+export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<null> | undefined {
+  const readable = readableBlock(node, path, depth, memo)
   if (readable === undefined) return undefined
   if (!readable.ok) return readable
   return readable.value.spelling === 'directive' ? undefined : success(null)
 }
 
-function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
-  if (node.type === 'blockquote') return emitBlockquote(node, path, depth)
-  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path, depth)
+function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+  const kept = memo?.get(node)
+  // A reuse sits no deeper than the fill it reads, so the kept headroom only ever grows (AGENTS.md §11).
+  if (kept !== undefined) return kept.block === undefined ? undefined : success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
+  const spelled = spellReadableBlock(node, path, depth, memo)
+  if (spelled === undefined) memo?.set(node, { block: undefined, depth })
+  else if (spelled.ok) memo?.set(node, { block: spelled.value, depth })
+  return spelled
+}
+
+function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+  if (node.type === 'blockquote') return emitBlockquote(node, path, depth, memo)
+  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path, depth, memo)
   if (node.type === 'codeBlock') return emitCodeBlock(node, path)
   if (node.type === 'heading') return emitHeading(node, path)
   if (node.type === 'mediaSingle') return readableText(tryImage(node, path))
@@ -149,9 +161,9 @@ function emitDirectiveBody(node: AdfNode, directive: BlockDirective, opener: str
   return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
-function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
+function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, [])) return undefined
-  const inner = walkBlocks(nodeContent(node), path, depth + 1)
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, memo)
   if (!inner.ok) return inner
   const text = joinBlocks(inner.value.blocks, 'document')
     .split('\n')
@@ -211,7 +223,7 @@ function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock
   return success(commonMarkText(`${hashes} ${line.value}`))
 }
 
-function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> | undefined {
+function emitList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
   const ordered = node.type === 'orderedList'
   if (!carriesOnly(node, ordered ? ['order'] : [])) return undefined
   const items = nodeContent(node)
@@ -221,7 +233,7 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number): Result<
   const walked: WalkedItem[] = []
   let headroom = Number.POSITIVE_INFINITY
   for (const [offset, item] of items.entries()) {
-    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1)
+    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, memo)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })

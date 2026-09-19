@@ -313,6 +313,12 @@ someone spells it or pins it.
   scan may keep what it read for a later walk of the same text, and the fallback where it kept
   nothing must be the same reader over the same text at the same index, so the two cannot disagree
   — which is what makes the kept value a memo rather than a second spelling (4c).
+- The parse keeps each node's readable spelling in a memo, so the `commonMarkSpelling` ask spells a
+  node once rather than once per level above it (18). The node reference is the key, which holds
+  because the parse builds one object per position; `adfToMarkdown` passes no memo, where a
+  consumer's document may hold one node at two positions (4b). A kept spelling rebases: `text` and
+  `spelling` carry no depth, `headroom` is affine in it, and a reuse sits at or above the depth that
+  filled it. Only what succeeded is kept, so no path minted at another position is ever read.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
