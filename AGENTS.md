@@ -238,6 +238,13 @@ The leg re-checks the conversions and nothing else — each fixture's emitted ma
 document, its error code — leaving the corpus's pairing, uniqueness, source positions and
 byte-level equality to the Node suite that owns them.
 
+Every leg announces its name and its image before it runs and its elapsed time after, `publish.sh`
+alongside `ci.sh`, so a long run reads as progress rather than as a hang — which is what a silent
+one cost the `0.1.0` release. A leg added later owes the same marker, and a leg that buffers its
+output to read something out of it streams and keeps the copy in a file: `tee /dev/stderr` reopens
+the stream, so under the `> log 2>&1` a reader runs locally the two offsets advance independently
+and punch NUL holes through each other's lines (4d).
+
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
 `noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index

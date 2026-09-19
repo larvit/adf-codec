@@ -10,6 +10,20 @@ in_image() {
   docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp ${PROPERTY_RUNS+-e PROPERTY_RUNS} ${in_image_network:+--network "$in_image_network"} -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
 }
 
+# Markers go to stderr so a leg reporting a value stays capturable, and the locals carry the
+# function's own name because bash scopes them dynamically into whatever the leg runs.
+leg() {
+  local leg_name=$1 leg_elapsed leg_started leg_status=0
+  shift
+  printf '\n\033[1;34m==> %s\033[0m\n' "$leg_name" >&2
+  # EPOCHREALTIME carries the locale's radix character, so keep the digits and read microseconds.
+  leg_started=${EPOCHREALTIME//[^0-9]/}
+  "$@" || leg_status=$?
+  leg_elapsed=$((${EPOCHREALTIME//[^0-9]/} - leg_started))
+  printf '\033[1;34m<== %s: %d.%ds\033[0m\n' "$leg_name" "$((leg_elapsed / 1000000))" "$((leg_elapsed % 1000000 / 100000))" >&2
+  return $leg_status
+}
+
 with_firefox() {
   local container in_image_network status=0
   container=$(docker run -d --rm "$firefox_image")
