@@ -416,6 +416,7 @@ test('names the mark spelling no opaque carry sits inside', () => {
   assert.equal(content(markdownToAdf(`**${carried}**\n`)), named)
   assert.equal(content(markdownToAdf(`~~a ${carried}~~\n`)), named)
   assert.equal(content(markdownToAdf(`[a ${carried} b](https://example.com/x)\n`)), named)
+  assert.equal(content(markdownToAdf(`[*<http://x/>${carried}*](/w)\n`)), named)
   assert.equal(content(markdownToAdf(`!adf:underline[${carried}]\n`)), named)
   assert.equal(content(markdownToAdf(`!adf:textColor[a ${carried}]{color="#ae2e24"}\n`)), named)
   assert.equal(content(markdownToAdf(`![_a ${carried}_](https://example.com/i)\n`)), named)
@@ -842,8 +843,11 @@ test('leaves the brackets of a link whose text already holds one the text they a
 })
 
 test('keeps the carry and the image the brackets a nested link leaves literal hold', () => {
-  assert.deepEqual(content(markdownToAdf('[[<http://x/>](/c)!adf:carry{json="{\\"type\\":\\"blockCard\\"}"}](/w)\n')), [
-    { content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'blockCard' }, text('](/w)')], type: 'paragraph' },
+  assert.deepEqual(content(markdownToAdf(`[<http://x/>${carried}](/w)\n`)), [
+    { content: [text('['), marked('http://x/', link('http://x/')), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf(`[[<http://x/>](/c)${carried}](/w)\n`)), [
+    { content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
   ])
   assert.deepEqual(content(markdownToAdf('![![a [b](/c) ](/i)[![x](/y)[<http://x/>](/c)](/w)](/v)\n')), [image('/v', 'a b [x[http://x/](/c)](/w)')])
 })

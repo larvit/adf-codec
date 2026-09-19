@@ -6,7 +6,7 @@ Directives moved under the `!adf:` prefix. `0.2.0` reads `0.1.0`'s spelling with
 turning each directive into text and each carried node into an `adf` code block. Before `0.2.0`
 reads any `0.1.0` markdown, convert what is stored or in flight (an open editor, a queue) with the
 recipe below, and rewrite markdown your code writes or matches (templates, prompts, patterns) by
-the spelling table. Stored ADF needs no change.
+the tables below. Stored ADF needs no change.
 
 ### Convert markdown
 
@@ -47,6 +47,14 @@ function migrateMarkdown(stored: string) {
 A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
 holding an unescaped `!adf:` and a `carry` fence are claimed instead.
 
+### Readings
+
+Markdown the spelling table leaves alone, reading to a different document.
+
+| Input | `0.1.0` | `0.2.0` |
+| --- | --- | --- |
+| a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text |
+
 ### Error codes
 
 `unspellable-link` leaves `ConvertErrorCode`: a `switch` naming it stops compiling, and the link
@@ -55,7 +63,6 @@ it named converts.
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |
-| a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text |
 | a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |

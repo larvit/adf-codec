@@ -221,7 +221,7 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
 function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.path)
-  if (holdsLink(nodes)) return failure('unsupported-node-shape', linkInLink, scan.path)
+  if (marksLink(nodes)) return failure('unsupported-node-shape', linkInLink, scan.path)
   if (commonMarkLink(nodeAttrs(mark), href, nodes, 0, scan.container === undefined) === undefined) return undefined
   if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.path)
   scan.openingSpellableLink = true
@@ -268,7 +268,12 @@ function holdsImage(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'image')
 }
 
-function holdsLink(nodes: readonly AdfNode[]): boolean {
+// A carry rides its own piece: the carried node's marks restore with it rather than riding a spelling, so the guard below answers for it.
+function holdsLink(pieces: readonly Piece[]): boolean {
+  return pieces.some((piece) => piece.kind === 'nodes' && marksLink(piece.nodes))
+}
+
+function marksLink(nodes: readonly AdfNode[]): boolean {
   return nodes.some((node) => nodeMarks(node).some((mark) => mark.type === 'link'))
 }
 
@@ -349,6 +354,11 @@ function resolveTarget(scan: Scan, bracket: Bracket, index: number): { definitio
 }
 
 function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<boolean> {
+  // Ahead of the guards below: brackets going literal put the image and the carry inside no mark for either to refuse.
+  if (holdsLink(inner)) {
+    deactivateOpeners(scan, at)
+    return success(false)
+  }
   if (holdsImage(inner)) return failure('unmappable-image', imageAlone, scan.path)
   if (holdsCarry(inner)) return failure('unsupported-node-shape', carriedInMark, scan.path)
   const resolved = resolveNodes(inner, scan.path)
@@ -356,10 +366,6 @@ function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: 
   const nodes = resolved.value
   // An empty link text gives the mark no node to ride, so the brackets stay text.
   if (nodes.length === 0) return success(false)
-  if (holdsLink(nodes)) {
-    deactivateOpeners(scan, at)
-    return success(false)
-  }
   const attrs = definition.title === undefined ? { href: definition.destination } : { href: definition.destination, title: definition.title }
   truncatePieces(scan, at)
   deactivateOpeners(scan, at)

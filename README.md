@@ -120,9 +120,9 @@ emit refuses:
   continuing past a marker change stays one list against CommonMark's two, a shortcut
   reference matching its definition only under Unicode case folding stays unresolved, and a link
   whose text holds an autolink keeps the inner link and leaves the outer brackets literal text,
-  where the reference nests one `<a>` inside another against the spec's own prose. The first three
-  are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite holds no example of
-  the fourth.
+  which the spec requires and the reference implementation itself breaks, nesting one `<a>` in the
+  other. The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the
+  suite holds no example of the fourth.
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
   processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.2.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding
