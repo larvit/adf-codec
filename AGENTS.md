@@ -238,12 +238,13 @@ The leg re-checks the conversions and nothing else — each fixture's emitted ma
 document, its error code — leaving the corpus's pairing, uniqueness, source positions and
 byte-level equality to the Node suite that owns them.
 
-Every leg announces its name and its image before it runs and its elapsed time after, `publish.sh`
-alongside `ci.sh`, so a long run reads as progress rather than as a hang — which is what a silent
-one cost the `0.1.0` release. A leg added later owes the same marker, and a leg that buffers its
-output to read something out of it streams and keeps the copy in a file: `tee /dev/stderr` reopens
-the stream, so under the `> log 2>&1` a reader runs locally the two offsets advance independently
-and punch NUL holes through each other's lines (4d).
+Every leg announces its name, and the image where it runs in one, before it runs and its elapsed
+time after, `publish.sh` alongside `ci.sh`, so a long run reads as progress rather than as a hang.
+A leg added later owes the same marker, and a function a leg runs chains its statements with `&&`,
+because the `||` that captures the leg's status suspends `set -e` for everything it calls. A leg
+whose output is both streamed and grepped keeps the copy in a `mktemp` file: `tee /dev/stderr`
+reopens fd 2, and under `./ci.sh > log 2>&1` the two offsets punch NUL holes through each other's
+lines (4d).
 
 The floors live in the `test` script, so `npm test` and the gate are one path: 100% of lines and
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards

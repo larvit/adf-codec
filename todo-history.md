@@ -560,19 +560,27 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       rather than promoting the gate's `dist`, and unmeasured until the log shows them. Per-leg
       timing is what turns "slow or hung" from a guess into a reading; the browser leg's own
       5.4–7.9s against a 17s warm gate is the number that made it obviously cheap.
-      **Measured** (2026-09-19): ten legs, not the nine counted above, each naming its image, on a
-      27.9 s warm gate — install 1.5 s, typecheck 1.1 s, Node tests 4.6 s, Deno 6.3 s, Bun 3.9 s,
-      build 1.0 s, pack and install 1.6 s, consumer typecheck 1.0 s, engines floor 0.5 s, browser
-      5.7 s. The browser leg lands in the 5.4–7.9 s the item quotes, and the markers cost nothing
-      measurable: 28.9 s before against 27.9 s after. `publish.sh` reads its fields in 2.5 s and the
-      registry in 1.4 s; its `npm ci` and rebuild are the gate's own 1.5 s and 1.0 s, so the seconds
-      §9 accepts for rebuilding rather than promoting the gate's `dist` are about 2.5.
-      Three things the writing turned up. The markers print to stderr, so a leg whose value is read —
-      `publish.sh` asking npmjs — stays capturable. `leg`'s locals carry its own name because bash
-      scopes them into whatever the leg runs: unprefixed, `name` was swallowed by the leg reading
-      `package.json`. And `leg` returns its command's status the way `with_firefox` already did,
-      because the bare call swallowed a non-zero one wherever `set -e` is suspended, which also gets
-      the elapsed time printed for the leg that failed.
+      **Measured** (2026-09-20): ten legs, not the nine counted above, each naming the image it runs
+      in where it runs in one, on a 28.4 s warm gate — install 1.5 s, typecheck 1.2 s, Node tests
+      4.9 s, Deno 6.0 s, Bun 4.5 s, build 1.0 s, pack and install 1.6 s, consumer typecheck 1.0 s,
+      engines floor 0.4 s, browser 5.6 s. The browser leg lands in the 5.4–7.9 s the item quotes,
+      and the markers cost nothing measurable: 28.9 s before against 28.4 s after. `publish.sh`
+      reads its fields in 2.6 s and the registry in 1.4 s; its `npm ci` and rebuild are the gate's
+      own 1.5 s and 1.0 s, so the seconds §9 accepts for rebuilding rather than promoting the gate's
+      `dist` are about 2.5.
+      Four things the writing turned up, three of them bash scoping a rule differently than it
+      reads. The markers print to stderr, so a leg whose value is read — `publish.sh` asking npmjs —
+      stays capturable. `leg`'s locals carry its own name because bash scopes them into whatever the
+      leg runs: unprefixed, `name` was swallowed by the leg reading `package.json`. `leg` returns
+      its command's status the way `with_firefox` already did, because the bare call dropped a
+      non-zero one wherever `set -e` is suspended, which also gets the elapsed time printed for the
+      leg that failed. And the `||` that captures that status suspends `set -e` for everything the
+      leg calls, so a function a leg runs chains its statements with `&&` or every statement but the
+      last runs unchecked: `read_package_fields` read on past a failed read, and `push_tag` pushed a
+      tag the tag step had refused to write, both of which aborted before this chunk (the
+      stability-reviewer, 2026-09-20). §10 carries the rule so the next leg cannot reintroduce it,
+      and `EPOCHREALTIME` is guarded at `source` so an older bash names itself rather than dying as
+      an unbound variable on the first leg.
 
 - [x] **5a — Rename to `@larvit/adf-codec` (`0.1.0`).** Before the first publish, the name being
       the published identity: `package.json` `name` and `repository`, the Gitea repo and its

@@ -3,15 +3,13 @@ set -euo pipefail
 cd "$(dirname "$0")"
 source ./docker-runner.sh
 
-test_log=$(mktemp)
+leg "install ($node_image)" in_image "$node_image" npm ci
+leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
 
-# Streamed, and copied so the zero-test guard reads the count without trading the output for it.
+test_log=$(mktemp)
 node_tests() {
   in_image "$node_image" npm test 2>&1 | tee "$test_log"
 }
-
-leg "install ($node_image)" in_image "$node_image" npm ci
-leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
 
 leg "tests ($node_image)" node_tests
 if grep -q 'ℹ tests 0' "$test_log"; then

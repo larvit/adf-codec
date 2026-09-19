@@ -1,3 +1,5 @@
+: "${EPOCHREALTIME:?the gate times its legs with EPOCHREALTIME — bash 5 or newer}"
+
 bun_image=oven/bun:1.4.0-alpine
 deno_image=denoland/deno:2.9.6
 firefox_image=selenium/standalone-firefox:153.0.4
@@ -10,8 +12,7 @@ in_image() {
   docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp ${PROPERTY_RUNS+-e PROPERTY_RUNS} ${in_image_network:+--network "$in_image_network"} -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
 }
 
-# Markers go to stderr so a leg reporting a value stays capturable, and the locals carry the
-# function's own name because bash scopes them dynamically into whatever the leg runs.
+# Markers on stderr so a captured leg's value stays clean; leg_* because bash scopes local into the leg's own call.
 leg() {
   local leg_name=$1 leg_elapsed leg_started leg_status=0
   shift
@@ -26,7 +27,7 @@ leg() {
 
 with_firefox() {
   local container in_image_network status=0
-  container=$(docker run -d --rm "$firefox_image")
+  container=$(docker run -d --rm "$firefox_image") || return $?
   # The id is baked in: the trap fires after this function's locals are gone.
   trap "docker rm -f $container >/dev/null 2>&1" EXIT
   trap 'exit 130' INT
