@@ -39,6 +39,8 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
   container: LineContainer | undefined
+  // Pieces below this have been walked for openers to deactivate, so a nest of doomed brackets stays linear.
+  deactivatedBefore: number
   definitions: LinkDefinitions
   openingSpellableLink: boolean
   path: ConvertErrorPath
@@ -61,7 +63,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
 }
 
 function parseInline(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer | undefined, spans: NestedSpans): Result<InlineContent> {
-  const scan: Scan = { container, definitions, openingSpellableLink: false, path, pending: '', pieces: [], source, spans }
+  const scan: Scan = { container, deactivatedBefore: 0, definitions, openingSpellableLink: false, path, pending: '', pieces: [], source, spans }
   let index = 0
   while (index < source.length) {
     switch (source.charAt(index)) {
@@ -346,20 +348,37 @@ function resolveTarget(scan: Scan, bracket: Bracket, index: number): { definitio
   return { definition, length: label?.length ?? 0 }
 }
 
-// `false` keeps the brackets text: an empty link text gives the mark no node to ride, and a linked one no room for a second.
 function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<boolean> {
   if (holdsImage(inner)) return failure('unmappable-image', imageAlone, scan.path)
   if (holdsCarry(inner)) return failure('unsupported-node-shape', carriedInMark, scan.path)
   const resolved = resolveNodes(inner, scan.path)
   if (!resolved.ok) return resolved
   const nodes = resolved.value
-  if (nodes.length === 0 || holdsLink(nodes)) return success(false)
+  // An empty link text gives the mark no node to ride, so the brackets stay text.
+  if (nodes.length === 0) return success(false)
+  if (holdsLink(nodes)) {
+    deactivateOpeners(scan, at)
+    return success(false)
+  }
   const attrs = definition.title === undefined ? { href: definition.destination } : { href: definition.destination, title: definition.title }
-  scan.pieces.length = at
-  // CommonMark: no link nests inside another, though an image's description holds one.
-  for (const piece of scan.pieces) if (piece.kind === 'open' && !piece.image) piece.active = false
+  truncatePieces(scan, at)
+  deactivateOpeners(scan, at)
   scan.pieces.push({ kind: 'nodes', nodes: applyMark(nodes, { attrs, type: 'link' }) })
   return success(true)
+}
+
+// CommonMark: no link nests inside another, though an image's description holds one.
+function deactivateOpeners(scan: Scan, before: number): void {
+  for (let index = Math.min(scan.deactivatedBefore, before); index < before; index += 1) {
+    const piece = scan.pieces[index]
+    if (piece?.kind === 'open' && !piece.image) piece.active = false
+  }
+  scan.deactivatedBefore = before
+}
+
+function truncatePieces(scan: Scan, to: number): void {
+  scan.pieces.length = to
+  scan.deactivatedBefore = Math.min(scan.deactivatedBefore, to)
 }
 
 function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<null> {
@@ -368,7 +387,7 @@ function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition:
   if (!resolved.ok) return resolved
   const alt = resolved.value
   const attrs = alt === '' ? { type: 'external', url: definition.destination } : { alt, type: 'external', url: definition.destination }
-  scan.pieces.length = at
+  truncatePieces(scan, at)
   scan.pieces.push({ alt, kind: 'image', node: { attrs: { layout: 'center' }, content: [{ attrs, type: 'media' }], type: 'mediaSingle' } })
   return success(null)
 }

@@ -1020,6 +1020,7 @@ test('names the link a directive link wraps, no link holding another', () => {
   assert.equal(content(markdownToAdf('!adf:link[<http://x/>]{collection=c href="/u"}\n')), named)
   assert.equal(content(markdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n')), named)
   assert.equal(content(markdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n')), named)
+  assert.equal(content(markdownToAdf('!adf:link[<http://x/>]{href="/u"}\n')), named)
 })
 
 test('names the directive mark left without the content it wraps', () => {
