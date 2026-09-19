@@ -219,22 +219,7 @@ bundle size and the tagline.
       over four concerns in one loop — escape, code span, nested directive, bracket balance — which
       4c left half-split and this item either passes or forces apart (the systems-architect and the
       maintainer, 2026-09-18).
-- [ ] **18 — The subtree the directive spelling asks about (`0.2.0`).** The parser asks
-      `commonMarkSpelling` at every directive-spelled block and the answer emits the whole subtree
-      below, so a node at depth d is spelled d times: three nested rule-first directive lists cost
-      18 asks over 10 nodes, and 250 levels parse in 1.2 s at 16.4 kB, 4.9 s at 261 kB with a
-      kilobyte of content per level. The depth guard bounds the levels at about 250, never the
-      content, so this is the pipeline persona's hang on an input nobody typed (§11). Keeping each
-      child's emitted result for its parent's ask is not a straight handover: the same node object
-      is asked at different depths — 4, 3 and 2 for the innermost list of three — because the
-      parser counts a list and its item as two levels where the emitter's readable list counts one
-      (4b), and `headroom` is that guard's slack. The parts that survive the measurement: the paths
-      agree, `text` and `spelling` carry no depth, `headroom` is affine in it, and the parser asks
-      first at the deepest of them, so a kept result rebases by the difference. Either rebase and
-      record that argument in `AGENTS.md`, or give both directions one list accounting so a node
-      has one depth and nothing needs rebasing — which reopens 4b. A single post-build walk was
-      rejected: it reports the outer offender where the build reports the inner one (the
-      maintainer, 2026-09-18).
+- [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 
 ## The ADF inventory to cover
 
