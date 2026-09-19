@@ -83,7 +83,7 @@ Parsing — `markdownToAdf`, and `htmlToAdf` at `0.2.0`:
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the markdown holds a raw HTML tag, comment or processing instruction | remove it or write it in the flavour — ADF holds no raw-HTML node, and the element mapping lands at `0.2.0` |
-| `unmappable-image` | an image sits inside other content, or carries a title | give the image a paragraph of its own and drop the title |
+| `unmappable-image` | an image sits inside other content that is not another image's description, or carries a title | give the image a paragraph of its own and drop the title |
 
 Emitting — `adfToMarkdown`, and `adfToHtml` at `0.2.0`:
 
@@ -121,8 +121,9 @@ emit refuses:
   empty link, a list continuing past a marker change stays one list against CommonMark's two, a
   shortcut reference matching its definition only under Unicode case folding stays unresolved, and
   a link whose text holds an autolink keeps the inner link and leaves the outer brackets literal
-  text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other. The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the
-  suite holds no example of the fourth.
+  text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other.
+  The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite
+  holds no example of the fourth.
 - Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
   processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.2.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding

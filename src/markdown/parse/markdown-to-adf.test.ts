@@ -849,7 +849,8 @@ test('keeps the carry and the image the brackets a nested link leaves literal ho
   assert.deepEqual(content(markdownToAdf(`[[<http://x/>](/c)${carried}](/w)\n`)), [
     { content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
   ])
-  assert.deepEqual(content(markdownToAdf('![![a [b](/c) ](/i)[![x](/y)[<http://x/>](/c)](/w)](/v)\n')), [image('/v', 'a b [x[http://x/](/c)](/w)')])
+  // The image close folds the link-marked piece into alt text, so only the deactivation still knows the enclosing bracket is doomed.
+  assert.deepEqual(content(markdownToAdf('![![a [b](/c) ](/i)[![[<http://x/>](/c)](/y)](/w)](/v)\n')), [image('/v', 'a b [[http://x/](/c)](/w)')])
 })
 
 test('reads the reference links a definition resolves, and leaves the rest literal', () => {
