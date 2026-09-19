@@ -849,7 +849,7 @@ test('keeps the carry and the image the brackets a nested link leaves literal ho
   assert.deepEqual(content(markdownToAdf(`[[<http://x/>](/c)${carried}](/w)\n`)), [
     { content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'placeholder' }, text('](/w)')], type: 'paragraph' },
   ])
-  // The image close folds the link-marked piece into alt text, so only the deactivation still knows the enclosing bracket is doomed.
+  // The failing bracket sits inside the image, not beside it: beside it the link-marked piece survives, and the deactivation stops being what the assertion pins.
   assert.deepEqual(content(markdownToAdf('![![a [b](/c) ](/i)[![[<http://x/>](/c)](/y)](/w)](/v)\n')), [image('/v', 'a b [[http://x/](/c)](/w)')])
 })
 
