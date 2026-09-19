@@ -840,12 +840,14 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       250 nested directive lists fall from 1.22 s to 0.04 s at 16.1 kB and from 5.20 s to 0.12 s at
       261 kB; a panel between every pair of lists 1.00 s to 0.05 s, an opaque carry in every item
       1.08 s to 0.03 s. No figure enters the gate (§14), as 4c settled for a behaviour-preserving
-      cost fix; what the gate holds is the refusal. The rebase's sign is pinned by the two
-      depth-boundary tests already there, its magnitude by a third case the review found: an ordered
-      list past the marker cap gives way, so the emitter spends two levels where the parser spent
-      one, and two such lists put a read below the depth that filled its entry — which a hit would
-      answer without the depth guards the walk runs, naming a different refusal at a different path.
-      That read re-spells (the stability-reviewer, 2026-09-19). The one list accounting was not
+      cost fix; what the gate holds is the refusal. An ordered list past the marker cap gives way,
+      so the emitter spends two levels where the parser spent one: one such list between an ask and
+      a kept entry cancels the credit the directive form starts with, and two put the read below the
+      depth that filled it — which a hit would answer without the depth guards the walk runs. That
+      read re-spells. Three cases hold the arithmetic between them: the two depth-boundary tests
+      already there pin the sign, the two-overflow case pins the guard, and the one-overflow case
+      pins the magnitude, a constant rebase accepting there a document the emitter then refuses
+      (the stability-reviewer, 2026-09-19). The one list accounting was not
       taken: 4b settled that accounting the day this was filed, and reopening it is an ask rather
       than a chunk.
 

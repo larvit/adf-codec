@@ -317,7 +317,7 @@ someone spells it or pins it.
   node once rather than once per level above it (18). The node reference is the key, which holds
   because the parse builds one object per position; `adfToMarkdown` passes no memo, where a
   consumer's document may hold one node at two positions (4b). `text` and `spelling` carry no depth
-  and `headroom` is affine in it, so a read above the depth that filled the entry rebases; a read
+  and `headroom` is affine in it, so a read at or above the depth that filled the entry rebases; a read
   below re-spells, because a hit skips the depth guards the walk it replaces runs and an ordered
   list past the marker cap gives way, spending two emitter levels where the parser spent one. A
   give-way is kept too and serves any depth, reading the node's shape alone. Only what succeeded is
