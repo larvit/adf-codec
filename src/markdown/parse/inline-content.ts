@@ -39,7 +39,7 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
   container: LineContainer | undefined
-  // Pieces below this have been walked for openers to deactivate, so a nest of doomed brackets stays linear.
+  // Pieces below this have been walked for openers to deactivate: one left active reaches closeLink, whose image and carry guards refuse what literal brackets hold fine.
   deactivatedBefore: number
   definitions: LinkDefinitions
   openingSpellableLink: boolean

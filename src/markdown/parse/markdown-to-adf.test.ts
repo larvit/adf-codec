@@ -841,6 +841,14 @@ test('leaves the brackets of a link whose text already holds one the text they a
   ])
 })
 
+// Literal brackets hold what no mark may, so the openers they doom give way before closeLink refuses a carry or an image inside them.
+test('keeps the carry and the image the brackets a nested link leaves literal hold', () => {
+  assert.deepEqual(content(markdownToAdf('[[<http://x/>](/c)!adf:carry{json="{\\"type\\":\\"blockCard\\"}"}](/w)\n')), [
+    { content: [text('[['), marked('http://x/', link('http://x/')), text('](/c)'), { type: 'blockCard' }, text('](/w)')], type: 'paragraph' },
+  ])
+  assert.deepEqual(content(markdownToAdf('![![a [b](/c) ](/i)[![x](/y)[<http://x/>](/c)](/w)](/v)\n')), [image('/v', 'a b [x[http://x/](/c)](/w)')])
+})
+
 test('reads the reference links a definition resolves, and leaves the rest literal', () => {
   assert.deepEqual(content(markdownToAdf('[a][r]\n\n[r]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
   assert.deepEqual(content(markdownToAdf('[a][]\n\n[a]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])

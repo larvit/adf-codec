@@ -55,7 +55,7 @@ it named converts.
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |
-| a link whose text already holds one (`[<https://example.com/>](/v)`) | drops the outer link | leaves the outer brackets literal text |
+| a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text |
 | a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |
