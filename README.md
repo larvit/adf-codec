@@ -29,9 +29,9 @@ In priority order.
 2. **Three formats, ADF the hub.** ADF, one markdown flavour, one HTML dialect, markdown↔HTML
    composing through ADF — four conversions to keep correct, never a fifth, and never a fourth
    format.
-3. **Plain CommonMark is input.** Markdown written for something else converts — the three
-   carve-outs and the one gap below are the whole of the exception — and every spelling the
-   flavour claims on top of CommonMark is escapable, so the flavour is opt-in.
+3. **Plain CommonMark is input.** Markdown written for something else converts — the exceptions
+   below are the whole of them — and every spelling the flavour claims on top of CommonMark is
+   escapable, so the flavour is opt-in.
 4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the directive
    form carries only what CommonMark cannot hold.
 5. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
@@ -118,7 +118,7 @@ Parsing — `markdownToAdf`, and `htmlToAdf` at `0.2.0`:
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in a `carry` | write the spelling the message names, or escape the prefix — `\!adf:`, block and inline alike — to keep it literal text |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the markdown holds a raw HTML tag, comment or processing instruction | remove it or write it in the flavour — ADF holds no raw-HTML node, and the element mapping lands at `0.2.0` |
+| `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.2.0` | remove the construct, or write what it holds in the flavour |
 | `unmappable-image` | an image sits inside other content that is not another image's description, or carries a title | give the image a paragraph of its own and drop the title |
 
 Emitting — `adfToMarkdown`, and `adfToHtml` at `0.2.0`:
@@ -144,13 +144,13 @@ emit refuses:
 
 - `markdownToAdf(adfToMarkdown(doc))` equals `doc` — unknown node types included, carried opaquely
   (AGENTS.md §3).
-- Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML below, with three
-  carve-outs — literal text matching directive, pipe-table or strikethrough syntax is claimed
-  (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as its own
-  title-less paragraph; mid-text and titled images are error results, save an image inside
-  another's description, which flattens into the alt text. Converting back yields the
-  library's canonical spelling, which round-trips byte-identically — where it converts back at
-  all: a parse succeeding is no promise of that, so keep the source until the way back succeeds.
+- Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
+  names, with three carve-outs — literal text matching directive, pipe-table or strikethrough
+  syntax is claimed (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as
+  its own title-less paragraph; mid-text and titled images are error results, save an image inside
+  another's description, which flattens into the alt text. Converting back yields the library's
+  canonical spelling, which round-trips byte-identically — where it converts back at all: a parse
+  succeeding is no promise of that, so keep the source until the way back succeeds.
   ``` ` `` ` ``` reads cleanly and then refuses.
 - Four CommonMark spellings parse without an error and build a document the reference
   implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
@@ -160,8 +160,6 @@ emit refuses:
   text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other.
   The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite
   holds no example of the fourth.
-- Raw HTML in markdown input is an error result, never a silent drop — a tag, a comment and a
-  processing instruction alike. ADF holds no raw-HTML node; the element mapping ships at `0.2.0`.
 - Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding
   a carriage return, or a paragraph line beginning with a code span whose backticks read back as a
   fence. Show the refusal and keep the document read-only; saving markdown you could not produce
@@ -175,8 +173,9 @@ emit refuses:
 - A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
-  `data-*` attributes. Foreign HTML maps a documented element set, an unmappable element is an
-  error, and well-formed HTML only — no tag-soup recovery.
+  `data-*` attributes. Foreign HTML maps a documented element set, which markdown's raw HTML reads
+  through as well, and a construct outside it is an error; well-formed HTML only — no tag-soup
+  recovery.
 
 ## The package
 

@@ -928,6 +928,21 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       directive-spelled opening link leaves the first segment with no node range for `escape` to
       ask about — so both are uncovered branches like the repo's other guards, 98.92% to 98.84%
       against the floor of 98.
+- [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).** §Goals 3 says "the three
+      carve-outs and the one gap below are the whole of the exception" and §The guarantees says
+      "Raw HTML in markdown input is an error result", both reading as settled, where
+      `spec/flavour.md` §Raw HTML in input says the opposite: `markdownToAdf` routes each construct
+      through the foreign HTML element mapping, and only a construct without one is refused. The
+      spec stands — commonplace markdown is accepted, and every tool writes some HTML (the
+      maintainer, 2026-09-20). So rewrite the two README texts to name the exception that survives
+      6 and 7, a construct outside the documented element set, and state it in one place, since
+      three already spell this one rule. `markdown-to-adf.ts:73` and `inline-content.ts:158` are
+      the whole of the refusal and already say "at this version"; 7 is what makes them route.
+      **Done** (2026-09-20): the rule has one home, the `unmappable-html` row, naming the element
+      set and what its absence covers at this version; §Goals 3 bounds the exceptions without
+      listing them, the standalone raw-HTML guarantee goes, and the `0.2.0` guarantee says
+      markdown's raw HTML reads the same set. That guarantee's "never a silent drop" went with it:
+      6 settled that `<script>` and `<style>` drop whole, so the claim does not survive 7.
 
 ## 5 — Ship `0.1.0`
 

@@ -40,16 +40,6 @@ panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
 
-- [ ] **29 — The README reads raw HTML as refused for good (`0.2.0`).** §Goals 3 says "the three
-      carve-outs and the one gap below are the whole of the exception" and §The guarantees says
-      "Raw HTML in markdown input is an error result", both reading as settled, where
-      `spec/flavour.md` §Raw HTML in input says the opposite: `markdownToAdf` routes each construct
-      through the foreign HTML element mapping, and only a construct without one is refused. The
-      spec stands — commonplace markdown is accepted, and every tool writes some HTML (the
-      maintainer, 2026-09-20). So rewrite the two README texts to name the exception that survives
-      6 and 7, a construct outside the documented element set, and state it in one place, since
-      three already spell this one rule. `markdown-to-adf.ts:73` and `inline-content.ts:158` are
-      the whole of the refusal and already say "at this version"; 7 is what makes them route.
 - [ ] **30 — AGENTS.md says each thing once (`0.2.0`).** §15's ask protocol — name the class, cite
       the earlier asks of it, never "A or B?" — is the rule reviewers cite most and has no heading,
       two thirds down a 50-line section in a file with no index. Give it one. §15 also offers "the
@@ -302,6 +292,7 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
 - [x] **17 — A machine-enforced size ratchet (`0.2.0`).**
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
+- [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
 
 ## The ADF inventory to cover
 
