@@ -18,7 +18,8 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 17, 10, 6, 7, 5f, 5g → `0.2.0`; 8, 9 → TBD; 5e last.
+4c, 14, 15, 16, 18, 4d, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 10, 6, 7, 5f, 5g → `0.2.0`;
+8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
 shaped ships in one release rather than a string of them: nothing waits on a version, and no
 consumer is served by the churn (the maintainer, 2026-09-18). So `0.2.0` completes §1's three
@@ -26,10 +27,64 @@ formats, and `0.2.1` and `0.3.0` are gone. `8` and `9` stay out as the two goals
 yet. `0.2.0`'s order is settled (the maintainer, 2026-09-13, extended 2026-09-18): 11 makes the
 tables 4 generates from answer to Atlassian's schema, 4 proves 12, 13 spells 11's gaps in 12's
 grammar, and 12 rewrites code 4b and 4c change; then 14 moves the files 15, 16 and 10 edit and HTML
-is written against that layout, 4d marks the gate legs before 17 adds one, 17 puts the complexity
-guardrail under the largest body of new code, and 5f and 5g read last because 7 is what changes the
+is written against that layout, 4d marks the gate legs before 17 adds one, 17 puts the size ratchet
+under the largest body of new code, and 5f and 5g read last because 7 is what changes the
 bundle size and the tagline.
+19 to 27 come from a comprehension panel — nine readers across four experience levels, none of
+them able to see this file, reporting what defeated them and whether the project's shape fits in a
+head (2026-09-20). They read ahead of 6, 7 and 10 because every one of them is cheaper before the
+HTML format lands than after: 19 and 20 because HTML has no answer without them, 21 to 24 because
+HTML doubles the importers and the file count they touch, and 25 to 27 because they are what the
+panel says the next reader pays for.
 
+- [ ] **19 — A home for what both formats read (`0.2.0`).** Settle where a construct both formats
+      need lives, and say so in AGENTS.md §11. Today `adf/` may hold no format knowledge and each
+      format directory holds its own shared layer, so there is no third place; the first ADF-shaped
+      but format-touching helper either breaks the layering or becomes a second spelling of one
+      rule, which is the loss §2 exists to stop. Both architects ranked this first and the only
+      item cheaper before the feature than after.
+- [ ] **20 — The give-way channel is unmistakable (`0.2.0`).** `emitBlockquote`, `emitCodeBlock`,
+      `emitHeading`, `emitList`, `emitParagraph` and `emitRule` return
+      `Result<EmittedBlock> | undefined`, where `undefined` gives way to the directive form and an
+      error refuses the document. Give the six the `try` prefix the repo already uses for
+      `tryImage`, `tryPipeTable` and `tryPipeCell`, or a return type that cannot hold both, so a
+      newcomer meeting an unspellable shape cannot reach for `failure` and silently narrow what
+      converts. Named as the first thing a new senior would break, and it lands on §1.
+- [ ] **21 — The ADF tables carry ADF's nouns (`0.2.0`).** `adf/block-directives.ts` and
+      `adf/inline-directives.ts` hold the ADF node tables — `paragraph`, `heading`, `blockquote`
+      and `rule` among them — under the markdown flavour's word, inside the directory §11 forbids
+      to know a format. Rename to the noun `spec/flavour.md` uses, types and accessors with them.
+      Before 7 doubles the import sites.
+- [ ] **22 — `LineContainer` sits at the markdown level (`0.2.0`).** Two of the four
+      `parse/` → `emit/` imports fetch this type from `emit/line-escaping.ts`, camouflaging the two
+      that are the deliberate spelling consultation. Move it, and name those two in §11 as the whole
+      of that surface, so a reviewer checks the seam with one grep.
+- [ ] **23 — The block-directive fragments are one file (`0.2.0`).** `block-directive-arguments.ts`,
+      `-forms.ts` and `-marks.ts` are three files under 25 lines answering one question. Fold them,
+      and take `src/markdown/` — the worst level both architects named, 13 entries with no
+      organising question — down with them.
+- [ ] **24 — The conformance gates have a directory (`0.2.0`).** Six root tests with no sibling
+      source (`adf-property`, `adf-schema`, `commonmark-spec`, `corpus`, `flavour`,
+      `markdown-property`) plus `property-harness.ts` are the machinery that makes the docs
+      executable, and they read as leftovers. Give them one, so `src/` root shows what it holds.
+- [ ] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).** Both are single unindexed paragraphs
+      holding the answer to nearly every question the panel had, and six readers and both
+      architects independently reported that finding the sentence cost more than reading the code
+      it governed. Sub-headings or an index at each section's head; delete whatever the code,
+      a type or a test name already says rather than reorganising it.
+- [ ] **26 — The two mutable structures say what they guarantee (`0.2.0`).** `escapedIndexes` fills
+      the `escaped` set left to right while the predicates it calls read the half-built set, then
+      `escapeClosedRuns` walks the same set right to left and adds to it; the order is load-bearing
+      and asserted nowhere, and a refactor to `filter`/`map` breaks it silently. Separately,
+      `walk.edges` is the blockquote and list-item subsequence of `walk.stack` with each entry's
+      stack index, maintained by hand in six places and stated in none. Put each invariant where it
+      cannot be got wrong — a type, a derived value, a named phase — rather than in a comment. The
+      panel's first and second hardest places.
+- [ ] **27 — The dead `headroom` write goes (`0.2.0`).** `directiveItems`
+      (`emit/adf-to-markdown.ts:258`) writes `item.walk.headroom - 1` onto each `PlacedBlock`, and
+      nothing on that path reads a block's `headroom`: `joinBlocks` and `separationBetween` read
+      `text` and `spelling`, and `emitDirectiveBlock` takes the level from the `Walk`. Of the two
+      subtractions three readers flagged as double-counting, this is the one that is dead.
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
 - [x] **1b — Block node syntaxes.**
@@ -198,14 +253,18 @@ bundle size and the tagline.
 - [x] **14 — The CommonMark subset's directory (`0.2.0`).**
 - [x] **15 — The href-less directive link (`0.2.0`).**
 - [x] **16 — The link wrapping a link (`0.2.0`).**
-- [ ] **17 — A machine-enforced size guardrail (`0.2.0`).** Add a per-function complexity check to
-      the gate — branch count or size — so the fits-in-your-head guardrail fails the build rather
-      than waiting for a review to catch it (the systems-architect, 2026-09-16). It reads ahead of
-      6, 7 and 10 so the largest body of new code is written under it, which is also what decides
-      the threshold: today's worst is `readDirectiveContent`, 27 lines and about 12 decision points
-      over four concerns in one loop — escape, code span, nested directive, bracket balance — which
-      4c left half-split and this item either passes or forces apart (the systems-architect and the
-      maintainer, 2026-09-18).
+- [ ] **17 — A machine-enforced size ratchet (`0.2.0`).** Add a per-function line ceiling to the
+      gate, set at today's worst and only ever moving down, so the largest body of new code cannot
+      exceed what is already here (the systems-architect, 2026-09-16; narrowed by the comprehension
+      panel, 2026-09-20). oxlint's `eslint/max-lines-per-function` measures it — one devDependency,
+      carrying the musl binding the gate's image needs, since TypeScript 7 is the native compiler
+      and exposes no parser to write the check against. No cyclomatic rule: `eslint/complexity`
+      charges `?.` and `??` a point each, the guards §10 already exempts from the branch floor, and
+      its two worst functions, `readBlockLine` and `parseInline`, went unnamed by all nine readers
+      while `isNodeArray` and `blockNode` were volunteered as among the clearest code here. Length
+      ranks no better: `emitList` and `blockNode` are both 26 lines, one the panel's unanimous top
+      four and the other the clearest map of the format in the repo. So the ceiling guards against
+      drift and never drives a refactor — 19 to 27 are where the hard work actually is.
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 
 ## The ADF inventory to cover
