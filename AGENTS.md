@@ -121,7 +121,10 @@ names the escape that unclaims the form claimed: `\!adf:` for a directive, block
 alike, `\|` for every pipe row.
 Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
 name reads true of it in both directions; where none does and a plain name exists, a new code — in
-any 0.x minor, and after 1.0 only in a MAJOR (the maintainer, 2026-09-18). A code names the
+any 0.x minor, and after 1.0 only in a MAJOR (the maintainer, 2026-09-18). A refusal whose cause is
+this library's own invariant rather than the input takes the existing code nearest what the consumer
+sees — a document that does not convert is `unsupported-node-shape` — since a code no input reaches
+is one no consumer can switch on (the maintainer, 2026-09-20). A code names the
 cause; where one cause recurs across node types, across one mark's attributes or across
 directions, one code covers them all and
 `path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
