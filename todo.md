@@ -192,11 +192,10 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
 - [ ] **6 — The HTML dialect spec (`0.2.0`).** Element-by-element mapping, the `data-*` fidelity
       scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts —
       the set `markdownToAdf` shares (`spec/flavour.md` §Raw HTML in input; 29).
-      **Settled** (the maintainer, 2026-09-20), three answers that shape the set:
+      **Settled** (the maintainer, 2026-09-20), the four answers that shape the set:
       - A container ADF has no node for unwraps to its children, its own attributes dropped, so
         `<div align="center">text</div>` keeps `text` and loses the box and the alignment ADF
-        cannot hold. AGENTS.md §3's "error result naming the element" stops being the whole rule
-        when this lands, and says so there.
+        cannot hold.
       - `<details><summary>Title</summary>…</details>` is an `expand`, the summary its `title`;
         one inside another is a `nestedExpand`, as 10 already spells for the lossy pair. An empty
         `<details>` is still refused — `expand` requires content, so there is nothing to build.
@@ -205,10 +204,18 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
         `annotation` mark, which carries an `id` and no text, the words living behind an Atlassian
         API. `placeholder` is the editor's own visible hint, and `extension` demands an
         `extensionKey` naming a vendor app. Nothing can hold the words, so nothing accepts them.
-      Open, and the reason the first answer is not yet a rule: whether unwrapping is the default
-      for any unmapped element holding children, or only for a named transparent set. `<script>`
-      and `<style>` hold text that is not prose, so the default leaks code into the document as
-      visible words.
+      - `<script>` and `<style>` drop whole, their text with them. Neither holds anything a reader
+        of the document ever saw, so nothing is lost; unwrapping them would put `alert(1)` on the
+        page as prose. A `style` attribute is a separate question — `textColor` and
+        `backgroundColor` are the marks it could reach — and is not read at `0.2.0`, the work
+        outweighing what it buys.
+      So the set sorts every element three ways, and that is what AGENTS.md §3 gains in place of
+      "error result naming the element": a container around document content unwraps, content ADF
+      cannot hold is an error result naming it, and what is not document content at all drops
+      whole. A comment sorts into the second rather than the third because a person wrote those
+      words on purpose. 10's "Rejected in the survey" line names raw HTML and comments and does not
+      contradict this: it rejects them as spellings the lossy pair writes and reads back, where
+      `plainMarkdownToAdf` composes on `markdownToAdf` and so inherits whatever this set accepts.
 - [ ] **7 — HTML, the third format (`0.2.0`).** `adfToHtml`, `htmlToAdf`, the composed
       `markdownToHtml` / `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from
       here (§10). The README's tagline and `package.json`'s `description` regain HTML (5g).
