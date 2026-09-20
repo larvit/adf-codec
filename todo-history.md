@@ -874,9 +874,10 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       ceiling is 52, `parseInline`'s length and the built set's worst; at 51 the gate reddens on
       it. The leg runs `oxlint --deny-warnings -c .oxlintrc.json src` beside the typecheck at 0.8s,
       the two flags because oxlint exits 0 on a warning and, discovering no config, falls back to
-      96 default rules; `IIFEs`, `skipBlankLines` and `skipComments` are spelled so a changed
-      default cannot move what 52 counts (the stability-reviewer, 2026-09-20). The lockfile carries
-      every platform binding, so `npm ci` resolves the musl one inside the image.
+      96 default rules; `skipBlankLines` and `skipComments` are spelled so a changed default cannot
+      move what 52 counts, and `IIFEs` because oxlint exempts an IIFE by default (the
+      stability-reviewer, 2026-09-20). The lockfile carries every platform binding, so `npm ci`
+      resolves the musl one inside the image.
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).** The parser asks
       `commonMarkSpelling` at every directive-spelled block and the answer emits the whole subtree
       below, so a node at depth d is spelled d times: three nested rule-first directive lists cost

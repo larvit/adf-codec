@@ -261,9 +261,11 @@ The size ratchet is the other such number, `.oxlintrc.json`'s single rule over t
 downward. It stops where the package does, because one ceiling covering the tests and the harness
 too would have to be their worst — 64 — which loosens the guard over the shipped code. It guards
 against drift and never drives a refactor, so no cyclomatic rule and no second lint rule join it:
-neither measure picked out what nine readers found hard (the comprehension panel, 2026-09-20). The
-leg passes `--deny-warnings` and an explicit `-c`, since oxlint exits 0 on a warning and, finding
-no config, falls back to 96 default rules — either way green with the ceiling gone.
+neither measure picked out what nine readers found hard (the comprehension panel, 2026-09-20).
+Three switches are load-bearing: `IIFEs: true`, since oxlint exempts an IIFE otherwise; an explicit
+`-c`, since finding no config it falls back to 96 default rules, green with the ceiling gone; and
+`--deny-warnings`, since a rule from a category the config never names arrives as a warning it
+exits 0 on.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
 editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
