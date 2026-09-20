@@ -253,18 +253,7 @@ panel says the next reader pays for.
 - [x] **14 — The CommonMark subset's directory (`0.2.0`).**
 - [x] **15 — The href-less directive link (`0.2.0`).**
 - [x] **16 — The link wrapping a link (`0.2.0`).**
-- [ ] **17 — A machine-enforced size ratchet (`0.2.0`).** Add a per-function line ceiling to the
-      gate, set at today's worst and only ever moving down, so the largest body of new code cannot
-      exceed what is already here (the systems-architect, 2026-09-16; narrowed by the comprehension
-      panel, 2026-09-20). oxlint's `eslint/max-lines-per-function` measures it — one devDependency,
-      carrying the musl binding the gate's image needs, since TypeScript 7 is the native compiler
-      and exposes no parser to write the check against. No cyclomatic rule: `eslint/complexity`
-      charges `?.` and `??` a point each, the guards §10 already exempts from the branch floor, and
-      its two worst functions, `readBlockLine` and `parseInline`, went unnamed by all nine readers
-      while `isNodeArray` and `blockNode` were volunteered as among the clearest code here. Length
-      ranks no better: `emitList` and `blockNode` are both 26 lines, one the panel's unanimous top
-      four and the other the clearest map of the format in the repo. So the ceiling guards against
-      drift and never drives a refactor — 19 to 27 are where the hard work actually is.
+- [x] **17 — A machine-enforced size ratchet (`0.2.0`).**
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 

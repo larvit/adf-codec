@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": { "correctness": "off" },
+  "ignorePatterns": ["src/**/*.test.ts", "src/property-harness.ts"],
+  "rules": {
+    "eslint/max-lines-per-function": ["error", { "max": 52 }]
+  }
+}

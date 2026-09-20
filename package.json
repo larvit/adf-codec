@@ -23,12 +23,14 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "size-ratchet": "oxlint src",
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-exclude=src/property-harness.ts --test-coverage-branches=98 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.build.json"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
     "fast-check": "4.10.0",
+    "oxlint": "1.83.0",
     "typescript": "7.0.2"
   }
 }

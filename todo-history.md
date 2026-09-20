@@ -856,6 +856,24 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       dropping the outer link silently as `closeLink`'s `applyMark` does today, with a
       normalization fixture per shape (the stability-reviewer, 2026-09-16; the maintainer,
       2026-09-17).
+- [x] **17 — A machine-enforced size ratchet (`0.2.0`).** Add a per-function line ceiling to the
+      gate, set at today's worst and only ever moving down, so the largest body of new code cannot
+      exceed what is already here (the systems-architect, 2026-09-16; narrowed by the comprehension
+      panel, 2026-09-20). oxlint's `eslint/max-lines-per-function` measures it — one devDependency,
+      carrying the musl binding the gate's image needs, since TypeScript 7 is the native compiler
+      and exposes no parser to write the check against. No cyclomatic rule: `eslint/complexity`
+      charges `?.` and `??` a point each, the guards §10 already exempts from the branch floor, and
+      its two worst functions, `readBlockLine` and `parseInline`, went unnamed by all nine readers
+      while `isNodeArray` and `blockNode` were volunteered as among the clearest code here. Length
+      ranks no better: `emitList` and `blockNode` are both 26 lines, one the panel's unanimous top
+      four and the other the clearest map of the format in the repo. So the ceiling guards against
+      drift and never drives a refactor — 19 to 27 are where the hard work actually is.
+      **Done** (2026-09-20): `.oxlintrc.json` carries the one rule, every category and plugin off,
+      over the 40 files `tsconfig.build.json` builds — the tests and `property-harness.ts` out, as
+      they are out of the coverage floors, the harness's own 59-line function with them. The
+      ceiling is 52, `parseInline`'s length and the repo's worst; at 51 the gate reddens on it.
+      `npm run size-ratchet` is the leg, beside the typecheck at 0.8s, and the lockfile carries
+      every platform binding, so `npm ci` resolves the musl one inside the image.
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).** The parser asks
       `commonMarkSpelling` at every directive-spelled block and the answer emits the whole subtree
       below, so a node at depth d is spelled d times: three nested rule-first directive lists cost

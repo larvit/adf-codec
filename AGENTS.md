@@ -78,7 +78,8 @@ vendored the same way, at `spec/adf-schema/`, rather than as the `@atlaskit/adf-
 dependency — CommonJS-only, some fifty packages with React among them, and a release most days for
 Renovate to automerge — re-pinned by hand when a payload or a report shows the need.
 `devDependencies`: few, each earning its keep; they never reach a consumer. `fast-check` earns its
-place shrinking a failing generated document to the nodes that break it.
+place shrinking a failing generated document to the nodes that break it, `oxlint` measuring §10's
+size ratchet — TypeScript 7 is a native compiler and exposes no parser to write that check against.
 
 ## 6. The package contract
 
@@ -253,6 +254,13 @@ The floors live in the `test` script, so `npm test` and the gate are one path: 1
 functions, and a branch floor that only ever moves upward. It sits below 100 because the guards
 `noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index
 compared against `undefined` — have a half no valid document reaches.
+
+The size ratchet is the other such number, `.oxlintrc.json`'s single rule over the files
+`tsconfig.build.json` builds: no function past 52 lines, today's worst (`parseInline`), moving only
+downward. It guards against drift and never drives a refactor, so no cyclomatic rule and no second
+lint rule join it — neither measure picked out what nine readers found hard (the comprehension
+panel, 2026-09-20), and `eslint/complexity` charges a point for each `?.` and `??` the branch floor
+above already exempts.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
 editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
