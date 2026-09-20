@@ -18,7 +18,7 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 10, 6, 7, 5f, 5g → `0.2.0`;
+4c, 14, 15, 16, 18, 4d, 28, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 10, 6, 7, 5f, 5g → `0.2.0`;
 8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
 shaped ships in one release rather than a string of them: nothing waits on a version, and no
@@ -37,6 +37,17 @@ HTML format lands than after: 19 and 20 because HTML has no answer without them,
 HTML doubles the importers and the file count they touch, and 25 to 27 because they are what the
 panel says the next reader pays for.
 
+- [ ] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).** `emit/inline-line.ts:67` is a
+      `for (;;)` that re-emits the line until every unspellable node has been carried, and its
+      termination rests on a comment: each pass carries at least one more node, or flips
+      `openingLinkAsDirective`, which happens once. Ten `return success({ carry: … })` sites in
+      that file have to honour it and nothing checks them — a range already inside `carried` loops
+      forever. The library has no I/O and no timeout, so that is a hung caller rather than an
+      error result, and §1's pipeline persona feeds documents nobody typed. Make the loop hold its
+      own guarantee: refuse a carry that adds no node and return an error. Reads first in `0.2.0`
+      because it is the only known way this library fails without a `Result`. Found by the
+      comprehension panel, 2026-09-20; the ten sites are confirmed, a document that reaches the
+      spin is not.
 - [ ] **19 — A home for what both formats read (`0.2.0`).** Settle where a construct both formats
       need lives, and say so in AGENTS.md §11. Today `adf/` may hold no format knowledge and each
       format directory holds its own shared layer, so there is no third place; the first ADF-shaped
