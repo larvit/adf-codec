@@ -19,6 +19,42 @@ one-directional and lossy. A consumer that shows a document and lets someone edi
 directions lossless — otherwise saving destroys the panels, mentions and attachments it could not
 represent.
 
+## Goals
+
+In priority order.
+
+1. **Lossless first.** The round-trip holds for every document, node types this version does not
+   know included; one that has no spelling is refused and says where, never silently reduced.
+   Every goal below gives way to this one.
+2. **Three formats, ADF the hub.** ADF, one markdown flavour, one HTML dialect, markdown↔HTML
+   composing through ADF — four conversions to keep correct, never a fifth, and never a fourth
+   format.
+3. **Plain CommonMark is input.** Markdown written for something else converts — the three
+   carve-outs and the one gap below are the whole of the exception — and every spelling the
+   flavour claims on top of CommonMark is escapable, so the flavour is opt-in.
+4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the directive
+   form carries only what CommonMark cannot hold.
+5. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
+   the emitted formats are.
+6. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
+   any ES2022 engine, in a browser as readily as on a server.
+
+## Audience
+
+Application developers embedding the library, addressed as personas rather than named consumers
+(AGENTS.md §7). All four rely on the guarantees below and on `code` being a closed list; none may
+rely on an error message's wording, which is free text.
+
+- **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the
+  round-trip holding for whatever the site's editor wrote, unknown node types included, and on a
+  refusal arriving before the save rather than after.
+- **Bot posting content** — turns generated markdown into ADF. Relies on plain CommonMark being
+  valid input, so nothing upstream has to learn the flavour.
+- **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
+  and on every refusal being deterministic, so a document that fails fails the same way next run.
+- **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
+  Relies on the round-trip and on markdown a reader half-knowing the flavour can still edit.
+
 ## The shape
 
 ```sh
@@ -141,16 +177,6 @@ emit refuses:
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
   `data-*` attributes. Foreign HTML maps a documented element set, an unmappable element is an
   error, and well-formed HTML only — no tag-soup recovery.
-
-## Who it is for
-
-Personas, never named consumers (AGENTS.md §7):
-
-- **Viewer/editor app** — shows a document, lets a human edit, posts back. Losslessness above all.
-- **Bot posting content** — converts generated markdown to ADF; needs the CommonMark promise.
-- **Export/indexing tool** — bulk ADF→markdown/HTML; needs readable output.
-- **LLM/agent pipeline** — documents to a model as markdown, edits back; needs the round-trip and
-  markdown legible to a reader that half-knows the flavour.
 
 ## The package
 
