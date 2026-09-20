@@ -35,6 +35,8 @@ type LineAttempt =
   | { carry?: undefined; line?: undefined; openingLinkAsDirective: true }
   | { carry?: undefined; line: string; openingLinkAsDirective?: undefined }
 
+type LineFallbacks = { carried: Set<number>; openingLinkAsDirective: boolean }
+
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const emitted = emitLine(nodes, container, path)
   if (!emitted.ok) return emitted
@@ -63,37 +65,41 @@ export function tryImageLine(alt: string | undefined, href: string, path: Conver
   return attempt.ok ? attempt.value.line : undefined
 }
 
-// Every pass carries at least one more node, or flips openingLinkAsDirective, which happens once — so the loop ends.
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<EmittedLine> {
-  const carried = new Set<number>()
-  let openingLinkAsDirective = false
+  const fallbacks: LineFallbacks = { carried: new Set(), openingLinkAsDirective: false }
   for (;;) {
-    const emission = lineSegments(nodes, container, path, carried, openingLinkAsDirective)
+    const emission = lineSegments(nodes, container, path, fallbacks)
     if (!emission.ok) return emission
     if (emission.value.carry !== undefined) {
-      carryRange(carried, emission.value.carry)
+      const taken = takeFallback(fallbacks, emission.value.carry, path)
+      if (!taken.ok) return taken
       continue
     }
     const attempt = attemptLine(emission.value.segments, container, path)
     if (!attempt.ok) return attempt
-    if (attempt.value.line !== undefined) return success({ line: attempt.value.line, openingLinkAsDirective, segments: emission.value.segments })
-    if (attempt.value.carry !== undefined) carryRange(carried, attempt.value.carry)
-    else openingLinkAsDirective = true
+    if (attempt.value.line !== undefined) {
+      return success({ line: attempt.value.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: emission.value.segments })
+    }
+    const taken = takeFallback(fallbacks, attempt.value.carry ?? 'opening-link', path)
+    if (!taken.ok) return taken
   }
 }
 
-function carryRange(carried: Set<number>, range: NodeRange): void {
-  for (let index = range.first; index <= range.last; index += 1) carried.add(index)
+// emitLine ends because each fallback is takeable once: a pass taking none re-emits the line it just emitted.
+function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
+  if (fallback === 'opening-link') {
+    if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)
+    fallbacks.openingLinkAsDirective = true
+    return success(null)
+  }
+  const before = fallbacks.carried.size
+  for (let index = fallback.first; index <= fallback.last; index += 1) fallbacks.carried.add(index)
+  if (fallbacks.carried.size === before) return failure('unsupported-node-shape', 'a carry took no inline node the line had not carried, so the line has no spelling left', path)
+  return success(null)
 }
 
-function lineSegments(
-  nodes: readonly AdfNode[],
-  container: LineContainer,
-  path: ConvertErrorPath,
-  carried: ReadonlySet<number>,
-  openingLinkAsDirective: boolean,
-): Result<Emission> {
-  const context: InlineContext = { atBlockEnd: true, bracketed: false, carried, openingLinkAsDirective, path, spansLines: container === 'paragraph' }
+function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<Emission> {
+  const context: InlineContext = { atBlockEnd: true, bracketed: false, ...fallbacks, path, spansLines: container === 'paragraph' }
   const emission = emitRun(nodes, 0, 0, context)
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return emission

@@ -314,6 +314,9 @@ someone spells it or pins it.
   mark run's segments: the argument list caps near 125k and throws a `RangeError` where a `Result`
   is owed. A walk pushes one at a time. A literal spread (`[...value]`) is not the same thing and
   is fine (4c).
+- A loop retrying an input until a fallback spells it refuses the pass taking no fallback, so its
+  termination is the loop's own check rather than an argument every give-way site has to honour
+  (28).
 - A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the
   line before it reads, `indexOf` — never a fresh slice per character, and a per-character walk
   hoists the scan that does not vary with the character. The pipeline persona feeds documents
