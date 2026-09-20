@@ -82,7 +82,6 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
   }
 }
 
-// A pass taking no fallback re-emits the line it just emitted, so refusing loses no spelling.
 function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
   if (fallback === 'opening-link') {
     if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)

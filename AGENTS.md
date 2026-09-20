@@ -208,7 +208,7 @@ wide `Result<T>`, since half their refusals come from an emit stage that read no
 
 Test for the behaviour wanted first, then implement until green. `node --test`, beside the code.
 Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
-coverage does not decline, containers are torn down after a run.
+containers are torn down after a run.
 
 The gate runs that same suite under Deno and Bun as well as Node, the three images pinned alike,
 and neither extra leg is Node's proof twice. Deno refuses an extensionless or directory specifier,
@@ -315,8 +315,7 @@ someone spells it or pins it.
   is owed. A walk pushes one at a time. A literal spread (`[...value]`) is not the same thing and
   is fine (4c).
 - A loop retrying an input until a fallback spells it refuses the pass taking no fallback, so its
-  termination is the loop's own check rather than an argument every give-way site has to honour
-  (28).
+  termination is the loop's own check (28).
 - A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the
   line before it reads, `indexOf` — never a fresh slice per character, and a per-character walk
   hoists the scan that does not vary with the character. The pipeline persona feeds documents
