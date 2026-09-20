@@ -30,10 +30,7 @@ type InlineContext = {
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
 
-type LineAttempt =
-  | { carry: NodeRange; line?: undefined; openingLinkAsDirective?: undefined }
-  | { carry?: undefined; line?: undefined; openingLinkAsDirective: true }
-  | { carry?: undefined; line: string; openingLinkAsDirective?: undefined }
+type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | { fallback?: undefined; line: string }
 
 type LineFallbacks = { carried: Set<number>; openingLinkAsDirective: boolean }
 
@@ -80,12 +77,12 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     if (attempt.value.line !== undefined) {
       return success({ line: attempt.value.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: emission.value.segments })
     }
-    const taken = takeFallback(fallbacks, attempt.value.carry ?? 'opening-link', path)
+    const taken = takeFallback(fallbacks, attempt.value.fallback, path)
     if (!taken.ok) return taken
   }
 }
 
-// emitLine ends because each fallback is takeable once: a pass taking none re-emits the line it just emitted.
+// A pass taking no fallback re-emits the line it just emitted, so refusing loses no spelling.
 function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
   if (fallback === 'opening-link') {
     if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)
@@ -108,8 +105,8 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
 
 function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath): Result<LineAttempt> {
   const assembled = assembleInlineLine(segments, container)
-  if (assembled.openingLinkAsDirective) return success({ openingLinkAsDirective: true })
-  if (assembled.unspellableRun !== undefined) return success({ carry: assembled.unspellableRun })
+  if (assembled.openingLinkAsDirective) return success({ fallback: 'opening-link' })
+  if (assembled.unspellableRun !== undefined) return success({ fallback: assembled.unspellableRun })
   for (const [index, single] of assembled.line.split('\n').entries()) {
     if (container === 'paragraph' && claimsLine(single, index === 0 ? 'first' : 'later')) {
       return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(single)}`, path)
