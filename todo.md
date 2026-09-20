@@ -18,7 +18,8 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 28, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 10, 6, 7, 5f, 5g → `0.2.0`;
+4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 23, 24, 25, 30, 26, 27, 10, 6, 7, 5f, 5g →
+`0.2.0`;
 8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
 shaped ships in one release rather than a string of them: nothing waits on a version, and no
@@ -36,7 +37,25 @@ head (2026-09-20). They read ahead of 6, 7 and 10 because every one of them is c
 HTML format lands than after: 19 and 20 because HTML has no answer without them, 21 to 24 because
 HTML doubles the importers and the file count they touch, and 25 to 27 because they are what the
 panel says the next reader pays for.
+29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
+ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
 
+- [ ] **29 — Goal 3 names the whole of the exception (`0.2.0`).** README §Goals 3 says "the three
+      carve-outs and the one gap below are the whole of the exception", and §The guarantees says
+      "apart from the raw HTML below, with three carve-outs … and one gap". Raw HTML is a fourth
+      exception, the commonest one in markdown written elsewhere, and `unmappable-html` refuses it
+      today. Name it in the goal, or stop enumerating there. Settle at the same time whether the
+      goal is written for `0.2.0`, where the element mapping the error text promises could make
+      raw HTML convert — the answer decides which repair is the true one, so it is the
+      maintainer's.
+- [ ] **30 — AGENTS.md says each thing once (`0.2.0`).** §15's ask protocol — name the class, cite
+      the earlier asks of it, never "A or B?" — is the rule reviewers cite most and has no heading,
+      two thirds down a 50-line section in a file with no index. Give it one. §15 also offers "the
+      gate's seconds" as a stated number that is kept, and no such number is stated anywhere, §14
+      forbidding the category outright; drop the example. Then the restatements: §15 repeats the
+      one-chunk rule three times and `version`/`NPM_TOKEN` twice, §12 says the default is delete
+      twice, and §5's "few, each earning its keep; they never reach a consumer" is npm's own
+      definition of the field. Cut to one copy each, the one carrying the why.
 - [ ] **19 — A home for what both formats read (`0.2.0`).** Settle where a construct both formats
       need lives, and say so in AGENTS.md §11. Today `adf/` may hold no format knowledge and each
       format directory holds its own shared layer, so there is no third place; the first ADF-shaped

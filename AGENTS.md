@@ -257,15 +257,14 @@ functions, and a branch floor that only ever moves upward. It sits below 100 bec
 compared against `undefined` — have a half no valid document reaches.
 
 The size ratchet is the other such number, `.oxlintrc.json`'s single rule over the files
-`tsconfig.build.json` builds: no function past 52 lines, today's worst (`parseInline`), moving only
-downward. It stops where the package does, because one ceiling covering the tests and the harness
-too would have to be their worst — 64 — which loosens the guard over the shipped code. It guards
-against drift and never drives a refactor, so no cyclomatic rule and no second lint rule join it:
-neither measure picked out what nine readers found hard (the comprehension panel, 2026-09-20).
-Three switches are load-bearing: `IIFEs: true`, since oxlint exempts an IIFE otherwise; an explicit
-`-c`, since finding no config it falls back to 96 default rules, green with the ceiling gone; and
-`--deny-warnings`, since a rule from a category the config never names arrives as a warning it
-exits 0 on.
+`tsconfig.build.json` builds: a per-function line ceiling, set at that set's worst and moving only
+downward. It covers the built files alone, since one ceiling over the tests too would have to be
+their worst, loosening the guard over the shipped code. It guards against drift and never drives a
+refactor, so no cyclomatic rule and no second lint rule join it: neither measure picked out what
+nine readers found hard (the comprehension panel, 2026-09-20). Three switches guard a silent green:
+`IIFEs: true`, since oxlint exempts an IIFE otherwise; an explicit `-c`, so a config gone missing
+fails the leg instead of falling back to oxlint's own defaults; and `--deny-warnings`, since a rule
+from a category this config never names arrives as a warning it exits 0 on.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
 editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
