@@ -9,8 +9,10 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 
 1. `git fetch origin` first and read this file at `origin/main`, then branch off it, not the
    worktree left behind: a checkout behind the remote reads a merged item as unchecked.
-2. The first unchecked item in shipping order, per AGENTS.md §15 — or, where that item has no
-   release, the planning chunk §15 describes.
+2. The first unchecked item in shipping order, per AGENTS.md §15 — the order the Milestones line
+   states, which wins over where an item's bullet sits: a newly filed item is written beside the
+   one it came in with, not at its own place in the order. Where that item has no release, the
+   planning chunk §15 describes.
 3. In flight: nothing.
 4. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
    session found it wrong or short.
@@ -40,14 +42,6 @@ panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
 
-- [ ] **30 — AGENTS.md says each thing once (`0.2.0`).** §15's ask protocol — name the class, cite
-      the earlier asks of it, never "A or B?" — is the rule reviewers cite most and has no heading,
-      two thirds down a 50-line section in a file with no index. Give it one. §15 also offers "the
-      gate's seconds" as a stated number that is kept, and no such number is stated anywhere, §14
-      forbidding the category outright; drop the example. Then the restatements: §15 repeats the
-      one-chunk rule three times and `version`/`NPM_TOKEN` twice, §12 says the default is delete
-      twice, and §5's "few, each earning its keep; they never reach a consumer" is npm's own
-      definition of the field. Cut to one copy each, the one carrying the why.
 - [ ] **19 — A home for what both formats read (`0.2.0`).** Settle where a construct both formats
       need lives, and say so in AGENTS.md §11. Today `adf/` may hold no format knowledge and each
       format directory holds its own shared layer, so there is no third place; the first ADF-shaped
@@ -293,6 +287,7 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 - [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
+- [x] **30 — AGENTS.md says each thing once (`0.2.0`).**
 
 ## The ADF inventory to cover
 

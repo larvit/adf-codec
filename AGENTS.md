@@ -77,10 +77,9 @@ deliberate re-pin, exceptions re-derived by hand beside it. Atlassian's ADF JSON
 vendored the same way, at `spec/adf-schema/`, rather than as the `@atlaskit/adf-schema` dev
 dependency — CommonJS-only, some fifty packages with React among them, and a release most days for
 Renovate to automerge — re-pinned by hand when a payload or a report shows the need.
-`devDependencies`: few, each earning its keep; they never reach a consumer. `fast-check` earns its
-place shrinking a failing generated document to the nodes that break it, `oxlint` measuring §10's
-size ratchet — TypeScript 7 is a native compiler publishing no in-process parser, only the
-`unstable/` AST surface an out-of-process handshake reaches.
+`devDependencies`: `fast-check` earns its place shrinking a failing generated document to the nodes
+that break it, `oxlint` measuring §10's size ratchet — TypeScript 7 is a native compiler publishing
+no in-process parser, only the `unstable/` AST surface an out-of-process handshake reaches.
 
 ## 6. The package contract
 
@@ -383,7 +382,6 @@ Applies everywhere: comments, every markdown file in this repo (this one include
 - Default is no comment. One earns its single line only by naming an invariant, footgun or
   external constraint the code cannot show — never restatement, history, absence or arrangement.
   A second line belongs in the commit message or a decision entry here.
-- Every prose comment in a diff is a review question; the default answer is delete.
 - A doc paragraph says what the repo cannot say for itself, or it goes. The fix for a redundant
   one is deletion, not trimming. A false claim in any doc is a bug, fixed where found.
 - Published text — npm README, error messages, API docs — never references internal systems,
@@ -406,7 +404,10 @@ figure is promised. A CLI is a later goal (`todo.md`), not a non-goal.
 
 One unchecked `todo.md` item per session, in the smallest PR-able chunk — split a big milestone
 into sub-items in `todo.md` before starting it. A chunk running a little over or under that is not
-worth deliberating; what matters is that nothing is left undone in the end. Per chunk:
+worth deliberating; what matters is that nothing is left undone in the end. The session stops there
+whatever it was asked to finish: a release is a chain of sessions, and `todo.md`'s "Next session" is
+the handover, so an instruction to work until a release is checked names the chain, not the session.
+Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
 2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest
@@ -415,11 +416,16 @@ worth deliberating; what matters is that nothing is left undone in the end. Per 
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted through the `0.2.0` release —
    the maintainer, 2026-09-13), check the box in `todo.md` and move the item's text to
-   `todo-history.md`, leaving its title behind, report, stop. The next chunk gets a fresh session.
+   `todo-history.md`, leaving its title behind, report, stop.
 
-Ask, don't guess: any choice where what the maintainer would pick is not near-certain gets asked,
-and the answer lands as a decision in this file. The confidence bar is very high — asking too
-often is the accepted cost, guessing wrong is not.
+Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
+bump on `main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
+
+### Ask, don't guess
+
+Any choice where what the maintainer would pick is not near-certain gets asked, and the answer
+lands as a decision in this file. The confidence bar is very high — asking too often is the
+accepted cost, guessing wrong is not.
 
 An ask is a gap in this file, and its answer is the rule that closes the gap, never the instance
 alone. Before asking, name the class the question belongs to and the earlier `(the maintainer, …)`
@@ -428,29 +434,23 @@ reads two ways on this input, that reading is the ask. Never ask "A or B?": stat
 earlier asks of its class, the nearest text here, a candidate rule in this file's voice and section,
 and the instance it yields, and ask for the rule. The maintainer answers the rule, the rule lands
 here, and the instance follows from it in the chunk. A rule that keeps collecting instances is
-wrong: rewrite it rather than append to it. `version` and `NPM_TOKEN` stay the maintainer's
-whatever any rule says.
+wrong: rewrite it rather than append to it.
 
-Rules the loop has settled (the maintainer, 2026-09-18):
+### Rules the loop has settled (the maintainer, 2026-09-18)
 
 - A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always
   in a release, weighed against every item on that release by the personas and §1–§3 — an item it
   outweighs moves later. A weighing no rule decides is asked as a gap.
-- A stated number — 500 levels, the gate's seconds, the branch floor — is kept; a chunk that cannot
-  keep it asks, naming the number it can reach. A number the code needs and no rule states is a gap.
+- A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks,
+  naming the number it can reach. A number the code needs and no rule states is a gap.
 - Where the shipping order names no release for the next unchecked item, the chunk is planning that
   release: every unscheduled item weighed as above, the order written in `todo.md`, and the
   maintainer's approval taken before any code.
-- A session works one chunk and stops, whatever it was asked to finish. A release is a chain of
-  sessions, and `todo.md`'s "Next session" is the handover; an instruction to work until a release
-  is checked names the chain, not the session.
 
-Reserved for the maintainer, never the agent: changing `version` in `package.json` (a bump on
-`main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
+### The continuous loop
 
-A continuous loop session (`/loop`) counts as a chain of sessions: one chunk per iteration, each
-iteration starting by re-reading `AGENTS.md` and `todo.md` and trusting them over anything
-remembered from earlier iterations. The loop session is a thin driver: each chunk's work runs in
-a fresh-context subagent holding this file as its charter, and the driver only relays maintainer
-questions, runs the review flow, merges, and cleans up. The loop stops when only
-maintainer-reserved acts remain.
+A `/loop` session counts as a chain of sessions, each iteration starting by re-reading `AGENTS.md`
+and `todo.md` and trusting them over anything remembered from earlier iterations. The loop session
+is a thin driver: each chunk's work runs in a fresh-context subagent holding this file as its
+charter, and the driver only relays maintainer questions, runs the review flow, merges, and cleans
+up. The loop stops when only maintainer-reserved acts remain.

@@ -943,6 +943,22 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       listing them, the standalone raw-HTML guarantee goes, and the `0.2.0` guarantee says
       markdown's raw HTML reads the same set. That guarantee's "never a silent drop" went with it:
       6 settled that `<script>` and `<style>` drop whole, so the claim does not survive 7.
+- [x] **30 — AGENTS.md says each thing once (`0.2.0`).** §15's ask protocol — name the class, cite
+      the earlier asks of it, never "A or B?" — is the rule reviewers cite most and has no heading,
+      two thirds down a 50-line section in a file with no index. Give it one. §15 also offers "the
+      gate's seconds" as a stated number that is kept, and no such number is stated anywhere, §14
+      forbidding the category outright; drop the example. Then the restatements: §15 repeats the
+      one-chunk rule three times and `version`/`NPM_TOKEN` twice, §12 says the default is delete
+      twice, and §5's "few, each earning its keep; they never reach a consumer" is npm's own
+      definition of the field. Cut to one copy each, the one carrying the why.
+      **Done** (2026-09-20): §15 gains three sub-headings — Ask, don't guess; Rules the loop has
+      settled; The continuous loop — so the protocol is one of four entries rather than a
+      paragraph two thirds down. The one-chunk rule keeps the head paragraph, which now carries
+      the chain-of-sessions why the settled bullet held; `version`/`NPM_TOKEN` keeps the reserved
+      paragraph, which carries §9's publish-on-bump why, and moves up beside the chunk steps.
+      §12's "every prose comment in a diff is a review question" and §5's devDependencies clause
+      go whole. The gate's seconds is confirmed stated nowhere: `docker-runner.sh` measures each
+      leg's elapsed time and no number bounds it.
 
 ## 5 — Ship `0.1.0`
 
