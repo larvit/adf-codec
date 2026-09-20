@@ -886,6 +886,27 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       (the stability-reviewer, 2026-09-19). The one list accounting was not
       taken: 4b settled that accounting the day this was filed, and reopening it is an ask rather
       than a chunk.
+- [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).** `emit/inline-line.ts:67` is a
+      `for (;;)` that re-emits the line until every unspellable node has been carried, and its
+      termination rests on a comment: each pass carries at least one more node, or flips
+      `openingLinkAsDirective`, which happens once. Ten `return success({ carry: … })` sites in
+      that file have to honour it and nothing checks them — a range already inside `carried` loops
+      forever. The library has no I/O and no timeout, so that is a hung caller rather than an
+      error result, and §1's pipeline persona feeds documents nobody typed. Make the loop hold its
+      own guarantee: refuse a carry that adds no node and return an error. Reads first in `0.2.0`
+      because it is the only known way this library fails without a `Result`. Found by the
+      comprehension panel, 2026-09-20; the ten sites are confirmed, a document that reaches the
+      spin is not.
+      **Done** (2026-09-20): the loop's progress is one named state and every pass takes a
+      fallback through `takeFallback`, which refuses a carry adding no node and an opening link
+      asked for the directive form a second time. Both are `unsupported-node-shape` under §8's
+      rule that a new cause takes an existing code reading true of it: the emitter has no spelling
+      left for that node arrangement, and a code a consumer can never switch on costs a removal
+      later. Neither refusal is reachable — a carried node takes `emitLeaf`'s carried branch
+      before any run forms, so every range a site names holds an uncarried node, and the
+      directive-spelled opening link leaves the first segment with no node range for `escape` to
+      ask about — so both are uncovered branches like the repo's other guards, 98.92% to 98.84%
+      against the floor of 98.
 
 ## 5 — Ship `0.1.0`
 
