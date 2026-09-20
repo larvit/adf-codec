@@ -868,11 +868,14 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       ranks no better: `emitList` and `blockNode` are both 26 lines, one the panel's unanimous top
       four and the other the clearest map of the format in the repo. So the ceiling guards against
       drift and never drives a refactor — 19 to 27 are where the hard work actually is.
-      **Done** (2026-09-20): `.oxlintrc.json` carries the one rule, every category and plugin off,
-      over the 40 files `tsconfig.build.json` builds — the tests and `property-harness.ts` out, as
-      they are out of the coverage floors, the harness's own 59-line function with them. The
-      ceiling is 52, `parseInline`'s length and the repo's worst; at 51 the gate reddens on it.
-      `npm run size-ratchet` is the leg, beside the typecheck at 0.8s, and the lockfile carries
+      **Done** (2026-09-20): `.oxlintrc.json` carries the one rule, `correctness` off so nothing
+      else runs, over the 40 files `tsconfig.build.json` builds — the tests and
+      `property-harness.ts` out, five functions over the ceiling with them, the worst 64. The
+      ceiling is 52, `parseInline`'s length and the built set's worst; at 51 the gate reddens on
+      it. The leg runs `oxlint --deny-warnings -c .oxlintrc.json src` beside the typecheck at 0.8s,
+      the two flags because oxlint exits 0 on a warning and, discovering no config, falls back to
+      96 default rules; `IIFEs`, `skipBlankLines` and `skipComments` are spelled so a changed
+      default cannot move what 52 counts (the stability-reviewer, 2026-09-20). The lockfile carries
       every platform binding, so `npm ci` resolves the musl one inside the image.
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).** The parser asks
       `commonMarkSpelling` at every directive-spelled block and the answer emits the whole subtree

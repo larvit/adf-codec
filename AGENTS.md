@@ -79,7 +79,8 @@ dependency — CommonJS-only, some fifty packages with React among them, and a r
 Renovate to automerge — re-pinned by hand when a payload or a report shows the need.
 `devDependencies`: few, each earning its keep; they never reach a consumer. `fast-check` earns its
 place shrinking a failing generated document to the nodes that break it, `oxlint` measuring §10's
-size ratchet — TypeScript 7 is a native compiler and exposes no parser to write that check against.
+size ratchet — TypeScript 7 is a native compiler publishing no in-process parser, only the
+`unstable/` AST surface an out-of-process handshake reaches.
 
 ## 6. The package contract
 
@@ -257,10 +258,12 @@ compared against `undefined` — have a half no valid document reaches.
 
 The size ratchet is the other such number, `.oxlintrc.json`'s single rule over the files
 `tsconfig.build.json` builds: no function past 52 lines, today's worst (`parseInline`), moving only
-downward. It guards against drift and never drives a refactor, so no cyclomatic rule and no second
-lint rule join it — neither measure picked out what nine readers found hard (the comprehension
-panel, 2026-09-20), and `eslint/complexity` charges a point for each `?.` and `??` the branch floor
-above already exempts.
+downward. It stops where the package does, because one ceiling covering the tests and the harness
+too would have to be their worst — 64 — which loosens the guard over the shipped code. It guards
+against drift and never drives a refactor, so no cyclomatic rule and no second lint rule join it:
+neither measure picked out what nine readers found hard (the comprehension panel, 2026-09-20). The
+leg passes `--deny-warnings` and an explicit `-c`, since oxlint exits 0 on a warning and, finding
+no config, falls back to 96 default rules — either way green with the ceiling gone.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
 editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.

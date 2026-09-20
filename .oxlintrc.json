@@ -3,6 +3,6 @@
   "categories": { "correctness": "off" },
   "ignorePatterns": ["src/**/*.test.ts", "src/property-harness.ts"],
   "rules": {
-    "eslint/max-lines-per-function": ["error", { "max": 52 }]
+    "eslint/max-lines-per-function": ["error", { "IIFEs": true, "max": 52, "skipBlankLines": false, "skipComments": false }]
   }
 }
