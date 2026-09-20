@@ -190,7 +190,25 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
 - [x] **5c — The build and the release pipeline.**
 - [x] **5d — The browser leg.**
 - [ ] **6 — The HTML dialect spec (`0.2.0`).** Element-by-element mapping, the `data-*` fidelity
-      scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts.
+      scheme, the opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts —
+      the set `markdownToAdf` shares (`spec/flavour.md` §Raw HTML in input; 29).
+      **Settled** (the maintainer, 2026-09-20), three answers that shape the set:
+      - A container ADF has no node for unwraps to its children, its own attributes dropped, so
+        `<div align="center">text</div>` keeps `text` and loses the box and the alignment ADF
+        cannot hold. AGENTS.md §3's "error result naming the element" stops being the whole rule
+        when this lands, and says so there.
+      - `<details><summary>Title</summary>…</details>` is an `expand`, the summary its `title`;
+        one inside another is a `nestedExpand`, as 10 already spells for the lossy pair. An empty
+        `<details>` is still refused — `expand` requires content, so there is nothing to build.
+      - A comment stays an error result. Neither schema holds a comment node: across 84 and 98
+        definitions the only "comment" in either file is `annotationType: "inlineComment"` on the
+        `annotation` mark, which carries an `id` and no text, the words living behind an Atlassian
+        API. `placeholder` is the editor's own visible hint, and `extension` demands an
+        `extensionKey` naming a vendor app. Nothing can hold the words, so nothing accepts them.
+      Open, and the reason the first answer is not yet a rule: whether unwrapping is the default
+      for any unmapped element holding children, or only for a named transparent set. `<script>`
+      and `<style>` hold text that is not prose, so the default leaks code into the document as
+      visible words.
 - [ ] **7 — HTML, the third format (`0.2.0`).** `adfToHtml`, `htmlToAdf`, the composed
       `markdownToHtml` / `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from
       here (§10). The README's tagline and `package.json`'s `description` regain HTML (5g).
