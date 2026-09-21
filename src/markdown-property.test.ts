@@ -10,7 +10,7 @@ import type { Result } from './result.ts'
 import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
 import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
-import { blockDirectives } from './adf/block-directives.ts'
+import { blockNodes } from './adf/block-nodes.ts'
 import { carryName } from './markdown/opaque-carry.ts'
 import {
   directivePrefix,
@@ -24,7 +24,7 @@ import {
   spellVocabulary,
 } from './markdown/directive-syntax.ts'
 import { fencedCodeBlock } from './markdown/commonmark/backtick-runs.ts'
-import { inlineDirectives } from './adf/inline-directives.ts'
+import { inlineNodes } from './adf/inline-nodes.ts'
 import { listBreakName } from './markdown/list-break.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
 import { markSpelling } from './markdown/mark-spellings.ts'
@@ -50,11 +50,11 @@ const fixpointFloor = 600
 const gateRuns = 1000
 const markdownMarkTypes = new Set(Object.keys(markAttributes).filter((type) => markSpelling(type)?.kind !== 'directive'))
 
-const vocabularies = [...Object.values(blockDirectives).map((directive) => directive.attributes), ...Object.values(inlineDirectives).map((directive) => directive.attributes), ...Object.values(markAttributes)]
+const vocabularies = [...Object.values(blockNodes).map((blockNode) => blockNode.attributes), ...Object.values(inlineNodes).map((inlineNode) => inlineNode.attributes), ...Object.values(markAttributes)]
 const attributeKeys = [
-  ...new Set([...vocabularies.flatMap((vocabulary) => Object.keys(vocabulary)), ...Object.keys(blockDirectives).flatMap((type) => blockArgument(type) ?? []), marksAttribute, 'json', textDirectiveName]),
+  ...new Set([...vocabularies.flatMap((vocabulary) => Object.keys(vocabulary)), ...Object.keys(blockNodes).flatMap((type) => blockArgument(type) ?? []), marksAttribute, 'json', textDirectiveName]),
 ]
-const directiveNames = [...Object.keys(blockDirectives), ...Object.keys(inlineDirectives), ...Object.keys(markAttributes), carryName, listBreakName, textDirectiveName]
+const directiveNames = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes), carryName, listBreakName, textDirectiveName]
 
 // Hostile generation reaches refusals; clean generation holds none a single piece would trip, so a whole document reaches the emitter.
 function choose(hostile: boolean, choices: readonly Choice[], depth?: { depthIdentifier: DepthIdentifier; maxDepth: number }): Arbitrary<string> {
@@ -233,9 +233,9 @@ function inlineMarkdown(hostile: boolean): InlineMarkdown {
         },
         {
           arbitrary: fc.oneof(
-            ...Object.entries(inlineDirectives).map(([name, directive]) =>
+            ...Object.entries(inlineNodes).map(([name, inlineNode]) =>
               fc
-                .tuple(directive.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(directive.attributes, directive.textAttribute))
+                .tuple(inlineNode.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(inlineNode.attributes, inlineNode.textAttribute))
                 .map(([slot, attrs]) => (slot === null ? spellInlineLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
             ),
             ...Object.entries(markAttributes)
@@ -328,15 +328,15 @@ function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, {
   const blockDepth = fc.createDepthIdentifier()
   const { blocks } = fc.letrec<{ block: string; blocks: string }>((tie) => {
     const bodyByModel = { block: fc.oneof(tie('blocks'), fc.constant('')), code: fencedCode, inline: fc.oneof(oneLine, fc.constant('')) }
-    const tableDirectives = Object.entries(blockDirectives).map(([name, directive]) => {
+    const tableDirectives = Object.entries(blockNodes).map(([name, blockNode]) => {
       const argument =
         blockArgument(name) === undefined
           ? fc.constant(undefined)
           : fc.oneof({ arbitrary: fc.constantFrom('DONE', 'TODO', 'custom', 'info', 'warning'), weight: 3 }, { arbitrary: bareToken, weight: 1 })
-      const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(directive.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(directive.attributes)
-      if (directive.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => spellDirectiveOpener(name, held, spelled))
+      const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(blockNode.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(blockNode.attributes)
+      if (blockNode.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => spellDirectiveOpener(name, held, spelled))
       return fc
-        .tuple(argument, attrs, bodyByModel[directive.contentModel], hostile ? closerDrift : fc.constant(null))
+        .tuple(argument, attrs, bodyByModel[blockNode.contentModel], hostile ? closerDrift : fc.constant(null))
         .map(([held, spelled, body, closer]) => container(spellDirectiveOpener(name, held, spelled), body, closer ?? spellDirectiveCloser(name)))
     })
     return {

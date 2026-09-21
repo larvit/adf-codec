@@ -1,11 +1,11 @@
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
-export type InlineDirective = {
+export type InlineNode = {
   attributes: AttributeVocabulary
   textAttribute?: string
 }
 
-export const inlineDirectives: Readonly<Record<string, InlineDirective>> = {
+export const inlineNodes: Readonly<Record<string, InlineNode>> = {
   date: { attributes: { localId: 'string', timestamp: 'string' } },
   emoji: { attributes: { id: 'string', localId: 'string', shortName: 'string', text: 'string' }, textAttribute: 'text' },
   hardBreak: { attributes: { localId: 'string', text: 'string' } },
@@ -27,6 +27,6 @@ export const inlineDirectives: Readonly<Record<string, InlineDirective>> = {
   status: { attributes: { color: 'string', localId: 'string', style: 'string', text: 'string' }, textAttribute: 'text' },
 }
 
-export function inlineDirective(type: string): InlineDirective | undefined {
-  return Object.hasOwn(inlineDirectives, type) ? inlineDirectives[type] : undefined
+export function inlineNodeNamed(type: string): InlineNode | undefined {
+  return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }

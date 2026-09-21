@@ -55,11 +55,6 @@ number under the pipeline.
       upward, so the first raise to the measured figure reddens a run that changed nothing. Make
       the measurement repeatable, or state the number the floor may be raised to and why it is not
       the measured one.
-- [ ] **21 — The ADF tables carry ADF's nouns (`0.2.0`).** `adf/block-directives.ts` and
-      `adf/inline-directives.ts` hold the ADF node tables — `paragraph`, `heading`, `blockquote`
-      and `rule` among them — under the markdown flavour's word, inside the directory §11 forbids
-      to know a format. Rename to the noun `spec/flavour.md` uses, types and accessors with them.
-      Before 7 doubles the import sites.
 - [ ] **22 — `LineContainer` sits at the markdown level (`0.2.0`).** Two of the four
       `parse/` → `emit/` imports fetch this type from `emit/line-escaping.ts`, camouflaging the two
       that are the deliberate spelling consultation. Move it, and name those two in §11 as the whole
@@ -287,6 +282,7 @@ number under the pipeline.
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 - [x] **19 — A home for what both formats read (`0.2.0`).**
 - [x] **20 — The give-way channel is unmistakable (`0.2.0`).**
+- [x] **21 — The ADF tables carry ADF's nouns (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 - [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
 - [x] **30 — AGENTS.md says each thing once (`0.2.0`).**

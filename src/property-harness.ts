@@ -7,9 +7,9 @@ import type { Arbitrary } from 'fast-check'
 import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
 import type { JsonValue } from './json-value.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
-import { blockDirectives } from './adf/block-directives.ts'
+import { blockNodes } from './adf/block-nodes.ts'
 import { directivePrefix } from './markdown/directive-syntax.ts'
-import { inlineDirectives } from './adf/inline-directives.ts'
+import { inlineNodes } from './adf/inline-nodes.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
 import { toEditorNormal } from './adf/editor-normal.ts'
 
@@ -25,7 +25,7 @@ const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell'
 const flatCommonMarkShapeWeight = 4
 export const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
 const nestingCommonMarkShapeWeight = 21
-const spelledTypes = new Set(['text', ...Object.keys(blockDirectives), ...Object.keys(inlineDirectives), ...Object.keys(markAttributes)])
+const spelledTypes = new Set(['text', ...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes)])
 
 export function textOf(minLength: number): Arbitrary<string> {
   return fc.oneof(
@@ -94,8 +94,8 @@ const autolinkTextNode = fc
   .record({ href: fc.tuple(fc.constantFrom('ab:', 'http://'), textOf(0)).map(([scheme, rest]) => `${scheme}${rest}`), marks })
   .map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
 
-const inlineNodes = Object.entries(inlineDirectives).map(([type, directive]) =>
-  fc.record({ attrs: attributes(directive.attributes), marks }).map((held): AdfNode => ({ ...held, type })),
+const tableInlineNodes = Object.entries(inlineNodes).map(([type, inlineNode]) =>
+  fc.record({ attrs: attributes(inlineNode.attributes), marks }).map((held): AdfNode => ({ ...held, type })),
 )
 
 function weighted(arbitraries: readonly Arbitrary<AdfNode>[], weight: number): { arbitrary: Arbitrary<AdfNode>; weight: number }[] {
@@ -112,17 +112,17 @@ const positions = fc.letrec<Positions>((tie) => {
     none: fc.constant<AdfNode[]>([]),
   }
   const blockMarks = fc.oneof({ arbitrary: fc.constant<AdfMark[]>([]), weight: 4 }, { arbitrary: marks, weight: 1 })
-  const blockNodes = Object.entries(blockDirectives).map(([type, directive]) => {
+  const tableBlockNodes = Object.entries(blockNodes).map(([type, blockNode]) => {
     const argument = blockArgument(type)
-    const vocabulary: AttributeVocabulary = argument === undefined ? directive.attributes : { ...directive.attributes, [argument]: 'string' }
-    const node = fc.record({ attrs: attributes(vocabulary), content: contentByModel[directive.contentModel], marks: blockMarks }).map((held): AdfNode => ({ ...held, type }))
-    return { leaf: directive.contentModel === 'code' || directive.contentModel === 'none', node }
+    const vocabulary: AttributeVocabulary = argument === undefined ? blockNode.attributes : { ...blockNode.attributes, [argument]: 'string' }
+    const node = fc.record({ attrs: attributes(vocabulary), content: contentByModel[blockNode.contentModel], marks: blockMarks }).map((held): AdfNode => ({ ...held, type }))
+    return { leaf: blockNode.contentModel === 'code' || blockNode.contentModel === 'none', node }
   })
   const unknownNode = fc
     .record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType })
     .map((held): AdfNode => held)
-  const leafBlocks = blockNodes.filter((entry) => entry.leaf).map((entry) => entry.node)
-  const containerBlocks = blockNodes.filter((entry) => !entry.leaf).map((entry) => entry.node)
+  const leafBlocks = tableBlockNodes.filter((entry) => entry.leaf).map((entry) => entry.node)
+  const containerBlocks = tableBlockNodes.filter((entry) => !entry.leaf).map((entry) => entry.node)
   const misplacedWeight = 7
   const paragraph = fc.oneof({ arbitrary: inlineContent, weight: 3 }, { arbitrary: fc.array(backtickRunNode, { maxLength: 4, minLength: 2 }), weight: 1 }).map((content): AdfNode => ({ content, type: 'paragraph' }))
   const cell = (type: string) => paragraph.map((held): AdfNode => ({ content: [held], type }))
@@ -148,7 +148,7 @@ const positions = fc.letrec<Positions>((tie) => {
       { depthIdentifier, depthSize: 'small', maxDepth: 4 },
       { arbitrary: fc.oneof(...flatBlocks), weight: flatBlocks.reduce((sum, entry) => sum + entry.weight, 0) },
       { arbitrary: fc.oneof(...containerBlocks), weight: containerBlocks.length * 2 },
-      { arbitrary: fc.oneof(textNode, ...inlineNodes, unknownNode), weight: misplacedWeight },
+      { arbitrary: fc.oneof(textNode, ...tableInlineNodes, unknownNode), weight: misplacedWeight },
       { arbitrary: fc.oneof(...nestingCommonMarkShapes), weight: nestingCommonMarkShapes.length * nestingCommonMarkShapeWeight },
     ),
     inline: fc.oneof(
@@ -156,8 +156,8 @@ const positions = fc.letrec<Positions>((tie) => {
       { arbitrary: textNode, weight: 12 },
       { arbitrary: autolinkTextNode, weight: 2 },
       { arbitrary: backtickRunNode, weight: 3 },
-      { arbitrary: fc.oneof(...inlineNodes), weight: 7 },
-      { arbitrary: fc.oneof(...blockNodes.map((entry) => entry.node), unknownNode), weight: 2 },
+      { arbitrary: fc.oneof(...tableInlineNodes), weight: 7 },
+      { arbitrary: fc.oneof(...tableBlockNodes.map((entry) => entry.node), unknownNode), weight: 2 },
     ),
   }
 })

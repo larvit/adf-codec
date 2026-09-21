@@ -5,8 +5,8 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
-import { blockDirectives } from './adf/block-directives.ts'
-import { inlineDirectives } from './adf/inline-directives.ts'
+import { blockNodes } from './adf/block-nodes.ts'
+import { inlineNodes } from './adf/inline-nodes.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
 import { textDirectiveName } from './markdown/text-directive.ts'
 
@@ -90,16 +90,16 @@ function vocabularies(table: Readonly<Record<string, Declared>>): Record<string,
 }
 
 test('the block node table holds the attributes spec/flavour.md gives each node', () => {
-  assert.deepEqual(declarations('Block nodes'), vocabularies(blockDirectives))
+  assert.deepEqual(declarations('Block nodes'), vocabularies(blockNodes))
 })
 
 test('the inline node table holds the attributes spec/flavour.md gives each node', () => {
-  assert.deepEqual(declarations('Inline nodes'), vocabularies(inlineDirectives))
+  assert.deepEqual(declarations('Inline nodes'), vocabularies(inlineNodes))
 })
 
 // A name in two tables would make the position a directive is read in ambiguous.
 test('no name is spelled in more than one position', () => {
-  const names = [...Object.keys(blockDirectives), ...Object.keys(inlineDirectives), ...Object.keys(markAttributes), textDirectiveName]
+  const names = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes), textDirectiveName]
   assert.equal(new Set(names).size, names.length)
 })
 

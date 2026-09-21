@@ -1,23 +1,23 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
-import type { BlockDirective } from '../../adf/block-directives.ts'
+import type { BlockNode } from '../../adf/block-nodes.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
 import { attributeNestingMessage, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { attributeValue, directivePrefix, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
-import { blockDirective } from '../../adf/block-directives.ts'
 import { blockDirectiveForm } from '../block-directive-forms.ts'
+import { blockNodeNamed } from '../../adf/block-nodes.ts'
 import { carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { inlineDirective } from '../../adf/inline-directives.ts'
 import { inlineMarkSpellingFault } from './directive-marks.ts'
+import { inlineNodeNamed } from '../../adf/inline-nodes.ts'
 import { marksAttribute, readMarkValues } from '../block-directive-marks.ts'
 import { readVocabulary } from './directive-attributes.ts'
 import { slotLineEndingFault } from '../directive-syntax.ts'
 import { textDirectiveName } from '../text-directive.ts'
 
-export type BlockDirectiveNode = { contentModel: BlockDirective['contentModel']; node: AdfNode }
+export type BlockDirectiveNode = { contentModel: BlockNode['contentModel']; node: AdfNode }
 
 export function readBlockDirectiveNode(
   name: string,
@@ -28,13 +28,13 @@ export function readBlockDirectiveNode(
   if (name === carryName) {
     return failure('malformed-directive', `the name ${carryName} is reserved for the opaque carry, whose block form is the ${carryName} fence`, path)
   }
-  const directive = blockDirective(name)
-  if (directive === undefined) return faulted(inlineSpellingFault(name) ?? unknownDirectiveFault(name), path)
+  const blockNode = blockNodeNamed(name)
+  if (blockNode === undefined) return faulted(inlineSpellingFault(name) ?? unknownDirectiveFault(name), path)
   const argumentKey = blockArgument(name)
   const rest = new Map(attributes)
   rest.delete(marksAttribute)
   const elsewhere: Elsewhere | undefined = argumentKey === undefined ? undefined : { key: argumentKey, slot: 'argument' }
-  const attrs = readVocabulary(name, rest, directive.attributes, elsewhere, path)
+  const attrs = readVocabulary(name, rest, blockNode.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
   if (argument !== undefined) {
     if (argumentKey === undefined) return failure('unsupported-node-shape', `${name} takes no argument: this one spells one`, path)
@@ -43,7 +43,7 @@ export function readBlockDirectiveNode(
   const spelled = attributes.get(marksAttribute)
   const marks: Result<AdfMark[] | undefined> = spelled === undefined ? success(undefined) : readMarks(name, spelled, path)
   if (!marks.ok) return marks
-  return success({ contentModel: directive.contentModel, node: namedNode(name, attrs.value, marks.value) })
+  return success({ contentModel: blockNode.contentModel, node: namedNode(name, attrs.value, marks.value) })
 }
 
 export function readInlineDirectiveNode(
@@ -52,12 +52,12 @@ export function readInlineDirectiveNode(
   content: readonly AdfNode[] | undefined,
   path: ConvertErrorPath,
 ): Result<AdfNode> {
-  const directive = inlineDirective(name)
-  if (directive === undefined) return faulted(blockSpellingFault(name) ?? unknownDirectiveFault(name), path)
-  const slot = directive.textAttribute
+  const inlineNode = inlineNodeNamed(name)
+  if (inlineNode === undefined) return faulted(blockSpellingFault(name) ?? unknownDirectiveFault(name), path)
+  const slot = inlineNode.textAttribute
   if (slot === undefined && content !== undefined) return failure('unsupported-node-shape', `${name} takes no content: this one holds some`, path)
   const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }
-  const attrs = readVocabulary(name, attributes, directive.attributes, elsewhere, path)
+  const attrs = readVocabulary(name, attributes, inlineNode.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
   if (slot !== undefined && content !== undefined) {
     const text = slotText(content)
@@ -75,7 +75,7 @@ export function readInlineDirectiveNode(
 function inlineSpellingFault(name: string): ConvertFault | undefined {
   const mark = inlineMarkSpellingFault(name)
   if (mark !== undefined) return mark
-  if (inlineDirective(name) === undefined && name !== textDirectiveName) return undefined
+  if (inlineNodeNamed(name) === undefined && name !== textDirectiveName) return undefined
   return { code: 'unsupported-node-shape', message: `${name} takes the inline form, ${directivePrefix}${name}{…}, never the block form` }
 }
 

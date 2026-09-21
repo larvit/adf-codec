@@ -1,4 +1,4 @@
-import type { BlockType } from '../adf/block-directives.ts'
+import type { BlockType } from '../adf/block-nodes.ts'
 
 const argumentByType = new Map(
   Object.entries({

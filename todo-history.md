@@ -994,6 +994,19 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       go whole. The gate's seconds is confirmed stated nowhere: `docker-runner.sh` measures each
       leg's elapsed time and no number bounds it.
 
+- [x] **21 — The ADF tables carry ADF's nouns (`0.2.0`).** `adf/block-directives.ts` and
+      `adf/inline-directives.ts` hold the ADF node tables — `paragraph`, `heading`, `blockquote`
+      and `rule` among them — under the markdown flavour's word, inside the directory §11 forbids
+      to know a format. Rename to the noun `spec/flavour.md` uses, types and accessors with them.
+      Before 7 doubles the import sites.
+      **Done** (2026-09-21): the tables are `adf/block-nodes.ts` and `adf/inline-nodes.ts`,
+      `blockNodes` and `inlineNodes` holding `BlockNode` and `InlineNode`, read by
+      `blockNodeNamed` and `inlineNodeNamed` — the accessor named apart from the entry so every
+      call site's local is the one name `blockNode`/`inlineNode` rather than shadowing its own
+      lookup. `BlockType` stays: it names a node type, the parallel of `mark-attributes.ts`'s
+      `MarkType`. `markdown/`'s `blockDirectiveForm`, `blockArgument` and the `spell*Directive*`
+      family keep the word, naming the spelling rather than the node.
+
 ## 5 — Ship `0.1.0`
 
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo

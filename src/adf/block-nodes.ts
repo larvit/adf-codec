@@ -1,6 +1,6 @@
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
-export type BlockDirective = {
+export type BlockNode = {
   attributes: AttributeVocabulary
   contentModel: 'block' | 'code' | 'inline' | 'none'
 }
@@ -41,7 +41,7 @@ const mediaAttributes: AttributeVocabulary = {
 
 const syncBlockAttributes: AttributeVocabulary = { localId: 'string', resourceId: 'string' }
 
-export const blockDirectives = {
+export const blockNodes = {
   blockTaskItem: { attributes: localIdAttributes, contentModel: 'block' },
   blockquote: { attributes: localIdAttributes, contentModel: 'block' },
   bodiedExtension: { attributes: extensionAttributes, contentModel: 'block' },
@@ -80,14 +80,14 @@ export const blockDirectives = {
   tableRow: { attributes: localIdAttributes, contentModel: 'block' },
   taskItem: { attributes: localIdAttributes, contentModel: 'inline' },
   taskList: { attributes: localIdAttributes, contentModel: 'block' },
-} satisfies Readonly<Record<string, BlockDirective>>
+} satisfies Readonly<Record<string, BlockNode>>
 
-export type BlockType = keyof typeof blockDirectives
+export type BlockType = keyof typeof blockNodes
 
-export function blockDirective(type: string): BlockDirective | undefined {
-  return isBlockType(type) ? blockDirectives[type] : undefined
+export function blockNodeNamed(type: string): BlockNode | undefined {
+  return isBlockType(type) ? blockNodes[type] : undefined
 }
 
 function isBlockType(type: string): type is BlockType {
-  return Object.hasOwn(blockDirectives, type)
+  return Object.hasOwn(blockNodes, type)
 }

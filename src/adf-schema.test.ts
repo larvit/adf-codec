@@ -7,8 +7,8 @@ import test from 'node:test'
 
 import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
 import { blockArgument } from './markdown/block-directive-arguments.ts'
-import { blockDirectives } from './adf/block-directives.ts'
-import { inlineDirectives } from './adf/inline-directives.ts'
+import { blockNodes } from './adf/block-nodes.ts'
+import { inlineNodes } from './adf/inline-nodes.ts'
 import { markAttributes } from './adf/mark-attributes.ts'
 
 type Held = Map<string, Set<AttributeKind>>
@@ -78,8 +78,8 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
 
 function spelled(): Spelled[] {
   return [
-    ...Object.entries(blockDirectives).map(([type, entry]) => spelledType(type, entry.attributes, blockArgument(type))),
-    ...Object.entries(inlineDirectives).map(([type, entry]) => spelledType(type, entry.attributes)),
+    ...Object.entries(blockNodes).map(([type, entry]) => spelledType(type, entry.attributes, blockArgument(type))),
+    ...Object.entries(inlineNodes).map(([type, entry]) => spelledType(type, entry.attributes)),
     ...Object.entries(markAttributes).map(([type, attributes]) => spelledType(type, attributes)),
   ]
 }

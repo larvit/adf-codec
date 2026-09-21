@@ -8,7 +8,7 @@ import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { inlineDirective } from '../../adf/inline-directives.ts'
+import { inlineNodeNamed } from '../../adf/inline-nodes.ts'
 import { mergeAdjacentText } from '../../adf/editor-normal.ts'
 import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { nodeAttrs, nodeMarks } from '../../adf/document.ts'
@@ -407,7 +407,7 @@ function imageAlt(inner: readonly Piece[], path: ConvertErrorPath): Result<strin
 // spec/flavour.md, The CommonMark image: the description's plain text, the content slot included.
 function altText(node: AdfNode): string {
   if (node.type === 'hardBreak') return ' '
-  const slot = inlineDirective(node.type)?.textAttribute
+  const slot = inlineNodeNamed(node.type)?.textAttribute
   const spelled = slot === undefined ? undefined : nodeAttrs(node)[slot]
   return typeof spelled === 'string' ? spelled : (node.text ?? '')
 }
