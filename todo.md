@@ -42,12 +42,6 @@ panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
 
-- [ ] **19 — A home for what both formats read (`0.2.0`).** Settle where a construct both formats
-      need lives, and say so in AGENTS.md §11. Today `adf/` may hold no format knowledge and each
-      format directory holds its own shared layer, so there is no third place; the first ADF-shaped
-      but format-touching helper either breaks the layering or becomes a second spelling of one
-      rule, which is the loss §2 exists to stop. Both architects ranked this first and the only
-      item cheaper before the feature than after.
 - [ ] **20 — The give-way channel is unmistakable (`0.2.0`).** `emitBlockquote`, `emitCodeBlock`,
       `emitHeading`, `emitList`, `emitParagraph` and `emitRule` return
       `Result<EmittedBlock> | undefined`, where `undefined` gives way to the directive form and an
@@ -285,6 +279,7 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
 - [x] **16 — The link wrapping a link (`0.2.0`).**
 - [x] **17 — A machine-enforced size ratchet (`0.2.0`).**
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
+- [x] **19 — A home for what both formats read (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 - [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
 - [x] **30 — AGENTS.md says each thing once (`0.2.0`).**

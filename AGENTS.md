@@ -349,19 +349,26 @@ someone spells it or pins it.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
-- `src/adf/` holds ADF's own knowledge and imports no format. Each format directory (`markdown/`,
-  `html/`) parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest of it holding what
-  both directions read. A construct's reader lives there beside the regex the emitter escapes
-  against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`, unless it is
-  part of a construct that side already holds — a grammar stays in one file rather than splitting
-  across the seam. A rule both
-  directions must answer alike — whether a list marker interrupts a paragraph — is one function
-  there too, never a copy per direction, however conservative the copy would be. Where the rule is
-  the emitter's own choice, input consults it rather than restating it: the parser asks
-  `commonMarkSpelling` which form the emitter picks, and `openingLinkTakesDirective` whether the
-  line a paragraph's opening link starts forces the directive link, so no fixture the emitter
-  writes can be refused, and a spelling the emitter refuses gives its own error rather than a
-  second name for it.
+- `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats
+  read lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a
+  content model — and no delimiter, element name or escape reaches it. A helper that cannot answer
+  that way is two constructs, the ADF question there and the spelling in each format, the seam
+  `markAttributes` and `markSpellings` already draw; one that cannot be split is a gap to ask (§15).
+  `markdown/` and `html/` are peers: neither imports the other, and no third directory sits between
+  them. A primitive knowing neither ADF nor a format — `result.ts`, `json-value.ts`, `nesting.ts`,
+  `canonical-json.ts` — stays at `src/` root. A construct rises to `adf/` on its second consumer,
+  not in anticipation of one (the maintainer, 2026-09-21).
+- Each format directory (`markdown/`, `html/`) parts into `emit/` (ADF→format) and `parse/`
+  (format→ADF), the rest of it holding what both directions read. A construct's reader lives there
+  beside the regex the emitter escapes against, so the two cannot drift; a reader with no emit
+  counterpart goes in `parse/`, unless it is part of a construct that side already holds — a grammar
+  stays in one file rather than splitting across the seam. A rule both directions must answer
+  alike — whether a list marker interrupts a paragraph — is one function there too, never a copy
+  per direction, however conservative the copy would be. Where the rule is the emitter's own
+  choice, input consults it rather than restating it: the parser asks `commonMarkSpelling` which
+  form the emitter picks, and `openingLinkTakesDirective` whether the line a paragraph's opening
+  link starts forces the directive link, so no fixture the emitter writes can be refused, and a
+  spelling the emitter refuses gives its own error rather than a second name for it.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
   Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so

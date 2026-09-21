@@ -907,6 +907,21 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       (the stability-reviewer, 2026-09-19). The one list accounting was not
       taken: 4b settled that accounting the day this was filed, and reopening it is an ask rather
       than a chunk.
+- [x] **19 — A home for what both formats read (`0.2.0`).** Settle where a construct both formats
+      need lives, and say so in AGENTS.md §11. Today `adf/` may hold no format knowledge and each
+      format directory holds its own shared layer, so there is no third place; the first ADF-shaped
+      but format-touching helper either breaks the layering or becomes a second spelling of one
+      rule, which is the loss §2 exists to stop. Both architects ranked this first and the only
+      item cheaper before the feature than after.
+      **Settled** (the maintainer, 2026-09-21): `adf/` is that place, and the test is the vocabulary
+      the answer is in — a node type, an attribute kind, a content model, never a delimiter, an
+      element name or an escape. A helper that cannot answer that way is the ADF question there and
+      a spelling per format, the seam `markAttributes` and `markSpellings` already draw; one that
+      cannot be split is a gap to ask. `markdown/` and `html/` are peers with no third directory
+      between them, and `src/` root keeps the primitives knowing neither ADF nor a format. No code
+      moved: a construct rises on its second consumer, so `linkHref` (`markdown/mark-spellings.ts`)
+      and the external-image read (`markdown/emit/image.ts`), both pure ADF attribute reads, move
+      when `html/` reads them (7).
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).** `emit/inline-line.ts:67` is a
       `for (;;)` that re-emits the line until every unspellable node has been carried, and its
       termination rests on a comment: each pass carries at least one more node, or flips
