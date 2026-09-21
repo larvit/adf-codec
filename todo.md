@@ -8,7 +8,9 @@ milestone. A done item shrinks to its title here; its full text moves to `todo-h
 Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next session" says.`
 
 1. `git fetch origin` first and read this file at `origin/main`, then branch off it, not the
-   worktree left behind: a checkout behind the remote reads a merged item as unchecked.
+   worktree left behind: a checkout behind the remote reads a merged item as unchecked. `tea pr
+   list` in the same breath — an open PR is a chunk already in flight whatever line 3 says, and
+   finishing it is the session.
 2. The first unchecked item in shipping order, per AGENTS.md §15 — the order the Milestones line
    states, which wins over where an item's bullet sits: a newly filed item is written beside the
    one it came in with, not at its own place in the order. Where that item has no release, the
@@ -20,7 +22,7 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 23, 24, 25, 30, 26, 27, 10, 6, 7, 5f, 5g →
+4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 23, 24, 25, 30, 26, 27, 10, 6, 7, 31, 5f, 5g →
 `0.2.0`;
 8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
@@ -41,14 +43,18 @@ HTML doubles the importers and the file count they touch, and 25 to 27 because t
 panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
+31 comes from 20's gate runs (2026-09-21) and reads beside 5f, the other chunk putting a measured
+number under the pipeline.
 
-- [ ] **20 — The give-way channel is unmistakable (`0.2.0`).** `emitBlockquote`, `emitCodeBlock`,
-      `emitHeading`, `emitList`, `emitParagraph` and `emitRule` return
-      `Result<EmittedBlock> | undefined`, where `undefined` gives way to the directive form and an
-      error refuses the document. Give the six the `try` prefix the repo already uses for
-      `tryImage`, `tryPipeTable` and `tryPipeCell`, or a return type that cannot hold both, so a
-      newcomer meeting an unspellable shape cannot reach for `failure` and silently narrow what
-      converts. Named as the first thing a new senior would break, and it lands on §1.
+- [ ] **31 — The branch figure the floor is read against is stable (`0.2.0`).** Three Node test
+      legs over one unchanged tree reported `emit/inline-line.ts` at 95.83%, 96.23% and 96.23%,
+      and the total at 98.80%, 98.84% and 98.84% (2026-09-21). `--experimental-test-coverage`
+      counts branches off V8's own coverage, which the runner's parallel files and V8's
+      optimization make run-dependent, so the number the floor is read against is not the code's
+      alone. The floor of 98 holds today on 0.8 points of slack and §10 says it only ever moves
+      upward, so the first raise to the measured figure reddens a run that changed nothing. Make
+      the measurement repeatable, or state the number the floor may be raised to and why it is not
+      the measured one.
 - [ ] **21 — The ADF tables carry ADF's nouns (`0.2.0`).** `adf/block-directives.ts` and
       `adf/inline-directives.ts` hold the ADF node tables — `paragraph`, `heading`, `blockquote`
       and `rule` among them — under the markdown flavour's word, inside the directory §11 forbids
@@ -280,6 +286,7 @@ ask is settled against, 19's included; 30 sits beside 25, the other chunk reread
 - [x] **17 — A machine-enforced size ratchet (`0.2.0`).**
 - [x] **18 — The subtree the directive spelling asks about (`0.2.0`).**
 - [x] **19 — A home for what both formats read (`0.2.0`).**
+- [x] **20 — The give-way channel is unmistakable (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 - [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
 - [x] **30 — AGENTS.md says each thing once (`0.2.0`).**

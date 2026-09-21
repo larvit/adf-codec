@@ -922,6 +922,25 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       moved: a construct rises on its second consumer, so `linkHref` (`markdown/mark-spellings.ts`)
       and the external-image read (`markdown/emit/image.ts`), both pure ADF attribute reads, move
       when `html/` reads them (7).
+- [x] **20 — The give-way channel is unmistakable (`0.2.0`).** `emitBlockquote`, `emitCodeBlock`,
+      `emitHeading`, `emitList`, `emitParagraph` and `emitRule` return
+      `Result<EmittedBlock> | undefined`, where `undefined` gives way to the directive form and an
+      error refuses the document. Give the six the `try` prefix the repo already uses for
+      `tryImage`, `tryPipeTable` and `tryPipeCell`, or a return type that cannot hold both, so a
+      newcomer meeting an unspellable shape cannot reach for `failure` and silently narrow what
+      converts. Named as the first thing a new senior would break, and it lands on §1.
+      **Done** (2026-09-21): both answers, each where it fits. Five of the six reach a refusal the
+      directive form shares — a walk, `codeBlockText`, `emitInlineLine` — so moving it out is the
+      second walk 4b removed, and they take the prefix alone. `tryRule` refuses nothing, so it
+      takes the narrower type as well, `string | undefined` through `readableText`, which is what
+      `tryImage` and `tryPipeTable` already return. `emitLink` and `listItemLines` are the same
+      channel outside the six — the CommonMark link and the tight list item, each tried ahead of a
+      directive form — so they take the prefix too, and the comment naming `emitLink`'s `undefined`
+      arm goes with the rename. §11's readable-spelling rule carries the prefix and gave up the set
+      it enumerated: the prefix is the set now, which is what stops the next spelling being named
+      by the eight beside it. The same rule's nested-list carve-out went with it, naming a refusal
+      2b's tight-versus-blank answer had already removed — `unspellable-adjacent-lists` is gone from
+      `result.ts` and `separationBetween` returns a `string`.
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).** `emit/inline-line.ts:67` is a
       `for (;;)` that re-emits the line until every unspellable node has been carried, and its
       termination rests on a comment: each pass carries at least one more node, or flips

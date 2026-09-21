@@ -26,7 +26,7 @@ type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
 type WalkedItem = { node: AdfNode; walk: Walk }
 
 const largestListMarker = 999999999
-// Bare because emitList admits no item carrying attributes, marks or text.
+// Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
@@ -115,13 +115,13 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, mem
 }
 
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
-  if (node.type === 'blockquote') return emitBlockquote(node, path, depth, memo)
-  if (node.type === 'bulletList' || node.type === 'orderedList') return emitList(node, path, depth, memo)
-  if (node.type === 'codeBlock') return emitCodeBlock(node, path)
-  if (node.type === 'heading') return emitHeading(node, path)
+  if (node.type === 'blockquote') return tryBlockquote(node, path, depth, memo)
+  if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, memo)
+  if (node.type === 'codeBlock') return tryCodeBlock(node, path)
+  if (node.type === 'heading') return tryHeading(node, path)
   if (node.type === 'mediaSingle') return readableText(tryImage(node, path))
-  if (node.type === 'paragraph') return emitParagraph(node, path)
-  if (node.type === 'rule') return emitRule(node)
+  if (node.type === 'paragraph') return tryParagraph(node, path)
+  if (node.type === 'rule') return readableText(tryRule(node))
   if (node.type === 'table') return readableText(tryPipeTable(node, path))
   return undefined
 }
@@ -164,7 +164,7 @@ function emitDirectiveBody(node: AdfNode, directive: BlockDirective, opener: str
   return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
-function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, [])) return undefined
   const inner = walkBlocks(nodeContent(node), path, depth + 1, memo)
   if (!inner.ok) return inner
@@ -175,7 +175,7 @@ function emitBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, me
   return success(commonMarkText(text, inner.value.headroom))
 }
 
-function emitCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
+function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, ['language'])) return undefined
   const slot = languageSlot(nodeAttrs(node)['language'])
   if (slot.kind === 'attribute') return undefined
@@ -214,7 +214,7 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
   return success(text)
 }
 
-function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
+function tryHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, ['level'])) return undefined
   const level = nodeAttrs(node)['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
@@ -226,7 +226,7 @@ function emitHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock
   return success(commonMarkText(`${hashes} ${line.value}`))
 }
 
-function emitList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
   const ordered = node.type === 'orderedList'
   if (!carriesOnly(node, ordered ? ['order'] : [])) return undefined
   const items = nodeContent(node)
@@ -243,7 +243,7 @@ function emitList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: Sp
   }
   const lines: string[] = []
   for (const [offset, item] of walked.entries()) {
-    const line = listItemLines(item.walk.blocks, ordered ? `${start + offset}. ` : '- ')
+    const line = tryListItemLines(item.walk.blocks, ordered ? `${start + offset}. ` : '- ')
     if (line === undefined) {
       if (headroom < 1) return tooDeep(path)
       return emitDirectiveBlock(node, ordered ? blockDirectives.orderedList : blockDirectives.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
@@ -265,7 +265,7 @@ function listStart(node: AdfNode, items: number): number | undefined {
   return start + items - 1 > largestListMarker ? undefined : start
 }
 
-function listItemLines(blocks: readonly PlacedBlock[], marker: string): string | undefined {
+function tryListItemLines(blocks: readonly PlacedBlock[], marker: string): string | undefined {
   const inner = joinBlocks(blocks, 'list-item')
   if (inner === '') return marker.trimEnd()
   const body = inner.split('\n')
@@ -276,7 +276,7 @@ function listItemLines(blocks: readonly PlacedBlock[], marker: string): string |
   return lines.join('\n')
 }
 
-function emitParagraph(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
+function tryParagraph(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
   const content = nodeContent(node)
   if (content.length === 0 || !carriesOnly(node, [])) return undefined
   const line = emitInlineLine(content, 'paragraph', path)
@@ -284,7 +284,7 @@ function emitParagraph(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlo
   return success(commonMarkText(line.value))
 }
 
-function emitRule(node: AdfNode): Result<EmittedBlock> | undefined {
+function tryRule(node: AdfNode): string | undefined {
   if (!carriesOnly(node, []) || nodeContent(node).length > 0) return undefined
-  return success(commonMarkText('---'))
+  return '---'
 }

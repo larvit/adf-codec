@@ -258,7 +258,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (attributes === undefined) return success({ carry: range })
   if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, range, path)
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
-  const link = spelling.kind === 'link' ? emitLink(nodes, mark, depth, range, context) : undefined
+  const link = spelling.kind === 'link' ? tryLink(nodes, mark, depth, range, context) : undefined
   if (link !== undefined) return link
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
   if (!inner.ok) return inner
@@ -300,8 +300,7 @@ function needsPadding(text: string): boolean {
   return text.startsWith(' ') && text.endsWith(' ') && /[^ ]/.test(text)
 }
 
-// `undefined` where the link takes the directive form the caller spells.
-function emitLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext): Result<Emission> | undefined {
+function tryLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext): Result<Emission> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return success({ carry: range })
   const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective

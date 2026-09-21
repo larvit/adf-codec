@@ -306,15 +306,12 @@ someone spells it or pins it.
   `matchEmphasis` transcribes the reference `process_emphasis` line for line, and its closer walk and
   opener search stay whole: broken into named steps they drift from the algorithm being faithful is
   the whole point of.
-- A readable spelling tried ahead of a general one — a CommonMark block, the image, the pipe
-  table, a pipe cell — gives way with `undefined` for every shape it cannot spell, and fails only
-  where the general form fails on the same node. Refusing there refuses a document the general
-  form spells, so a refusal the general form does not share belongs in the general form or
-  nowhere — save the nested list a tight spelling would swallow, whose refusal the
-  tight-versus-blank answer owns (`todo.md` 2b). A readable spelling that must spell its subtree
-  before it can give way — the list, whose thematic-break first line and blank lines exist only
-  spelled — hands that one walk to the general form instead: giving way after the walk walks
-  again at every level, doubling per level (4b).
+- A readable spelling tried ahead of a general one takes the `try` prefix and fails only where the
+  general form fails on the same node (20): refusing there refuses a document the general form
+  spells, so a refusal the general form does not share belongs in the general form or nowhere. A
+  readable spelling that must spell its subtree before it can give way — the list, whose
+  thematic-break first line and blank lines exist only spelled — hands that one walk to the general
+  form instead: giving way after the walk walks again at every level, doubling per level (4b).
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
   `Result` rather than the stack overflow that waits near 2000. A level is one block-list
