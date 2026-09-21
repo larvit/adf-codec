@@ -1,7 +1,7 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
-import type { LineContainer } from '../emit/line-escaping.ts'
+import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'

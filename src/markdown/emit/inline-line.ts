@@ -1,6 +1,7 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
-import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type LineContainer, type NodeRange } from './line-escaping.ts'
+import type { LineContainer } from '../line-container.ts'
+import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'

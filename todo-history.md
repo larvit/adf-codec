@@ -1010,6 +1010,14 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       `blockDirectiveForm`, `blockArgument` and the `spell*Directive*` family keep the word,
       naming the spelling rather than the node.
 
+- [x] **22 — `LineContainer` sits at the markdown level (`0.2.0`).** Two of the four
+      `parse/` → `emit/` imports fetch this type from `emit/line-escaping.ts`, camouflaging the two
+      that are the deliberate spelling consultation. Move it, and name those two in §11 as the whole
+      of that surface, so a reviewer checks the seam with one grep.
+      **Done** (2026-09-21): the type is `markdown/line-container.ts`, read by both directions, so
+      `parse/` imports `emit/` twice — `commonMarkSpelling` and `openingLinkTakesDirective` — and
+      §11 says those two are the whole of the seam a `../emit/` grep under `parse/` reads.
+
 ## 5 — Ship `0.1.0`
 
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo

@@ -1,3 +1,4 @@
+import type { LineContainer } from '../line-container.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { claimsDirectivePrefix } from '../directive-syntax.ts'
@@ -20,8 +21,6 @@ export type InlineSegment =
 export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: NodeRange | undefined }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
-
-export type LineContainer = 'heading' | 'paragraph' | 'table-cell'
 
 type EmittedDelimiter = { closes: boolean; offset: number; pair: number; width: number }
 
