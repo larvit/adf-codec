@@ -20,12 +20,12 @@ const documentStart: SourcePosition = { line: 1, offset: 0 }
 
 export function markdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   const parsed = parseBlocks(markdown)
-  const content = positioned(blockNodes(parsed.blocks, parsed.definitions, [], 0, new Map()), documentStart)
+  const content = positioned(readBlocks(parsed.blocks, parsed.definitions, [], 0, new Map()), documentStart)
   if (!content.ok) return content
   return success(content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 })
 }
 
-function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode[]> {
+function readBlocks(blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
@@ -35,7 +35,7 @@ function blockNodes(blocks: readonly Block[], definitions: LinkDefinitions, path
       if (fault !== undefined) return positioned(faulted(fault, nodePath), block.position)
       continue
     }
-    const node = positioned(blockNode(block, definitions, nodePath, depth, memo), block.position)
+    const node = positioned(readBlock(block, definitions, nodePath, depth, memo), block.position)
     if (!node.ok) return node
     content.push(node.value)
   }
@@ -55,7 +55,7 @@ function partsFault(): ConvertFault {
   return unsupportedNodeShape(`${listBreakName} parts two adjacent lists of one type: this one parts something else`)
 }
 
-function blockNode(block: Block, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
+function readBlock(block: Block, definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':
       return containerNode({ type: 'blockquote' }, block.blocks, definitions, path, depth, memo)
@@ -138,7 +138,7 @@ function inlineBodyNode(node: AdfNode, blocks: readonly Block[], definitions: Li
 }
 
 function containerNode(node: AdfNode, blocks: readonly Block[], definitions: LinkDefinitions, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<AdfNode> {
-  const content = blockNodes(blocks, definitions, path, depth + 1, memo)
+  const content = readBlocks(blocks, definitions, path, depth + 1, memo)
   if (!content.ok) return content
   return success(withContent(node, content.value))
 }
