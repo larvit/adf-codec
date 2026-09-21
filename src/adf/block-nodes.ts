@@ -1,6 +1,6 @@
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
-export type BlockNode = {
+export type BlockNodeModel = {
   attributes: AttributeVocabulary
   contentModel: 'block' | 'code' | 'inline' | 'none'
 }
@@ -80,11 +80,11 @@ export const blockNodes = {
   tableRow: { attributes: localIdAttributes, contentModel: 'block' },
   taskItem: { attributes: localIdAttributes, contentModel: 'inline' },
   taskList: { attributes: localIdAttributes, contentModel: 'block' },
-} satisfies Readonly<Record<string, BlockNode>>
+} satisfies Readonly<Record<string, BlockNodeModel>>
 
 export type BlockType = keyof typeof blockNodes
 
-export function blockNodeNamed(type: string): BlockNode | undefined {
+export function blockNodeModel(type: string): BlockNodeModel | undefined {
   return isBlockType(type) ? blockNodes[type] : undefined
 }
 

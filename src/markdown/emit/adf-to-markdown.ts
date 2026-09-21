@@ -1,8 +1,8 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import type { BlockNode } from '../../adf/block-nodes.ts'
+import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import { adfDocumentFault, carriesOnly, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockDirectiveForm } from '../block-directive-forms.ts'
-import { blockNodeNamed, blockNodes } from '../../adf/block-nodes.ts'
+import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -87,11 +87,11 @@ function interruptsParagraph(node: AdfNode): boolean {
 }
 
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> {
-  const blockNode = blockNodeNamed(node.type)
-  if (blockNode === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  const model = blockNodeModel(node.type)
+  if (model === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   const readable = readableBlock(node, path, depth, memo)
   if (readable !== undefined) return readable
-  return emitDirectiveBlock(node, blockNode, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, memo))
+  return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, memo))
 }
 
 export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<null> | undefined {
@@ -143,18 +143,18 @@ function directivePair(node: AdfNode, opener: string, body: string, headroom: nu
   return { headroom, spelling: 'directive', text: `${opener}\n${body === '' ? '' : `${body}\n`}${spellDirectiveCloser(node.type)}` }
 }
 
-function emitDirectiveBlock(node: AdfNode, blockNode: BlockNode, path: ConvertErrorPath, depth: number, walkBody: () => Result<Walk>): Result<EmittedBlock> {
+function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number, walkBody: () => Result<Walk>): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
   if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
-  if (blockNode.contentModel === 'code') return emitCodeDirective(node, blockNode, path, depth)
-  const opener = spellBlockDirectiveOpener(node, blockNode)
+  if (model.contentModel === 'code') return emitCodeDirective(node, model, path, depth)
+  const opener = spellBlockDirectiveOpener(node, model)
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  return emitDirectiveBody(node, blockNode, opener, path, walkBody)
+  return emitDirectiveBody(node, model, opener, path, walkBody)
 }
 
-function emitDirectiveBody(node: AdfNode, blockNode: BlockNode, opener: string, path: ConvertErrorPath, walkBody: () => Result<Walk>): Result<EmittedBlock> {
+function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string, path: ConvertErrorPath, walkBody: () => Result<Walk>): Result<EmittedBlock> {
   if (blockDirectiveForm(node.type) === 'leaf') return success({ headroom: Number.POSITIVE_INFINITY, spelling: 'directive', text: opener })
-  if (blockNode.contentModel === 'inline') {
+  if (model.contentModel === 'inline') {
     const line = emitInlineLine(nodeContent(node), 'paragraph', path)
     if (!line.ok) return line
     return success(directivePair(node, opener, line.value))
@@ -184,9 +184,9 @@ function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBloc
   return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
 }
 
-function emitCodeDirective(node: AdfNode, blockNode: BlockNode, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
+function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const slot = languageSlot(nodeAttrs(node)['language'])
-  const opener = spellBlockDirectiveOpener(node, blockNode, slot.kind === 'attribute' ? [] : ['language'])
+  const opener = spellBlockDirectiveOpener(node, model, slot.kind === 'attribute' ? [] : ['language'])
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   const text = codeBlockText(node, path)
   if (!text.ok) return text

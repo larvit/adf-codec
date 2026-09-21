@@ -1000,12 +1000,15 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       to know a format. Rename to the noun `spec/flavour.md` uses, types and accessors with them.
       Before 7 doubles the import sites.
       **Done** (2026-09-21): the tables are `adf/block-nodes.ts` and `adf/inline-nodes.ts`,
-      `blockNodes` and `inlineNodes` holding `BlockNode` and `InlineNode`, read by
-      `blockNodeNamed` and `inlineNodeNamed` — the accessor named apart from the entry so every
-      call site's local is the one name `blockNode`/`inlineNode` rather than shadowing its own
-      lookup. `BlockType` stays: it names a node type, the parallel of `mark-attributes.ts`'s
-      `MarkType`. `markdown/`'s `blockDirectiveForm`, `blockArgument` and the `spell*Directive*`
-      family keep the word, naming the spelling rather than the node.
+      `blockNodes` and `inlineNodes` — `spec/flavour.md`'s own headings — each row a
+      `BlockNodeModel` or `InlineNodeModel` read by `blockNodeModel` and `inlineNodeModel`. The row
+      is the node's model, never the node: `BlockNode` beside `AdfNode` put two kinds of thing one
+      lookup apart in every signature the rename touched, where §8 already calls the content model
+      the model. `markdown-to-adf.ts`'s own `blockNodes`/`blockNode` walk became
+      `readBlocks`/`readBlock`, so the table's name means one thing repo-wide. `BlockType` stays:
+      it names a node type, the parallel of `mark-attributes.ts`'s `MarkType`. `markdown/`'s
+      `blockDirectiveForm`, `blockArgument` and the `spell*Directive*` family keep the word,
+      naming the spelling rather than the node.
 
 ## 5 — Ship `0.1.0`
 

@@ -50,7 +50,7 @@ const fixpointFloor = 600
 const gateRuns = 1000
 const markdownMarkTypes = new Set(Object.keys(markAttributes).filter((type) => markSpelling(type)?.kind !== 'directive'))
 
-const vocabularies = [...Object.values(blockNodes).map((blockNode) => blockNode.attributes), ...Object.values(inlineNodes).map((inlineNode) => inlineNode.attributes), ...Object.values(markAttributes)]
+const vocabularies = [...Object.values(blockNodes).map((model) => model.attributes), ...Object.values(inlineNodes).map((model) => model.attributes), ...Object.values(markAttributes)]
 const attributeKeys = [
   ...new Set([...vocabularies.flatMap((vocabulary) => Object.keys(vocabulary)), ...Object.keys(blockNodes).flatMap((type) => blockArgument(type) ?? []), marksAttribute, 'json', textDirectiveName]),
 ]
@@ -233,9 +233,9 @@ function inlineMarkdown(hostile: boolean): InlineMarkdown {
         },
         {
           arbitrary: fc.oneof(
-            ...Object.entries(inlineNodes).map(([name, inlineNode]) =>
+            ...Object.entries(inlineNodes).map(([name, model]) =>
               fc
-                .tuple(inlineNode.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(inlineNode.attributes, inlineNode.textAttribute))
+                .tuple(model.textAttribute === undefined ? fc.constant(null) : fc.option(hostile ? word : prose), tableAttributes(model.attributes, model.textAttribute))
                 .map(([slot, attrs]) => (slot === null ? spellInlineLeafDirective(name, attrs) : `${spellInlineDirectiveOpener(name)}${slot}]${attrs}`)),
             ),
             ...Object.entries(markAttributes)
@@ -328,15 +328,15 @@ function blockMarkdown(hostile: boolean, { inlines, oneLine }: InlineMarkdown, {
   const blockDepth = fc.createDepthIdentifier()
   const { blocks } = fc.letrec<{ block: string; blocks: string }>((tie) => {
     const bodyByModel = { block: fc.oneof(tie('blocks'), fc.constant('')), code: fencedCode, inline: fc.oneof(oneLine, fc.constant('')) }
-    const tableDirectives = Object.entries(blockNodes).map(([name, blockNode]) => {
+    const tableDirectives = Object.entries(blockNodes).map(([name, model]) => {
       const argument =
         blockArgument(name) === undefined
           ? fc.constant(undefined)
           : fc.oneof({ arbitrary: fc.constantFrom('DONE', 'TODO', 'custom', 'info', 'warning'), weight: 3 }, { arbitrary: bareToken, weight: 1 })
-      const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(blockNode.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(blockNode.attributes)
-      if (blockNode.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => spellDirectiveOpener(name, held, spelled))
+      const attrs = hostile ? fc.oneof({ arbitrary: tableAttributes(model.attributes), weight: 4 }, { arbitrary: hostileAttributes, weight: 1 }) : tableAttributes(model.attributes)
+      if (model.contentModel === 'none') return fc.tuple(argument, attrs).map(([held, spelled]) => spellDirectiveOpener(name, held, spelled))
       return fc
-        .tuple(argument, attrs, bodyByModel[blockNode.contentModel], hostile ? closerDrift : fc.constant(null))
+        .tuple(argument, attrs, bodyByModel[model.contentModel], hostile ? closerDrift : fc.constant(null))
         .map(([held, spelled, body, closer]) => container(spellDirectiveOpener(name, held, spelled), body, closer ?? spellDirectiveCloser(name)))
     })
     return {

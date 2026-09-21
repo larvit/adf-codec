@@ -78,8 +78,8 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
 
 function spelled(): Spelled[] {
   return [
-    ...Object.entries(blockNodes).map(([type, entry]) => spelledType(type, entry.attributes, blockArgument(type))),
-    ...Object.entries(inlineNodes).map(([type, entry]) => spelledType(type, entry.attributes)),
+    ...Object.entries(blockNodes).map(([type, model]) => spelledType(type, model.attributes, blockArgument(type))),
+    ...Object.entries(inlineNodes).map(([type, model]) => spelledType(type, model.attributes)),
     ...Object.entries(markAttributes).map(([type, attributes]) => spelledType(type, attributes)),
   ]
 }

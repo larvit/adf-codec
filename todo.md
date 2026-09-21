@@ -22,7 +22,7 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 23, 24, 25, 30, 26, 27, 10, 6, 7, 31, 5f, 5g →
+4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 32, 23, 24, 25, 30, 26, 27, 10, 6, 7, 31, 5f, 5g →
 `0.2.0`;
 8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
@@ -44,7 +44,8 @@ panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
 31 comes from 20's gate runs (2026-09-21) and reads beside 5f, the other chunk putting a measured
-number under the pipeline.
+number under the pipeline. 32 comes from 21's review (2026-09-21) and reads beside 22, the other
+chunk clearing a §11 seam.
 
 - [ ] **31 — The branch figure the floor is read against is stable (`0.2.0`).** Three Node test
       legs over one unchanged tree reported `emit/inline-line.ts` at 95.83%, 96.23% and 96.23%,
@@ -59,6 +60,14 @@ number under the pipeline.
       `parse/` → `emit/` imports fetch this type from `emit/line-escaping.ts`, camouflaging the two
       that are the deliberate spelling consultation. Move it, and name those two in §11 as the whole
       of that surface, so a reviewer checks the seam with one grep.
+- [ ] **32 — The mark depth `adf/` counts is stated in ADF's terms (`0.2.0`).**
+      `document.ts`'s `markAttributeNesting` is `largestNesting - 3`, and both the comment above it
+      and AGENTS.md §8 give the reason as markdown's: the block directive spells the whole mark set
+      as one JSON attribute, so the parser reads the value at the bottom of array, mark and
+      `attrs`. That is a format's spelling deciding a constant inside the directory §11 forbids to
+      know a format. Move the derivation to where that spelling lives, or state the three levels in
+      ADF's own vocabulary. Before 7 gives the constant a second format whose spelling may not
+      spend the same three levels.
 - [ ] **23 — The block-directive fragments are one file (`0.2.0`).** `block-directive-arguments.ts`,
       `-forms.ts` and `-marks.ts` are three files under 25 lines answering one question. Fold them,
       and take `src/markdown/` — the worst level both architects named, 13 entries with no
