@@ -362,12 +362,11 @@ someone spells it or pins it.
   stays in one file rather than splitting across the seam. A rule both directions must answer
   alike — whether a list marker interrupts a paragraph — is one function there too, never a copy
   per direction, however conservative the copy would be. Where the rule is the emitter's own
-  choice, input consults it rather than restating it: the parser asks `commonMarkSpelling` which
-  form the emitter picks, and `openingLinkTakesDirective` whether the line a paragraph's opening
-  link starts forces the directive link, so no fixture the emitter writes can be refused, and a
-  spelling the emitter refuses gives its own error rather than a second name for it. Those two asks,
-  with the types their signatures name, are the whole of `parse/` → `emit/`, so a grep for
-  `../emit/` under `parse/` reads the seam entire.
+  choice, input consults it rather than restating it, and that is the only import `parse/` takes
+  from `emit/`: the parser asks `commonMarkSpelling` which form the emitter picks, and
+  `openingLinkTakesDirective` whether the line a paragraph's opening link starts forces the
+  directive link, so no fixture the emitter writes can be refused, and a spelling the emitter
+  refuses gives its own error rather than a second name for it.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
   Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so
