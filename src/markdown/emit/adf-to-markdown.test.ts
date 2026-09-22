@@ -375,11 +375,16 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
     assert.deepEqual(toEditorNormal(read.value), document(node))
   }
 
-  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em', largestNesting - 3))
+  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em'))
+  assert.equal(
+    markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs: { deep: nested(largestNesting) }, type: 'em' }], text: 'x', type: 'text' })))),
+    `unsupported-nesting-depth: a carried node's JSON nests deeper than the ${largestNesting} levels its position leaves`,
+  )
   assert.equal(markdown(adfToMarkdown(document(paragraph(card(largestNesting + 1))))), deeper('data', 'inlineCard'))
   assert.deepEqual(path(adfToMarkdown(document(paragraph(card(largestNesting + 1))))), [])
   roundTrips(paragraph(card(largestNesting)))
-  assert.equal(markdown(adfToMarkdown(document(marked(largestNesting - 2)))), deeper('deep', 'em', largestNesting - 3))
+  assert.equal(markdown(adfToMarkdown(document(marked(largestNesting - 2)))), deeper('marks', 'panel'))
+  assert.deepEqual(path(adfToMarkdown(document(marked(largestNesting - 2)))), ['content', 0])
   roundTrips(marked(largestNesting - 3))
 })
 

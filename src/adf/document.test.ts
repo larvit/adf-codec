@@ -68,9 +68,9 @@ test('names the attribute nesting past the levels the parser reads one at, and s
   assert.equal(faultCode(withAttribute(nested(largestNesting + 1))), 'unsupported-nesting-depth')
   assert.equal(isAdfDocument(withAttribute(nested(largestNesting + 1))), true)
   const marked = (levels: number): unknown => ({ content: [{ marks: [{ attrs: { a: nested(levels) }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 })
-  assert.equal(fault(marked(largestNesting - 3)), 'accepted')
-  assert.equal(fault(marked(largestNesting - 2)), deeper('a', 'link', largestNesting - 3))
-  assert.equal(isAdfDocument(marked(largestNesting - 2)), true)
+  assert.equal(fault(marked(largestNesting)), 'accepted')
+  assert.equal(fault(marked(largestNesting + 1)), deeper('a', 'link'))
+  assert.equal(isAdfDocument(marked(largestNesting + 1)), true)
 })
 
 test('accepts the JSON values an attribute may hold', () => {

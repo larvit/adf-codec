@@ -147,9 +147,10 @@ function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertE
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
   if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (model.contentModel === 'code') return emitCodeDirective(node, model, path, depth)
-  const opener = spellBlockDirectiveOpener(node, model)
+  const opener = spellBlockDirectiveOpener(node, model, path)
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  return emitDirectiveBody(node, model, opener, path, walkBody)
+  if (!opener.ok) return opener
+  return emitDirectiveBody(node, model, opener.value, path, walkBody)
 }
 
 function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string, path: ConvertErrorPath, walkBody: () => Result<Walk>): Result<EmittedBlock> {
@@ -186,11 +187,12 @@ function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBloc
 
 function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const slot = languageSlot(nodeAttrs(node)['language'])
-  const opener = spellBlockDirectiveOpener(node, model, slot.kind === 'attribute' ? [] : ['language'])
+  const opener = spellBlockDirectiveOpener(node, model, path, slot.kind === 'attribute' ? [] : ['language'])
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  if (!opener.ok) return opener
   const text = codeBlockText(node, path)
   if (!text.ok) return text
-  return success(directivePair(node, opener, fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
+  return success(directivePair(node, opener.value, fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
 }
 
 function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {

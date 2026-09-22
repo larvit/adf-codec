@@ -1,12 +1,14 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
+import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { blockArgument } from '../block-directive-arguments.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { isBareToken, spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
 import { markValues, marksAttribute } from '../block-directive-marks.ts'
-import { nodeAttrs, nodeMarks } from '../../adf/document.ts'
+import { overNested } from '../../json-value.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
-export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, spelledByBody: readonly string[] = []): string | undefined {
+export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, spelledByBody: readonly string[] = []): Result<string> | undefined {
   const argumentAttribute = blockArgument(node.type)
   const slot = bareArgument(node, argumentAttribute)
   if (slot === undefined) return undefined
@@ -15,8 +17,12 @@ export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, 
   if (pairs === undefined) return undefined
   const spelledPairs = spellVocabulary(pairs)
   const marks = nodeMarks(node)
-  if (marks.length > 0) spelledPairs.push([marksAttribute, spellJsonAttribute(markValues(marks))])
-  return spellDirectiveOpener(node.type, slot.argument, spellAttributes(spelledPairs))
+  if (marks.length > 0) {
+    const values = markValues(marks)
+    if (overNested(values)) return failure('unsupported-nesting-depth', attributeNestingMessage(marksAttribute, node.type), path)
+    spelledPairs.push([marksAttribute, spellJsonAttribute(values)])
+  }
+  return success(spellDirectiveOpener(node.type, slot.argument, spellAttributes(spelledPairs)))
 }
 
 // `undefined` where the argument slot holds a value no bare token spells.
