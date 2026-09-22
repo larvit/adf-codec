@@ -365,9 +365,9 @@ someone spells it or pins it.
   choice, input consults it rather than restating it: the parser asks `commonMarkSpelling` which
   form the emitter picks, and `openingLinkTakesDirective` whether the line a paragraph's opening
   link starts forces the directive link, so no fixture the emitter writes can be refused, and a
-  spelling the emitter refuses gives its own error rather than a second name for it. Those two asks
-  are the whole of `parse/` → `emit/`, so a grep for `../emit/` under `parse/` reads the seam
-  entire: what both directions read sits at the format level, a type included.
+  spelling the emitter refuses gives its own error rather than a second name for it. Those two asks,
+  with the types their signatures name, are the whole of `parse/` → `emit/`, so a grep for
+  `../emit/` under `parse/` reads the seam entire.
 - The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
   format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
   Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so
