@@ -1043,7 +1043,7 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       `markdown-property`) plus `property-harness.ts` are the machinery that makes the docs
       executable, and they read as leftovers. Give them one, so `src/` root shows what it holds.
       **Done** (2026-09-23): `src/conformance/` holds the six gate tests and the property harness,
-      so `src/` root is the four primitives and the entrypoint.
+      so `src/` root holds the primitives and the entrypoint.
 
 ## 5 — Ship `0.1.0`
 
