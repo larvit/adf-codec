@@ -13,12 +13,14 @@ export type InlineEscaping = 'backslash' | 'bracketed' | 'bracketed-link-target'
 
 export type NodeRange = { first: number; last: number }
 
+export type MarkRun = NodeRange & { depth: number }
+
 export type InlineSegment =
-  | { emphasis: EmphasisRole; escaping: 'none'; nodes: NodeRange; text: string }
+  | { emphasis: EmphasisRole; escaping: 'none'; nodes: MarkRun; text: string }
   | { emphasis?: undefined; escaping: 'none'; nodes: NodeRange; text: string }
   | { emphasis?: undefined; escaping: InlineEscaping; nodes?: undefined; text: string }
 
-export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: NodeRange | undefined }
+export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: MarkRun | undefined }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
@@ -132,7 +134,7 @@ function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], cl
   return escaped
 }
 
-function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
+function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun | undefined {
   const { nodes, runs } = emittedRuns(segments, placements, output)
   const pair = misflanked(runs) ?? unpaired(runs)
   return pair === undefined ? undefined : nodes[pair]
@@ -168,9 +170,9 @@ function delimiterAt(run: EmittedRun, closes: boolean, offset: number, width: nu
   return run.delimiters.find((delimiter) => delimiter.closes === closes && delimiter.offset === offset && delimiter.width === width)
 }
 
-function emittedRuns(segments: readonly InlineSegment[], placements: readonly number[], output: string): { nodes: NodeRange[]; runs: EmittedRun[] } {
+function emittedRuns(segments: readonly InlineSegment[], placements: readonly number[], output: string): { nodes: MarkRun[]; runs: EmittedRun[] } {
   const runs: EmittedRun[] = []
-  const nodes: NodeRange[] = []
+  const nodes: MarkRun[] = []
   const open: number[] = []
   let cursor = 0
   for (const segment of segments) {

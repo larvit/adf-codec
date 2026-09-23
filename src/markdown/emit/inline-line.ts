@@ -1,7 +1,7 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
 import type { LineContainer } from '../line-container.ts'
-import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type NodeRange } from './line-escaping.ts'
+import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
@@ -35,6 +35,8 @@ type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | 
 
 type LineFallbacks = { carried: Set<number>; openingLinkAsDirective: boolean }
 
+export type PlainLineFallback = { kind: 'claimed-line'; line: number } | { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun }
+
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const emitted = emitLine(nodes, container, path)
   if (!emitted.ok) return emitted
@@ -45,6 +47,17 @@ export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: Conve
   const emitted = emitLine(nodes, 'paragraph', path)
   if (!emitted.ok) return emitted
   return success(emitted.value.openingLinkAsDirective)
+}
+
+export function plainLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<PlainLineFallback | undefined> {
+  const emission = lineSegments(nodes, container, path, { carried: new Set(), openingLinkAsDirective: false })
+  if (!emission.ok) return emission
+  if (emission.value.carry !== undefined) return failure('unsupported-node-shape', 'an inline node on a plain line has no spelling but the carry', path)
+  const assembled = assembleInlineLine(emission.value.segments, container)
+  if (assembled.openingLinkAsDirective) return success({ kind: 'opening-link' })
+  if (assembled.unspellableRun !== undefined) return success({ kind: 'unspellable-run', run: assembled.unspellableRun })
+  const claimed = claimedLine(assembled.line, container)
+  return success(claimed === undefined ? undefined : { kind: 'claimed-line', line: claimed })
 }
 
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): string | undefined {
@@ -108,12 +121,17 @@ function attemptLine(segments: readonly InlineSegment[], container: LineContaine
   const assembled = assembleInlineLine(segments, container)
   if (assembled.openingLinkAsDirective) return success({ fallback: 'opening-link' })
   if (assembled.unspellableRun !== undefined) return success({ fallback: assembled.unspellableRun })
-  for (const [index, single] of assembled.line.split('\n').entries()) {
-    if (container === 'paragraph' && claimsLine(single, index === 0 ? 'first' : 'later')) {
-      return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(single)}`, path)
-    }
+  const claimed = claimedLine(assembled.line, container)
+  if (claimed !== undefined) {
+    return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(assembled.line.split('\n')[claimed])}`, path)
   }
   return success({ line: assembled.line })
+}
+
+function claimedLine(line: string, container: LineContainer): number | undefined {
+  if (container !== 'paragraph') return undefined
+  const index = line.split('\n').findIndex((single, index) => claimsLine(single, index === 0 ? 'first' : 'later'))
+  return index === -1 ? undefined : index
 }
 
 // spec/flavour.md, Inline nodes.
@@ -275,9 +293,9 @@ function emitEmphasis(nodes: readonly AdfNode[], spelling: string, depth: number
   const carried = carryStrippedWhitespace(inner.value.segments)
   return success({
     segments: [
-      { emphasis: 'open', escaping: 'none', nodes: range, text: spelling },
+      { emphasis: 'open', escaping: 'none', nodes: { ...range, depth }, text: spelling },
       ...carried,
-      { emphasis: 'close', escaping: 'none', nodes: range, text: spelling },
+      { emphasis: 'close', escaping: 'none', nodes: { ...range, depth }, text: spelling },
     ],
   })
 }
