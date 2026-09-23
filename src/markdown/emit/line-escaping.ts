@@ -67,7 +67,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
   const scan = segments.map((segment) => segment.text).join('')
   const escapings: InlineEscaping[] = []
   for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) escapings.push(segment.escaping)
-  const escaped = escapedIndexes(scan, escapings, container)
+  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container))
   const placements: number[] = []
   let output = ''
   for (let index = 0; index < scan.length; index += 1) {
@@ -82,31 +82,30 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
   return { line: output, unspellableRun: unspellableRun(segments, output, placements) }
 }
 
-function escapedIndexes(scan: string, escapings: readonly InlineEscaping[], container: LineContainer): Set<number> {
+function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer): ReadonlySet<number> {
   const escaped = new Set<number>()
   const linkClose = lastLinkClose(scan, escapings)
   let line = scanLine(scan, 0)
+  let afterEscape = false
   for (let index = 0; index < scan.length; index += 1) {
     if (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
-    if (
+    afterEscape =
       (escapable &&
         (claimsLineStart(line, index, container) ||
           mergesWithSyntax(scan, escapings, index) ||
-          opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, escaped))) ||
+          opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, afterEscape))) ||
       (escaping === 'bracketed-link-target' &&
-        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, escaped)) || claimsDirectivePrefix(scan, index)))
-    ) {
-      escaped.add(index)
-    }
+        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, afterEscape)) || claimsDirectivePrefix(scan, index)))
+    if (afterEscape) escaped.add(index)
   }
-  escapeClosedRuns(scan, escapings, escaped)
   return escaped
 }
 
 // CommonMark reads no escape inside a code span, so a backtick string an escape forms or splits off still closes one an earlier bare run opens.
-function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], escaped: Set<number>): void {
+function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], claimed: ReadonlySet<number>): ReadonlySet<number> {
+  const escaped = new Set(claimed)
   const formed = new Set<number>()
   let end = scan.length - 1
   while (end >= 0) {
@@ -118,17 +117,18 @@ function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], es
     while (scan.charAt(start - 1) === '`') start -= 1
     let segmentEnd = end
     for (let index = end; index > start; index -= 1) {
-      if (!escaped.has(index)) continue
+      if (!claimed.has(index)) continue
       formed.add(segmentEnd - index + 1)
       segmentEnd = index - 1
     }
-    if (segmentEnd !== end || escaped.has(start)) formed.add(segmentEnd - start + 1)
+    if (segmentEnd !== end || claimed.has(start)) formed.add(segmentEnd - start + 1)
     else if (escapings[start] !== 'none' && formed.has(end - start + 1)) {
       for (let index = start; index <= end; index += 1) escaped.add(index)
       formed.add(1)
     }
     end = start - 1
   }
+  return escaped
 }
 
 function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): NodeRange | undefined {
@@ -231,10 +231,10 @@ function opensConstruct(
   index: number,
   inBrackets: boolean,
   container: LineContainer,
-  escaped: ReadonlySet<number>,
+  afterEscape: boolean,
 ): boolean {
   if (container === 'heading' && closesHeading(scan, index)) return true
-  return claimsCharacter(scan, linkClose, index, inBrackets, container, escaped)
+  return claimsCharacter(scan, linkClose, index, inBrackets, container, afterEscape)
 }
 
 // A hard break is the one spelling that puts a delimiter row under a row of its own, so only a later line claims.
@@ -260,7 +260,7 @@ function claimsCharacter(
   index: number,
   inBrackets: boolean,
   container: LineContainer,
-  escaped: ReadonlySet<number>,
+  afterEscape: boolean,
 ): boolean {
   const character = scan.charAt(index)
   if (inBrackets && (character === '[' || character === ']')) return true
@@ -270,8 +270,8 @@ function claimsCharacter(
   if (character === '<') return opensBracketedAutolink(scan, index) || opensEmailAutolink(scan, index) || inlineHtmlConstruct(scan, index) !== undefined
   if (character === '!') return claimsDirectivePrefix(scan, index)
   if (character === '[') return index < linkClose
-  if (character === '`') return opensCodeSpan(scan, index, escaped)
-  if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, escaped)
+  if (character === '`') return opensCodeSpan(scan, index, afterEscape)
+  if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, afterEscape)
   return false
 }
 
@@ -284,16 +284,16 @@ function lastLinkClose(scan: string, escapings: readonly (InlineEscaping | undef
   return -1
 }
 
-function opensCodeSpan(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
+function opensCodeSpan(scan: string, index: number, afterEscape: boolean): boolean {
   // A run escapes whole: a rest left bare would be a raw run of another length for a closer.
-  if (scan.charAt(index - 1) === '`' && escaped.has(index - 1)) return true
-  if (!startsRun(scan, index, escaped)) return false
+  if (afterEscape && scan.charAt(index - 1) === '`') return true
+  if (!startsRun(scan, index, afterEscape)) return false
   const opener = backtickRun(scan, index)
   return closingBacktickRun(scan, index + opener, opener) !== undefined
 }
 
-function claimsEmphasis(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
-  if (!startsRun(scan, index, escaped)) return false
+function claimsEmphasis(scan: string, index: number, afterEscape: boolean): boolean {
+  if (!startsRun(scan, index, afterEscape)) return false
   const character = scan.charAt(index)
   const length = runLength(scan, index)
   if (character === '~' && length !== 2) return false
@@ -301,8 +301,8 @@ function claimsEmphasis(scan: string, index: number, escaped: ReadonlySet<number
   return flags.canClose || flags.canOpen
 }
 
-function startsRun(scan: string, index: number, escaped: ReadonlySet<number>): boolean {
-  if (index === 0 || escaped.has(index - 1)) return true
+function startsRun(scan: string, index: number, afterEscape: boolean): boolean {
+  if (index === 0 || afterEscape) return true
   return scan.charAt(index - 1) !== scan.charAt(index)
 }
 

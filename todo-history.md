@@ -1054,6 +1054,18 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       layout. What `src/result.ts`, `README.md` §The errors and `ls src` already say went, and
       the level's definition, `matchEmphasis`'s transcription and `emitLine`'s termination moved
       to one line at the code each defines.
+- [x] **26 — The two mutable structures say what they guarantee (`0.2.0`).** `escapedIndexes` fills
+      the `escaped` set left to right while the predicates it calls read the half-built set, then
+      `escapeClosedRuns` walks the same set right to left and adds to it; the order is load-bearing
+      and asserted nowhere, and a refactor to `filter`/`map` breaks it silently. Separately,
+      `walk.edges` is the blockquote and list-item subsequence of `walk.stack` with each entry's
+      stack index, maintained by hand in six places and stated in none. Put each invariant where it
+      cannot be got wrong — a type, a derived value, a named phase — rather than in a comment. The
+      panel's first and second hardest places. `escapeClaims` hands each predicate the one fact
+      it reads — whether the character before was escaped — and `escapeClosedRuns` takes that
+      pass's set read-only and returns the whole. `containerStack` is the one writer of the stack,
+      `edges` and each directive's `depths`, all read-only elsewhere; deriving `edges` from the
+      stack instead makes every line walk the open directives, quadratic in their nesting.
 
 ## 5 — Ship `0.1.0`
 

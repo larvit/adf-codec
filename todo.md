@@ -58,14 +58,7 @@ chunk clearing a §11 seam.
       the measured one.
 - [x] **24 — The conformance gates have a directory (`0.2.0`).**
 - [x] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).**
-- [ ] **26 — The two mutable structures say what they guarantee (`0.2.0`).** `escapedIndexes` fills
-      the `escaped` set left to right while the predicates it calls read the half-built set, then
-      `escapeClosedRuns` walks the same set right to left and adds to it; the order is load-bearing
-      and asserted nowhere, and a refactor to `filter`/`map` breaks it silently. Separately,
-      `walk.edges` is the blockquote and list-item subsequence of `walk.stack` with each entry's
-      stack index, maintained by hand in six places and stated in none. Put each invariant where it
-      cannot be got wrong — a type, a derived value, a named phase — rather than in a comment. The
-      panel's first and second hardest places.
+- [x] **26 — The two mutable structures say what they guarantee (`0.2.0`).**
 - [ ] **27 — The dead `headroom` write goes (`0.2.0`).** `directiveItems`
       (`emit/adf-to-markdown.ts:258`) writes `item.walk.headroom - 1` onto each `PlacedBlock`, and
       nothing on that path reads a block's `headroom`: `joinBlocks` and `separationBetween` read

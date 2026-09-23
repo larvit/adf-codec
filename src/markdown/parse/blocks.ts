@@ -64,13 +64,19 @@ type Line = { column: number; text: string }
 
 type LeafOpener = { index: number; position: SourcePosition }
 
+type ContainerStack = {
+  drop: (depth: number) => OpenContainer[]
+  edges: readonly { container: EdgeContainer; depth: number }[]
+  open: readonly OpenContainer[]
+  push: (container: OpenContainer) => void
+}
+
 type Walk = ParsedBlocks & {
   directiveDepths: Map<string, number[]>
-  edges: { container: EdgeContainer; depth: number }[]
   leaf: OpenLeaf | undefined
   leafOpeners: Map<Block[], Map<string, LeafOpener>>
   position: SourcePosition
-  stack: OpenContainer[]
+  stack: ContainerStack
 }
 
 const indentedCodeColumns = 4
@@ -82,11 +88,10 @@ export function parseBlocks(markdown: string): ParsedBlocks {
     blocks: [],
     definitions: new Map(),
     directiveDepths: new Map(),
-    edges: [],
     leaf: undefined,
     leafOpeners: new Map(),
     position: { line: 1, offset: 0 },
-    stack: [],
+    stack: containerStack(),
   }
   for (const line of sourceLines(markdown)) {
     walk.position = line.position
@@ -96,16 +101,38 @@ export function parseBlocks(markdown: string): ParsedBlocks {
   return { blocks: walk.blocks, definitions: walk.definitions }
 }
 
+function containerStack(): ContainerStack {
+  const edges: { container: EdgeContainer; depth: number }[] = []
+  const open: OpenContainer[] = []
+  return {
+    drop: (depth) => {
+      const dropped = open.splice(depth)
+      for (const container of dropped) {
+        if (container.kind === 'directive') container.depths.pop()
+        else edges.pop()
+      }
+      return dropped
+    },
+    edges,
+    open,
+    push: (container) => {
+      const depth = open.push(container) - 1
+      if (container.kind === 'directive') container.depths.push(depth)
+      else edges.push({ container, depth })
+    },
+  }
+}
+
 function readLine(walk: Walk, line: Line): void {
   const matched = matchContainers(walk, line)
   // CommonMark: no container opens inside an open code or HTML block.
-  if (matched.depth === walk.stack.length && swallowsLines(walk.leaf)) {
+  if (matched.depth === walk.stack.open.length && swallowsLines(walk.leaf)) {
     readBlockLine(walk, matched.rest)
     return
   }
-  const paragraphOpen = matched.depth === walk.stack.length && walk.leaf?.kind === 'paragraph'
+  const paragraphOpen = matched.depth === walk.stack.open.length && walk.leaf?.kind === 'paragraph'
   const opened = openContainers(walk, matched.rest, paragraphOpen, matched.depth)
-  if (!opened.opened && matched.depth < walk.stack.length) {
+  if (!opened.opened && matched.depth < walk.stack.open.length) {
     if (continuesLazily(walk, opened.rest)) {
       appendParagraph(walk, opened.rest.text)
       return
@@ -122,12 +149,12 @@ function swallowsLines(leaf: OpenLeaf | undefined): boolean {
 // A directive container has no continuation marker, so every line continues it.
 function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } {
   let rest = line
-  for (const { container, depth } of walk.edges) {
+  for (const { container, depth } of walk.stack.edges) {
     const next = continuesContainer(walk, container, rest)
     if (next === undefined) return { depth, rest }
     rest = next
   }
-  return { depth: walk.stack.length, rest }
+  return { depth: walk.stack.open.length, rest }
 }
 
 function continuesContainer(walk: Walk, container: EdgeContainer, line: Line): Line | undefined {
@@ -145,7 +172,7 @@ function blockquoteRest(opener: Line): Line | undefined {
 }
 
 function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: number): { opened: boolean; rest: Line } {
-  const unmatched = walk.stack[depth]
+  const unmatched = walk.stack.open[depth]
   const tail = thematicBreakTail(line.text)
   let opened = false
   let rest = line
@@ -202,16 +229,12 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   if (start.kind === 'blockquote') {
     const blockquote: EdgeContainer = { blocks, kind: 'blockquote', position: walk.position }
     currentBlocks(walk).push(blockquote)
-    pushEdge(walk, blockquote)
+    walk.stack.push(blockquote)
     return
   }
   const list = openedList(walk, start)
   list.items.push(blocks)
-  pushEdge(walk, { blocks, indentation: start.indentation, kind: 'item', list })
-}
-
-function pushEdge(walk: Walk, container: EdgeContainer): void {
-  walk.edges.push({ container, depth: walk.stack.push(container) - 1 })
+  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
 // Two lists of a kind never sit adjacent: one `- ` spelling reads them back as one (spec/flavour.md).
@@ -226,7 +249,7 @@ function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>
 
 function closeContainers(walk: Walk, depth: number): void {
   closeLeaf(walk)
-  for (const container of dropContainers(walk, depth)) {
+  for (const container of walk.stack.drop(depth)) {
     if (container.kind !== 'directive') continue
     container.parent[container.index] = {
       fault: malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it; ${directiveEscape}`),
@@ -234,15 +257,6 @@ function closeContainers(walk: Walk, depth: number): void {
       position: container.position,
     }
   }
-}
-
-function dropContainers(walk: Walk, depth: number): OpenContainer[] {
-  const dropped = walk.stack.splice(depth)
-  for (const container of dropped) {
-    if (container.kind === 'directive') container.depths.pop()
-    else walk.edges.pop()
-  }
-  return dropped
 }
 
 function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
@@ -268,7 +282,7 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'op
     return
   }
   const depths = entryOf(walk.directiveDepths, name, (): number[] => [])
-  depths.push(walk.stack.push({ blocks: block.blocks, depths, index, kind: 'directive', name, parent, position }) - 1)
+  walk.stack.push({ blocks: block.blocks, depths, index, kind: 'directive', name, parent, position })
 }
 
 function closeDirective(walk: Walk, name: string): void {
@@ -283,13 +297,13 @@ function closeDirective(walk: Walk, name: string): void {
     return
   }
   closeContainers(walk, depth + 1)
-  dropContainers(walk, depth)
+  walk.stack.drop(depth)
 }
 
 // A closer crosses no list item or blockquote edge.
 function openDirectiveDepth(walk: Walk, name: string): number | undefined {
   const depth = walk.directiveDepths.get(name)?.at(-1)
-  return depth === undefined || depth < (walk.edges.at(-1)?.depth ?? -1) ? undefined : depth
+  return depth === undefined || depth < (walk.stack.edges.at(-1)?.depth ?? -1) ? undefined : depth
 }
 
 function faultLeafOpener(walk: Walk, name: string, fault: ConvertFault): void {
@@ -497,7 +511,7 @@ function takeParagraph(walk: Walk): Extract<Block, { kind: 'paragraph' }> | unde
 }
 
 function currentBlocks(walk: Walk): Block[] {
-  return walk.stack.at(-1)?.blocks ?? walk.blocks
+  return walk.stack.open.at(-1)?.blocks ?? walk.blocks
 }
 
 function* sourceLines(markdown: string): Generator<{ position: SourcePosition; text: string }> {
