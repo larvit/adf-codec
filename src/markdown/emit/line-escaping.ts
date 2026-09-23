@@ -91,14 +91,15 @@ function escapeClaims(scan: string, escapings: readonly InlineEscaping[], contai
     if (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
-    afterEscape =
+    const claimed: boolean =
       (escapable &&
         (claimsLineStart(line, index, container) ||
           mergesWithSyntax(scan, escapings, index) ||
           opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, afterEscape))) ||
       (escaping === 'bracketed-link-target' &&
         ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, afterEscape)) || claimsDirectivePrefix(scan, index)))
-    if (afterEscape) escaped.add(index)
+    if (claimed) escaped.add(index)
+    afterEscape = claimed
   }
   return escaped
 }

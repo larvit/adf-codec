@@ -1064,7 +1064,7 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       panel's first and second hardest places. `escapeClaims` hands each predicate the one fact
       it reads — whether the character before was escaped — and `escapeClosedRuns` takes that
       pass's set read-only and returns the whole. `containerStack` is the one writer of the stack,
-      `edges` and each directive's `depths`, all read-only elsewhere; deriving `edges` from the
+      `edges` and the open directives' depths by name, all read-only elsewhere; deriving `edges` from the
       stack instead makes every line walk the open directives, quadratic in their nesting.
 
 ## 5 — Ship `0.1.0`

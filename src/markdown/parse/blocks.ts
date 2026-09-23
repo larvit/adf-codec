@@ -43,7 +43,7 @@ export type DirectiveBlock = Extract<Block, { kind: 'directive' }>
 
 type ListBlock = Extract<Block, { items: Block[][] }>
 
-type OpenDirective = { blocks: Block[]; depths: number[]; index: number; kind: 'directive'; name: string; parent: Block[]; position: SourcePosition }
+type OpenDirective = { blocks: Block[]; index: number; kind: 'directive'; name: string; parent: Block[]; position: SourcePosition }
 
 type EdgeContainer = Extract<Block, { kind: 'blockquote' }> | { blocks: Block[]; indentation: number; kind: 'item'; list: ListBlock }
 
@@ -65,6 +65,7 @@ type Line = { column: number; text: string }
 type LeafOpener = { index: number; position: SourcePosition }
 
 type ContainerStack = {
+  directiveDepth: (name: string) => number | undefined
   drop: (depth: number) => OpenContainer[]
   edges: readonly { container: EdgeContainer; depth: number }[]
   open: readonly OpenContainer[]
@@ -72,7 +73,6 @@ type ContainerStack = {
 }
 
 type Walk = ParsedBlocks & {
-  directiveDepths: Map<string, number[]>
   leaf: OpenLeaf | undefined
   leafOpeners: Map<Block[], Map<string, LeafOpener>>
   position: SourcePosition
@@ -87,7 +87,6 @@ export function parseBlocks(markdown: string): ParsedBlocks {
   const walk: Walk = {
     blocks: [],
     definitions: new Map(),
-    directiveDepths: new Map(),
     leaf: undefined,
     leafOpeners: new Map(),
     position: { line: 1, offset: 0 },
@@ -102,13 +101,16 @@ export function parseBlocks(markdown: string): ParsedBlocks {
 }
 
 function containerStack(): ContainerStack {
+  const directiveDepths = new Map<string, number[]>()
+  const depthsOf = (name: string): number[] => entryOf(directiveDepths, name, () => [])
   const edges: { container: EdgeContainer; depth: number }[] = []
   const open: OpenContainer[] = []
   return {
+    directiveDepth: (name) => directiveDepths.get(name)?.at(-1),
     drop: (depth) => {
       const dropped = open.splice(depth)
       for (const container of dropped) {
-        if (container.kind === 'directive') container.depths.pop()
+        if (container.kind === 'directive') depthsOf(container.name).pop()
         else edges.pop()
       }
       return dropped
@@ -117,7 +119,7 @@ function containerStack(): ContainerStack {
     open,
     push: (container) => {
       const depth = open.push(container) - 1
-      if (container.kind === 'directive') container.depths.push(depth)
+      if (container.kind === 'directive') depthsOf(container.name).push(depth)
       else edges.push({ container, depth })
     },
   }
@@ -281,8 +283,7 @@ function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'op
     entryOf(walk.leafOpeners, parent, () => new Map<string, LeafOpener>()).set(name, { index, position })
     return
   }
-  const depths = entryOf(walk.directiveDepths, name, (): number[] => [])
-  walk.stack.push({ blocks: block.blocks, depths, index, kind: 'directive', name, parent, position })
+  walk.stack.push({ blocks: block.blocks, index, kind: 'directive', name, parent, position })
 }
 
 function closeDirective(walk: Walk, name: string): void {
@@ -302,7 +303,7 @@ function closeDirective(walk: Walk, name: string): void {
 
 // A closer crosses no list item or blockquote edge.
 function openDirectiveDepth(walk: Walk, name: string): number | undefined {
-  const depth = walk.directiveDepths.get(name)?.at(-1)
+  const depth = walk.stack.directiveDepth(name)
   return depth === undefined || depth < (walk.stack.edges.at(-1)?.depth ?? -1) ? undefined : depth
 }
 
