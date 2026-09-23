@@ -1051,7 +1051,9 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       a type or a test name already says rather than reorganising it.
       **Done** (2026-09-23): §8 parts into the code list, which code a cause takes, and `message`,
       `path` and `position`, as bullets one rule each; §11 into style, bounds, spellings and
-      layout. What `src/result.ts`, `README.md` §The errors and `ls src` already say went.
+      layout. What `src/result.ts`, `README.md` §The errors and `ls src` already say went, and
+      the level's definition, `matchEmphasis`'s transcription and `emitLine`'s termination moved
+      to one line at the code each defines.
 
 ## 5 — Ship `0.1.0`
 

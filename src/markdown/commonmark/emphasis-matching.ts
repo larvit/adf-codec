@@ -27,6 +27,7 @@ export function isWordCharacter(character: string): boolean {
   return character !== '' && !isWhitespace(character) && !isPunctuation(character)
 }
 
+// Transcribes CommonMark's reference process_emphasis line for line; the closer walk and opener search stay whole, since named steps drift from it.
 export function matchEmphasis<Run extends DelimiterRun>(runs: readonly Run[]): EmphasisPairing<Run>[] {
   const pairings: EmphasisPairing<Run>[] = []
   const bottoms = new Map<string, Candidate<Run> | undefined>()

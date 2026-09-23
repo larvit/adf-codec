@@ -65,6 +65,7 @@ export function tryImageLine(alt: string | undefined, href: string, path: Conver
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<EmittedLine> {
   const fallbacks: LineFallbacks = { carried: new Set(), openingLinkAsDirective: false }
+  // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {
     const emission = lineSegments(nodes, container, path, fallbacks)
     if (!emission.ok) return emission

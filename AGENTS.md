@@ -1,7 +1,8 @@
 # Working in this repo
 
 Decisions a reader would otherwise relitigate, and the rules for every collaborator, human or
-agent. Using the library: `README.md`. What is still to build: `todo.md`.
+agent. Using the library: `README.md`. What is still to build: `todo.md`; a bare `(28)` cites
+that item's entry in `todo-history.md`.
 
 ## 1. Three formats, ADF is the hub
 
@@ -129,8 +130,6 @@ types in `src/result.ts` hold its shape.
   the spelling and the code goes, which the freeze is the last moment for (`unspellable-link`, the
   maintainer, 2026-09-13). A cause the carry answers gets no code: a mark no spelling writes rides
   the carry with its node.
-- `unmappable-html` names the version rather than the element: this one converts no raw HTML, so
-  at `0.2.0` the mapped elements stop erroring and the code stays for what no ADF node carries.
 
 ### Which code a cause takes
 
@@ -159,12 +158,10 @@ types in `src/result.ts` hold its shape.
   its content model does not take — is `unsupported-node-shape`, the emitter's code for the same
   mismatch read the other way: one code across both directions for good, since the call site
   knows which direction it called and parting them after `0.1.0` is MAJOR.
-- An attribute is counted from its value; a spelling that nests it deeper — the block directive's
-  `marks`, the carry — refuses in its own format, as its parser does.
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them.
 
-### `message`, `path` and `position`
+### `message` and `path`
 
 - A message names the violation, not the rule alone — a rule by itself states a truth the reader
   must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose
@@ -174,9 +171,6 @@ types in `src/result.ts` hold its shape.
   branches read the document's own shape, and threading a path to the eighth — a malformed node
   anywhere in the tree — wants the manual stack §11's no-recursion rule forces, whose empty half
   no input reaches. The message names the violation instead.
-- A direction reading a source returns `Result<T, ParseError>`: an optional field a direction
-  always fills is a branch a consumer cannot take, and the `!` §11 bans is how they take it
-  anyway.
 
 ## 9. Release automation
 
@@ -283,7 +277,7 @@ someone spells it or pins it.
 
 ### Style
 
-- Two-space indent, strict TypeScript, English everywhere. Alphabetical order wherever order
+- Two-space indent, English everywhere. Alphabetical order wherever order
   carries no meaning, keyed on the name a line introduces rather than where it came from: an
   import sorts on its first binding, type imports ahead of value imports, so moving or renaming a
   module reorders nothing (the maintainer, 2026-09-18).
@@ -299,14 +293,14 @@ someone spells it or pins it.
 ### Bounds
 
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
-  attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
-  `Result` rather than the stack overflow that waits near 2000. A level is one block-list
-  recursion in either direction: a readable list's items sit one below it, its directive
-  spelling's two. So a list giving way after its walk owes the directive form a level the walk
-  did not count, and the walk reports its headroom — the least slack any depth guard below it
-  has — for the fallback to refuse at zero rather than walk again; counting every list twice
-  halved the list limit, counting the directive form once doubled the parser's frames per level
-  (the maintainer, 2026-09-18).
+  attribute's and a carried node's alike — are all held to 500 levels (`largestNesting`), so a
+  deep document is a `Result` rather than the stack overflow that waits near 2000. An attribute
+  is counted from its value; a spelling that nests it deeper — the block directive's `marks`, the
+  carry — refuses in its own format, as its parser does. A list giving way after its walk owes
+  the directive form a level the walk did not count, and the walk reports its headroom — the
+  least slack any depth guard below it has — for the fallback to refuse at zero rather than walk
+  again; counting every list twice halved the list limit, counting the directive form once
+  doubled the parser's frames per level (the maintainer, 2026-09-18).
 - Nothing spreads an unbounded array into a call — a node's siblings, a code block's held lines, a
   mark run's segments: the argument list caps near 125k and throws a `RangeError` where a `Result`
   is owed. A walk pushes one at a time. A literal spread (`[...value]`) is not the same thing and
@@ -327,8 +321,7 @@ someone spells it or pins it.
   and `headroom` is affine in it, so a read at or above the depth that filled the entry rebases; a
   read below re-spells, because a hit skips the depth guards the walk it replaces runs and an
   ordered list past the marker cap gives way, spending two emitter levels where the parser spent
-  one. A give-way is kept too and serves any depth, reading the node's shape alone. Only what
-  succeeded is kept, so no path minted at another position is ever read.
+  one. Only what succeeded is kept, so no path minted at another position is ever read.
 
 ### Spellings
 
@@ -337,9 +330,6 @@ someone spells it or pins it.
 - Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
   escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
   only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
-  `matchEmphasis` transcribes the reference `process_emphasis` line for line, and its closer walk and
-  opener search stay whole: broken into named steps they drift from the algorithm being faithful is
-  the whole point of.
 - A readable spelling tried ahead of a general one takes the `try` prefix and fails only where the
   general form fails on the same node (20): refusing there refuses a document the general form
   spells, so a refusal the general form does not share belongs in the general form or nowhere. A
