@@ -61,8 +61,7 @@ test('rejects a node whose shape ProseMirror JSON cannot hold', () => {
 })
 
 test('names the attribute nesting past the levels the parser reads one at, and still calls the value a document', () => {
-  const deeper = (key: string, type: string, levels: number = largestNesting): string =>
-    `the ${key} attribute of ${type} nests deeper than the ${levels} levels an attribute carries`
+  const deeper = (key: string, type: string): string => `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
   assert.equal(fault(withAttribute(nested(largestNesting))), 'accepted')
   assert.equal(fault(withAttribute(nested(largestNesting + 1))), deeper('a', 'paragraph'))
   assert.equal(faultCode(withAttribute(nested(largestNesting + 1))), 'unsupported-nesting-depth')

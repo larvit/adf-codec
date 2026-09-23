@@ -353,8 +353,8 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   assert.equal(code(adfToMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
   let attrs: AdfMark['attrs'] = { depth: 'x' }
   for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
-  const deeper = (key: string, type: string, levels: number = largestNesting): string =>
-    `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${levels} levels an attribute carries`
+  const deeper = (key: string, type: string): string =>
+    `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
   const nested = (levels: number): JsonValue => {
     let value: JsonValue = 1
     for (let level = 0; level < levels; level += 1) value = [value]
@@ -385,6 +385,8 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   roundTrips(paragraph(card(largestNesting)))
   assert.equal(markdown(adfToMarkdown(document(marked(largestNesting - 2)))), deeper('marks', 'panel'))
   assert.deepEqual(path(adfToMarkdown(document(marked(largestNesting - 2)))), ['content', 0])
+  const markedCode: AdfNode = { content: [{ text: 'x', type: 'text' }], marks: [{ attrs: { deep: nested(largestNesting - 2) }, type: 'em' }], type: 'codeBlock' }
+  assert.equal(markdown(adfToMarkdown(document(markedCode))), deeper('marks', 'codeBlock'))
   roundTrips(marked(largestNesting - 3))
 })
 
