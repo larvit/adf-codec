@@ -1066,6 +1066,12 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       pass's set read-only and returns the whole. `containerStack` is the one writer of the stack,
       `edges` and the open directives' depths by name, all read-only elsewhere; deriving `edges` from the
       stack instead makes every line walk the open directives, quadratic in their nesting.
+- [x] **27 — The dead `headroom` write goes (`0.2.0`).** `directiveItems`
+      (`emit/adf-to-markdown.ts:258`) writes `item.walk.headroom - 1` onto each `PlacedBlock`, and
+      nothing on that path reads a block's `headroom`: `joinBlocks` and `separationBetween` read
+      `text` and `spelling`, and `emitDirectiveBlock` takes the level from the `Walk`. Of the two
+      subtractions three readers flagged as double-counting, this is the one that is dead.
+      `PlacedBlock` carries no `headroom`, so a placed block cannot be read for one.
 
 ## 5 — Ship `0.1.0`
 

@@ -59,11 +59,7 @@ chunk clearing a §11 seam.
 - [x] **24 — The conformance gates have a directory (`0.2.0`).**
 - [x] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).**
 - [x] **26 — The two mutable structures say what they guarantee (`0.2.0`).**
-- [ ] **27 — The dead `headroom` write goes (`0.2.0`).** `directiveItems`
-      (`emit/adf-to-markdown.ts:258`) writes `item.walk.headroom - 1` onto each `PlacedBlock`, and
-      nothing on that path reads a block's `headroom`: `joinBlocks` and `separationBetween` read
-      `text` and `spelling`, and `emitDirectiveBlock` takes the level from the `Walk`. Of the two
-      subtractions three readers flagged as double-counting, this is the one that is dead.
+- [x] **27 — The dead `headroom` write goes (`0.2.0`).**
 - [x] **0 — Scaffold.**
 - [x] **1a — The directive grammar.**
 - [x] **1b — Block node syntaxes.**

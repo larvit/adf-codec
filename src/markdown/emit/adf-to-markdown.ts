@@ -19,7 +19,7 @@ type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
-type PlacedBlock = EmittedBlock & { node: AdfNode }
+type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
 type WalkedItem = { node: AdfNode; walk: Walk }
@@ -256,7 +256,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: Spe
 
 // The directive form sinks each item's blocks a level below where the walk read them.
 function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {
-  return items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.walk.blocks, 'directive'), item.walk.headroom - 1), node: item.node }))
+  return items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.walk.blocks, 'directive')), node: item.node }))
 }
 
 function listStart(node: AdfNode, items: number): number | undefined {
