@@ -4,14 +4,14 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
-import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
-import { isAdfDocument } from './adf/document.ts'
-import { isJsonValue } from './json-value.ts'
-import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
-import { serializeCanonicalJson } from './canonical-json.ts'
-import { toEditorNormal } from './adf/editor-normal.ts'
+import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { isAdfDocument } from '../adf/document.ts'
+import { isJsonValue } from '../json-value.ts'
+import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { serializeCanonicalJson } from '../canonical-json.ts'
+import { toEditorNormal } from '../adf/editor-normal.ts'
 
-const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus')
+const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus')
 const errorsRoot = join(corpusRoot, 'errors')
 const normalizationRoot = join(corpusRoot, 'normalization')
 const realPayloadsRoot = join(corpusRoot, 'real-payloads')

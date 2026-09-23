@@ -56,10 +56,7 @@ chunk clearing a §11 seam.
       upward, so the first raise to the measured figure reddens a run that changed nothing. Make
       the measurement repeatable, or state the number the floor may be raised to and why it is not
       the measured one.
-- [ ] **24 — The conformance gates have a directory (`0.2.0`).** Six root tests with no sibling
-      source (`adf-property`, `adf-schema`, `commonmark-spec`, `corpus`, `flavour`,
-      `markdown-property`) plus `property-harness.ts` are the machinery that makes the docs
-      executable, and they read as leftovers. Give them one, so `src/` root shows what it holds.
+- [x] **24 — The conformance gates have a directory (`0.2.0`).**
 - [ ] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).** Both are single unindexed paragraphs
       holding the answer to nearly every question the panel had, and six readers and both
       architects independently reported that finding the sentence cost more than reading the code

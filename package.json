@@ -24,7 +24,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "size-ratchet": "oxlint --deny-warnings -c .oxlintrc.json src",
-    "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-exclude=src/property-harness.ts --test-coverage-branches=98 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
+    "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-exclude=src/conformance/property-harness.ts --test-coverage-branches=98 --test-coverage-functions=100 --test-coverage-lines=100 \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.build.json"
   },
   "devDependencies": {

@@ -2,16 +2,16 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
-import type { AdfDocument } from './adf/document.ts'
+import type { AdfDocument } from '../adf/document.ts'
 import type { Arbitrary, DepthIdentifier } from 'fast-check'
-import type { AttributeVocabulary } from './adf/attribute-vocabulary.ts'
-import type { JsonValue } from './json-value.ts'
-import type { Result } from './result.ts'
+import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
+import type { JsonValue } from '../json-value.ts'
+import type { Result } from '../result.ts'
 import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
-import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
-import { blockArgument, listBreakName, marksAttribute } from './markdown/block-directive.ts'
-import { blockNodes } from './adf/block-nodes.ts'
-import { carryName } from './markdown/opaque-carry.ts'
+import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { blockArgument, listBreakName, marksAttribute } from '../markdown/block-directive.ts'
+import { blockNodes } from '../adf/block-nodes.ts'
+import { carryName } from '../markdown/opaque-carry.ts'
 import {
   directivePrefix,
   spellAttributes,
@@ -22,17 +22,17 @@ import {
   spellJsonAttribute,
   spellStringAttribute,
   spellVocabulary,
-} from './markdown/directive-syntax.ts'
-import { fencedCodeBlock } from './markdown/commonmark/backtick-runs.ts'
-import { inlineNodes } from './adf/inline-nodes.ts'
-import { markAttributes } from './adf/mark-attributes.ts'
-import { markSpelling } from './markdown/mark-spellings.ts'
-import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
-import { nodeContent, nodeMarks } from './adf/document.ts'
-import { serializeCanonicalJson } from './canonical-json.ts'
-import { textDirectiveName } from './markdown/text-directive.ts'
-import { toEditorNormal } from './adf/editor-normal.ts'
-import { vocabularyPairs } from './adf/attribute-vocabulary.ts'
+} from '../markdown/directive-syntax.ts'
+import { fencedCodeBlock } from '../markdown/commonmark/backtick-runs.ts'
+import { inlineNodes } from '../adf/inline-nodes.ts'
+import { markAttributes } from '../adf/mark-attributes.ts'
+import { markSpelling } from '../markdown/mark-spellings.ts'
+import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { nodeContent, nodeMarks } from '../adf/document.ts'
+import { serializeCanonicalJson } from '../canonical-json.ts'
+import { textDirectiveName } from '../markdown/text-directive.ts'
+import { toEditorNormal } from '../adf/editor-normal.ts'
+import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Choice = { arbitrary: Arbitrary<string>; hostile?: true; weight: number }
 

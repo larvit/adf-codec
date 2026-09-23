@@ -5,11 +5,11 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
-import type { AdfDocument, AdfNode } from './adf/document.ts'
-import { adfToMarkdown } from './markdown/emit/adf-to-markdown.ts'
-import { markdownToAdf } from './markdown/parse/markdown-to-adf.ts'
+import type { AdfDocument, AdfNode } from '../adf/document.ts'
+import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'corpus', 'commonmark-spec')
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus', 'commonmark-spec')
 const checks = ['count', 'fixpoint', 'text'] as const
 
 type Check = (typeof checks)[number]

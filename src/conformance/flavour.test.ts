@@ -4,15 +4,15 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
-import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
-import { blockNodes } from './adf/block-nodes.ts'
-import { inlineNodes } from './adf/inline-nodes.ts'
-import { markAttributes } from './adf/mark-attributes.ts'
-import { textDirectiveName } from './markdown/text-directive.ts'
+import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
+import { blockNodes } from '../adf/block-nodes.ts'
+import { inlineNodes } from '../adf/inline-nodes.ts'
+import { markAttributes } from '../adf/mark-attributes.ts'
+import { textDirectiveName } from '../markdown/text-directive.ts'
 
 type Declared = { attributes: AttributeVocabulary }
 
-const specPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'spec', 'flavour.md')
+const specPath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'spec', 'flavour.md')
 const introducer = 'Attributes: '
 const codeFence = /^`{3,}/
 const directiveName = /`([a-z][A-Za-z0-9]*)`/g

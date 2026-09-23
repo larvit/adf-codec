@@ -5,11 +5,11 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
-import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
-import { blockArgument } from './markdown/block-directive.ts'
-import { blockNodes } from './adf/block-nodes.ts'
-import { inlineNodes } from './adf/inline-nodes.ts'
-import { markAttributes } from './adf/mark-attributes.ts'
+import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
+import { blockArgument } from '../markdown/block-directive.ts'
+import { blockNodes } from '../adf/block-nodes.ts'
+import { inlineNodes } from '../adf/inline-nodes.ts'
+import { markAttributes } from '../adf/mark-attributes.ts'
 
 type Held = Map<string, Set<AttributeKind>>
 type Properties = Map<string, SchemaObject[]>
@@ -21,7 +21,7 @@ const definitionReference = '#/definitions/'
 const gaps: string[] = []
 const grammarOwn = ['doc', 'text']
 const readKeywords = ['$ref', 'additionalProperties', 'allOf', 'anyOf', 'enum', 'items', 'maxItems', 'maximum', 'minItems', 'minLength', 'minimum', 'pattern', 'properties', 'required', 'type']
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'spec', 'adf-schema')
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'spec', 'adf-schema')
 const schemaFiles = ['full.json', 'stage-0.json']
 
 test('the ADF JSON Schemas are @atlaskit/adf-schema 57.4.9, vendored byte-exact', () => {
