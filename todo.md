@@ -57,11 +57,7 @@ chunk clearing a §11 seam.
       the measurement repeatable, or state the number the floor may be raised to and why it is not
       the measured one.
 - [x] **24 — The conformance gates have a directory (`0.2.0`).**
-- [ ] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).** Both are single unindexed paragraphs
-      holding the answer to nearly every question the panel had, and six readers and both
-      architects independently reported that finding the sentence cost more than reading the code
-      it governed. Sub-headings or an index at each section's head; delete whatever the code,
-      a type or a test name already says rather than reorganising it.
+- [x] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).**
 - [ ] **26 — The two mutable structures say what they guarantee (`0.2.0`).** `escapedIndexes` fills
       the `escaped` set left to right while the predicates it calls read the half-built set, then
       `escapeClosedRuns` walks the same set right to left and adds to it; the order is load-bearing

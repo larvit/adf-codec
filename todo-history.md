@@ -1044,6 +1044,14 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       executable, and they read as leftovers. Give them one, so `src/` root shows what it holds.
       **Done** (2026-09-23): `src/conformance/` holds the six gate tests and the property harness,
       so `src/` root holds the primitives and the entrypoint.
+- [x] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).** Both are single unindexed paragraphs
+      holding the answer to nearly every question the panel had, and six readers and both
+      architects independently reported that finding the sentence cost more than reading the code
+      it governed. Sub-headings or an index at each section's head; delete whatever the code,
+      a type or a test name already says rather than reorganising it.
+      **Done** (2026-09-23): §8 parts into the code list, which code a cause takes, and `message`,
+      `path` and `position`, as bullets one rule each; §11 into style, bounds, spellings and
+      layout. What `src/result.ts`, `README.md` §The errors and `ls src` already say went.
 
 ## 5 — Ship `0.1.0`
 

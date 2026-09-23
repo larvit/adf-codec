@@ -113,72 +113,70 @@ Pre-1.0, normal 0.x rules. A spelled node's content model is part of that contra
 container is the model, not the syntax — so giving a spelled node's model content it had not, or
 taking it away, is MAJOR whatever ADF's own schema does.
 
-The error surface is a contract too. `ConvertError` is `{ code, message, path, position? }` — the
-code from a closed list a consumer may switch exhaustively, the message free text, the path the
-node's place from the document root, the position where a parse read the refusal in its input.
-A message names the violation, not the rule alone — a rule by itself states a truth the reader
-must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose it
-names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and inline
-alike, `\|` for every pipe row.
-Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
-name reads true of it in both directions; where none does and a plain name exists, a new code — in
-any 0.x minor, and after 1.0 only in a MAJOR (the maintainer, 2026-09-18). A refusal whose cause is
-this library's own invariant rather than the input takes the existing code nearest what the consumer
-sees — a document that does not convert is `unsupported-node-shape` — since a code no input reaches
-is one no consumer can switch on (the maintainer, 2026-09-20). A code names the
-cause; where one cause recurs across node types, across one mark's attributes or across
-directions, one code covers them all and
-`path` and `message` say which — `unsupported-nesting-depth` is the 500-level guard whichever
-direction hits it, `unspellable-character` the text node and the code block alike. Where two codes stay
-apart, the line between them is what they name: `unspellable-character` is a character CommonMark
-rewrites wherever text holds it, `unspellable-whitespace` the newline no inline directive's
-content slot spans, in either direction. A claim code names the spelling claimed, never the node that spelling would have built:
-a malformed `!adf:table` is a `malformed-directive`, and an alignment colon a `malformed-pipe-table` —
-the flavour's own delimiter row is `-` runs, so the grammar refuses the colon rather than ADF's
-missing column model doing it. A refusal no spelling recovers from is a gap in the flavour rather
-than a code: give the flavour the spelling and the code goes, which the freeze is the last moment
-for — `unspellable-link` went at `0.2.0`, the directive link spelling the `href` and `title` it
-refused and the attributes the carry held (the maintainer, 2026-09-13). A cause the carry answers gets no code: a mark no
-spelling writes rides the carry with its node. A directive whose name reads back to no node is
-`unknown-directive-name` rather than a claim code — the spelling is well formed, and telling that
-apart from a typo is what a consumer switches on when a later MINOR gives the name meaning. A
-reserved name is a known name, so never that code, and the two the flavour reserves part on form:
-a form the grammar does not have is a claim code — `!adf:carry`, whose carry is the fence — and a
-well-formed form in the wrong place is `unsupported-node-shape`, `!adf:listBreak` parting anything
-but two adjacent lists of one type. What
-the grammar itself refuses stays a claim code, key order among it, and a leaf given a body is refused
-at its opener, as a container missing its closer is (the maintainer, 2026-09-16); a well-formed
-directive the node tables refuse — an attribute a node does not hold or spells elsewhere, a value
-outside its kind or its canonical spelling, an argument, or a body of a shape its content model does
-not take — is
-`unsupported-node-shape`, the emitter's code for the same mismatch read the other way — one code
-across both directions for good, since the call site knows which direction it called and parting
-them after `0.1.0` is MAJOR. `unmappable-html` names the version rather than the element: this one
-converts no raw HTML, so at `0.2.0` the mapped elements stop erroring and the code stays for what
-no ADF node carries. A refusal found before its path is known — the block walk's, a directive
-reader's — is a `ConvertFault`, the code and message alone; the node walk attaches the path as it
-descends, so a document reports its first error in document order. `not-an-adf-document` carries
-the document's own path throughout: seven of the guard's eight branches read the document's own
-shape, and threading a path to the eighth — a malformed node anywhere in the tree — wants the
-manual stack §11's no-recursion rule forces, whose empty half no input reaches. The message names
-the violation instead. An attribute value past 500 levels is `unsupported-nesting-depth` in both
-directions, the guard included. An attribute is counted from its value; a spelling that nests it
-deeper — the block directive's `marks`, the carry — refuses in its own format, as its parser does.
-A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
-emitting — no document holds one, so no round-trip crosses them.
+The error surface is a contract too; `README.md` §The errors states it to the consumer, and the
+types in `src/result.ts` hold its shape.
 
-`position` is the parse side's alone: an emitter reads no source, so an emit error carries `path`
-and nothing more. It is `{ line, offset }` at the start of the line the block holding the refusal
-begins on — the offset indexing the string the caller passed, the line counted from 1 — minted by
-the block walk and attached as results return, so the innermost block wins, the emitter's own
-refusals the parser re-enters for the CommonMark spelling included.
+### The code list
 
-A parse names a position for every refusal it returns, so the type says so rather than the prose:
-`Result<T, E extends ConvertError = ConvertError>`, and a direction reading a source returns
-`Result<T, ParseError>` — `ConvertError` with `position` required. An optional field a direction
-always fills is a branch a consumer cannot take, and the `!` §11 bans is how they take it anyway.
-`htmlToAdf` inherits this at `0.2.0`; the composed `markdownToHtml` and `htmlToMarkdown` keep the
-wide `Result<T>`, since half their refusals come from an emit stage that read no source.
+- Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
+  name reads true of it in both directions; where none does and a plain name exists, a new code —
+  in any 0.x minor, and after 1.0 only in a MAJOR (the maintainer, 2026-09-18).
+- A refusal whose cause is this library's own invariant rather than the input takes the existing
+  code nearest what the consumer sees — a document that does not convert is
+  `unsupported-node-shape` — since a code no input reaches is one no consumer can switch on (the
+  maintainer, 2026-09-20).
+- A refusal no spelling recovers from is a gap in the flavour rather than a code: give the flavour
+  the spelling and the code goes, which the freeze is the last moment for (`unspellable-link`, the
+  maintainer, 2026-09-13). A cause the carry answers gets no code: a mark no spelling writes rides
+  the carry with its node.
+- `unmappable-html` names the version rather than the element: this one converts no raw HTML, so
+  at `0.2.0` the mapped elements stop erroring and the code stays for what no ADF node carries.
+
+### Which code a cause takes
+
+- A code names the cause; where one cause recurs across node types, across one mark's attributes
+  or across directions, one code covers them all and `path` and `message` say which —
+  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it,
+  `unspellable-character` the text node and the code block alike. Where two codes stay apart, the
+  line between them is what they name: `unspellable-character` is a character CommonMark rewrites
+  wherever text holds it, `unspellable-whitespace` the newline no inline directive's content slot
+  spans, in either direction.
+- A claim code names the spelling claimed, never the node that spelling would have built: a
+  malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
+  `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
+  colon rather than ADF's missing column model doing it. What the grammar itself refuses stays a
+  claim code, key order among it, and a leaf given a body is refused at its opener, as a container
+  missing its closer is (the maintainer, 2026-09-16).
+- A directive whose name reads back to no node is `unknown-directive-name` rather than a claim
+  code — the spelling is well formed, and telling that apart from a typo is what a consumer
+  switches on when a later MINOR gives the name meaning. A reserved name is a known name, so never
+  that code, and the two the flavour reserves part on form: a form the grammar does not have is a
+  claim code — `!adf:carry`, whose carry is the fence — and a well-formed form in the wrong place
+  is `unsupported-node-shape`, `!adf:listBreak` parting anything but two adjacent lists of one
+  type.
+- A well-formed directive the node tables refuse — an attribute a node does not hold or spells
+  elsewhere, a value outside its kind or its canonical spelling, an argument, or a body of a shape
+  its content model does not take — is `unsupported-node-shape`, the emitter's code for the same
+  mismatch read the other way: one code across both directions for good, since the call site
+  knows which direction it called and parting them after `0.1.0` is MAJOR.
+- An attribute is counted from its value; a spelling that nests it deeper — the block directive's
+  `marks`, the carry — refuses in its own format, as its parser does.
+- A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
+  emitting — no document holds one, so no round-trip crosses them.
+
+### `message`, `path` and `position`
+
+- A message names the violation, not the rule alone — a rule by itself states a truth the reader
+  must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose
+  it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
+  inline alike, `\|` for every pipe row.
+- `not-an-adf-document` carries the document's own path throughout: seven of the guard's eight
+  branches read the document's own shape, and threading a path to the eighth — a malformed node
+  anywhere in the tree — wants the manual stack §11's no-recursion rule forces, whose empty half
+  no input reaches. The message names the violation instead.
+- A direction reading a source returns `Result<T, ParseError>`: an optional field a direction
+  always fills is a branch a consumer cannot take, and the `!` §11 bans is how they take it
+  anyway.
 
 ## 9. Release automation
 
@@ -283,29 +281,23 @@ someone spells it or pins it.
 
 ## 11. Code rules
 
+### Style
+
 - Two-space indent, strict TypeScript, English everywhere. Alphabetical order wherever order
   carries no meaning, keyed on the name a line introduces rather than where it came from: an
   import sorts on its first binding, type imports ahead of value imports, so moving or renaming a
   module reorders nothing (the maintainer, 2026-09-18).
-- Failures are values: everything returns
-  `Result<T>` — `{ ok: true; value } | { ok: false; error: ConvertError }` — nothing throws.
-  `try/catch` only wrapped tightly around a call that genuinely throws, converted to a result on
-  the spot. A reader with no path to name returns `Read<T>` instead, the same two arms over a
-  `ConvertFault`, and `faulted` attaches the path where the walk knows it.
-- Only the hard break's inline segment holds a raw newline — every other spelling escapes one or
-  refuses it — which is how the whitespace carry finds a line edge.
-- Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
-  escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
-  only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
-  `matchEmphasis` transcribes the reference `process_emphasis` line for line, and its closer walk and
-  opener search stay whole: broken into named steps they drift from the algorithm being faithful is
-  the whole point of.
-- A readable spelling tried ahead of a general one takes the `try` prefix and fails only where the
-  general form fails on the same node (20): refusing there refuses a document the general form
-  spells, so a refusal the general form does not share belongs in the general form or nowhere. A
-  readable spelling that must spell its subtree before it can give way — the list, whose
-  thematic-break first line and blank lines exist only spelled — hands that one walk to the general
-  form instead: giving way after the walk walks again at every level, doubling per level (4b).
+- No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
+  fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
+  unrepresentable.
+- Failures are values: everything returns `Result<T>`, nothing throws. `try/catch` only wrapped
+  tightly around a call that genuinely throws, converted to a result on the spot. A reader with no
+  path to name returns `Read<T>`, and the walk attaches the path where it knows it.
+- Reuse before adding; the smallest sufficient diff is the benchmark; no speculative generality —
+  a second consumer, or it goes.
+
+### Bounds
+
 - Nothing recurses unbounded: the guards walk iteratively, and blocks, marks and JSON values — an
   attribute's and a carried node's alike — are all held to 500 levels, so a deep document is a
   `Result` rather than the stack overflow that waits near 2000. A level is one block-list
@@ -337,18 +329,39 @@ someone spells it or pins it.
   ordered list past the marker cap gives way, spending two emitter levels where the parser spent
   one. A give-way is kept too and serves any depth, reading the node's shape alone. Only what
   succeeded is kept, so no path minted at another position is ever read.
-- No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
-  fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
-  unrepresentable.
+
+### Spellings
+
+- Only the hard break's inline segment holds a raw newline — every other spelling escapes one or
+  refuses it — which is how the whitespace carry finds a line edge.
+- Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
+  escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
+  only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
+  `matchEmphasis` transcribes the reference `process_emphasis` line for line, and its closer walk and
+  opener search stay whole: broken into named steps they drift from the algorithm being faithful is
+  the whole point of.
+- A readable spelling tried ahead of a general one takes the `try` prefix and fails only where the
+  general form fails on the same node (20): refusing there refuses a document the general form
+  spells, so a refusal the general form does not share belongs in the general form or nowhere. A
+  readable spelling that must spell its subtree before it can give way — the list, whose
+  thematic-break first line and blank lines exist only spelled — hands that one walk to the general
+  form instead: giving way after the walk walks again at every level, doubling per level (4b).
+- The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
+  format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
+  Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so
+  decode-respell-compare cannot drift, and each format writes its own — canonical JSON for a
+  number is the markdown flavour's choice, not ADF's.
+
+### Layout
+
 - `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats
   read lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a
   content model — and no delimiter, element name or escape reaches it. A helper that cannot answer
   that way is two constructs, the ADF question there and the spelling in each format, the seam
   `markAttributes` and `markSpellings` already draw; one that cannot be split is a gap to ask (§15).
   `markdown/` and `html/` are peers: neither imports the other, and no third directory sits between
-  them. A primitive knowing neither ADF nor a format — `result.ts`, `json-value.ts`, `nesting.ts`,
-  `canonical-json.ts` — stays at `src/` root. A construct rises to `adf/` on its second consumer,
-  not in anticipation of one (the maintainer, 2026-09-21).
+  them. A primitive knowing neither ADF nor a format stays at `src/` root. A construct rises to
+  `adf/` on its second consumer, not in anticipation of one (the maintainer, 2026-09-21).
 - Each format directory (`markdown/`, `html/`) parts into `emit/` (ADF→format) and `parse/`
   (format→ADF), the rest of it holding what both directions read. A construct's reader lives there
   beside the regex the emitter escapes against, so the two cannot drift; a reader with no emit
@@ -357,22 +370,14 @@ someone spells it or pins it.
   alike — whether a list marker interrupts a paragraph — is one function there too, never a copy
   per direction, however conservative the copy would be. Where the rule is the emitter's own
   choice, input consults it rather than restating it, and that is the only import `parse/` takes
-  from `emit/`: the parser asks `commonMarkSpelling` which form the emitter picks, and
-  `openingLinkTakesDirective` whether the line a paragraph's opening link starts forces the
-  directive link, so no fixture the emitter writes can be refused, and a spelling the emitter
-  refuses gives its own error rather than a second name for it.
-- The attribute vocabulary is ADF's: `adf/` walks it and narrows each value to its kind, and a
-  format spells the narrowed value. A spelling that re-checks the type is the check's second copy.
-  Reading a spelling back is the format's own: the reader sits beside the spelling it inverts, so
-  decode-respell-compare cannot drift, and each format writes its own — canonical JSON for a
-  number is the markdown flavour's choice, not ADF's.
+  from `emit/` — `commonMarkSpelling` and `openingLinkTakesDirective` — so no fixture the emitter
+  writes can be refused, and a spelling the emitter refuses gives its own error rather than a
+  second name for it.
 - Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a
   file does not repeat its directory in its name — `adf/document.ts`, never
   `adf/adf-document.ts`. A name is the noun `spec/flavour.md` or ADF's schema uses for the
   thing; a directory follows a split the spec draws; a placement these rules leave open goes
   beside its only reader, or in what both read where there are two (the maintainer, 2026-09-18).
-- Reuse before adding; the smallest sufficient diff is the benchmark; no speculative generality —
-  a second consumer, or it goes.
 
 ## 12. Prose to a minimum
 
