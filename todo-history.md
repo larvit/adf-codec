@@ -1018,6 +1018,18 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       `parse/` imports `emit/` twice — `commonMarkSpelling` and `openingLinkTakesDirective` — and
       §11 says those two are the whole of the seam a `../emit/` grep under `parse/` reads.
 
+- [x] **32 — The mark depth `adf/` counts is stated in ADF's terms (`0.2.0`).**
+      `document.ts`'s `markAttributeNesting` is `largestNesting - 3`, and both the comment above it
+      and AGENTS.md §8 give the reason as markdown's: the block directive spells the whole mark set
+      as one JSON attribute, so the parser reads the value at the bottom of array, mark and
+      `attrs`. That is a format's spelling deciding a constant inside the directory §11 forbids to
+      know a format. Move the derivation to where that spelling lives, or state the three levels in
+      ADF's own vocabulary. Before 7 gives the constant a second format whose spelling may not
+      spend the same three levels.
+      **Done** (2026-09-23): `adf/` counts a mark's attribute from its value at 500, as a node's;
+      the block directive's `marks` spelling refuses its own over-deep JSON with the parser's
+      message and the node's path, and §8 says a deeper spelling refuses in its own format.
+
 ## 5 — Ship `0.1.0`
 
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo

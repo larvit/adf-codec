@@ -56,14 +56,6 @@ chunk clearing a §11 seam.
       upward, so the first raise to the measured figure reddens a run that changed nothing. Make
       the measurement repeatable, or state the number the floor may be raised to and why it is not
       the measured one.
-- [ ] **32 — The mark depth `adf/` counts is stated in ADF's terms (`0.2.0`).**
-      `document.ts`'s `markAttributeNesting` is `largestNesting - 3`, and both the comment above it
-      and AGENTS.md §8 give the reason as markdown's: the block directive spells the whole mark set
-      as one JSON attribute, so the parser reads the value at the bottom of array, mark and
-      `attrs`. That is a format's spelling deciding a constant inside the directory §11 forbids to
-      know a format. Move the derivation to where that spelling lives, or state the three levels in
-      ADF's own vocabulary. Before 7 gives the constant a second format whose spelling may not
-      spend the same three levels.
 - [ ] **23 — The block-directive fragments are one file (`0.2.0`).** `block-directive-arguments.ts`,
       `-forms.ts` and `-marks.ts` are three files under 25 lines answering one question. Fold them,
       and take `src/markdown/` — the worst level both architects named, 13 entries with no
@@ -292,6 +284,7 @@ chunk clearing a §11 seam.
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 - [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
 - [x] **30 — AGENTS.md says each thing once (`0.2.0`).**
+- [x] **32 — The mark depth `adf/` counts is stated in ADF's terms (`0.2.0`).**
 
 ## The ADF inventory to cover
 
