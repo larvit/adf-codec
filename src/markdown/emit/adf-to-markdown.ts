@@ -254,7 +254,6 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: Spe
   return success({ headroom, spelling: 'list', text: lines.join('\n') })
 }
 
-// The directive form sinks each item's blocks a level below where the walk read them.
 function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {
   return items.map((item) => ({ ...directivePair(item.node, listItemOpener, joinBlocks(item.walk.blocks, 'directive')), node: item.node }))
 }
