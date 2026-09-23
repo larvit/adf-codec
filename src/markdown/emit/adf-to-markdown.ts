@@ -246,6 +246,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: Spe
   for (const [offset, item] of walked.entries()) {
     const line = tryListItemLines(item.walk.blocks, ordered ? `${start + offset}. ` : '- ')
     if (line === undefined) {
+      // The directive form spends a level the walk did not count.
       if (headroom < 1) return tooDeep(path)
       return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
     }

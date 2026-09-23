@@ -296,11 +296,10 @@ someone spells it or pins it.
   attribute's and a carried node's alike — are all held to 500 levels (`largestNesting`), so a
   deep document is a `Result` rather than the stack overflow that waits near 2000. An attribute
   is counted from its value; a spelling that nests it deeper — the block directive's `marks`, the
-  carry — refuses in its own format, as its parser does. A list giving way after its walk owes
-  the directive form a level the walk did not count, and the walk reports its headroom — the
-  least slack any depth guard below it has — for the fallback to refuse at zero rather than walk
-  again; counting every list twice halved the list limit, counting the directive form once
-  doubled the parser's frames per level (the maintainer, 2026-09-18).
+  carry — refuses in its own format, as its parser does. A list giving way to the directive form
+  refuses at zero headroom rather than walking again; counting every list twice halved the list
+  limit, counting the directive form once doubled the parser's frames per level (the maintainer,
+  2026-09-18).
 - Nothing spreads an unbounded array into a call — a node's siblings, a code block's held lines, a
   mark run's segments: the argument list caps near 125k and throws a `RangeError` where a `Result`
   is owed. A walk pushes one at a time. A literal spread (`[...value]`) is not the same thing and
