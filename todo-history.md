@@ -1030,6 +1030,14 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       the block directive's `marks` spelling refuses its own over-deep JSON with the parser's
       message and the node's path, and §8 says a deeper spelling refuses in its own format.
 
+- [x] **23 — The block-directive fragments are one file (`0.2.0`).** `block-directive-arguments.ts`,
+      `-forms.ts` and `-marks.ts` are three files under 25 lines answering one question. Fold them,
+      and take `src/markdown/` — the worst level both architects named, 13 entries with no
+      organising question — down with them.
+      **Done** (2026-09-23): `markdown/block-directive.ts` holds the form, the argument, the `marks`
+      attribute and the `listBreak` spelling — what the block directive spells of a node that the
+      grammar does not — and `src/markdown/` drops from 15 entries to 12.
+
 ## 5 — Ship `0.1.0`
 
 - [ ] **5 — Ship `0.1.0`.** Only the maintainer's own acts are left (§15): make the Gitea repo

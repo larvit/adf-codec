@@ -19,7 +19,7 @@ import {
   type ThematicBreakTail,
 } from '../commonmark/grammar.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
-import { blockDirectiveForm } from '../block-directive-forms.ts'
+import { blockDirectiveForm } from '../block-directive.ts'
 import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
 import { readLinkDefinitions } from '../commonmark/link-reference-definitions.ts'
 

@@ -6,7 +6,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './adf/documen
 import type { Arbitrary } from 'fast-check'
 import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
 import type { JsonValue } from './json-value.ts'
-import { blockArgument } from './markdown/block-directive-arguments.ts'
+import { blockArgument } from './markdown/block-directive.ts'
 import { blockNodes } from './adf/block-nodes.ts'
 import { directivePrefix } from './markdown/directive-syntax.ts'
 import { inlineNodes } from './adf/inline-nodes.ts'

@@ -1,10 +1,9 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
-import { blockArgument } from '../block-directive-arguments.ts'
+import { blockArgument, markValues, marksAttribute } from '../block-directive.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { isBareToken, spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
-import { markValues, marksAttribute } from '../block-directive-marks.ts'
 import { overNested } from '../../json-value.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 

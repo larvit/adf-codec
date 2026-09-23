@@ -56,10 +56,6 @@ chunk clearing a §11 seam.
       upward, so the first raise to the measured figure reddens a run that changed nothing. Make
       the measurement repeatable, or state the number the floor may be raised to and why it is not
       the measured one.
-- [ ] **23 — The block-directive fragments are one file (`0.2.0`).** `block-directive-arguments.ts`,
-      `-forms.ts` and `-marks.ts` are three files under 25 lines answering one question. Fold them,
-      and take `src/markdown/` — the worst level both architects named, 13 entries with no
-      organising question — down with them.
 - [ ] **24 — The conformance gates have a directory (`0.2.0`).** Six root tests with no sibling
       source (`adf-property`, `adf-schema`, `commonmark-spec`, `corpus`, `flavour`,
       `markdown-property`) plus `property-harness.ts` are the machinery that makes the docs
@@ -281,6 +277,7 @@ chunk clearing a §11 seam.
 - [x] **20 — The give-way channel is unmistakable (`0.2.0`).**
 - [x] **21 — The ADF tables carry ADF's nouns (`0.2.0`).**
 - [x] **22 — `LineContainer` sits at the markdown level (`0.2.0`).**
+- [x] **23 — The block-directive fragments are one file (`0.2.0`).**
 - [x] **28 — `emitLine`'s retry loop cannot spin (`0.2.0`).**
 - [x] **29 — The README reads raw HTML as refused for good (`0.2.0`).**
 - [x] **30 — AGENTS.md says each thing once (`0.2.0`).**

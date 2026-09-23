@@ -1,9 +1,35 @@
 import type { AdfMark } from '../adf/document.ts'
+import type { BlockType } from '../adf/block-nodes.ts'
 import type { JsonValue } from '../json-value.ts'
+import { blockNodeModel } from '../adf/block-nodes.ts'
 import { isAdfMark, nodeAttrs } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
+import { spellDirectiveOpener } from './directive-syntax.ts'
+
+const argumentByType = new Map(
+  Object.entries({
+    blockTaskItem: 'state',
+    panel: 'panelType',
+    taskItem: 'state',
+  } satisfies Partial<Record<BlockType, string>>),
+)
+
+export const listBreakName = 'listBreak'
+
+export const listBreakSpelling = spellDirectiveOpener(listBreakName, undefined, '')
 
 export const marksAttribute = 'marks'
+
+export function blockArgument(type: string): string | undefined {
+  return argumentByType.get(type)
+}
+
+export function blockDirectiveForm(name: string): 'container' | 'leaf' | undefined {
+  if (name === listBreakName) return 'leaf'
+  const model = blockNodeModel(name)
+  if (model === undefined) return undefined
+  return model.contentModel === 'none' ? 'leaf' : 'container'
+}
 
 export function markValues(marks: readonly AdfMark[]): JsonValue {
   return marks.map((mark) => {

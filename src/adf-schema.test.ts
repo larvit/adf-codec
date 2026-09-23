@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import type { AttributeKind, AttributeVocabulary } from './adf/attribute-vocabulary.ts'
-import { blockArgument } from './markdown/block-directive-arguments.ts'
+import { blockArgument } from './markdown/block-directive.ts'
 import { blockNodes } from './adf/block-nodes.ts'
 import { inlineNodes } from './adf/inline-nodes.ts'
 import { markAttributes } from './adf/mark-attributes.ts'

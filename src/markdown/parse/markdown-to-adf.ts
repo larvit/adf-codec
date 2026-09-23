@@ -9,7 +9,7 @@ import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.t
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { listBreakName, listBreakSpelling } from '../list-break.ts'
+import { listBreakName, listBreakSpelling } from '../block-directive.ts'
 import { nodeAttrs } from '../../adf/document.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
