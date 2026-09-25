@@ -1074,6 +1074,8 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
 - [ ] **10 — Lossy conversion (`0.2.0`).**
   - [x] **10a — The reduction.** `adfToPlainMarkdown`'s ADF→ADF reduction, tests first, a test per
         row above.
+  - [x] **10b — The lift.** `plainMarkdownToAdf`'s ADF→ADF lift, tests first, a test per row it reads,
+        other tools' spellings included; the editor's default highlight colour looked up and cited.
 
 ## 5 — Ship `0.1.0`
 

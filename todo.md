@@ -252,8 +252,7 @@ chunk clearing a §11 seam.
         lists, wikilinks, embeds, tags, comments, TOC tokens, spoilers, task states past `[x]`/`[ ]`,
         and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
   - [x] **10a — The reduction.**
-  - [ ] **10b — The lift.** `plainMarkdownToAdf`'s ADF→ADF lift, tests first, a test per row it reads,
-        other tools' spellings included; the editor's default highlight colour looked up and cited.
+  - [x] **10b — The lift.**
   - [ ] **10c — The exports.** `adfToPlainMarkdown` and `plainMarkdownToAdf` exported with their README
         sections, and two properties over 4.2's generators: writing refuses only the guard's codes
         and writes no `!adf:`, and markdown `adfToPlainMarkdown` wrote reads back through `plainMarkdownToAdf` and writes
