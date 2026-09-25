@@ -236,8 +236,9 @@ chunk clearing a §11 seam.
         rows it covered, padding at most to the table's cell count.
       - A list stays a list: where CommonMark cannot hold a block inside an item, what gives way is
         what a reader does not see — the spaces of a whitespace-only code line — and a rule opening an
-        item drops (a panel, 3 of 3, 2026-09-25); an ordered list running past `999999999` is a bullet
-        list keeping its numbers as text (a panel, 3 of 3, 2026-09-25).
+        item drops (a panel, 3 of 3, 2026-09-25); an ordered list running past `999999999`, or adjacent
+        ordered lists whose numbering does not continue, is one bullet list keeping its numbers as text
+        (panels, 3 of 3 and 5 of 7, 2026-09-25).
       - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text —
         `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes has its
         `href` percent-encoded until one does, and a mark run CommonMark's flanking or matching cannot
