@@ -202,8 +202,8 @@ chunk clearing a §11 seam.
         success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE`. The lift reads those words
         back (`NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error) and
         Obsidian's by meaning (hint tip; success, check and done success; attention warning; danger,
-        failure, fail, missing and bug error; any other word info). Text after a marker in its
-        paragraph is the panel's first body paragraph.
+        failure, fail, missing, bug and error error — `error` by a panel, 3 of 3, 2026-09-25; any
+        other word info). Text after a marker in its paragraph is the panel's first body paragraph.
       - An `expand` or `nestedExpand` is Obsidian's folded callout, `> [!NOTE]- Title`, a blank `>`,
         then the body. The lift reads a fold sign (`-` or `+`) as an expand whatever the word, the
         rest of the marker's paragraph as its title, and an expand inside an expand as a
@@ -258,6 +258,12 @@ chunk clearing a §11 seam.
         sections, and two properties over 4.2's generators: writing refuses only the guard's codes
         and writes no `!adf:`, and markdown `adfToPlainMarkdown` wrote reads back through `plainMarkdownToAdf` and writes
         again byte for byte. AGENTS.md §1 records the pair as composed around the lossless one.
+  - [ ] **10d — A literal marker survives the lossy round trip.** Text reading `==x==`, a quote
+        opening `[!NOTE]` or a list whose items all open `[x] ` comes back as a highlight, panel or
+        task list after `plainMarkdownToAdf(adfToPlainMarkdown(doc))`, and a human's `\==x==` too:
+        the lift reads ADF, where `markdownToAdf` has already spent the backslash. Give plain
+        markdown an escape that keeps such text literal through both directions — which seam carries
+        it is a gap to ask.
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
   - [x] **11b — The gate.**

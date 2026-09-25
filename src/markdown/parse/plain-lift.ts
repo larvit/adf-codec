@@ -158,6 +158,8 @@ function split(inline: readonly AdfNode[], paired: readonly Delimiter[]): AdfNod
 }
 
 function pushPiece(lifted: AdfNode[], node: AdfNode, text: string, inPair: boolean): void {
-  const marks = inPair ? [editorHighlight, ...nodeMarks(node)] : [...nodeMarks(node)]
+  // Atlassian's schema refuses a highlight on code.
+  const highlights = inPair && !nodeMarks(node).some((mark) => mark.type === 'code')
+  const marks = highlights ? [editorHighlight, ...nodeMarks(node)] : [...nodeMarks(node)]
   if (text !== '') lifted.push(marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' })
 }
