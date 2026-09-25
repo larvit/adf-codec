@@ -23,8 +23,8 @@ represent.
 
 In priority order.
 
-1. **Lossless first.** The round-trip holds for every document, node types this version does not
-   know included; one that has no spelling is refused and says where, never silently reduced.
+1. **Lossless first.** The round-trip holds for every document the lossless pair converts, node
+   types this version does not know included; one that has no spelling is refused and says where, never silently reduced.
    Every goal below gives way to this one.
 2. **Three formats, ADF the hub.** ADF, one markdown flavour, one HTML dialect, markdown↔HTML
    composing through ADF — four conversions to keep correct, never a fifth, and never a fourth
@@ -34,9 +34,13 @@ In priority order.
    escapable, so the flavour is opt-in.
 4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the directive
    form carries only what CommonMark cannot hold.
-5. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
+5. **Lossy conversion keeps the content.** `adfToPlainMarkdown` and `plainMarkdownToAdf` drop what
+   plain markdown cannot hold — format, design, structure — never content: what a reader of the
+   rendered document sees or follows, its text, images and link targets. What is dropped goes the
+   way the audience expects.
+6. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
    the emitted formats are.
-6. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
+7. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
    any ES2022 engine, in a browser as readily as on a server.
 
 ## Audience

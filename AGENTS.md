@@ -429,6 +429,13 @@ and the instance it yields, and ask for the rule. The maintainer answers the rul
 here, and the instance follows from it in the chunk. A rule that keeps collecting instances is
 wrong: rewrite it rather than append to it.
 
+Which output the audience expects — README goal 5 — is settled by a reader panel rather than
+asked: three fresh-context readers, one per README persona the conversion serves, each given only
+`## Audience` and the input, writing what they expect before picking among outputs the goals
+allow, rendered, shuffled, with no rationale and nothing saying what is implemented. Three agreeing
+settle it; otherwise four more read, five of seven settle it, and less is a missing goal, asked.
+The verdict lands in the item it settles (the maintainer, 2026-09-25).
+
 ### Rules the loop has settled (the maintainer, 2026-09-18)
 
 - A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always

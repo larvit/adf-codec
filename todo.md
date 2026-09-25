@@ -213,16 +213,23 @@ chunk clearing a §11 seam.
         spelling, attributes dropped.
       - `mention` and `status` become their text, the mention's `@` kept; `emoji` its text or else its
         `shortName`; `date` its ISO date in UTC (`2026-09-13`); `inlineCard`, `blockCard` and
-        `embedCard` a link to their `url`, dropped when they carry only `data`; a `mediaSingle`
-        holding an external image stays `![alt](url)`; `media`, `mediaGroup` and `mediaInline` their
-        `alt` text or nothing; `caption` its text as a paragraph; `extension`, `inlineExtension` and
-        `syncBlock` their `text` attribute or nothing; `placeholder` nothing; a node no row names, or
-        one standing where no spelling holds it, its blocks or its text.
+        `embedCard` a link to their `url`, or to their `data`'s `url` named by its `name` — the name
+        alone without a `url`; an external image, wherever it stands, `![alt](url)`; `media`,
+        `mediaGroup` and `mediaInline` holding a stored file their `alt` text; `caption` its text as
+        a paragraph; `extension` and `inlineExtension` their `text` attribute; `placeholder` nothing,
+        its text being the editor's prompt rather than the document's; a node no row names, or one
+        standing where no spelling holds it, its blocks or its text.
+      - Content the document only references — a stored file with no `alt`, an extension with no
+        `text`, a `syncBlock`, a card with neither `url` nor `data` naming one — leaves MARKER.
       - A table stays a pipe table: the first row becomes the header, a cell's blocks join on one line
-        with spaces, and spans and the cells they cover drop.
+        with spaces, and a span keeps its cell under its header by empty cells in the columns and
+        rows it covered, padding at most to the table's cell count.
+      - A list stays a list: where CommonMark cannot hold a block inside an item, what gives way is
+        what a reader does not see — the spaces of a whitespace-only code line, a rule's spelling.
       - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text —
-        `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes becomes its
-        text, and a mark run CommonMark's flanking or matching cannot spell drops its mark.
+        `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes has its
+        `href` percent-encoded until one does, and a mark run CommonMark's flanking or matching cannot
+        spell drops its mark.
       - A newline in text becomes a hard break and edge whitespace is trimmed; carriage returns and
         null characters are removed; a paragraph line opening with a code span whose backticks would
         read as a fence loses the code mark; an empty paragraph drops, and adjacent lists of one type
