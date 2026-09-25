@@ -172,35 +172,40 @@ test('spells an inline node as its text', () => {
   assert.equal(plain(paragraph(node('emoji', { shortName: ':tada:', text: '🎉' }), node('emoji', { shortName: ':smile:' }))), '🎉:smile:\n')
   assert.equal(plain(paragraph(node('date', { timestamp: '1757721600000' }), text(' '), node('date', { timestamp: 'soon' }))), '2025-09-13\n')
   assert.equal(plain(paragraph({ marks: [strong], ...node('mention', { text: '@Mikael' }) })), '**@Mikael**\n')
+  assert.equal(plain(paragraph(text('by '), node('mention', { id: '5b10a2' }), node('mention', {}))), 'by @5b10a2\n')
 })
 
-test('spells a card as a link to its url, dropping one carrying only data', () => {
+test('spells a card as a link to its url, or to its data url named by its data name, else a note', () => {
   assert.equal(plain(paragraph(node('inlineCard', { url: 'https://example.com' }))), '<https://example.com>\n')
   assert.equal(plain(paragraph({ ...node('inlineCard', { url: 'https://example.com' }), marks: [strong, link('https://other.com')] })), '**<https://example.com>**\n')
-  assert.equal(plain(paragraph(text('see '), node('inlineCard', { data: {} }))), 'see\n')
+  assert.equal(plain(paragraph(text('see '), node('inlineCard', { data: {} }))), 'see _(link card not included)_\n')
+  assert.equal(plain(paragraph(node('inlineCard', { data: { name: 'Spec', url: 'https://e.com/s' } }), text(' '), node('inlineCard', { data: { url: 'https://e.com/u' } }))), '[Spec](https://e.com/s) <https://e.com/u>\n')
+  assert.equal(plain(paragraph(node('inlineCard', { data: { name: 'Spec' } }), text(' '), node('inlineCard', { data: ['x'] }))), 'Spec _(link card not included)_\n')
   assert.equal(plain(node('blockCard', { url: 'https://example.com/a b' })), '[https://example.com/a b](<https://example.com/a b>)\n')
   assert.equal(plain(node('embedCard', { layout: 'center', url: 'https://example.com' })), '<https://example.com>\n')
-  assert.equal(plain(node('blockCard', { data: {} })), '')
+  assert.equal(plain(node('blockCard', { data: {} })), '_(link card not included)_\n')
 })
 
-test('keeps an external image and spells other media as their alt text', () => {
+test('keeps an external image wherever it stands and spells a stored file as its alt text, else a note', () => {
   const media = (attrs: AdfAttributes): AdfNode => ({ attrs, type: 'media' })
   const caption: AdfNode = node('caption', {}, text('The moon.'))
   const external = media({ alt: 'Moon', height: 10, type: 'external', url: 'https://example.com/moon.png' })
   assert.equal(plain(node('mediaSingle', { layout: 'wide', width: 50 }, external, caption)), '![Moon](https://example.com/moon.png)\n\nThe moon.\n')
   assert.equal(plain(node('mediaSingle', {}, media({ alt: '', type: 'external', url: 'https://example.com/a.png' }))), '![](https://example.com/a.png)\n')
   assert.equal(plain(node('mediaSingle', {}, media({ alt: ' Two\nlines ', type: 'external', url: 'u' }), media({ type: 'external', url: 'v' }))), '![Two lines](u)\n\n![](v)\n')
-  assert.equal(plain(node('mediaSingle', {}, media({ alt: 'Bad', type: 'external', url: 'a\\b' }))), 'Bad\n')
+  assert.equal(plain(node('mediaSingle', {}, media({ alt: 'Bad', type: 'external', url: 'a\\b <&amp;>' }))), '![Bad](<a%5Cb %3C%26amp;%3E>)\n')
   assert.equal(plain(node('mediaSingle', {}, media({ alt: 'Photo', collection: 'c', id: 'i', type: 'file' }))), 'Photo\n')
-  assert.equal(plain(node('mediaGroup', {}, media({ alt: 'One', type: 'file' }), media({ type: 'file' }))), 'One\n')
-  assert.equal(plain(paragraph(text('a '), node('mediaInline', { alt: 'clip', type: 'file' }), node('mediaInline', { type: 'file' }))), 'a clip\n')
+  assert.equal(plain(node('mediaGroup', {}, media({ alt: 'One', type: 'file' }), media({ type: 'file' }), external)), 'One\n\n_(image not included)_\n\n![Moon](https://example.com/moon.png)\n')
+  assert.equal(plain(external), '![Moon](https://example.com/moon.png)\n')
+  assert.equal(plain(paragraph(text('a '), node('mediaInline', { alt: 'clip', type: 'file' }), text(' '), node('mediaInline', { type: 'file' }))), 'a clip _(image not included)_\n')
+  assert.equal(plain(paragraph(text('See '), external, text(' for '), node('mediaInline', { type: 'external', url: 'https://e.com/i.png' }))), 'See [Moon](https://example.com/moon.png) for <https://e.com/i.png>\n')
   assert.equal(plain(caption), 'The moon.\n')
 })
 
-test('spells an extension as its text attribute and a placeholder as nothing', () => {
-  assert.equal(plain(node('extension', { extensionKey: 'toc', text: 'Contents' }), node('extension', { extensionKey: 'toc' })), 'Contents\n')
-  assert.equal(plain(node('syncBlock', { resourceId: 'r' })), '')
-  assert.equal(plain(paragraph(text('a '), node('inlineExtension', { text: 'macro' }), node('placeholder', { text: 'Type here' }))), 'a macro\n')
+test('spells an extension as its text attribute, else a note naming it, and a placeholder as nothing', () => {
+  assert.equal(plain(node('extension', { extensionKey: 'toc', text: 'Contents' }), node('extension', { extensionKey: 'jira-issues-table' })), 'Contents\n\n_(jira-issues-table not included)_\n')
+  assert.equal(plain(node('syncBlock', { resourceId: 'r' })), '_(synced block not included)_\n')
+  assert.equal(plain(paragraph(text('a '), node('inlineExtension', { text: 'macro' }), text(' '), node('inlineExtension', {}), node('placeholder', { text: 'Type here' }))), 'a macro _(extension not included)_\n')
 })
 
 test('spells a node no row names, or one standing where no spelling holds it, as its blocks or its text', () => {
@@ -210,8 +215,8 @@ test('spells a node no row names, or one standing where no spelling holds it, as
   assert.equal(plain(paragraph(text('a '), node('bulletList', {}, item(said('b')), item(said('c'))))), 'a  b c\n')
   assert.equal(plain(bulletList(said('stray'), item(said('b')), text('loose'))), '- stray\n- b\n- loose\n')
   assert.equal(plain(bulletList()), '')
+  assert.equal(plain(bulletList(item({ content: [text('a\n  \nb')], type: 'codeBlock' }))), '- ```\n  a\n\n  b\n  ```\n')
   assert.equal(plain(bulletList(item(node('rule', {}), said('x')))), '---\n\nx\n')
-  assert.equal(plain(bulletList(item({ content: [text('a\n  \nb')], type: 'codeBlock' }))), '```\na\n  \nb\n```\n')
   assert.equal(plain(node('nestedExpand', {}, node('tableCell', {}, said('c')))), '> [!NOTE]-\n>\n> c\n')
 })
 
@@ -227,11 +232,14 @@ test('keeps a table as a pipe table headed by its first row, one line per cell',
     'table',
     {},
     row(cell('tableHeader', said('A')), cell('tableHeader', said('B')), cell('tableHeader', said('C'))),
-    row(node('tableCell', { colspan: 2 }, said('wide')), cell('tableCell', said('c'))),
+    row(node('tableCell', { colspan: 2, rowspan: 2 }, said('wide')), cell('tableCell', said('c'))),
+    row(cell('tableCell', said('d'))),
     row(cell('tableCell')),
   )
-  assert.equal(plain(spanned), '| A | B | C |\n| --- | --- | --- |\n| wide | c |  |\n|  |  |  |\n')
-  assert.equal(plain(node('table', {}, row(cell('tableHeader', paragraph(text('a|b', code), text(' '), text('x', link('https://e.com/|'))))))), '| a\\|b x |\n| --- |\n')
+  assert.equal(plain(spanned), '| A | B | C |\n| --- | --- | --- |\n| wide |  | c |\n|  |  | d |\n|  |  |  |\n')
+  const huge = node('table', {}, row(node('tableHeader', { colspan: 1e9, rowspan: 1e9 }, said('A')), cell('tableHeader', said('B'))), row(cell('tableCell', said('c'))))
+  assert.equal(plain(huge), '| A |  |  |  | B |\n| --- | --- | --- | --- | --- |\n| c |  |  |  |  |\n')
+  assert.equal(plain(node('table', {}, row(cell('tableHeader', paragraph(text('a|b', code), text(' '), text('x', link('https://e.com/|'))))))), '| a\\|b [x](https://e.com/%7C) |\n| --- |\n')
   assert.equal(plain(node('table', {}, said('stray'))), '| stray |\n| --- |\n')
   const titled = paragraph(text('t', link('https://e.com', 'a|b')))
   const folded = [node('expand', { title: 'Log' }, said('x')), node('nestedExpand', {}, said('y'))]
@@ -246,10 +254,10 @@ test('keeps code, em, link, strike and strong and drops every other mark, keepin
   assert.equal(plain(paragraph(text('site', { attrs: { collection: 'c', href: 'https://e.com', id: 'i' }, type: 'link' }))), '[site](https://e.com)\n')
 })
 
-test('spells a link no CommonMark escape writes as its text', () => {
-  assert.equal(plain(paragraph(text('a', link('a\\b')), text(' '), text('b', { attrs: { id: 'i' }, type: 'link' }))), 'a b\n')
-  assert.equal(plain(paragraph(text('t', link('https://e.com', 'two\nlines')), text(' '), text('u', link('https://e.com', 'Title')))), '[t](https://e.com) [u](https://e.com "Title")\n')
-  assert.equal(plain(paragraph(text(']: a', link('/u'), code))), '`]: a`\n')
+test('percent-encodes a link href no CommonMark escape writes until one does', () => {
+  assert.equal(plain(paragraph(text('a', link('a\\b')), text(' '), text('b', { attrs: { id: 'i' }, type: 'link' }), text(' '), text('c', link('/&amp;')))), '[a](a%5Cb) b [c](/%26amp;)\n')
+  assert.equal(plain(paragraph(text('t', link('https://e.com', 'two\nlines')), text(' '), text('u', link('https://e.com', 'a\\b')))), '[t](https://e.com "two lines") [u](https://e.com)\n')
+  assert.equal(plain(paragraph(text(']: a', link('/u'), code))), '[\\]: a](/u)\n')
 })
 
 test('drops the mark of a run CommonMark flanking or matching cannot spell', () => {

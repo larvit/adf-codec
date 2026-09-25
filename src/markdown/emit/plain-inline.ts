@@ -1,4 +1,4 @@
-import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -31,7 +31,7 @@ export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer
     const held = nodeLeaves(node, container, [...path, 'content', index], depth)
     if (!held.ok) return held
     if (held.value.length === 0) continue
-    const block = isBlockNodeType(node.type)
+    const block = isBlockNodeType(node.type) && node.type !== 'media'
     if (leaves.length > 0 && (joinsNext || block)) leaves.push(textLeaf(' ', []))
     joinsNext = block
     for (const leaf of held.value) leaves.push(leaf)
@@ -47,18 +47,47 @@ function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorP
   if (node.type === 'date') return success(textLeaves(isoDate(attrs['timestamp']), marks, container))
   if (node.type === 'emoji') return success(textLeaves(nonEmpty(attrs['text']) ?? attrs['shortName'], marks, container))
   if (node.type === 'placeholder') return success([])
-  if (['extension', 'inlineExtension', 'mention', 'status', 'syncBlock'].includes(node.type)) return success(textLeaves(attrs['text'], marks, container))
-  if (['media', 'mediaInline'].includes(node.type)) return success(textLeaves(attrs['alt'], marks, container))
-  if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(attrs['url'], marks, container))
+  if (node.type === 'mention') return success(textLeaves(nonEmpty(attrs['text']) ?? idMention(attrs['id']), marks, container))
+  if (node.type === 'status') return success(textLeaves(attrs['text'], marks, container))
+  if (['extension', 'inlineExtension'].includes(node.type)) return success(textLeaves(nonEmpty(attrs['text']), marks, container, nonEmpty(attrs['extensionKey']) ?? 'extension'))
+  if (node.type === 'syncBlock') return success(noteLeaves('synced block'))
+  if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(attrs, marks, container))
+  if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(attrs, marks, container))
   const own = textLeaves(node.text ?? (['expand', 'nestedExpand'].includes(node.type) ? attrs['title'] : undefined), marks, container)
   const held = inlineLeaves(nodeContent(node), container, path, depth + 1)
   if (!held.ok) return held
   return success(own.length > 0 && held.value.length > 0 ? [...own, textLeaf(' ', []), ...held.value] : [...own, ...held.value])
 }
 
-function cardLeaves(url: unknown, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  if (typeof url !== 'string') return []
-  return textLeaves(url, [...marks.filter((mark) => mark.type !== 'link'), { attrs: { href: url }, type: 'link' }], container)
+function cardLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+  const data = attrs['data']
+  const held = typeof data === 'object' && data !== null && !Array.isArray(data) ? data : {}
+  const url = nonEmpty(attrs['url'])
+  const heldUrl = nonEmpty(held['url'])
+  const name = nonEmpty(held['name'])
+  const href = url ?? heldUrl
+  if (href === undefined) return textLeaves(name, marks, container, 'link card')
+  return linkedLeaves(url ?? name ?? href, href, marks, container)
+}
+
+function linkedLeaves(text: string, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+  return textLeaves(text, [...marks.filter((mark) => mark.type !== 'link'), { attrs: { href }, type: 'link' }], container)
+}
+
+function idMention(id: unknown): string | undefined {
+  return typeof id === 'string' && id !== '' ? `@${id}` : undefined
+}
+
+// An image standing inline is a link to it: CommonMark's inline image reads back as no node.
+function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+  const alt = nonEmpty(attrs['alt'])
+  const url = nonEmpty(attrs['url'])
+  if (attrs['type'] !== 'external' || url === undefined) return textLeaves(alt, marks, container, 'image')
+  return linkedLeaves(alt ?? url, url, marks, container)
+}
+
+function noteLeaves(name: string): AdfNode[] {
+  return [textLeaf(`(${name} not included)`, [{ type: 'em' }])]
 }
 
 function nonEmpty(value: unknown): string | undefined {
@@ -77,8 +106,9 @@ function lineBreak(container: LineContainer): AdfNode {
   return container === 'paragraph' ? { type: 'hardBreak' } : textLeaf(' ', [])
 }
 
-function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  if (typeof value !== 'string') return []
+// note: what the content is named in the note left where it has none.
+function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer, note?: string): AdfNode[] {
+  if (typeof value !== 'string') return note === undefined ? [] : noteLeaves(note)
   const text = value.replace(/[\r\u0000]/g, '')
   const kept = plainMarks(marks, container, text)
   const leaves: AdfNode[] = []
@@ -108,12 +138,22 @@ function plainMarks(marks: readonly AdfMark[], container: LineContainer, text: s
 
 function plainLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
   const attrs = nodeAttrs(mark)
-  const href = attrs['href']
-  const title = attrs['title']
-  const pipes = container === 'table-cell'
-  if (typeof href !== 'string' || spellDestination(href) === undefined || (pipes && href.includes('|'))) return undefined
-  if (typeof title !== 'string' || spellLinkTarget(href, title) === undefined || (pipes && title.includes('|'))) return { attrs: { href }, type: 'link' }
+  const held = attrs['href']
+  const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/\r/g, '').replace(/\n/g, ' ') : undefined
+  if (typeof held !== 'string') return undefined
+  const href = writableHref(container === 'table-cell' ? held.replaceAll('|', '%7C') : held)
+  if (title === undefined || spellLinkTarget(href, title) === undefined || (container === 'table-cell' && title.includes('|'))) return { attrs: { href }, type: 'link' }
   return { attrs: { href, title }, type: 'link' }
+}
+
+// spec/flavour.md, Links: the characters no destination spelling holds, then an ampersand an entity reference would read.
+export function writableHref(href: string): string {
+  let written = href
+  for (const unwritable of [/[\u0000-\u001f\u007f\\<>]/g, /&/g]) {
+    if (spellDestination(written) !== undefined) return written
+    written = written.replace(unwritable, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`)
+  }
+  return written
 }
 
 // The delimiters carry the marks the whole run shares, so they open and close inside them.
@@ -222,6 +262,9 @@ function withoutFallback(leaves: readonly AdfNode[], fallback: PlainLineFallback
   if (mark === undefined || mark.type !== (fallback.kind === 'opening-link' ? 'link' : 'code')) return undefined
   let last = first
   while (sameMarkAt(nodeMarks(leaves[last + 1] ?? {}), [mark], 0)) last += 1
+  // A code span is what binds the `]` a link definition reads, and dropping it keeps the link target.
+  const spans = leaves.slice(first, last + 1).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
+  if (mark.type === 'link' && spans) return leaves.map((leaf, index) => (index < first || index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code'))))
   return withoutMark(leaves, first, last, 0)
 }
 

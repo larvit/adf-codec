@@ -3,7 +3,7 @@ import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { commonMarkSpelling, type SpellingMemo } from './adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { inlineLeaves, isBlockNodeType, reduceInline } from './plain-inline.ts'
+import { inlineLeaves, isBlockNodeType, reduceInline, writableHref } from './plain-inline.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -12,6 +12,8 @@ import { largestNesting } from '../../nesting.ts'
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
 
 type BlockReducer = (node: AdfNode, reduction: Reduction) => Result<AdfNode[]>
+
+type PlacedCell = { colspan: number; paragraph: AdfNode; rowspan: number }
 
 type Placed = { index: number; loose: AdfNode[] } | { index: number; loose?: undefined; node: AdfNode }
 
@@ -35,8 +37,8 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
   expand: reduceExpand,
   extension: paragraphOfNode,
   heading: reduceHeading,
-  media: paragraphOfNode,
-  mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index) => (child.type === 'media' ? imageOrAlt : reduceStanding)(child, childReduction(reduction, index)))),
+  media: reduceMedia,
+  mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index) => reduceStanding(child, childReduction(reduction, index)))),
   nestedExpand: reduceExpand,
   orderedList: reduceList,
   panel: (node, reduction) => quoted(success([paragraph([text(`[!${alertWord(nodeAttrs(node)['panelType'])}]`)])]), node, reduction),
@@ -207,7 +209,17 @@ function reduceItems(node: AdfNode, reduction: Reduction, itemBlocks: (child: Ad
 }
 
 function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
-  return blocks.ok ? success([{ content: blocks.value, type: 'listItem' }]) : blocks
+  return blocks.ok ? success([itemOf(blocks.value)]) : blocks
+}
+
+// A list item holds no line of spaces alone, and a code line of them is what a reader does not see.
+function itemOf(blocks: readonly AdfNode[]): AdfNode {
+  const content = blocks.map((block) => (block.type === 'codeBlock' ? { ...block, content: nodeContent(block).map(blankedLines) } : block))
+  return { content, type: 'listItem' }
+}
+
+function blankedLines(code: AdfNode): AdfNode {
+  return code.text === undefined ? code : { ...code, text: code.text.replace(/^[ \t]+$/gm, '') }
 }
 
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
@@ -216,7 +228,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     const blocks = taskBlocks(child, childReduction(reduction, index))
     if (!blocks.ok) return blocks
     const previous = child.type === 'taskList' ? items.pop() : undefined
-    items.push({ content: previous === undefined ? blocks.value : mergedLists([...nodeContent(previous), ...blocks.value]), type: 'listItem' })
+    items.push(itemOf(previous === undefined ? blocks.value : mergedLists([...nodeContent(previous), ...blocks.value])))
   }
   return success(listOf(items, 'bulletList'))
 }
@@ -236,33 +248,71 @@ function taskBlocks(child: AdfNode, at: Reduction): Result<AdfNode[]> {
 }
 
 function reduceTable(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const grid: AdfNode[][] = []
+  const rows: PlacedCell[][] = []
   for (const [rowIndex, row] of nodeContent(node).entries()) {
     const rowReduction = childReduction(reduction, rowIndex)
-    const cells = concatenated((row.type === 'tableRow' ? nodeContent(row) : [row]).map((cell, cellIndex) => cellParagraph(cell, childReduction(rowReduction, cellIndex))))
-    if (!cells.ok) return cells
-    grid.push(cells.value)
+    const cells: PlacedCell[] = []
+    for (const [cellIndex, cell] of (row.type === 'tableRow' ? nodeContent(row) : [row]).entries()) {
+      const paragraph = cellParagraph(cell, childReduction(rowReduction, cellIndex))
+      if (!paragraph.ok) return paragraph
+      cells.push({ colspan: span(nodeAttrs(cell)['colspan']), paragraph: paragraph.value, rowspan: span(nodeAttrs(cell)['rowspan']) })
+    }
+    rows.push(cells)
   }
+  const grid = spannedGrid(rows)
   const width = grid.reduce((widest, cells) => Math.max(widest, cells.length), 0)
-  const rows = grid.map((cells, rowIndex) => {
-    const padded = [...cells, ...Array.from({ length: width - cells.length }, (): AdfNode => ({ type: 'paragraph' }))]
-    return { content: padded.map((cell): AdfNode => ({ content: [cell], type: rowIndex === 0 ? 'tableHeader' : 'tableCell' })), type: 'tableRow' }
-  })
-  return success(width === 0 ? [] : [{ content: rows, type: 'table' }])
+  const tableRows = grid.map((cells, rowIndex) => ({
+    content: Array.from({ length: width }, (_, column): AdfNode => ({ content: [cells[column] ?? { type: 'paragraph' }], type: rowIndex === 0 ? 'tableHeader' : 'tableCell' })),
+    type: 'tableRow',
+  }))
+  return success(width === 0 ? [] : [{ content: tableRows, type: 'table' }])
 }
 
-function cellParagraph(cell: AdfNode, reduction: Reduction): Result<AdfNode[]> {
+function span(value: unknown): number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 1 ? value : 1
+}
+
+// A span keeps its cell under its header by empty cells where it covered; they number no more than the table's cells.
+function spannedGrid(rows: readonly PlacedCell[][]): (AdfNode | undefined)[][] {
+  const grid: (AdfNode | undefined)[][] = rows.map(() => [])
+  const covered = rows.map(() => new Set<number>())
+  let padding = rows.reduce((count, cells) => count + cells.length, 0)
+  for (const [rowIndex, cells] of rows.entries()) {
+    let column = 0
+    for (const cell of cells) {
+      while (covered[rowIndex]?.has(column) === true) column += 1
+      setCell(grid, rowIndex, column, cell.paragraph)
+      for (let row = rowIndex; row < Math.min(rows.length, rowIndex + cell.rowspan) && padding > 0; row += 1) {
+        for (let spanned = row === rowIndex ? 1 : 0; spanned < cell.colspan && padding > 0; spanned += 1) {
+          covered[row]?.add(column + spanned)
+          setCell(grid, row, column + spanned, { type: 'paragraph' })
+          padding -= 1
+        }
+      }
+      column += 1
+    }
+  }
+  return grid
+}
+
+function setCell(grid: (AdfNode | undefined)[][], row: number, column: number, cell: AdfNode): void {
+  const cells = grid[row]
+  if (cells !== undefined && cells[column] === undefined) cells[column] = cell
+}
+
+function cellParagraph(cell: AdfNode, reduction: Reduction): Result<AdfNode> {
   const blocks = cell.type === 'tableCell' || cell.type === 'tableHeader' ? nodeContent(cell) : [cell]
   const content = reduceInline(blocks, 'table-cell', reduction.path, reduction.depth)
-  return content.ok ? success([content.value.length === 0 ? { type: 'paragraph' } : paragraph(content.value)]) : content
+  return content.ok ? success(content.value.length === 0 ? { type: 'paragraph' } : paragraph(content.value)) : content
 }
 
-function imageOrAlt(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
+function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const attrs = nodeAttrs(media)
   const url = attrs['url']
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
   const alt = typeof held === 'string' ? held.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ').trim() : ''
-  const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: alt === '' ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }], type: 'mediaSingle' }
-  return commonMarkSpelling(image, reduction.path, reduction.depth, reduction.memo)?.ok === true ? success([image]) : paragraphOfNode(media, reduction)
+  const external: AdfNode = { attrs: alt === '' ? { type: 'external', url: writableHref(url) } : { alt, type: 'external', url: writableHref(url) }, type: 'media' }
+  const image: AdfNode = { attrs: { layout: 'center' }, content: [external], type: 'mediaSingle' }
+  return success([image])
 }
