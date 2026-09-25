@@ -166,6 +166,12 @@ test('keeps the CommonMark blocks in their spelling and drops their attributes a
   assert.equal(plain(node('orderedList', { order: -1 }, item(said('a')))), '1. a\n')
   const code: AdfNode = { content: [text('x')], type: 'codeBlock' }
   assert.equal(plain(node('orderedList', { order: 1e10 }, item(said('Alpha')), item(code), item())), '- 10000000000. Alpha\n- 10000000001.\n\n  ```\n  x\n  ```\n- 10000000002.\n')
+  const long = node('orderedList', { order: 1e10 }, item(said('y')))
+  assert.equal(plain(bulletList(item(said('x'))), long, bulletList(item(said('z')))), '- x\n- 10000000000. y\n- z\n')
+  assert.equal(plain(node('taskList', {}, node('taskItem', { state: 'DONE' }, text('t'))), long), '- [x] t\n- 10000000000. y\n')
+  assert.equal(plain(bulletList(item(said('a'), bulletList(item(said('x'))), long))), '- a\n  - x\n  - 10000000000. y\n')
+  const givesWay = node('orderedList', { order: 1e10 }, item(node('rule', {})), item(bulletList(item(bulletList(item())))))
+  assert.equal(plain(givesWay, bulletList(item(said('z')))), '- 10000000000.\n- 10000000001.\n\n  - -\n- z\n')
   assert.equal(plain(node('orderedList', { order: 999999999 }, item(said('a'))), node('orderedList', { order: 5 }, item(said('b')))), '- 999999999\\. a\n- 1000000000. b\n')
   assert.equal(plain(node('heading', { level: 7 }, text('h'))), 'h\n')
 })
@@ -209,6 +215,7 @@ test('spells an extension as its text attribute, else a note naming it, and a pl
   assert.equal(plain(node('extension', { extensionKey: 'toc', text: 'Contents' }), node('extension', { extensionKey: 'jira-issues-table' })), 'Contents\n\n_(jira-issues-table not included)_\n')
   assert.equal(plain(node('syncBlock', { resourceId: 'r' })), '_(synced block not included)_\n')
   assert.equal(plain(node('extension', { extensionKey: 'jira\r\nissues\u0000' })), '_(jira issues not included)_\n')
+  assert.equal(plain(node('extension', { extensionKey: '\r\u0000' }), node('extension', { extensionKey: '\n' })), '_(extension not included)_\n\n_(extension not included)_\n')
   assert.equal(plain(paragraph(text('a '), node('inlineExtension', { text: 'macro' }), text(' '), node('inlineExtension', {}), node('placeholder', { text: 'Type here' }))), 'a macro _(extension not included)_\n')
 })
 
