@@ -89,7 +89,7 @@ test('reads text after an alert marker in its paragraph as the panel first body 
   assert.deepEqual(lifted('> [!NOTE]\n> Line **one**.\n>\n> Two.\n'), [panel('info', paragraph(text('Line '), text('one', strong), text('.')), said('Two.'))])
   assert.deepEqual(lifted('> [!tip] Title\n'), [panel('tip', said('Title'))])
   assert.deepEqual(lifted('> [!NOTE]\\\n> Broken.\n'), [panel('info', said('Broken.'))])
-  assert.deepEqual(lifted('> [!NOTE]\n'), normal(panel('info')))
+  assert.deepEqual(lifted('> [!NOTE]\n'), normal(panel('info', paragraph())))
   assert.deepEqual(lifted('> > [!WARNING]\n> > Inner.\n'), [bare('blockquote', panel('warning', said('Inner.')))])
 })
 
@@ -103,14 +103,14 @@ test('leaves a quote plain where its first line is no alert marker', () => {
 test('lifts a folded callout to an expand titled by the rest of its marker paragraph, whatever the word', () => {
   assert.deepEqual(lifted('> [!NOTE]- Build log\n>\n> Line.\n'), [node('expand', { title: 'Build log' }, said('Line.'))])
   assert.deepEqual(lifted('> [!bug]+ Open **by** default\n> still title\n>\n> Line.\n'), [node('expand', { title: 'Open by default still title' }, said('Line.'))])
-  assert.deepEqual(lifted('> [!NOTE]- Two\\\n> lines\n'), normal(node('expand', { title: 'Two\nlines' })))
+  assert.deepEqual(lifted('> [!NOTE]- Two\\\n> lines\n'), normal(node('expand', { title: 'Two\nlines' }, paragraph())))
   assert.deepEqual(lifted('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })
 
 test('lifts a folded callout inside an expand to a nested expand', () => {
   const markdown = '> [!NOTE]- Outer\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n>\n> > [!TIP]\n> >\n> > > [!NOTE]-\n'
-  assert.deepEqual(lifted(markdown), normal(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand')))))
-  assert.deepEqual(lifted('- > [!NOTE]-\n'), normal(bare('bulletList', bare('listItem', bare('expand')))))
+  assert.deepEqual(lifted(markdown), normal(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))))
+  assert.deepEqual(lifted('- > [!NOTE]-\n'), normal(bare('bulletList', bare('listItem', bare('expand', paragraph())))))
 })
 
 test('lifts a bullet list whose every item leads with a task marker to a task list', () => {
@@ -142,7 +142,7 @@ test('lifts a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
   assert.deepEqual(lifted('**==hi==** b\n'), [paragraph(text('hi', highlight, strong), text(' b'))])
   assert.deepEqual(lifted('==**a**_b_ `c`==\n'), [paragraph(text('a', highlight, strong), text('b', highlight, em), text(' ', highlight), text('c', code))])
   assert.deepEqual(lifted('==`a`==\n'), [paragraph(text('a', code))])
-  assert.deepEqual(lifted('x==y==z ==a == b==\n'), [paragraph(text('x'), text('y', highlight), text('z '), text('a == b', highlight))])
+  assert.deepEqual(lifted('x==y==z ==a == b==, (==c==) _d_==e==\n'), [paragraph(text('x==y==z '), text('a == b', highlight), text(', ('), text('c', highlight), text(') '), text('d', em), text('e', highlight))])
   assert.deepEqual(lifted('# ==h==\n\n| ==c== |\n| --- |\n'), [
     node('heading', { level: 1 }, text('h', highlight)),
     bare('table', bare('tableRow', bare('tableHeader', paragraph(text('c', highlight))))),
@@ -152,7 +152,7 @@ test('lifts a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
 })
 
 test('leaves a == no pair flanks as text', () => {
-  for (const markdown of ['a == b == c\n', '====\n', '`==x==`\n', '==a\\\nb==\n', '**==a**==\n', '==a', '== a==\n', '==a ==\n']) {
+  for (const markdown of ['a == b == c\n', 'if a==b and c==d then\n', 'a==b== c\n', '==a==b\n', '====\n', '`==x==`\n', '==a\\\nb==\n', '**==a**==\n', '==a', '== a==\n', '==a ==\n']) {
     assert.equal(JSON.stringify(lifted(markdown)).includes('backgroundColor'), false, markdown)
   }
 })
@@ -163,6 +163,7 @@ test('lifts what the reduction wrote back to the node it reduced, less the attri
     assert.deepEqual(roundTripped(node('panel', { localId, panelType }, said('Check.'))), [panel(panelType, said('Check.'))], panelType)
   }
   const expand = node('expand', { localId, title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))
+  assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), normal(panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())))
   assert.deepEqual(roundTripped(expand), [node('expand', { title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))])
   const tasks = bare(
     'taskList',
@@ -188,6 +189,10 @@ test('keeps what markdownToAdf reads that no row lifts, and refuses only what it
   const future = bare('futureBlock', text('==x=='))
   const carried = adfToMarkdown(document(future))
   assert.deepEqual(carried.ok ? lifted(carried.value) : carried.error.code, [future])
+  const red: AdfMark = { attrs: { color: '#ff0000' }, type: 'backgroundColor' }
+  const held = paragraph(text('a ==b== c', red), text(' ==d '), { attrs: { note: 'x' }, text: 'e==f', type: 'text' }, text(' g=='))
+  const spelled = adfToMarkdown(document(held))
+  assert.deepEqual(spelled.ok ? lifted(spelled.value) : spelled.error.code, [paragraph(text('a ==b== c', red), text(' '), text('d ', highlight), { attrs: { note: 'x' }, text: 'e==f', type: 'text' }, text(' g', highlight))])
   assert.equal(lifted('!adf:panel\n'), 'malformed-directive')
   let deep = 'x\n'
   for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
