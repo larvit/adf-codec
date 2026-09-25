@@ -262,7 +262,9 @@ chunk clearing a §11 seam.
         task list after `plainMarkdownToAdf(adfToPlainMarkdown(doc))`, and a human's `\==x==` too:
         the lift reads ADF, where `markdownToAdf` has already spent the backslash. Give plain
         markdown an escape that keeps such text literal through both directions — which seam carries
-        it is a gap to ask.
+        it is a gap to ask. The same class runs the other way: a highlighted `=` writes `=====`, which
+        reads back as text, and a highlighted `a==b` writes `==a==b==`, highlighting `a` alone; 10c's
+        byte-for-byte property misses both, since the wrong document re-spells to the same bytes.
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
   - [x] **11b — The gate.**
