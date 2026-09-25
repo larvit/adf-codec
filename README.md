@@ -23,8 +23,9 @@ represent.
 
 In priority order.
 
-1. **Lossless first.** The round-trip holds for every document the lossless pair converts, node
-   types this version does not know included; one that has no spelling is refused and says where, never silently reduced.
+1. **Lossless first.** The round-trip holds for every document the lossless conversions take, node
+   types this version does not know included; one that has no spelling is refused and says where,
+   never silently reduced.
    Every goal below gives way to this one.
 2. **Three formats, ADF the hub.** ADF, one markdown flavour, one HTML dialect, markdown↔HTML
    composing through ADF — four conversions to keep correct, never a fifth, and never a fourth
