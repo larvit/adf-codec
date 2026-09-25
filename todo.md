@@ -22,7 +22,7 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 32, 23, 24, 25, 30, 26, 27, 10, 6, 7, 31, 33, 5f, 5g →
+4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 32, 23, 24, 25, 30, 26, 27, 10, 6, 7, 31, 33, 34, 5f, 5g →
 `0.2.0`;
 8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
@@ -43,8 +43,7 @@ HTML doubles the importers and the file count they touch, and 25 to 27 because t
 panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
-33 comes from 10a (2026-09-25) and reads beside 31, the other chunk about what the pipeline
-measures.
+33 comes from 10a and 34 from 10b (2026-09-25); both read beside 31.
 31 comes from 20's gate runs (2026-09-21) and reads beside 5f, the other chunk putting a measured
 number under the pipeline. 32 comes from 21's review (2026-09-21) and reads beside 22, the other
 chunk clearing a §11 seam.
@@ -62,6 +61,10 @@ chunk clearing a §11 seam.
       on one paragraph of 2000 × `un` plus `**-r**`: each run its flanking cannot spell re-emits the
       whole line before riding the carry, quadratic in the runs (§11 Bounds), and the plain
       reduction's `spellableLine` drops one mark per re-emit the same way. Make both linear.
+- [ ] **34 — Emphasis flanking reads a whole character (`0.2.0`).** Check whether
+      `line-escaping.ts`'s `charAt` and the parser's flanking read one UTF-16 unit beside an astral
+      symbol — a lone surrogate is neither punctuation nor symbol, where CommonMark reads `😀` as
+      punctuation — and, where they do, read the code point, with a fixture per direction.
 - [x] **24 — The conformance gates have a directory (`0.2.0`).**
 - [x] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).**
 - [x] **26 — The two mutable structures say what they guarantee (`0.2.0`).**
