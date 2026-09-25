@@ -166,7 +166,7 @@ test('keeps the CommonMark blocks in their spelling and drops their attributes a
   assert.equal(plain(node('orderedList', { order: -1 }, item(said('a')))), '1. a\n')
   const code: AdfNode = { content: [text('x')], type: 'codeBlock' }
   assert.equal(plain(node('orderedList', { order: 1e10 }, item(said('Alpha')), item(code), item())), '- 10000000000. Alpha\n- 10000000001.\n\n  ```\n  x\n  ```\n- 10000000002.\n')
-  assert.equal(plain(node('orderedList', { order: 999999999 }, item(said('a'))), node('orderedList', { order: 5 }, item(said('b')))), '- 999999999. a\n- 1000000000. b\n')
+  assert.equal(plain(node('orderedList', { order: 999999999 }, item(said('a'))), node('orderedList', { order: 5 }, item(said('b')))), '- 999999999\\. a\n- 1000000000. b\n')
   assert.equal(plain(node('heading', { level: 7 }, text('h'))), 'h\n')
 })
 
