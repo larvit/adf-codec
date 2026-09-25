@@ -131,22 +131,37 @@ function spliced(sequence: readonly AdfNode[], index: number, replacement: reado
 // A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.
 function numberedPastMarkers(list: AdfNode): AdfNode {
   const order = nodeAttrs(list)['order']
-  const items = nodeContent(list)
-  if (list.type !== 'orderedList' || typeof order !== 'number' || order + items.length - 1 <= largestListMarker) return list
-  return { content: items.map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
+  if (list.type !== 'orderedList' || typeof order !== 'number' || order + nodeContent(list).length - 1 <= largestListMarker) return list
+  return numberedAsText(list)
+}
+
+function numberedAsText(list: AdfNode): AdfNode {
+  const order = Number(nodeAttrs(list)['order'])
+  return { content: nodeContent(list).map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
 }
 
 function mergedLists(blocks: readonly AdfNode[]): AdfNode[] {
   const merged: AdfNode[] = []
   for (const block of blocks) {
-    const previous = merged[merged.length - 1]
-    if (previous !== undefined && previous.type === block.type && (block.type === 'bulletList' || block.type === 'orderedList')) {
-      merged[merged.length - 1] = { ...previous, content: [...nodeContent(previous), ...nodeContent(block)] }
-    } else {
-      merged.push(block)
+    let next = block
+    for (let previous = merged.at(-1); previous !== undefined && previous.type === next.type && isList(next); previous = merged.at(-1)) {
+      merged.pop()
+      next = joinedLists(previous, next)
     }
+    merged.push(next)
   }
   return merged
+}
+
+function isList(block: AdfNode): boolean {
+  return block.type === 'bulletList' || block.type === 'orderedList'
+}
+
+// Two numbered lists whose numbering breaks between them keep their numbers as text in one bullet list.
+function joinedLists(first: AdfNode, second: AdfNode): AdfNode {
+  const breaks = first.type === 'orderedList' && nodeAttrs(second)['order'] !== Number(nodeAttrs(first)['order']) + nodeContent(first).length
+  const [head, tail] = breaks ? [numberedAsText(first), numberedAsText(second)] : [first, second]
+  return { ...head, content: [...nodeContent(head), ...nodeContent(tail)] }
 }
 
 function paragraph(content: readonly AdfNode[]): AdfNode {
