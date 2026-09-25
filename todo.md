@@ -254,8 +254,8 @@ chunk clearing a §11 seam.
   - [ ] **10b — The lift.** `plainMarkdownToAdf`'s ADF→ADF lift, tests first, a test per row it reads,
         other tools' spellings included; the editor's default highlight colour looked up and cited.
   - [ ] **10c — The exports.** `adfToPlainMarkdown` and `plainMarkdownToAdf` exported with their README
-        sections, and two properties over 4.2's generators: writing refuses only the guard's codes,
-        and markdown `adfToPlainMarkdown` wrote reads back through `plainMarkdownToAdf` and writes
+        sections, and two properties over 4.2's generators: writing refuses only the guard's codes
+        and writes no `!adf:`, and markdown `adfToPlainMarkdown` wrote reads back through `plainMarkdownToAdf` and writes
         again byte for byte. AGENTS.md §1 records the pair as composed around the lossless one.
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
