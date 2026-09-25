@@ -143,6 +143,7 @@ test('lifts a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
   assert.deepEqual(lifted('==**a**_b_ `c`==\n'), [paragraph(text('a', highlight, strong), text('b', highlight, em), text(' ', highlight), text('c', code))])
   assert.deepEqual(lifted('==`a`==\n'), [paragraph(text('a', code))])
   assert.deepEqual(lifted('x==y==z ==a == b==, (==c==) _d_==e==\n'), [paragraph(text('x==y==z '), text('a == b', highlight), text(', ('), text('c', highlight), text(') '), text('d', em), text('e', highlight))])
+  assert.deepEqual(lifted('😀==b== ==c==😀 é==d==\n'), [paragraph(text('😀'), text('b', highlight), text(' '), text('c', highlight), text('😀 é==d=='))])
   assert.deepEqual(lifted('# ==h==\n\n| ==c== |\n| --- |\n'), [
     node('heading', { level: 1 }, text('h', highlight)),
     bare('table', bare('tableRow', bare('tableHeader', paragraph(text('c', highlight))))),
