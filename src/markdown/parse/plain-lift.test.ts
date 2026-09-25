@@ -140,7 +140,8 @@ test('leaves mixed, ordered and unmarked lists plain', () => {
 test('lifts a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atlaskit/adf-schema 57.6.8', () => {
   assert.deepEqual(lifted('a ==hi there== b\n'), [paragraph(text('a '), text('hi there', highlight), text(' b'))])
   assert.deepEqual(lifted('**==hi==** b\n'), [paragraph(text('hi', highlight, strong), text(' b'))])
-  assert.deepEqual(lifted('==**a**_b_ `c`==\n'), [paragraph(text('a', highlight, strong), text('b', highlight, em), text(' ', highlight), text('c', highlight, code))])
+  assert.deepEqual(lifted('==**a**_b_ `c`==\n'), [paragraph(text('a', highlight, strong), text('b', highlight, em), text(' ', highlight), text('c', code))])
+  assert.deepEqual(lifted('==`a`==\n'), [paragraph(text('a', code))])
   assert.deepEqual(lifted('x==y==z ==a == b==\n'), [paragraph(text('x'), text('y', highlight), text('z '), text('a == b', highlight))])
   assert.deepEqual(lifted('# ==h==\n\n| ==c== |\n| --- |\n'), [
     node('heading', { level: 1 }, text('h', highlight)),
