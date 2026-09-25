@@ -1,5 +1,6 @@
 import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { isWordCharacter } from '../commonmark/emphasis-matching.ts'
 import { highlightDelimiter, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
 import { mergeAdjacentText, sameMarks } from '../../adf/editor-normal.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
@@ -114,8 +115,11 @@ function delimiters(inline: readonly AdfNode[]): Delimiter[] {
       const end = offset + highlightDelimiter.length
       const before = offset > 0 ? text[offset - 1] : textOf(inline[index - 1])?.at(-1)
       const after = text[end] ?? textOf(inline[index + 1])?.[0]
-      const closes = flanks(before) && bounds(text[end])
-      found.push({ closes, holder: node, line, node: index, offset, opens: flanks(after) && bounds(text[offset - 1]), position: position + offset })
+      // Outside a delimiter a node's edge bounds it, standing where the source spelled a mark's punctuation.
+      const outsideBefore = Array.from(text.slice(Math.max(0, offset - 2), offset)).at(-1) ?? ''
+      const outsideAfter = Array.from(text.slice(end, end + 2))[0] ?? ''
+      const closes = flanks(before) && !isWordCharacter(outsideAfter)
+      found.push({ closes, holder: node, line, node: index, offset, opens: flanks(after) && !isWordCharacter(outsideBefore), position: position + offset })
     }
     position += text.length
   }
@@ -124,11 +128,6 @@ function delimiters(inline: readonly AdfNode[]): Delimiter[] {
 
 function flanks(character: string | undefined): boolean {
   return character !== undefined && !/\s/.test(character)
-}
-
-// Outside a delimiter, a node's edge stands where the source spelled a mark's punctuation.
-function bounds(character: string | undefined): boolean {
-  return character === undefined || /[\s\p{P}\p{S}]/u.test(character)
 }
 
 // Each opener takes the next closer holding at least one character after it, both in one line and under the same marks.
