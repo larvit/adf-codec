@@ -98,7 +98,6 @@ export function oneLine(text: string): string {
   return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
 }
 
-// Blank once a text leaf's cleaning has run is empty.
 function nonEmpty(value: unknown): string | undefined {
   return typeof value === 'string' && oneLine(value).trim() !== '' ? value : undefined
 }
@@ -115,7 +114,6 @@ function lineBreak(container: LineContainer): AdfNode {
   return container === 'paragraph' ? { type: 'hardBreak' } : textLeaf(' ', [])
 }
 
-// note: what the content is named in the note left where it has none.
 function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer, note?: string): AdfNode[] {
   if (typeof value !== 'string') return note === undefined ? [] : noteLeaves(note)
   const text = value.replace(/[\r\u0000]/g, '')
@@ -235,7 +233,6 @@ function leafEdges(leaf: AdfNode, previous: AdfNode | undefined, next: AdfNode |
   return edges
 }
 
-// The marks the whitespace keeps, or undefined where it goes.
 function edgeDepth(marks: readonly AdfMark[], neighbour: AdfNode | undefined, whitespace: string): number | undefined {
   if (whitespace === '') return marks.length
   const lineEdge = neighbour === undefined || neighbour.type === 'hardBreak'
