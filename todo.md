@@ -60,7 +60,8 @@ chunk clearing a §11 seam.
       the measured one.
 - [ ] **33 — A carried mark run costs the line one re-emit (`0.2.0`).** `adfToMarkdown` spends 23 s
       on one paragraph of 2000 × `un` plus `**-r**`: each run its flanking cannot spell re-emits the
-      whole line before riding the carry, quadratic in the runs (§11 Bounds). Make it linear.
+      whole line before riding the carry, quadratic in the runs (§11 Bounds), and the plain
+      reduction's `spellableLine` drops one mark per re-emit the same way. Make both linear.
 - [x] **24 — The conformance gates have a directory (`0.2.0`).**
 - [x] **25 — AGENTS.md §8 and §11 are findable (`0.2.0`).**
 - [x] **26 — The two mutable structures say what they guarantee (`0.2.0`).**
@@ -235,7 +236,8 @@ chunk clearing a §11 seam.
         rows it covered, padding at most to the table's cell count.
       - A list stays a list: where CommonMark cannot hold a block inside an item, what gives way is
         what a reader does not see — the spaces of a whitespace-only code line — and a rule opening an
-        item drops (a panel, 3 of 3, 2026-09-25).
+        item drops (a panel, 3 of 3, 2026-09-25); an ordered list running past `999999999` is a bullet
+        list keeping its numbers as text (a panel, 3 of 3, 2026-09-25).
       - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text —
         `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes has its
         `href` percent-encoded until one does, and a mark run CommonMark's flanking or matching cannot
