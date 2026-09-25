@@ -99,7 +99,7 @@ test('refuses nesting past 500 levels wherever the reduction walks', () => {
 
 test('spells a panel as an alert in the GitHub word for its colour', () => {
   const panel = (panelType: string | undefined): string =>
-    plain(node('panel', panelType === undefined ? {} : { localId: 'a', panelType }, said('Check it.')))
+    plain(node('panel', panelType === undefined ? {} : { localId: '01a0d99b-1f56-7a50-889a-f4375f09ee05', panelType }, said('Check it.')))
   assert.equal(panel('info'), '> [!NOTE]\n>\n> Check it.\n')
   assert.equal(panel('note'), '> [!IMPORTANT]\n>\n> Check it.\n')
   assert.equal(panel('tip'), '> [!TIP]\n>\n> Check it.\n')
@@ -114,7 +114,7 @@ test('spells a panel as an alert in the GitHub word for its colour', () => {
 test('spells an expand and a nested expand as a folded callout titled by the marker line', () => {
   const nested = node('nestedExpand', { title: 'Inner' }, said('Deep.'))
   assert.equal(
-    plain(node('expand', { localId: 'a', title: 'Build log' }, said('Line.'), nested)),
+    plain(node('expand', { localId: '01a0d99b-1f57-7fec-94ae-50c2ee25c9de', title: 'Build log' }, said('Line.'), nested)),
     '> [!NOTE]- Build log\n>\n> Line.\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n',
   )
   assert.equal(plain(node('expand', {}, said('Line.'))), '> [!NOTE]-\n>\n> Line.\n')
@@ -122,7 +122,7 @@ test('spells an expand and a nested expand as a folded callout titled by the mar
 })
 
 test('spells a task list as a bullet list whose items lead with their state', () => {
-  const task = (state: string, value: string): AdfNode => node('taskItem', { localId: 'a', state }, text(value))
+  const task = (state: string, value: string): AdfNode => node('taskItem', { localId: '01a0d99b-1f58-7b95-829b-6f9860371d54', state }, text(value))
   const nested = node('taskList', {}, task('TODO', 'Review'))
   assert.equal(plain(node('taskList', {}, task('DONE', 'Write the spec'), nested, task('TODO', 'Ship it'))), '- [x] Write the spec\n  - [ ] Review\n- [ ] Ship it\n')
   assert.equal(plain(node('taskList', {}, nested, task('DONE', ''), said('Stray'))), '- - [ ] Review\n- [x]\n- Stray\n')
@@ -154,16 +154,19 @@ test('unwraps the containers plain markdown has no spelling for to their body bl
 })
 
 test('keeps the CommonMark blocks in their spelling and drops their attributes and marks', () => {
-  const localId = { localId: 'a' }
-  assert.equal(plain(node('paragraph', localId, text('x')), node('heading', { level: 2, localId: 'a' }, text('h'))), 'x\n\n## h\n')
+  const localId = { localId: '01a0d99b-1f56-7a50-889a-f4375f09ee05' }
+  assert.equal(plain(node('paragraph', localId, text('x')), node('heading', { level: 2, localId: '01a0d99b-1f57-7fec-94ae-50c2ee25c9de' }, text('h'))), 'x\n\n## h\n')
   assert.equal(plain({ attrs: localId, content: [said('q')], marks: [{ type: 'breakout' }], type: 'blockquote' }), '> q\n')
   assert.equal(plain(node('codeBlock', { language: 'ts', wrap: true }, text('a\r\nb\u0000'))), '```ts\na\nb\n```\n')
   assert.equal(plain(node('codeBlock', { language: 'carry' }, text('a'), { type: 'hardBreak' }, text('b', strong))), '```\na\nb\n```\n')
   assert.equal(plain(node('codeBlock', {})), '```\n```\n')
   assert.equal(plain(node('rule', { color: '#000' })), '---\n')
-  assert.equal(plain(node('orderedList', { localId: 'a', order: 3 }, item(said('c')))), '3. c\n')
+  assert.equal(plain(node('orderedList', { localId: '01a0d99b-1f58-7b95-829b-6f9860371d54', order: 3 }, item(said('c')))), '3. c\n')
   assert.equal(plain(node('orderedList', {}, item(said('a')))), '1. a\n')
   assert.equal(plain(node('orderedList', { order: -1 }, item(said('a')))), '1. a\n')
+  const code: AdfNode = { content: [text('x')], type: 'codeBlock' }
+  assert.equal(plain(node('orderedList', { order: 1e10 }, item(said('Alpha')), item(code), item())), '- 10000000000. Alpha\n- 10000000001.\n\n  ```\n  x\n  ```\n- 10000000002.\n')
+  assert.equal(plain(node('orderedList', { order: 999999999 }, item(said('a'))), node('orderedList', { order: 5 }, item(said('b')))), '- 999999999. a\n- 1000000000. b\n')
   assert.equal(plain(node('heading', { level: 7 }, text('h'))), 'h\n')
 })
 
@@ -205,6 +208,7 @@ test('keeps an external image wherever it stands and spells a stored file as its
 test('spells an extension as its text attribute, else a note naming it, and a placeholder as nothing', () => {
   assert.equal(plain(node('extension', { extensionKey: 'toc', text: 'Contents' }), node('extension', { extensionKey: 'jira-issues-table' })), 'Contents\n\n_(jira-issues-table not included)_\n')
   assert.equal(plain(node('syncBlock', { resourceId: 'r' })), '_(synced block not included)_\n')
+  assert.equal(plain(node('extension', { extensionKey: 'jira\r\nissues\u0000' })), '_(jira issues not included)_\n')
   assert.equal(plain(paragraph(text('a '), node('inlineExtension', { text: 'macro' }), text(' '), node('inlineExtension', {}), node('placeholder', { text: 'Type here' }))), 'a macro _(extension not included)_\n')
 })
 
@@ -216,7 +220,8 @@ test('spells a node no row names, or one standing where no spelling holds it, as
   assert.equal(plain(bulletList(said('stray'), item(said('b')), text('loose'))), '- stray\n- b\n- loose\n')
   assert.equal(plain(bulletList()), '')
   assert.equal(plain(bulletList(item({ content: [text('a\n  \nb')], type: 'codeBlock' }))), '- ```\n  a\n\n  b\n  ```\n')
-  assert.equal(plain(bulletList(item(node('rule', {}), said('Install')), item(said('Configure')))), '- Install\n- Configure\n')
+  assert.equal(plain(bulletList(item(node('rule', {}), node('rule', {}), said('Install')), item(said('Configure')))), '- Install\n- Configure\n')
+  assert.equal(plain(bulletList(item(node('rule', {}), node('rule', {})), item(said('Configure')))), '-\n- Configure\n')
   assert.equal(plain(bulletList(item(bulletList(item(bulletList(item())))))), '- -\n')
   assert.equal(plain(node('nestedExpand', {}, node('tableCell', {}, said('c')))), '> [!NOTE]-\n>\n> c\n')
 })
