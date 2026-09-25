@@ -77,7 +77,7 @@ function mergesText(node: AdfNode): boolean {
   return node.type === 'text' && Object.keys(nodeAttrs(node)).length === 0
 }
 
-function sameMarks(previous: AdfNode, node: AdfNode): boolean {
+export function sameMarks(previous: AdfNode, node: AdfNode): boolean {
   return marksKey(nodeMarks(previous)) === marksKey(nodeMarks(node))
 }
 

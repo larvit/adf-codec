@@ -1,10 +1,10 @@
 import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { highlightDelimiter, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
-import { mergeAdjacentText, sameMark } from '../../adf/editor-normal.ts'
-import { nodeContent, nodeMarks } from '../../adf/document.ts'
+import { mergeAdjacentText, sameMarks } from '../../adf/editor-normal.ts'
+import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 
-type Delimiter = { closes: boolean; line: number; marks: readonly AdfMark[]; node: number; offset: number; opens: boolean; position: number }
+type Delimiter = { closes: boolean; holder: AdfNode; line: number; node: number; offset: number; opens: boolean; position: number }
 
 type MarkerLed<T> = { marker: T; rest: AdfNode[] }
 
@@ -53,11 +53,16 @@ function liftQuote(quote: AdfNode, inExpand: boolean): AdfNode {
   const [first, ...body] = nodeContent(quote)
   const led = markerLed(first, readAlertMarker)
   if (led === undefined) return { ...quote, content: liftBlocks(nodeContent(quote), inExpand) }
-  if (!led.marker.folded) return { attrs: { panelType: led.marker.panelType }, content: liftBlocks([...paragraphOf(led.rest), ...body], inExpand), type: 'panel' }
+  if (!led.marker.folded) return { attrs: { panelType: led.marker.panelType }, content: filled(liftBlocks([...paragraphOf(led.rest), ...body], inExpand)), type: 'panel' }
   const title = led.rest.map((node) => node.text ?? (node.type === 'hardBreak' ? '\n' : '')).join('')
-  const content = liftBlocks(body, true)
+  const content = filled(liftBlocks(body, true))
   const type = inExpand ? 'nestedExpand' : 'expand'
   return title === '' ? { content, type } : { attrs: { title }, content, type }
+}
+
+// Atlassian's schema requires a panel and an expand to hold a block.
+function filled(blocks: AdfNode[]): AdfNode[] {
+  return blocks.length === 0 ? [{ type: 'paragraph' }] : blocks
 }
 
 // A task list trailing an item's blocks stands beside it, as ADF nests one.
@@ -89,6 +94,11 @@ function textOf(node: AdfNode | undefined): string | undefined {
   return node?.type === 'text' ? node.text : undefined
 }
 
+// Atlassian's schema refuses a highlight on code, a node holds one highlight, and a rebuilt node would lose its attributes.
+function heldWhole(node: AdfNode): boolean {
+  return Object.keys(nodeAttrs(node)).length > 0 || nodeMarks(node).some((mark) => mark.type === 'code' || mark.type === 'backgroundColor')
+}
+
 function delimiters(inline: readonly AdfNode[]): Delimiter[] {
   const found: Delimiter[] = []
   let line = 0
@@ -96,14 +106,16 @@ function delimiters(inline: readonly AdfNode[]): Delimiter[] {
   for (const [index, node] of inline.entries()) {
     const text = textOf(node)
     if (text === undefined) line += 1
-    if (text === undefined || nodeMarks(node).some((mark) => mark.type === 'code')) {
+    if (text === undefined || heldWhole(node)) {
       position += text?.length ?? 0
       continue
     }
     for (let offset = text.indexOf(highlightDelimiter); offset !== -1; offset = text.indexOf(highlightDelimiter, offset + highlightDelimiter.length)) {
+      const end = offset + highlightDelimiter.length
       const before = offset > 0 ? text[offset - 1] : textOf(inline[index - 1])?.at(-1)
-      const after = text[offset + highlightDelimiter.length] ?? textOf(inline[index + 1])?.[0]
-      found.push({ closes: flanks(before), line, marks: nodeMarks(node), node: index, offset, opens: flanks(after), position: position + offset })
+      const after = text[end] ?? textOf(inline[index + 1])?.[0]
+      const closes = flanks(before) && bounds(text[end])
+      found.push({ closes, holder: node, line, node: index, offset, opens: flanks(after) && bounds(text[offset - 1]), position: position + offset })
     }
     position += text.length
   }
@@ -112,6 +124,11 @@ function delimiters(inline: readonly AdfNode[]): Delimiter[] {
 
 function flanks(character: string | undefined): boolean {
   return character !== undefined && !/\s/.test(character)
+}
+
+// Outside a delimiter, a node's edge stands where the source spelled a mark's punctuation.
+function bounds(character: string | undefined): boolean {
+  return character === undefined || /[\s\p{P}\p{S}]/u.test(character)
 }
 
 // Each opener takes the next closer holding at least one character after it, both in one line and under the same marks.
@@ -126,15 +143,11 @@ function pairedDelimiters(inline: readonly AdfNode[]): Delimiter[] {
     let candidate = found[closer]
     while (candidate !== undefined && (!candidate.closes || candidate.position < earliest)) candidate = found[(closer += 1)]
     if (candidate === undefined) break
-    if (candidate.line !== opener.line || !sameMarks(opener.marks, candidate.marks)) continue
+    if (candidate.line !== opener.line || !sameMarks(opener.holder, candidate.holder)) continue
     paired.push(opener, candidate)
     resume = candidate.position + highlightDelimiter.length
   }
   return paired
-}
-
-function sameMarks(first: readonly AdfMark[], second: readonly AdfMark[]): boolean {
-  return first.length === second.length && first.every((mark, index) => second[index] !== undefined && sameMark(mark, second[index]))
 }
 
 function split(inline: readonly AdfNode[], paired: readonly Delimiter[]): AdfNode[] {
@@ -142,7 +155,7 @@ function split(inline: readonly AdfNode[], paired: readonly Delimiter[]): AdfNod
   let next = 0
   for (const [index, node] of inline.entries()) {
     const text = textOf(node)
-    if (text === undefined) {
+    if (text === undefined || heldWhole(node)) {
       lifted.push(node)
       continue
     }
@@ -158,8 +171,6 @@ function split(inline: readonly AdfNode[], paired: readonly Delimiter[]): AdfNod
 }
 
 function pushPiece(lifted: AdfNode[], node: AdfNode, text: string, inPair: boolean): void {
-  // Atlassian's schema refuses a highlight on code.
-  const highlights = inPair && !nodeMarks(node).some((mark) => mark.type === 'code')
-  const marks = highlights ? [editorHighlight, ...nodeMarks(node)] : [...nodeMarks(node)]
+  const marks = inPair ? [editorHighlight, ...nodeMarks(node)] : [...nodeMarks(node)]
   if (text !== '') lifted.push(marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' })
 }
