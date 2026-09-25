@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
-import { commonMarkSpelling, type SpellingMemo } from './adf-to-markdown.ts'
+import { commonMarkSpelling, largestListMarker, type SpellingMemo } from './adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineLeaves, isBlockNodeType, reduceInline, writableHref } from './plain-inline.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
@@ -107,26 +107,29 @@ function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> 
   return success(blocks)
 }
 
-// A list or a table still taking the directive form gives way to its blocks.
+// A list still taking the directive form gives way to its items' blocks.
 function plainSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
   let sequence = mergedLists(blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0))
   for (let index = 0; index < sequence.length; index += 1) {
-    const block = sequence[index]
-    if (block === undefined || !['bulletList', 'orderedList', 'table'].includes(block.type)) continue
+    const listed = sequence[index]
+    if (listed === undefined || (listed.type !== 'bulletList' && listed.type !== 'orderedList')) continue
+    const block = numberedPastMarkers(listed)
+    sequence[index] = block
     if (commonMarkSpelling(block, reduction.path, reduction.depth, reduction.memo)?.ok === true) continue
-    sequence = mergedLists([...sequence.slice(0, index), ...heldBlocks(block), ...sequence.slice(index + 1)])
-    index = Math.max(-1, index - 2)
+    const held = nodeContent(block).flatMap(nodeContent)
+    const from = Math.max(0, index - 1)
+    sequence = [...sequence.slice(0, from), ...mergedLists([...sequence.slice(from, index), ...held, ...sequence.slice(index + 1, index + 2)]), ...sequence.slice(index + 2)]
+    index = from - 1
   }
   return success(sequence)
 }
 
-function heldBlocks(node: AdfNode): AdfNode[] {
-  const blocks: AdfNode[] = []
-  for (const child of nodeContent(node)) {
-    const held = ['listItem', 'tableCell', 'tableHeader', 'tableRow'].includes(child.type) ? heldBlocks(child) : [child]
-    for (const block of held) blocks.push(block)
-  }
-  return blocks
+// A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.
+function numberedPastMarkers(list: AdfNode): AdfNode {
+  const order = nodeAttrs(list)['order']
+  const items = nodeContent(list)
+  if (list.type !== 'orderedList' || typeof order !== 'number' || order + items.length - 1 <= largestListMarker) return list
+  return { content: items.map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
 }
 
 function mergedLists(blocks: readonly AdfNode[]): AdfNode[] {
@@ -214,7 +217,8 @@ function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
 
 // A list item's first line reads as no rule and holds no line of spaces alone: the rule and the spaces give way.
 function itemOf(blocks: readonly AdfNode[]): AdfNode {
-  const content = (blocks[0]?.type === 'rule' ? blocks.slice(1) : blocks).map((block) => (block.type === 'codeBlock' ? { ...block, content: nodeContent(block).map(blankedLines) } : block))
+  const rules = blocks.findIndex((block) => block.type !== 'rule')
+  const content = blocks.slice(rules === -1 ? blocks.length : rules).map((block) => (block.type === 'codeBlock' ? { ...block, content: nodeContent(block).map(blankedLines) } : block))
   return { content, type: 'listItem' }
 }
 
@@ -241,10 +245,14 @@ function taskBlocks(child: AdfNode, at: Reduction): Result<AdfNode[]> {
   }
   if (child.type !== 'blockTaskItem') return reduceStanding(child, at)
   const blocks = reduceBlocks(nodeContent(child), at)
-  if (!blocks.ok) return blocks
-  const [first, ...rest] = blocks.value
-  if (first?.type === 'paragraph') return success([paragraph([text(`${marker} `), ...nodeContent(first)]), ...rest])
-  return success([paragraph([text(marker)]), ...blocks.value])
+  return blocks.ok ? success(marked(blocks.value, marker)) : blocks
+}
+
+// The marker leads the first paragraph, or stands as one where the blocks open with another.
+function marked(blocks: readonly AdfNode[], marker: string): AdfNode[] {
+  const [first, ...rest] = blocks
+  if (first?.type === 'paragraph') return [paragraph([text(`${marker} `), ...nodeContent(first)]), ...rest]
+  return [paragraph([text(marker)]), ...blocks]
 }
 
 function reduceTable(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {

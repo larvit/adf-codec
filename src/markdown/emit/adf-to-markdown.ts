@@ -24,7 +24,7 @@ export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
 type WalkedItem = { node: AdfNode; walk: Walk }
 
-const largestListMarker = 999999999
+export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 

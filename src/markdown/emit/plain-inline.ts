@@ -87,7 +87,7 @@ function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], 
 }
 
 function noteLeaves(name: string): AdfNode[] {
-  return [textLeaf(`(${name} not included)`, [{ type: 'em' }])]
+  return [textLeaf(`(${name.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')} not included)`, [{ type: 'em' }])]
 }
 
 function nonEmpty(value: unknown): string | undefined {

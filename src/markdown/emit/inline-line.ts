@@ -35,7 +35,7 @@ type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | 
 
 type LineFallbacks = { carried: Set<number>; openingLinkAsDirective: boolean }
 
-export type PlainLineFallback = { kind: 'claimed-line'; line: number } | { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun }
+export type PlainLineFallback = { kind: 'claimed-line'; line: number; text: string } | { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun }
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<string> {
   const emitted = emitLine(nodes, container, path)
@@ -53,11 +53,8 @@ export function plainLineFallback(nodes: readonly AdfNode[], container: LineCont
   const emission = lineSegments(nodes, container, path, { carried: new Set(), openingLinkAsDirective: false })
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return failure('unsupported-node-shape', 'an inline node on a plain line has no spelling but the carry', path)
-  const assembled = assembleInlineLine(emission.value.segments, container)
-  if (assembled.openingLinkAsDirective) return success({ kind: 'opening-link' })
-  if (assembled.unspellableRun !== undefined) return success({ kind: 'unspellable-run', run: assembled.unspellableRun })
-  const claimed = claimedLine(assembled.line, container)
-  return success(claimed === undefined ? undefined : { kind: 'claimed-line', line: claimed })
+  const verdict = lineVerdict(emission.value.segments, container)
+  return success(verdict.kind === 'line' ? undefined : verdict)
 }
 
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath): string | undefined {
@@ -118,20 +115,21 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
 }
 
 function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath): Result<LineAttempt> {
-  const assembled = assembleInlineLine(segments, container)
-  if (assembled.openingLinkAsDirective) return success({ fallback: 'opening-link' })
-  if (assembled.unspellableRun !== undefined) return success({ fallback: assembled.unspellableRun })
-  const claimed = claimedLine(assembled.line, container)
-  if (claimed !== undefined) {
-    return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(assembled.line.split('\n')[claimed])}`, path)
-  }
-  return success({ line: assembled.line })
+  const verdict = lineVerdict(segments, container)
+  if (verdict.kind === 'opening-link') return success({ fallback: 'opening-link' })
+  if (verdict.kind === 'unspellable-run') return success({ fallback: verdict.run })
+  if (verdict.kind === 'claimed-line') return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(verdict.text)}`, path)
+  return success({ line: verdict.text })
 }
 
-function claimedLine(line: string, container: LineContainer): number | undefined {
-  if (container !== 'paragraph') return undefined
-  const index = line.split('\n').findIndex((single, index) => claimsLine(single, index === 0 ? 'first' : 'later'))
-  return index === -1 ? undefined : index
+// The fallbacks in the order a line takes them, or the line where it takes none.
+function lineVerdict(segments: readonly InlineSegment[], container: LineContainer): PlainLineFallback | { kind: 'line'; text: string } {
+  const assembled = assembleInlineLine(segments, container)
+  if (assembled.openingLinkAsDirective) return { kind: 'opening-link' }
+  if (assembled.unspellableRun !== undefined) return { kind: 'unspellable-run', run: assembled.unspellableRun }
+  const lines = assembled.line.split('\n')
+  const claimed = container === 'paragraph' ? lines.findIndex((single, index) => claimsLine(single, index === 0 ? 'first' : 'later')) : -1
+  return claimed === -1 ? { kind: 'line', text: assembled.line } : { kind: 'claimed-line', line: claimed, text: lines[claimed] ?? '' }
 }
 
 // spec/flavour.md, Inline nodes.
