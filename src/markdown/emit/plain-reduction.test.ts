@@ -216,6 +216,8 @@ test('spells an extension as its text attribute, else a note naming it, and a pl
   assert.equal(plain(node('syncBlock', { resourceId: 'r' })), '_(synced block not included)_\n')
   assert.equal(plain(node('extension', { extensionKey: 'jira\r\nissues\u0000' })), '_(jira issues not included)_\n')
   assert.equal(plain(node('extension', { extensionKey: '\r\u0000' }), node('extension', { extensionKey: '\n' })), '_(extension not included)_\n\n_(extension not included)_\n')
+  const blank = paragraph(node('inlineExtension', { extensionKey: 'k', text: '\r' }), text(' '), node('mediaInline', { alt: '\u0000', type: 'file' }), text(' '), node('mention', { id: '5b10a2', text: '\r' }))
+  assert.equal(plain(blank), '_(k not included)_ _(image not included)_ @5b10a2\n')
   assert.equal(plain(paragraph(text('a '), node('inlineExtension', { text: 'macro' }), text(' '), node('inlineExtension', {}), node('placeholder', { text: 'Type here' }))), 'a macro _(extension not included)_\n')
 })
 
