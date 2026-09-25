@@ -216,7 +216,8 @@ test('spells a node no row names, or one standing where no spelling holds it, as
   assert.equal(plain(bulletList(said('stray'), item(said('b')), text('loose'))), '- stray\n- b\n- loose\n')
   assert.equal(plain(bulletList()), '')
   assert.equal(plain(bulletList(item({ content: [text('a\n  \nb')], type: 'codeBlock' }))), '- ```\n  a\n\n  b\n  ```\n')
-  assert.equal(plain(bulletList(item(node('rule', {}), said('x')))), '---\n\nx\n')
+  assert.equal(plain(bulletList(item(node('rule', {}), said('Install')), item(said('Configure')))), '- Install\n- Configure\n')
+  assert.equal(plain(bulletList(item(bulletList(item(bulletList(item())))))), '- -\n')
   assert.equal(plain(node('nestedExpand', {}, node('tableCell', {}, said('c')))), '> [!NOTE]-\n>\n> c\n')
 })
 

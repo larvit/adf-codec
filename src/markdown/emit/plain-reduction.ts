@@ -212,9 +212,9 @@ function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
   return blocks.ok ? success([itemOf(blocks.value)]) : blocks
 }
 
-// A list item holds no line of spaces alone, and a code line of them is what a reader does not see.
+// A list item's first line reads as no rule and holds no line of spaces alone: the rule and the spaces give way.
 function itemOf(blocks: readonly AdfNode[]): AdfNode {
-  const content = blocks.map((block) => (block.type === 'codeBlock' ? { ...block, content: nodeContent(block).map(blankedLines) } : block))
+  const content = (blocks[0]?.type === 'rule' ? blocks.slice(1) : blocks).map((block) => (block.type === 'codeBlock' ? { ...block, content: nodeContent(block).map(blankedLines) } : block))
   return { content, type: 'listItem' }
 }
 
