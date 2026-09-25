@@ -15,8 +15,7 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
    states, which wins over where an item's bullet sits: a newly filed item is written beside the
    one it came in with, not at its own place in the order. Where that item has no release, the
    planning chunk §15 describes.
-3. In flight: 10a on the local branch `10a` (worktree `../adf-codec-10a`, `8a3a83f`), built before
-   item 10's rows were rewritten on 2026-09-25; rework it against them.
+3. In flight: nothing.
 4. Before stopping, rewrite this section: the in-flight line, and the prompt itself wherever the
    session found it wrong or short.
 
@@ -220,19 +219,23 @@ chunk clearing a §11 seam.
       - `mention` and `status` become their text, the mention's `@` kept; `emoji` its text or else its
         `shortName`; `date` its ISO date in UTC (`2026-09-13`); `inlineCard`, `blockCard` and
         `embedCard` a link to their `url`, or to their `data`'s `url` named by its `name` — the name
-        alone without a `url`; an external image, wherever it stands, `![alt](url)`; `media`,
+        alone without a `url`; an external image `![alt](url)` in a block and `[alt](url)` inline, where no ADF node spelled
+        `![alt](url)` stands (a panel, 6 of 7, 2026-09-25); `media`,
         `mediaGroup` and `mediaInline` holding a stored file their `alt` text; `caption` its text as
         a paragraph; `extension` and `inlineExtension` their `text` attribute; `placeholder` nothing,
         its text being the editor's prompt rather than the document's; a node no row names, or one
         standing where no spelling holds it, its blocks or its text.
       - Content the document only references — a stored file with no `alt`, an extension with no
         `text`, a `syncBlock`, a card with neither `url` nor `data` naming one — leaves an italic note
-        naming it: `*(image not included)*`, `*(jira-issues-table not included)*`.
+        naming it: `_(image not included)_`, `_(jira-issues-table not included)_`, `_(synced block not
+        included)_`, `_(link card not included)_`, `_(extension not included)_` without a key; a mention
+        with no text is `@` and its id (panels, 3 of 3, 2026-09-25).
       - A table stays a pipe table: the first row becomes the header, a cell's blocks join on one line
         with spaces, and a span keeps its cell under its header by empty cells in the columns and
         rows it covered, padding at most to the table's cell count.
       - A list stays a list: where CommonMark cannot hold a block inside an item, what gives way is
-        what a reader does not see — the spaces of a whitespace-only code line, a rule's spelling.
+        what a reader does not see — the spaces of a whitespace-only code line — and a rule opening an
+        item drops (a panel, 3 of 3, 2026-09-25).
       - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text —
         `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes has its
         `href` percent-encoded until one does, and a mark run CommonMark's flanking or matching cannot
@@ -245,8 +248,7 @@ chunk clearing a §11 seam.
         (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admonition family, footnotes, definition
         lists, wikilinks, embeds, tags, comments, TOC tokens, spoilers, task states past `[x]`/`[ ]`,
         and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
-  - [ ] **10a — The reduction.** `adfToPlainMarkdown`'s ADF→ADF reduction, tests first, a test per
-        row above.
+  - [x] **10a — The reduction.**
   - [ ] **10b — The lift.** `plainMarkdownToAdf`'s ADF→ADF lift, tests first, a test per row it reads,
         other tools' spellings included; the editor's default highlight colour looked up and cited.
   - [ ] **10c — The exports.** `adfToPlainMarkdown` and `plainMarkdownToAdf` exported with their README

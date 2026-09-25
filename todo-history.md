@@ -1071,6 +1071,9 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       nothing on that path reads a block's `headroom`: `joinBlocks` and `separationBetween` read
       `text` and `spelling`, and `emitDirectiveBlock` takes the level from the `Walk`. Of the two
       subtractions three readers flagged as double-counting, this is the one that is dead.
+- [ ] **10 — Lossy conversion (`0.2.0`).**
+  - [x] **10a — The reduction.** `adfToPlainMarkdown`'s ADF→ADF reduction, tests first, a test per
+        row above.
 
 ## 5 — Ship `0.1.0`
 
