@@ -3,7 +3,7 @@ import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { commonMarkSpelling, largestListMarker, type SpellingMemo } from './adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { inlineLeaves, isBlockNodeType, reduceInline, writableHref } from './plain-inline.ts'
+import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './plain-inline.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -114,14 +114,18 @@ function plainSequence(blocks: readonly AdfNode[], reduction: Reduction): Result
     const listed = sequence[index]
     if (listed === undefined || (listed.type !== 'bulletList' && listed.type !== 'orderedList')) continue
     const block = numberedPastMarkers(listed)
-    sequence[index] = block
-    if (commonMarkSpelling(block, reduction.path, reduction.depth, reduction.memo)?.ok === true) continue
-    const held = nodeContent(block).flatMap(nodeContent)
-    const from = Math.max(0, index - 1)
-    sequence = [...sequence.slice(0, from), ...mergedLists([...sequence.slice(from, index), ...held, ...sequence.slice(index + 1, index + 2)]), ...sequence.slice(index + 2)]
-    index = from - 1
+    const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, reduction.memo)?.ok === true
+    if (spelled) continue
+    sequence = spliced(sequence, index, block === listed ? nodeContent(block).flatMap(nodeContent) : [block])
+    index = Math.max(0, index - 1) - 1
   }
   return success(sequence)
+}
+
+// The replacement merges with the lists beside it, so no two lists of one type stand adjacent.
+function spliced(sequence: readonly AdfNode[], index: number, replacement: readonly AdfNode[]): AdfNode[] {
+  const from = Math.max(0, index - 1)
+  return [...sequence.slice(0, from), ...mergedLists([...sequence.slice(from, index), ...replacement, ...sequence.slice(index + 1, index + 2)]), ...sequence.slice(index + 2)]
 }
 
 // A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.
@@ -319,7 +323,7 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const url = attrs['url']
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
-  const alt = typeof held === 'string' ? held.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ').trim() : ''
+  const alt = typeof held === 'string' ? oneLine(held).trim() : ''
   const external: AdfNode = { attrs: alt === '' ? { type: 'external', url: writableHref(url) } : { alt, type: 'external', url: writableHref(url) }, type: 'media' }
   const image: AdfNode = { attrs: { layout: 'center' }, content: [external], type: 'mediaSingle' }
   return success([image])

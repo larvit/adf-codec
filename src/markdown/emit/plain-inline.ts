@@ -49,7 +49,7 @@ function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorP
   if (node.type === 'placeholder') return success([])
   if (node.type === 'mention') return success(textLeaves(nonEmpty(attrs['text']) ?? idMention(attrs['id']), marks, container))
   if (node.type === 'status') return success(textLeaves(attrs['text'], marks, container))
-  if (['extension', 'inlineExtension'].includes(node.type)) return success(textLeaves(nonEmpty(attrs['text']), marks, container, nonEmpty(attrs['extensionKey']) ?? 'extension'))
+  if (['extension', 'inlineExtension'].includes(node.type)) return success(textLeaves(nonEmpty(attrs['text']), marks, container, noteName(attrs['extensionKey']) ?? 'extension'))
   if (node.type === 'syncBlock') return success(noteLeaves('synced block'))
   if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(attrs, marks, container))
   if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(attrs, marks, container))
@@ -87,7 +87,15 @@ function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], 
 }
 
 function noteLeaves(name: string): AdfNode[] {
-  return [textLeaf(`(${name.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')} not included)`, [{ type: 'em' }])]
+  return [textLeaf(`(${name} not included)`, [{ type: 'em' }])]
+}
+
+function noteName(value: unknown): string | undefined {
+  return typeof value === 'string' ? nonEmpty(oneLine(value).trim()) : undefined
+}
+
+export function oneLine(text: string): string {
+  return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
 }
 
 function nonEmpty(value: unknown): string | undefined {
