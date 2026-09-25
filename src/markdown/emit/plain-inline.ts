@@ -91,15 +91,16 @@ function noteLeaves(name: string): AdfNode[] {
 }
 
 function noteName(value: unknown): string | undefined {
-  return typeof value === 'string' ? nonEmpty(oneLine(value).trim()) : undefined
+  return nonEmpty(value) === undefined ? undefined : oneLine(String(value)).trim()
 }
 
 export function oneLine(text: string): string {
   return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
 }
 
+// Blank once a text leaf's cleaning has run is empty.
 function nonEmpty(value: unknown): string | undefined {
-  return typeof value === 'string' && value !== '' ? value : undefined
+  return typeof value === 'string' && oneLine(value).trim() !== '' ? value : undefined
 }
 
 function isoDate(timestamp: unknown): string | undefined {
