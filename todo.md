@@ -213,7 +213,8 @@ chunk clearing a §11 seam.
         where an item holds more than one block, a nested task list moved beside its item — and
         leaves mixed and ordered lists plain. A `decisionList` is a plain bullet list.
       - `backgroundColor` is `==text==`, and the lift gives `==text==` the Atlassian editor's default
-        highlight colour.
+        highlight colour where whitespace, punctuation or a line edge bounds each `==` outside, so
+        `a==b and c==d` stays text (a panel, 3 of 3, 2026-09-25).
       - `layoutSection`/`layoutColumn`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`
         and `extensionFrame` unwrap to their body blocks in order; the CommonMark blocks keep their
         spelling, attributes dropped.
