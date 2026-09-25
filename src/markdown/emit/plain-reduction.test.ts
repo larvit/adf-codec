@@ -171,7 +171,7 @@ test('keeps the CommonMark blocks in their spelling and drops their attributes a
   assert.equal(plain(node('taskList', {}, node('taskItem', { state: 'DONE' }, text('t'))), long), '- [x] t\n- 10000000000. y\n')
   assert.equal(plain(bulletList(item(said('a'), bulletList(item(said('x'))), long))), '- a\n  - x\n  - 10000000000. y\n')
   const givesWay = node('orderedList', { order: 1e10 }, item(node('rule', {})), item(bulletList(item(bulletList(item())))))
-  assert.equal(plain(givesWay, bulletList(item(said('z')))), '- 10000000000.\n- 10000000001.\n\n  - -\n- z\n')
+  assert.equal(plain(givesWay, bulletList(item(said('z')))), '- 10000000000.\n- 10000000001.\n  - -\n- z\n')
   assert.equal(plain(node('orderedList', { order: 999999999 }, item(said('a'))), node('orderedList', { order: 5 }, item(said('b')))), '- 999999999\\. a\n- 1000000000. b\n')
   assert.equal(plain(node('heading', { level: 7 }, text('h'))), 'h\n')
 })
