@@ -1,5 +1,6 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { alertMarker, foldedAlertMarker, taskMarker } from '../plain-conventions.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { commonMarkSpelling, largestListMarker, type SpellingMemo } from './adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -17,15 +18,6 @@ type PlacedCell = { colspan: number; paragraph: AdfNode; rowspan: number }
 
 type Placed = { index: number; loose: AdfNode[] } | { index: number; loose?: undefined; node: AdfNode }
 
-const alertWords: Readonly<Record<string, string>> = {
-  error: 'CAUTION',
-  info: 'NOTE',
-  note: 'IMPORTANT',
-  success: 'TIP',
-  tip: 'TIP',
-  warning: 'WARNING',
-}
-
 const blockReducers: Readonly<Record<string, BlockReducer>> = {
   blockCard: paragraphOfNode,
   blockquote: (node, reduction) => quoted(success([]), node, reduction),
@@ -41,7 +33,7 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
   mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index) => reduceStanding(child, childReduction(reduction, index)))),
   nestedExpand: reduceExpand,
   orderedList: reduceList,
-  panel: (node, reduction) => quoted(success([paragraph([text(`[!${alertWord(nodeAttrs(node)['panelType'])}]`)])]), node, reduction),
+  panel: (node, reduction) => quoted(success([paragraph([text(alertMarker(nodeAttrs(node)['panelType']))])]), node, reduction),
   paragraph: (node, reduction) => paragraphOf(nodeContent(node), reduction),
   rule: () => success([{ type: 'rule' }]),
   syncBlock: paragraphOfNode,
@@ -190,14 +182,9 @@ function quoted(head: Result<AdfNode[]>, node: AdfNode, reduction: Reduction): R
   return content.ok ? success([{ content: content.value, type: 'blockquote' }]) : content
 }
 
-function alertWord(panelType: unknown): string {
-  const word = typeof panelType === 'string' && Object.hasOwn(alertWords, panelType) ? alertWords[panelType] : undefined
-  return word ?? 'NOTE'
-}
-
 function reduceExpand(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const title = nodeAttrs(node)['title']
-  const marker = typeof title === 'string' ? `[!NOTE]- ${title.replace(/^[ \t\n\r]+/, '')}` : '[!NOTE]-'
+  const marker = typeof title === 'string' ? `${foldedAlertMarker} ${title.replace(/^[ \t\n\r]+/, '')}` : foldedAlertMarker
   return quoted(paragraphOf([text(marker)], { ...reduction, depth: reduction.depth + 1 }), node, reduction)
 }
 
@@ -257,7 +244,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
 }
 
 function taskBlocks(child: AdfNode, at: Reduction): Result<AdfNode[]> {
-  const marker = nodeAttrs(child)['state'] === 'DONE' ? '[x]' : '[ ]'
+  const marker = taskMarker(nodeAttrs(child)['state'])
   if (child.type === 'taskItem') {
     const content = reduceInline(nodeContent(child), 'paragraph', at.path, at.depth)
     return content.ok ? success([paragraph(content.value.length === 0 ? [text(marker)] : [text(`${marker} `), ...content.value])]) : content

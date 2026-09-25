@@ -2,6 +2,7 @@ import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { highlightDelimiter } from '../plain-conventions.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, sameMark } from '../../adf/editor-normal.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
@@ -9,7 +10,6 @@ import { plainLineFallback, type PlainLineFallback } from './inline-line.ts'
 import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
-const highlightDelimiter = '=='
 const edgeStrippingMarks: readonly string[] = [highlight, 'em', 'strike', 'strong']
 const keptMarks: readonly string[] = [...edgeStrippingMarks, 'code', 'link']
 
