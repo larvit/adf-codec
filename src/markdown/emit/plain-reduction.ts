@@ -2,7 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, foldedAlertMarker, taskMarker } from '../plain-conventions.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
-import { commonMarkSpelling, largestListMarker, type SpellingMemo } from './adf-to-markdown.ts'
+import { adfToMarkdown, commonMarkSpelling, largestListMarker, type SpellingMemo } from './adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './plain-inline.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
@@ -39,6 +39,11 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
   syncBlock: paragraphOfNode,
   table: reduceTable,
   taskList: reduceTaskList,
+}
+
+export function adfToPlainMarkdown(document: AdfDocument): Result<string> {
+  const reduced = reduceToPlain(document)
+  return reduced.ok ? adfToMarkdown(reduced.value) : reduced
 }
 
 export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
@@ -224,12 +229,13 @@ function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
 // A list item's first line reads as no rule and holds no line of spaces alone: the rule and the spaces give way.
 function itemOf(blocks: readonly AdfNode[]): AdfNode {
   const rules = blocks.findIndex((block) => block.type !== 'rule')
-  const content = blocks.slice(rules === -1 ? blocks.length : rules).map((block) => (block.type === 'codeBlock' ? { ...block, content: nodeContent(block).map(blankedLines) } : block))
+  const content = blocks.slice(rules === -1 ? blocks.length : rules).map((block) => (block.type === 'codeBlock' ? { ...block, content: blankedLines(nodeContent(block)) } : block))
   return { content, type: 'listItem' }
 }
 
-function blankedLines(code: AdfNode): AdfNode {
-  return code.text === undefined ? code : { ...code, text: code.text.replace(/^[ \t]+$/gm, '') }
+function blankedLines(code: readonly AdfNode[]): AdfNode[] {
+  const blanked = code.map((leaf) => leaf.text ?? '').join('').replace(/^[ \t]+$/gm, '')
+  return blanked === '' ? [] : [text(blanked)]
 }
 
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {

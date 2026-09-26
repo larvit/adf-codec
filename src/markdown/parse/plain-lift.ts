@@ -2,14 +2,21 @@ import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { isWordCharacter } from '../commonmark/emphasis-matching.ts'
 import { highlightDelimiter, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
+import { markdownToAdf } from './markdown-to-adf.ts'
 import { mergeAdjacentText, sameMarks } from '../../adf/editor-normal.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { success, type ParseError, type Result } from '../../result.ts'
 
 type Delimiter = { closes: boolean; holder: AdfNode; line: number; node: number; offset: number; opens: boolean; position: number }
 
 type MarkerLed<T> = { marker: T; rest: AdfNode[] }
 
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
+
+export function plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
+  const parsed = markdownToAdf(markdown)
+  return parsed.ok ? success(liftFromPlain(parsed.value)) : parsed
+}
 
 export function liftFromPlain(document: AdfDocument): AdfDocument {
   return { ...document, content: liftBlocks(nodeContent(document), false) }

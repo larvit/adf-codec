@@ -257,10 +257,7 @@ chunk clearing a §11 seam.
         and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
   - [x] **10a — The reduction.**
   - [x] **10b — The lift.**
-  - [ ] **10c — The exports.** `adfToPlainMarkdown` and `plainMarkdownToAdf` exported with their README
-        sections, and two properties over 4.2's generators: writing refuses only the guard's codes
-        and writes no `!adf:`, and markdown `adfToPlainMarkdown` wrote reads back through `plainMarkdownToAdf` and writes
-        again byte for byte. AGENTS.md §1 records the pair as composed around the lossless one.
+  - [x] **10c — The exports.**
   - [ ] **10d — A literal marker survives the lossy round trip.** Text reading `==x==`, a quote
         opening `[!NOTE]` or a list whose items all open `[x] ` comes back as a highlight, panel or
         task list after `plainMarkdownToAdf(adfToPlainMarkdown(doc))`, and a human's `\==x==` too:

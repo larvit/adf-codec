@@ -10,6 +10,9 @@ ADF, one markdown flavour, one HTML dialect. Six directions exposed, but markdow
 through ADF: four conversions exist to keep correct — never write a fifth. No fourth format, ever;
 each one doubles the directions.
 
+The lossy pair is no fifth: `adfToPlainMarkdown` reduces ADF→ADF ahead of `adfToMarkdown`, and
+`plainMarkdownToAdf` lifts ADF→ADF after `markdownToAdf` (the maintainer, 2026-09-14).
+
 ## 2. The round-trip is the product
 
 `markdownToAdf(adfToMarkdown(doc))` and `htmlToAdf(adfToHtml(doc))` must equal `doc` — anything

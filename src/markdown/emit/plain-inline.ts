@@ -221,10 +221,11 @@ function leafEdges(leaf: AdfNode, previous: AdfNode | undefined, next: AdfNode |
   const text = leaf.text
   if (text === undefined || marks.some((mark) => mark.type === 'code')) return undefined
   const lead = text.slice(0, text.search(/[^ \t]|$/))
-  const trail = lead === text ? '' : text.slice(text.search(/[ \t]*$/))
+  const trail = text.slice(Math.max(lead.length, text.search(/[ \t]*$/)))
   const leadDepth = edgeDepth(marks, previous, lead)
-  const trailDepth = edgeDepth(marks, next, trail)
+  const trailDepth = edgeDepth(marks, next, lead === text ? text : trail)
   if (leadDepth === marks.length && trailDepth === marks.length) return undefined
+  if (lead === text) return leadDepth === undefined || trailDepth === undefined ? [] : [textLeaf(text, marks.slice(0, Math.min(leadDepth, trailDepth)))]
   const edges: AdfNode[] = []
   if (lead !== '' && leadDepth !== undefined) edges.push(textLeaf(lead, marks.slice(0, leadDepth)))
   const core = text.slice(lead.length, text.length - trail.length)
