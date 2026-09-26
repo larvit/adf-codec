@@ -266,6 +266,14 @@ chunk clearing a §11 seam.
         it is a gap to ask. The same class runs the other way: a highlighted `=` writes `=====`, which
         reads back as text, and a highlighted `a==b` writes `==a==b==`, highlighting `a` alone; 10c's
         byte-for-byte property misses both, since the wrong document re-spells to the same bytes.
+  - [ ] **10e — A callout's body stays its body.** `plainMarkdownToAdf` reads Obsidian's own
+        spelling, `> [!faq]- Why?` with the body on the next `>` line, as an expand titled with the
+        whole paragraph — `"Why? See the docs and code."` — and an empty body, dropping the link
+        target and the code mark Goal 5 keeps; an unfolded `> [!tip] Title` merges the title into
+        the body's first line. Item 10's settled "the rest of the marker's paragraph as its title"
+        reads against Goal 5 here, and the line edge is gone once `markdownToAdf` has joined the
+        paragraph, so which seam reads it is part of the gap to ask: candidate rule "the title is
+        the marker's line; the lines after it open the body" (10c's review, 2026-09-26).
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
   - [x] **11b — The gate.**
