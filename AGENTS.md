@@ -7,11 +7,10 @@ that item's entry in `todo-history.md`.
 ## 1. Three formats, ADF is the hub
 
 ADF, one markdown flavour, one HTML dialect. Six directions exposed, but markdown↔HTML compose
-through ADF: four conversions exist to keep correct — never write a fifth. No fourth format, ever;
-each one doubles the directions.
-
-The lossy pair is no fifth: `adfToPlainMarkdown` reduces ADF→ADF ahead of `adfToMarkdown`, and
-`plainMarkdownToAdf` lifts ADF→ADF after `markdownToAdf` (the maintainer, 2026-09-14).
+through ADF: four conversions exist to keep correct — never write a fifth. The lossy pair wraps
+two of them, an ADF→ADF reduction ahead of `adfToMarkdown` and an ADF→ADF lift after
+`markdownToAdf`, and whatever it adds stays ADF→ADF (the maintainer, 2026-09-14). No fourth format,
+ever; each one doubles the directions.
 
 ## 2. The round-trip is the product
 
@@ -419,18 +418,16 @@ bump on `main` publishes, §9 — every release is the maintainer's) and the `NP
 
 ### Ask, don't guess
 
-Any choice where what the maintainer would pick is not near-certain gets asked, and the answer
-lands as a decision in this file. The confidence bar is very high — asking too often is the
-accepted cost, guessing wrong is not.
+Any choice where what the maintainer would pick is not near-certain gets asked. The confidence bar
+is very high — asking too often is the accepted cost, guessing wrong is not.
 
-An ask is a gap in this file, and its answer is the rule that closes the gap, never the instance
-alone. Before asking, name the class the question belongs to and the earlier `(the maintainer, …)`
-entries of that class; where a rule already decides it, apply it without asking, and where the rule
-reads two ways on this input, that reading is the ask. Never ask "A or B?": state the gap, the
-earlier asks of its class, the nearest text here, a candidate rule in this file's voice and section,
-and the instance it yields, and ask for the rule. The maintainer answers the rule, the rule lands
-here, and the instance follows from it in the chunk. A rule that keeps collecting instances is
-wrong: rewrite it rather than append to it.
+An ask is a gap in this file, and its answer is the rule that closes it, landing here — never the
+instance alone. Before asking, name the class the question belongs to and the earlier
+`(the maintainer, …)` entries of that class; where a rule already decides it, apply it without
+asking, and where the rule reads two ways on this input, that reading is the ask. Never ask "A or
+B?": state the gap, the earlier asks of its class, the nearest text here, a candidate rule in this
+file's voice and section, and the instance it yields. A rule that keeps collecting instances is
+wrong: rewrite it.
 
 Which output the audience expects — README goal 5 — is settled by a reader panel rather than
 asked: three fresh-context readers, one per README persona the conversion serves, each given only
