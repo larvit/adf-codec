@@ -143,7 +143,10 @@ chunk clearing a §11 seam.
       everything exported sits near the bottom. The HTML directions were to stay an aside until a
       later release shipped them; 7 now ships in this one and reads ahead of this item, so the
       README documents HTML as it documents markdown, the tagline and `description` naming both
-      (the maintainer, 2026-09-13, revised 2026-09-18).
+      (the maintainer, 2026-09-13, revised 2026-09-18). They name the lossy pair too, and the
+      flavours it writes and reads by name — GitHub Flavored Markdown's alerts and task lists,
+      Obsidian Flavored Markdown's callouts — so a search for either finds the package (the
+      maintainer, 2026-09-26).
 - [x] **5a — Rename to `@larvit/adf-codec`.**
 - [x] **5b — The consumer's error surface.**
   - [x] **5b1 — The error's source position.**
@@ -198,7 +201,7 @@ chunk clearing a §11 seam.
       Discord, GitHub's renderer confirming each shape. Writing refuses only what the document guard
       refuses (`not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`)
       and degrades every other shape; reading refuses what `markdownToAdf` refuses. A lifted node
-      carries no `localId`. The lift also reads other tools' spellings — type words in any case,
+      carries no `localId`, save a task node's position id (10f, the maintainer, 2026-09-26). The lift also reads other tools' spellings — type words in any case,
       Obsidian's aliases, `[X]` — since it reads their output and never writes those spellings.
       - A `panel` is an alert: the marker alone on the quote's first line, a blank `>`, then the body
         (`> [!WARNING]`), in GitHub's five words by colour — info `NOTE`, note `IMPORTANT`, tip and
@@ -206,11 +209,12 @@ chunk clearing a §11 seam.
         back (`NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error) and
         Obsidian's by meaning (hint tip; success, check and done success; attention warning; danger,
         failure, fail, missing, bug and error error — `error` by a panel, 3 of 3, 2026-09-25; any
-        other word info). Text after a marker in its paragraph is the panel's first body paragraph.
+        other word info). Text after a marker on its line is the panel's first body paragraph, and
+        the lines after it open the body (10e).
       - An `expand` or `nestedExpand` is Obsidian's folded callout, `> [!NOTE]- Title`, a blank `>`,
         then the body. The lift reads a fold sign (`-` or `+`) as an expand whatever the word, the
-        rest of the marker's paragraph as its title, and an expand inside an expand as a
-        `nestedExpand`.
+        rest of the marker's line as its title and the lines after it as the body (10e), and an
+        expand inside an expand as a `nestedExpand`.
       - A `taskList` is a bullet list whose items lead with `[x]` or `[ ]` (`- [x] Write the spec`).
         The lift reads a list whose every item is so marked back as a `taskList` — a `blockTaskItem`
         where an item holds more than one block, a nested task list moved beside its item — and
@@ -266,14 +270,20 @@ chunk clearing a §11 seam.
         it is a gap to ask. The same class runs the other way: a highlighted `=` writes `=====`, which
         reads back as text, and a highlighted `a==b` writes `==a==b==`, highlighting `a` alone; 10c's
         byte-for-byte property misses both, since the wrong document re-spells to the same bytes.
-  - [ ] **10e — A callout's body stays its body.** `plainMarkdownToAdf` reads Obsidian's own
-        spelling, `> [!faq]- Why?` with the body on the next `>` line, as an expand titled with the
-        whole paragraph — `"Why? See the docs and code."` — and an empty body, dropping the link
-        target and the code mark Goal 5 keeps; an unfolded `> [!tip] Title` merges the title into
-        the body's first line. Item 10's settled "the rest of the marker's paragraph as its title"
-        reads against Goal 5 here, and the line edge is gone once `markdownToAdf` has joined the
-        paragraph, so which seam reads it is part of the gap to ask: candidate rule "the title is
-        the marker's line; the lines after it open the body" (10c's review, 2026-09-26).
+  - [ ] **10e — A callout's title is its marker's line.** `> [!faq]- Why?` with the body on the
+        next `>` line lifts to an expand titled `Why?` whose body keeps the next lines' link
+        targets and marks, and `> [!tip] Title` then `> body` to a panel whose paragraphs are
+        `Title` and `body`. The rest of the marker's line is the title (an expand) or the first
+        body paragraph (a panel), and the lines after it open the body. The line edge is gone once
+        `markdownToAdf` has joined the paragraph, so `plainMarkdownToAdf` reads the marker line
+        through the block parser — the one place the lift leaves ADF→ADF (the maintainer,
+        2026-09-26; 10c's review found the paragraph rule dropping link targets Goal 5 keeps).
+  - [ ] **10f — Lifted task nodes carry position ids.** `plainMarkdownToAdf` gives each `taskList`,
+        `taskItem` and `blockTaskItem` it lifts a deterministic `localId` from its position in
+        document order, so a site that rejects a missing `localId` takes the document and the same
+        markdown lifts to the same ids every run; README §Plain markdown's `localId` bullet says so
+        (the maintainer, 2026-09-26). The id spelling — unique within the document, no host API —
+        is part of the chunk.
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
   - [x] **11a — The vendored schema.**
   - [x] **11b — The gate.**

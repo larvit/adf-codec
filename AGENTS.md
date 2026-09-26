@@ -9,7 +9,8 @@ that item's entry in `todo-history.md`.
 ADF, one markdown flavour, one HTML dialect. Six directions exposed, but markdown↔HTML compose
 through ADF: four conversions exist to keep correct — never write a fifth. The lossy pair wraps
 two of them, an ADF→ADF reduction ahead of `adfToMarkdown` and an ADF→ADF lift after
-`markdownToAdf`, and whatever it adds stays ADF→ADF (the maintainer, 2026-09-14). No fourth format,
+`markdownToAdf`, and whatever it adds stays ADF→ADF (the maintainer, 2026-09-14) — save a callout's
+marker line, which the lift reads through the block parser (10e, 2026-09-26). No fourth format,
 ever; each one doubles the directions.
 
 ## 2. The round-trip is the product

@@ -39,7 +39,9 @@ In priority order.
    plain markdown cannot hold — format, design, structure — never content: what a reader of the
    rendered document sees or follows, its text, images and link targets. Content the document only
    references is marked where it stood, by a note that reads as the converter's and names what was
-   left out. What is dropped goes the way the audience expects.
+   left out. What is dropped goes the way the audience expects. The lossy pair creates and
+   exports; it never saves back over the document it read — identity (task, mention, media ids)
+   lives only in the lossless pair.
 6. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
    the emitted formats are.
 7. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
