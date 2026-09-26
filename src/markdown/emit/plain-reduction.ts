@@ -78,7 +78,8 @@ function reduceNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 }
 
 function reduceStanding(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  return standsInline(node) ? paragraphOf([node], reduction) : reduceNode(node, reduction)
+  const blocks = standsInline(node) ? paragraphOf([node], reduction) : reduceNode(node, reduction)
+  return blocks.ok ? plainSequence(blocks.value, reduction) : blocks
 }
 
 function standsInline(node: AdfNode): boolean {

@@ -306,6 +306,7 @@ test('drops an empty paragraph and merges adjacent lists of one type', () => {
   assert.equal(plain(ordered(2, 'a'), ordered(3, 'b'), bulletList(item(said('c')))), '2. a\n3. b\n\n- c\n')
   assert.equal(plain(bulletList(item(said('x'))), ordered(1, 'a'), ordered(5, 'b'), ordered(6, 'c')), '- x\n- 1\\. a\n- 5\\. b\n\n6. c\n')
   assert.equal(plain(ordered(1, 'a'), ordered(1e10, 'y')), '- 1\\. a\n- 10000000000. y\n')
+  assert.equal(plain(node('taskList', {}, ordered(1e10, 'y')), bulletList(ordered(1e10, 'z'))), '- - 10000000000. y\n- - 10000000000. z\n')
   const column = (list: AdfNode): AdfNode => node('layoutColumn', {}, list)
   assert.equal(plain(node('layoutSection', {}, column(bulletList(item(said('a')))), column(bulletList(item(said('b')))))), '- a\n- b\n')
 })
