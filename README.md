@@ -105,7 +105,8 @@ keeping the content and dropping the rest: attributes, colours, layout, identity
 no directive. `plainMarkdownToAdf` reads through `markdownToAdf`, refusing what it refuses, and
 lifts the conventions below back into nodes, reading other tools' spellings too. Markdown
 `adfToPlainMarkdown` wrote reads back and writes again byte for byte; the document it came from
-does not come back.
+does not come back. To edit a document and save it back, use `adfToMarkdown` and `markdownToAdf`:
+saving what this pair read replaces mentions, attachments and macros with text.
 
 | ADF | Written | Read back |
 | --- | --- | --- |
@@ -127,11 +128,12 @@ does not come back.
   `_(link card not included)_`, `_(extension not included)_`.
 - `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops, keeping its text, and
   so does a mark CommonMark cannot spell where it stands.
-- A newline in text is a hard break, edge whitespace outside a link or code span is trimmed, carriage returns and null
-  characters are removed, and an empty paragraph drops.
+- A newline in text is a hard break, edge whitespace outside a link or code span is trimmed,
+  carriage returns and null characters are removed, and an empty paragraph drops.
 - An ordered list numbered past `999999999`, or adjacent ordered lists whose numbering does not
   continue, is one bullet list keeping its numbers as text.
-- A node read back carries no `localId`.
+- A node read back carries no `localId`, which Atlassian's schema requires on `taskList`,
+  `taskItem` and `blockTaskItem`: mint one where the receiving site requires it.
 
 ## The errors
 
@@ -156,7 +158,7 @@ UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte of
 or before the refusal — currently the start of the line the enclosing block begins on; a later
 minor may narrow that, never widen it.
 
-Parsing — `markdownToAdf`, and `htmlToAdf` at `0.2.0`:
+Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -214,7 +216,7 @@ emit refuses:
   error too — ADF holds no column alignment. The trailing pipe is canonical output, optional in
   input.
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
-  is the `taskList` directive.
+  is the `taskList` directive — `plainMarkdownToAdf` lifts the marker.
 - A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
