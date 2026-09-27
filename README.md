@@ -143,7 +143,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
 ## The errors
 
 An ADF node type this version does not know is not an error: it is carried opaquely and restores
-unchanged (AGENTS.md §3).
+unchanged (`docs/decisions.md §Unknown nodes ride the carry`).
 
 `ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
 stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text
@@ -195,7 +195,7 @@ emit refuses:
 ## The guarantees
 
 - `markdownToAdf(adfToMarkdown(doc))` equals `doc` — unknown node types included, carried opaquely
-  (AGENTS.md §3).
+  (`docs/decisions.md §Unknown nodes ride the carry`).
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
   names, with three carve-outs — literal text matching directive, pipe-table or strikethrough
   syntax is claimed (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as
@@ -234,4 +234,4 @@ emit refuses:
 ESM only, no runtime dependencies, public npmjs. Built JavaScript with `.d.ts` beside it.
 Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs under Node,
 Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
-Contract: `AGENTS.md` §5–6.
+Contract: `docs/decisions.md`.

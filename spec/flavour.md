@@ -154,15 +154,15 @@ outside code spans and code blocks, `\!adf:` in input yields the literal text.
 naming no open container or a node other than the innermost open one, a leaf given a body, an
 `!adf:` completing no directive, an inline `[content]` or `{attrs}` left unclosed at end of line,
 unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent literal-text
-fallback — a typo that reparses as prose is the silent loss §2 refuses.
+fallback — a typo that reparses as prose is the silent loss the round-trip refuses.
 
-## The opaque carry (AGENTS.md §3)
+## The opaque carry (`docs/decisions.md` §Unknown nodes ride the carry)
 
-A node no section spells where it stands — an unknown type, or a known one whose spelling belongs
-to the other position — rides as its raw JSON and restores to a deep-equal node. A carry may hold
-a node the emitter spells natively: it restores unreinterpreted, and the next emit spells it
-canonically (AGENTS.md §2). Block and inline positions canonicalize differently, each fitting
-where it sits:
+A node no section spells where it stands — an unknown type, or a known one whose spelling belongs to
+the other position — rides as its raw JSON and restores to a deep-equal node. A carry may hold a
+node the emitter spells natively: it restores unreinterpreted, and the next emit spells it
+canonically (`docs/decisions.md` §The round-trip is the product). Block and inline positions
+canonicalize differently, each fitting where it sits:
 
 - **Block position**: a fenced code block with info string `carry`, body = the node's JSON —
   two-space indent, object keys sorted.
@@ -177,9 +177,10 @@ In block-directive position `!adf:carry` is a named error — the carry's block 
 ## Raw HTML in input
 
 CommonMark input may contain raw HTML. `markdownToAdf` routes each construct through the foreign
-HTML element mapping (AGENTS.md §3; specified with the HTML dialect, todo.md milestone 6) — ADF
-has no raw-HTML node, so a construct without a mapping, comments and processing instructions
-included, is an error result naming it. The flavour never emits raw HTML.
+HTML element mapping (`docs/decisions.md` §Foreign HTML is refused by name; specified with the HTML
+dialect, todo.md milestone 6) — ADF has no raw-HTML node, so a construct without a mapping, comments
+and processing instructions included, is an error result naming it. The flavour never emits raw
+HTML.
 
 ## Block nodes
 
@@ -192,10 +193,11 @@ have written as CommonMark is a named error.
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
 type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
-(`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys
-sorted), quoted. `markdownToAdf` emits `attrs`, `content` and `marks` keys only when non-empty;
-editor-normal ADF reads an empty attrs object, marks array or content array as the absent key
-(AGENTS.md §2) — the grammar's empty-`{attrs}` omission already collapses the two spellings.
+(`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys sorted),
+quoted. `markdownToAdf` emits `attrs`, `content` and `marks` keys only when non-empty; editor-normal
+ADF reads an empty attrs object, marks array or content array as the absent key (`docs/decisions.md`
+§Equality is editor-normal) — the grammar's empty-`{attrs}` omission already collapses the two
+spellings.
 
 Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
 `json` value: `!adf:layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
@@ -300,10 +302,10 @@ other text, or one carrying a title, is a named error: `mediaInline` carries a m
 ### Tables
 
 One header row plus plain inline cells is a pipe table; anything richer is the directive form
-(AGENTS.md §4). Precisely: a table emits as a pipe table exactly when the `table`, every row
-and every cell carry no attrs and no marks, the first row is all `tableHeader` and the rest all
-`tableCell`, every row has the header's cell count, and every cell holds exactly one attr-less,
-mark-less paragraph — an empty cell holds one empty paragraph — with no `|` anywhere the
+(`docs/decisions.md` §Tables). Precisely: a table emits as a pipe table exactly when the `table`,
+every row and every cell carry no attrs and no marks, the first row is all `tableHeader` and the
+rest all `tableCell`, every row has the header's cell count, and every cell holds exactly one
+attr-less, mark-less paragraph — an empty cell holds one empty paragraph — with no `|` anywhere the
 inline layer spells as syntax: a code span, an autolink, a link destination or title. A `|` there
 takes the directive form instead. A pipe table parses back to exactly that shape.
 
@@ -449,14 +451,14 @@ Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=175608000000
 ```
 
 **Whitespace CommonMark cannot hold.** A newline inside a text node, and a space or tab where
-CommonMark strips or refuses one — a block's inline content edges, either side of a line break,
-an em, strong or strike spelling's inner edges, a pipe cell's edges — is spelled
-`!adf:text{text="…"}`, the reserved key carrying the node's text, escaped by the attribute grammar
-and never literal: pipe cells trim and pad. The emitter wraps the whitespace run alone and leaves
-the rest plain text; `markdownToAdf` merges adjacent text nodes carrying identical marks and no
-attributes (AGENTS.md §2). Input reads that spelling alone: the value is one run of spaces and
-tabs, or one run of newlines, and anything else — a mixed run, or text CommonMark carries plainly —
-is a named error.
+CommonMark strips or refuses one — a block's inline content edges, either side of a line break, an
+em, strong or strike spelling's inner edges, a pipe cell's edges — is spelled `!adf:text{text="…"}`,
+the reserved key carrying the node's text, escaped by the attribute grammar and never literal: pipe
+cells trim and pad. The emitter wraps the whitespace run alone and leaves the rest plain text;
+`markdownToAdf` merges adjacent text nodes carrying identical marks and no attributes
+(`docs/decisions.md` §Equality is editor-normal). Input reads that spelling alone: the value is one
+run of spaces and tabs, or one run of newlines, and anything else — a mixed run, or text CommonMark
+carries plainly — is a named error.
 
 ```
 !adf:text{text="  "}Two leading spaces held, and one text node split!adf:text{text="\n"}over two lines.
@@ -502,7 +504,7 @@ close where the run sits (`un**-real**istic`), or one CommonMark's matching pair
 intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave the
 merged run's pairing to another delimiter — rides the inline carry whole. An opaque carry inside a
 mark spelling is a named error in input: the carry restores its node exactly, marks included
-(AGENTS.md §3).
+(`docs/decisions.md` §Unknown nodes ride the carry).
 
 ```
 !adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].

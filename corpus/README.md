@@ -3,8 +3,8 @@
 One directory per contract kind, each landing with its milestone:
 
 - `round-trip/` — `<name>.json` + `<name>.md`: the markdown `adfToMarkdown` must emit for that
-  document, byte for byte, and that `markdownToAdf` must read back to it (AGENTS.md §2). Grouped
-  by what the fixture exercises.
+  document, byte for byte, and that `markdownToAdf` must read back to it (`docs/decisions.md` §The
+  round-trip is the product). Grouped by what the fixture exercises.
 - `normalization/` — `<name>.md` + `<name>.json`: markdown input, and the document
   `markdownToAdf` must build from it, which must in turn emit and read back to itself. The
   markdown is not canonical.
@@ -19,8 +19,8 @@ One directory per contract kind, each landing with its milestone:
   model), `unspellable` (parses but the flavour has no spelling) or `pending` (a parser gap a later
   milestone may close).
 
-JSON is editor-normal (AGENTS.md §2), two-space indent, keys sorted. `spec.json` is the vendored,
-upstream machine-readable suite, byte-exact from
+JSON is editor-normal (`docs/decisions.md` §Equality is editor-normal), two-space indent, keys
+sorted. `spec.json` is the vendored, upstream machine-readable suite, byte-exact from
 [spec.commonmark.org](https://spec.commonmark.org/0.31.2/spec.json) (CommonMark 0.31.2, © John
 MacFarlane, [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/)), and is not
 re-serialized by the corpus gate.

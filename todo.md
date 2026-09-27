@@ -7,11 +7,19 @@
   one no goal serves is proposed as a goal and asked. Sources: `AGENTS.md`'s body, the settled text
   in this file's items, and `todo-history.md`, deleted with the bare `(28)` citations into it once
   nothing cites it. Split by `AGENTS.md` section where one chunk is too big.
+  - **36b — Move §8, §9 and §14's decisions.** The code list's rules, release automation and the
+    non-goals.
+  - **36c — Move §10 and §11's decisions.** The engine legs, floors, size ratchet, bounds, spellings
+    and layout; the style rules stay working rules.
+  - **36d — Move the settled text in `todo.md`'s items and §15's dated rules, and point §15's
+    "the rule that closes it, landing here" at `docs/decisions.md`.** `AGENTS.md`'s sections are
+    renumbered once only working rules remain, their citations with them.
+  - **36e — Move `todo-history.md`'s decisions, re-point its citations and delete it.**
 - **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
-  AGENTS.md §1, `plainMarkdownToAdf` is `markdownToAdf`'s parser and `adfToPlainMarkdown`
-  `adfToMarkdown`'s writer, each with the plain flavour set; 10's rows are read and written there,
-  and the lift goes (the maintainer, 2026-09-27). The exports, their refusals and 10's rows stay as
-  they are.
+  `docs/decisions.md` §Plain markdown is a flavour of the grammar, `plainMarkdownToAdf` is
+  `markdownToAdf`'s parser and `adfToPlainMarkdown` `adfToMarkdown`'s writer, each with the plain
+  flavour set; 10's rows are read and written there, and the lift goes (the maintainer, 2026-09-27).
+  The exports, their refusals and 10's rows stay as they are.
   - **35a — Read the plain flavour in the parser and delete the lift.** 10's rows are read while
     parsing, and `plain-lift.ts` is deleted, its tests reading through `plainMarkdownToAdf`. `>
     [!faq]- Why?` with the body on the next `>` line reads to an expand titled `Why?` whose body
@@ -49,13 +57,14 @@
     the document ever saw, so nothing is lost; unwrapping them would put `alert(1)` on the page as
     prose. A `style` attribute is a separate question — `textColor` and `backgroundColor` are the
     marks it could reach — and is not read at `0.2.0`, the work outweighing what it buys.
-  So the set sorts every element three ways, and that is what AGENTS.md §3 gains in place of "error
-  result naming the element": a container around document content unwraps, content ADF cannot hold
-  is an error result naming it, and what is not document content at all drops whole. A comment sorts
-  into the second rather than the third because a person wrote those words on purpose. 10's
-  "Rejected in the survey" line names raw HTML and comments and does not contradict this: it rejects
-  them as spellings the lossy pair writes and reads back, where `plainMarkdownToAdf` reads through
-  `markdownToAdf`'s parser and so inherits whatever this set accepts.
+  So the set sorts every element three ways, and that is what `docs/decisions.md` §Foreign HTML is
+  refused by name becomes in place of "error result naming the element": a container around document
+  content unwraps, content ADF cannot hold is an error result naming it, and what is not document
+  content at all drops whole. A comment sorts into the second rather than the third because a person
+  wrote those words on purpose. 10's "Rejected in the survey" line names raw HTML and comments and
+  does not contradict this: it rejects them as spellings the lossy pair writes and reads back, where
+  `plainMarkdownToAdf` reads through `markdownToAdf`'s parser and so inherits whatever this set
+  accepts.
 - **7 — Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed
   through ADF.** CommonMark spec suite runs against `markdownToHtml` from here (§10). The README's
   tagline and `package.json`'s `description` regain HTML (5g).
