@@ -188,19 +188,19 @@ chunk clearing a §11 seam.
       here (§10). The README's tagline and `package.json`'s `description` regain HTML (5g).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
-- [ ] **35 — Plain markdown is a flavour of the markdown grammar (`0.2.0`).** Per Goal 2 and
+- [ ] **35 — Read and write plain markdown as a flavour of the markdown grammar (`0.2.0`).** Per Goal 2 and
       AGENTS.md §1, `plainMarkdownToAdf` is `markdownToAdf`'s parser and `adfToPlainMarkdown`
       `adfToMarkdown`'s writer, each with the plain flavour set; 10's rows are read and written
       there, and the lift goes (the maintainer, 2026-09-27). The exports, their refusals and 10's
       rows stay as they are.
-  - [ ] **35a — The parser reads the plain flavour.** 10's rows are read while parsing, and
+  - [ ] **35a — Read the plain flavour in the parser and delete the lift.** 10's rows are read while parsing, and
         `plain-lift.ts` is deleted, its tests reading through `plainMarkdownToAdf`. `> [!faq]- Why?`
         with the body on the next `>` line reads to an expand titled `Why?` whose body keeps the
         next lines' link targets and marks, and `> [!tip] Title` then `> body` to a panel whose
         paragraphs are `Title` and `body`: the rest of the marker's line is the title (an expand)
         or the first body paragraph (a panel). A CommonMark backslash keeps a marker literal —
         `\==x==`, `> \[!NOTE]`, `- \[x]`.
-  - [ ] **35b — The writer spells the plain flavour.** Panels, expands, task lists and highlights
+  - [ ] **35b — Spell the plain flavour in the writer.** Panels, expands, task lists and highlights
         are written by the writer, which escapes text that would read back as one, so
         `plainMarkdownToAdf(adfToPlainMarkdown(doc))` keeps a literal `==x==`, a quote opening
         `[!NOTE]` and a list whose items all open `[x] ` as text. A highlighted `=` (today
@@ -280,7 +280,7 @@ chunk clearing a §11 seam.
   - [x] **10a — The reduction.**
   - [x] **10b — The lift.**
   - [x] **10c — The exports.**
-  - [ ] **10f — Task nodes read from plain markdown carry position ids.** `plainMarkdownToAdf` gives
+  - [ ] **10f — Give task nodes read from plain markdown position ids.** `plainMarkdownToAdf` gives
         each `taskList`, `taskItem` and `blockTaskItem` a deterministic `localId` from its position in
         document order, so a site that rejects a missing `localId` takes the document and the same
         markdown reads to the same ids every run; README §Plain markdown's `localId` bullet says so
