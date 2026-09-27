@@ -1,6 +1,7 @@
 # Todo history
 
-The done `todo.md` items in full, as they were written. `todo.md` keeps a one-line summary of each.
+The done `todo.md` items in full, as they were written, until 36 moves their decisions to
+`docs/decisions.md` and deletes this file.
 
 ## Milestones
 
@@ -1072,6 +1073,75 @@ The done `todo.md` items in full, as they were written. `todo.md` keeps a one-li
       `text` and `spelling`, and `emitDirectiveBlock` takes the level from the `Walk`. Of the two
       subtractions three readers flagged as double-counting, this is the one that is dead.
 - [ ] **10 — Lossy conversion (`0.2.0`).**
+- [x] **10 — Lossy conversion (`0.2.0`).** Markdown other tools render readably, to and from ADF,
+      keeping the content while dropping what markdown cannot hold — format, design and the richer
+      nodes.
+      **Settled** (the maintainer, 2026-09-14, reshaped by 35 on 2026-09-27): two exports, the
+      markdown grammar's reader and writer with the plain flavour set (AGENTS.md §1). The markdown
+      is the lossless flavour without directives — CommonMark, the pipe table and `~~` —
+      plus the conventions below, chosen for readability from a survey of GitHub, GitLab, Gitea,
+      Obsidian, Pandoc, MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and
+      Discord, GitHub's renderer confirming each shape. Writing refuses only what the document guard
+      refuses (`not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`)
+      and degrades every other shape; reading refuses what `markdownToAdf` refuses. A read node
+      carries no `localId`, save a task node's position id (10f, the maintainer, 2026-09-26). Reading also takes other tools' spellings — type words in any case,
+      Obsidian's aliases, `[X]` — since it reads their output and never writes those spellings.
+      - A `panel` is an alert: the marker alone on the quote's first line, a blank `>`, then the body
+        (`> [!WARNING]`), in GitHub's five words by colour — info `NOTE`, note `IMPORTANT`, tip and
+        success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE`. Reading takes those words
+        back (`NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error) and
+        Obsidian's by meaning (hint tip; success, check and done success; attention warning; danger,
+        failure, fail, missing, bug and error error — `error` by a panel, 3 of 3, 2026-09-25; any
+        other word info). Text after a marker on its line is the panel's first body paragraph, and
+        the lines after it open the body (35a).
+      - An `expand` or `nestedExpand` is Obsidian's folded callout, `> [!NOTE]- Title`, a blank `>`,
+        then the body. Reading takes a fold sign (`-` or `+`) as an expand whatever the word, the
+        rest of the marker's line as its title and the lines after it as the body (35a), and an
+        expand inside an expand as a `nestedExpand`.
+      - A `taskList` is a bullet list whose items lead with `[x]` or `[ ]` (`- [x] Write the spec`).
+        Reading takes a list whose every item is so marked back as a `taskList` — a `blockTaskItem`
+        where an item holds more than one block, a nested task list moved beside its item — and
+        leaves mixed and ordered lists plain. A `decisionList` is a plain bullet list.
+      - `backgroundColor` is `==text==`, and reading gives `==text==` the Atlassian editor's default
+        highlight colour where whitespace, punctuation or a line edge bounds each `==` outside, so
+        `a==b and c==d` stays text (a panel, 3 of 3, 2026-09-25).
+      - `layoutSection`/`layoutColumn`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`
+        and `extensionFrame` unwrap to their body blocks in order; the CommonMark blocks keep their
+        spelling, attributes dropped.
+      - `mention` and `status` become their text, the mention's `@` kept; `emoji` its text or else its
+        `shortName`; `date` its ISO date in UTC (`2026-09-13`); `inlineCard`, `blockCard` and
+        `embedCard` a link to their `url`, or to their `data`'s `url` named by its `name` — the name
+        alone without a `url`; an external image `![alt](url)` in a block and `[alt](url)` inline, where no ADF node spelled
+        `![alt](url)` stands (a panel, 6 of 7, 2026-09-25); `media`,
+        `mediaGroup` and `mediaInline` holding a stored file their `alt` text; `caption` its text as
+        a paragraph; `extension` and `inlineExtension` their `text` attribute; `placeholder` nothing,
+        its text being the editor's prompt rather than the document's; a node no row names, or one
+        standing where no spelling holds it, its blocks or its text.
+      - Content the document only references — a stored file with no `alt`, an extension with no
+        `text`, a `syncBlock`, a card with neither `url` nor `data` naming one — leaves an italic note
+        naming it: `_(image not included)_`, `_(jira-issues-table not included)_`, `_(synced block not
+        included)_`, `_(link card not included)_`, `_(extension not included)_` without a key; a mention
+        with no text is `@` and its id (panels, 3 of 3, 2026-09-25).
+      - A table stays a pipe table: the first row becomes the header, a cell's blocks join on one line
+        with spaces, and a span keeps its cell under its header by empty cells in the columns and
+        rows it covered, padding at most to the table's cell count.
+      - A list stays a list: where CommonMark cannot hold a block inside an item, what gives way is
+        what a reader does not see — the spaces of a whitespace-only code line — and a rule opening an
+        item drops (a panel, 3 of 3, 2026-09-25); an ordered list running past `999999999`, or adjacent
+        ordered lists whose numbering does not continue, is one bullet list keeping its numbers as text
+        (panels, 3 of 3 and 5 of 7, 2026-09-25).
+      - `code`, `em`, `link`, `strike` and `strong` stay and every other mark drops, keeping its text —
+        `subsup` too, since `~2~` is a strike on GitHub; a link no CommonMark escape writes has its
+        `href` percent-encoded until one does, and a mark run CommonMark's flanking or matching cannot
+        spell drops its mark.
+      - A newline in text becomes a hard break and edge whitespace is trimmed; carriage returns and
+        null characters are removed; a paragraph line opening with a code span whose backticks would
+        read as a fence loses the code mark; an empty paragraph drops, and adjacent lists of one type
+        merge.
+      - Rejected in the survey: `~sub~` and `^sup^`, underline and colour spellings, raw HTML
+        (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admonition family, footnotes, definition
+        lists, wikilinks, embeds, tags, comments, TOC tokens, spoilers, task states past `[x]`/`[ ]`,
+        and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
   - [x] **10a — The reduction.** `adfToPlainMarkdown`'s ADF→ADF reduction, tests first, a test per
         row above.
   - [x] **10b — The lift.** `plainMarkdownToAdf`'s ADF→ADF lift, tests first, a test per row it reads,

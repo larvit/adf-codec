@@ -180,6 +180,7 @@ types in `src/result.ts` hold its shape.
   deliberate semver judgment. `publish.sh` is that job, and `private: true` stops it before it
   reads the token, so the pipeline is live and silent until the maintainer's first bump drops the
   field.
+- The bump commit renames `CHANGELOG.md`'s `## Unreleased` to the version.
 - Docs on `main` describe the release being built rather than the version npm holds, so they match
   it the moment the bump publishes; add no interim note marking the gap (the maintainer,
   2026-09-16).
@@ -396,11 +397,13 @@ figure is promised. A CLI is a later goal (`todo.md`), not a non-goal.
 
 ## 15. The working loop
 
-One unchecked `todo.md` item per session, in the smallest PR-able chunk — split a big milestone
+`todo.md` lists what is left under the release that ships it, in shipping order. One item per
+session — the first under the earliest release — in the smallest PR-able chunk; split a big item
 into sub-items in `todo.md` before starting it. A chunk running a little over or under that is not
 worth deliberating; what matters is that nothing is left undone in the end. The session stops there
-whatever it was asked to finish: a release is a chain of sessions, and `todo.md`'s "Next session" is
-the handover, so an instruction to work until a release is checked names the chain, not the session.
+whatever it was asked to finish: a release is a chain of sessions, so an instruction to work until a
+release is done names the chain, not the session. An open PR is a chunk already in flight, and
+finishing it is the session.
 Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
@@ -409,8 +412,8 @@ Per chunk:
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted through the `0.2.0` release —
-   the maintainer, 2026-09-13), check the box in `todo.md` and move the item's text to
-   `todo-history.md`, leaving its title behind, report, stop.
+   the maintainer, 2026-09-13), delete the item from `todo.md` — what a consumer sees of it is
+   reworded for them into `CHANGELOG.md`'s `## Unreleased` — report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
@@ -442,9 +445,9 @@ The verdict lands in the item it settles (the maintainer, 2026-09-25).
   outweighs moves later. A weighing no rule decides is asked as a gap.
 - A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks,
   naming the number it can reach. A number the code needs and no rule states is a gap.
-- Where the shipping order names no release for the next unchecked item, the chunk is planning that
-  release: every unscheduled item weighed as above, the order written in `todo.md`, and the
-  maintainer's approval taken before any code.
+- An earliest release with no items left and nothing shipped toward it is planned as the chunk:
+  every later item weighed as above, the order written in `todo.md`, and the maintainer's approval
+  taken before any code. With work shipped toward it, it is ready to cut: report that and stop.
 
 ### The continuous loop
 
