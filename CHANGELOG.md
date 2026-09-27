@@ -24,4 +24,5 @@
 ## 0.1.0
 
 - First release: lossless conversion between ADF and an extended markdown flavour —
-  `adfToMarkdown`, `markdownToAdf` and `isAdfDocument`. Nothing throws, and every error carries a `code` from a closed list.
+  `adfToMarkdown`, `markdownToAdf` and `isAdfDocument`. Nothing throws, and every error carries a `code` from a
+  closed list.
