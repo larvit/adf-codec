@@ -5,7 +5,7 @@ an HTML dialect.
 
 **Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
 `0.2.0`.**
-Plan: `todo.md`. Decisions: `AGENTS.md`. The flavour's grammar:
+Plan: `todo.md`. Decisions: `AGENTS.md`. The lossless flavour's grammar:
 [`spec/flavour.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/spec/flavour.md).
 Upgrading from `0.1.0`: [convert your markdown first](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/MIGRATION.md).
 
@@ -58,11 +58,11 @@ rely on an error message's wording, which is free text.
   round-trip holding for whatever the site's editor wrote, unknown node types included, and on a
   refusal arriving before the save rather than after.
 - **Bot posting content** — turns generated markdown into ADF. Relies on plain CommonMark being
-  valid input, so nothing upstream has to learn the flavour.
+  valid input, so nothing upstream has to learn a flavour.
 - **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
   and on every refusal being deterministic, so a document that fails fails the same way next run.
 - **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
-  Relies on the round-trip and on markdown a reader half-knowing the flavour can still edit.
+  Relies on the round-trip and on markdown a reader half-knowing the lossless flavour can still edit.
 
 ## The shape
 
@@ -82,7 +82,7 @@ if (result.ok) {
 }
 ```
 
-Pure functions, no I/O, no configuration. ADF is the hub: markdown↔HTML compose through it.
+Pure functions, no I/O, no configuration.
 
 ```ts
 adfToMarkdown(doc: AdfDocument): Result<string>
@@ -102,8 +102,9 @@ htmlToMarkdown(html: string): Result<string>              // 0.2.0, via ADF
 
 ## Plain markdown
 
-`adfToPlainMarkdown` writes markdown other tools render — GitHub, GitLab, Obsidian and the like —
-keeping the content and dropping the rest: attributes, colours, layout, identity. It refuses only
+Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` writes markdown other
+tools render — GitHub, GitLab, Obsidian and the like — keeping the content and dropping the rest:
+attributes, colours, layout, identity. It refuses only
 `not-an-adf-document`, `unsupported-document-version` and `unsupported-nesting-depth`, and writes
 no directive. `plainMarkdownToAdf` reads through `markdownToAdf`, refusing what it refuses, and
 turns the conventions below back into nodes, taking other tools' spellings too. Markdown
@@ -219,7 +220,7 @@ emit refuses:
   error too — ADF holds no column alignment. The trailing pipe is canonical output, optional in
   input.
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
-  is the `taskList` directive — `plainMarkdownToAdf` reads the marker.
+  is the `taskList` directive — `plainMarkdownToAdf` turns the marker into a `taskList`.
 - A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
