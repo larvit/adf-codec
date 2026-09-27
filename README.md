@@ -27,14 +27,15 @@ In priority order.
    types this version does not know included; one that has no spelling is refused and says where,
    never silently reduced.
    Every goal below gives way to this one.
-2. **Three formats, ADF the hub.** ADF, one markdown flavour, one HTML dialect, markdown↔HTML
-   composing through ADF — four conversions to keep correct, never a fifth, and never a fourth
-   format.
+2. **ADF is the hub.** Every format and flavour converts to and from ADF, and no two others
+   convert directly: markdown↔HTML composes through ADF. Adding a format or flavour costs one
+   reader and one writer. A flavour of a grammar shares that grammar's reader and writer and adds
+   only its own spellings.
 3. **Plain CommonMark is input.** Markdown written for something else converts — the exceptions
-   below are the whole of them — and every spelling the flavour claims on top of CommonMark is
-   escapable, so the flavour is opt-in.
-4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the directive
-   form carries only what CommonMark cannot hold.
+   below are the whole of them — and every spelling a flavour claims on top of CommonMark is
+   escapable, so each flavour is opt-in.
+4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the lossless
+   flavour's directive form carries only what CommonMark cannot hold.
 5. **Lossy conversion keeps the content.** `adfToPlainMarkdown` and `plainMarkdownToAdf` drop what
    plain markdown cannot hold — format, design, structure — never content: what a reader of the
    rendered document sees or follows, its text, images and link targets. Content the document only
@@ -105,7 +106,7 @@ htmlToMarkdown(html: string): Result<string>              // 0.2.0, via ADF
 keeping the content and dropping the rest: attributes, colours, layout, identity. It refuses only
 `not-an-adf-document`, `unsupported-document-version` and `unsupported-nesting-depth`, and writes
 no directive. `plainMarkdownToAdf` reads through `markdownToAdf`, refusing what it refuses, and
-lifts the conventions below back into nodes, reading other tools' spellings too. Markdown
+turns the conventions below back into nodes, taking other tools' spellings too. Markdown
 `adfToPlainMarkdown` wrote reads back and writes again byte for byte; the document it came from
 does not come back. To edit a document and save it back, use `adfToMarkdown` and `markdownToAdf`:
 saving what this pair read replaces mentions, attachments and macros with text.
@@ -218,7 +219,7 @@ emit refuses:
   error too — ADF holds no column alignment. The trailing pipe is canonical output, optional in
   input.
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
-  is the `taskList` directive — `plainMarkdownToAdf` lifts the marker.
+  is the `taskList` directive — `plainMarkdownToAdf` reads the marker.
 - A document nested deeper than 500 levels is an error result, not a stack overflow.
 - The emitted formats are semver surface (AGENTS.md §8).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides

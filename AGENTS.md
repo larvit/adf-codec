@@ -4,14 +4,12 @@ Decisions a reader would otherwise relitigate, and the rules for every collabora
 agent. Using the library: `README.md`. What is still to build: `todo.md`; a bare `(28)` cites
 that item's entry in `todo-history.md`.
 
-## 1. Three formats, ADF is the hub
+## 1. ADF is the hub
 
-ADF, one markdown flavour, one HTML dialect. Six directions exposed, but markdown↔HTML compose
-through ADF: four conversions exist to keep correct — never write a fifth. The lossy pair wraps
-two of them, an ADF→ADF reduction ahead of `adfToMarkdown` and an ADF→ADF lift after
-`markdownToAdf`, and whatever it adds stays ADF→ADF (the maintainer, 2026-09-14) — save a callout's
-marker line, which the lift reads through the block parser (10e, 2026-09-26). No fourth format,
-ever; each one doubles the directions.
+README Goal 2. The lossy pair is the plain flavour: the markdown grammar's reader and writer with
+the flavour set, its spellings — alerts, callouts, task markers, `==` — read and written there, so
+a marker line and a backslash reach them intact; what the flavour cannot spell reduces ADF→ADF
+ahead of the writer (the maintainer, 2026-09-27; 35).
 
 ## 2. The round-trip is the product
 
@@ -389,7 +387,7 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 
 ## 14. Non-goals
 
-No wiki markup (§1), no network or filesystem I/O, no name→id resolution (§3), no ADF schema
+No network or filesystem I/O, no name→id resolution (§3), no ADF schema
 validation or exported validator — a refusal that keeps the round-trip is not schema validation,
 so the one a spelled node carrying the same mark type twice earns stays, and input nesting a
 spelling inside its own kind (`*(*a*)*`) names that mark once, no shipped CSS (§4), no

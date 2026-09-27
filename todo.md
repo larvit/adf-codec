@@ -22,14 +22,13 @@ Start a session with: `Read AGENTS.md and todo.md, then do what todo.md's "Next 
 ## Milestones
 
 Shipping order: 3h, 3i, 3j, 5a, 5b, 5c, 5d, 5 → `0.1.0` (shipped 2026-09-05); 3k, 11, 4, 12, 13, 4b,
-4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 32, 23, 24, 25, 30, 26, 27, 10, 6, 7, 31, 33, 34, 5f, 5g →
+4c, 14, 15, 16, 18, 4d, 28, 17, 29, 19, 20, 21, 22, 32, 23, 24, 25, 30, 26, 27, 35, 10, 6, 7, 31, 33, 34, 5f, 5g →
 `0.2.0`;
 8, 9 → TBD; 5e last.
 The numbering is the order the work was planned in, not the order it ships. Everything known and
 shaped ships in one release rather than a string of them: nothing waits on a version, and no
-consumer is served by the churn (the maintainer, 2026-09-18). So `0.2.0` completes §1's three
-formats, and `0.2.1` and `0.3.0` are gone. `8` and `9` stay out as the two goals nothing has shaped
-yet. `0.2.0`'s order is settled (the maintainer, 2026-09-13, extended 2026-09-18): 11 makes the
+consumer is served by the churn (the maintainer, 2026-09-18). So `0.2.0` completes HTML, and
+`0.2.1` and `0.3.0` are gone. `8` and `9` stay out as the two goals nothing has shaped yet. `0.2.0`'s order is settled (the maintainer, 2026-09-13, extended 2026-09-18): 11 makes the
 tables 4 generates from answer to Atlassian's schema, 4 proves 12, 13 spells 11's gaps in 12's
 grammar, and 12 rewrites code 4b and 4c change; then 14 moves the files 15, 16 and 10 edit and HTML
 is written against that layout, 4d marks the gate legs before 17 adds one, 17 puts the size ratchet
@@ -44,6 +43,7 @@ panel says the next reader pays for.
 29 and 30 come from 17's prose pass (2026-09-20). 29 reads first because every goal is what a later
 ask is settled against, 19's included; 30 sits beside 25, the other chunk rereading AGENTS.md.
 33 comes from 10a and 34 from 10b (2026-09-25); both read beside 31.
+35 comes from Goal 2's rewrite (2026-09-27) and reads first of what is left.
 31 comes from 20's gate runs (2026-09-21) and reads beside 5f, the other chunk putting a measured
 number under the pipeline. 32 comes from 21's review (2026-09-21) and reads beside 22, the other
 chunk clearing a §11 seam.
@@ -181,45 +181,63 @@ chunk clearing a §11 seam.
       whole. A comment sorts into the second rather than the third because a person wrote those
       words on purpose. 10's "Rejected in the survey" line names raw HTML and comments and does not
       contradict this: it rejects them as spellings the lossy pair writes and reads back, where
-      `plainMarkdownToAdf` composes on `markdownToAdf` and so inherits whatever this set accepts.
-- [ ] **7 — HTML, the third format (`0.2.0`).** `adfToHtml`, `htmlToAdf`, the composed
+      `plainMarkdownToAdf` reads through `markdownToAdf`'s parser and so inherits whatever this set
+      accepts.
+- [ ] **7 — HTML (`0.2.0`).** `adfToHtml`, `htmlToAdf`, the composed
       `markdownToHtml` / `htmlToMarkdown`. CommonMark spec suite runs against `markdownToHtml` from
       here (§10). The README's tagline and `package.json`'s `description` regain HTML (5g).
 - [ ] **8 — CLI.** A later goal, shaped around the personas once the library exists.
 - [ ] **9 — The online sandbox.** A web page with two textboxes converting back and forth between ADF and markdown, powered by the library's browser build.
+- [ ] **35 — Plain markdown is a flavour of the markdown grammar (`0.2.0`).** Per Goal 2 and
+      AGENTS.md §1, `plainMarkdownToAdf` is `markdownToAdf`'s parser and `adfToPlainMarkdown`
+      `adfToMarkdown`'s writer, each with the plain flavour set; 10's rows are read and written
+      there, and the lift goes (the maintainer, 2026-09-27). The exports, their refusals and 10's
+      rows stay as they are.
+  - [ ] **35a — The parser reads the plain flavour.** 10's rows are read while parsing, and
+        `plain-lift.ts` is deleted, its tests reading through `plainMarkdownToAdf`. `> [!faq]- Why?`
+        with the body on the next `>` line reads to an expand titled `Why?` whose body keeps the
+        next lines' link targets and marks, and `> [!tip] Title` then `> body` to a panel whose
+        paragraphs are `Title` and `body`: the rest of the marker's line is the title (an expand)
+        or the first body paragraph (a panel). A CommonMark backslash keeps a marker literal —
+        `\==x==`, `> \[!NOTE]`, `- \[x]`.
+  - [ ] **35b — The writer spells the plain flavour.** Panels, expands, task lists and highlights
+        are written by the writer, which escapes text that would read back as one, so
+        `plainMarkdownToAdf(adfToPlainMarkdown(doc))` keeps a literal `==x==`, a quote opening
+        `[!NOTE]` and a list whose items all open `[x] ` as text. A highlighted `=` (today
+        `=====`) and `a==b` (today `==a==b==`, highlighting `a` alone) come back highlighted
+        whole, or lose the highlight where no spelling holds them; 10c's byte-for-byte property
+        misses both, since the wrong document re-spells to the same bytes. The reduction keeps
+        only degrading what the flavour cannot spell.
 - [ ] **10 — Lossy conversion (`0.2.0`).** Markdown other tools render readably, to and from ADF,
       keeping the content while dropping what markdown cannot hold — format, design and the richer
       nodes.
-      **Settled** (the maintainer, 2026-09-14): two exports composed around the lossless pair, so §1's
-      four conversions stay four. `adfToPlainMarkdown(doc)` reduces the document ADF→ADF and hands it
-      to `adfToMarkdown`; `plainMarkdownToAdf(markdown)` hands the markdown to `markdownToAdf` and
-      lifts the result ADF→ADF. Both carry markdown conventions, so the reduction sits in
-      `src/markdown/emit/`, the lift in `src/markdown/parse/` and what both read in `src/markdown/`
-      (§11). The markdown is the flavour without directives — CommonMark, the pipe table and `~~` —
+      **Settled** (the maintainer, 2026-09-14, reshaped by 35 on 2026-09-27): two exports, the
+      markdown grammar's reader and writer with the plain flavour set (AGENTS.md §1). The markdown
+      is the lossless flavour without directives — CommonMark, the pipe table and `~~` —
       plus the conventions below, chosen for readability from a survey of GitHub, GitLab, Gitea,
       Obsidian, Pandoc, MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and
       Discord, GitHub's renderer confirming each shape. Writing refuses only what the document guard
       refuses (`not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`)
-      and degrades every other shape; reading refuses what `markdownToAdf` refuses. A lifted node
-      carries no `localId`, save a task node's position id (10f, the maintainer, 2026-09-26). The lift also reads other tools' spellings — type words in any case,
+      and degrades every other shape; reading refuses what `markdownToAdf` refuses. A read node
+      carries no `localId`, save a task node's position id (10f, the maintainer, 2026-09-26). Reading also takes other tools' spellings — type words in any case,
       Obsidian's aliases, `[X]` — since it reads their output and never writes those spellings.
       - A `panel` is an alert: the marker alone on the quote's first line, a blank `>`, then the body
         (`> [!WARNING]`), in GitHub's five words by colour — info `NOTE`, note `IMPORTANT`, tip and
-        success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE`. The lift reads those words
+        success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE`. Reading takes those words
         back (`NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error) and
         Obsidian's by meaning (hint tip; success, check and done success; attention warning; danger,
         failure, fail, missing, bug and error error — `error` by a panel, 3 of 3, 2026-09-25; any
         other word info). Text after a marker on its line is the panel's first body paragraph, and
-        the lines after it open the body (10e).
+        the lines after it open the body (35a).
       - An `expand` or `nestedExpand` is Obsidian's folded callout, `> [!NOTE]- Title`, a blank `>`,
-        then the body. The lift reads a fold sign (`-` or `+`) as an expand whatever the word, the
-        rest of the marker's line as its title and the lines after it as the body (10e), and an
+        then the body. Reading takes a fold sign (`-` or `+`) as an expand whatever the word, the
+        rest of the marker's line as its title and the lines after it as the body (35a), and an
         expand inside an expand as a `nestedExpand`.
       - A `taskList` is a bullet list whose items lead with `[x]` or `[ ]` (`- [x] Write the spec`).
-        The lift reads a list whose every item is so marked back as a `taskList` — a `blockTaskItem`
+        Reading takes a list whose every item is so marked back as a `taskList` — a `blockTaskItem`
         where an item holds more than one block, a nested task list moved beside its item — and
         leaves mixed and ordered lists plain. A `decisionList` is a plain bullet list.
-      - `backgroundColor` is `==text==`, and the lift gives `==text==` the Atlassian editor's default
+      - `backgroundColor` is `==text==`, and reading gives `==text==` the Atlassian editor's default
         highlight colour where whitespace, punctuation or a line edge bounds each `==` outside, so
         `a==b and c==d` stays text (a panel, 3 of 3, 2026-09-25).
       - `layoutSection`/`layoutColumn`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`
@@ -262,26 +280,10 @@ chunk clearing a §11 seam.
   - [x] **10a — The reduction.**
   - [x] **10b — The lift.**
   - [x] **10c — The exports.**
-  - [ ] **10d — A literal marker survives the lossy round trip.** Text reading `==x==`, a quote
-        opening `[!NOTE]` or a list whose items all open `[x] ` comes back as a highlight, panel or
-        task list after `plainMarkdownToAdf(adfToPlainMarkdown(doc))`, and a human's `\==x==` too:
-        the lift reads ADF, where `markdownToAdf` has already spent the backslash. Give plain
-        markdown an escape that keeps such text literal through both directions — which seam carries
-        it is a gap to ask. The same class runs the other way: a highlighted `=` writes `=====`, which
-        reads back as text, and a highlighted `a==b` writes `==a==b==`, highlighting `a` alone; 10c's
-        byte-for-byte property misses both, since the wrong document re-spells to the same bytes.
-  - [ ] **10e — A callout's title is its marker's line.** `> [!faq]- Why?` with the body on the
-        next `>` line lifts to an expand titled `Why?` whose body keeps the next lines' link
-        targets and marks, and `> [!tip] Title` then `> body` to a panel whose paragraphs are
-        `Title` and `body`. The rest of the marker's line is the title (an expand) or the first
-        body paragraph (a panel), and the lines after it open the body. The line edge is gone once
-        `markdownToAdf` has joined the paragraph, so `plainMarkdownToAdf` reads the marker line
-        through the block parser — the one place the lift leaves ADF→ADF (the maintainer,
-        2026-09-26; 10c's review found the paragraph rule dropping link targets Goal 5 keeps).
-  - [ ] **10f — Lifted task nodes carry position ids.** `plainMarkdownToAdf` gives each `taskList`,
-        `taskItem` and `blockTaskItem` it lifts a deterministic `localId` from its position in
+  - [ ] **10f — Task nodes read from plain markdown carry position ids.** `plainMarkdownToAdf` gives
+        each `taskList`, `taskItem` and `blockTaskItem` a deterministic `localId` from its position in
         document order, so a site that rejects a missing `localId` takes the document and the same
-        markdown lifts to the same ids every run; README §Plain markdown's `localId` bullet says so
+        markdown reads to the same ids every run; README §Plain markdown's `localId` bullet says so
         (the maintainer, 2026-09-26). The id spelling — unique within the document, no host API —
         is part of the chunk.
 - [x] **11 — Atlassian's ADF schema as the tables' truth.**
@@ -328,4 +330,4 @@ syntax, the rest rides the opaque carry (§3) until it does too.
 
 Plain markdown covers `blockquote`, `bulletList`, `codeBlock`, `heading`, `orderedList`,
 `paragraph`, `rule`, `listItem`, `hardBreak`, `text`, and the `code`, `em`, `link` and `strong`
-marks; `strike` is the flavour's `~~` carve-out. Everything else is what the flavour is for.
+marks; `strike` is the flavour's `~~` carve-out. Everything else is what the lossless flavour is for.
