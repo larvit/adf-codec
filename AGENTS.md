@@ -172,16 +172,16 @@ functions, and a branch floor that only ever moves upward. It sits below 100 bec
 compared against `undefined` — have a half no valid document reaches.
 
 The size ratchet is the other such number, `.oxlintrc.json`'s single rule over the files
-`tsconfig.build.json` builds — `oxlint`, since TypeScript 7 is a native compiler publishing no
-in-process parser, only the `unstable/` AST surface an out-of-process handshake reaches: a
-per-function line ceiling, set at that set's worst and moving only downward. It covers the built
-files alone, since one ceiling over the tests too would have to be their worst, loosening the guard
-over the shipped code. It guards against drift and never drives a refactor, so no cyclomatic rule
-and no second lint rule join it: neither measure picked out what nine readers found hard (the
-comprehension panel, 2026-09-20). Three switches guard a silent green: `IIFEs: true`, since oxlint
-exempts an IIFE otherwise; an explicit `-c`, so a config gone missing fails the leg instead of
-falling back to oxlint's own defaults; and `--deny-warnings`, since a rule from a category this
-config never names arrives as a warning it exits 0 on.
+`tsconfig.build.json` builds, measured by `oxlint` since TypeScript 7 is a native compiler
+publishing no in-process parser, only the `unstable/` AST surface an out-of-process handshake
+reaches. It is a per-function line ceiling, set at that set's worst and moving only downward. It
+covers the built files alone, since one ceiling over the tests too would have to be their worst,
+loosening the guard over the shipped code. It guards against drift and never drives a refactor, so
+no cyclomatic rule and no second lint rule join it: neither measure picked out what nine readers
+found hard (the comprehension panel, 2026-09-20). Three switches guard a silent green: `IIFEs:
+true`, since oxlint exempts an IIFE otherwise; an explicit `-c`, so a config gone missing fails the
+leg instead of falling back to oxlint's own defaults; and `--deny-warnings`, since a rule from a
+category this config never names arrives as a warning it exits 0 on.
 
 The corpus, all checked in: hand-built fixtures per node and combination; real ADF Atlassian's
 editor wrote; the CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
@@ -372,8 +372,9 @@ The verdict lands in the item it settles (the maintainer, 2026-09-25).
 ### Rules the loop has settled (the maintainer, 2026-09-18)
 
 - A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always
-  in a release, weighed against every item on that release by the personas and Goals 1 and 2 — an
-  item it outweighs moves later. A weighing no rule decides is asked as a gap.
+  in a release, weighed against every item on that release by the personas and `docs/decisions.md`
+  §Plain markdown is a flavour of the grammar through §Names stay text — an item it outweighs moves
+  later. A weighing no rule decides is asked as a gap.
 - A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks,
   naming the number it can reach. A number the code needs and no rule states is a gap.
 - An earliest release with no items left and nothing shipped toward it is planned as the chunk:

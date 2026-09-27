@@ -5,7 +5,8 @@ an HTML dialect.
 
 **Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
 `0.2.0`.**
-Plan: `todo.md`. Decisions: `AGENTS.md`. Changes:
+Plan: `todo.md`. Decisions:
+[`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md). Changes:
 [`CHANGELOG.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/CHANGELOG.md). The lossless flavour's grammar:
 [`spec/flavour.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/spec/flavour.md).
 Upgrading from `0.1.0`: [convert your markdown first](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/MIGRATION.md).
@@ -143,7 +144,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
 ## The errors
 
 An ADF node type this version does not know is not an error: it is carried opaquely and restores
-unchanged (`docs/decisions.md §Unknown nodes ride the carry`).
+unchanged ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 
 `ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
 stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text
@@ -195,7 +196,7 @@ emit refuses:
 ## The guarantees
 
 - `markdownToAdf(adfToMarkdown(doc))` equals `doc` — unknown node types included, carried opaquely
-  (`docs/decisions.md §Unknown nodes ride the carry`).
+  ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
   names, with three carve-outs — literal text matching directive, pipe-table or strikethrough
   syntax is claimed (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as
@@ -234,4 +235,5 @@ emit refuses:
 ESM only, no runtime dependencies, public npmjs. Built JavaScript with `.d.ts` beside it.
 Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs under Node,
 Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
-Contract: `docs/decisions.md`.
+Contract: [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#any-es2022-engine), §Any
+ES2022 engine to §Public on npm.

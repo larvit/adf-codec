@@ -156,13 +156,13 @@ naming no open container or a node other than the innermost open one, a leaf giv
 unparseable or duplicate-keyed attrs, invalid JSON in an opaque carry. Never a silent literal-text
 fallback — a typo that reparses as prose is the silent loss the round-trip refuses.
 
-## The opaque carry (`docs/decisions.md` §Unknown nodes ride the carry)
+## The opaque carry
 
-A node no section spells where it stands — an unknown type, or a known one whose spelling belongs to
-the other position — rides as its raw JSON and restores to a deep-equal node. A carry may hold a
-node the emitter spells natively: it restores unreinterpreted, and the next emit spells it
-canonically (`docs/decisions.md` §The round-trip is the product). Block and inline positions
-canonicalize differently, each fitting where it sits:
+A node no section spells where it stands (`docs/decisions.md` §Unknown nodes ride the carry) — an
+unknown type, or a known one whose spelling belongs to the other position — rides as its raw JSON
+and restores to a deep-equal node. A carry may hold a node the emitter spells natively: it restores
+unreinterpreted, and the next emit spells it canonically (`docs/decisions.md` §The round-trip is the
+product). Block and inline positions canonicalize differently, each fitting where it sits:
 
 - **Block position**: a fenced code block with info string `carry`, body = the node's JSON —
   two-space indent, object keys sorted.
@@ -490,11 +490,11 @@ the directive form, open to no literal reading, is a named error.
 
 A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
 outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the
-reverse.
-`adfToMarkdown` nests in the order the array holds rather than sorting it — §2's equality
-restores the array, not a set — and opens each spelling once over the longest run of adjacent
-inline nodes carrying an identical mark, attributes included, at that depth. A run breaks at every
-node the emitter carries, so no emitted carry sits inside a mark spelling.
+reverse. `adfToMarkdown` nests in the order the array holds rather than sorting it —
+`docs/decisions.md` §Equality is editor-normal restores the array, not a set — and opens each
+spelling once over the longest run of adjacent inline nodes carrying an identical mark, attributes
+included, at that depth. A run breaks at every node the emitter carries, so no emitted carry sits
+inside a mark spelling.
 
 An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
 spelling does not list, a value that is not the spelling's type, an attribute the spelling needs

@@ -40,7 +40,7 @@ array the absent key — the only domain markdown can restore.
 ## Unknown nodes ride the carry
 
 2026-08-23, extended to misplaced known nodes 2026-08-26, the maintainer. Goal 1. Valid while ADF
-gains node types faster than this library spells them.
+holds nodes, or node positions, this library does not spell.
 
 An unknown ADF node is carried opaquely — raw JSON rides a dedicated syntax in both formats and
 restores to a deep-equal node. The round-trip holds for documents newer than the library. So does
@@ -76,7 +76,7 @@ opener nests by itself and leaf versus container falls out of the node's content
 
 ## CommonMark is a subset
 
-2026-08-23, the maintainer. Goal 3. Valid while the carve-outs stay the flavour's only claims.
+2026-08-23, the maintainer. Goal 3. Valid while prose rarely writes the shapes the carve-outs claim.
 
 Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
 directive, a pipe table or a `~~` pair is claimed — plus one image gap.
@@ -117,7 +117,8 @@ for what HTML cannot express, text always escaped. No stylesheet ships.
 
 ## No runtime dependencies
 
-2026-08-23, the maintainer. Goal 7. Valid while Goal 7 names no runtime dependencies.
+2026-08-23, the maintainer. Goal 7. Valid while ~20 lines of own code, or a vendored table, do each
+job a dependency would.
 
 `dependencies` is empty. A runtime dependency enters only through an entry here stating why ~20
 lines of own code cannot do the job, who maintains it, and what auditing it costs. So the CommonMark
@@ -125,8 +126,8 @@ and HTML parsers are written in this repo.
 
 ## Standards ship as data
 
-2026-08-30, the CommonMark suite 2026-09-05 and ADF's schemas 2026-09-13, the maintainer. Goals 1
-and 7. Valid while each table's upstream package is CommonJS-only or heavy.
+2026-08-30, the CommonMark suite 2026-09-05 and ADF's schemas 2026-09-13, the maintainer. Goals 1,
+3 and 7. Valid while each table is fixed data a dependency would only wrap.
 
 A table a standard fixes is data rather than a dependency: HTML5's 2125 semicolon-terminated
 character references ship packed in their own module, so entity decoding is complete without one.
@@ -163,7 +164,7 @@ never the higher one those repo-only tools want.
 
 ## ESM only
 
-2026-08-23, the maintainer. Goal 7. Valid while every supported engine loads ES modules.
+2026-08-23, the maintainer. Goal 7. Valid while the audience's toolchains all import ES modules.
 
 No CommonJS build, no dual-package hazard.
 
@@ -177,7 +178,7 @@ an npm consumer.
 
 ## Public on npm
 
-2026-08-23, the maintainer. Goal 7 and the Audience. Valid while the audience installs from public
+2026-08-23, the maintainer. The Audience. Valid while the audience installs from public
 npm.
 
 Published to public npmjs as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
