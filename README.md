@@ -25,10 +25,10 @@ represent.
 
 In priority order.
 
-1. **Lossless first.** The round-trip holds for every document the lossless conversions take, node
-   types this version does not know included; one that has no spelling is refused and says where,
-   never silently reduced. Every call answers: no input makes one hang or overflow the stack.
-   Every goal below gives way to this one.
+1. **Lossless, and every call returns.** The round-trip holds for every document the lossless
+   conversions take, node types this version does not know included; one that has no spelling is
+   refused and says where, never silently reduced. No input makes a call loop forever or overflow
+   the stack. Every goal below gives way to this one.
 2. **ADF is the hub.** Every format and flavour converts to and from ADF, and no two others
    convert directly: markdown↔HTML composes through ADF. Adding a format or flavour costs one
    reader and one writer. A flavour of a grammar shares that grammar's reader and writer and adds
@@ -49,9 +49,10 @@ In priority order.
    the emitted formats are.
 7. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
    any ES2022 engine, in a browser as readily as on a server, installed from public npm.
-8. **Correct before fast.** Each format is read and written as its own specification defines it —
-   markdown as CommonMark's spec suite reads it, well-formed HTML as the HTML standard parses it —
-   and a call takes a whole document and returns a whole result.
+8. **Correct before fast.** Each format means what its own specification says — markdown as the
+   CommonMark spec reads it, well-formed HTML as the HTML standard parses it — both in what this
+   library reads and in what a conforming parser reads from what it writes. A call takes a whole
+   document and returns a whole result.
 9. **Fast once correct.** Conversion time grows linearly with the document wherever the goals above
    allow it; a faster path that risks one of them is not taken.
 
