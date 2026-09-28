@@ -2,17 +2,11 @@
 
 ## 0.2.0
 
-- **36 — Move every decision into `docs/decisions.md`, indexed from `AGENTS.md`.** Each entry states
-  the decision, its date, who made it, the README goal it serves and the premise it is valid while;
-  one no goal serves is proposed as a goal and asked. Sources: `AGENTS.md`'s body, the settled text
-  in this file's items, and `todo-history.md`, deleted with the bare `(28)` citations into it once
-  nothing cites it. Split by `AGENTS.md` section where one chunk is too big.
-  - **36e — Move `todo-history.md`'s decisions, re-point its citations and delete it.**
 - **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
-  `docs/decisions.md` §Plain markdown is a flavour of the grammar, 10's rows are read by
-  `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The exports,
-  their refusals and 10's rows stay as they are.
-  - **35a — Read the plain flavour in the parser and delete the lift.** 10's rows are read while
+  `docs/decisions.md` §Plain markdown is a flavour of the grammar, README §Plain markdown's rows are
+  read by `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The
+  exports, their refusals and those rows stay as they are.
+  - **35a — Read the plain flavour in the parser and delete the lift.** The rows are read while
     parsing, and `plain-lift.ts` is deleted, its tests reading through `plainMarkdownToAdf`. `>
     [!faq]- Why?` with the body on the next `>` line reads to an expand titled `Why?` whose body
     keeps the next lines' link targets and marks, and `> [!tip] Title` then `> body` to a panel
@@ -24,14 +18,15 @@
     `plainMarkdownToAdf(adfToPlainMarkdown(doc))` keeps a literal `==x==`, a quote opening `[!NOTE]`
     and a list whose items all open `[x] ` as text. A highlighted `=` (today `=====`) and `a==b`
     (today `==a==b==`, highlighting `a` alone) come back highlighted whole, or lose the highlight
-    where no spelling holds them; 10c's byte-for-byte property misses both, since the wrong document
-    re-spells to the same bytes. The reduction keeps only degrading what the flavour cannot spell.
+    where no spelling holds them; the plain pair's byte-for-byte property misses both, since the
+    wrong document re-spells to the same bytes. The reduction keeps only degrading what the flavour
+    cannot spell.
 - **10f — Give task nodes read from plain markdown position ids.** Per `docs/decisions.md` §Plain
   task ids come from position, README §Plain markdown's `localId` bullet saying so. The id spelling
   is part of the chunk.
 - **6 — Specify the HTML dialect.** Element-by-element mapping, the `data-*` fidelity scheme, the
   opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts — the set
-  `markdownToAdf` shares (`spec/flavour.md` §Raw HTML in input; 29).
+  `markdownToAdf` shares (`spec/flavour.md` §Raw HTML in input).
   The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
 - **7 — Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed
   through ADF.** CommonMark spec suite runs against `markdownToHtml` from here. The README's
@@ -53,6 +48,9 @@
   `line-escaping.ts`'s `charAt` and the parser's flanking read one UTF-16 unit beside an astral
   symbol — a lone surrogate is neither punctuation nor symbol, where CommonMark reads `😀` as
   punctuation — and, where they do, read the code point, with a fixture per direction.
+- **38 — Spell a lone surrogate in a text node so it survives a UTF-8 encode.** `adfToMarkdown`
+  emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute values already escape
+  it.
 - **5f — Publish the bundle size, after 7 changes it.** Measure the shipped artifact and put the
   number in the README, kept honest by the release pipeline rather than by a human re-reading it.
   The quantity is what a consumer downloads and loads: the tarball `npm pack` produces, its unpacked

@@ -11,12 +11,15 @@ a backslash reach them intact; what the flavour cannot spell reduces ADF→ADF a
 
 ## The round-trip is the product
 
-2026-08-23, the maintainer. Goal 1. Valid while a consumer saves back through the lossless pair.
+2026-08-23, real payloads 2026-09-15, the maintainer. Goal 1. Valid while a consumer saves back
+through the lossless pair.
 
 `markdownToAdf(adfToMarkdown(doc))` and `htmlToAdf(adfToHtml(doc))` must equal `doc` — anything
 less silently destroys content an editor could not represent, in a document it did not author.
 When losslessness and readability conflict, losslessness wins. Round-trip equality is a property
-tested over a checked-in corpus (`corpus/README.md`), not a claim made in prose.
+tested over a checked-in corpus (`corpus/README.md`), not a claim made in prose. Its real payloads
+are invented content written in Atlassian's editor on the maintainer's test site, so none is
+sanitized and a mention keeps the test user's real account id.
 
 ## Markdown in is a canonical fixpoint
 
@@ -131,6 +134,22 @@ position in document order, unique within the document and minted with no host A
 rejecting a missing `localId` takes the document and the same markdown reads to the same ids every
 run.
 
+## The plain flavour's spellings
+
+2026-09-14, panels 2026-09-25, the maintainer. Goal 5. Valid while GitHub's renderer is the one the
+audience's markdown is read in.
+
+README §Plain markdown's rows come from a survey of GitHub, GitLab, Gitea, Obsidian, Pandoc,
+MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and Discord, GitHub's
+renderer confirming each shape. Reader panels settled `error` as an error panel and the `==`
+bounds (3 of 3), the external image's two forms (6 of 7), the omission notes and a rule opening a
+list item dropping (3 of 3), and a list's numbering overflowing into bullets (3 of 3, 5 of 7).
+Reading takes other tools' spellings, since it reads their output and writes none of them.
+Rejected: `~sub~` and `^sup^` (`~2~` is a strike on GitHub, so `subsup` drops), underline and colour
+spellings, raw HTML (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admonition family,
+footnotes, definition lists, wikilinks, embeds, tags, comments, TOC tokens, spoilers, task states
+past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
+
 ## The HTML dialect
 
 2026-08-23, the maintainer. Goals 4 and 7. Valid while HTML output is read by consumers styling it
@@ -202,21 +221,24 @@ an npm consumer.
 
 ## Public on npm
 
-2026-08-23, the maintainer. Goal 7. Valid while the package's source stays public beside it.
+2026-08-23, the name 2026-09-01, the maintainer. Goals 2 and 7. Valid while the package's source
+stays public beside it.
 
 Published to public npm as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
-LICENSE in place, before the first publish.
+LICENSE in place, before the first publish. A codec, since it converts both directions, and named
+for the hub rather than the formats around it.
 
 ## The formats are API
 
-2026-08-23, content models 2026-09-16, the maintainer. Goals 1 and 6. Valid while consumers store
-what the library emits.
+2026-08-23, strict input 2026-09-01, content models 2026-09-16, the maintainer. Goals 1 and 6.
+Valid while consumers store what the library emits.
 
 The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
 differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
 Pre-1.0, normal 0.x rules. A spelled node's content model is part of that contract — leaf or
 container is the model, not the syntax — so giving a spelled node's model content it had not, or
-taking it away, is MAJOR whatever ADF's own schema does.
+taking it away, is MAJOR whatever ADF's own schema does. Input reads the canonical directive
+spelling alone — spacing, key order, each value's spelling — since loosening it later is MINOR.
 
 The error surface is a contract too; `README.md` §The errors states it to the consumer, and the
 types in `src/result.ts` hold its shape.
@@ -354,7 +376,9 @@ is the other's `127.0.0.1`; `--headless --screenshot` has no such channel, and l
 `dist/index.js` in a globals-stripped realm buys one by not running a browser. The leg re-checks
 the conversions and nothing else — each fixture's emitted markdown, its parsed document, its error
 code — leaving the corpus's pairing, uniqueness, source positions and byte-level equality to the
-Node suite that owns them.
+Node suite that owns them. `selenium/standalone-firefox` runs it over the smaller
+`instrumentisto/geckodriver`: the leg is worth a current SpiderMonkey, and that image fell four
+Firefox majors behind.
 
 ## The coverage floors
 
@@ -389,6 +413,18 @@ exits 0 on.
 
 Beside the corpus, properties run over documents generated from the node tables and over generated
 markdown, on a fixed seed in the gate; a counterexample found becomes a round-trip fixture.
+
+## The CommonMark suite checks three ways
+
+2026-08-27, the maintainer. Goals 1 and 8. Valid while the suite's answers are HTML ADF cannot be
+compared against.
+
+Each example is a named error or markdown that parses and emits to itself byte for byte; its
+reference HTML's text, tags stripped and entities decoded, equals the parsed document's; and its
+elements count the marks and nodes they map to. The fixpoint alone passes a parser returning the
+empty document, the text alone one dropping every emphasis. An exception is the maintainer's to
+add, and valid CommonMark parsing to a document `adfToMarkdown` refuses where a spelling could exist
+is a bug to fix, never an exception.
 
 ## The flavour spec is read as a source
 
@@ -464,6 +500,17 @@ no depth and `headroom` is affine in it, so a read at or above the depth that fi
 rebases; a read below re-spells, because a hit skips the depth guards the walk it replaces runs and
 an ordered list past the marker cap gives way, spending two emitter levels where the parser spent
 one. Only what succeeded is kept, so no path minted at another position is ever read.
+
+## Cost fixes are measured, never timed
+
+2026-09-18, the maintainer and the stability-reviewer. Goal 9. Valid while Goal 9 promises growth
+rather than a figure.
+
+A cost fix that changes no behaviour lands on the suite staying green with no fixture output
+changed, and a before-and-after figure in its PR; the gate times nothing. Measured and kept:
+`adfDocumentFault`'s shape and depth walks stay two — the parting gives depth its own code — at
+52 ms for a 9 MB document the emit takes 314 ms over; and `continuesContainer`'s re-scan per item
+level stays, linear in the lines and bounded in depth by the 500-level guard.
 
 ## Only the hard break holds a raw newline
 

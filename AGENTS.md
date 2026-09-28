@@ -1,8 +1,7 @@
 # Working in this repo
 
 The rules for every collaborator, human or agent, and an index of the decisions a reader would
-otherwise relitigate. Using the library: `README.md`. What is still to build: `todo.md`; a bare
-`(28)` cites that item's entry in `todo-history.md`.
+otherwise relitigate. Using the library: `README.md`. What is still to build: `todo.md`.
 
 ## Decisions
 
@@ -21,6 +20,7 @@ In `docs/decisions.md`:
 - Links
 - Ids stay site-local
 - Plain task ids come from position
+- The plain flavour's spellings
 - The HTML dialect
 - No runtime dependencies
 - Standards ship as data
@@ -42,6 +42,7 @@ In `docs/decisions.md`:
 - The coverage floors
 - The size ratchet
 - Properties on a fixed seed
+- The CommonMark suite checks three ways
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
 - Nothing recurses unbounded
@@ -49,6 +50,7 @@ In `docs/decisions.md`:
 - A retry loop checks its own termination
 - Readers scan by index
 - The spelling memo
+- Cost fixes are measured, never timed
 - Only the hard break holds a raw newline
 - Emphasis follows CommonMark's matching
 - Readable spellings take the `try` prefix
@@ -82,7 +84,7 @@ a hang. A leg added later owes the same marker, and a function a leg reaches cha
 with `&&`, because the `||` that captures the leg's status suspends `set -e` for everything it
 calls. A leg whose output is both streamed and grepped keeps the copy in a `mktemp`
 file: `tee /dev/stderr` reopens fd 2, and under `./ci.sh > log 2>&1` the two offsets punch NUL
-holes through each other's lines (4d).
+holes through each other's lines.
 
 `PROPERTY_RUNS=<runs>` raises the property runs and randomizes the seed for local digging. The
 generators and run parameters properties share live in `src/conformance/property-harness.ts`,
