@@ -204,9 +204,15 @@ test('keeps what markdownToAdf reads that no row reads, and refuses only what it
   const lossless = markdownToAdf('> [!NOTE]\n\n- [x] ==a==\n')
   assert.deepEqual(lossless.ok ? lossless.value.content : lossless.error.code, [bare('blockquote', said('[!NOTE]')), bare('bulletList', bare('listItem', said('[x] ==a==')))])
   assert.equal(read('!adf:panel\n'), 'malformed-directive')
-  for (const markdown of ['> [!tip] ![a](u)\n', '> [!tip]\n> ![a](u)\n', '> [!NOTE]- t\n> ![a](u)\n', '> [!NOTE]- ![a](u)\n', '- [x] ![a](u)\n']) {
+  const refusal = (markdown: string): unknown => {
     const parsed = plainMarkdownToAdf(markdown)
-    assert.deepEqual(parsed.ok ? parsed.value : [parsed.error.code, parsed.error.message], ['unmappable-image', 'an image fits only as a paragraph of its own: this one shares its paragraph with a marker'], markdown)
+    return parsed.ok ? parsed.value : [parsed.error.code, parsed.error.message]
+  }
+  for (const markdown of ['> [!tip] ![a](u)\n', '> [!NOTE]- ![a](u)\n', '- [x] ![a](u)\n']) {
+    assert.deepEqual(refusal(markdown), ['unmappable-image', 'an image fits only as a paragraph of its own: this one shares a line with a marker'], markdown)
+  }
+  for (const markdown of ['> [!tip]\n> ![a](u)\n', '> [!tip] t\n> ![a](u)\n', '> [!NOTE]- t\n> ![a](u)\n', '- [x]\n  ![a](u)\n']) {
+    assert.deepEqual(refusal(markdown), ['unmappable-image', 'an image fits only as a paragraph of its own: this one continues the paragraph a marker opens, which a blank line before it ends'], markdown)
   }
   let deep = 'x\n'
   for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
