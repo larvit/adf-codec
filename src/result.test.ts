@@ -25,7 +25,7 @@ function calledCodes(): string[] {
   return [...called].sort()
 }
 
-// The list is frozen at 0.1.0 (docs/decisions.md §The code list), so a code outliving its cause is a removal that costs a MAJOR.
+// Removing a code is breaking (docs/decisions.md §The code list), so a code must not outlive its cause.
 test('every ConvertErrorCode is the code of a production call site, and every call site names a declared one', () => {
   assert.deepEqual(calledCodes(), declaredCodes())
 })
