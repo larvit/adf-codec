@@ -28,96 +28,24 @@ In `docs/decisions.md`:
 - ESM only
 - One built entrypoint
 - Public on npm
+- The formats are API
+- The code list
+- Which code a cause takes
+- `message` and `path`
+- Publish on a version bump
+- Docs describe the release being built
+- No schema validation
+- No streaming APIs
+- No performance budget
 
 ## 7. Nothing about any consumer
 
 No Jira client, no HTTP, no REST shapes, no issue keys, no actual consumer named anywhere. Design
 against the README's personas.
 
-## 8. Semver: the formats are API
-
-The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
-differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
-Pre-1.0, normal 0.x rules. A spelled node's content model is part of that contract — leaf or
-container is the model, not the syntax — so giving a spelled node's model content it had not, or
-taking it away, is MAJOR whatever ADF's own schema does.
-
-The error surface is a contract too; `README.md` §The errors states it to the consumer, and the
-types in `src/result.ts` hold its shape.
-
-### The code list
-
-- Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
-  name reads true of it in both directions; where none does and a plain name exists, a new code —
-  in any 0.x minor, and after 1.0 only in a MAJOR (the maintainer, 2026-09-18).
-- A refusal whose cause is this library's own invariant rather than the input takes the existing
-  code nearest what the consumer sees — a document that does not convert is
-  `unsupported-node-shape` — since a code no input reaches is one no consumer can switch on (the
-  maintainer, 2026-09-20).
-- A refusal no spelling recovers from is a gap in the flavour rather than a code: give the flavour
-  the spelling and the code goes, which the freeze is the last moment for (`unspellable-link`, the
-  maintainer, 2026-09-13). A cause the carry answers gets no code: a mark no spelling writes rides
-  the carry with its node.
-
-### Which code a cause takes
-
-- A code names the cause; where one cause recurs across node types, across one mark's attributes
-  or across directions, one code covers them all and `path` and `message` say which —
-  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it,
-  `unspellable-character` the text node and the code block alike. Where two codes stay apart, the
-  line between them is what they name: `unspellable-character` is a character CommonMark rewrites
-  wherever text holds it, `unspellable-whitespace` the newline no inline directive's content slot
-  spans, in either direction.
-- A claim code names the spelling claimed, never the node that spelling would have built: a
-  malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
-  `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
-  colon rather than ADF's missing column model doing it. What the grammar itself refuses stays a
-  claim code, key order among it, and a leaf given a body is refused at its opener, as a container
-  missing its closer is (the maintainer, 2026-09-16).
-- A directive whose name reads back to no node is `unknown-directive-name` rather than a claim
-  code — the spelling is well formed, and telling that apart from a typo is what a consumer
-  switches on when a later MINOR gives the name meaning. A reserved name is a known name, so never
-  that code, and the two the flavour reserves part on form: a form the grammar does not have is a
-  claim code — `!adf:carry`, whose carry is the fence — and a well-formed form in the wrong place
-  is `unsupported-node-shape`, `!adf:listBreak` parting anything but two adjacent lists of one
-  type.
-- A well-formed directive the node tables refuse — an attribute a node does not hold or spells
-  elsewhere, a value outside its kind or its canonical spelling, an argument, or a body of a shape
-  its content model does not take — is `unsupported-node-shape`, the emitter's code for the same
-  mismatch read the other way: one code across both directions for good, since the call site
-  knows which direction it called and parting them after `0.1.0` is MAJOR.
-- A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
-  emitting — no document holds one, so no round-trip crosses them.
-
-### `message` and `path`
-
-- A message names the violation, not the rule alone — a rule by itself states a truth the reader
-  must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose
-  it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
-  inline alike, `\|` for every pipe row.
-- `not-an-adf-document` carries the document's own path throughout: seven of the guard's eight
-  branches read the document's own shape, and threading a path to the eighth — a malformed node
-  anywhere in the tree — wants the manual stack §11's no-recursion rule forces, whose empty half
-  no input reaches. The message names the violation instead.
-
 ## 9. Release automation
 
-- `package.json` version on `main` is the source of truth. CI on `main`: tests green and version
-  differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
-  deliberate semver judgment. `publish.sh` is that job, and `private: true` stops it before it
-  reads the token, so the pipeline is live and silent until the maintainer's first bump drops the
-  field.
 - The bump commit renames `CHANGELOG.md`'s `## Unreleased` to the version.
-- Docs on `main` describe the release being built rather than the version npm holds, so they match
-  it the moment the bump publishes; add no interim note marking the gap (the maintainer,
-  2026-09-16).
-- The publish and the tag each observe their own end state — the version on npm, the tag on the
-  remote — and neither gates the other, so a run that dies between them converges on the next push
-  to `main` rather than leaving npm ahead of the tags. An unanswered registry reads the same as an
-  unpublished version, which npm's own duplicate rejection is what catches. The job rebuilds rather
-  than taking the gate's `dist`: the lockfile is committed, the image is patch-pinned and `tsc` is
-  deterministic, so the two builds agree, and promoting an artifact would make the release path
-  depend on a store that the gate would then have to keep.
 - Exact versions: `save-exact=true` in `.npmrc`.
 - Renovate watches devDependencies, Docker pins and action tags; automerges everything on green CI.
 - Docker images pin the full patch version (`node:24.19.0-alpine3.24`, never `node:24`), as
@@ -316,16 +244,6 @@ Applies everywhere: comments, every markdown file in this repo (this one include
 
 One-line commit messages and PR titles; short PR summaries. No AI-attribution markers, ever.
 
-## 14. Non-goals
-
-No network or filesystem I/O, no name→id resolution (`docs/decisions.md` §Names stay text), no ADF
-schema validation or exported validator — a refusal that keeps the round-trip is not schema
-validation, so the one a spelled node carrying the same mark type twice earns stays, and input
-nesting a spelling inside its own kind (`*(*a*)*`) names that mark once, no shipped CSS
-(`docs/decisions.md` §The HTML dialect), no streaming APIs, no performance budget past §11's
-scanning rule — nothing here is tuned, and no figure is promised. A CLI is a later goal (`todo.md`),
-not a non-goal.
-
 ## 15. The working loop
 
 `todo.md` lists what is left under the release that ships it, in shipping order. One item per
@@ -347,7 +265,8 @@ Per chunk:
    reworded for them into `CHANGELOG.md`'s `## Unreleased` — report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
-bump on `main` publishes, §9 — every release is the maintainer's) and the `NPM_TOKEN` secret.
+bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
+maintainer's) and the `NPM_TOKEN` secret.
 
 ### Ask, don't guess
 

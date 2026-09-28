@@ -224,7 +224,8 @@ emit refuses:
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
   is the `taskList` directive — `plainMarkdownToAdf` turns the marker into a `taskList`.
 - A document nested deeper than 500 levels is an error result, not a stack overflow.
-- The emitted formats are semver surface (AGENTS.md §8).
+- The emitted formats are semver surface
+  ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#the-formats-are-api)).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
   `data-*` attributes. Foreign HTML maps a documented element set, which markdown's raw HTML reads
   through as well, and a construct outside it is an error; well-formed HTML only — no tag-soup

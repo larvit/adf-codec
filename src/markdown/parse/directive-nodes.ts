@@ -69,7 +69,7 @@ export function readInlineDirectiveNode(
   return success(namedNode(name, attrs.value, undefined))
 }
 
-// A name the other position spells names that spelling, never the code a later MINOR may fill (AGENTS.md §8).
+// A name the other position spells names that spelling, never the code a later MINOR may fill (docs/decisions.md §Which code a cause takes).
 function inlineSpellingFault(name: string): ConvertFault | undefined {
   const mark = inlineMarkSpellingFault(name)
   if (mark !== undefined) return mark

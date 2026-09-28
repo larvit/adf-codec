@@ -7,8 +7,6 @@
   one no goal serves is proposed as a goal and asked. Sources: `AGENTS.md`'s body, the settled text
   in this file's items, and `todo-history.md`, deleted with the bare `(28)` citations into it once
   nothing cites it. Split by `AGENTS.md` section where one chunk is too big.
-  - **36b — Move §8, §9 and §14's decisions.** The code list's rules, release automation and the
-    non-goals.
   - **36c — Move §10 and §11's decisions.** The engine legs, floors, size ratchet, bounds, spellings
     and layout; the style rules stay working rules.
   - **36d — Move the settled text in `todo.md`'s items and §15's dated rules, and point §15's

@@ -1,12 +1,12 @@
 # The markdown flavour
 
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
-CommonMark is a subset apart from raw HTML (below), with three carve-outs: literal text that
-matches directive syntax below or reads as a pipe table is claimed by the flavour, and a matched
-`~~` pair spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal) — and one gap: a
-CommonMark image fits only as its own
-title-less paragraph — mid-text and titled images are named errors. The emitted form is contract
-(AGENTS.md §8). Per-node syntaxes build on this grammar in the sections below.
+CommonMark is a subset apart from raw HTML (below), with three carve-outs: literal text that matches
+directive syntax below or reads as a pipe table is claimed by the flavour, and a matched `~~` pair
+spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal) — and one gap: a CommonMark
+image fits only as its own title-less paragraph — mid-text and titled images are named errors. The
+emitted form is contract (`docs/decisions.md` §The formats are API). Per-node syntaxes build on this
+grammar in the sections below.
 
 ## Canonical form
 
@@ -76,13 +76,14 @@ normalizes to it through the round-trip.
 One grammar for everything CommonMark lacks, namespaced: every directive opens with the literal
 `!adf:`. A directive name is `[a-z][A-Za-z0-9]*` — the ADF node and mark names the sections below
 spell as directives. Recognition is syntactic and name-set-independent: anything matching the forms
-below parses as a directive regardless of whether the name is known, and an unknown name is an
-error result naming it at the opener, whatever follows it — so output an old emitter escaped stays
-escaped, and erroring input gaining meaning later is MINOR, never a reparse (§8). Each name belongs
-to one position, and a name the other one spells — a mark or an inline node written as a block
-directive, a block node written inline — is a different error, naming the spelling it takes. Two
-reserved names read back to no node: `carry` for the opaque carry, as both directive name and fence
-info string, and `listBreak` for the leaf that parts two adjacent lists (Canonical form).
+below parses as a directive regardless of whether the name is known, and an unknown name is an error
+result naming it at the opener, whatever follows it — so output an old emitter escaped stays
+escaped, and erroring input gaining meaning later is MINOR, never a reparse (`docs/decisions.md`
+§The formats are API). Each name belongs to one position, and a name the other one spells — a mark
+or an inline node written as a block directive, a block node written inline — is a different error,
+naming the spelling it takes. Two reserved names read back to no node: `carry` for the opaque carry,
+as both directive name and fence info string, and `listBreak` for the leaf that parts two adjacent
+lists (Canonical form).
 
 **Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`
 closes a container, and a name picks by what follows it in turn — a space or the line's end a block
@@ -123,7 +124,7 @@ Which of the two a node takes is its content model, never the spelling: a model 
 written as an opener–closer pair and one taking none as a leaf, so a leaf given a body and a
 container missing its closer are each a named error. A node holding no content whose model takes
 some is an empty pair. A spelled node's content model is contract in consequence — changing one is
-MAJOR (AGENTS.md §8).
+MAJOR (`docs/decisions.md` §The formats are API).
 
 Canonical spacing is the only spacing input reads: one space parts the name, `arg` and `{attrs}`,
 and one parts each attribute pair, with no padding inside the braces. Trailing whitespace on a
@@ -184,11 +185,11 @@ HTML.
 
 ## Block nodes
 
-The directive name is always the ADF node type. A container's body is the node's `content`; a
-leaf has none. Every directive parses in any position — `markdownToAdf` builds exactly what is
-written; validity against ADF's content models stays the author's business (AGENTS.md §14). It
-parses only in the form the emitter picks, though: a directive spelling a node the emitter would
-have written as CommonMark is a named error.
+The directive name is always the ADF node type. A container's body is the node's `content`; a leaf
+has none. Every directive parses in any position — `markdownToAdf` builds exactly what is written;
+validity against ADF's content models stays the author's business (`docs/decisions.md` §No schema
+validation). It parses only in the form the emitter picks, though: a directive spelling a node the
+emitter would have written as CommonMark is a named error.
 
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by

@@ -477,7 +477,7 @@ function markType(character: string, used: number): string {
   return used === 2 ? 'strong' : 'em'
 }
 
-// A node cannot carry one mark type twice (AGENTS.md §14).
+// A node cannot carry one mark type twice (docs/decisions.md §No schema validation).
 function applyMark(nodes: readonly AdfNode[], mark: AdfMark): AdfNode[] {
   return nodes.map((node) => {
     const marks = nodeMarks(node)

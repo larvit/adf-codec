@@ -91,7 +91,7 @@ test('the refusal list is unique per example and names real examples', () => {
   for (const example of exampleToRefusal.keys()) assert.ok(spec.some((entry) => entry.example === example), `refusal ${example} names no example in the suite`)
 })
 
-// A mark is counted once per text node it touches (AGENTS.md §14).
+// A mark is counted once per text node it touches (docs/decisions.md §No schema validation).
 const countKeys = ['a', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'pre', 'strong', 'ul']
 const nodeElement: Record<string, string> = {
   blockquote: 'blockquote',

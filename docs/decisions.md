@@ -182,3 +182,127 @@ an npm consumer.
 
 Published to public npm as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
 LICENSE in place, before the first publish.
+
+## The formats are API
+
+2026-08-23, content models 2026-09-16, the maintainer. Goals 1 and 6. Valid while consumers store
+what the library emits.
+
+The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
+differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
+Pre-1.0, normal 0.x rules. A spelled node's content model is part of that contract — leaf or
+container is the model, not the syntax — so giving a spelled node's model content it had not, or
+taking it away, is MAJOR whatever ADF's own schema does.
+
+The error surface is a contract too; `README.md` §The errors states it to the consumer, and the
+types in `src/result.ts` hold its shape.
+
+## The code list
+
+2026-08-25, the maintainer; dated below where a rule came later. Goal 6. Valid while a consumer
+switches on `code` with no `default`.
+
+- Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
+  name reads true of it in both directions; where none does and a plain name exists, a new code —
+  in any 0.x minor, and after 1.0 only in a MAJOR (2026-09-18).
+- A refusal whose cause is this library's own invariant rather than the input takes the existing
+  code nearest what the consumer sees — a document that does not convert is
+  `unsupported-node-shape` — since a code no input reaches is one no consumer can switch on
+  (2026-09-20).
+- A refusal no spelling recovers from is a gap in the flavour rather than a code: give the flavour
+  the spelling and the code goes, which the freeze is the last moment for (`unspellable-link`,
+  2026-09-13). A cause the carry answers gets no code: a mark no spelling writes rides the carry
+  with its node.
+
+## Which code a cause takes
+
+2026-08-28, the maintainer; dated below where a rule came later. Goal 6. Valid while a consumer
+handles one cause alike whichever node, attribute or direction raised it.
+
+- A code names the cause; where one cause recurs across node types, across one mark's attributes
+  or across directions, one code covers them all and `path` and `message` say which —
+  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it,
+  `unspellable-character` the text node and the code block alike. Where two codes stay apart, the
+  line between them is what they name: `unspellable-character` is a character CommonMark rewrites
+  wherever text holds it, `unspellable-whitespace` the newline no inline directive's content slot
+  spans, in either direction.
+- A claim code names the spelling claimed, never the node that spelling would have built: a
+  malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
+  `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
+  colon rather than ADF's missing column model doing it. What the grammar itself refuses stays a
+  claim code, key order among it, and a leaf given a body is refused at its opener, as a container
+  missing its closer is (2026-09-16).
+- A directive whose name reads back to no node is `unknown-directive-name` rather than a claim
+  code — the spelling is well formed, and telling that apart from a typo is what a consumer
+  switches on when a later MINOR gives the name meaning. A reserved name is a known name, so never
+  that code, and the two the flavour reserves part on form: a form the grammar does not have is a
+  claim code — `!adf:carry`, whose carry is the fence — and a well-formed form in the wrong place
+  is `unsupported-node-shape`, `!adf:listBreak` parting anything but two adjacent lists of one
+  type (2026-09-01).
+- A well-formed directive the node tables refuse — an attribute a node does not hold or spells
+  elsewhere, a value outside its kind or its canonical spelling, an argument, or a body of a shape
+  its content model does not take — is `unsupported-node-shape`, the emitter's code for the same
+  mismatch read the other way: one code across both directions for good, since the call site
+  knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23).
+- A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
+  emitting — no document holds one, so no round-trip crosses them (2026-09-23).
+
+## `message` and `path`
+
+2026-09-03, the path 2026-09-23, the maintainer. Goals 3 and 6. Valid while a person fixing the
+input reads `message`.
+
+- A message names the violation, not the rule alone — a rule by itself states a truth the reader
+  must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose
+  it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
+  inline alike, `\|` for every pipe row.
+- `not-an-adf-document` carries the document's own path throughout: seven of the guard's eight
+  branches read the document's own shape, and threading a path to the eighth — a malformed node
+  anywhere in the tree — wants the manual stack the no-recursion rule (`AGENTS.md` §11) forces,
+  whose empty half no input reaches. The message names the violation instead.
+
+## Publish on a version bump
+
+2026-08-23, converging 2026-09-03, the maintainer. Goal 7. Valid while CI on `main` holds the npm
+token.
+
+`package.json` version on `main` is the source of truth. CI on `main`: tests green and version
+differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
+deliberate semver judgment. `publish.sh` is that job, and `private: true` stops it before it reads
+the token, so the pipeline is live and silent until the maintainer's first bump drops the field.
+
+The publish and the tag each observe their own end state — the version on npm, the tag on the
+remote — and neither gates the other, so a run that dies between them converges on the next push
+to `main` rather than leaving npm ahead of the tags. An unanswered registry reads the same as an
+unpublished version, which npm's own duplicate rejection is what catches. The job rebuilds rather
+than taking the gate's `dist`: the lockfile is committed, the image is patch-pinned and `tsc` is
+deterministic, so the two builds agree, and promoting an artifact would make the release path
+depend on a store that the gate would then have to keep.
+
+## Docs describe the release being built
+
+2026-09-16, the maintainer. Goal 7. Valid while a bump on `main` publishes.
+
+Docs on `main` describe the release being built rather than the version npm holds, so they match it
+the moment the bump publishes; add no interim note marking the gap.
+
+## No schema validation
+
+2026-08-23, the mark refusal 2026-08-25, the maintainer. Goal 1. Valid while the site a document
+is saved to validates it.
+
+No ADF schema validation or exported validator. A refusal that keeps the round-trip is not schema
+validation, so the one a spelled node carrying the same mark type twice earns stays, and input
+nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
+
+## No streaming APIs
+
+2026-08-23, the maintainer. Goal 8. Valid while a document fits in memory.
+
+A call takes a whole document and returns a whole result.
+
+## No performance budget
+
+2026-08-23, the maintainer. Goal 8. Valid while no persona needs a speed figure.
+
+Nothing is tuned past the scanning rule (`AGENTS.md` §11), and no figure is promised.
