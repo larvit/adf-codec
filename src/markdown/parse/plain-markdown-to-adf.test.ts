@@ -109,6 +109,7 @@ test('reads a folded callout to an expand titled by the rest of its marker line,
     node('expand', { title: 'Why?' }, paragraph(text('See '), text('the docs', link), text(', '), text('now', strong), text('.'))),
   ])
   assert.deepEqual(read('> [!NOTE]- Two\\\n> lines\n'), [node('expand', { title: 'Two' }, said('lines'))])
+  assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), normal(node('expand', { title: 'Set ==x== here' }, paragraph())))
   assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })
 
@@ -116,6 +117,7 @@ test('reads a folded callout inside an expand to a nested expand', () => {
   const markdown = '> [!NOTE]- Outer\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n>\n> > [!TIP]\n> >\n> > > [!NOTE]-\n'
   assert.deepEqual(read(markdown), normal(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))))
   assert.deepEqual(read('- > [!NOTE]-\n'), normal(bare('bulletList', bare('listItem', bare('expand', paragraph())))))
+  assert.deepEqual(read('!adf:expand\n> [!NOTE]- Inner\n!adf:/expand\n'), normal(bare('expand', node('nestedExpand', { title: 'Inner' }, paragraph()))))
 })
 
 test('reads a bullet list whose every item leads with a task marker to a task list', () => {
@@ -202,6 +204,10 @@ test('keeps what markdownToAdf reads that no row reads, and refuses only what it
   const lossless = markdownToAdf('> [!NOTE]\n\n- [x] ==a==\n')
   assert.deepEqual(lossless.ok ? lossless.value.content : lossless.error.code, [bare('blockquote', said('[!NOTE]')), bare('bulletList', bare('listItem', said('[x] ==a==')))])
   assert.equal(read('!adf:panel\n'), 'malformed-directive')
+  for (const markdown of ['> [!tip] ![a](u)\n', '> [!tip]\n> ![a](u)\n', '> [!NOTE]- t\n> ![a](u)\n', '> [!NOTE]- ![a](u)\n', '- [x] ![a](u)\n']) {
+    const parsed = plainMarkdownToAdf(markdown)
+    assert.deepEqual(parsed.ok ? parsed.value : [parsed.error.code, parsed.error.message], ['unmappable-image', 'an image fits only as a paragraph of its own: this one shares its paragraph with a marker'], markdown)
+  }
   let deep = 'x\n'
   for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
   assert.equal(typeof read(deep), 'object')
