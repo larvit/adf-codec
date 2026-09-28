@@ -24,7 +24,8 @@ type Paragraph = Extract<Block, { kind: 'paragraph' }>
 type Reading = { definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
 
 const documentStart: SourcePosition = { line: 1, offset: 0 }
-const imageBesideMarker = 'an image fits only as a paragraph of its own: this one shares its paragraph with a marker'
+const imageAfterMarker = 'an image fits only as a paragraph of its own: this one continues the paragraph a marker opens, which a blank line before it ends'
+const imageOnMarkerLine = 'an image fits only as a paragraph of its own: this one shares a line with a marker'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   return readDocument(markdown, 'lossless')
@@ -124,13 +125,13 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   if (led === undefined) return containerNode({ type: 'blockquote' }, blocks, reading, path, depth)
   const { folded, panelType } = led.marker
   const { line, rest } = markerLine(led.text)
-  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readMarked(paragraphsOf(led.position, line, rest), body, reading, path, depth))
+  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readMarked(paragraphsOf(led.position, line, rest), line !== '', body, reading, path, depth))
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', 'lossless')
   if (!title.ok) return title
-  if (title.value.image !== undefined) return failure('unmappable-image', imageBesideMarker, path)
+  if (title.value.image !== undefined) return failure('unmappable-image', imageOnMarkerLine, path)
   const text = title.value.nodes.map((node) => node.text ?? '').join('')
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
-  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), body, { ...reading, inExpand: true }, path, depth))
+  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), false, body, { ...reading, inExpand: true }, path, depth))
 }
 
 // Atlassian's schema requires a panel and an expand to hold a block.
@@ -139,12 +140,13 @@ function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> 
   return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
 }
 
-// A paragraph split off a marker still refuses the image it held beside it.
-function readMarked(marked: readonly Paragraph[], others: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+// A paragraph split off a marker still refuses the image it held beside it; `onMarkerLine` is whether the first one opens on the marker's line.
+function readMarked(marked: readonly Paragraph[], onMarkerLine: boolean, others: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const read = readBlocks([...marked, ...others], reading, path, depth + 1)
   if (!read.ok) return read
   const image = read.value.slice(0, marked.length).findIndex((node) => node.type === 'mediaSingle')
-  return image === -1 ? read : failure('unmappable-image', imageBesideMarker, [...path, 'content', image])
+  if (image === -1) return read
+  return failure('unmappable-image', image === 0 && onMarkerLine ? imageOnMarkerLine : imageAfterMarker, [...path, 'content', image])
 }
 
 // A task list trailing an item's blocks stands beside it, as ADF nests one.
@@ -157,7 +159,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
   }
   const tasks: AdfNode[] = []
   for (const [index, { marker, others, position, text }] of led.entries()) {
-    const read = readMarked(paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), others, reading, [...path, 'content', index], depth)
+    const read = readMarked(paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), markerLine(text).line !== '', others, reading, [...path, 'content', index], depth)
     if (!read.ok) return read
     let beside = read.value.length
     while (read.value[beside - 1]?.type === 'taskList') beside -= 1

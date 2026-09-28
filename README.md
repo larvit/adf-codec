@@ -118,9 +118,9 @@ Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` wri
 tools render — GitHub, GitLab, Obsidian and the like — keeping the content and dropping the rest:
 attributes, colours, layout, identity. It refuses only
 `not-an-adf-document`, `unsupported-document-version` and `unsupported-nesting-depth`, and writes
-no directive. `plainMarkdownToAdf` reads what `markdownToAdf` reads, refusing what it refuses, and
-the conventions below as nodes, taking other tools' spellings too; a backslash keeps a marker text:
-`\==x==`, `> \[!NOTE]`, `- \[x]`. Markdown
+no directive. `plainMarkdownToAdf` reads what `markdownToAdf` reads and refuses what it refuses,
+and reads the conventions below as nodes, taking other tools' spellings too; a backslash keeps a
+marker as text: `\==x==`, `> \[!NOTE]`, `- \[x]`. Markdown
 `adfToPlainMarkdown` wrote reads back and writes again byte for byte; the document it came from
 does not come back. To edit a document and save it back, use `adfToMarkdown` and `markdownToAdf`:
 saving what this pair read replaces mentions, attachments and macros with text.

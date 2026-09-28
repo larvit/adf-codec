@@ -12,11 +12,16 @@
     and a list whose items all open `[x] ` as text. A highlighted `=` (today `=====`) and `a==b`
     (today `==a==b==`, highlighting `a` alone) come back highlighted whole, or lose the highlight
     where no spelling holds them; the plain pair's byte-for-byte property misses both, since the
-    wrong document re-spells to the same bytes. The reduction keeps only degrading what the flavour
-    cannot spell.
+    wrong document re-spells to the same bytes. An expand titled `**x** [y](z)` comes back an
+    expand, where today its escaped marker reads back as a quote. The reduction keeps only
+    degrading what the flavour cannot spell.
 - **10f — Give task nodes read from plain markdown position ids.** Per `docs/decisions.md` §Plain
   task ids come from position, README §Plain markdown's `localId` bullet saying so. The id spelling
   is part of the chunk.
+- **41 — Keep a link's target when `plainMarkdownToAdf` reads a callout title.** Per Goal 5 a link
+  target is content, but `> [!faq]- See [x](http://y)` reads to an expand titled `See x`, the
+  target gone. Where the target goes is a gap in `docs/decisions.md`; candidate: the title keeps
+  it as text, `See x (http://y)`.
 - **40 — Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document it takes.**
   Today it holds for editor-normal documents only: two adjacent text nodes with the same marks
   merge, an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines
