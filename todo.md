@@ -2,10 +2,6 @@
 
 ## 0.2.0
 
-- **39 — Export `sameAdf(a, b)`, the equality README §The guarantees means.** Per Goal 7, it answers
-  whether two documents are equal editor-normal (`docs/decisions.md` §Equality is editor-normal), and
-  the guarantees' "equals `doc`" names it, since a deep-equal fails on a valid document holding an
-  empty `attrs` or two adjacent text nodes with the same marks.
 - **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
   `docs/decisions.md` §Plain markdown is a flavour of the grammar, README §Plain markdown's rows are
   read by `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The
@@ -28,6 +24,12 @@
 - **10f — Give task nodes read from plain markdown position ids.** Per `docs/decisions.md` §Plain
   task ids come from position, README §Plain markdown's `localId` bullet saying so. The id spelling
   is part of the chunk.
+- **40 — Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document it takes.**
+  Today it holds for editor-normal documents only: two adjacent text nodes with the same marks
+  merge, an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines
+  and bots build. Spell each so it reads back as written, CommonMark's spelling kept wherever none
+  occurs; the spellings are part of the chunk. `docs/decisions.md` §Equality is editor-normal,
+  `spec/flavour.md` and `corpus/README.md` follow, and the tests drop `toEditorNormal`.
 - **6 — Specify the HTML dialect.** Element-by-element mapping, the `data-*` fidelity scheme, the
   opaque-carry form, and the documented foreign-element set `htmlToAdf` accepts — the set
   `markdownToAdf` shares (`spec/flavour.md` §Raw HTML in input).

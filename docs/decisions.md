@@ -39,6 +39,7 @@ merges.
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
 and no attributes merged, JSON number semantics, an empty attrs object, marks array or content
 array the absent key — the only domain markdown can restore.
+Replaced by deep equality with `todo.md` 40 (2026-09-28, the maintainer).
 
 ## Unknown nodes ride the carry
 
