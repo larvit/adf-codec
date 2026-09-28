@@ -48,7 +48,7 @@ In priority order.
 6. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
    the emitted formats are.
 7. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
-   any ES2022 engine, in a browser as readily as on a server.
+   any ES2022 engine, in a browser as readily as on a server, installed from public npm.
 
 ## Audience
 
