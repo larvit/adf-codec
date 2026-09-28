@@ -61,7 +61,7 @@ In priority order.
 ## Audience
 
 Application developers embedding the library, addressed as personas rather than named consumers
-(AGENTS.md §7). All four rely on the guarantees below and on `code` being a closed list; none may
+(AGENTS.md §1). All four rely on the guarantees below and on `code` being a closed list; none may
 rely on an error message's wording, which is free text.
 
 - **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the

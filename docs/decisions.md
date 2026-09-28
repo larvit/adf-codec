@@ -49,12 +49,25 @@ checking its position, and refusing loses a document ADF itself keeps in an `uns
 Where a container's own spelling cannot hold the child it has — a `bulletList` outside `listItem`,
 a `codeBlock` outside text — the error result names that instead.
 
-## Foreign HTML is refused by name
+## Foreign HTML sorts three ways
 
-2026-08-23, the maintainer. Goals 1 and 6. Valid until the HTML dialect's element set lands
-(`todo.md`, 6).
+2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 6. Valid while ADF holds no node for a
+bare container, a comment or a script.
 
-An unmappable foreign HTML element is an error result naming the element — never a silent drop.
+Every foreign element `htmlToAdf` and `markdownToAdf` read sorts one of three ways, never a silent
+drop of what a reader saw:
+
+- A container around document content that ADF has no node for unwraps to its children, its own
+  attributes dropped: `<div align="center">text</div>` keeps `text`.
+- Content ADF cannot hold is an error result naming it. A comment is one: a person wrote those
+  words, and neither of Atlassian's schemas holds them — `annotation`'s `inlineComment` carries an
+  id, `placeholder` is the editor's own hint, `extension` names a vendor app.
+- What is not document content drops whole: `<script>` and `<style>`, their text with them.
+
+`<details><summary>Title</summary>…</details>` is an `expand` titled by its summary, a `nestedExpand`
+inside another; an empty one is refused, since `expand` requires content. A `style` attribute is not
+read at `0.2.0`: the `textColor` and `backgroundColor` it could reach cost more than they buy.
+`plainMarkdownToAdf` reads through `markdownToAdf`'s parser, so it takes the same set.
 
 ## Names stay text
 
@@ -106,6 +119,16 @@ where its reference implementation nests one `<a>` in another.
 
 Identity-bearing nodes carry their ids in attributes; a document is only portable within its site —
 accepted.
+
+## Plain task ids come from position
+
+2026-09-26, the maintainer. Goals 5 and 7. Valid while a site rejects a task node with no
+`localId`.
+
+`plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` a `localId` from its
+position in document order, unique within the document and minted with no host API, so a site
+rejecting a missing `localId` takes the document and the same markdown reads to the same ids every
+run.
 
 ## The HTML dialect
 
@@ -301,7 +324,7 @@ The gate runs the suite under Deno and Bun as well as Node. Bun runs JavaScriptC
 of the three that is not V8, where the Unicode property escapes emphasis matching leans on can
 disagree. Deno shares Node's V8 and stays to prove the library runs there too, catching what the
 two runtimes leave undocumented. Both refuse a run matching no test, so Node's is the only
-vacuous-green guard, and `AGENTS.md` §10's `node:` shims rule is the price of proving those engines
+vacuous-green guard, and `AGENTS.md` §3's `node:` shims rule is the price of proving those engines
 over the corpus rather than over a smoke import.
 
 ## The gate installs the tarball
@@ -482,7 +505,7 @@ is the markdown flavour's choice, not ADF's.
 
 ## The source parts by ADF and format
 
-2026-08-27, `adf/`'s bar 2026-09-21, the maintainer. Goal 2. Valid while each format has a reader
+2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, the maintainer. Goal 2. Valid while each format has a reader
 and a writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
@@ -492,7 +515,9 @@ is two constructs, the ADF question there and the spelling in each format, the s
 `markAttributes` and `markSpellings` already draw; one that cannot be split is a gap to ask.
 `markdown/` and `html/` are peers: neither imports the other, and no third directory sits between
 them. A primitive knowing neither ADF nor a format stays at `src/` root. A construct rises to
-`adf/` on its second consumer, not in anticipation of one.
+`adf/` on its second consumer, not in anticipation of one. A directory follows a split
+`spec/flavour.md` draws, and a placement nothing here settles goes beside its only reader, or in
+what both read where there are two.
 
 Each format directory parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest of it
 holding what both directions read. A construct's reader lives there beside the regex the emitter

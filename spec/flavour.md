@@ -178,7 +178,7 @@ In block-directive position `!adf:carry` is a named error — the carry's block 
 ## Raw HTML in input
 
 CommonMark input may contain raw HTML. `markdownToAdf` routes each construct through the foreign
-HTML element mapping (`docs/decisions.md` §Foreign HTML is refused by name; specified with the HTML
+HTML element mapping (`docs/decisions.md` §Foreign HTML sorts three ways; specified with the HTML
 dialect, todo.md milestone 6) — ADF has no raw-HTML node, so a construct without a mapping, comments
 and processing instructions included, is an error result naming it. The flavour never emits raw
 HTML.

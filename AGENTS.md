@@ -13,13 +13,14 @@ In `docs/decisions.md`:
 - Markdown in is a canonical fixpoint
 - Equality is editor-normal
 - Unknown nodes ride the carry
-- Foreign HTML is refused by name
+- Foreign HTML sorts three ways
 - Names stay text
 - Directives under `!adf:`
 - CommonMark is a subset
 - Tables
 - Links
 - Ids stay site-local
+- Plain task ids come from position
 - The HTML dialect
 - No runtime dependencies
 - Standards ship as data
@@ -54,12 +55,12 @@ In `docs/decisions.md`:
 - The attribute vocabulary is ADF's
 - The source parts by ADF and format
 
-## 7. Nothing about any consumer
+## 1. Nothing about any consumer
 
 No Jira client, no HTTP, no REST shapes, no issue keys, no actual consumer named anywhere. Design
 against the README's personas.
 
-## 9. Release automation
+## 2. Release automation
 
 - The bump commit renames `CHANGELOG.md`'s `## Unreleased` to the version.
 - Exact versions: `save-exact=true` in `.npmrc`.
@@ -68,10 +69,10 @@ against the README's personas.
   specific as the publisher tags: `oven/bun:1.4.0-alpine` pins Bun's patch and leaves the base
   floating because Bun publishes nothing narrower. Actions pin semver tags.
 
-## 10. Tests first, in Docker
+## 3. Tests first, in Docker
 
 Test for the behaviour wanted first, then implement until green. `node --test`, beside the code.
-Node, tsc and npm never run on the host — only via the pinned images (§9). Tests are independent,
+Node, tsc and npm never run on the host — only via the pinned images (§2). Tests are independent,
 containers are torn down after a run. A test reaches only for what Node's, Deno's and Bun's `node:`
 shims all carry.
 
@@ -91,12 +92,11 @@ Each `- ` bullet in `spec/flavour.md`'s `## Block nodes`, `## Inline nodes` and 
 the nodes named before its first em dash, with the attributes following `Attributes: ` — a
 parenthesized value set reading `string`; fenced examples are skipped. Keep prose out of a bullet.
 
-## 11. Code rules
+## 4. Code rules
 
-- Two-space indent, English everywhere. Alphabetical order wherever order
-  carries no meaning, keyed on the name a line introduces rather than where it came from: an
-  import sorts on its first binding, type imports ahead of value imports, so moving or renaming a
-  module reorders nothing (the maintainer, 2026-09-18).
+- Two-space indent, English everywhere. Alphabetical order wherever order carries no meaning,
+  keyed on the name a line introduces: an import sorts on its first binding, type imports ahead of
+  value imports, so moving or renaming a module reorders nothing.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
   fields it claims (`isAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
@@ -107,28 +107,25 @@ parenthesized value set reading `string`; fenced examples are skipped. Keep pros
   a second consumer, or it goes.
 - Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a file
   does not repeat its directory in its name — `adf/document.ts`, never `adf/adf-document.ts`. A name
-  is the noun `spec/flavour.md` or ADF's schema uses for the thing; a directory follows a split the
-  spec draws; a placement neither this section nor `docs/decisions.md` §The source parts by ADF and
-  format settles goes beside its only reader, or in what both read where there are two (the
-  maintainer, 2026-09-18).
+  is the noun `spec/flavour.md` or ADF's schema uses for the thing.
 
-## 12. Prose to a minimum
+## 5. Prose to a minimum
 
 Applies everywhere: comments, every markdown file in this repo (this one included), PR text.
 
 - Default is no comment. One earns its single line only by naming an invariant, footgun or
   external constraint the code cannot show — never restatement, history, absence or arrangement.
-  A second line belongs in the commit message or a decision entry here.
+  A second line belongs in the commit message or a `docs/decisions.md` entry.
 - A doc paragraph says what the repo cannot say for itself, or it goes. The fix for a redundant
   one is deletion, not trimming. A false claim in any doc is a bug, fixed where found.
 - Published text — npm README, error messages, API docs — never references internal systems,
   tickets or repos.
 
-## 13. Commits and PRs
+## 6. Commits and PRs
 
 One-line commit messages and PR titles; short PR summaries. No AI-attribution markers, ever.
 
-## 15. The working loop
+## 7. The working loop
 
 `todo.md` lists what is left under the release that ships it, in shipping order. One item per
 session — the first under the earliest release — in the smallest PR-able chunk; split a big item
@@ -139,13 +136,13 @@ release is done names the chain, not the session. An open PR is a chunk already 
 finishing it is the session.
 Per chunk:
 
-1. Fresh worktree off updated `origin/main`; implement tests-first (§10).
+1. Fresh worktree off updated `origin/main`; implement tests-first (§3).
 2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest
    gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
-3. Merge the PR (standing authorization, this repo only, granted through the `0.2.0` release —
-   the maintainer, 2026-09-13), delete the item from `todo.md` — what a consumer sees of it is
+3. Merge the PR (standing authorization, this repo only, granted by the maintainer through the
+   `0.2.0` release), delete the item from `todo.md` — what a consumer sees of it is
    reworded for them into `CHANGELOG.md`'s `## Unreleased` — report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
@@ -157,22 +154,22 @@ maintainer's) and the `NPM_TOKEN` secret.
 Any choice where what the maintainer would pick is not near-certain gets asked. The confidence bar
 is very high — asking too often is the accepted cost, guessing wrong is not.
 
-An ask is a gap in this file, and its answer is the rule that closes it, landing here — never the
-instance alone. Before asking, name the class the question belongs to and the earlier
-`(the maintainer, …)` entries of that class; where a rule already decides it, apply it without
-asking, and where the rule reads two ways on this input, that reading is the ask. Never ask "A or
-B?": state the gap, the earlier asks of its class, the nearest text here, a candidate rule in this
-file's voice and section, and the instance it yields. A rule that keeps collecting instances is
-wrong: rewrite it.
+An ask is a gap in `docs/decisions.md`, and its answer is the entry that closes it, landing there —
+never the instance alone; an answer that is a goal lands in the README, one that is a working rule
+here. Before asking, name the class the question belongs to and the entries of that class; where
+one already decides it, apply it without asking, and where it reads two ways on this input, that
+reading is the ask. Never ask "A or B?": state the gap, the earlier entries of its class, the
+nearest text, a candidate entry in that file's voice, and the instance it yields. An entry that
+keeps collecting instances is wrong: rewrite it.
 
 Which output the audience expects — README goal 5 — is settled by a reader panel rather than
 asked: three fresh-context readers, one per README persona the conversion serves, each given only
 `## Audience` and the input, writing what they expect before picking among outputs the goals
 allow, rendered, shuffled, with no rationale and nothing saying what is implemented. Three agreeing
 settle it; otherwise four more read, five of seven settle it, and less is a missing goal, asked.
-The verdict lands in the item it settles (the maintainer, 2026-09-25).
+The verdict lands in `docs/decisions.md`.
 
-### Rules the loop has settled (the maintainer, 2026-09-18)
+### Findings, numbers and empty releases
 
 - A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always
   in a release, weighed against every item on that release by the personas and `docs/decisions.md`
