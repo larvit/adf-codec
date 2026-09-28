@@ -73,6 +73,9 @@
   so the first raise to the measured figure reddens a run that changed nothing. Make the
   measurement repeatable, or state the number the floor may be raised to and why it is not the
   measured one.
+- **37 — State what the Deno leg proves that Node's does not, or drop it.** `docs/decisions.md` §The
+  gate runs on Deno and Bun credits Deno with holding the module graph to fully-spelled specifiers,
+  which Node already refuses under `"type": "module"`, and `tsc` under `NodeNext`.
 - **33 — Make a carried mark run cost the line one re-emit.** `adfToMarkdown` spends 23 s on one
   paragraph of 2000 × `un` plus `**-r**`: each run its flanking cannot spell re-emits the whole line
   before riding the carry, quadratic in the runs (Goal 9), and the plain reduction's

@@ -294,8 +294,8 @@ nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
 
 ## The gate runs on Deno and Bun
 
-2026-09-01, the maintainer. Goals 7 and 8. Valid while Deno is the only leg refusing an
-extensionless specifier and Bun the only engine that is not V8.
+2026-09-01, the maintainer. Goals 7 and 8. Valid while Bun is the gate's only engine that is
+not V8.
 
 The gate runs the suite under Deno and Bun as well as Node, and neither extra leg is Node's proof
 twice. Deno refuses an extensionless or directory specifier, so it holds the module graph to the
@@ -345,7 +345,7 @@ compared against `undefined` — have a half no valid document reaches.
 ## The size ratchet
 
 2026-09-20, the maintainer. Goal 10. Valid while no measure picks out what readers find hard
-(the comprehension panel, 2026-09-20).
+better than a function's length.
 
 `.oxlintrc.json`'s single rule, over the files `tsconfig.build.json` builds, is a per-function line
 ceiling, set at that set's worst and moving only downward. It covers the built files alone, since
@@ -371,10 +371,11 @@ markdown, on a fixed seed in the gate; a counterexample found becomes a round-tr
 2026-09-01, the maintainer. Goal 1. Valid while `spec/flavour.md` restates the node tables in
 prose.
 
-`spec/flavour.md` is read as a source, so the node tables cannot drift from the prose they copy: its
-node and mark bullets must equal the tables in `adf/`. It guards the attributes alone: nodes that
-differ in content model share a bullet, and the argument attribute is spelled ahead of `Attributes:
-`, so both answer to the round-trip corpus and to nothing else where a node has no fixture.
+`spec/flavour.md` is read as a source, so the node tables cannot drift from the prose they copy:
+its node and mark bullets must equal the tables in `adf/`. It guards the attributes alone: nodes
+that differ in content model share a bullet, and the argument attribute is spelled outside the
+bullet's attribute list, so both answer to the round-trip corpus and to nothing else where a node
+has no fixture.
 
 ## The node tables answer to Atlassian's schema
 
@@ -433,12 +434,12 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 2026-09-19, the maintainer. Goal 9. Valid while the `commonMarkSpelling` ask spells a node once
 per level above it otherwise.
 
-The parse keeps each node's readable spelling in a memo, so the `commonMarkSpelling` ask stops
-spelling a node once per level above it. `text` and `spelling` carry no depth and `headroom` is
-affine in it, so a read at or above the depth that filled the entry rebases; a read below re-spells,
-because a hit skips the depth guards the walk it replaces runs and an ordered list past the marker
-cap gives way, spending two emitter levels where the parser spent one. Only what succeeded is kept,
-so no path minted at another position is ever read.
+The parse and the plain reduction keep each node's readable spelling in a memo, so the
+`commonMarkSpelling` ask stops spelling a node once per level above it. `text` and `spelling` carry
+no depth and `headroom` is affine in it, so a read at or above the depth that filled the entry
+rebases; a read below re-spells, because a hit skips the depth guards the walk it replaces runs and
+an ordered list past the marker cap gives way, spending two emitter levels where the parser spent
+one. Only what succeeded is kept, so no path minted at another position is ever read.
 
 ## Only the hard break holds a raw newline
 
