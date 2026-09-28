@@ -6,8 +6,7 @@ import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.t
 import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPlainMarkdown } from '../markdown/emit/plain-reduction.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
-import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
-import { plainMarkdownToAdf } from '../markdown/parse/plain-lift.ts'
+import { markdownToAdf, plainMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { toEditorNormal } from '../adf/editor-normal.ts'
 
 const gateRuns = 1600

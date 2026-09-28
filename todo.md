@@ -4,15 +4,8 @@
 
 - **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
   `docs/decisions.md` §Plain markdown is a flavour of the grammar, README §Plain markdown's rows are
-  read by `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The
+  read by `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer. The
   exports, their refusals and those rows stay as they are.
-  - **35a — Read the plain flavour in the parser and delete the lift.** The rows are read while
-    parsing, and `plain-lift.ts` is deleted, its tests reading through `plainMarkdownToAdf`. `>
-    [!faq]- Why?` with the body on the next `>` line reads to an expand titled `Why?` whose body
-    keeps the next lines' link targets and marks, and `> [!tip] Title` then `> body` to a panel
-    whose paragraphs are `Title` and `body`: the rest of the marker's line is the title (an expand)
-    or the first body paragraph (a panel). A CommonMark backslash keeps a marker literal — `\==x==`,
-    `> \[!NOTE]`, `- \[x]`.
   - **35b — Spell the plain flavour in the writer.** Panels, expands, task lists and highlights are
     written by the writer, which escapes text that would read back as one, so
     `plainMarkdownToAdf(adfToPlainMarkdown(doc))` keeps a literal `==x==`, a quote opening `[!NOTE]`

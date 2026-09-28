@@ -118,7 +118,7 @@ test('spells an expand and a nested expand as a folded callout titled by the mar
     '> [!NOTE]- Build log\n>\n> Line.\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n',
   )
   assert.equal(plain(node('expand', {}, said('Line.'))), '> [!NOTE]-\n>\n> Line.\n')
-  assert.equal(plain(node('expand', { title: ' *Two*\nlines ' })), '> [!NOTE]- \\*Two\\*\\\n> lines\n')
+  assert.equal(plain(node('expand', { title: ' *Two*\nlines ' })), '> [!NOTE]- \\*Two\\* lines\n')
 })
 
 test('spells a task list as a bullet list whose items lead with their state', () => {

@@ -190,7 +190,7 @@ function quoted(head: Result<AdfNode[]>, node: AdfNode, reduction: Reduction): R
 
 function reduceExpand(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const title = nodeAttrs(node)['title']
-  const marker = typeof title === 'string' ? `${foldedAlertMarker} ${title.replace(/^[ \t\n\r]+/, '')}` : foldedAlertMarker
+  const marker = typeof title === 'string' ? `${foldedAlertMarker} ${title.replace(/^[ \t\n\r]+/, '').replaceAll('\n', ' ')}` : foldedAlertMarker
   return quoted(paragraphOf([text(marker)], { ...reduction, depth: reduction.depth + 1 }), node, reduction)
 }
 

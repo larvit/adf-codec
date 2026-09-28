@@ -1,0 +1,208 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import { adfToMarkdown } from '../emit/adf-to-markdown.ts'
+import { largestNesting } from '../../nesting.ts'
+import { markdownToAdf, plainMarkdownToAdf } from './markdown-to-adf.ts'
+import { reduceToPlain } from '../emit/plain-reduction.ts'
+import { toEditorNormal } from '../../adf/editor-normal.ts'
+
+const code: AdfMark = { type: 'code' }
+const em: AdfMark = { type: 'em' }
+const highlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
+const strong: AdfMark = { type: 'strong' }
+
+function read(markdown: string): readonly AdfNode[] | string {
+  const parsed = plainMarkdownToAdf(markdown)
+  return parsed.ok ? (toEditorNormal(parsed.value).content ?? []) : parsed.error.code
+}
+
+function normal(...blocks: AdfNode[]): readonly AdfNode[] {
+  return toEditorNormal(document(...blocks)).content ?? []
+}
+
+function document(...content: AdfNode[]): AdfDocument {
+  return { content, type: 'doc', version: 1 }
+}
+
+// ADF the reduction wrote, spelled and read back.
+function roundTripped(...content: AdfNode[]): readonly AdfNode[] | string {
+  const reduced = reduceToPlain(document(...content))
+  const markdown = reduced.ok ? adfToMarkdown(reduced.value) : reduced
+  return markdown.ok ? read(markdown.value) : markdown.error.code
+}
+
+function text(value: string, ...marks: AdfMark[]): AdfNode {
+  return marks.length === 0 ? { text: value, type: 'text' } : { marks, text: value, type: 'text' }
+}
+
+function node(type: string, attrs: AdfAttributes, ...content: AdfNode[]): AdfNode {
+  return { attrs, content, type }
+}
+
+function bare(type: string, ...content: AdfNode[]): AdfNode {
+  return { content, type }
+}
+
+function paragraph(...content: AdfNode[]): AdfNode {
+  return bare('paragraph', ...content)
+}
+
+function said(value: string): AdfNode {
+  return paragraph(text(value))
+}
+
+function panel(panelType: string, ...content: AdfNode[]): AdfNode {
+  return node('panel', { panelType }, ...content)
+}
+
+function task(state: string, ...content: AdfNode[]): AdfNode {
+  return node('taskItem', { state }, ...content)
+}
+
+test('reads an alert to a panel by its GitHub word, in any case', () => {
+  const alert = (word: string): readonly AdfNode[] | string => read(`> [!${word}]\n>\n> Check it.\n`)
+  assert.deepEqual(alert('NOTE'), [panel('info', said('Check it.'))])
+  assert.deepEqual(alert('IMPORTANT'), [panel('note', said('Check it.'))])
+  assert.deepEqual(alert('TIP'), [panel('tip', said('Check it.'))])
+  assert.deepEqual(alert('WARNING'), [panel('warning', said('Check it.'))])
+  assert.deepEqual(alert('CAUTION'), [panel('error', said('Check it.'))])
+  assert.deepEqual(alert('Warning'), [panel('warning', said('Check it.'))])
+  assert.deepEqual(alert('caution'), [panel('error', said('Check it.'))])
+})
+
+test('reads an Obsidian callout to a panel by what its word means, any other word info', () => {
+  const alert = (word: string): unknown => {
+    const blocks = read(`> [!${word}]\n> Body.\n`)
+    return typeof blocks === 'string' ? blocks : blocks[0]?.attrs
+  }
+  assert.deepEqual(alert('hint'), { panelType: 'tip' })
+  for (const word of ['success', 'check', 'Done']) assert.deepEqual(alert(word), { panelType: 'success' }, word)
+  assert.deepEqual(alert('attention'), { panelType: 'warning' })
+  for (const word of ['danger', 'error', 'failure', 'fail', 'missing', 'BUG']) assert.deepEqual(alert(word), { panelType: 'error' }, word)
+  for (const word of ['info', 'note', 'question', 'my-type']) assert.deepEqual(alert(word), { panelType: 'info' }, word)
+})
+
+test('reads the rest of an alert marker line as the panel first body paragraph, the lines after as the next', () => {
+  assert.deepEqual(read('> [!NOTE]\n> Line **one**.\n>\n> Two.\n'), [panel('info', paragraph(text('Line '), text('one', strong), text('.')), said('Two.'))])
+  assert.deepEqual(read('> [!tip] Title\n'), [panel('tip', said('Title'))])
+  assert.deepEqual(read('> [!tip] Title\n> body\n'), [panel('tip', said('Title'), said('body'))])
+  assert.deepEqual(read('> [!tip] Title\\\n> body\n'), [panel('tip', said('Title'), said('body'))])
+  assert.deepEqual(read('> [!NOTE]\\\n> Broken.\n'), [panel('info', said('Broken.'))])
+  assert.deepEqual(read('> [!NOTE]\n'), normal(panel('info', paragraph())))
+  assert.deepEqual(read('> > [!WARNING]\n> > Inner.\n'), [bare('blockquote', panel('warning', said('Inner.')))])
+})
+
+test('leaves a quote plain where its first line is no alert marker', () => {
+  for (const markdown of ['> \\[!NOTE]\n> x\n', '> [!NOTE]x\n', '> **[!NOTE]**\n', '> See [!NOTE]\n', '> [!NOTE]**x**\n', '> [!]\n', '> ```\n> [!NOTE]\n> ```\n']) {
+    const blocks = read(markdown)
+    assert.equal(typeof blocks !== 'string' && blocks[0]?.type, 'blockquote', markdown)
+  }
+})
+
+test('reads a folded callout to an expand titled by the rest of its marker line, whatever the word', () => {
+  assert.deepEqual(read('> [!NOTE]- Build log\n>\n> Line.\n'), [node('expand', { title: 'Build log' }, said('Line.'))])
+  assert.deepEqual(read('> [!bug]+ Open **by** default\n> body\n>\n> Line.\n'), [node('expand', { title: 'Open by default' }, said('body'), said('Line.'))])
+  const link: AdfMark = { attrs: { href: 'https://example.com' }, type: 'link' }
+  assert.deepEqual(read('> [!faq]- Why?\n> See [the docs](https://example.com), **now**.\n'), [
+    node('expand', { title: 'Why?' }, paragraph(text('See '), text('the docs', link), text(', '), text('now', strong), text('.'))),
+  ])
+  assert.deepEqual(read('> [!NOTE]- Two\\\n> lines\n'), [node('expand', { title: 'Two' }, said('lines'))])
+  assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
+})
+
+test('reads a folded callout inside an expand to a nested expand', () => {
+  const markdown = '> [!NOTE]- Outer\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n>\n> > [!TIP]\n> >\n> > > [!NOTE]-\n'
+  assert.deepEqual(read(markdown), normal(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))))
+  assert.deepEqual(read('- > [!NOTE]-\n'), normal(bare('bulletList', bare('listItem', bare('expand', paragraph())))))
+})
+
+test('reads a bullet list whose every item leads with a task marker to a task list', () => {
+  assert.deepEqual(read('- [x] Write the spec\n- [ ] Ship **it**\n- [X] Tell\n'), [
+    bare('taskList', task('DONE', text('Write the spec')), task('TODO', text('Ship '), text('it', strong)), task('DONE', text('Tell'))),
+  ])
+  assert.deepEqual(read('- [x]\n- [ ]\\\n  after\n'), normal(bare('taskList', task('DONE'), task('TODO', text('after')))))
+})
+
+test('moves a nested task list beside its item and makes an item holding more than one block a block task item', () => {
+  assert.deepEqual(read('- [x] Parent\n  - [ ] Child\n- [ ] Next\n'), [bare('taskList', task('DONE', text('Parent')), bare('taskList', task('TODO', text('Child'))), task('TODO', text('Next')))])
+  assert.deepEqual(read('- [x] First.\n\n  Second.\n- [ ]\n\n  ```\n  x\n  ```\n'), [
+    bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.')), node('blockTaskItem', { state: 'TODO' }, bare('codeBlock', text('x')))),
+  ])
+  assert.deepEqual(read('- [x] A\n  - plain\n'), [bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('A'), bare('bulletList', bare('listItem', said('plain')))))])
+})
+
+test('leaves mixed, ordered and unmarked lists plain', () => {
+  for (const markdown of ['- \\[x] a\n', '- [x] a\n- \\[ ] b\n', '- [x] a\n- b\n', '1. [x] a\n', '- [x]a\n', '- **[x]** a\n', '- [x]**a**\n', '- [-] a\n', '- > [x] a\n']) {
+    const blocks = read(markdown)
+    assert.notEqual(typeof blocks !== 'string' && blocks[0]?.type, 'taskList', markdown)
+    assert.equal(JSON.stringify(blocks).includes('taskItem'), false, markdown)
+  }
+  assert.deepEqual(read('- plain\n  - [ ] nested\n'), [bare('bulletList', bare('listItem', said('plain'), bare('taskList', task('TODO', text('nested')))))])
+})
+
+test('reads a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atlaskit/adf-schema 57.6.8', () => {
+  assert.deepEqual(read('a ==hi there== b\n'), [paragraph(text('a '), text('hi there', highlight), text(' b'))])
+  assert.deepEqual(read('**==hi==** b\n'), [paragraph(text('hi', highlight, strong), text(' b'))])
+  assert.deepEqual(read('==**a**_b_ `c`==\n'), [paragraph(text('a', highlight, strong), text('b', highlight, em), text(' ', highlight), text('c', code))])
+  assert.deepEqual(read('==`a`==\n'), [paragraph(text('a', code))])
+  assert.deepEqual(read('x==y==z ==a == b==, (==c==) _d_==e==\n'), [paragraph(text('x==y==z '), text('a == b', highlight), text(', ('), text('c', highlight), text(') '), text('d', em), text('e', highlight))])
+  assert.deepEqual(read('😀==b== ==c==😀 é==d==\n'), [paragraph(text('😀'), text('b', highlight), text(' '), text('c', highlight), text('😀 é==d=='))])
+  assert.deepEqual(read('# ==h==\n\n| ==c== |\n| --- |\n'), [
+    node('heading', { level: 1 }, text('h', highlight)),
+    bare('table', bare('tableRow', bare('tableHeader', paragraph(text('c', highlight))))),
+  ])
+  assert.deepEqual(read('> [!NOTE]\n> ==x==\n'), [panel('info', paragraph(text('x', highlight)))])
+  assert.deepEqual(read('==a==\\\n==b==\n'), [paragraph(text('a', highlight), { type: 'hardBreak' }, text('b', highlight))])
+})
+
+test('leaves a == no pair flanks as text', () => {
+  for (const markdown of ['\\==x==\n', '==x\\==\n', 'a == b == c\n', 'if a==b and c==d then\n', 'a==b== c\n', '==a==b\n', '====\n', '`==x==`\n', '==a\\\nb==\n', '**==a**==\n', '==a', '== a==\n', '==a ==\n']) {
+    assert.equal(JSON.stringify(read(markdown)).includes('backgroundColor'), false, markdown)
+  }
+})
+
+test('reads what the reduction wrote back to the node it reduced, less the attributes it drops', () => {
+  const localId = '01a0d99b-1f59-7e2c-a3d4-62c1f0b8e7a1'
+  for (const panelType of ['info', 'note', 'tip', 'warning', 'error']) {
+    assert.deepEqual(roundTripped(node('panel', { localId, panelType }, said('Check.'))), [panel(panelType, said('Check.'))], panelType)
+  }
+  const expand = node('expand', { localId, title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))
+  assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), normal(panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())))
+  assert.deepEqual(roundTripped(expand), [node('expand', { title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))])
+  const tasks = bare(
+    'taskList',
+    node('taskItem', { localId, state: 'DONE' }, text('Write')),
+    bare('taskList', task('TODO', text('Review'))),
+    node('blockTaskItem', { state: 'TODO' }, said('First.'), said('Second.')),
+    node('blockTaskItem', { state: 'DONE' }, bare('codeBlock', text('x'))),
+  )
+  const plainTasks = bare(
+    'taskList',
+    task('DONE', text('Write')),
+    bare('taskList', task('TODO', text('Review'))),
+    node('blockTaskItem', { state: 'TODO' }, said('First.'), said('Second.')),
+    node('blockTaskItem', { state: 'DONE' }, bare('codeBlock', text('x'))),
+  )
+  assert.deepEqual(roundTripped(tasks), [plainTasks])
+  const colour: AdfMark = { attrs: { color: '#c6edfb' }, type: 'backgroundColor' }
+  assert.deepEqual(roundTripped(paragraph(text('a '), text('hi', colour, strong), text(' b'))), [paragraph(text('a '), text('hi', highlight, strong), text(' b'))])
+})
+
+test('keeps what markdownToAdf reads that no row reads, and refuses only what it refuses', () => {
+  assert.deepEqual(read('!adf:panel warning\n- [x] a\n!adf:/panel\n'), [panel('warning', bare('taskList', task('DONE', text('a'))))])
+  const future = bare('futureBlock', text('==x=='))
+  const carried = adfToMarkdown(document(future))
+  assert.deepEqual(carried.ok ? read(carried.value) : carried.error.code, [future])
+  const red: AdfMark = { attrs: { color: '#ff0000' }, type: 'backgroundColor' }
+  const held = paragraph(text('a ==b== c', red), text(' ==d '), { attrs: { note: 'x' }, text: 'e==f', type: 'text' }, text(' g=='))
+  const spelled = adfToMarkdown(document(held))
+  assert.deepEqual(spelled.ok ? read(spelled.value) : spelled.error.code, [paragraph(text('a ==b== c', red), text(' '), text('d ', highlight), { attrs: { note: 'x' }, text: 'e==f', type: 'text' }, text(' g', highlight))])
+  const lossless = markdownToAdf('> [!NOTE]\n\n- [x] ==a==\n')
+  assert.deepEqual(lossless.ok ? lossless.value.content : lossless.error.code, [bare('blockquote', said('[!NOTE]')), bare('bulletList', bare('listItem', said('[x] ==a==')))])
+  assert.equal(read('!adf:panel\n'), 'malformed-directive')
+  let deep = 'x\n'
+  for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
+  assert.equal(typeof read(deep), 'object')
+})
