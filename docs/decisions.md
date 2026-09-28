@@ -294,15 +294,15 @@ nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
 
 ## The gate runs on Deno and Bun
 
-2026-09-01, the maintainer. Goals 7 and 8. Valid while Bun is the gate's only engine that is
-not V8.
+2026-09-01, Deno's reason 2026-09-28, the maintainer. Goals 7 and 8. Valid while the library claims
+any ES2022 engine.
 
-The gate runs the suite under Deno and Bun as well as Node, and neither extra leg is Node's proof
-twice. Deno refuses an extensionless or directory specifier, so it holds the module graph to the
-fully-spelled form a browser can load; Bun runs JavaScriptCore, the one engine of the three that is
-not V8, where the Unicode property escapes emphasis matching leans on can disagree. Both refuse a
-run matching no test, so Node's is the only vacuous-green guard, and `AGENTS.md` §10's `node:` shims
-rule is the price of proving those engines over the corpus rather than over a smoke import.
+The gate runs the suite under Deno and Bun as well as Node. Bun runs JavaScriptCore, the one engine
+of the three that is not V8, where the Unicode property escapes emphasis matching leans on can
+disagree. Deno shares Node's V8 and stays to prove the library runs there too, catching what the
+two runtimes leave undocumented. Both refuse a run matching no test, so Node's is the only
+vacuous-green guard, and `AGENTS.md` §10's `node:` shims rule is the price of proving those engines
+over the corpus rather than over a smoke import.
 
 ## The gate installs the tarball
 
