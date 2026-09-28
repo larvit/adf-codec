@@ -174,9 +174,9 @@ The verdict lands in `docs/decisions.md`.
 - A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always
   in a release, weighed against every item on that release by the personas and `docs/decisions.md`
   §Plain markdown is a flavour of the grammar through §Names stay text — an item it outweighs moves
-  later. A weighing no rule decides is asked as a gap.
+  later. A weighing no entry decides is asked as a gap.
 - A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks,
-  naming the number it can reach. A number the code needs and no rule states is a gap.
+  naming the number it can reach. A number the code needs and no entry states is a gap.
 - An earliest release with no items left and nothing shipped toward it is planned as the chunk:
   every later item weighed as above, the order written in `todo.md`, and the maintainer's approval
   taken before any code. With work shipped toward it, it is ready to cut: report that and stop.

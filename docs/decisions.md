@@ -51,22 +51,23 @@ a `codeBlock` outside text — the error result names that instead.
 
 ## Foreign HTML sorts three ways
 
-2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 6. Valid while ADF holds no node for a
-bare container, a comment or a script.
+2026-08-23, the sort 2026-09-20, the maintainer. Goals 1, 3 and 6. Valid while ADF holds no node
+for a bare container, a comment or a script. Lands with `todo.md` 6.
 
 Every foreign element `htmlToAdf` and `markdownToAdf` read sorts one of three ways, never a silent
-drop of what a reader saw:
+drop of content:
 
 - A container around document content that ADF has no node for unwraps to its children, its own
-  attributes dropped: `<div align="center">text</div>` keeps `text`.
+  attributes dropped: `<div align="center">text</div>` keeps `text`, losing the alignment.
 - Content ADF cannot hold is an error result naming it. A comment is one: a person wrote those
   words, and neither of Atlassian's schemas holds them — `annotation`'s `inlineComment` carries an
   id, `placeholder` is the editor's own hint, `extension` names a vendor app.
 - What is not document content drops whole: `<script>` and `<style>`, their text with them.
 
-`<details><summary>Title</summary>…</details>` is an `expand` titled by its summary, a `nestedExpand`
-inside another; an empty one is refused, since `expand` requires content. A `style` attribute is not
-read at `0.2.0`: the `textColor` and `backgroundColor` it could reach cost more than they buy.
+`<details><summary>Title</summary>…</details>` is an `expand` titled by its summary, a
+`nestedExpand` inside another; an empty one is refused, since `expand` requires content. A `style`
+attribute is not read at `0.2.0`: the `textColor` and `backgroundColor` it could reach cost more
+than they buy.
 `plainMarkdownToAdf` reads through `markdownToAdf`'s parser, so it takes the same set.
 
 ## Names stay text
@@ -123,7 +124,7 @@ accepted.
 ## Plain task ids come from position
 
 2026-09-26, the maintainer. Goals 5 and 7. Valid while a site rejects a task node with no
-`localId`.
+`localId`. Lands with `todo.md` 10f.
 
 `plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` a `localId` from its
 position in document order, unique within the document and minted with no host API, so a site
@@ -505,8 +506,8 @@ is the markdown flavour's choice, not ADF's.
 
 ## The source parts by ADF and format
 
-2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, the maintainer. Goal 2. Valid while each format has a reader
-and a writer through ADF.
+2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, the maintainer. Goal 2. Valid while
+each format has a reader and a writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
 lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a content

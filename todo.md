@@ -10,7 +10,8 @@
   - **36e — Move `todo-history.md`'s decisions, re-point its citations and delete it.**
 - **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
   `docs/decisions.md` §Plain markdown is a flavour of the grammar, 10's rows are read by
-  `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The exports, their refusals and 10's rows stay as they are.
+  `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The exports,
+  their refusals and 10's rows stay as they are.
   - **35a — Read the plain flavour in the parser and delete the lift.** 10's rows are read while
     parsing, and `plain-lift.ts` is deleted, its tests reading through `plainMarkdownToAdf`. `>
     [!faq]- Why?` with the body on the next `>` line reads to an expand titled `Why?` whose body
