@@ -118,19 +118,22 @@ Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` wri
 tools render — GitHub, GitLab, Obsidian and the like — keeping the content and dropping the rest:
 attributes, colours, layout, identity. It refuses only
 `not-an-adf-document`, `unsupported-document-version` and `unsupported-nesting-depth`, and writes
-no directive. `plainMarkdownToAdf` reads what `markdownToAdf` reads and refuses what it refuses,
-and reads the conventions below as nodes, taking other tools' spellings too; a backslash keeps a
-marker as text: `\==x==`, `> \[!NOTE]`, `- \[x]`. Markdown
-`adfToPlainMarkdown` wrote reads back and writes again byte for byte; the document it came from
-does not come back. To edit a document and save it back, use `adfToMarkdown` and `markdownToAdf`:
-saving what this pair read replaces mentions, attachments and macros with text.
+no directive.
+
+`plainMarkdownToAdf` reads what `markdownToAdf` reads and refuses what it refuses, and reads the
+conventions below as nodes, taking other tools' spellings too; a backslash keeps a marker as text:
+`\==x==`, `> \[!NOTE]`, `- \[x]`. Markdown `adfToPlainMarkdown` wrote reads back and writes again
+byte for byte; the document it came from does not come back.
+
+To edit a document and save it back, use `adfToMarkdown` and `markdownToAdf`: saving what this pair
+read replaces mentions, attachments and macros with text.
 
 | ADF | Written | Read back |
 | --- | --- | --- |
-| `panel` | a GitHub alert, `> [!WARNING]`: info `NOTE`, note `IMPORTANT`, tip and success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE` | GitHub's five words, and Obsidian's: hint tip; success, check, done success; attention warning; danger, failure, fail, missing, bug, error error; any other word info — in any case; the rest of the marker's line is the first paragraph |
+| `panel` | a GitHub alert, `> [!WARNING]`: info `NOTE`, note `IMPORTANT`, tip and success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE` | `NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error, and Obsidian's: hint tip; success, check, done success; attention warning; danger, failure, fail, missing, bug, error error; any other word info — in any case; the rest of the marker's line is the first paragraph |
 | `expand`, `nestedExpand` | Obsidian's folded callout, `> [!NOTE]- Title` | `-` or `+` after any word, the rest of the marker's line the title; an expand inside an expand is a `nestedExpand` |
 | `taskList` | `- [x] Done`, `- [ ] Todo` | a bullet list whose every item is so marked, `[X]` too |
-| `backgroundColor` | `==text==` | `==text==` bounded outside by whitespace, punctuation or a line edge, in the editor's default highlight |
+| `backgroundColor` | `==text==` | `==text==` on one line, the text touching both delimiters, bounded outside by whitespace, punctuation or a line edge, in the editor's default highlight `#f8e6a0` |
 | `table` | a pipe table: the first row its header, a cell's blocks on one line, a span kept under its header by empty cells | — |
 | `decisionList` | a bullet list | — |
 | `mention`, `status`, `emoji`, `date` | their text: `@` kept, a mention with none `@` and its id, an emoji its `shortName` without, a date `2026-09-13` in UTC | — |
@@ -143,8 +146,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
 - Content the document only references leaves an italic note naming it where it stood:
   `_(image not included)_`, `_(jira-issues-table not included)_`, `_(synced block not included)_`,
   `_(link card not included)_`, `_(extension not included)_`.
-- `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops, keeping its text, and
-  so does a mark CommonMark cannot spell where it stands.
+- `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
+  keeping its text, and so does a mark CommonMark cannot spell where it stands.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.

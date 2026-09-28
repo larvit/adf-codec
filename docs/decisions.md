@@ -304,8 +304,8 @@ input reads `message`.
   inline alike, `\|` for every pipe row.
 - `not-an-adf-document` carries the document's own path throughout: seven of the guard's eight
   branches read the document's own shape, and threading a path to the eighth — a malformed node
-  anywhere in the tree — wants the manual stack §Nothing recurses unbounded forces, whose empty
-  half no input reaches. The message names the violation instead.
+  anywhere in the tree — wants the manual stack §Nothing recurses unbounded forces. The message
+  names the violation instead.
 
 ## Publish on a version bump
 
