@@ -24,6 +24,7 @@ type Paragraph = Extract<Block, { kind: 'paragraph' }>
 type Reading = { definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
 
 const documentStart: SourcePosition = { line: 1, offset: 0 }
+const imageBesideMarker = 'an image fits only as a paragraph of its own: this one shares its paragraph with a marker'
 
 export function markdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   return readDocument(markdown, 'lossless')
@@ -98,7 +99,6 @@ function readBlock(block: Block, reading: Reading, path: ConvertErrorPath, depth
   }
 }
 
-// The marker opens the paragraph's source, and whitespace or the line's end follows it.
 function markerLed<T extends { length: number }>(block: Block | undefined, read: (text: string) => T | undefined): { marker: T; position: SourcePosition; text: string } | undefined {
   if (block?.kind !== 'paragraph') return undefined
   const marker = read(block.text)
@@ -107,7 +107,6 @@ function markerLed<T extends { length: number }>(block: Block | undefined, read:
   return text === '' || /^(?:[ \t\n]|\\\n)/.test(text) ? { marker, position: block.position, text } : undefined
 }
 
-// The marker's line, less a hard break ending it, and the lines after.
 function markerLine(text: string): { line: string; rest: string } {
   const lineEnd = text.indexOf('\n')
   const line = lineEnd === -1 ? text : text.slice(0, lineEnd)
@@ -125,18 +124,27 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   if (led === undefined) return containerNode({ type: 'blockquote' }, blocks, reading, path, depth)
   const { folded, panelType } = led.marker
   const { line, rest } = markerLine(led.text)
-  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, [...paragraphsOf(led.position, line, rest), ...body], reading, path, depth)
-  const title = contentNode({ type: 'paragraph' }, line, reading, path, 'paragraph')
+  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readMarked(paragraphsOf(led.position, line, rest), body, reading, path, depth))
+  const title = parseInlineContent(line, reading.definitions, path, 'paragraph', 'lossless')
   if (!title.ok) return title
-  const text = nodeContent(title.value).map((node) => node.text ?? '').join('')
+  if (title.value.image !== undefined) return failure('unmappable-image', imageBesideMarker, path)
+  const text = title.value.nodes.map((node) => node.text ?? '').join('')
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
-  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, [...paragraphsOf(led.position, rest), ...body], { ...reading, inExpand: true }, path, depth)
+  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), body, { ...reading, inExpand: true }, path, depth))
 }
 
 // Atlassian's schema requires a panel and an expand to hold a block.
-function filledNode(node: AdfNode, blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const built = containerNode(node, blocks, reading, path, depth)
-  return built.ok && built.value.content === undefined ? success({ ...built.value, content: [{ type: 'paragraph' }] }) : built
+function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> {
+  if (!content.ok) return content
+  return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
+}
+
+// A paragraph split off a marker still refuses the image it held beside it.
+function readMarked(marked: readonly Paragraph[], others: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+  const read = readBlocks([...marked, ...others], reading, path, depth + 1)
+  if (!read.ok) return read
+  const image = read.value.slice(0, marked.length).findIndex((node) => node.type === 'mediaSingle')
+  return image === -1 ? read : failure('unmappable-image', imageBesideMarker, [...path, 'content', image])
 }
 
 // A task list trailing an item's blocks stands beside it, as ADF nests one.
@@ -149,7 +157,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
   }
   const tasks: AdfNode[] = []
   for (const [index, { marker, others, position, text }] of led.entries()) {
-    const read = readBlocks([...paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), ...others], reading, [...path, 'content', index], depth + 1)
+    const read = readMarked(paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), others, reading, [...path, 'content', index], depth)
     if (!read.ok) return read
     let beside = read.value.length
     while (read.value[beside - 1]?.type === 'taskList') beside -= 1

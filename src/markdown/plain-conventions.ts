@@ -1,10 +1,6 @@
-import type { AdfMark } from '../adf/document.ts'
-
 export type Flavour = 'lossless' | 'plain'
 
 type AlertMarker = { folded: boolean; length: number; panelType: string }
-
-export const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 
 export const foldedAlertMarker = '[!NOTE]-'
 export const highlightDelimiter = '=='

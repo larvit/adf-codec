@@ -8,7 +8,7 @@ import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedA
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
-import { editorHighlight, highlightDelimiter } from '../plain-conventions.ts'
+import { highlightDelimiter } from '../plain-conventions.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { mergeAdjacentText, sameMarks } from '../../adf/editor-normal.ts'
@@ -59,6 +59,7 @@ type Scan = {
 type SlotContent = { carry: boolean; nodes: AdfNode[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
+const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 const hreflessLink = 'the link mark spells its href: this one spells none'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
 const linkInLink = 'no link wraps a link: the [content] this one marks already holds one'
