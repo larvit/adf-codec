@@ -40,7 +40,6 @@ In `docs/decisions.md`:
 - Firefox reads the build
 - The coverage floors
 - The size ratchet
-- The corpus
 - Properties on a fixed seed
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
@@ -88,8 +87,9 @@ holes through each other's lines (4d).
 generators and run parameters properties share live in `src/conformance/property-harness.ts`,
 outside the build and coverage.
 
-Keep prose in `spec/flavour.md`'s `## Block nodes`, `## Inline nodes` and `## Marks` out of a `- `
-bullet.
+Each `- ` bullet in `spec/flavour.md`'s `## Block nodes`, `## Inline nodes` and `## Marks` declares
+the nodes named before its first em dash, with the attributes following `Attributes: ` — a
+parenthesized value set reading `string`; fenced examples are skipped. Keep prose out of a bullet.
 
 ## 11. Code rules
 
@@ -105,11 +105,12 @@ bullet.
   path to name returns `Read<T>`, and the walk attaches the path where it knows it.
 - Reuse before adding; the smallest sufficient diff is the benchmark; no speculative generality —
   a second consumer, or it goes.
-- Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a
-  file does not repeat its directory in its name — `adf/document.ts`, never
-  `adf/adf-document.ts`. A name is the noun `spec/flavour.md` or ADF's schema uses for the
-  thing; a directory follows a split the spec draws; a placement these rules leave open goes
-  beside its only reader, or in what both read where there are two (the maintainer, 2026-09-18).
+- Explicit over implicit; descriptive names; no catch-all files (`utils`, `helpers`, `misc`); a file
+  does not repeat its directory in its name — `adf/document.ts`, never `adf/adf-document.ts`. A name
+  is the noun `spec/flavour.md` or ADF's schema uses for the thing; a directory follows a split the
+  spec draws; a placement neither this section nor `docs/decisions.md` §The source parts by ADF and
+  format settles goes beside its only reader, or in what both read where there are two (the
+  maintainer, 2026-09-18).
 
 ## 12. Prose to a minimum
 

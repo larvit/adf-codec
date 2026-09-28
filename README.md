@@ -55,8 +55,8 @@ In priority order.
    document and returns a whole result.
 9. **Fast once correct.** Conversion time grows linearly with the document wherever the goals above
    allow it; a faster path that risks one of them is not taken.
-10. **Source a contributor can hold.** Any one function reads at a sitting, and the gate stops the
-    source drifting longer.
+10. **Source a contributor can hold.** Any one function reads in one sitting, and no change makes
+    the longest one longer.
 
 ## Audience
 

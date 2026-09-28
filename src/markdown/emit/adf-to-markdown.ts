@@ -20,6 +20,7 @@ type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
+// Keyed by reference: the parse builds one object per position; a consumer's document may share one, so adfToMarkdown passes none.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
 type WalkedItem = { node: AdfNode; walk: Walk }

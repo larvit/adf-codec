@@ -16,7 +16,7 @@ a backslash reach them intact; what the flavour cannot spell reduces ADF→ADF a
 `markdownToAdf(adfToMarkdown(doc))` and `htmlToAdf(adfToHtml(doc))` must equal `doc` — anything
 less silently destroys content an editor could not represent, in a document it did not author.
 When losslessness and readability conflict, losslessness wins. Round-trip equality is a property
-tested over a corpus, not a claim made in prose.
+tested over a checked-in corpus (`corpus/README.md`), not a claim made in prose.
 
 ## Markdown in is a canonical fixpoint
 
@@ -294,16 +294,15 @@ nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
 
 ## The gate runs on Deno and Bun
 
-2026-09-01, the maintainer. Goals 7 and 8. Valid while the suite, rather than a smoke import, is
-what proves an engine.
+2026-09-01, the maintainer. Goals 7 and 8. Valid while Deno is the only leg refusing an
+extensionless specifier and Bun the only engine that is not V8.
 
-The gate runs the suite under Deno and Bun as well as Node, the three images pinned alike, and
-neither extra leg is Node's proof twice. Deno refuses an extensionless or directory specifier, so
-it holds the module graph to the fully-spelled form a browser can load; Bun runs JavaScriptCore,
-the one engine of the three that is not V8, where the Unicode property escapes emphasis matching
-leans on can disagree. Both refuse a run matching no test, so Node's is the only vacuous-green
-guard, and a test may reach only for what all three `node:` shims carry — the price of proving
-those engines over the corpus rather than over a smoke import.
+The gate runs the suite under Deno and Bun as well as Node, and neither extra leg is Node's proof
+twice. Deno refuses an extensionless or directory specifier, so it holds the module graph to the
+fully-spelled form a browser can load; Bun runs JavaScriptCore, the one engine of the three that is
+not V8, where the Unicode property escapes emphasis matching leans on can disagree. Both refuse a
+run matching no test, so Node's is the only vacuous-green guard, and `AGENTS.md` §10's `node:` shims
+rule is the price of proving those engines over the corpus rather than over a smoke import.
 
 ## The gate installs the tarball
 
@@ -319,7 +318,8 @@ resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` s
 
 ## Firefox reads the build
 
-2026-09-04, the maintainer. Goal 7. Valid while no other leg runs SpiderMonkey.
+2026-09-04, the maintainer. Goal 7. Valid while the library claims a browser and no other leg runs
+SpiderMonkey.
 
 A headless Firefox loads `dist/index.js` over HTTP and converts the round-trip, normalization and
 error fixtures and the real payloads — the `commonmark-spec` sort is the Node suite's to check —
@@ -345,7 +345,7 @@ compared against `undefined` — have a half no valid document reaches.
 ## The size ratchet
 
 2026-09-20, the maintainer. Goal 10. Valid while no measure picks out what readers find hard
-better than a function's length.
+(the comprehension panel, 2026-09-20).
 
 `.oxlintrc.json`'s single rule, over the files `tsconfig.build.json` builds, is a per-function line
 ceiling, set at that set's worst and moving only downward. It covers the built files alone, since
@@ -359,13 +359,6 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
-## The corpus
-
-2026-08-23, the maintainer. Goals 1 and 8. Valid while the round-trip is proved by example.
-
-All checked in: hand-built fixtures per node and combination; real ADF Atlassian's editor wrote; the
-CommonMark spec suite against `markdownToAdf` and `markdownToHtml`.
-
 ## Properties on a fixed seed
 
 2026-09-14, the maintainer. Goal 1. Valid while a red gate must reproduce.
@@ -375,16 +368,13 @@ markdown, on a fixed seed in the gate; a counterexample found becomes a round-tr
 
 ## The flavour spec is read as a source
 
-2026-09-01, the maintainer. Goals 1 and 6. Valid while `spec/flavour.md` restates the node tables
-in prose.
+2026-09-01, the maintainer. Goal 1. Valid while `spec/flavour.md` restates the node tables in
+prose.
 
-`spec/flavour.md` is read as a source, so the node tables cannot drift from the prose they copy:
-each `- ` bullet in `## Block nodes`, `## Inline nodes` and `## Marks` declares the nodes named
-before its first em dash, with the attributes following `Attributes: ` — a parenthesized value set
-reading `string` — and must equal the tables in `adf/`. Fenced examples are skipped. It guards the
-attributes alone: nodes that differ in content model share a bullet, and the argument attribute is
-spelled ahead of `Attributes: `, so both answer to the round-trip corpus and to nothing else where
-a node has no fixture.
+`spec/flavour.md` is read as a source, so the node tables cannot drift from the prose they copy: its
+node and mark bullets must equal the tables in `adf/`. It guards the attributes alone: nodes that
+differ in content model share a bullet, and the argument attribute is spelled ahead of `Attributes:
+`, so both answer to the round-trip corpus and to nothing else where a node has no fixture.
 
 ## The node tables answer to Atlassian's schema
 
@@ -417,14 +407,14 @@ once doubled the parser's frames per level.
 Nothing spreads an unbounded array into a call — a node's siblings, a code block's held lines, a
 mark run's segments: the argument list caps near 125k and throws a `RangeError` where a `Result` is
 owed. A walk pushes one at a time. A literal spread (`[...value]`) is not the same thing and is
-fine (4c).
+fine.
 
 ## A retry loop checks its own termination
 
-2026-09-20, the maintainer. Goal 1. Valid while a line retries until a fallback spells it.
+2026-09-20, the maintainer. Goal 1. Valid while a fallback can fail to spell what it is handed.
 
 A loop retrying an input until a fallback spells it refuses the pass taking no fallback, so its
-termination is the loop's own check (28).
+termination is the loop's own check.
 
 ## Readers scan by index
 
@@ -436,7 +426,7 @@ before it reads, `indexOf` — never a fresh slice per character, and a per-char
 scan that does not vary with the character: a megabyte through a quadratic walk is a minute rather
 than a millisecond. A scan may keep what it read for a later walk of the same text, and the
 fallback where it kept nothing must be the same reader over the same text at the same index, so the
-two cannot disagree — which is what makes the kept value a memo rather than a second spelling (4c).
+two cannot disagree — which is what makes the kept value a memo rather than a second spelling.
 
 ## The spelling memo
 
@@ -444,13 +434,11 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 per level above it otherwise.
 
 The parse keeps each node's readable spelling in a memo, so the `commonMarkSpelling` ask stops
-spelling a node once per level above it (18). The node reference is the key, which holds because
-the parse builds one object per position; `adfToMarkdown` passes no memo, where a consumer's
-document may hold one node at two positions (4b). `text` and `spelling` carry no depth and
-`headroom` is affine in it, so a read at or above the depth that filled the entry rebases; a read
-below re-spells, because a hit skips the depth guards the walk it replaces runs and an ordered list
-past the marker cap gives way, spending two emitter levels where the parser spent one. Only what
-succeeded is kept, so no path minted at another position is ever read.
+spelling a node once per level above it. `text` and `spelling` carry no depth and `headroom` is
+affine in it, so a read at or above the depth that filled the entry rebases; a read below re-spells,
+because a hit skips the depth guards the walk it replaces runs and an ordered list past the marker
+cap gives way, spending two emitter levels where the parser spent one. Only what succeeded is kept,
+so no path minted at another position is ever read.
 
 ## Only the hard break holds a raw newline
 
@@ -471,15 +459,15 @@ only ones in play, and a pair that matching hands to another delimiter rides the
 
 ## Readable spellings take the `try` prefix
 
-2026-09-21, the maintainer. Goals 1 and 4. Valid while a readable spelling is tried ahead of a
-general one.
+2026-09-21, the maintainer. Goals 1 and 4. Valid while a readable spelling's refusal would cost a
+document the general form spells.
 
 A readable spelling tried ahead of a general one takes the `try` prefix and fails only where the
-general form fails on the same node (20): refusing there refuses a document the general form
-spells, so a refusal the general form does not share belongs in the general form or nowhere. A
-readable spelling that must spell its subtree before it can give way — the list, whose
-thematic-break first line and blank lines exist only spelled — hands that one walk to the general
-form instead: giving way after the walk walks again at every level, doubling per level (4b).
+general form fails on the same node: refusing there refuses a document the general form spells, so a
+refusal the general form does not share belongs in the general form or nowhere. A readable spelling
+that must spell its subtree before it can give way — the list, whose thematic-break first line and
+blank lines exist only spelled — hands that one walk to the general form instead: giving way after
+the walk walks again at every level, doubling per level.
 
 ## The attribute vocabulary is ADF's
 
