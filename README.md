@@ -232,7 +232,7 @@ emit refuses:
 
 ## The package
 
-ESM only, no runtime dependencies, public npmjs. Built JavaScript with `.d.ts` beside it.
+ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts` beside it.
 Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs under Node,
 Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
 Contract: [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#any-es2022-engine), §Any

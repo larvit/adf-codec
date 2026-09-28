@@ -178,7 +178,7 @@ an npm consumer.
 
 ## Public on npm
 
-2026-08-23, the maintainer. Goal 7. Valid while the audience installs from public npm.
+2026-08-23, the maintainer. Goal 7. Valid while the package's source stays public beside it.
 
-Published to public npmjs as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
+Published to public npm as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
 LICENSE in place, before the first publish.
