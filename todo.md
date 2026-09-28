@@ -7,8 +7,6 @@
   one no goal serves is proposed as a goal and asked. Sources: `AGENTS.md`'s body, the settled text
   in this file's items, and `todo-history.md`, deleted with the bare `(28)` citations into it once
   nothing cites it. Split by `AGENTS.md` section where one chunk is too big.
-  - **36c — Move §10 and §11's decisions.** The engine legs, floors, size ratchet, bounds, spellings
-    and layout; the style rules stay working rules.
   - **36d — Move the settled text in `todo.md`'s items and §15's dated rules, and point §15's
     "the rule that closes it, landing here" at `docs/decisions.md`.** `AGENTS.md`'s sections are
     renumbered once only working rules remain, their citations with them.
@@ -64,19 +62,19 @@
   `plainMarkdownToAdf` reads through `markdownToAdf`'s parser and so inherits whatever this set
   accepts.
 - **7 — Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed
-  through ADF.** CommonMark spec suite runs against `markdownToHtml` from here (§10). The README's
+  through ADF.** CommonMark spec suite runs against `markdownToHtml` from here (`docs/decisions.md` §The corpus). The README's
   tagline and `package.json`'s `description` regain HTML (5g).
 - **31 — Make the branch figure the coverage floor is read against repeatable.** Three Node test
   legs over one unchanged tree reported `emit/inline-line.ts` at 95.83%, 96.23% and 96.23%, and the
   total at 98.80%, 98.84% and 98.84% (2026-09-21). `--experimental-test-coverage` counts branches
   off V8's own coverage, which the runner's parallel files and V8's optimization make run-dependent,
   so the number the floor is read against is not the code's alone. The floor of 98 holds today on
-  0.8 points of slack and §10 says it only ever moves upward, so the first raise to the measured
+  0.8 points of slack and `docs/decisions.md` §The coverage floors says it only ever moves upward, so the first raise to the measured
   figure reddens a run that changed nothing. Make the measurement repeatable, or state the number
   the floor may be raised to and why it is not the measured one.
 - **33 — Make a carried mark run cost the line one re-emit.** `adfToMarkdown` spends 23 s on one
   paragraph of 2000 × `un` plus `**-r**`: each run its flanking cannot spell re-emits the whole line
-  before riding the carry, quadratic in the runs (§11 Bounds), and the plain reduction's
+  before riding the carry, quadratic in the runs (Goal 9), and the plain reduction's
   `spellableLine` drops one mark per re-emit the same way. Make both linear.
 - **34 — Read emphasis flanking by the whole character beside an astral symbol.** Check whether
   `line-escaping.ts`'s `charAt` and the parser's flanking read one UTF-16 unit beside an astral
