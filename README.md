@@ -49,6 +49,10 @@ In priority order.
    the emitted formats are.
 7. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
    any ES2022 engine, in a browser as readily as on a server, installed from public npm.
+8. **Correct before fast.** A whole document in, a whole result out, one call; no input makes a
+   call hang or overflow the stack.
+9. **Fast once correct.** Conversion time grows linearly with the document wherever the goals above
+   allow it; a faster path that risks one of them is not taken.
 
 ## Audience
 

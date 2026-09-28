@@ -291,15 +291,3 @@ is saved to validates it.
 No ADF schema validation or exported validator. A refusal that keeps the round-trip is not schema
 validation, so the one a spelled node carrying the same mark type twice earns stays, and input
 nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
-
-## No streaming APIs
-
-2026-08-23, the maintainer. Goal 8. Valid while a document fits in memory.
-
-A call takes a whole document and returns a whole result.
-
-## No performance budget
-
-2026-08-23, the maintainer. Goal 8. Valid while no persona needs a speed figure.
-
-Nothing is tuned past the scanning rule (`AGENTS.md` §11), and no figure is promised.

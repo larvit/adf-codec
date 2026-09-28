@@ -35,8 +35,6 @@ In `docs/decisions.md`:
 - Publish on a version bump
 - Docs describe the release being built
 - No schema validation
-- No streaming APIs
-- No performance budget
 
 ## 7. Nothing about any consumer
 
