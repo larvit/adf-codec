@@ -30,7 +30,6 @@ fi
 published=$(leg "ask npmjs for $name@$version ($node_image)" published_version "$name" "$version")
 tagged=$(leg "ask origin for v$version" git ls-remote --tags origin "v$version")
 
-# Both steps observe their own end state, so a partial run converges on the next push to main.
 if [ -z "$published" ]; then
   : "${NPM_TOKEN:?the publish needs NPM_TOKEN}"
   leg "install ($node_image)" in_image "$node_image" npm ci

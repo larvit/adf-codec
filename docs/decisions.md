@@ -210,8 +210,8 @@ switches on `code` with no `default`.
   `unsupported-node-shape` — since a code no input reaches is one no consumer can switch on
   (2026-09-20).
 - A refusal no spelling recovers from is a gap in the flavour rather than a code: give the flavour
-  the spelling and the code goes (`unspellable-link`, 2026-09-13). A cause the carry answers gets no code: a mark no spelling writes rides the carry
-  with its node.
+  the spelling and the code goes (`unspellable-link`, 2026-09-13). A cause the carry answers gets
+  no code: a mark no spelling writes rides the carry with its node.
 
 ## Which code a cause takes
 
@@ -265,12 +265,11 @@ input reads `message`.
 2026-08-23, converging 2026-09-03, the maintainer. Goal 7. Valid while CI on `main` holds the npm
 token.
 
-`package.json` version on `main` is the source of truth. CI on `main`: tests green and version
-differs from npm → publish and tag `vX.Y.Z`. No bump, no deploy; the bump is each shipping PR's
-deliberate semver judgment. `publish.sh` is that job.
+`package.json` version on `main` is the source of truth. CI on `main`: tests green and the version
+not yet on npm → publish and tag `vX.Y.Z`. No bump, no deploy. `publish.sh` is that job.
 
-The publish and the tag each observe their own end state — the version on npm, the tag on the
-remote — and neither gates the other, so a run that dies between them converges on the next push
+The publish and the tag each check their own end state — the version on npm, the tag on the
+remote — so a run that dies between them converges on the next push
 to `main` rather than leaving npm ahead of the tags. An unanswered registry reads the same as an
 unpublished version, which npm's own duplicate rejection is what catches. The job rebuilds rather
 than taking the gate's `dist`: the lockfile is committed, the image is patch-pinned and `tsc` is
