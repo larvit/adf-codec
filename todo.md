@@ -2,6 +2,10 @@
 
 ## 0.2.0
 
+- **39 — Export `sameAdf(a, b)`, the equality README §The guarantees means.** Per Goal 7, it answers
+  whether two documents are equal editor-normal (`docs/decisions.md` §Equality is editor-normal), and
+  the guarantees' "equals `doc`" names it, since a deep-equal fails on a valid document holding an
+  empty `attrs` or two adjacent text nodes with the same marks.
 - **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
   `docs/decisions.md` §Plain markdown is a flavour of the grammar, README §Plain markdown's rows are
   read by `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer, and the lift goes. The
