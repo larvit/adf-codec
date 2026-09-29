@@ -51,7 +51,7 @@ export function readAlertMarker(text: string): AlertMarker | undefined {
 export function leadingMarker<T extends { length: number }>(text: string, read: (text: string) => T | undefined): T | undefined {
   const marker = read(text)
   if (marker === undefined) return undefined
-  const rest = text.slice(marker.length)
+  const rest = text.slice(marker.length, marker.length + 2)
   return rest === '' || /^(?:[ \t\n]|\\\n)/.test(rest) ? marker : undefined
 }
 
