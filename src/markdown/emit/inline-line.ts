@@ -38,7 +38,7 @@ type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | 
 
 type LineFallbacks = { carried: Set<number>; flavour: Flavour; openingLinkAsDirective: boolean }
 
-export type PlainLineFallback = { kind: 'claimed-line'; line: number; text: string } | { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun; runs: MarkRun[] }
+export type PlainLineFallback = { kind: 'claimed-line'; line: number; text: string } | { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<string> {
   const emitted = emitLine(nodes, container, path, flavour)
@@ -120,7 +120,7 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
 function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<LineAttempt> {
   const verdict = lineVerdict(segments, container, flavour)
   if (verdict.kind === 'opening-link') return success({ fallback: 'opening-link' })
-  if (verdict.kind === 'unspellable-run') return success({ fallback: verdict.run })
+  if (verdict.kind === 'unspellable-run') return success({ fallback: verdict.runs[0] })
   if (verdict.kind === 'claimed-line') return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(verdict.text)}`, path)
   return success({ line: verdict.text })
 }
@@ -129,8 +129,8 @@ function attemptLine(segments: readonly InlineSegment[], container: LineContaine
 function lineVerdict(segments: readonly InlineSegment[], container: LineContainer, flavour: Flavour): PlainLineFallback | { kind: 'line'; text: string } {
   const assembled = assembleInlineLine(segments, container, flavour)
   if (assembled.openingLinkAsDirective) return { kind: 'opening-link' }
-  const [run] = assembled.unspellableRuns
-  if (run !== undefined) return { kind: 'unspellable-run', run, runs: assembled.unspellableRuns }
+  const [run, ...others] = assembled.unspellableRuns
+  if (run !== undefined) return { kind: 'unspellable-run', runs: [run, ...others] }
   const lines = assembled.line.split('\n')
   const claimed = container === 'paragraph' ? lines.findIndex((single, index) => claimsLine(single, index === 0 ? 'first' : 'later')) : -1
   return claimed === -1 ? { kind: 'line', text: assembled.line } : { kind: 'claimed-line', line: claimed, text: lines[claimed] ?? '' }

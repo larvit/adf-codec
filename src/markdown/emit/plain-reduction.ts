@@ -285,7 +285,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     const reduced = isTask(child) ? reduceTask(child, at) : reduceStanding(child, at)
     if (!reduced.ok) return reduced
     if (!regular) {
-      const standsAlone = !isTask(child) && child.type !== 'taskList'
+      const standsAlone = !isTask(child) && child.type !== 'taskList' && reduced.value.length > 0
       for (const block of standsAlone ? [{ content: reduced.value, type: 'listItem' }] : reduced.value) tasks.push(block)
       continue
     }
