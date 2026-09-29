@@ -127,6 +127,9 @@ test('spells a task list as a bullet list whose items lead with their state', ()
   const blockTask = node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.'))
   const codeTask = node('blockTaskItem', { state: 'TODO' }, { content: [text('x')], type: 'codeBlock' })
   assert.equal(plain(node('taskList', {}, blockTask, codeTask)), '- [x] First.\n\n  Second.\n- [ ]\n\n  ```\n  x\n  ```\n')
+  const listTask = node('blockTaskItem', { state: 'DONE' }, bulletList(item(said('a'))))
+  assert.equal(plain(node('taskList', {}, task('TODO', ''), listTask, node('taskList', {}, task('TODO', 'b')))), '- [ ]\n- [x]\n  - a\n  - [ ] b\n')
+  assert.equal(plain(node('taskList', {}, task('DONE', 'a'), node('taskList', {}, task('TODO', '')))), '- [x] a\n  - [ ]\n')
 })
 
 test('spells a decision list as a plain bullet list', () => {
@@ -138,7 +141,7 @@ test('spells a highlight as a == pair around the run, whatever its colour', () =
   assert.equal(plain(paragraph(text('a '), text('hi', highlight('#fff')), text(' there', highlight('#000')), text(' b'))), 'a ==hi there== b\n')
   assert.equal(plain(paragraph(text('hi ', strong, highlight('#fff')), text('b'))), '**==hi==** b\n')
   assert.equal(plain(paragraph(text('a', strong, highlight('#fff')), text('b', highlight('#fff'), em))), '==**a**_b_==\n')
-  assert.equal(plain(paragraph(text('a', highlight('#fff'), code))), '==`a`==\n')
+  assert.equal(plain(paragraph(text('a', highlight('#fff'), code), text('b', highlight('#fff')))), '`a`==b==\n')
   assert.equal(plain(paragraph(text('=', highlight('#fff')), text(' '), text('a==b', highlight('#fff')))), '==\\=== ==a==b==\n')
   assert.equal(plain(paragraph(text('x'), text('y', highlight('#fff')), text(' z'))), 'xy z\n')
 })
@@ -323,5 +326,5 @@ test('drops an empty paragraph and merges adjacent lists of one type', () => {
 test('keeps the nodes the plain flavour spells and degrades only what it cannot', () => {
   const tasks = node('taskList', {}, node('taskItem', { localId: '01a0d99b-1f58-7b95-829b-6f9860371d54', state: 'DONE' }, text('t')))
   const reduced = reduceToPlain(document(node('panel', { localId: '01a0d99b-1f56-7a50-889a-f4375f09ee05', panelType: 'info' }, said('x')), tasks))
-  assert.deepEqual(reduced.ok ? reduced.value : undefined, document(node('panel', { panelType: 'info' }, said('x')), node('taskList', {}, node('taskItem', { state: 'DONE' }, text('t')))))
+  assert.deepEqual(reduced.ok ? reduced.value : undefined, document(node('panel', { panelType: 'info' }, said('x')), { content: [node('taskItem', { state: 'DONE' }, text('t'))], type: 'taskList' }))
 })

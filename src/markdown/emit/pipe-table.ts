@@ -1,10 +1,11 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath } from '../../result.ts'
+import type { Flavour } from '../plain-conventions.ts'
 import { carriesOnly, nodeContent } from '../../adf/document.ts'
 import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
 
-export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | undefined {
+export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): string | undefined {
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
   const lines: string[] = []
@@ -12,7 +13,7 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath): string | un
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
       const content = nodeContent(paragraph)
-      const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0])
+      const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0], flavour)
       if (line === undefined) return undefined
       cells.push(line)
     }

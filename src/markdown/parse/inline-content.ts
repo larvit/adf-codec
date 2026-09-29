@@ -7,9 +7,9 @@ import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
-import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
-import { highlightDelimiter } from '../plain-conventions.ts'
+import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { highlightDelimiter, highlightFlanking } from '../plain-conventions.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { mergeAdjacentText, sameMarks } from '../../adf/editor-normal.ts'
 import { noSpans, readInlineDirective } from '../directive-syntax.ts'
@@ -301,22 +301,14 @@ function readDelimiterRun(scan: Scan, index: number): number {
   return index + length
 }
 
-// A delimiter is bounded outside by the code point beyond it, and flanks by the character inside it.
 function readEquals(scan: Scan, index: number): number {
   if (!scan.highlights || !scan.source.startsWith(highlightDelimiter, index)) {
     scan.pending += '='
     return index + 1
   }
-  const end = index + highlightDelimiter.length
-  const before = Array.from(scan.source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
-  const after = Array.from(scan.source.slice(end, end + 2))[0] ?? ''
   flush(scan, false)
-  scan.pieces.push({ closes: flanks(before) && !isWordCharacter(after), kind: 'highlight', opens: flanks(after) && !isWordCharacter(before) })
-  return end
-}
-
-function flanks(character: string): boolean {
-  return character !== '' && !/\s/.test(character)
+  scan.pieces.push({ ...highlightFlanking(scan.source, index), kind: 'highlight' })
+  return index + highlightDelimiter.length
 }
 
 function readAutolink(source: string, index: number): { length: number; node: AdfNode } | undefined {

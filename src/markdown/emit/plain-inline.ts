@@ -2,7 +2,6 @@ import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { highlightDelimiter } from '../plain-conventions.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, sameMark } from '../../adf/editor-normal.ts'
 import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
@@ -10,6 +9,7 @@ import { plainLineFallback, type PlainLineFallback } from './inline-line.ts'
 import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
+const highlightMark: AdfMark = { type: highlight }
 const edgeStrippingMarks: readonly string[] = [highlight, 'em', 'strike', 'strong']
 const keptMarks: readonly string[] = [...edgeStrippingMarks, 'code', 'link']
 
@@ -140,7 +140,9 @@ function plainMarks(marks: readonly AdfMark[], container: LineContainer, text: s
     if (plain !== undefined) kept.push(plain)
   }
   const rank = (mark: AdfMark): number => (mark.type === highlight ? 0 : mark.type === 'code' ? 2 : 1)
-  return kept.sort((first, second) => rank(first) - rank(second))
+  // The reader highlights no code, as Atlassian's schema allows none.
+  const code = kept.some((mark) => mark.type === 'code')
+  return kept.filter((mark) => !code || mark.type !== highlight).sort((first, second) => rank(first) - rank(second))
 }
 
 function plainLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
@@ -163,7 +165,7 @@ export function writableHref(href: string): string {
   return written
 }
 
-// The delimiters carry the marks the whole run shares, so they open and close inside them.
+// The marks a whole highlight run shares go outside the highlight, so its delimiters open and close inside them.
 function highlighted(leaves: readonly AdfNode[]): AdfNode[] {
   const spelled: AdfNode[] = []
   let run: AdfNode[] = []
@@ -173,10 +175,10 @@ function highlighted(leaves: readonly AdfNode[]): AdfNode[] {
     if (marks[0]?.type === highlight) {
       const held = marks.slice(1)
       shared = run.length === 0 ? held.filter((mark) => mark.type !== 'code') : shared.filter((mark) => held.some((other) => sameMark(other, mark)))
-      run.push(withMarks(leaf, held))
+      run.push(leaf)
       continue
     }
-    if (run.length > 0) for (const held of [textLeaf(highlightDelimiter, shared), ...run, textLeaf(highlightDelimiter, shared)]) spelled.push(held)
+    for (const held of run) spelled.push(withMarks(held, [...shared, highlightMark, ...nodeMarks(held).slice(1).filter((mark) => !shared.some((other) => sameMark(other, mark)))]))
     run = []
     spelled.push(leaf)
   }

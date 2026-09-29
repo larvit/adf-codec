@@ -10,11 +10,11 @@ import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.t
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { leadingMarker, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
 import { listBreakName, listBreakSpelling } from '../block-directive.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
-import { readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
 import { unsupportedNodeShape } from '../directive-syntax.ts'
 
@@ -102,10 +102,8 @@ function readBlock(block: Block, reading: Reading, path: ConvertErrorPath, depth
 
 function markerLed<T extends { length: number }>(block: Block | undefined, read: (text: string) => T | undefined): { marker: T; position: SourcePosition; text: string } | undefined {
   if (block?.kind !== 'paragraph') return undefined
-  const marker = read(block.text)
-  if (marker === undefined) return undefined
-  const text = block.text.slice(marker.length)
-  return text === '' || /^(?:[ \t\n]|\\\n)/.test(text) ? { marker, position: block.position, text } : undefined
+  const marker = leadingMarker(block.text, read)
+  return marker === undefined ? undefined : { marker, position: block.position, text: block.text.slice(marker.length) }
 }
 
 function markerLine(text: string): { line: string; rest: string } {
@@ -179,7 +177,7 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
   const inExpand = reading.inExpand || read.value.node.type === 'expand' || read.value.node.type === 'nestedExpand'
   const built = directiveBody(read.value, block.blocks, { ...reading, inExpand }, path, depth)
   if (!built.ok) return built
-  const readable = commonMarkSpelling(built.value, path, depth, reading.memo)
+  const readable = commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo })
   if (readable === undefined) return built
   if (!readable.ok) return readable
   return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)

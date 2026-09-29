@@ -1,13 +1,15 @@
+import type { Flavour } from '../plain-conventions.ts'
 import type { LineContainer } from '../line-container.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { claimsDirectivePrefix } from '../directive-syntax.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
+import { highlightDelimiter, highlightFlanking } from '../plain-conventions.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 import { readEntityReference } from '../commonmark/entity-references.ts'
 
-export type EmphasisRole = 'close' | 'open'
+export type DelimiterRole = 'close' | 'open'
 
 export type InlineEscaping = 'backslash' | 'bracketed' | 'bracketed-link-target' | 'none'
 
@@ -16,9 +18,10 @@ export type NodeRange = { first: number; last: number }
 export type MarkRun = NodeRange & { depth: number }
 
 export type InlineSegment =
-  | { emphasis: EmphasisRole; escaping: 'none'; nodes: MarkRun; text: string }
-  | { emphasis?: undefined; escaping: 'none'; nodes: NodeRange; text: string }
-  | { emphasis?: undefined; escaping: InlineEscaping; nodes?: undefined; text: string }
+  | { emphasis: DelimiterRole; escaping: 'none'; highlight?: undefined; nodes: MarkRun; text: string }
+  | { emphasis?: undefined; escaping: 'none'; highlight: DelimiterRole; nodes: MarkRun; text: string }
+  | { emphasis?: undefined; escaping: 'none'; highlight?: undefined; nodes: NodeRange; text: string }
+  | { emphasis?: undefined; escaping: InlineEscaping; highlight?: undefined; nodes?: undefined; text: string }
 
 export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: MarkRun | undefined }
 
@@ -32,8 +35,8 @@ const delimiters = ['*', '_', '`', '~']
 
 const followsLinkText = /[([]/
 
-export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
-  return escape(resolveEmphasis(segments), container)
+export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer, flavour: Flavour): AssembledLine {
+  return escape(resolveEmphasis(segments), container, flavour === 'plain')
 }
 
 function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
@@ -65,11 +68,11 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
   return resolved
 }
 
-function escape(segments: readonly InlineSegment[], container: LineContainer): AssembledLine {
+function escape(segments: readonly InlineSegment[], container: LineContainer, highlights: boolean): AssembledLine {
   const scan = segments.map((segment) => segment.text).join('')
   const escapings: InlineEscaping[] = []
   for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) escapings.push(segment.escaping)
-  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container))
+  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container, highlights))
   const placements: number[] = []
   let output = ''
   for (let index = 0; index < scan.length; index += 1) {
@@ -84,26 +87,37 @@ function escape(segments: readonly InlineSegment[], container: LineContainer): A
   return { line: output, unspellableRun: unspellableRun(segments, output, placements) }
 }
 
-function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer): ReadonlySet<number> {
+function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer, highlights: boolean): ReadonlySet<number> {
   const escaped = new Set<number>()
   const linkClose = lastLinkClose(scan, escapings)
   let line = scanLine(scan, 0)
   let afterEscape = false
+  // Whether the `=` before opens a `==` the reader takes whole, so this one starts nothing.
+  let pairsEquals = false
   for (let index = 0; index < scan.length; index += 1) {
     if (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
+    const opensEquals: boolean = highlights && !pairsEquals && scan.startsWith(highlightDelimiter, index)
     const claimed: boolean =
       (escapable &&
-        (claimsLineStart(line, index, container) ||
+        ((opensEquals && claimsHighlight(scan, index)) ||
+          claimsLineStart(line, index, container) ||
           mergesWithSyntax(scan, escapings, index) ||
           opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, afterEscape))) ||
       (escaping === 'bracketed-link-target' &&
         ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, afterEscape)) || claimsDirectivePrefix(scan, index)))
     if (claimed) escaped.add(index)
     afterEscape = claimed
+    pairsEquals = opensEquals && !claimed
   }
   return escaped
+}
+
+// Like an emphasis run, a `==` in text escapes where the reader can open or close with it.
+function claimsHighlight(scan: string, index: number): boolean {
+  const flanking = highlightFlanking(scan, index)
+  return flanking.opens || flanking.closes
 }
 
 // CommonMark reads no escape inside a code span, so a backtick string an escape forms or splits off still closes one an earlier bare run opens.
@@ -137,7 +151,22 @@ function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], cl
 function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun | undefined {
   const { nodes, runs } = emittedRuns(segments, placements, output)
   const pair = misflanked(runs) ?? unpaired(runs)
-  return pair === undefined ? undefined : nodes[pair]
+  return pair === undefined ? unreadHighlight(segments, output, placements) : nodes[pair]
+}
+
+// No `==` in text can open or close, and highlights never nest, so a pair reads back where each delimiter flanks and both share a line.
+function unreadHighlight(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun | undefined {
+  let cursor = 0
+  let opener = 0
+  for (const segment of segments) {
+    const start = placements[cursor] ?? 0
+    cursor += segment.text.length
+    if (segment.highlight === undefined) continue
+    const flanking = highlightFlanking(output, start)
+    if (segment.highlight === 'open') opener = start
+    if (segment.highlight === 'open' ? !flanking.opens : !flanking.closes || output.slice(opener, start).includes('\n')) return segment.nodes
+  }
+  return undefined
 }
 
 function misflanked(runs: readonly EmittedRun[]): number | undefined {

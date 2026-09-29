@@ -1,6 +1,8 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
+import type { Flavour } from '../plain-conventions.ts'
 import { adfDocumentFault, carriesOnly, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../plain-conventions.ts'
 import { blockDirectiveForm, listBreakSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
@@ -24,28 +26,33 @@ type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
 type WalkedItem = { node: AdfNode; walk: Walk }
+export type Writing = { flavour: Flavour; memo: SpellingMemo | undefined }
 
 export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 
 export function adfToMarkdown(document: AdfDocument): Result<string> {
+  return writeMarkdown(document, 'lossless')
+}
+
+export function writeMarkdown(document: AdfDocument, flavour: Flavour): Result<string> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  const walk = walkBlocks(nodeContent(document), [], 0, undefined)
+  const walk = walkBlocks(nodeContent(document), [], 0, { flavour, memo: undefined })
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
   return success(text === '' ? '' : `${text}\n`)
 }
 
 // headroom: the least slack any depth guard below the walk has.
-function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<Walk> {
+function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
   for (const [index, node] of nodes.entries()) {
-    const block = emitBlock(node, [...path, 'content', index], depth, memo)
+    const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
@@ -81,49 +88,117 @@ function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: 
 
 function interruptsParagraph(node: AdfNode): boolean {
   const items = nodeContent(node)
-  const empty = items[0] === undefined || nodeContent(items[0]).length === 0
+  const empty = node.type !== 'taskList' && (items[0] === undefined || nodeContent(items[0]).length === 0)
   if (node.type !== 'orderedList') return markerInterruptsParagraph(undefined, empty)
   return markerInterruptsParagraph(listStart(node, items.length) ?? 0, empty)
 }
 
-function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> {
+function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const model = blockNodeModel(node.type)
   if (model === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  const readable = readableBlock(node, path, depth, memo)
+  const readable = readableBlock(node, path, depth, writing)
   if (readable !== undefined) return readable
-  return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, memo))
+  return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, writing))
 }
 
-export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo): Result<null> | undefined {
-  const readable = readableBlock(node, path, depth, memo)
+export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<null> | undefined {
+  const readable = readableBlock(node, path, depth, writing)
   if (readable === undefined) return undefined
   if (!readable.ok) return readable
   return readable.value.spelling === 'directive' ? undefined : success(null)
 }
 
-function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+  const { memo } = writing
   const kept = memo?.get(node)
   if (kept !== undefined) {
     if (kept.block === undefined) return undefined
     // A read below the fill would skip the depth guards the walk it replaces runs (docs/decisions.md §The spelling memo).
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
-  const spelled = spellReadableBlock(node, path, depth, memo)
+  const spelled = spellReadableBlock(node, path, depth, writing)
   if (spelled === undefined) memo?.set(node, { block: undefined, depth })
   else if (spelled.ok) memo?.set(node, { block: spelled.value, depth })
   return spelled
 }
 
-function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
-  if (node.type === 'blockquote') return tryBlockquote(node, path, depth, memo)
-  if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, memo)
+function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+  const plain = writing.flavour === 'plain' ? spellPlainBlock(node, path, depth, writing) : undefined
+  if (plain !== undefined) return plain
+  if (node.type === 'blockquote') return tryBlockquote(node, path, depth, writing)
+  if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, writing)
   if (node.type === 'codeBlock') return tryCodeBlock(node, path)
-  if (node.type === 'heading') return tryHeading(node, path)
+  if (node.type === 'heading') return tryHeading(node, path, writing.flavour)
   if (node.type === 'mediaSingle') return readableText(tryImage(node, path))
-  if (node.type === 'paragraph') return tryParagraph(node, path)
+  if (node.type === 'paragraph') return tryParagraph(node, path, writing.flavour)
   if (node.type === 'rule') return readableText(tryRule(node))
-  if (node.type === 'table') return readableText(tryPipeTable(node, path))
+  if (node.type === 'table') return readableText(tryPipeTable(node, path, writing.flavour))
   return undefined
+}
+
+// The plain flavour's nodes, in the shapes the plain reduction leaves them.
+function spellPlainBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+  if (node.type === 'panel') return quotedUnder(alertMarker(nodeAttrs(node)['panelType']), node, path, depth, writing)
+  if (node.type === 'taskList') return tryTaskList(node, path, depth, writing)
+  if (node.type !== 'expand' && node.type !== 'nestedExpand') return undefined
+  const title = nodeAttrs(node)['title']
+  if (typeof title !== 'string') return quotedUnder(foldedAlertMarker, node, path, depth, writing)
+  // The reader takes a title as lossless inline text.
+  const line = emitInlineLine([{ text: title, type: 'text' }], 'paragraph', path, 'lossless')
+  return line.ok ? quotedUnder(`${foldedAlertMarker} ${line.value}`, node, path, depth, writing) : line
+}
+
+function quotedUnder(head: string, node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
+  if (!inner.ok) return inner
+  const body = joinBlocks(inner.value.blocks, 'document')
+  return success(commonMarkText(quoted(body === '' ? head : `${head}\n\n${body}`), inner.value.headroom))
+}
+
+function quoted(text: string): string {
+  return text
+    .split('\n')
+    .map((line) => (line === '' ? '>' : `> ${line}`))
+    .join('\n')
+}
+
+function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+  const items: PlacedBlock[][] = []
+  let headroom = largestNesting - depth - 1
+  // A child other than a task nests in the task before it.
+  for (const [index, child] of nodeContent(node).entries()) {
+    const task = child.type === 'taskItem' || child.type === 'blockTaskItem'
+    const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, writing) : placedBlock(child, [...path, 'content', index], depth + 1, writing)
+    if (!walk.ok) return walk
+    headroom = Math.min(headroom, walk.value.headroom)
+    const previous = items.at(-1)
+    if (task || previous === undefined) items.push([...walk.value.blocks])
+    else for (const block of walk.value.blocks) previous.push(block)
+  }
+  const lines = items.map((blocks) => tryListItemLines(joinBlocks(blocks, 'list-item'), '- '))
+  return lines.includes(undefined) ? undefined : success({ headroom, spelling: 'list', text: lines.join('\n') })
+}
+
+function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {
+  const block = emitBlock(node, path, depth, writing)
+  return block.ok ? success({ blocks: [{ ...block.value, node }], headroom: block.value.headroom }) : block
+}
+
+// The marker leads the first paragraph, or stands as one where the blocks open with another.
+function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {
+  const marker = taskMarker(nodeAttrs(task)['state'])
+  const markerBlock: PlacedBlock = { node: { type: 'paragraph' }, spelling: 'commonmark', text: marker }
+  if (task.type === 'taskItem') {
+    const content = nodeContent(task)
+    const line = content.length === 0 ? success('') : emitInlineLine(content, 'paragraph', path, writing.flavour)
+    if (!line.ok) return line
+    return success({ blocks: [{ ...markerBlock, text: line.value === '' ? marker : `${marker} ${line.value}` }], headroom: Number.POSITIVE_INFINITY })
+  }
+  const walk = walkBlocks(nodeContent(task), path, depth, writing)
+  if (!walk.ok) return walk
+  const [first, ...rest] = walk.value.blocks
+  const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
+  return success({ blocks, headroom: walk.value.headroom })
 }
 
 function readableText(text: string | undefined): Result<EmittedBlock> | undefined {
@@ -156,7 +231,7 @@ function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertE
 function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string, path: ConvertErrorPath, walkBody: () => Result<Walk>): Result<EmittedBlock> {
   if (blockDirectiveForm(node.type) === 'leaf') return success({ headroom: Number.POSITIVE_INFINITY, spelling: 'directive', text: opener })
   if (model.contentModel === 'inline') {
-    const line = emitInlineLine(nodeContent(node), 'paragraph', path)
+    const line = emitInlineLine(nodeContent(node), 'paragraph', path, 'lossless')
     if (!line.ok) return line
     return success(directivePair(node, opener, line.value))
   }
@@ -165,15 +240,13 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
   return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
-function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, [])) return undefined
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, memo)
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
   const text = joinBlocks(inner.value.blocks, 'document')
-    .split('\n')
-    .map((line) => (line === '' ? '>' : `> ${line}`))
-    .join('\n')
-  return success(commonMarkText(text, inner.value.headroom))
+  const alert = writing.flavour === 'plain' && leadingMarker(text, readAlertMarker) !== undefined
+  return success(commonMarkText(quoted(alert ? `\\${text}` : text), inner.value.headroom))
 }
 
 function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
@@ -216,19 +289,19 @@ function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
   return success(text)
 }
 
-function tryHeading(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
+function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
   if (!carriesOnly(node, ['level'])) return undefined
   const level = nodeAttrs(node)['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
   const hashes = '#'.repeat(level)
   const content = nodeContent(node)
   if (content.length === 0) return success(commonMarkText(hashes))
-  const line = emitInlineLine(content, 'heading', path)
+  const line = emitInlineLine(content, 'heading', path, flavour)
   if (!line.ok) return line
   return success(commonMarkText(`${hashes} ${line.value}`))
 }
 
-function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: SpellingMemo | undefined): Result<EmittedBlock> | undefined {
+function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   const ordered = node.type === 'orderedList'
   if (!carriesOnly(node, ordered ? ['order'] : [])) return undefined
   const items = nodeContent(node)
@@ -238,14 +311,17 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, memo: Spe
   const walked: WalkedItem[] = []
   let headroom = Number.POSITIVE_INFINITY
   for (const [offset, item] of items.entries()) {
-    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, memo)
+    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, writing)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })
   }
+  const inners = walked.map((item) => joinBlocks(item.walk.blocks, 'list-item'))
+  // A bullet list whose every item opens with a task marker reads as a task list (README §Plain markdown).
+  if (writing.flavour === 'plain' && !ordered && inners.every((inner) => leadingMarker(inner, readTaskMarker) !== undefined)) inners[0] = `\\${inners[0] ?? ''}`
   const lines: string[] = []
-  for (const [offset, item] of walked.entries()) {
-    const line = tryListItemLines(item.walk.blocks, ordered ? `${start + offset}. ` : '- ')
+  for (const [offset, inner] of inners.entries()) {
+    const line = tryListItemLines(inner, ordered ? `${start + offset}. ` : '- ')
     if (line === undefined) {
       // The directive form spends a level the walk did not count.
       if (headroom < 1) return tooDeep(path)
@@ -267,8 +343,7 @@ function listStart(node: AdfNode, items: number): number | undefined {
   return start + items - 1 > largestListMarker ? undefined : start
 }
 
-function tryListItemLines(blocks: readonly PlacedBlock[], marker: string): string | undefined {
-  const inner = joinBlocks(blocks, 'list-item')
+function tryListItemLines(inner: string, marker: string): string | undefined {
   if (inner === '') return marker.trimEnd()
   const body = inner.split('\n')
   if (body.some((line) => line !== '' && isBlankLine(line))) return undefined
@@ -278,10 +353,10 @@ function tryListItemLines(blocks: readonly PlacedBlock[], marker: string): strin
   return lines.join('\n')
 }
 
-function tryParagraph(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
+function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
   const content = nodeContent(node)
   if (content.length === 0 || !carriesOnly(node, [])) return undefined
-  const line = emitInlineLine(content, 'paragraph', path)
+  const line = emitInlineLine(content, 'paragraph', path, flavour)
   if (!line.ok) return line
   return success(commonMarkText(line.value))
 }

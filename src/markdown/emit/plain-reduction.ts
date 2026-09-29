@@ -1,13 +1,13 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
-import { adfToMarkdown, commonMarkSpelling, largestListMarker, type SpellingMemo } from './adf-to-markdown.ts'
-import { alertMarker, foldedAlertMarker, taskMarker } from '../plain-conventions.ts'
+import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from './adf-to-markdown.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './plain-inline.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { taskMarker } from '../plain-conventions.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
@@ -20,7 +20,7 @@ type Placed = { index: number; loose: AdfNode[] } | { index: number; loose?: und
 
 const blockReducers: Readonly<Record<string, BlockReducer>> = {
   blockCard: paragraphOfNode,
-  blockquote: (node, reduction) => quoted(success([]), node, reduction),
+  blockquote: (node, reduction) => contained({ type: 'blockquote' }, node, reduction),
   bulletList: reduceList,
   caption: (node, reduction) => paragraphOf(nodeContent(node), reduction),
   codeBlock: reduceCodeBlock,
@@ -33,7 +33,7 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
   mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index) => reduceStanding(child, childReduction(reduction, index)))),
   nestedExpand: reduceExpand,
   orderedList: reduceList,
-  panel: (node, reduction) => quoted(success([paragraph([text(alertMarker(nodeAttrs(node)['panelType']))])]), node, reduction),
+  panel: reducePanel,
   paragraph: (node, reduction) => paragraphOf(nodeContent(node), reduction),
   rule: () => success([{ type: 'rule' }]),
   syncBlock: paragraphOfNode,
@@ -43,7 +43,7 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
 
 export function adfToPlainMarkdown(document: AdfDocument): Result<string> {
   const reduced = reduceToPlain(document)
-  return reduced.ok ? adfToMarkdown(reduced.value) : reduced
+  return reduced.ok ? writeMarkdown(reduced.value, 'plain') : reduced
 }
 
 export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
@@ -112,7 +112,7 @@ function plainSequence(blocks: readonly AdfNode[], reduction: Reduction): Result
     const listed = sequence[index]
     if (listed === undefined || (listed.type !== 'bulletList' && listed.type !== 'orderedList')) continue
     const block = numberedPastMarkers(listed)
-    const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, reduction.memo)?.ok === true
+    const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'plain', memo: reduction.memo })?.ok === true
     if (spelled) continue
     sequence = spliced(sequence, index, block === listed ? nodeContent(block).flatMap(nodeContent) : [block])
     index = Math.max(0, index - 1) - 1
@@ -138,11 +138,12 @@ function numberedAsText(list: AdfNode): AdfNode {
   return { content: nodeContent(list).map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
 }
 
+// Adjacent lists of one marker read back as one list.
 function mergedLists(blocks: readonly AdfNode[]): AdfNode[] {
   const merged: AdfNode[] = []
   for (const block of blocks) {
     let next = block
-    for (let previous = merged.at(-1); previous !== undefined && previous.type === next.type && isList(next); previous = merged.at(-1)) {
+    for (let previous = merged.at(-1); previous !== undefined && listMarker(next) !== undefined && listMarker(previous) === listMarker(next); previous = merged.at(-1)) {
       merged.pop()
       next = joinedLists(previous, next)
     }
@@ -151,15 +152,28 @@ function mergedLists(blocks: readonly AdfNode[]): AdfNode[] {
   return merged
 }
 
-function isList(block: AdfNode): boolean {
-  return block.type === 'bulletList' || block.type === 'orderedList'
+function listMarker(block: AdfNode): string | undefined {
+  if (block.type === 'orderedList') return '.'
+  return block.type === 'bulletList' || block.type === 'taskList' ? '-' : undefined
 }
 
-// Two numbered lists whose numbering breaks between them keep their numbers as text in one bullet list.
+// Two numbered lists whose numbering breaks between them keep their numbers as text in one bullet list, and a task list joining a bullet list its markers.
 function joinedLists(first: AdfNode, second: AdfNode): AdfNode {
   const breaks = first.type === 'orderedList' && nodeAttrs(second)['order'] !== Number(nodeAttrs(first)['order']) + nodeContent(first).length
-  const [head, tail] = breaks ? [numberedAsText(first), numberedAsText(second)] : [first, second]
+  const [head, tail] = breaks ? [numberedAsText(first), numberedAsText(second)] : first.type === second.type ? [first, second] : [tasksAsText(first), tasksAsText(second)]
   return { ...head, content: [...nodeContent(head), ...nodeContent(tail)] }
+}
+
+function tasksAsText(list: AdfNode): AdfNode {
+  if (list.type !== 'taskList') return list
+  const items: AdfNode[] = []
+  for (const child of nodeContent(list)) {
+    const marker = taskMarker(nodeAttrs(child)['state'])
+    const previous = child.type === 'taskItem' || child.type === 'blockTaskItem' ? undefined : items.pop()
+    if (previous !== undefined) items.push(itemOf([...nodeContent(previous), child]))
+    else items.push(itemOf(child.type === 'taskItem' ? [paragraph(nodeContent(child).length === 0 ? [text(marker)] : [text(`${marker} `), ...nodeContent(child)])] : marked(nodeContent(child), marker)))
+  }
+  return { content: items, type: 'bulletList' }
 }
 
 function paragraph(content: readonly AdfNode[]): AdfNode {
@@ -183,15 +197,20 @@ function paragraphOfNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]>
   return paragraphOf([node], reduction)
 }
 
-function quoted(head: Result<AdfNode[]>, node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const content = concatenated([head, reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })])
-  return content.ok ? success([{ content: content.value, type: 'blockquote' }]) : content
+function contained(shell: AdfNode, node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
+  const content = reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })
+  return content.ok ? success([{ ...shell, content: content.value }]) : content
+}
+
+function reducePanel(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
+  const panelType = nodeAttrs(node)['panelType']
+  return contained(typeof panelType === 'string' ? { attrs: { panelType }, type: 'panel' } : { type: 'panel' }, node, reduction)
 }
 
 function reduceExpand(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const title = nodeAttrs(node)['title']
-  const marker = typeof title === 'string' ? `${foldedAlertMarker} ${title.replace(/^[ \t\n\r]+/, '').replaceAll('\n', ' ')}` : foldedAlertMarker
-  return quoted(paragraphOf([text(marker)], { ...reduction, depth: reduction.depth + 1 }), node, reduction)
+  const held = nodeAttrs(node)['title']
+  const title = typeof held === 'string' ? oneLine(held).replace(/^[ \t]+|[ \t]+$/g, '') : ''
+  return contained(title === '' ? { type: node.type } : { attrs: { title }, type: node.type }, node, reduction)
 }
 
 function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
@@ -230,8 +249,11 @@ function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
 // A list item's first line reads as no rule and holds no line of spaces alone: the rule and the spaces give way.
 function itemOf(blocks: readonly AdfNode[]): AdfNode {
   const rules = blocks.findIndex((block) => block.type !== 'rule')
-  const content = blocks.slice(rules === -1 ? blocks.length : rules).map((block) => (block.type === 'codeBlock' ? { ...block, content: blankedLines(nodeContent(block)) } : block))
-  return { content, type: 'listItem' }
+  return { content: blankedCode(blocks.slice(rules === -1 ? blocks.length : rules)), type: 'listItem' }
+}
+
+function blankedCode(blocks: readonly AdfNode[]): AdfNode[] {
+  return blocks.map((block) => (block.type === 'codeBlock' ? { ...block, content: blankedLines(nodeContent(block)) } : block))
 }
 
 function blankedLines(code: readonly AdfNode[]): AdfNode[] {
@@ -239,7 +261,48 @@ function blankedLines(code: readonly AdfNode[]): AdfNode[] {
   return blanked === '' ? [] : [text(blanked)]
 }
 
+// A task list opening with a task and holding tasks and task lists alone keeps its spelling; a list nests in the task before it.
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
+  const children = nodeContent(node)
+  if (!isTask(children[0]) || children.some((child) => !isTask(child) && child.type !== 'taskList')) return reduceTasksAsText(node, reduction)
+  const tasks: AdfNode[] = []
+  let nested: AdfNode[] = []
+  for (const [index, child] of children.entries()) {
+    const at = childReduction(reduction, index)
+    const reduced = isTask(child) ? reduceTask(child, at) : reduceStanding(child, at)
+    if (!reduced.ok) return reduced
+    if (isTask(child)) {
+      nestIn(tasks, nested)
+      nested = []
+    }
+    for (const block of reduced.value) (isTask(child) ? tasks : nested).push(block)
+  }
+  nestIn(tasks, nested)
+  return success([{ content: tasks, type: 'taskList' }])
+}
+
+// The writer nests a list in the task before it, so one closing a block task item's blocks merges with it.
+function nestIn(tasks: AdfNode[], nested: readonly AdfNode[]): void {
+  const previous = tasks.at(-1)
+  if (previous?.type === 'blockTaskItem') tasks[tasks.length - 1] = { ...previous, content: mergedLists([...nodeContent(previous), ...nested]) }
+  else for (const block of mergedLists(nested)) tasks.push(block)
+}
+
+function isTask(node: AdfNode | undefined): boolean {
+  return node?.type === 'taskItem' || node?.type === 'blockTaskItem'
+}
+
+function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
+  const attrs = { state: nodeAttrs(task)['state'] === 'DONE' ? 'DONE' : 'TODO' }
+  if (task.type === 'taskItem') {
+    const content = reduceInline(nodeContent(task), 'paragraph', at.path, at.depth)
+    return content.ok ? success([{ attrs, content: content.value, type: 'taskItem' }]) : content
+  }
+  const blocks = reduceBlocks(nodeContent(task), at)
+  return blocks.ok ? success([{ attrs, content: blankedCode(blocks.value), type: 'blockTaskItem' }]) : blocks
+}
+
+function reduceTasksAsText(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const items: AdfNode[] = []
   for (const [index, child] of nodeContent(node).entries()) {
     const blocks = taskBlocks(child, childReduction(reduction, index))

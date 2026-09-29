@@ -1,3 +1,5 @@
+import { isWordCharacter } from './commonmark/emphasis-matching.ts'
+
 export type Flavour = 'lossless' | 'plain'
 
 type AlertMarker = { folded: boolean; length: number; panelType: string }
@@ -43,6 +45,26 @@ export function readAlertMarker(text: string): AlertMarker | undefined {
   const word = (marker[1] ?? '').toLowerCase()
   const panelType = Object.hasOwn(panelTypesByWord, word) ? panelTypesByWord[word] : undefined
   return { folded: marker[2] !== '', length: marker[0].length, panelType: panelType ?? 'info' }
+}
+
+// A marker leads text that ends at it or goes on past whitespace or a hard break.
+export function leadingMarker<T extends { length: number }>(text: string, read: (text: string) => T | undefined): T | undefined {
+  const marker = read(text)
+  if (marker === undefined) return undefined
+  const rest = text.slice(marker.length)
+  return rest === '' || /^(?:[ \t\n]|\\\n)/.test(rest) ? marker : undefined
+}
+
+// A delimiter is bounded outside by the code point beyond it, and flanks by the character inside it.
+export function highlightFlanking(source: string, index: number): { closes: boolean; opens: boolean } {
+  const end = index + highlightDelimiter.length
+  const before = Array.from(source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
+  const after = Array.from(source.slice(end, end + 2))[0] ?? ''
+  return { closes: flanks(before) && !isWordCharacter(after), opens: flanks(after) && !isWordCharacter(before) }
+}
+
+function flanks(character: string): boolean {
+  return character !== '' && !/\s/.test(character)
 }
 
 export function taskMarker(state: unknown): string {
