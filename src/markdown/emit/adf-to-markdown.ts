@@ -317,12 +317,12 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
     headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })
   }
-  const inners = walked.map((item) => joinBlocks(item.walk.blocks, 'list-item'))
-  // A bullet list whose every item opens with a task marker reads as a task list (README §Plain markdown).
-  if (writing.flavour === 'plain' && !ordered && inners.every((inner) => leadingMarker(inner, readTaskMarker) !== undefined)) inners[0] = `\\${inners[0] ?? ''}`
   const lines: string[] = []
-  for (const [offset, inner] of inners.entries()) {
-    const line = tryListItemLines(inner, ordered ? `${start + offset}. ` : '- ')
+  for (const [offset, item] of walked.entries()) {
+    const inner = joinBlocks(item.walk.blocks, 'list-item')
+    // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
+    const escaped = writing.flavour === 'plain' && leadingMarker(inner, readTaskMarker) !== undefined ? `\\${inner}` : inner
+    const line = tryListItemLines(escaped, ordered ? `${start + offset}. ` : '- ')
     if (line === undefined) {
       // The directive form spends a level the walk did not count.
       if (headroom < 1) return tooDeep(path)
