@@ -236,6 +236,10 @@ test('keeps what markdownToAdf reads that no row reads, and refuses only what it
   const future = bare('futureBlock', text('==x=='))
   const carried = adfToMarkdown(document(future))
   assert.deepEqual(carried.ok ? read(carried.value) : carried.error.code, [future])
+  const uncarriable = bare('taskList', node('taskItem', { extra: { a: 1 }, state: 'TODO' }, text('a')))
+  const carriedPanel = adfToMarkdown(document(node('panel', { extra: true, panelType: 'info' }, uncarriable)))
+  const restored = carriedPanel.ok ? plainMarkdownToAdf(carriedPanel.value) : carriedPanel
+  assert.deepEqual(restored.ok ? restored.value.content : restored.error.code, [node('panel', { extra: true, panelType: 'info' }, uncarriable)])
   const red: AdfMark = { attrs: { color: '#ff0000' }, type: 'backgroundColor' }
   const held = paragraph(text('a ==b== c', red), text(' ==d '), { attrs: { note: 'x' }, text: 'e==f', type: 'text' }, text(' g=='))
   const spelled = adfToMarkdown(document(held))

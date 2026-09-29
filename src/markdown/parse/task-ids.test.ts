@@ -23,34 +23,38 @@ function tasks(...content: AdfNode[]): AdfDocument {
 test('mints each task node lacking a localId a UUID v4 in document order, unique and the same every run', () => {
   const unminted = (): AdfDocument => tasks({ content: [{ attrs: { state: 'TODO' }, type: 'taskItem' }, { content: [{ attrs: { state: 'DONE' }, type: 'blockTaskItem' }], type: 'taskList' }], type: 'taskList' })
   const minted = unminted()
-  mintTaskIds(minted, '- [ ] a\n')
+  mintTaskIds(minted, '- [ ] a\n', new Set())
   const ids = taskIds(minted)
   assert.equal(ids.length, 4)
   for (const id of ids) assert.match(String(id), uuidV4)
   assert.equal(new Set(ids).size, 4)
   const again = unminted()
-  mintTaskIds(again, '- [ ] a\n')
+  mintTaskIds(again, '- [ ] a\n', new Set())
   assert.deepEqual(taskIds(again), ids)
   const other = unminted()
-  mintTaskIds(other, '- [ ] b\n')
+  mintTaskIds(other, '- [ ] b\n', new Set())
   assert.equal(taskIds(other).some((id) => ids.includes(id)), false)
 })
 
 test('keeps a localId the document spells and skips it when minting, a carried one too', () => {
   const first = tasks({ type: 'taskList' })
-  mintTaskIds(first, 'x')
+  mintTaskIds(first, 'x', new Set())
   const [taken] = taskIds(first)
-  const spelled = tasks({ type: 'taskList' }, { content: [{ attrs: { localId: String(taken) }, type: 'taskList' }], type: 'futureBlock' })
-  mintTaskIds(spelled, 'x')
+  const carried: AdfNode = { content: [{ attrs: { localId: String(taken) }, type: 'taskList' }], type: 'futureBlock' }
+  const spelled = tasks({ type: 'taskList' }, carried)
+  mintTaskIds(spelled, 'x', new Set([carried]))
   const [minted, kept] = taskIds(spelled)
   assert.equal(kept, taken)
   assert.notEqual(minted, taken)
   assert.match(String(minted), uuidV4)
 })
 
-test('leaves a task node inside a node type this version does not know as carried', () => {
-  const carried: AdfNode = { content: [{ type: 'taskList' }], type: 'futureBlock' }
-  const document = tasks(carried)
-  mintTaskIds(document, 'x')
-  assert.deepEqual(document, tasks({ content: [{ type: 'taskList' }], type: 'futureBlock' }))
+test('leaves a node the carry restores as carried, minting neither it nor what it holds', () => {
+  const list = (): AdfNode => ({ content: [{ attrs: { state: 'TODO' }, type: 'taskItem' }], type: 'taskList' })
+  const carriedList = list()
+  const carriedPanel: AdfNode = { attrs: { panelType: 'info' }, content: [list()], type: 'panel' }
+  const future: AdfNode = { content: [list()], type: 'futureBlock' }
+  const document = tasks(carriedList, carriedPanel, future)
+  mintTaskIds(document, 'x', new Set([carriedList, carriedPanel]))
+  assert.deepEqual(document, tasks(list(), { attrs: { panelType: 'info' }, content: [list()], type: 'panel' }, { content: [list()], type: 'futureBlock' }))
 })
