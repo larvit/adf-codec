@@ -4,8 +4,7 @@ import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 
 const taskTypes = new Set(['blockTaskItem', 'taskItem', 'taskList'])
 
-// docs/decisions.md, Plain task ids come from position.
-export function mintTaskIds(document: AdfDocument, markdown: string): void {
+export function mintTaskIds(document: AdfDocument, markdown: string, carried: ReadonlySet<AdfNode>): void {
   const taken = new Set<string>()
   for (const node of preorder(document, () => true)) {
     const localId = nodeAttrs(node)['localId']
@@ -13,8 +12,8 @@ export function mintTaskIds(document: AdfDocument, markdown: string): void {
   }
   const seed = hash128(markdown).join(' ')
   let count = 0
-  for (const node of preorder(document, (held) => blockNodeModel(held.type) !== undefined)) {
-    if (!taskTypes.has(node.type) || typeof nodeAttrs(node)['localId'] === 'string') continue
+  for (const node of preorder(document, (held) => !carried.has(held) && blockNodeModel(held.type)?.contentModel === 'block')) {
+    if (!taskTypes.has(node.type) || carried.has(node) || typeof nodeAttrs(node)['localId'] === 'string') continue
     let localId = ''
     do {
       count += 1

@@ -135,7 +135,8 @@ in the editor's UUID v4 shape, hashed (cyrb128) from the whole markdown and the 
 document order, skipping any id the document holds. A site rejecting a missing `localId` takes the
 document, the same markdown reads to the same ids every run, and different markdown to ids no other
 document shares. The same markdown pasted twice into one document repeats its ids: determinism
-wins over that case.
+wins over that case. A node the carry restores stays deep-equal (§Unknown nodes ride the carry): its
+ids are only skipped.
 
 ## A callout title keeps its link targets
 

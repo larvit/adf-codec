@@ -22,7 +22,7 @@ import { unsupportedNodeShape } from '../directive-syntax.ts'
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
 
 // `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand.
-type Reading = { definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
+type Reading = { carried: Set<AdfNode>; definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
 
 const documentStart: SourcePosition = { line: 1, offset: 0 }
 const imageAfterMarker = 'an image fits only as a paragraph of its own: this one continues the paragraph a marker opens, which a blank line before it ends'
@@ -38,11 +38,11 @@ export function plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseE
 
 function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
   const parsed = parseBlocks(markdown)
-  const reading: Reading = { definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
+  const reading: Reading = { carried: new Set(), definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
   const content = positioned(readBlocks(parsed.blocks, reading, [], 0), documentStart)
   if (!content.ok) return content
   const document: AdfDocument = content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 }
-  if (flavour === 'plain') mintTaskIds(document, markdown)
+  if (flavour === 'plain') mintTaskIds(document, markdown, reading.carried)
   return success(document)
 }
 
@@ -83,7 +83,7 @@ function readBlock(block: Block, reading: Reading, path: ConvertErrorPath, depth
     case 'bulletList':
       return reading.flavour === 'plain' ? bulletNode(block.items, reading, path, depth) : listNode({ type: 'bulletList' }, block.items, reading, path, depth)
     case 'code':
-      return codeBlockNode(block.language, block.text, path, depth)
+      return codeBlockNode(block.language, block.text, reading, path, depth)
     case 'directive':
       return directiveNode(block, reading, path, depth)
     case 'fault':
@@ -250,10 +250,11 @@ function listNode(node: AdfNode, items: readonly Block[][], reading: Reading, pa
   return success({ ...node, content })
 }
 
-function codeBlockNode(language: string, text: string, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function codeBlockNode(language: string, text: string, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   if (language === carryName) {
     const carried = readCarriedBlock(text, depth)
     if (carried.fault !== undefined) return faulted(carried.fault, path)
+    reading.carried.add(carried.value)
     return success(carried.value)
   }
   const node: AdfNode = language === '' ? { type: 'codeBlock' } : { attrs: { language }, type: 'codeBlock' }
