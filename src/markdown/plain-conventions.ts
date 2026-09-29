@@ -16,8 +16,8 @@ const alertWords: Readonly<Record<string, string>> = {
   warning: 'WARNING',
 }
 
-// ー, ｰ and the kana voicing marks are Script=Common; Script_Extensions would also take Latin combining marks.
-const boundingScript = /^[\u3099-\u309c\u30fc\uff70\uff9e\uff9f\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Khmer}\p{Script=Lao}\p{Script=Myanmar}\p{Script=Thai}]$/u
+// ー, ｰ and the kana voicing marks sit outside the kana scripts; Script_Extensions would also take Latin combining marks.
+const boundingScript = /^[\u3099\u309a\u30fc\uff70\uff9e\uff9f\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Khmer}\p{Script=Lao}\p{Script=Myanmar}\p{Script=Thai}]$/u
 
 const panelTypesByWord: Readonly<Record<string, string>> = {
   attention: 'warning',
