@@ -147,7 +147,7 @@ read replaces mentions, attachments and macros with text.
   `_(image not included)_`, `_(jira-issues-table not included)_`, `_(synced block not included)_`,
   `_(link card not included)_`, `_(extension not included)_`.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
-  keeping its text, and so does a mark CommonMark cannot spell where it stands.
+  keeping its text, and so does a mark the flavour cannot spell where it stands.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.

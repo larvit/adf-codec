@@ -23,7 +23,7 @@ export type InlineSegment =
   | { emphasis?: undefined; escaping: 'none'; highlight?: undefined; nodes: NodeRange; text: string }
   | { emphasis?: undefined; escaping: InlineEscaping; highlight?: undefined; nodes?: undefined; text: string }
 
-export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: MarkRun | undefined }
+export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRuns: MarkRun[] }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
@@ -81,10 +81,10 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, hi
     output += scan.charAt(index)
   }
   if (container === 'paragraph' && opensLinkDefinition(output)) {
-    if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRun: undefined }
-    return { line: `\\${output}`, unspellableRun: unspellableRun(segments, output, placements) }
+    if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRuns: [] }
+    return { line: `\\${output}`, unspellableRuns: unspellableRuns(segments, output, placements) }
   }
-  return { line: output, unspellableRun: unspellableRun(segments, output, placements) }
+  return { line: output, unspellableRuns: unspellableRuns(segments, output, placements) }
 }
 
 function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer, highlights: boolean): ReadonlySet<number> {
@@ -148,25 +148,27 @@ function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], cl
   return escaped
 }
 
-function unspellableRun(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun | undefined {
+// One emphasis run, the innermost, or every highlight run the line cannot spell.
+function unspellableRuns(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun[] {
   const { nodes, runs } = emittedRuns(segments, placements, output)
   const pair = misflanked(runs) ?? unpaired(runs)
-  return pair === undefined ? unreadHighlight(segments, output, placements) : nodes[pair]
+  const run = pair === undefined ? undefined : nodes[pair]
+  return run === undefined ? unreadHighlights(segments, output, placements) : [run]
 }
 
-// No `==` in text can open or close, and highlights never nest, so a pair reads back where each delimiter flanks and both share a line.
-function unreadHighlight(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun | undefined {
+// No `==` in text can open or close, and highlights never nest, so a pair reads back where each delimiter flanks.
+function unreadHighlights(segments: readonly InlineSegment[], output: string, placements: readonly number[]): MarkRun[] {
+  const unread: MarkRun[] = []
   let cursor = 0
-  let opener = 0
   for (const segment of segments) {
     const start = placements[cursor] ?? 0
     cursor += segment.text.length
     if (segment.highlight === undefined) continue
     const flanking = highlightFlanking(output, start)
-    if (segment.highlight === 'open') opener = start
-    if (segment.highlight === 'open' ? !flanking.opens : !flanking.closes || output.slice(opener, start).includes('\n')) return segment.nodes
+    const flanks = segment.highlight === 'open' ? flanking.opens : flanking.closes
+    if (!flanks && unread.at(-1) !== segment.nodes) unread.push(segment.nodes)
   }
-  return undefined
+  return unread
 }
 
 function misflanked(runs: readonly EmittedRun[]): number | undefined {

@@ -162,7 +162,7 @@ function quoted(text: string): string {
     .join('\n')
 }
 
-function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const items: PlacedBlock[][] = []
   let headroom = largestNesting - depth - 1
   // A child other than a task nests in the task before it.
@@ -176,7 +176,8 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
     else for (const block of walk.value.blocks) previous.push(block)
   }
   const lines = items.map((blocks) => tryListItemLines(joinBlocks(blocks, 'list-item'), '- '))
-  return lines.includes(undefined) ? undefined : success({ headroom, spelling: 'list', text: lines.join('\n') })
+  // The plain reduction leaves no task a list item cannot hold: a directive here would break the flavour.
+  return lines.includes(undefined) ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success({ headroom, spelling: 'list', text: lines.join('\n') })
 }
 
 function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {

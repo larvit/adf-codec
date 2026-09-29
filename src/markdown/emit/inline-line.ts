@@ -38,7 +38,7 @@ type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | 
 
 type LineFallbacks = { carried: Set<number>; flavour: Flavour; openingLinkAsDirective: boolean }
 
-export type PlainLineFallback = { kind: 'claimed-line'; line: number; text: string } | { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun }
+export type PlainLineFallback = { kind: 'claimed-line'; line: number; text: string } | { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun; runs: MarkRun[] }
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<string> {
   const emitted = emitLine(nodes, container, path, flavour)
@@ -129,7 +129,8 @@ function attemptLine(segments: readonly InlineSegment[], container: LineContaine
 function lineVerdict(segments: readonly InlineSegment[], container: LineContainer, flavour: Flavour): PlainLineFallback | { kind: 'line'; text: string } {
   const assembled = assembleInlineLine(segments, container, flavour)
   if (assembled.openingLinkAsDirective) return { kind: 'opening-link' }
-  if (assembled.unspellableRun !== undefined) return { kind: 'unspellable-run', run: assembled.unspellableRun }
+  const [run] = assembled.unspellableRuns
+  if (run !== undefined) return { kind: 'unspellable-run', run, runs: assembled.unspellableRuns }
   const lines = assembled.line.split('\n')
   const claimed = container === 'paragraph' ? lines.findIndex((single, index) => claimsLine(single, index === 0 ? 'first' : 'later')) : -1
   return claimed === -1 ? { kind: 'line', text: assembled.line } : { kind: 'claimed-line', line: claimed, text: lines[claimed] ?? '' }

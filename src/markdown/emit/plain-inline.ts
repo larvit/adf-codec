@@ -1,5 +1,6 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
+import type { MarkRun } from './line-escaping.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -130,7 +131,7 @@ function textLeaf(text: string, marks: readonly AdfMark[]): AdfNode {
   return marks.length === 0 ? { text, type: 'text' } : { marks: [...marks], text, type: 'text' }
 }
 
-// A highlight goes outermost so its run is one run at depth 0, and code innermost, the only place its spelling holds.
+// A highlight goes first, where `highlighted` looks for it, and code last, the only place its spelling holds.
 function plainMarks(marks: readonly AdfMark[], container: LineContainer, text: string): AdfMark[] {
   const kept: AdfMark[] = []
   for (const mark of marks) {
@@ -174,7 +175,7 @@ function highlighted(leaves: readonly AdfNode[]): AdfNode[] {
     const marks = nodeMarks(leaf)
     if (marks[0]?.type === highlight) {
       const held = marks.slice(1)
-      shared = run.length === 0 ? held.filter((mark) => mark.type !== 'code') : shared.filter((mark) => held.some((other) => sameMark(other, mark)))
+      shared = run.length === 0 ? held : shared.filter((mark) => held.some((other) => sameMark(other, mark)))
       run.push(leaf)
       continue
     }
@@ -265,7 +266,7 @@ function spellableLine(leaves: AdfNode[], container: LineContainer, path: Conver
 }
 
 function withoutFallback(leaves: readonly AdfNode[], fallback: PlainLineFallback): AdfNode[] | undefined {
-  if (fallback.kind === 'unspellable-run') return withoutMark(leaves, fallback.run.first, fallback.run.last, fallback.run.depth)
+  if (fallback.kind === 'unspellable-run') return withoutMarks(leaves, fallback.runs)
   const first = fallback.kind === 'opening-link' ? 0 : lineStart(leaves, fallback.line)
   const mark = nodeMarks(leaves[first] ?? {})[0]
   if (mark === undefined || mark.type !== (fallback.kind === 'opening-link' ? 'link' : 'code')) return undefined
@@ -274,7 +275,7 @@ function withoutFallback(leaves: readonly AdfNode[], fallback: PlainLineFallback
   // A code span is what binds the `]` a link definition reads, and dropping it keeps the link target.
   const spans = leaves.slice(first, last + 1).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
   if (mark.type === 'link' && spans) return leaves.map((leaf, index) => (index < first || index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code'))))
-  return withoutMark(leaves, first, last, 0)
+  return withoutMarks(leaves, [{ depth: 0, first, last }])
 }
 
 function lineStart(leaves: readonly AdfNode[], line: number): number {
@@ -283,6 +284,12 @@ function lineStart(leaves: readonly AdfNode[], line: number): number {
   return index
 }
 
-function withoutMark(leaves: readonly AdfNode[], first: number, last: number, depth: number): AdfNode[] {
-  return leaves.map((leaf, index) => (index < first || index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => held !== depth))))
+// The runs cover disjoint leaves, so one pass drops them all.
+function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
+  const depths = new Map<number, number>()
+  for (const run of runs) for (let index = run.first; index <= run.last; index += 1) depths.set(index, run.depth)
+  return leaves.map((leaf, index) => {
+    const depth = depths.get(index)
+    return depth === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => held !== depth))
+  })
 }

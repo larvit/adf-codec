@@ -164,16 +164,22 @@ function joinedLists(first: AdfNode, second: AdfNode): AdfNode {
   return { ...head, content: [...nodeContent(head), ...nodeContent(tail)] }
 }
 
+// A task keeps its marker as text; a list item stands as one, and anything else nests in the item before it.
 function tasksAsText(list: AdfNode): AdfNode {
   if (list.type !== 'taskList') return list
   const items: AdfNode[] = []
   for (const child of nodeContent(list)) {
-    const marker = taskMarker(nodeAttrs(child)['state'])
-    const previous = child.type === 'taskItem' || child.type === 'blockTaskItem' ? undefined : items.pop()
-    if (previous !== undefined) items.push(itemOf([...nodeContent(previous), child]))
-    else items.push(itemOf(child.type === 'taskItem' ? [paragraph(nodeContent(child).length === 0 ? [text(marker)] : [text(`${marker} `), ...nodeContent(child)])] : marked(nodeContent(child), marker)))
+    const previous = isTask(child) || child.type === 'listItem' ? undefined : items.pop()
+    items.push(itemOf(previous === undefined ? taskAsText(child) : mergedLists([...nodeContent(previous), child])))
   }
   return { content: items, type: 'bulletList' }
+}
+
+function taskAsText(child: AdfNode): readonly AdfNode[] {
+  const marker = taskMarker(nodeAttrs(child)['state'])
+  if (child.type === 'taskItem') return [paragraph(nodeContent(child).length === 0 ? [text(marker)] : [text(`${marker} `), ...nodeContent(child)])]
+  if (child.type === 'blockTaskItem') return marked(nodeContent(child), marker)
+  return child.type === 'listItem' ? nodeContent(child) : [child]
 }
 
 function paragraph(content: readonly AdfNode[]): AdfNode {
@@ -209,8 +215,15 @@ function reducePanel(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 
 function reduceExpand(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const held = nodeAttrs(node)['title']
-  const title = typeof held === 'string' ? oneLine(held).replace(/^[ \t]+|[ \t]+$/g, '') : ''
+  const title = typeof held === 'string' ? withoutTrailingBlanks(oneLine(held).replace(/^[ \t]+/, '')) : ''
   return contained(title === '' ? { type: node.type } : { attrs: { title }, type: node.type }, node, reduction)
+}
+
+// A backward scan: an unanchored-end regex retries from every blank in a long run.
+function withoutTrailingBlanks(text: string): string {
+  let end = text.length
+  while (end > 0 && (text.charAt(end - 1) === ' ' || text.charAt(end - 1) === '\t')) end -= 1
+  return text.slice(0, end)
 }
 
 function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
@@ -261,16 +274,21 @@ function blankedLines(code: readonly AdfNode[]): AdfNode[] {
   return blanked === '' ? [] : [text(blanked)]
 }
 
-// A task list opening with a task and holding tasks and task lists alone keeps its spelling; a list nests in the task before it.
+// A task list opening with a task and holding tasks and task lists alone keeps its spelling, a list nesting in the task before it; any other keeps its markers as text.
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const children = nodeContent(node)
-  if (!isTask(children[0]) || children.some((child) => !isTask(child) && child.type !== 'taskList')) return reduceTasksAsText(node, reduction)
+  const regular = isTask(children[0]) && children.every((child) => isTask(child) || child.type === 'taskList')
   const tasks: AdfNode[] = []
   let nested: AdfNode[] = []
   for (const [index, child] of children.entries()) {
     const at = childReduction(reduction, index)
     const reduced = isTask(child) ? reduceTask(child, at) : reduceStanding(child, at)
     if (!reduced.ok) return reduced
+    if (!regular) {
+      const standsAlone = !isTask(child) && child.type !== 'taskList'
+      for (const block of standsAlone ? [{ content: reduced.value, type: 'listItem' }] : reduced.value) tasks.push(block)
+      continue
+    }
     if (isTask(child)) {
       nestIn(tasks, nested)
       nested = []
@@ -278,7 +296,8 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     for (const block of reduced.value) (isTask(child) ? tasks : nested).push(block)
   }
   nestIn(tasks, nested)
-  return success([{ content: tasks, type: 'taskList' }])
+  if (regular) return success([{ content: tasks, type: 'taskList' }])
+  return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
 }
 
 // The writer nests a list in the task before it, so one closing a block task item's blocks merges with it.
@@ -300,28 +319,6 @@ function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
   }
   const blocks = reduceBlocks(nodeContent(task), at)
   return blocks.ok ? success([{ attrs, content: blankedCode(blocks.value), type: 'blockTaskItem' }]) : blocks
-}
-
-function reduceTasksAsText(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const items: AdfNode[] = []
-  for (const [index, child] of nodeContent(node).entries()) {
-    const blocks = taskBlocks(child, childReduction(reduction, index))
-    if (!blocks.ok) return blocks
-    const previous = child.type === 'taskList' ? items.pop() : undefined
-    items.push(itemOf(previous === undefined ? blocks.value : mergedLists([...nodeContent(previous), ...blocks.value])))
-  }
-  return success(listOf(items, 'bulletList'))
-}
-
-function taskBlocks(child: AdfNode, at: Reduction): Result<AdfNode[]> {
-  const marker = taskMarker(nodeAttrs(child)['state'])
-  if (child.type === 'taskItem') {
-    const content = reduceInline(nodeContent(child), 'paragraph', at.path, at.depth)
-    return content.ok ? success([paragraph(content.value.length === 0 ? [text(marker)] : [text(`${marker} `), ...content.value])]) : content
-  }
-  if (child.type !== 'blockTaskItem') return reduceStanding(child, at)
-  const blocks = reduceBlocks(nodeContent(child), at)
-  return blocks.ok ? success(marked(blocks.value, marker)) : blocks
 }
 
 // The marker leads the first paragraph, or stands as one where the blocks open with another.
