@@ -115,6 +115,7 @@ test('spells an expand and a nested expand as a folded callout titled by the mar
   )
   assert.equal(plain(node('expand', {}, said('Line.'))), '> [!NOTE]-\n>\n> Line.\n')
   assert.equal(plain(node('expand', { title: ' *Two*\nlines ' })), '> [!NOTE]- \\*Two\\* lines\n')
+  assert.equal(plain(node('expand', { title: '\ta \t b\t ' })), '> [!NOTE]- a \t b\n')
   assert.equal(plain(node('expand', { title: '**x** [y](z) ==w==' }, said('b'))), '> [!NOTE]- \\*\\*x\\*\\* \\[y](z) ==w==\n>\n> b\n')
 })
 
@@ -123,6 +124,8 @@ test('spells a task list as a bullet list whose items lead with their state', ()
   const nested = node('taskList', {}, task('TODO', 'Review'))
   assert.equal(plain(node('taskList', {}, task('DONE', 'Write the spec'), nested, task('TODO', 'Ship it'))), '- [x] Write the spec\n  - [ ] Review\n- [ ] Ship it\n')
   assert.equal(plain(node('taskList', {}, nested, task('DONE', ''), said('Stray'))), '- - [ ] Review\n- [x]\n- Stray\n')
+  assert.equal(plain(node('taskList', {}, node('taskList', {}), task('DONE', 'a'), said('b'), node('taskList', {}, task('TODO', 'c')))), '- [x] a\n- b\n  - [ ] c\n')
+  assert.equal(plain(bulletList(item(said('x'))), node('taskList', {}, task('DONE', 'a'), node('taskList', {}, task('TODO', 'c')))), '- x\n- [x] a\n  - [ ] c\n')
   assert.equal(plain(node('taskList', {}), task('TODO', 'Loose')), 'Loose\n')
   const blockTask = node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.'))
   const codeTask = node('blockTaskItem', { state: 'TODO' }, { content: [text('x')], type: 'codeBlock' })
@@ -292,6 +295,8 @@ test('drops the mark of a run CommonMark flanking or matching cannot spell', () 
   assert.equal(plain(paragraph(text('un'), text('-real', strong), text('istic'))), 'un-realistic\n')
   assert.equal(plain(paragraph(text('a', em), text('b', strong), text('c', em))), '_a_**b**_c_\n')
   assert.equal(plain(paragraph(text('x'), text('*', em), text('y'))), 'x\\*y\n')
+  const highlight: AdfMark = { type: 'backgroundColor' }
+  assert.equal(plain(paragraph(text('a'), text('b', highlight), text(' c'), text('d', highlight), text(' '), text('e', highlight))), 'ab cd ==e==\n')
 })
 
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {
