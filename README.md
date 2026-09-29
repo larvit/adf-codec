@@ -155,6 +155,9 @@ read replaces mentions, attachments and macros with text.
   continue, is one bullet list keeping its numbers as text.
 - A task list beside a bullet or decision list, or holding a block other than a task, joins one
   bullet list keeping its states as text: `- \[x] Done`.
+- Text that would read as a marker takes a backslash: `==` wherever it could open or close a
+  highlight, `[!…]` opening a quote, and `[x]` or `[ ]` opening any list item, since GitHub reads
+  that marker per item.
 - A node read back carries no `localId`, which Atlassian's schema requires on `taskList`,
   `taskItem` and `blockTaskItem`: mint one where the receiving site requires it.
 

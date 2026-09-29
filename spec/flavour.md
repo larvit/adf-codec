@@ -67,9 +67,7 @@ normalizes to it through the round-trip.
   matching below, which is what lets the emitter decide its own pairings.
 - Blocks separated by one blank line at document level, inside a blockquote and between CommonMark
   blocks; inside a directive container a pair holding a directive block takes none. No trailing
-  whitespace outside a code
-  block's
-  content, single trailing newline; a document with no blocks is the empty string.
+  whitespace outside a code block's content, single trailing newline; a document with no blocks is the empty string.
 
 ## Directives
 
