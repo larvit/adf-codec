@@ -149,6 +149,7 @@ test('spells a highlight as a == pair around the run, whatever its colour', () =
   assert.equal(plain(paragraph(text('=', highlight('#fff')), text(' '), text('a==b', highlight('#fff')))), '==\\=== ==a==b==\n')
   assert.equal(plain(paragraph(text('x'), text('y', highlight('#fff')), text(' z'))), 'xy z\n')
   assert.equal(plain(paragraph(text('この機能は'), text('日本語', highlight('#fff')), text('でのみ'))), 'この機能は==日本語==でのみ\n')
+  assert.equal(plain(paragraph(text('サーバー'), text('停止', highlight('#fff')), text('中 iPhone'), text('専用', highlight('#fff')), text('アプリ 기능은 '), text('한국어', highlight('#fff')), text('에서만'))), 'サーバー==停止==中 iPhone==専用==アプリ 기능은 ==한국어==에서만\n')
   assert.equal(plain(paragraph(text('日==本==語'))), '日\\==本\\==語\n')
 })
 

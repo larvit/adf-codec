@@ -149,8 +149,11 @@ test('reads a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
   assert.deepEqual(read('==`a`==\n'), [paragraph(text('a', code))])
   assert.deepEqual(read('x==y==z ==a == b==, (==c==) _d_==e==\n'), [paragraph(text('x==y==z '), text('a == b', highlight), text(', ('), text('c', highlight), text(') '), text('d', em), text('e', highlight))])
   assert.deepEqual(read('😀==b== ==c==😀 é==d==\n'), [paragraph(text('😀'), text('b', highlight), text(' '), text('c', highlight), text('😀 é==d=='))])
-  assert.deepEqual(read('この機能は==日本語==でのみ、中文==重点==内容、ภาษา==ไทย==ดี a==日本==b\n'), [
-    paragraph(text('この機能は'), text('日本語', highlight), text('でのみ、中文'), text('重点', highlight), text('内容、ภาษา'), text('ไทย', highlight), text('ดี a==日本==b')),
+  assert.deepEqual(read('この機能は==日本語==でのみ、中文==重点==内容、ภาษา==ไทย==ดี 𠀀==𠀁==𠀂 이 기능은 ==한국어==에서만 サーバー==停止==中 このiPhone==専用==アプリ\n'), [
+    paragraph(
+      text('この機能は'), text('日本語', highlight), text('でのみ、中文'), text('重点', highlight), text('内容、ภาษา'), text('ไทย', highlight), text('ดี 𠀀'), text('𠀁', highlight),
+      text('𠀂 이 기능은 '), text('한국어', highlight), text('에서만 サーバー'), text('停止', highlight), text('中 このiPhone'), text('専用', highlight), text('アプリ'),
+    ),
   ])
   assert.deepEqual(read('# ==h==\n\n| ==c== |\n| --- |\n'), [
     node('heading', { level: 1 }, text('h', highlight)),
