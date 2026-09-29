@@ -23,7 +23,7 @@ export const propertyTimeout = 600000
 const depthIdentifier = fc.createDepthIdentifier()
 const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell' }
 const flatCommonMarkShapeWeight = 4
-export const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
+export const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉', '==', '[!NOTE]', '[x]', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
 const nestingCommonMarkShapeWeight = 21
 const spelledTypes = new Set(['text', ...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes)])
 
@@ -80,6 +80,7 @@ function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): 
 
 const mark: Arbitrary<AdfMark> = fc.oneof(
   { arbitrary: fc.oneof(...Object.entries(markAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))), weight: 9 },
+  { arbitrary: attributes({ color: 'string' }).map((attrs) => ({ attrs, type: 'backgroundColor' })), weight: 2 },
   { arbitrary: fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
 )
 const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type })
@@ -135,8 +136,12 @@ const positions = fc.letrec<Positions>((tie) => {
     paragraph,
     fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
   ]
+  const task = (type: string, content: Arbitrary<AdfNode[]>) =>
+    fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type }))
+  const taskItem = fc.oneof({ arbitrary: task('taskItem', inlineContent), weight: 3 }, { arbitrary: task('blockTaskItem', blockContent), weight: 1 })
   const nestingCommonMarkShapes = [
     blockContent.map((content): AdfNode => ({ content, type: 'blockquote' })),
+    fc.array(fc.oneof({ arbitrary: taskItem, weight: 3 }, { arbitrary: tie('block'), weight: 1 }), { depthIdentifier, maxLength: 3, minLength: 1 }).map((content): AdfNode => ({ content, type: 'taskList' })),
     listItems.map((content): AdfNode => ({ content, type: 'bulletList' })),
     fc
       .record({ content: listItems, order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 4 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 1 }) })

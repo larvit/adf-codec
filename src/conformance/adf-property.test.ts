@@ -2,9 +2,10 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
+import type { AdfNode } from '../adf/document.ts'
 import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
-import { adfToPlainMarkdown } from '../markdown/emit/plain-reduction.ts'
+import { adfToPlainMarkdown, reduceToPlain } from '../markdown/emit/plain-reduction.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { markdownToAdf, plainMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { toEditorNormal } from '../adf/editor-normal.ts'
@@ -17,6 +18,20 @@ function readsNoDirective(markdown: string): boolean {
   const read = markdownToAdf(markdown)
   const renamed = markdownToAdf(markdown.replaceAll(directivePrefix, renamedPrefix))
   return read.ok && renamed.ok && JSON.stringify(read.value).replaceAll(directivePrefix, renamedPrefix) === JSON.stringify(renamed.value)
+}
+
+// Each block's text, an expand's title and an image's alt and url, in document order: what the plain pair keeps.
+function shownText(nodes: readonly AdfNode[]): string[] {
+  const shown: string[] = []
+  for (const node of nodes) {
+    const attrs = node.attrs ?? {}
+    if ((node.type === 'expand' || node.type === 'nestedExpand') && typeof attrs['title'] === 'string') shown.push(attrs['title'])
+    if (node.type === 'media') shown.push(`${JSON.stringify(attrs['alt'] ?? '')} ${JSON.stringify(attrs['url'])}`)
+    const content = node.content ?? []
+    if (content.some((child) => child.type === 'text' || child.type === 'hardBreak')) shown.push(content.map((child) => child.text ?? '\n').join(''))
+    else for (const text of shownText(content)) shown.push(text)
+  }
+  return shown.filter((text) => text !== '')
 }
 
 test('a generated document refuses to emit, or its markdown reads back to it', { timeout: propertyTimeout }, () => {
@@ -32,7 +47,7 @@ test('a generated document refuses to emit, or its markdown reads back to it', {
   )
 })
 
-test('a generated document writes plain markdown refusing only what the guard refuses, and that markdown reads back to itself', { timeout: propertyTimeout }, () => {
+test('a generated document writes plain markdown refusing only what the guard refuses, and that markdown reads back to its text and to itself', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const written = adfToPlainMarkdown(document)
@@ -40,6 +55,8 @@ test('a generated document writes plain markdown refusing only what the guard re
       assert.ok(readsNoDirective(written.value), `a directive in ${JSON.stringify(written.value)}`)
       const read = plainMarkdownToAdf(written.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+      const reduced = reduceToPlain(document)
+      assert.deepEqual(shownText(read.value.content ?? []), reduced.ok ? shownText(reduced.value.content ?? []) : reduced, `reading ${JSON.stringify(written.value)}`)
       assert.deepEqual(adfToPlainMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
     }),
     propertyRuns(gateRuns),

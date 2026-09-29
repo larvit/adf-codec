@@ -2,9 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
-import { adfToMarkdown } from './adf-to-markdown.ts'
+import { adfToPlainMarkdown, reduceToPlain } from './plain-reduction.ts'
 import { largestNesting } from '../../nesting.ts'
-import { reduceToPlain } from './plain-reduction.ts'
 
 const code: AdfMark = { type: 'code' }
 const em: AdfMark = { type: 'em' }
@@ -19,11 +18,8 @@ function plain(...content: AdfNode[]): string {
 }
 
 function plainDocument(input: AdfDocument): string {
-  const reduced = reduceToPlain(input)
-  if (!reduced.ok) return `${reduced.error.code} at /${reduced.error.path.join('/')}`
-  const markdown = adfToMarkdown(reduced.value)
-  if (!markdown.ok) return `emit ${markdown.error.code}: ${markdown.error.message}`
-  return markdown.value
+  const markdown = adfToPlainMarkdown(input)
+  return markdown.ok ? markdown.value : `${markdown.error.code} at /${markdown.error.path.join('/')}`
 }
 
 function text(value: string, ...marks: AdfMark[]): AdfNode {
@@ -119,6 +115,7 @@ test('spells an expand and a nested expand as a folded callout titled by the mar
   )
   assert.equal(plain(node('expand', {}, said('Line.'))), '> [!NOTE]-\n>\n> Line.\n')
   assert.equal(plain(node('expand', { title: ' *Two*\nlines ' })), '> [!NOTE]- \\*Two\\* lines\n')
+  assert.equal(plain(node('expand', { title: '**x** [y](z) ==w==' }, said('b'))), '> [!NOTE]- \\*\\*x\\*\\* \\[y](z) ==w==\n>\n> b\n')
 })
 
 test('spells a task list as a bullet list whose items lead with their state', () => {
@@ -142,6 +139,18 @@ test('spells a highlight as a == pair around the run, whatever its colour', () =
   assert.equal(plain(paragraph(text('hi ', strong, highlight('#fff')), text('b'))), '**==hi==** b\n')
   assert.equal(plain(paragraph(text('a', strong, highlight('#fff')), text('b', highlight('#fff'), em))), '==**a**_b_==\n')
   assert.equal(plain(paragraph(text('a', highlight('#fff'), code))), '==`a`==\n')
+  assert.equal(plain(paragraph(text('=', highlight('#fff')), text(' '), text('a==b', highlight('#fff')))), '==\\=== ==a==b==\n')
+  assert.equal(plain(paragraph(text('x'), text('y', highlight('#fff')), text(' z'))), 'xy z\n')
+})
+
+test('escapes text that would read back as a flavour marker, and only there', () => {
+  assert.equal(plain(said('==x== a == b a==b ===')), '\\==x\\== a == b a==b \\=\\==\n')
+  assert.equal(plain({ content: [said('[!NOTE] x'), said('[!TIP]')], type: 'blockquote' }), '> \\[!NOTE] x\n>\n> [!TIP]\n')
+  assert.equal(plain({ content: [said('[!NOTE]x')], type: 'blockquote' }, said('[!NOTE]')), '> [!NOTE]x\n\n[!NOTE]\n')
+  assert.equal(plain(bulletList(item(said('[x] a')), item(said('[ ]')))), '- \\[x] a\n- [ ]\n')
+  assert.equal(plain(bulletList(item(said('[x] a')), item(said('b'))), node('orderedList', { order: 1 }, item(said('[x] c')))), '- [x] a\n- b\n\n1. [x] c\n')
+  const task = (state: string, value: string): AdfNode => node('taskItem', { state }, text(value))
+  assert.equal(plain(node('taskList', {}, task('DONE', '[x] a'), task('TODO', '==b=='))), '- [x] [x] a\n- [ ] \\==b\\==\n')
 })
 
 test('unwraps the containers plain markdown has no spelling for to their body blocks in order', () => {
@@ -311,7 +320,8 @@ test('drops an empty paragraph and merges adjacent lists of one type', () => {
   assert.equal(plain(node('layoutSection', {}, column(bulletList(item(said('a')))), column(bulletList(item(said('b')))))), '- a\n- b\n')
 })
 
-test('returns a document the lossless emitter spells without a directive', () => {
-  const reduced = reduceToPlain(document(node('panel', { panelType: 'info' }, said('x'))))
-  assert.deepEqual(reduced.ok ? reduced.value : undefined, document({ content: [said('[!NOTE]'), said('x')], type: 'blockquote' }))
+test('keeps the nodes the plain flavour spells and degrades only what it cannot', () => {
+  const tasks = node('taskList', {}, node('taskItem', { localId: '01a0d99b-1f58-7b95-829b-6f9860371d54', state: 'DONE' }, text('t')))
+  const reduced = reduceToPlain(document(node('panel', { localId: '01a0d99b-1f56-7a50-889a-f4375f09ee05', panelType: 'info' }, said('x')), tasks))
+  assert.deepEqual(reduced.ok ? reduced.value : undefined, document(node('panel', { panelType: 'info' }, said('x')), node('taskList', {}, node('taskItem', { state: 'DONE' }, text('t')))))
 })

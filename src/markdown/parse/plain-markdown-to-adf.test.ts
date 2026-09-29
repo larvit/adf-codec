@@ -3,9 +3,9 @@ import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { adfToMarkdown } from '../emit/adf-to-markdown.ts'
+import { adfToPlainMarkdown } from '../emit/plain-reduction.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markdownToAdf, plainMarkdownToAdf } from './markdown-to-adf.ts'
-import { reduceToPlain } from '../emit/plain-reduction.ts'
 import { toEditorNormal } from '../../adf/editor-normal.ts'
 
 const code: AdfMark = { type: 'code' }
@@ -26,10 +26,8 @@ function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
 }
 
-// ADF the reduction wrote, spelled and read back.
 function roundTripped(...content: AdfNode[]): readonly AdfNode[] | string {
-  const reduced = reduceToPlain(document(...content))
-  const markdown = reduced.ok ? adfToMarkdown(reduced.value) : reduced
+  const markdown = adfToPlainMarkdown(document(...content))
   return markdown.ok ? read(markdown.value) : markdown.error.code
 }
 
@@ -190,6 +188,16 @@ test('reads what the reduction wrote back to the node it reduced, less the attri
   assert.deepEqual(roundTripped(tasks), [plainTasks])
   const colour: AdfMark = { attrs: { color: '#c6edfb' }, type: 'backgroundColor' }
   assert.deepEqual(roundTripped(paragraph(text('a '), text('hi', colour, strong), text(' b'))), [paragraph(text('a '), text('hi', highlight, strong), text(' b'))])
+  assert.deepEqual(roundTripped(paragraph(text('=', colour), text(' '), text('a==b', colour))), [paragraph(text('=', highlight), text(' '), text('a==b', highlight))])
+  assert.deepEqual(roundTripped(paragraph(text('x'), text('y', colour))), [said('xy')])
+  assert.deepEqual(roundTripped(node('expand', { title: '**x** [y](z)' }, said('b'))), [node('expand', { title: '**x** [y](z)' }, said('b'))])
+})
+
+test('reads text the writer kept from reading as a marker back as text', () => {
+  const quote = bare('blockquote', said('[!NOTE] x'))
+  const list = bare('bulletList', bare('listItem', said('[x] a')), bare('listItem', said('[ ] b')))
+  assert.deepEqual(roundTripped(said('==x== a==b'), quote, list), [said('==x== a==b'), quote, list])
+  assert.deepEqual(roundTripped(bare('taskList', task('DONE', text('[x] ==a==')))), [bare('taskList', task('DONE', text('[x] ==a==')))])
 })
 
 test('keeps what markdownToAdf reads that no row reads, and refuses only what it refuses', () => {
