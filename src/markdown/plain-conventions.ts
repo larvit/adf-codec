@@ -16,6 +16,9 @@ const alertWords: Readonly<Record<string, string>> = {
   warning: 'WARNING',
 }
 
+// ー, ｰ and the kana voicing marks are Script=Common; Script_Extensions would also take Latin combining marks.
+const boundingScript = /^[\u3099-\u309c\u30fc\uff70\uff9e\uff9f\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Khmer}\p{Script=Lao}\p{Script=Myanmar}\p{Script=Thai}]$/u
+
 const panelTypesByWord: Readonly<Record<string, string>> = {
   attention: 'warning',
   bug: 'error',
@@ -33,8 +36,6 @@ const panelTypesByWord: Readonly<Record<string, string>> = {
   tip: 'tip',
   warning: 'warning',
 }
-
-const unspacedScript = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Khmer}\p{Script=Lao}\p{Script=Myanmar}\p{Script=Thai}]$/u
 
 export function alertMarker(panelType: unknown): string {
   const word = typeof panelType === 'string' && Object.hasOwn(alertWords, panelType) ? alertWords[panelType] : undefined
@@ -62,11 +63,11 @@ export function highlightFlanking(source: string, index: number): { closes: bool
   const end = index + highlightDelimiter.length
   const before = Array.from(source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
   const after = Array.from(source.slice(end, end + 2))[0] ?? ''
-  return { closes: flanks(before) && bounds(after), opens: flanks(after) && bounds(before) }
+  return { closes: flanks(before) && bounds(after, before), opens: flanks(after) && bounds(before, after) }
 }
 
-function bounds(character: string): boolean {
-  return !isWordCharacter(character) || unspacedScript.test(character)
+function bounds(outside: string, inside: string): boolean {
+  return !isWordCharacter(outside) || boundingScript.test(outside) || boundingScript.test(inside)
 }
 
 function flanks(character: string): boolean {

@@ -151,10 +151,10 @@ renderer is the one the audience's markdown is read in.
 README §Plain markdown's rows come from a survey of GitHub, GitLab, Gitea, Obsidian, Pandoc,
 MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and Discord, GitHub's
 renderer confirming each shape. Reader panels settled `error` as an error panel, the `==` bounds
-(3 of 3) and a letter of a script written without spaces bounding them, so `は==日本語==で`
-highlights (3 of 3), the external image's two forms (6 of 7), the omission notes and a rule
-opening a list item dropping (3 of 3), and a list's numbering overflowing into bullets (3 of 3,
-5 of 7).
+(3 of 3) and a Han, Hangul, kana, Thai, Lao, Khmer or Myanmar character on either side bounding a
+delimiter, so `は==日本語==で` (3 of 3), `==한국어==에서만` and `iPhone==専用==` (6 of 7) highlight,
+the external image's two forms (6 of 7), the omission notes and a rule opening a list item
+dropping (3 of 3), and a list's numbering overflowing into bullets (3 of 3, 5 of 7).
 Reading takes other tools' spellings, since it reads their output and writes none of them.
 Rejected: `~sub~` and `^sup^` (`~2~` is a strike on GitHub, so `subsup` drops), underline and colour
 spellings, raw HTML (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admonition family,
