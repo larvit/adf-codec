@@ -18,10 +18,9 @@
 - **10f — Give task nodes read from plain markdown position ids.** Per `docs/decisions.md` §Plain
   task ids come from position, README §Plain markdown's `localId` bullet saying so. The id spelling
   is part of the chunk.
-- **41 — Keep a link's target when `plainMarkdownToAdf` reads a callout title.** Per Goal 5 a link
-  target is content, but `> [!faq]- See [x](http://y)` reads to an expand titled `See x`, the
-  target gone. Where the target goes is a gap in `docs/decisions.md`; candidate: the title keeps
-  it as text, `See x (http://y)`.
+- **41 — Keep a link's target when `plainMarkdownToAdf` reads a callout title.** Per
+  `docs/decisions.md` §A callout title keeps its link targets; today `> [!faq]- See [x](http://y)`
+  reads to an expand titled `See x`, the target gone.
 - **40 — Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document it takes.**
   Today it holds for editor-normal documents only: two adjacent text nodes with the same marks
   merge, an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines

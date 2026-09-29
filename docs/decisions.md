@@ -135,6 +135,14 @@ position in document order, unique within the document and minted with no host A
 rejecting a missing `localId` takes the document and the same markdown reads to the same ids every
 run.
 
+## A callout title keeps its link targets
+
+2026-09-29, the maintainer. Goal 5. Valid while an expand's `title` is a string. Lands with
+`todo.md` 41.
+
+`plainMarkdownToAdf` writes a link in a folded callout's title as its text and its target in
+parentheses: `> [!faq]- See [x](http://y)` reads to the title `See x (http://y)`.
+
 ## The plain flavour's spellings
 
 2026-09-14, panels 2026-09-25, the maintainer. Goal 5. Valid while GitHub's renderer is the one the

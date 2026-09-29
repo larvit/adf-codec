@@ -20,6 +20,7 @@ In `docs/decisions.md`:
 - Links
 - Ids stay site-local
 - Plain task ids come from position
+- A callout title keeps its link targets
 - The plain flavour's spellings
 - The HTML dialect
 - No runtime dependencies
