@@ -145,14 +145,16 @@ parentheses: `> [!faq]- See [x](http://y)` reads to the title `See x (http://y)`
 
 ## The plain flavour's spellings
 
-2026-09-14, panels 2026-09-25, the maintainer. Goal 5. Valid while GitHub's renderer is the one the
-audience's markdown is read in.
+2026-09-14, panels 2026-09-25 and 2026-09-29, the maintainer. Goal 5. Valid while GitHub's
+renderer is the one the audience's markdown is read in.
 
 README §Plain markdown's rows come from a survey of GitHub, GitLab, Gitea, Obsidian, Pandoc,
 MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and Discord, GitHub's
-renderer confirming each shape. Reader panels settled `error` as an error panel and the `==`
-bounds (3 of 3), the external image's two forms (6 of 7), the omission notes and a rule opening a
-list item dropping (3 of 3), and a list's numbering overflowing into bullets (3 of 3, 5 of 7).
+renderer confirming each shape. Reader panels settled `error` as an error panel, the `==` bounds
+(3 of 3) and a letter of a script written without spaces bounding them, so `は==日本語==で`
+highlights (3 of 3), the external image's two forms (6 of 7), the omission notes and a rule
+opening a list item dropping (3 of 3), and a list's numbering overflowing into bullets (3 of 3,
+5 of 7).
 Reading takes other tools' spellings, since it reads their output and writes none of them.
 Rejected: `~sub~` and `^sup^` (`~2~` is a strike on GitHub, so `subsup` drops), underline and colour
 spellings, raw HTML (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admonition family,

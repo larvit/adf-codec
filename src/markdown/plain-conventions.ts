@@ -34,6 +34,8 @@ const panelTypesByWord: Readonly<Record<string, string>> = {
   warning: 'warning',
 }
 
+const unspacedScript = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Khmer}\p{Script=Lao}\p{Script=Myanmar}\p{Script=Thai}]$/u
+
 export function alertMarker(panelType: unknown): string {
   const word = typeof panelType === 'string' && Object.hasOwn(alertWords, panelType) ? alertWords[panelType] : undefined
   return `[!${word ?? 'NOTE'}]`
@@ -60,7 +62,11 @@ export function highlightFlanking(source: string, index: number): { closes: bool
   const end = index + highlightDelimiter.length
   const before = Array.from(source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
   const after = Array.from(source.slice(end, end + 2))[0] ?? ''
-  return { closes: flanks(before) && !isWordCharacter(after), opens: flanks(after) && !isWordCharacter(before) }
+  return { closes: flanks(before) && bounds(after), opens: flanks(after) && bounds(before) }
+}
+
+function bounds(character: string): boolean {
+  return !isWordCharacter(character) || unspacedScript.test(character)
 }
 
 function flanks(character: string): boolean {
