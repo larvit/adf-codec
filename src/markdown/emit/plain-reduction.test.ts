@@ -148,6 +148,8 @@ test('spells a highlight as a == pair around the run, whatever its colour', () =
   assert.equal(plain(paragraph(text('a', highlight('#fff'), code), text('b', highlight('#fff')))), '`a`==b==\n')
   assert.equal(plain(paragraph(text('=', highlight('#fff')), text(' '), text('a==b', highlight('#fff')))), '==\\=== ==a==b==\n')
   assert.equal(plain(paragraph(text('x'), text('y', highlight('#fff')), text(' z'))), 'xy z\n')
+  assert.equal(plain(paragraph(text('この機能は'), text('日本語', highlight('#fff')), text('でのみ'))), 'この機能は==日本語==でのみ\n')
+  assert.equal(plain(paragraph(text('日==本==語'))), '日\\==本\\==語\n')
 })
 
 test('escapes text a renderer would take as a flavour marker, and only there', () => {

@@ -149,6 +149,9 @@ test('reads a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
   assert.deepEqual(read('==`a`==\n'), [paragraph(text('a', code))])
   assert.deepEqual(read('x==y==z ==a == b==, (==c==) _d_==e==\n'), [paragraph(text('x==y==z '), text('a == b', highlight), text(', ('), text('c', highlight), text(') '), text('d', em), text('e', highlight))])
   assert.deepEqual(read('😀==b== ==c==😀 é==d==\n'), [paragraph(text('😀'), text('b', highlight), text(' '), text('c', highlight), text('😀 é==d=='))])
+  assert.deepEqual(read('この機能は==日本語==でのみ、中文==重点==内容、ภาษา==ไทย==ดี a==日本==b\n'), [
+    paragraph(text('この機能は'), text('日本語', highlight), text('でのみ、中文'), text('重点', highlight), text('内容、ภาษา'), text('ไทย', highlight), text('ดี a==日本==b')),
+  ])
   assert.deepEqual(read('# ==h==\n\n| ==c== |\n| --- |\n'), [
     node('heading', { level: 1 }, text('h', highlight)),
     bare('table', bare('tableRow', bare('tableHeader', paragraph(text('c', highlight))))),
@@ -196,7 +199,7 @@ test('reads what the reduction wrote back to the node it reduced, less the attri
 test('reads text the writer kept from reading as a marker back as text', () => {
   const quote = bare('blockquote', said('[!NOTE] x'))
   const list = bare('bulletList', bare('listItem', said('[x] a')), bare('listItem', said('[ ] b')))
-  assert.deepEqual(roundTripped(said('==x== a==b'), quote, list), [said('==x== a==b'), quote, list])
+  assert.deepEqual(roundTripped(said('==x== a==b 日==本==語'), quote, list), [said('==x== a==b 日==本==語'), quote, list])
   assert.deepEqual(roundTripped(bare('taskList', task('DONE', text('[x] ==a==')))), [bare('taskList', task('DONE', text('[x] ==a==')))])
 })
 
