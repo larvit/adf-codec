@@ -2,19 +2,6 @@
 
 ## 0.2.0
 
-- **35 — Read and write plain markdown as a flavour of the markdown grammar.** Per Goal 2 and
-  `docs/decisions.md` §Plain markdown is a flavour of the grammar, README §Plain markdown's rows are
-  read by `markdownToAdf`'s parser and written by `adfToMarkdown`'s writer. The
-  exports, their refusals and those rows stay as they are.
-  - **35b — Spell the plain flavour in the writer.** Panels, expands, task lists and highlights are
-    written by the writer, which escapes text that would read back as one, so
-    `plainMarkdownToAdf(adfToPlainMarkdown(doc))` keeps a literal `==x==`, a quote opening `[!NOTE]`
-    and a list whose items all open `[x] ` as text. A highlighted `=` (today `=====`) and `a==b`
-    (today `==a==b==`, highlighting `a` alone) come back highlighted whole, or lose the highlight
-    where no spelling holds them; the plain pair's byte-for-byte property misses both, since the
-    wrong document re-spells to the same bytes. An expand titled `**x** [y](z)` comes back an
-    expand, where today its escaped marker reads back as a quote. The reduction keeps only
-    degrading what the flavour cannot spell.
 - **10f — Give task nodes read from plain markdown position ids.** Per `docs/decisions.md` §Plain
   task ids come from position, README §Plain markdown's `localId` bullet saying so. The id spelling
   is part of the chunk.
