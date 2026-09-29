@@ -165,8 +165,8 @@ read replaces mentions, attachments and macros with text.
 
 ## The errors
 
-An ADF node type this version does not know is not an error: it is carried opaquely and restores
-unchanged ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
+An ADF node type this version does not know is not an error: the lossless pair carries it opaquely
+and restores it unchanged ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 
 `ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
 stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text

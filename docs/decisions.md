@@ -50,8 +50,8 @@ An unknown ADF node is carried opaquely — raw JSON rides a dedicated syntax in
 restores to a deep-equal node. The round-trip holds for documents newer than the library. So does
 a known node no section spells where it stands: a markdown serializer spells a node by type without
 checking its position, and refusing loses a document ADF itself keeps in an `unsupportedBlock`.
-Where a container's own spelling cannot hold the child it has — a `bulletList` outside `listItem`,
-a `codeBlock` outside text — the error result names that instead.
+Where a container's own spelling cannot hold the child it has — a `bulletList` holding other than
+`listItem`, a `codeBlock` other than text — the error result names that instead.
 
 ## Foreign HTML sorts three ways
 
@@ -131,11 +131,10 @@ accepted.
 node with no `localId`.
 
 `plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` lacking one a `localId`
-in the editor's UUID v4 shape, hashed (cyrb128) from the whole markdown and the node's position in
-document order, skipping any id the document holds. A site rejecting a missing `localId` takes the
-document, the same markdown reads to the same ids every run, and different markdown to ids no other
-document shares. The same markdown pasted twice into one document repeats its ids: determinism
-wins over that case. A node the carry restores stays deep-equal (§Unknown nodes ride the carry): its
+in the editor's UUID v4 shape, hashed from the whole markdown and the node's order among those it
+mints, skipping any id the document holds: the same markdown reads to the same ids every run,
+different markdown to different ids. The same markdown pasted twice into one document repeats its
+ids: determinism wins over that case. A node the carry restores stays deep-equal (§Unknown nodes ride the carry): its
 ids are only skipped.
 
 ## A callout title keeps its link targets
