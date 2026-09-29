@@ -13,9 +13,22 @@ const em: AdfMark = { type: 'em' }
 const highlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 const strong: AdfMark = { type: 'strong' }
 
+const taskTypes = ['blockTaskItem', 'taskItem', 'taskList']
+
 function read(markdown: string): readonly AdfNode[] | string {
   const parsed = plainMarkdownToAdf(markdown)
-  return parsed.ok ? (toEditorNormal(parsed.value).content ?? []) : parsed.error.code
+  if (!parsed.ok) return parsed.error.code
+  const blocks = toEditorNormal(parsed.value).content ?? []
+  const pending = [...blocks]
+  for (let block = pending.pop(); block !== undefined; block = pending.pop()) {
+    for (const child of block.content ?? []) pending.push(child)
+    if (!taskTypes.includes(block.type)) continue
+    const { localId, ...attrs } = block.attrs ?? {}
+    assert.equal(typeof localId, 'string', `${block.type} in ${JSON.stringify(markdown)}`)
+    if (Object.keys(attrs).length === 0) delete block.attrs
+    else block.attrs = attrs
+  }
+  return blocks
 }
 
 function normal(...blocks: AdfNode[]): readonly AdfNode[] {
@@ -123,6 +136,15 @@ test('reads a bullet list whose every item leads with a task marker to a task li
     bare('taskList', task('DONE', text('Write the spec')), task('TODO', text('Ship '), text('it', strong)), task('DONE', text('Tell'))),
   ])
   assert.deepEqual(read('- [x]\n- [ ]\\\n  after\n'), normal(bare('taskList', task('DONE'), task('TODO', text('after')))))
+  const minted = plainMarkdownToAdf('- [x] Parent\n  - [ ] Child\n')
+  assert.deepEqual(minted.ok ? minted.value.content : minted.error.code, [
+    node(
+      'taskList',
+      { localId: '51470556-7c91-46cb-b140-16e225a9b1f2' },
+      node('taskItem', { localId: 'e04cbd87-eb04-4737-ae72-6d56d7799874', state: 'DONE' }, text('Parent')),
+      node('taskList', { localId: '9ab33f3f-8c58-428f-b4eb-343a32a177d6' }, node('taskItem', { localId: 'b16a2f09-9543-499b-8a97-b88fc342b918', state: 'TODO' }, text('Child'))),
+    ),
+  ])
 })
 
 test('moves a nested task list beside its item and makes an item holding more than one block a block task item', () => {
@@ -208,6 +230,9 @@ test('reads text the writer kept from reading as a marker back as text', () => {
 
 test('keeps what markdownToAdf reads that no row reads, and refuses only what it refuses', () => {
   assert.deepEqual(read('!adf:panel warning\n- [x] a\n!adf:/panel\n'), [panel('warning', bare('taskList', task('DONE', text('a'))))])
+  assert.deepEqual(read('!adf:taskList\n!adf:taskItem TODO\nb\n!adf:/taskItem\n!adf:/taskList\n'), [bare('taskList', task('TODO', text('b')))])
+  const listed = plainMarkdownToAdf('!adf:taskList {localId=01a0eeb2-be48-7ea7-8587-db5e013c374a}\n- [ ] b\n!adf:/taskList\n')
+  assert.deepEqual(listed.ok ? listed.value.content?.[0]?.attrs : listed.error.code, { localId: '01a0eeb2-be48-7ea7-8587-db5e013c374a' })
   const future = bare('futureBlock', text('==x=='))
   const carried = adfToMarkdown(document(future))
   assert.deepEqual(carried.ok ? read(carried.value) : carried.error.code, [future])

@@ -2,9 +2,6 @@
 
 ## 0.2.0
 
-- **10f — Give task nodes read from plain markdown position ids.** Per `docs/decisions.md` §Plain
-  task ids come from position, README §Plain markdown's `localId` bullet saying so. The id spelling
-  is part of the chunk.
 - **41 — Keep a link's target when `plainMarkdownToAdf` reads a callout title.** Per
   `docs/decisions.md` §A callout title keeps its link targets; today `> [!faq]- See [x](http://y)`
   reads to an expand titled `See x`, the target gone.

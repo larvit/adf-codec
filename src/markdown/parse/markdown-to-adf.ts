@@ -12,6 +12,7 @@ import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
 import { listBreakName, listBreakSpelling } from '../block-directive.ts'
+import { mintTaskIds } from './task-ids.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
@@ -40,7 +41,9 @@ function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, P
   const reading: Reading = { definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
   const content = positioned(readBlocks(parsed.blocks, reading, [], 0), documentStart)
   if (!content.ok) return content
-  return success(content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 })
+  const document: AdfDocument = content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 }
+  if (flavour === 'plain') mintTaskIds(document, markdown)
+  return success(document)
 }
 
 function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {

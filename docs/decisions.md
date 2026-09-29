@@ -127,13 +127,15 @@ accepted.
 
 ## Plain task ids come from position
 
-2026-09-26, the maintainer. Goals 5 and 7. Valid while a site rejects a task node with no
-`localId`. Lands with `todo.md` 10f.
+2026-09-26, spelling 2026-09-29, the maintainer. Goals 5 and 7. Valid while a site rejects a task
+node with no `localId`.
 
-`plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` a `localId` from its
-position in document order, unique within the document and minted with no host API, so a site
-rejecting a missing `localId` takes the document and the same markdown reads to the same ids every
-run.
+`plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` lacking one a `localId`
+in the editor's UUID v4 shape, hashed (cyrb128) from the whole markdown and the node's position in
+document order, skipping any id the document holds. A site rejecting a missing `localId` takes the
+document, the same markdown reads to the same ids every run, and different markdown to ids no other
+document shares. The same markdown pasted twice into one document repeats its ids: determinism
+wins over that case.
 
 ## A callout title keeps its link targets
 

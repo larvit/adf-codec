@@ -158,8 +158,9 @@ read replaces mentions, attachments and macros with text.
 - Text that would read as a marker takes a backslash: `==` wherever it could open or close a
   highlight, `[!…]` opening a quote, and `[x]` or `[ ]` opening any list item, since GitHub reads
   that marker per item.
-- A node read back carries no `localId`, which Atlassian's schema requires on `taskList`,
-  `taskItem` and `blockTaskItem`: mint one where the receiving site requires it.
+- A node read back carries no `localId`, save a `taskList`, `taskItem` or `blockTaskItem`, which
+  Atlassian's schema requires one on: it gets a UUID v4 hashed from the markdown and its position,
+  so the same markdown reads to the same ids.
 
 ## The errors
 
