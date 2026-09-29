@@ -274,26 +274,29 @@ function blankedLines(code: readonly AdfNode[]): AdfNode[] {
   return blanked === '' ? [] : [text(blanked)]
 }
 
-// A task list opening with a task and holding tasks and task lists alone keeps its spelling, a list nesting in the task before it; any other keeps its markers as text.
+// A task list opening with a task and holding tasks and task lists alone keeps its spelling, a list nesting in the task before it; any other keeps its markers as text. A child reducing to nothing counts for neither.
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const children = nodeContent(node)
-  const regular = isTask(children[0]) && children.every((child) => isTask(child) || child.type === 'taskList')
-  const tasks: AdfNode[] = []
-  let nested: AdfNode[] = []
-  for (const [index, child] of children.entries()) {
+  const kept: { blocks: AdfNode[]; child: AdfNode }[] = []
+  for (const [index, child] of nodeContent(node).entries()) {
     const at = childReduction(reduction, index)
     const reduced = isTask(child) ? reduceTask(child, at) : reduceStanding(child, at)
     if (!reduced.ok) return reduced
+    if (reduced.value.length > 0) kept.push({ blocks: reduced.value, child })
+  }
+  const regular = isTask(kept[0]?.child) && kept.every(({ child }) => isTask(child) || child.type === 'taskList')
+  const tasks: AdfNode[] = []
+  let nested: AdfNode[] = []
+  for (const { blocks, child } of kept) {
     if (!regular) {
-      const standsAlone = !isTask(child) && child.type !== 'taskList' && reduced.value.length > 0
-      for (const block of standsAlone ? [{ content: reduced.value, type: 'listItem' }] : reduced.value) tasks.push(block)
+      const standsAlone = !isTask(child) && child.type !== 'taskList'
+      for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
       continue
     }
     if (isTask(child)) {
       nestIn(tasks, nested)
       nested = []
     }
-    for (const block of reduced.value) (isTask(child) ? tasks : nested).push(block)
+    for (const block of blocks) (isTask(child) ? tasks : nested).push(block)
   }
   nestIn(tasks, nested)
   if (regular) return success([{ content: tasks, type: 'taskList' }])
