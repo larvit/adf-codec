@@ -150,7 +150,7 @@ test('spells a highlight as a == pair around the run, whatever its colour', () =
   assert.equal(plain(paragraph(text('x'), text('y', highlight('#fff')), text(' z'))), 'xy z\n')
 })
 
-test('escapes text that would read back as a flavour marker, and only there', () => {
+test('escapes text a renderer would take as a flavour marker, and only there', () => {
   assert.equal(plain(said('==x== a == b a==b ===')), '\\==x\\== a == b a==b \\=\\==\n')
   assert.equal(plain({ content: [said('[!NOTE] x'), said('[!TIP]')], type: 'blockquote' }), '> \\[!NOTE] x\n>\n> [!TIP]\n')
   assert.equal(plain({ content: [said('[!NOTE]x')], type: 'blockquote' }, said('[!NOTE]')), '> [!NOTE]x\n\n[!NOTE]\n')
