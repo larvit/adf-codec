@@ -153,6 +153,8 @@ read replaces mentions, attachments and macros with text.
   paragraph drops.
 - An ordered list numbered past `999999999`, or adjacent ordered lists whose numbering does not
   continue, is one bullet list keeping its numbers as text.
+- A task list beside a bullet or decision list, or holding a block other than a task, joins one
+  bullet list keeping its states as text: `- \[x] Done`.
 - A node read back carries no `localId`, which Atlassian's schema requires on `taskList`,
   `taskItem` and `blockTaskItem`: mint one where the receiving site requires it.
 
