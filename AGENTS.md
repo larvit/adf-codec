@@ -165,7 +165,7 @@ reading is the ask. Never ask "A or B?": state the gap, the earlier entries of i
 nearest text, a candidate entry in that file's voice, and the instance it yields. An entry that
 keeps collecting instances is wrong: rewrite it.
 
-Which output the audience expects — README goal 5 — is settled by a reader panel rather than
+Which output the audience expects — README goal 6 — is settled by a reader panel rather than
 asked: three fresh-context readers, one per README persona the conversion serves, each given only
 `## Audience` and the input, writing what they expect before picking among outputs the goals
 allow, rendered, shuffled, with no rationale and nothing saying what is implemented. Three agreeing

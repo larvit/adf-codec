@@ -120,6 +120,9 @@ test('reads a folded callout to an expand titled by the rest of its marker line,
     node('expand', { title: 'Why?' }, paragraph(text('See '), text('the docs', link), text(', '), text('now', strong), text('.'))),
   ])
   assert.deepEqual(read('> [!NOTE]- Two\\\n> lines\n'), [node('expand', { title: 'Two' }, said('lines'))])
+  assert.deepEqual(read('> [!faq]- See [x](http://y)\n'), normal(node('expand', { title: 'See x (http://y)' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- [a **b**](u "t")[c](u) and [d](v)\n'), normal(node('expand', { title: 'a bc (u) and d (v)' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- <http://y> or <a@b.c>\n'), normal(node('expand', { title: 'http://y or a@b.c' }, paragraph())))
   assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), normal(node('expand', { title: 'Set ==x== here' }, paragraph())))
   assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })

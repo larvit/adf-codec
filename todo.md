@@ -2,9 +2,6 @@
 
 ## 0.2.0
 
-- **41 — Keep a link's target when `plainMarkdownToAdf` reads a callout title.** Per
-  `docs/decisions.md` §A callout title keeps its link targets; today `> [!faq]- See [x](http://y)`
-  reads to an expand titled `See x`, the target gone.
 - **40 — Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document it takes.**
   Today it holds for editor-normal documents only: two adjacent text nodes with the same marks
   merge, an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines
@@ -29,11 +26,11 @@
   measured one.
 - **33 — Make a carried mark run cost the line one re-emit.** `adfToMarkdown` spends 23 s on one
   paragraph of 2000 × `un` plus `**-r**`: each run its flanking cannot spell re-emits the whole line
-  before riding the carry, quadratic in the runs (Goal 9), and the plain reduction's
+  before riding the carry, quadratic in the runs (Goal 10), and the plain reduction's
   `spellableLine` drops one mark per re-emit the same way. Make both linear.
 - **42 — Trim a text leaf's trailing blanks in linear time.** `plain-inline.ts`'s `leafEdges` finds
   the trail with an unanchored `/[ \t]*$/`, quadratic in a run of blanks inside one leaf: a
-  paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in `adfToPlainMarkdown` (Goal 9). Scan backward,
+  paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in `adfToPlainMarkdown` (Goal 10). Scan backward,
   as the expand title's trim does.
 - **34 — Read emphasis flanking by the whole character beside an astral symbol.** Check whether
   `line-escaping.ts`'s `charAt` and the parser's flanking read one UTF-16 unit beside an astral

@@ -130,9 +130,29 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', 'lossless')
   if (!title.ok) return title
   if (title.value.image !== undefined) return failure('unmappable-image', imageOnMarkerLine, path)
-  const text = title.value.nodes.map((node) => node.text ?? '').join('')
+  const text = titleText(title.value.nodes)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
   return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), false, body, { ...reading, inExpand: true }, path, depth))
+}
+
+// docs/decisions.md, A callout title keeps its link targets.
+function titleText(nodes: readonly AdfNode[]): string {
+  let text = ''
+  let linked = ''
+  for (const [index, node] of nodes.entries()) {
+    const href = linkTarget(node)
+    text += node.text ?? ''
+    linked += href === undefined ? '' : node.text ?? ''
+    if (href === undefined || linkTarget(nodes[index + 1]) === href) continue
+    if (href !== linked && href !== `mailto:${linked}`) text += ` (${href})`
+    linked = ''
+  }
+  return text
+}
+
+function linkTarget(node: AdfNode | undefined): string | undefined {
+  const href = node?.marks?.find((mark) => mark.type === 'link')?.attrs?.href
+  return typeof href === 'string' ? href : undefined
 }
 
 // Atlassian's schema requires a panel and an expand to hold a block.
