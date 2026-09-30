@@ -39,10 +39,10 @@ In priority order.
 4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the lossless
    flavour's directive form carries only what CommonMark cannot hold.
 5. **Lossy conversion keeps the content.** `adfToPlainMarkdown` and `plainMarkdownToAdf` drop what
-   plain markdown cannot hold — format, design, structure — never content: what a reader of the
-   rendered document sees or follows, its text, images and link targets. The lossy pair creates and
-   exports; it never saves back over the document it read — a document's identity (task, mention,
-   media ids) survives a round trip only through the lossless pair.
+   plain markdown cannot hold — format, design, structure — never content the document holds: what
+   a reader of the rendered document sees or follows, its text, images and link targets. The lossy
+   pair creates and exports; it never saves back over the document it read — a document's identity
+   (task, mention, media ids) survives a round trip only through the lossless pair.
 6. **What happens is what the audience expects.** Where the goals leave a choice, a conversion
    takes the one its audience would predict, reading the input as written.
 7. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
@@ -144,8 +144,9 @@ read replaces mentions, attachments and macros with text.
 | `placeholder` | nothing | — |
 
 - Content the document only references leaves an italic note naming it where it stood:
-  `_(image not included)_`, `_(jira-issues-table not included)_`, `_(synced block not included)_`,
-  `_(link card not included)_`, `_(extension not included)_`.
+  `_(image not included)_`, `_(synced block not included)_`, `_(link card not included)_` for a card
+  with no URL, and an extension's key, `_(jira-issues-table not included)_`, or
+  `_(extension not included)_` where it has none.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
   keeping its text, and so does a mark the flavour cannot spell where it stands.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
