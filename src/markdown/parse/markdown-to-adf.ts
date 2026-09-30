@@ -131,9 +131,13 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', 'lossless')
   if (!title.ok) return title
   if (title.value.image !== undefined) return failure('unmappable-image', imageOnMarkerLine, path)
-  const leaves = inlineLeaves(title.value.nodes, 'paragraph', path, depth)
-  if (!leaves.ok) return leaves
-  const text = titleText(leaves.value)
+  const leaves: AdfNode[] = []
+  for (const [index, node] of title.value.nodes.entries()) {
+    const held = node.text === undefined ? inlineLeaves([node], 'paragraph', [...path, 'content', index], depth) : success([node])
+    if (!held.ok) return held
+    leaves.push(...held.value)
+  }
+  const text = titleText(leaves)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
   return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), false, body, { ...reading, inExpand: true }, path, depth))
 }
