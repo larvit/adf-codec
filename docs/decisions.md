@@ -143,8 +143,8 @@ ids are only skipped.
 
 `plainMarkdownToAdf` writes a link in a folded callout's title as its text and its target in
 parentheses: `> [!faq]- See [x](http://y)` reads to the title `See x (http://y)`. A link whose text
-is its target, `mailto:` aside, keeps its text alone: `<http://y>` titles `http://y`, `<a@b.c>`
-`a@b.c` — three persona readers agreeing, 2026-09-30.
+is its target, with or without `mailto:`, keeps its text alone: `<http://y>` titles `http://y`,
+`<a@b.c>` `a@b.c` — three persona readers agreeing, 2026-09-30.
 
 ## The plain flavour's spellings
 

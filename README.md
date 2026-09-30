@@ -44,8 +44,8 @@ In priority order.
    references is marked where it stood, by a note that reads as the converter's and names what was
    left out. The lossy pair creates and exports; it never saves back over the document it read —
    identity (task, mention, media ids) lives only in the lossless pair.
-6. **What happens is what the audience expects.** Where the goals above leave a choice, a
-   conversion takes the one its audience would predict, reading the input as written.
+6. **What happens is what the audience expects.** Where the goals leave a choice, a conversion
+   takes the one its audience would predict, reading the input as written.
 7. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
    the emitted formats are.
 8. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
@@ -132,7 +132,7 @@ read replaces mentions, attachments and macros with text.
 | ADF | Written | Read back |
 | --- | --- | --- |
 | `panel` | a GitHub alert, `> [!WARNING]`: info `NOTE`, note `IMPORTANT`, tip and success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE` | `NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error, and Obsidian's: hint tip; success, check, done success; attention warning; danger, failure, fail, missing, bug, error error; any other word info — in any case; the rest of the marker's line is the first paragraph |
-| `expand`, `nestedExpand` | Obsidian's folded callout, `> [!NOTE]- Title` | `-` or `+` after any word, the rest of the marker's line the title, a link as `text (target)`, one whose text is its target, `mailto:` aside, as its text; an expand inside an expand is a `nestedExpand` |
+| `expand`, `nestedExpand` | Obsidian's folded callout, `> [!NOTE]- Title` | `-` or `+` after any word, the rest of the marker's line the title; a link reads `text (target)`, or its text alone where the text is the target with or without `mailto:`; an expand inside an expand is a `nestedExpand` |
 | `taskList` | `- [x] Done`, `- [ ] Todo` | a bullet list whose every item is so marked, `[X]` too |
 | `backgroundColor` | `==text==` | `==text==` on one line, the text touching both delimiters, bounded outside by whitespace, punctuation or a line edge, or touching a Han, Hangul, Hiragana, Katakana, Thai, Lao, Khmer or Myanmar character on either side, in the editor's default highlight `#f8e6a0` |
 | `table` | a pipe table: the first row its header, a cell's blocks on one line, a span kept under its header by empty cells | — |
