@@ -123,6 +123,7 @@ test('reads a folded callout to an expand titled by the rest of its marker line,
   assert.deepEqual(read('> [!faq]- See [x](http://y)\n'), normal(node('expand', { title: 'See x (http://y)' }, paragraph())))
   assert.deepEqual(read('> [!faq]- [a **b**](u "t")[c](u) and [d](v)\n'), normal(node('expand', { title: 'a bc (u) and d (v)' }, paragraph())))
   assert.deepEqual(read('> [!faq]- <http://y> or <a@b.c>\n'), normal(node('expand', { title: 'http://y or a@b.c' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- [!adf:mention[@M]{id=5}](u) !adf:inlineCard{url="http://y"}\n'), normal(node('expand', { title: '@M (u) http://y' }, paragraph())))
   assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), normal(node('expand', { title: 'Set ==x== here' }, paragraph())))
   assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })

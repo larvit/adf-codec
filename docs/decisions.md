@@ -184,7 +184,7 @@ and HTML parsers are written in this repo.
 ## Standards ship as data
 
 2026-08-30, the CommonMark suite 2026-09-05 and ADF's schemas 2026-09-13, the maintainer. Goals 1,
-3 and 7. Valid while each table is fixed data a dependency would only wrap.
+3 and 8. Valid while each table is fixed data a dependency would only wrap.
 
 A table a standard fixes is data rather than a dependency: HTML5's 2125 semicolon-terminated
 character references ship packed in their own module, so entity decoding is complete without one.

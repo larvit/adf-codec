@@ -8,6 +8,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryName, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
+import { inlineLeaves } from '../emit/plain-inline.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
@@ -130,7 +131,9 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', 'lossless')
   if (!title.ok) return title
   if (title.value.image !== undefined) return failure('unmappable-image', imageOnMarkerLine, path)
-  const text = titleText(title.value.nodes)
+  const leaves = inlineLeaves(title.value.nodes, 'paragraph', path, depth)
+  if (!leaves.ok) return leaves
+  const text = titleText(leaves.value)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
   return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), false, body, { ...reading, inExpand: true }, path, depth))
 }
