@@ -156,8 +156,8 @@ MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and Disco
 renderer confirming each shape. Reader panels settled `error` as an error panel, the `==` bounds
 (3 of 3) and a Han, Hangul, kana, Thai, Lao, Khmer or Myanmar character on either side bounding a
 delimiter, so `は==日本語==で` (3 of 3), `==한국어==에서만` and `iPhone==専用==` (6 of 7) highlight,
-the external image's two forms (6 of 7), the omission notes and a rule opening a list item
-dropping (3 of 3), and a list's numbering overflowing into bullets (3 of 3, 5 of 7).
+the external image's two forms (6 of 7), a rule opening a list item dropping and the omission
+notes (3 of 3), and a list's numbering overflowing into bullets (3 of 3, 5 of 7).
 An omission note reads as the converter's, never as the author's.
 Reading takes other tools' spellings, since it reads their output and writes none of them.
 Rejected: `~sub~` and `^sup^` (`~2~` is a strike on GitHub, so `subsup` drops), underline and colour

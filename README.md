@@ -137,16 +137,17 @@ read replaces mentions, attachments and macros with text.
 | `table` | a pipe table: the first row its header, a cell's blocks on one line, a span kept under its header by empty cells | — |
 | `decisionList` | a bullet list | — |
 | `mention`, `status`, `emoji`, `date` | their text: `@` kept, a mention with none `@` and its id, an emoji its `shortName` without, a date `2026-09-13` in UTC | — |
-| `inlineCard`, `blockCard`, `embedCard` | a link to the card's URL | — |
+| `inlineCard`, `blockCard`, `embedCard` | a link to the card's URL, else its name | — |
 | external `media` | `![alt](url)` in a block, `[alt](url)` inline | — |
 | stored `media`, `mediaInline`, `extension`, `inlineExtension` | their `alt` or `text` | — |
 | `layoutSection`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`, `extensionFrame`, `caption`, a node this version does not know | its blocks or its text | — |
 | `placeholder` | nothing | — |
 
-- Content the document only references leaves an italic note naming it where it stood:
-  `_(image not included)_`, `_(synced block not included)_`, `_(link card not included)_` for a card
-  with no URL, and an extension's key, `_(jira-issues-table not included)_`, or
-  `_(extension not included)_` where it has none.
+- Content the document only references, with no text of its own to keep, leaves an italic note
+  naming it where it stood: `_(image not included)_` for stored media with no `alt`,
+  `_(link card not included)_` for a card with neither URL nor name, an extension with no `text`
+  its key, `_(jira-issues-table not included)_`, or `_(extension not included)_` without one, and
+  `_(synced block not included)_` for a `syncBlock`.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
   keeping its text, and so does a mark the flavour cannot spell where it stands.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
