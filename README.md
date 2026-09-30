@@ -40,11 +40,9 @@ In priority order.
    flavour's directive form carries only what CommonMark cannot hold.
 5. **Lossy conversion keeps the content.** `adfToPlainMarkdown` and `plainMarkdownToAdf` drop what
    plain markdown cannot hold — format, design, structure — never content: what a reader of the
-   rendered document sees or follows, its text, images and link targets. Content the document only
-   references is marked where it stood, by a note that reads as the converter's and names what was
-   left out. The lossy pair creates and exports; it never saves back over the document it read —
-   a document's identity (task, mention, media ids) survives a round trip only through the lossless
-   pair.
+   rendered document sees or follows, its text, images and link targets. The lossy pair creates and
+   exports; it never saves back over the document it read — a document's identity (task, mention,
+   media ids) survives a round trip only through the lossless pair.
 6. **What happens is what the audience expects.** Where the goals leave a choice, a conversion
    takes the one its audience would predict, reading the input as written.
 7. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
