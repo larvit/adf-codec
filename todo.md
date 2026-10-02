@@ -65,9 +65,10 @@
   `description` naming both, the lossy pair, and the flavours it writes and reads by name — GitHub
   Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a search for
   either finds the package.
-- **44 — Delete `AGENTS.md` §7's empty-release bullet, leaving the maintainer's global working loop
-  to rule it.** "An earliest release with no items left and nothing shipped toward it is planned as
-  the chunk" restates that loop, in a sentence its own prose rules ban.
+- **44 — Cut `AGENTS.md` §7's empty-release bullet to what the maintainer's global working loop
+  leaves open.** The bullet restates that loop's rule for an empty release, in a sentence
+  `~/.claude/CLAUDE.md` → "Prose" bans; keep only its weighing by the personas and
+  `docs/decisions.md`, which the global loop does not hold.
 
 ## 0.3.0
 

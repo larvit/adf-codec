@@ -143,7 +143,7 @@ Per chunk:
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer through the
-   `0.2.0` release), delete the chunk's items from `todo.md` — what a consumer sees of it is
+   `0.2.0` release), delete the chunk's items from `todo.md` — what a consumer sees of them is
    reworded for them into `CHANGELOG.md`'s `## Unreleased` — report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
@@ -172,7 +172,7 @@ The verdict lands in `docs/decisions.md`.
 
 ### Findings, numbers and empty releases
 
-- A finding inside the chunk's items is fixed in the chunk. Outside it, a new `todo.md` item, always
+- A finding inside the chunk's items is fixed in the chunk. Outside them, a new `todo.md` item, always
   in a release, weighed against every item on that release by the personas and `docs/decisions.md`
   §Plain markdown is a flavour of the grammar through §Names stay text — an item it outweighs moves
   later. A weighing no entry decides is asked as a gap.

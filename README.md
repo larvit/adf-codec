@@ -38,8 +38,8 @@ The most useful ADF conversion library available, by these goals in priority ord
 ## Audience
 
 Application developers embedding the library, in four personas. All four rely on the guarantees
-below and on `code` being a closed list; none may rely on an error message's wording, which is
-free text.
+below and on an error's `code` being a closed list; none may rely on an error message's wording,
+which is free text.
 
 - **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the
   round-trip holding for whatever the site's editor wrote, unknown node types included, and on a
@@ -70,8 +70,8 @@ if (result.ok) {
 ```
 
 Serves Goals 1, 2 and 7. Pure functions, each taking a whole document and returning a whole
-result; no I/O, no configuration. Every conversion goes through ADF, so `markdownToHtml` keeps
-exactly what ADF holds.
+result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF, so
+they drop whatever ADF cannot hold.
 
 ```ts
 adfToMarkdown(doc: AdfDocument): Result<string>
@@ -83,8 +83,8 @@ plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
 
 adfToHtml(doc: AdfDocument): Result<string>               // 0.2.0
 htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.2.0
-markdownToHtml(markdown: string): Result<string>          // 0.2.0, via ADF
-htmlToMarkdown(html: string): Result<string>              // 0.2.0, via ADF
+markdownToHtml(markdown: string): Result<string>          // 0.2.0
+htmlToMarkdown(html: string): Result<string>              // 0.2.0
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
@@ -201,9 +201,9 @@ Serves Goals 1, 3 and 4.
 
 - `markdownToAdf(adfToMarkdown(doc))` equals `doc` — unknown node types included, carried opaquely
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
-- Markdown means what the CommonMark spec says — and, at `0.2.0`, well-formed HTML what the HTML
-  standard parses — both in what this library reads and in what a conforming parser reads back
-  from its output; the bullets below name every exception.
+- Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
+  `0.2.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
+  name every exception.
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
   names, with three carve-outs — literal text matching directive, pipe-table or strikethrough
   syntax is claimed (escapable — `spec/flavour.md`) — and one gap: a CommonMark image fits only as
@@ -242,7 +242,7 @@ Serves Goals 1, 3 and 4.
 ## The package
 
 Serves Goal 7. ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts`
-beside it. Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs under Node,
-Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
+beside it. Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs
+under Node, Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
 Contract: [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#any-es2022-engine), §Any
 ES2022 engine to §Public on npm.
