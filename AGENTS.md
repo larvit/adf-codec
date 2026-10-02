@@ -130,11 +130,10 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 
 ## 7. The working loop
 
-`todo.md` lists what is left under the release that ships it, in shipping order. A session works
-one chunk, starting from the first item under the earliest release, and stops when that chunk
-merges, whatever it was asked to finish: a release is a chain of sessions, so an instruction to
-work until a release is done names the chain, not the session. An open PR is a chunk already in
-flight, and finishing it is the session.
+A session works one chunk, starting from the first item under the earliest release in `todo.md`,
+and stops when that chunk merges, whatever it was asked to finish: a release is a chain of
+sessions, so an instruction to work until a release is done names the chain, not the session. An
+open PR is a chunk already in flight, and finishing it is the session.
 Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§3).
@@ -143,8 +142,7 @@ Per chunk:
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer through the
-   `0.2.0` release), delete the chunk's items from `todo.md` — the part a consumer sees goes to
-   `CHANGELOG.md`'s `## Unreleased`, reworded for consumers — report, stop.
+   `0.2.0` release), report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
@@ -170,17 +168,10 @@ allow, rendered, shuffled, with no rationale and nothing saying what is implemen
 settle it; otherwise four more read, five of seven settle it, and less is a missing goal, asked.
 The verdict lands in `docs/decisions.md`.
 
-### Findings, numbers and empty releases
+### Stated numbers
 
-- A finding inside the chunk's items is fixed in the chunk. Outside them, a new `todo.md` item,
-  always in a release, weighed against every item on that release by the personas and
-  `docs/decisions.md` §Plain markdown is a flavour of the grammar through §Names stay text — an item
-  it outweighs moves later. A weighing no entry decides is asked as a gap.
-- A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks,
-  naming the number it can reach. A number the code needs and no entry states is a gap.
-- An earliest release with no items left and nothing shipped toward it is planned as the chunk:
-  every later item weighed as above, the order written in `todo.md`, and the maintainer's approval
-  taken before any code. With work shipped toward it, it is ready to cut: report that and stop.
+A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks, naming
+the number it can reach. A number the code needs and no entry states is a gap.
 
 ### The continuous loop
 

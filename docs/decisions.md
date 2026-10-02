@@ -39,7 +39,7 @@ merges.
 "Equals" is structural equality over editor-normal ADF — adjacent text nodes with identical marks
 and no attributes merged, JSON number semantics, an empty attrs object, marks array or content
 array the absent key — the only domain markdown can restore.
-Replaced by deep equality with `todo.md` 40 (2026-09-28, the maintainer).
+Replaced by deep equality with `todo.md` item 40 (2026-09-28, the maintainer).
 
 ## Unknown nodes ride the carry
 
@@ -56,7 +56,7 @@ Where a container's own spelling cannot hold the child it has — a `bulletList`
 ## Foreign HTML sorts three ways
 
 2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 4. Valid while ADF holds no node
-for a bare container, a comment or a script. Lands with `todo.md` 6.
+for a bare container, a comment or a script. Lands with `todo.md` item 6.
 
 Every foreign element `htmlToAdf` and `markdownToAdf` read sorts one of three ways, never a silent
 drop of content:
