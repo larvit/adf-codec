@@ -130,13 +130,11 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 
 ## 7. The working loop
 
-`todo.md` lists what is left under the release that ships it, in shipping order. One item per
-session — the first under the earliest release — in the smallest PR-able chunk; split a big item
-into sub-items in `todo.md` before starting it. A chunk running a little over or under that is not
-worth deliberating; what matters is that nothing is left undone in the end. The session stops there
-whatever it was asked to finish: a release is a chain of sessions, so an instruction to work until a
-release is done names the chain, not the session. An open PR is a chunk already in flight, and
-finishing it is the session.
+`todo.md` lists what is left under the release that ships it, in shipping order. A session works
+one chunk, starting from the first item under the earliest release, and stops there whatever it
+was asked to finish: a release is a chain of sessions, so an instruction to work until a release is
+done names the chain, not the session. An open PR is a chunk already in flight, and finishing it is
+the session.
 Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§3).
@@ -145,7 +143,7 @@ Per chunk:
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer through the
-   `0.2.0` release), delete the item from `todo.md` — what a consumer sees of it is
+   `0.2.0` release), delete the chunk's items from `todo.md` — what a consumer sees of it is
    reworded for them into `CHANGELOG.md`'s `## Unreleased` — report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
@@ -165,7 +163,7 @@ reading is the ask. Never ask "A or B?": state the gap, the earlier entries of i
 nearest text, a candidate entry in that file's voice, and the instance it yields. An entry that
 keeps collecting instances is wrong: rewrite it.
 
-Which output the audience expects — README goal 6 — is settled by a reader panel rather than
+Which output the audience expects — README goal 5 — is settled by a reader panel rather than
 asked: three fresh-context readers, one per README persona the conversion serves, each given only
 `## Audience` and the input, writing what they expect before picking among outputs the goals
 allow, rendered, shuffled, with no rationale and nothing saying what is implemented. Three agreeing
@@ -174,7 +172,7 @@ The verdict lands in `docs/decisions.md`.
 
 ### Findings, numbers and empty releases
 
-- A finding inside the chunk's item is fixed in the chunk. Outside it, a new `todo.md` item, always
+- A finding inside the chunk's items is fixed in the chunk. Outside it, a new `todo.md` item, always
   in a release, weighed against every item on that release by the personas and `docs/decisions.md`
   §Plain markdown is a flavour of the grammar through §Names stay text — an item it outweighs moves
   later. A weighing no entry decides is asked as a gap.

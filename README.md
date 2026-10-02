@@ -23,47 +23,21 @@ represent.
 
 ## Goals
 
-In priority order.
+The most useful ADF conversion library available, by these goals in priority order:
 
-1. **Lossless, and every call returns.** The round-trip holds for every document the lossless
-   conversions take, node types this version does not know included; one that has no spelling is
-   refused and says where, never silently reduced. No input makes a call loop forever or overflow
-   the stack. Every goal below gives way to this one.
-2. **ADF is the hub.** Every format and flavour converts to and from ADF, and no two others
-   convert directly: markdown↔HTML composes through ADF. Adding a format or flavour costs one
-   reader and one writer. A flavour of a grammar shares that grammar's reader and writer and adds
-   only its own spellings.
-3. **Plain CommonMark is input.** Markdown written for something else converts — the exceptions
-   below are the whole of them — and every spelling a flavour claims on top of CommonMark is
-   escapable, so each flavour is opt-in.
-4. **Output a person can edit.** A node CommonMark can spell gets that spelling; the lossless
-   flavour's directive form carries only what CommonMark cannot hold.
-5. **Lossy conversion keeps the content.** `adfToPlainMarkdown` and `plainMarkdownToAdf` drop what
-   plain markdown cannot hold — format, design, structure — never content the document holds: what
-   a reader of the rendered document sees or follows, its text, images and link targets. The lossy
-   pair creates and exports; it never saves back over the document it read — a document's identity
-   (task, mention, media ids) survives a round trip only through the lossless pair.
-6. **What happens is what the audience expects.** Where the goals leave a choice, a conversion
-   takes the one its audience would predict, reading the input as written.
-7. **Failures are values.** Nothing throws, and `code` is a closed list — as much a contract as
-   the emitted formats are.
-8. **Nothing in the way.** No runtime dependencies, no I/O, no configuration, no host API: ESM on
-   any ES2022 engine, in a browser as readily as on a server, installed from public npm. The public
-   surface is the conversions, their types, `isAdfDocument`, and what a consumer needs to check a
-   guarantee this README makes; a helper is exported only when a persona cannot do without it.
-9. **Correct before fast.** Each format means what its own specification says — markdown as the
-   CommonMark spec reads it, well-formed HTML as the HTML standard parses it — both in what this
-   library reads and in what a conforming parser reads from what it writes. A call takes a whole
-   document and returns a whole result.
-10. **Fast once correct.** Conversion time grows linearly with the document wherever the goals
-    above allow it; a faster path that risks one of them is not taken.
-11. **Source a contributor can hold.** Any one function reads in one sitting, and no change makes
-    the longest one longer.
+1. **Lossless, and every call returns a result, never a throw.**
+2. **ADF is the hub.**
+3. **Each format reads and writes as its standard says.**
+4. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
+5. **No surprises: output reads and edits the way its audience expects.**
+6. **Lossy conversion drops form, never content.**
+7. **Runs in any JavaScript engine, with nothing to install, configure or connect.**
+8. **Fast, and linear in the document's size.**
+9. **Easy to find, and clear at a glance what it does.**
 
 ## Audience
 
-Application developers embedding the library, addressed as personas rather than named consumers
-(AGENTS.md §1). All four rely on the guarantees below and on `code` being a closed list; none may
+Application developers embedding the library, in four personas. All four rely on the guarantees below and on `code` being a closed list; none may
 rely on an error message's wording, which is free text.
 
 - **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the
@@ -94,7 +68,8 @@ if (result.ok) {
 }
 ```
 
-Pure functions, no I/O, no configuration.
+Serves Goals 1 and 7. Pure functions, each taking a whole document and returning a whole result;
+no I/O, no configuration.
 
 ```ts
 adfToMarkdown(doc: AdfDocument): Result<string>
@@ -114,9 +89,10 @@ htmlToMarkdown(html: string): Result<string>              // 0.2.0, via ADF
 
 ## Plain markdown
 
-Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` writes markdown other
-tools render — GitHub, GitLab, Obsidian and the like — keeping the content and dropping the rest:
-attributes, colours, layout, identity. It refuses only
+Serves Goal 6. Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` writes
+markdown other tools render — GitHub, GitLab, Obsidian and the like — keeping the content and
+dropping the rest: attributes, colours, layout, identity. Content is what a reader of the rendered
+document sees or follows: its text, images and link targets. It refuses only
 `not-an-adf-document`, `unsupported-document-version` and `unsupported-nesting-depth`, and writes
 no directive.
 
@@ -167,7 +143,7 @@ read replaces mentions, attachments and macros with text.
 
 ## The errors
 
-An ADF node type this version does not know is not an error: the lossless pair carries it opaquely
+Serves Goal 1. An ADF node type this version does not know is not an error: the lossless pair carries it opaquely
 and restores it unchanged ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 
 `ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
@@ -219,6 +195,11 @@ emit refuses:
 
 ## The guarantees
 
+Serves Goals 1, 3 and 4.
+
+- Markdown means what the CommonMark spec says, and well-formed HTML what the HTML standard
+  parses, both in what this library reads and in what a conforming parser reads from what it
+  writes; the bullets below name every exception.
 - `markdownToAdf(adfToMarkdown(doc))` equals `doc` — unknown node types included, carried opaquely
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
@@ -247,7 +228,8 @@ emit refuses:
   input.
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
   is the `taskList` directive — `plainMarkdownToAdf` turns the marker into a `taskList`.
-- A document nested deeper than 500 levels is an error result, not a stack overflow.
+- A document nested deeper than 500 levels is an error result, not a stack overflow, and no input
+  makes a call loop forever.
 - The emitted formats are semver surface
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#the-formats-are-api)).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
@@ -257,7 +239,7 @@ emit refuses:
 
 ## The package
 
-ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts` beside it.
+Serves Goal 7. ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts` beside it.
 Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs under Node,
 Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
 Contract: [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#any-es2022-engine), §Any

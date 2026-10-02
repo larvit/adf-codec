@@ -23,7 +23,7 @@ sanitized and a mention keeps the test user's real account id.
 
 ## Markdown in is a canonical fixpoint
 
-2026-08-23, the maintainer. Goals 1 and 3. Valid while markdown input may be written by hand.
+2026-08-23, the maintainer. Goals 1 and 4. Valid while markdown input may be written by hand.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
 back yields the library's canonical spelling, and that spelling round-trips byte-identically —
@@ -55,7 +55,7 @@ Where a container's own spelling cannot hold the child it has — a `bulletList`
 
 ## Foreign HTML sorts three ways
 
-2026-08-23, the sort 2026-09-20, the maintainer. Goals 1, 3 and 7. Valid while ADF holds no node
+2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 4. Valid while ADF holds no node
 for a bare container, a comment or a script. Lands with `todo.md` 6.
 
 Every foreign element `htmlToAdf` and `markdownToAdf` read sorts one of three ways, never a silent
@@ -76,39 +76,40 @@ than they buy.
 
 ## Names stay text
 
-2026-08-23, the maintainer. Goal 8. Valid while resolving a name to an id needs I/O.
+2026-08-23, the maintainer. Goal 7. Valid while resolving a name to an id needs I/O.
 
 A bare `@name` or `:smile:` in typed text stays a text node. Only directives produce
 mention/emoji/media nodes; resolving names to ids is the consumer's job.
 
 ## Directives under `!adf:`
 
-2026-08-23, prefixed `!adf:` 2026-09-16, the maintainer. Goals 3 and 4. Valid while prose does not
+2026-08-23, prefixed `!adf:` 2026-09-16, the maintainer. Goals 4 and 5. Valid while prose does not
 write `!adf:`.
 
 Directives are one grammar for everything markdown lacks, namespaced under `!adf:`:
 `!adf:panel info` … `!adf:/panel` blocks, `!adf:mention[@Mikael]{id=5b10a2}` inline, `\!adf:` the
-one escape. Not CommonMark's generic-directives proposal: its `:::` claims a form prose writes, and
-its fence-length discipline ties a container's opener to its own body, where closing from the
-opener nests by itself and leaf versus container falls out of the node's content model.
+one escape. A node CommonMark can spell takes that spelling, never a directive. Not CommonMark's
+generic-directives proposal: its `:::` claims a form prose writes, and its fence-length discipline
+ties a container's opener to its own body, where closing from the opener nests by itself and leaf
+versus container falls out of the node's content model.
 
 ## CommonMark is a subset
 
-2026-08-23, the maintainer. Goal 3. Valid while prose rarely writes the shapes the carve-outs claim.
+2026-08-23, the maintainer. Goal 4. Valid while prose rarely writes the shapes the carve-outs claim.
 
 Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
 directive, a pipe table or a `~~` pair is claimed — plus one image gap.
 
 ## Tables
 
-2026-08-23, the maintainer. Goal 4. Valid while a pipe table holds only one header row and inline
+2026-08-23, the maintainer. Goal 5. Valid while a pipe table holds only one header row and inline
 cells.
 
 One header row plus plain inline cells → pipe table; anything richer → directive form.
 
 ## Links
 
-2026-09-13, nesting 2026-09-17, the maintainer. Goals 1 and 4. Valid while CommonMark's link
+2026-09-13, nesting 2026-09-17, the maintainer. Goals 1 and 5. Valid while CommonMark's link
 syntax is what readers edit.
 
 `[text](url "title")`, or `<url>` for a bare autolink-shaped text, wherever CommonMark spells the
@@ -127,7 +128,7 @@ accepted.
 
 ## Plain task ids come from position
 
-2026-09-26, spelling 2026-09-29, the maintainer. Goals 5 and 8. Valid while a site rejects a task
+2026-09-26, spelling 2026-09-29, the maintainer. Goals 6 and 7. Valid while a site rejects a task
 node with no `localId`.
 
 `plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` lacking one a `localId`
@@ -167,7 +168,7 @@ past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates int
 
 ## The HTML dialect
 
-2026-08-23, the maintainer. Goals 4 and 8. Valid while HTML output is read by consumers styling it
+2026-08-23, the maintainer. Goals 5 and 7. Valid while HTML output is read by consumers styling it
 themselves.
 
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
@@ -175,7 +176,7 @@ for what HTML cannot express, text always escaped. No stylesheet ships.
 
 ## No runtime dependencies
 
-2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each
+2026-08-23, the maintainer. Goal 7. Valid while ~20 lines of own code, or a vendored table, do each
 job a dependency would.
 
 `dependencies` is empty. A runtime dependency enters only through an entry here stating why ~20
@@ -185,7 +186,7 @@ and HTML parsers are written in this repo.
 ## Standards ship as data
 
 2026-08-30, the CommonMark suite 2026-09-05 and ADF's schemas 2026-09-13, the maintainer. Goals 1,
-3 and 8. Valid while each table is fixed data a dependency would only wrap.
+4 and 7. Valid while each table is fixed data a dependency would only wrap.
 
 A table a standard fixes is data rather than a dependency: HTML5's 2125 semicolon-terminated
 character references ship packed in their own module, so entity decoding is complete without one.
@@ -208,7 +209,7 @@ nodes that break it.
 
 ## Any ES2022 engine
 
-2026-09-01, the maintainer. Goal 8. Valid while ES2022 is the floor browsers and servers share.
+2026-09-01, the maintainer. Goal 7. Valid while ES2022 is the floor browsers and servers share.
 
 The library runs on any ES2022 engine, not only Node — a browser as readily as a server. The
 shipped source is ECMAScript and nothing else: no host import, no host global, no DOM.
@@ -222,13 +223,13 @@ never the higher one those repo-only tools want.
 
 ## ESM only
 
-2026-08-23, the maintainer. Goal 8. Valid while the audience's toolchains all import ES modules.
+2026-08-23, the maintainer. Goal 7. Valid while the audience's toolchains all import ES modules.
 
 No CommonJS build, no dual-package hazard.
 
 ## One built entrypoint
 
-2026-08-23, the maintainer. Goal 8. Valid while Node refuses to type-strip under `node_modules`.
+2026-08-23, the maintainer. Goal 7. Valid while Node refuses to type-strip under `node_modules`.
 
 Built JavaScript, `.d.ts` beside it. Do not add a TypeScript-source entrypoint — Node refuses to
 type-strip under `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`), so it cannot serve
@@ -236,7 +237,7 @@ an npm consumer.
 
 ## Public on npm
 
-2026-08-23, the name 2026-09-01, the maintainer. Goals 2 and 8. Valid while the package's source
+2026-08-23, the name 2026-09-01, the maintainer. Goals 2 and 7. Valid while the package's source
 stays public beside it.
 
 Published to public npm as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
@@ -245,7 +246,7 @@ for the hub rather than the formats around it.
 
 ## The formats are API
 
-2026-08-23, strict input 2026-09-01, content models 2026-09-16, the maintainer. Goals 1 and 7.
+2026-08-23, strict input 2026-09-01, content models 2026-09-16, the maintainer. Goal 1.
 Valid while consumers store what the library emits.
 
 The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
@@ -260,7 +261,7 @@ types in `src/result.ts` hold its shape.
 
 ## The code list
 
-2026-08-25, the maintainer; dated below where a rule came later. Goal 7. Valid while a consumer
+2026-08-25, the maintainer; dated below where a rule came later. Goal 1. Valid while a consumer
 switches on `code` with no `default`.
 
 - Adding, removing or renaming a code is breaking, so a new cause takes an existing code whose
@@ -276,7 +277,7 @@ switches on `code` with no `default`.
 
 ## Which code a cause takes
 
-2026-08-28, the maintainer; dated below where a rule came later. Goal 7. Valid while a consumer
+2026-08-28, the maintainer; dated below where a rule came later. Goal 1. Valid while a consumer
 handles one cause alike whichever node, attribute or direction raised it.
 
 - A code names the cause; where one cause recurs across node types, across one mark's attributes
@@ -309,7 +310,7 @@ handles one cause alike whichever node, attribute or direction raised it.
 
 ## `message` and `path`
 
-2026-09-03, the path 2026-09-23, the maintainer. Goals 3 and 7. Valid while a person fixing the
+2026-09-03, the path 2026-09-23, the maintainer. Goals 1 and 4. Valid while a person fixing the
 input reads `message`.
 
 - A message names the violation, not the rule alone — a rule by itself states a truth the reader
@@ -323,7 +324,7 @@ input reads `message`.
 
 ## Publish on a version bump
 
-2026-08-23, converging 2026-09-03, the maintainer. Goal 8. Valid while CI on `main` holds the npm
+2026-08-23, converging 2026-09-03, the maintainer. Goal 7. Valid while CI on `main` holds the npm
 token.
 
 `package.json` version on `main` is the source of truth. CI on `main`: tests green and the version
@@ -339,7 +340,7 @@ depend on a store that the gate would then have to keep.
 
 ## Docs describe the release being built
 
-2026-09-16, the maintainer. Goal 8. Valid while a bump on `main` publishes.
+2026-09-16, the maintainer. Goal 7. Valid while a bump on `main` publishes.
 
 Docs on `main` describe the release being built rather than the version npm holds, so they match it
 the moment the bump publishes; add no interim note marking the gap.
@@ -355,7 +356,7 @@ nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
 
 ## The gate runs on Deno and Bun
 
-2026-09-01, Deno's reason 2026-09-28, the maintainer. Goals 8 and 9. Valid while the library claims
+2026-09-01, Deno's reason 2026-09-28, the maintainer. Goals 3 and 7. Valid while the library claims
 any ES2022 engine.
 
 The gate runs the suite under Deno and Bun as well as Node. Bun runs JavaScriptCore, the one engine
@@ -367,7 +368,7 @@ over the corpus rather than over a smoke import.
 
 ## The gate installs the tarball
 
-2026-09-03, the maintainer. Goal 8. Valid while consumers install the packed package.
+2026-09-03, the maintainer. Goal 7. Valid while consumers install the packed package.
 
 The gate packs the build and installs the tarball under `package-tests/`, so `files`, `exports`
 and `types` are proved on the artifact that ships rather than on the source tree a self-reference
@@ -379,7 +380,7 @@ resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` s
 
 ## Firefox reads the build
 
-2026-09-04, the maintainer. Goal 8. Valid while the library claims a browser and no other leg runs
+2026-09-04, the maintainer. Goal 7. Valid while the library claims a browser and no other leg runs
 SpiderMonkey.
 
 A headless Firefox loads `dist/index.js` over HTTP and converts the round-trip, normalization and
@@ -407,8 +408,8 @@ compared against `undefined` — have a half no valid document reaches.
 
 ## The size ratchet
 
-2026-09-20, the maintainer. Goal 11. Valid while no measure picks out what readers find hard
-better than a function's length.
+2026-09-20, the maintainer. KISS, a technical principle. Valid while no measure picks out what
+readers find hard better than a function's length.
 
 `.oxlintrc.json`'s single rule, over the files `tsconfig.build.json` builds, is a per-function line
 ceiling, set at that set's worst and moving only downward. It covers the built files alone, since
@@ -431,7 +432,7 @@ markdown, on a fixed seed in the gate; a counterexample found becomes a round-tr
 
 ## The CommonMark suite checks three ways
 
-2026-08-27, the maintainer. Goals 1 and 9. Valid while the suite's answers are HTML ADF cannot be
+2026-08-27, the maintainer. Goals 1 and 3. Valid while the suite's answers are HTML ADF cannot be
 compared against.
 
 Each example is a named error or markdown that parses and emits to itself byte for byte; its
@@ -494,7 +495,7 @@ termination is the loop's own check.
 
 ## Readers scan by index
 
-2026-08-30, the kept scan 2026-09-18, the maintainer. Goal 10. Valid while the pipeline persona
+2026-08-30, the kept scan 2026-09-18, the maintainer. Goal 8. Valid while the pipeline persona
 feeds documents nobody typed.
 
 A reader takes the text and an index — a sticky regex whose `lastIndex` the caller sets on the line
@@ -506,7 +507,7 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 
 ## The spelling memo
 
-2026-09-19, the maintainer. Goal 10. Valid while the `commonMarkSpelling` ask spells a node once
+2026-09-19, the maintainer. Goal 8. Valid while the `commonMarkSpelling` ask spells a node once
 per level above it otherwise.
 
 The parse and the plain reduction keep each node's readable spelling in a memo, so the
@@ -518,7 +519,7 @@ one. Only what succeeded is kept, so no path minted at another position is ever 
 
 ## Cost fixes are measured, never timed
 
-2026-09-18, the maintainer and the stability-reviewer. Goal 10. Valid while Goal 10 promises growth
+2026-09-18, the maintainer and the stability-reviewer. Goal 8. Valid while Goal 8 promises growth
 rather than a figure.
 
 A cost fix that changes no behaviour lands on the suite staying green with no fixture output
@@ -537,7 +538,7 @@ refuses it — which is how the whitespace carry finds a line edge.
 
 ## Emphasis follows CommonMark's matching
 
-2026-08-27, the maintainer. Goals 1 and 9. Valid while CommonMark's emphasis rules are the
+2026-08-27, the maintainer. Goals 1 and 3. Valid while CommonMark's emphasis rules are the
 reader's.
 
 Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
@@ -546,7 +547,7 @@ only ones in play, and a pair that matching hands to another delimiter rides the
 
 ## Readable spellings take the `try` prefix
 
-2026-09-21, the maintainer. Goals 1 and 4. Valid while a readable spelling's refusal would cost a
+2026-09-21, the maintainer. Goals 1 and 5. Valid while a readable spelling's refusal would cost a
 document the general form spells.
 
 A readable spelling tried ahead of a general one takes the `try` prefix and fails only where the
