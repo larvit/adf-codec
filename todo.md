@@ -31,7 +31,7 @@
 | 43 | 0.2.0 |  | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
-| 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4 | 10.4 |
+| 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 3, 4 | 12.6 |
@@ -80,14 +80,15 @@ read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a calle
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.
 
-Lands after item 43. `- a` then `+ b`, or `1.` then `1)`, opens one list where CommonMark opens two
-(spec examples 301 and 302); the CommonMark reader opens two. `spec/flavour.md` merges them in the
-lossless flavour on purpose, parting two adjacent lists with `!adf:listBreak`, so the chunk settles
-by Goals 3 and 4 whether the flavour follows — and with it what `adfToMarkdown` and
-`adfToPlainMarkdown` write for two adjacent lists and whether `!adf:listBreak` still reads — and
-asks where they do not decide. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table
-gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Four CommonMark
-spellings" bullet, which counts one fewer.
+Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
+two (spec examples 301 and 302), and so must the CommonMark reader. `spec/flavour.md` merges them in
+the lossless flavour on purpose and parts two adjacent lists with `!adf:listBreak`. The chunk
+settles by Goals 3 and 4 whether the flavour follows, and asks where the Goals do not decide. That
+answer also settles what `adfToMarkdown` and `adfToPlainMarkdown` write for two adjacent lists, and
+whether `!adf:listBreak` still reads. Breaking, so it ships beside item 43: `MIGRATION.md`'s
+Readings table gains its row, and its Spellings table one if `!adf:listBreak` retires. Its `pending`
+exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet, which counts
+one fewer.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 
@@ -174,6 +175,6 @@ kB.
 
 ### 8. Ship a CLI.
 
-The Goals and G cells are provisional: no README goal covers a CLI, and no persona names one yet.
-Naming both is part of the work (the maintainer, 2026-10-02): the chunk proposes them, and they land
-in the README's `## Goals` and `## Audience` with the CLI.
+The Goals and G cells are provisional: no README goal or persona covers a CLI yet. The chunk
+proposes both (the maintainer, 2026-10-02), and they land in the README's `## Goals` and `##
+Audience` with the CLI.
