@@ -35,7 +35,7 @@
 | 42 | 0.3.0 |  | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 8 | 12.5 |
 | 48 | 0.3.0 | question | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 9 | 11.7 |
 | 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
-| 33 | 0.3.0 |  | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and the plain reduction.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
+| 33 | 0.3.0 |  | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 9 | 10.3 |
 | 8 | 0.4.0 | question | **Ship a CLI.** | 4 | 7 | 5 | 5 | 9 | 5.3 |
@@ -44,15 +44,17 @@
 
 ### 40. Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document `adfToMarkdown` takes.
 
+takes.
+
 Today it holds for editor-normal documents only: two adjacent text nodes with the same marks merge,
 an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines and bots
 build. Spell each so it reads back as written; CommonMark's spelling stays wherever the document
-holds none of these shapes. The spellings are part of the chunk. `docs/decisions.md` §Equality is editor-normal, `spec/flavour.md`
-and `corpus/README.md` follow, and the tests drop `toEditorNormal`.
+holds none of these shapes. The spellings are part of the chunk. `docs/decisions.md` §Equality is
+editor-normal, `spec/flavour.md` and `corpus/README.md` follow, and the tests drop `toEditorNormal`.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
-Builds on item 6. Once it lands, the CommonMark spec suite runs against `markdownToHtml`. The README
+Lands after item 6. The CommonMark spec suite also runs against `markdownToHtml`. The README
 documents HTML as it documents markdown, and its tagline and `package.json`'s `description` regain
 HTML.
 
@@ -83,11 +85,11 @@ already escape it.
 ### 47. Open the README with what the package is, what it does and for whom.
 
 It opens with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
-decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or
-"why" note left. The badges are npm's version and the Gitea Actions status. The README names the
-lossy pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it writes and reads —
-GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a
-search for either finds the package.
+decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why"
+note left. The badges are npm's version and the Gitea Actions status. The README names the lossy
+pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it writes and reads — GitHub
+Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a search for
+any of these names finds the package.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
@@ -108,11 +110,10 @@ writes was not enough, and npm answered `EOTP` until the token itself bypassed. 
 bypass-2FA tokens for direct publishing around January 2027, leaving them `npm stage publish`, which
 a maintainer approves with 2FA; its replacement — trusted publishing over OIDC — supports
 GitHub-hosted Actions, GitLab.com's shared runners and CircleCI's cloud, self-hosted runners planned
-without a date. Revisit:
-whether npm has added Gitea or self-hosted OIDC, and otherwise whether the release moves to the
-staged publish — which fits badly with publish-on-merge, and is the maintainer's trade to weigh.
-The Goals and G cells are provisional: no README goal covers the release path. It stays out of `0.2.0` knowing the cutoff may land
-first.
+without a date. Revisit: whether npm has added Gitea or self-hosted OIDC, and otherwise whether the
+release moves to the staged publish — which fits badly with publish-on-merge, and is the
+maintainer's trade to weigh. The Goals and G cells are provisional: no README goal covers the
+release path. It stays out of `0.2.0` knowing the cutoff may land first.
 
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
 
@@ -125,7 +126,7 @@ moves upward, so the first raise to the measured figure reddens a run that chang
 measurement repeatable, or state the number the floor may be raised to and why it is not the
 measured one.
 
-### 33. Emit a line in time linear in its mark runs, in `adfToMarkdown` and the plain reduction.
+### 33. Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.
 
 `adfToMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its flanking
 cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and the plain
@@ -135,11 +136,11 @@ reduction's `spellableLine` drops one mark per re-emit the same way. Make both l
 
 Lands after item 7, which changes it. The quantity is what a consumer downloads and loads: the
 tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minified + gzipped — the
-figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since ours
-ships tsc's unminified output and no minifier yet (decide here whether to minify for the build or
-report the unminified gzip). The figure lands in README §The package beside the "no runtime
-dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped
-45.6 kB.
+figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
+ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
+or report the unminified gzip). The figure lands in README §The package beside the "no runtime
+dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
+kB.
 
 ### 8. Ship a CLI.
 
