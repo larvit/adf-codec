@@ -88,10 +88,9 @@ write `!adf:`.
 
 Directives are one grammar for everything markdown lacks, namespaced under `!adf:`:
 `!adf:panel info` … `!adf:/panel` blocks, `!adf:mention[@Mikael]{id=5b10a2}` inline, `\!adf:` the
-one escape. A node CommonMark can spell takes that spelling, never a directive. Not CommonMark's
-generic-directives proposal: its `:::` claims a form prose writes, and its fence-length discipline
-ties a container's opener to its own body, where closing from the opener nests by itself and leaf
-versus container falls out of the node's content model.
+one escape. Not CommonMark's generic-directives proposal: its `:::` claims a form prose writes, and
+its fence-length discipline ties a container's opener to its own body, where closing from the
+opener nests by itself and leaf versus container falls out of the node's content model.
 
 ## CommonMark is a subset
 

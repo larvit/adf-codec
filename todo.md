@@ -3,10 +3,11 @@
 ## 0.2.0
 
 - **43 — Give each markdown input its own reader, strict to its own standard.** Today
-  `markdownToAdf` reads CommonMark and the lossless flavour as one input, so text CommonMark reads
-  one way — shaped like a directive, a pipe table or a `~~` pair — the flavour claims (Goals 3 and
-  4). A caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless
-  flavour, read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
+  `markdownToAdf` reads CommonMark and the lossless flavour as one input: text shaped like a
+  directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark reads plain text
+  (Goals 3 and 4). A caller names the markdown it hands in: CommonMark, read as its spec says, or
+  the lossless flavour, read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a
+  caller takes.
 - **40 — Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document it takes.**
   Today it holds for editor-normal documents only: two adjacent text nodes with the same marks
   merge, an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines
@@ -64,6 +65,9 @@
   `description` naming both, the lossy pair, and the flavours it writes and reads by name — GitHub
   Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a search for
   either finds the package.
+- **44 — Delete `AGENTS.md` §7's empty-release bullet, leaving the maintainer's global working loop
+  to rule it.** "An earliest release with no items left and nothing shipped toward it is planned as
+  the chunk" restates that loop, in a sentence its own prose rules ban.
 
 ## 0.3.0
 

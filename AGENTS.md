@@ -131,10 +131,10 @@ One-line commit messages and PR titles; short PR summaries. No AI-attribution ma
 ## 7. The working loop
 
 `todo.md` lists what is left under the release that ships it, in shipping order. A session works
-one chunk, starting from the first item under the earliest release, and stops there whatever it
-was asked to finish: a release is a chain of sessions, so an instruction to work until a release is
-done names the chain, not the session. An open PR is a chunk already in flight, and finishing it is
-the session.
+one chunk, starting from the first item under the earliest release, and stops when that chunk
+merges, whatever it was asked to finish: a release is a chain of sessions, so an instruction to
+work until a release is done names the chain, not the session. An open PR is a chunk already in
+flight, and finishing it is the session.
 Per chunk:
 
 1. Fresh worktree off updated `origin/main`; implement tests-first (§3).
