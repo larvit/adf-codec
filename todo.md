@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 49`
+`Next ID = 52`
 
 | Goal | W |
 |---|---|
@@ -29,16 +29,19 @@
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 43 | 0.2.0 |  | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
+| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, as CommonMark does.** | 3 | 3 | 5 | 8 | 3, 4 | 18.7 |
+| 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
+| 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4 | 10.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 3, 4 | 12.6 |
 | 42 | 0.3.0 |  | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 8 | 12.5 |
-| 48 | 0.3.0 | question | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 9 | 11.7 |
+| 48 | 0.3.0 |  | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 9 | 11.7 |
 | 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
 | 33 | 0.3.0 |  | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 9 | 10.3 |
-| 8 | 0.4.0 | question | **Ship a CLI.** | 4 | 7 | 5 | 5 | 9 | 5.3 |
+| 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 9 | 10.6 |
 
 ## Details
 
@@ -75,6 +78,24 @@ directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark r
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
+### 49. Read a list whose bullet or ordered delimiter changes as two lists, as CommonMark does.
+
+`- a` then `+ b`, or `1.` then `1)`, opens one list where CommonMark opens two (spec examples 301
+and 302). Breaking: it changes what a spelling the README documents builds, so it ships beside item
+43. Its `pending` exceptions and the README's bullet on them go.
+
+### 51. Match a reference label to its definition under Unicode case folding.
+
+`link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
+example 540); lowercasing and then uppercasing folds it. Breaking, as item 49. Its `pending`
+exceptions and the README's bullet on them go.
+
+### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
+
+Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
+link mark, so the chunk settles what the empty link builds by Goals 3 and 6, asked where they do not
+decide it. Breaking, as item 49. Its `pending` exceptions and the README's bullet on them go.
+
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
 `adfToMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute values
@@ -103,15 +124,17 @@ of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 
 ### 48. Keep the release path publishing past npm's bypass-2FA token retirement.
 
-`0.1.0` published only once the npm token carried **Bypass 2FA**: the account requiring no 2FA on
-writes was not enough, and npm answered `EOTP` until the token itself bypassed. npm retires
-bypass-2FA tokens for direct publishing around January 2027, leaving them `npm stage publish`, which
-a maintainer approves with 2FA; its replacement — trusted publishing over OIDC — supports
-GitHub-hosted Actions, GitLab.com's shared runners and CircleCI's cloud, self-hosted runners planned
-without a date. Revisit: whether npm has added Gitea or self-hosted OIDC, and otherwise whether the
-release moves to the staged publish — which fits badly with publish-on-merge, and is the
-maintainer's trade to weigh. The Goals and G cells are provisional: no README goal covers the
-release path. It stays out of `0.2.0` knowing the cutoff may land first.
+Lands after 2027-01-01, or after a release run fails on the token, whichever comes first: the
+maintainer waits to see whether the retirement bites (2026-10-02). `0.1.0` published only once the
+npm token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
+answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct publishing
+around January 2027, leaving them `npm stage publish`, which a maintainer approves with 2FA; its
+replacement — trusted publishing over OIDC — supports GitHub-hosted Actions, GitLab.com's shared
+runners and CircleCI's cloud, self-hosted runners planned without a date. Revisit: whether npm has
+added Gitea or self-hosted OIDC, and otherwise whether the release moves to the staged publish —
+which fits badly with publish-on-merge, and is the maintainer's trade to weigh. The Goals and G
+cells are provisional: no README goal covers the release path. It stays out of `0.2.0` knowing the
+cutoff may land first.
 
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
 
@@ -142,6 +165,6 @@ kB.
 
 ### 8. Ship a CLI.
 
-The Goals and G cells are provisional: no goal or persona in the README covers a CLI yet. The
-maintainer names both before it is built, and they land in the README's `## Goals` and `## Audience`
-with it.
+The Goals and G cells are provisional: no goal or persona in the README covers a CLI yet. Naming
+both is part of the work (the maintainer, 2026-10-02): the chunk proposes them, and they land in the
+README's `## Goals` and `## Audience` with the CLI.
