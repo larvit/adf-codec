@@ -52,8 +52,9 @@ and `corpus/README.md` follow, and the tests drop `toEditorNormal`.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
-Builds on item 6. The CommonMark spec suite runs against `markdownToHtml` from here. The README's tagline and
-`package.json`'s `description` regain HTML (item 47).
+Builds on item 6. The CommonMark spec suite runs against `markdownToHtml` from here. The README
+documents HTML as it documents markdown, and its tagline and `package.json`'s `description` regain
+HTML.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -87,10 +88,9 @@ does and for whom first, then the shortest runnable example. The background goes
 endpoint, ticket or "why" note left. The top follows the package-README order: an npm version badge
 and the Gitea Actions badge, a tagline that is also `package.json`'s `description`, a feature list
 and a one-line table of contents, then install and the shortest runnable example; a table of
-everything exported sits near the bottom. The README documents HTML as it documents markdown, the
-tagline and `description` naming both, the lossy pair, and the flavours it writes and reads by name
-— GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a
-search for either finds the package.
+everything exported sits near the bottom. The README names the lossy pair and the flavours it
+writes and reads — GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's
+callouts — so a search for either finds the package.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
