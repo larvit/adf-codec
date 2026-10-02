@@ -16,8 +16,7 @@ One directory per contract kind:
   is the suite; `refusals.json` pins each refusing example to its error `code`; `exceptions.json`
   pins each known divergence by `check`, `example`, `kind` and the exact `divergence`, with a
   `reason`. `kind` is `mark-model` (the permanent count divergence from ADF's mark-per-text-node
-  model), `unspellable` (parses but the flavour has no spelling) or `pending` (a parser gap a later
-  `todo.md` item may close).
+  model), `unspellable` (parses but the flavour has no spelling) or `pending` (a parser gap).
 
 JSON is editor-normal (`docs/decisions.md` §Equality is editor-normal), two-space indent, keys
 sorted. `spec.json` is the vendored, upstream machine-readable suite, byte-exact from
