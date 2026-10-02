@@ -1,6 +1,6 @@
 # The corpus
 
-One directory per contract kind, each landing with its milestone:
+One directory per contract kind:
 
 - `round-trip/` — `<name>.json` + `<name>.md`: the markdown `adfToMarkdown` must emit for that
   document, byte for byte, and that `markdownToAdf` must read back to it (`docs/decisions.md` §The
@@ -17,7 +17,7 @@ One directory per contract kind, each landing with its milestone:
   pins each known divergence by `check`, `example`, `kind` and the exact `divergence`, with a
   `reason`. `kind` is `mark-model` (the permanent count divergence from ADF's mark-per-text-node
   model), `unspellable` (parses but the flavour has no spelling) or `pending` (a parser gap a later
-  milestone may close).
+  `todo.md` item may close).
 
 JSON is editor-normal (`docs/decisions.md` §Equality is editor-normal), two-space indent, keys
 sorted. `spec.json` is the vendored, upstream machine-readable suite, byte-exact from
