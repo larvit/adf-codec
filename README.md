@@ -5,7 +5,8 @@ an HTML dialect.
 
 **Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
 `0.2.0`.**
-Plan: `todo.md`. Decisions:
+Plan:
+[`todo.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/todo.md). Decisions:
 [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md). Changes:
 [`CHANGELOG.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/CHANGELOG.md). The lossless flavour's grammar:
 [`spec/flavour.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/spec/flavour.md).
