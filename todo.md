@@ -29,14 +29,14 @@
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 43 | 0.2.0 |  | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
-| 38 | 0.2.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
-| 47 | 0.2.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
-| 34 | 0.2.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 3, 4 | 12.6 |
-| 42 | 0.2.0 |  | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 8 | 12.5 |
-| 31 | 0.2.0 |  | **Make the branch figure the coverage floor is read against repeatable.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
-| 33 | 0.2.0 |  | **Make a carried mark run cost the line one re-emit.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
-| 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
+| 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
+| 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
+| 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 3, 4 | 12.6 |
+| 42 | 0.3.0 |  | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 8 | 12.5 |
 | 48 | 0.3.0 | question | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 9 | 11.7 |
+| 31 | 0.3.0 |  | **Make the branch figure the coverage floor is read against repeatable.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
+| 33 | 0.3.0 |  | **Make a carried mark run cost the line one re-emit.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
+| 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 9 | 10.3 |
 | 8 | 0.4.0 | question | **Ship a CLI.** | 4 | 7 | 5 | 5 | 9 | 5.3 |
 
@@ -104,6 +104,19 @@ punctuation — and, where they do, read the code point, with a fixture per dire
 of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 `adfToPlainMarkdown`. Scan backward, as the expand title's trim does.
 
+### 48. Keep the release path publishing past npm's bypass-2FA token retirement.
+
+`0.1.0` published only once the npm token carried **Bypass 2FA**: the account requiring no 2FA on
+writes was not enough, and npm answered `EOTP` until the token itself bypassed. npm retires
+bypass-2FA tokens for direct publishing around January 2027, leaving them `npm stage publish`, which
+a maintainer approves with 2FA; its replacement — trusted publishing over OIDC — supports
+GitHub-hosted Actions, GitLab.com's shared runners and CircleCI's cloud, self-hosted runners planned
+without a date. So the release path has an expiry date and no drop-in successor yet. Revisit:
+whether npm has added Gitea or self-hosted OIDC, and otherwise whether the release moves to the
+staged publish — which fits badly with publish-on-merge, and is the maintainer's trade to weigh
+rather than discover on a red release run. It stays out of `0.2.0` knowing the cutoff may land
+first.
+
 ### 31. Make the branch figure the coverage floor is read against repeatable.
 
 Three Node test legs over one unchanged tree reported `emit/inline-line.ts` at 95.83%, 96.23% and
@@ -130,19 +143,6 @@ ships tsc's unminified output and no minifier yet (decide here whether to minify
 report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped
 45.6 kB.
-
-### 48. Keep the release path publishing past npm's bypass-2FA token retirement.
-
-`0.1.0` published only once the npm token carried **Bypass 2FA**: the account requiring no 2FA on
-writes was not enough, and npm answered `EOTP` until the token itself bypassed. npm retires
-bypass-2FA tokens for direct publishing around January 2027, leaving them `npm stage publish`, which
-a maintainer approves with 2FA; its replacement — trusted publishing over OIDC — supports
-GitHub-hosted Actions, GitLab.com's shared runners and CircleCI's cloud, self-hosted runners planned
-without a date. So the release path has an expiry date and no drop-in successor yet. Revisit:
-whether npm has added Gitea or self-hosted OIDC, and otherwise whether the release moves to the
-staged publish — which fits badly with publish-on-merge, and is the maintainer's trade to weigh
-rather than discover on a red release run. It stays out of `0.2.0` knowing the cutoff may land
-first.
 
 ### 8. Ship a CLI.
 
