@@ -172,10 +172,10 @@ The verdict lands in `docs/decisions.md`.
 
 ### Findings, numbers and empty releases
 
-- A finding inside the chunk's items is fixed in the chunk. Outside them, a new `todo.md` item, always
-  in a release, weighed against every item on that release by the personas and `docs/decisions.md`
-  §Plain markdown is a flavour of the grammar through §Names stay text — an item it outweighs moves
-  later. A weighing no entry decides is asked as a gap.
+- A finding inside the chunk's items is fixed in the chunk. Outside them, a new `todo.md` item,
+  always in a release, weighed against every item on that release by the personas and
+  `docs/decisions.md` §Plain markdown is a flavour of the grammar through §Names stay text — an item
+  it outweighs moves later. A weighing no entry decides is asked as a gap.
 - A stated number — 500 levels, the branch floor — is kept; a chunk that cannot keep it asks,
   naming the number it can reach. A number the code needs and no entry states is a gap.
 - An earliest release with no items left and nothing shipped toward it is planned as the chunk:
