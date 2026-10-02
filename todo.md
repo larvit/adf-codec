@@ -44,8 +44,6 @@
 
 ### 40. Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document `adfToMarkdown` takes.
 
-takes.
-
 Today it holds for editor-normal documents only: two adjacent text nodes with the same marks merge,
 an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines and bots
 build. Spell each so it reads back as written; CommonMark's spelling stays wherever the document
