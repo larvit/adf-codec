@@ -23,7 +23,7 @@ represent.
 
 ## Goals
 
-The most useful ADF conversion library available, by these goals in priority order:
+The most useful ADF conversion library available, judged by these goals, in priority order:
 
 1. **Lossless, and every call returns a result, never a throw.**
 2. **ADF is the hub.**
@@ -31,7 +31,7 @@ The most useful ADF conversion library available, by these goals in priority ord
 4. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
 5. **No surprises: output reads and edits the way its audience expects.**
 6. **Lossy conversion drops form, never content.**
-7. **Runs in any JavaScript engine, with nothing to install, configure or connect.**
+7. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
 8. **Fast, and linear in the document's size.**
 9. **Easy to find, and clear at a glance what it does.**
 

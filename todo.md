@@ -8,6 +8,10 @@
   (Goals 3 and 4). A caller names the markdown it hands in: CommonMark, read as its spec says, or
   the lossless flavour, read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a
   caller takes.
+- **45 — Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** Goal 1 has every
+  call return a result; the boolean guard is the one export that does not, and it cannot say which
+  branch refused, where `not-an-adf-document`'s message already does. Breaking: `MIGRATION.md`
+  shows the guard's replacement.
 - **40 — Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document it takes.**
   Today it holds for editor-normal documents only: two adjacent text nodes with the same marks
   merge, an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines
