@@ -29,7 +29,7 @@
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 43 | 0.2.0 |  | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
-| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, as CommonMark does.** | 3 | 3 | 5 | 8 | 3, 4 | 18.7 |
+| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4 | 10.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
@@ -78,23 +78,32 @@ directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark r
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
-### 49. Read a list whose bullet or ordered delimiter changes as two lists, as CommonMark does.
+### 49. Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.
 
-`- a` then `+ b`, or `1.` then `1)`, opens one list where CommonMark opens two (spec examples 301
-and 302). Breaking: it changes what a spelling the README documents builds, so it ships beside item
-43. Its `pending` exceptions and the README's bullet on them go.
+Lands after item 43. `- a` then `+ b`, or `1.` then `1)`, opens one list where CommonMark opens two
+(spec examples 301 and 302); the CommonMark reader opens two. `spec/flavour.md` merges them in the
+lossless flavour on purpose, parting two adjacent lists with `!adf:listBreak`, so the chunk settles
+by Goals 3 and 4 whether the flavour follows — and with it what `adfToMarkdown` and
+`adfToPlainMarkdown` write for two adjacent lists and whether `!adf:listBreak` still reads — and
+asks where they do not decide. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table
+gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Four CommonMark
+spellings" bullet, which counts one fewer.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
-example 540); lowercasing and then uppercasing folds it. Breaking, as item 49. Its `pending`
-exceptions and the README's bullet on them go.
+example 540); lowercasing and then uppercasing folds it. Breaking, so it ships beside item 43:
+`MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go, and its spelling leaves
+the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 
 Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
-link mark, so the chunk settles what the empty link builds by Goals 3 and 6, asked where they do not
-decide it. Breaking, as item 49. Its `pending` exceptions and the README's bullet on them go.
+link mark, so the chunk settles what the empty link builds by Goals 3 and 6, and asks where they do
+not decide; whatever it builds, both still parse, since a bot relies on plain CommonMark being valid
+input. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
+`pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
+which counts one fewer.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
@@ -125,7 +134,8 @@ of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 ### 48. Keep the release path publishing past npm's bypass-2FA token retirement.
 
 Lands after 2027-01-01, or after a release run fails on the token, whichever comes first: the
-maintainer waits to see whether the retirement bites (2026-10-02). `0.1.0` published only once the
+maintainer chose on 2026-10-02 to wait and see whether the retirement bites. It holds back no
+release: when the rest of its release is done, it moves to the next. `0.1.0` published only once the
 npm token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
 answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct publishing
 around January 2027, leaving them `npm stage publish`, which a maintainer approves with 2FA; its
@@ -133,8 +143,7 @@ replacement — trusted publishing over OIDC — supports GitHub-hosted Actions,
 runners and CircleCI's cloud, self-hosted runners planned without a date. Revisit: whether npm has
 added Gitea or self-hosted OIDC, and otherwise whether the release moves to the staged publish —
 which fits badly with publish-on-merge, and is the maintainer's trade to weigh. The Goals and G
-cells are provisional: no README goal covers the release path. It stays out of `0.2.0` knowing the
-cutoff may land first.
+cells are provisional: no README goal covers the release path.
 
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
 
@@ -165,6 +174,6 @@ kB.
 
 ### 8. Ship a CLI.
 
-The Goals and G cells are provisional: no goal or persona in the README covers a CLI yet. Naming
-both is part of the work (the maintainer, 2026-10-02): the chunk proposes them, and they land in the
-README's `## Goals` and `## Audience` with the CLI.
+The Goals and G cells are provisional: no README goal covers a CLI, and no persona names one yet.
+Naming both is part of the work (the maintainer, 2026-10-02): the chunk proposes them, and they land
+in the README's `## Goals` and `## Audience` with the CLI.
