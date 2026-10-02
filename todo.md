@@ -86,9 +86,9 @@ the lossless flavour on purpose and parts two adjacent lists with `!adf:listBrea
 settles by Goals 3 and 4 whether the flavour follows, and asks where the Goals do not decide. That
 answer also settles what `adfToMarkdown` and `adfToPlainMarkdown` write for two adjacent lists, and
 whether `!adf:listBreak` still reads. Breaking, so it ships beside item 43: `MIGRATION.md`'s
-Readings table gains its row, and its Spellings table one if `!adf:listBreak` retires. Its `pending`
-exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet, which counts
-one fewer.
+Readings table gains its row, and its Spellings table one if `!adf:listBreak` retires. Examples 301
+and 302 lose their `pending` exceptions, and the spelling leaves the README's "Four CommonMark
+spellings" bullet, which counts one fewer.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 
