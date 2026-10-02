@@ -70,8 +70,8 @@ if (result.ok) {
 ```
 
 Serves Goals 1, 2 and 7. Pure functions, each taking a whole document and returning a whole
-result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF, so
-they drop whatever ADF cannot hold.
+result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF:
+they keep only what ADF holds, and refuse what `markdownToAdf` or `htmlToAdf` refuses.
 
 ```ts
 adfToMarkdown(doc: AdfDocument): Result<string>
