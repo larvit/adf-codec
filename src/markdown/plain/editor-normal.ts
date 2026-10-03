@@ -28,6 +28,8 @@ export function toEditorNormal(document: AdfDocument): AdfDocument {
       return holder
     })
   }
+  // ADF's schema requires content on doc, so an empty one stays.
+  if (document.content !== undefined && normal.content === undefined) normal.content = []
   return normal
 }
 

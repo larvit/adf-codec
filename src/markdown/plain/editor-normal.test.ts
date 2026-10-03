@@ -50,14 +50,15 @@ test('reads negative zero as zero, as JSON does', () => {
   )
 })
 
-test('reads an empty attrs object, marks array or content array as the absent key', () => {
+test('reads an empty attrs object, marks array or content array as the absent key, but on doc', () => {
   const paragraph: AdfNode = { attrs: {}, content: [{ attrs: {}, marks: [], text: 'a', type: 'text' }, { marks: [{ attrs: {}, type: 'em' }], text: 'b', type: 'text' }], marks: [], type: 'paragraph' }
   assert.deepEqual(toEditorNormal({ content: [paragraph, { content: [], type: 'rule' }], type: 'doc', version: 1 }), {
     content: [{ content: [{ text: 'a', type: 'text' }, { marks: [{ type: 'em' }], text: 'b', type: 'text' }], type: 'paragraph' }, { type: 'rule' }],
     type: 'doc',
     version: 1,
   })
-  assert.deepEqual(toEditorNormal({ content: [], type: 'doc', version: 1 }), { type: 'doc', version: 1 })
+  assert.deepEqual(toEditorNormal({ content: [], type: 'doc', version: 1 }), { content: [], type: 'doc', version: 1 })
+  assert.deepEqual(toEditorNormal({ type: 'doc', version: 1 }), { type: 'doc', version: 1 })
 })
 
 test('normalizes blocks and mark attributes nesting far past the levels a recursive walk survives', () => {

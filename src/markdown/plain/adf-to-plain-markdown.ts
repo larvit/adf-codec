@@ -58,7 +58,7 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
     const raw = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
     return !raw.ok && raw.error.code === blocks.error.code ? raw : blocks
   }
-  return success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 })
+  return success(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 }))
 }
 
 function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
