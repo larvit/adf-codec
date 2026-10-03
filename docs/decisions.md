@@ -87,7 +87,7 @@ the directive form, since no list marker spells the sign.
 Markdown holding no block reads as `{ content: [], type: 'doc', version: 1 }`, the document
 `spec/adf-schema/full.json` requires. A document holding no `content` key is
 `!adf:doc {content=none}` standing alone as its only block, and a named error anywhere else. The
-panel split 4 for `none` and 3 for `absent`, and the maintainer chose `none`; all seven rejected a
+writer panel split 4 for `none` and 3 for `absent`, and the maintainer chose `none`; all seven rejected a
 bare `!adf:doc`.
 
 ## Unknown nodes ride the carry
