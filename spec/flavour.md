@@ -250,8 +250,8 @@ form.
   the `#` count, so a heading carrying none, or one that is no whole number from 1 to 6, has no
   CommonMark spelling.
 - `orderedList` — container of `listItem`, block body. Attributes: `localId` (string), `order`
-  (number). `order` is the first marker, so a list carrying none, one that is no whole number
-  from 0, or one whose markers would run past 999999999, has no CommonMark spelling.
+  (number). `order` is the first marker, so a list carrying none, one that is `-0` or no whole
+  number from 0, or one whose markers would run past 999999999, has no CommonMark spelling.
 - `paragraph` — container, inline body. Attributes: `localId` (string).
 - `rule` — leaf. Attributes: `color` (string, `#rrggbb`), `localId` (string), `style` (`dashed`
   `dotted` `fade` `sketch` `solid`), `weight` (number, 1–3).

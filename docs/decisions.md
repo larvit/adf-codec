@@ -60,22 +60,16 @@ around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text 
 spells an empty object or array.
 
 An `attrs`, `content` or `marks` key holding an empty object or array is the reserved key with the
-bare value `empty` on every directive — block, inline node and mark: `{attrs=empty}`,
-`{content=empty}`, `{marks=empty}`. A writer panel chose the spelling, 5 of 7. A container
-spelling `content=empty` closes with no body, so an empty pair stays the node holding no content
-key; a leaf spells it too, `!adf:rule {content=empty}`. A node CommonMark spells takes its
-directive form to hold an empty key, and a text node holding one rides the inline carry, as does a
-node under an `em`, `strong`, `strike`, `code` or `link` mark whose `attrs` is empty, since none of
-those spellings holds attributes. Any other value of a reserved key is `unsupported-node-shape`,
-except on a block's `marks`, which reads it as the marks array in JSON.
+bare value `empty`, so an empty pair stays the node holding no content key. A writer panel chose
+the spelling, 5 of 7. The grammar: `spec/flavour.md` §Directives, **Attributes**, and §Marks.
 
 ## `-0` is spelled `-0`
 
 2026-10-03, the maintainer. Goal 1. Valid while JSON's own serialization writes `-0` as `0`.
 
-Wherever the flavour writes a number or a JSON value — an attribute, a `json` value, the carry —
-`-0` is `-0`, which JSON's grammar reads back as `-0`. An `orderedList` whose `order` is `-0` takes
-the directive form, since no list marker spells the sign.
+`-0` is spelled `-0` wherever the flavour writes a number or a JSON value, since JSON's grammar
+reads it back as `-0` and no list marker spells the sign. The grammar: `spec/flavour.md` §Block
+nodes and §The CommonMark blocks.
 
 ## Empty markdown is a document of no blocks
 
@@ -170,7 +164,7 @@ opener nests by itself and leaf versus container falls out of the node's content
 Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
 directive, a pipe table or a `~~` pair is claimed, and so is a code fence whose info string opens
 `adf:` (§The carry fence names the node type) — plus one image gap. `todo.md` item 43 ends the
-claims, giving CommonMark its own reader.
+claims, giving CommonMark its own reader, and `todo.md` item 65 ends the image gap.
 
 ## Tables
 
