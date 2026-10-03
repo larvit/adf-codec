@@ -33,6 +33,9 @@ export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<str
 }
 
 export function readCarriedBlock(type: string, body: string, depth: number): Read<AdfNode> {
+  if (type !== '' && !infoStringCarries(type)) {
+    return { fault: unsupportedNodeShape(`the carry fence names a type no info string carries back: spell it ${carryFencePrefix} with the type in the JSON`) }
+  }
   const read = readCarriedJson(body, 'two-space', largestNesting - depth, type)
   if (read.fault !== undefined || type !== '' || !infoStringCarries(read.value.type)) return read
   return { fault: unsupportedNodeShape(`the carry fence names a type its info string carries: spell it ${carryFencePrefix}${read.value.type}`) }

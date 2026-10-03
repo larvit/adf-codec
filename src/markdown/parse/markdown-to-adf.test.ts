@@ -375,6 +375,8 @@ test('reads the carry fence back to the node its info string names and its JSON 
   )
   assert.equal(content(markdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the carry fence names a type its info string carries: spell it adf:blockCard')
   assert.equal(content(markdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node")
+  const unnamed = 'unsupported-node-shape: the carry fence names a type no info string carries back: spell it adf: with the type in the JSON'
+  assert.equal(content(markdownToAdf('```adf:\\\\\n{}\n```\n')), unnamed)
 })
 
 test('reads the inline carry back to the node its json attribute holds', () => {
