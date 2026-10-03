@@ -114,7 +114,7 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
   const emission = emitRun(nodes, 0, 0, context)
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return emission
-  return success({ segments: carryStrippedWhitespace(emission.value.segments) })
+  return success({ segments: spellEdgeWhitespace(emission.value.segments) })
 }
 
 function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<LineAttempt> {
@@ -137,32 +137,32 @@ function lineVerdict(segments: readonly InlineSegment[], container: LineContaine
 }
 
 // spec/flavour.md, Inline nodes.
-function carryStrippedWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
-  const carried: InlineSegment[] = []
+function spellEdgeWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
+  const spelled: InlineSegment[] = []
   for (const [index, segment] of segments.entries()) {
     const previous = segments[index - 1]
     const next = segments[index + 1]
     const leading = previous === undefined || previous.text.includes('\n')
     const trailing = next === undefined || next.text.includes('\n')
-    carried.push(...carryEdges(segment, leading, trailing))
+    spelled.push(...edgeWhitespaceSegments(segment, leading, trailing))
   }
-  return carried
+  return spelled
 }
 
-function carryEdges(segment: InlineSegment, leading: boolean, trailing: boolean): InlineSegment[] {
+function edgeWhitespaceSegments(segment: InlineSegment, leading: boolean, trailing: boolean): InlineSegment[] {
   if (segment.escaping !== 'backslash' && segment.escaping !== 'bracketed') return [segment]
   const head = leading ? (/^[ \t]+/.exec(segment.text)?.[0] ?? '') : ''
   const body = segment.text.slice(head.length)
   const middle = trailing ? trimTrailingSpace(body) : body
   const tail = body.slice(middle.length)
   const edges: InlineSegment[] = []
-  if (head !== '') edges.push(carriedText(head))
+  if (head !== '') edges.push(textDirectiveSegment(head))
   if (middle !== '') edges.push({ escaping: segment.escaping, text: middle })
-  if (tail !== '') edges.push(carriedText(tail))
+  if (tail !== '') edges.push(textDirectiveSegment(tail))
   return edges
 }
 
-function carriedText(text: string): InlineSegment {
+function textDirectiveSegment(text: string): InlineSegment {
   return syntax(spellTextDirective(text))
 }
 
@@ -275,7 +275,7 @@ function emitText(node: AdfNode, context: InlineContext, index: number, path: Co
   if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
   const parts = node.text.split(/(\n+)/).filter((part) => part !== '')
-  return success({ segments: parts.map((part) => (part.startsWith('\n') ? carriedText(part) : { escaping, text: part })) })
+  return success({ segments: parts.map((part) => (part.startsWith('\n') ? textDirectiveSegment(part) : { escaping, text: part })) })
 }
 
 function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {
@@ -300,11 +300,11 @@ function emitEmphasis(nodes: readonly AdfNode[], spelling: string, depth: number
   const inner = emitRun(nodes, depth + 1, range.first, context)
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  const carried = carryStrippedWhitespace(inner.value.segments)
+  const spelled = spellEdgeWhitespace(inner.value.segments)
   return success({
     segments: [
       { emphasis: 'open', escaping: 'none', nodes: { ...range, depth }, text: spelling },
-      ...carried,
+      ...spelled,
       { emphasis: 'close', escaping: 'none', nodes: { ...range, depth }, text: spelling },
     ],
   })

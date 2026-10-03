@@ -51,7 +51,7 @@ export function attributeNestingMessage(key: string, type: string): string {
   return `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
 }
 
-export function carriesOnly(node: AdfNode, attributes: readonly string[]): boolean {
+export function holdsOnlyAttributes(node: AdfNode, attributes: readonly string[]): boolean {
   if (nodeMarks(node).length > 0 || node.text !== undefined || emptyKeys(node).length > 0) return false
   return holdsOnly(nodeAttrs(node), attributes)
 }

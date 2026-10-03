@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { Flavour } from '../plain/conventions.ts'
-import { adfDocumentFault, carriesOnly, isPlainText, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { adfDocumentFault, holdsOnlyAttributes, isPlainText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../plain/conventions.ts'
 import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
@@ -76,15 +76,15 @@ function joinBlocks(blocks: readonly PlacedBlock[], container: BlockContainer): 
 }
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
-  const plainPair = previous.spelling !== 'directive' && next.spelling !== 'directive'
-  if (plainPair && next.spelling === 'list') {
+  const bothCommonMark = previous.spelling !== 'directive' && next.spelling !== 'directive'
+  if (bothCommonMark && next.spelling === 'list') {
     if (previous.spelling === 'list' && previous.node.type === next.node.type) {
       const gap = container === 'directive' ? '\n' : '\n\n'
       return `${gap}${listBreakSpelling}${gap}`
     }
     if (container === 'list-item') return interruptsParagraph(next.node) ? '\n' : '\n\n'
   }
-  return container === 'directive' && !plainPair ? '\n' : '\n\n'
+  return container === 'directive' && !bothCommonMark ? '\n' : '\n\n'
 }
 
 function interruptsParagraph(node: AdfNode): boolean {
@@ -243,7 +243,7 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
 }
 
 function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  if (!carriesOnly(node, [])) return undefined
+  if (!holdsOnlyAttributes(node, [])) return undefined
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
   const text = joinBlocks(inner.value.blocks, 'document')
@@ -252,7 +252,7 @@ function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, wri
 }
 
 function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
-  if (!carriesOnly(node, ['language'])) return undefined
+  if (!holdsOnlyAttributes(node, ['language'])) return undefined
   const slot = languageSlot(nodeAttrs(node)['language'])
   if (slot.kind === 'attribute') return undefined
   const texts = fencedTexts(node, path)
@@ -291,7 +291,7 @@ function fencedTexts(node: AdfNode, path: ConvertErrorPath): Result<string[] | u
 }
 
 function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
-  if (!carriesOnly(node, ['level'])) return undefined
+  if (!holdsOnlyAttributes(node, ['level'])) return undefined
   const level = nodeAttrs(node)['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
   const hashes = '#'.repeat(level)
@@ -304,11 +304,11 @@ function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Re
 
 function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   const ordered = node.type === 'orderedList'
-  if (!carriesOnly(node, ordered ? ['order'] : [])) return undefined
+  if (!holdsOnlyAttributes(node, ordered ? ['order'] : [])) return undefined
   const items = nodeContent(node)
   const start = listStart(node, items.length)
   if (start === undefined || items.length === 0) return undefined
-  if (items.some((item) => item.type !== 'listItem' || !carriesOnly(item, []))) return undefined
+  if (items.some((item) => item.type !== 'listItem' || !holdsOnlyAttributes(item, []))) return undefined
   const walked: WalkedItem[] = []
   let headroom = Number.POSITIVE_INFINITY
   for (const [offset, item] of items.entries()) {
@@ -356,13 +356,13 @@ function tryListItemLines(inner: string, marker: string): string | undefined {
 
 function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
   const content = nodeContent(node)
-  if (content.length === 0 || !carriesOnly(node, [])) return undefined
+  if (content.length === 0 || !holdsOnlyAttributes(node, [])) return undefined
   const line = emitInlineLine(content, 'paragraph', path, flavour)
   if (!line.ok) return line
   return success(commonMarkText(line.value))
 }
 
 function tryRule(node: AdfNode): string | undefined {
-  if (!carriesOnly(node, []) || nodeContent(node).length > 0) return undefined
+  if (!holdsOnlyAttributes(node, []) || nodeContent(node).length > 0) return undefined
   return '---'
 }

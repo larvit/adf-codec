@@ -1,7 +1,7 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath } from '../../result.ts'
 import type { Flavour } from '../plain/conventions.ts'
-import { carriesOnly, nodeContent } from '../../adf/document.ts'
+import { holdsOnlyAttributes, nodeContent } from '../../adf/document.ts'
 import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
 
@@ -26,16 +26,16 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: Fla
 function pipeRows(node: AdfNode): AdfNode[][] | undefined {
   const rows = nodeContent(node)
   const columns = rows[0] === undefined ? 0 : nodeContent(rows[0]).length
-  if (!carriesOnly(node, []) || columns === 0) return undefined
+  if (!holdsOnlyAttributes(node, []) || columns === 0) return undefined
   const grid: AdfNode[][] = []
   for (const [index, row] of rows.entries()) {
     const cells = nodeContent(row)
-    if (row.type !== 'tableRow' || !carriesOnly(row, []) || cells.length !== columns) return undefined
+    if (row.type !== 'tableRow' || !holdsOnlyAttributes(row, []) || cells.length !== columns) return undefined
     const wanted = index === 0 ? 'tableHeader' : 'tableCell'
     const paragraphs: AdfNode[] = []
     for (const cell of cells) {
       const paragraph = plainParagraph(cell)
-      if (paragraph === undefined || cell.type !== wanted || !carriesOnly(cell, [])) return undefined
+      if (paragraph === undefined || cell.type !== wanted || !holdsOnlyAttributes(cell, [])) return undefined
       paragraphs.push(paragraph)
     }
     grid.push(paragraphs)
@@ -46,6 +46,6 @@ function pipeRows(node: AdfNode): AdfNode[][] | undefined {
 function plainParagraph(cell: AdfNode): AdfNode | undefined {
   const content = nodeContent(cell)
   const paragraph = content[0]
-  if (paragraph === undefined || content.length !== 1 || paragraph.type !== 'paragraph' || !carriesOnly(paragraph, [])) return undefined
+  if (paragraph === undefined || content.length !== 1 || paragraph.type !== 'paragraph' || !holdsOnlyAttributes(paragraph, [])) return undefined
   return paragraph
 }
