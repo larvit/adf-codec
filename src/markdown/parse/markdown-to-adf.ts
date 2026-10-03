@@ -18,8 +18,8 @@ import { mintTaskIds } from './task-ids.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
+import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.ts'
 import { spellsEmpty } from '../empty-keys.ts'
-import { unsupportedNodeShape } from '../directive-syntax.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
 
@@ -257,7 +257,7 @@ function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: Conver
   const fromFence = first.language !== ''
   const slot = languageSlot(fromFence ? first.language : attribute)
   if (!fromFence && slot.kind === 'fence') {
-    return failure('unsupported-node-shape', `move language=${slot.info} to the fence's info string: a fence carries the language wherever its info string can`, path)
+    return failure('unsupported-node-shape', `move language=${spellStringAttribute(slot.info)} to the fences' info strings: they can spell this language`, path)
   }
   if ((slot.kind === 'fence') !== fromFence || (fromFence && attribute !== undefined)) {
     return failure('unsupported-node-shape', `${node.type} spells its language in the fence info string, or in the attribute where no info string carries it back`, path)

@@ -27,6 +27,6 @@ export function readEmptyKeys(type: string, attributes: DirectiveAttributes, key
     empty.add(key)
     rest.delete(key)
   }
-  if (empty.has('attrs') && (held || [...rest.keys()].some((key) => key !== 'marks'))) return { fault: unsupportedNodeShape(`${type} spells attrs=empty beside another attribute, an argument or content: drop attrs=empty or the rest`) }
+  if (empty.has('attrs') && (held || [...rest.keys()].some((key) => key !== 'marks'))) return { fault: unsupportedNodeShape(`${type} spells attrs=empty beside another attribute, an argument or a [content] slot: drop attrs=empty, or the rest`) }
   return { value: { empty, rest } }
 }

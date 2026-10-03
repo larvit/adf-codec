@@ -166,7 +166,11 @@ test('reads the codeBlock directive body as the node content, the info string it
 
 test('names the slot a codeBlock spells its language outside of', () => {
   const slot = 'unsupported-node-shape: codeBlock spells its language in the fence info string, or in the attribute where no info string carries it back'
-  assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n')), "unsupported-node-shape: move language=rust to the fence's info string: a fence carries the language wherever its info string can")
+  assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n')), "unsupported-node-shape: move language=rust to the fences' info strings: they can spell this language")
+  assert.equal(
+    content(markdownToAdf('!adf:codeBlock {language="c sharp"}\n```\nx\n```\n```\ny\n```\n!adf:/codeBlock\n')),
+    "unsupported-node-shape: move language=\"c sharp\" to the fences' info strings: they can spell this language",
+  )
   assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n')), slot)
   assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n')), slot)
   assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n')), slot)
@@ -1116,6 +1120,6 @@ test('leads a refusal ordinary editing meets with the edit that fixes it', () =>
   )
   assert.equal(
     content(markdownToAdf('!adf:panel info {attrs=empty}\nText.\n!adf:/panel\n')),
-    'unsupported-node-shape: panel spells attrs=empty beside another attribute, an argument or content: drop attrs=empty or the rest',
+    'unsupported-node-shape: panel spells attrs=empty beside another attribute, an argument or a [content] slot: drop attrs=empty, or the rest',
   )
 })
