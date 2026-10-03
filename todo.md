@@ -24,14 +24,14 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 63 | 0.2.0 | defect | **Refuse a cyclic input as `not-an-adf-document` in place of looping forever.** | 2 | 2 | 6 | 9 | 1 | 27.5 |
+| 63 | 0.2.0 | defect | **Refuse a cyclic input as `not-an-adf-document`.** | 2 | 2 | 6 | 9 | 1 | 27.5 |
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
-| 55 | 0.2.0 | defect | **Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node with empty, missing or content-holding text.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
+| 55 | 0.2.0 | defect | **Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
-| 64 | 0.2.0 | defect | **Read every JSON key the emitter writes back unchanged on V8, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 7 | 23.0 |
+| 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 7 | 23.0 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
-| 65 | 0.2.0 | defect | **Read a mid-text or titled CommonMark image as Goal 6 allows, in place of refusing it with `unmappable-image`.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
+| 65 | 0.2.0 | defect | **Read a mid-text or titled CommonMark image as Goal 6 allows.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
@@ -40,7 +40,7 @@
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
-| 62 | 0.2.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `plain/` and `emit/` no longer import each other.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
+| 62 | 0.2.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 3, 4 | 12.6 |
@@ -57,7 +57,7 @@
 
 ## Details
 
-### 63. Refuse a cyclic input as `not-an-adf-document` in place of looping forever.
+### 63. Refuse a cyclic input as `not-an-adf-document`.
 
 `adfDocumentFault` walks with `isNodeArray` (`adf/document.ts`) and `isJsonValue` (`json-value.ts`),
 worklists that record no visited object, so a node whose `content` holds itself hangs
@@ -70,7 +70,7 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 `markdownToHtml`. The README documents HTML as it documents markdown, and its tagline and
 `package.json`'s `description` regain HTML.
 
-### 55. Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node with empty, missing or content-holding text.
+### 55. Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.
 
 `inline-line.ts` refuses a carriage return or NUL in text (`unspellable-character`) and a paragraph
 opening with a code-span run (`unspellable-line-start`); `fencedTexts` refuses the same characters
@@ -93,14 +93,14 @@ Element-by-element mapping, the `data-*` fidelity scheme, the opaque-carry form,
 foreign-element set `htmlToAdf` accepts — the set `markdownToAdf` shares (`spec/flavour.md` §Raw
 HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
 
-### 64. Read every JSON key the emitter writes back unchanged on V8, with a fixture whose key holds `\`, `"` or a control character.
+### 64. Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.
 
 `property-harness.ts` strips `\`, `"` and control characters from generated JSON keys, citing V8's
 `JSON.parse` returning a wrong key for an escaped backslash. The library reads `json` attributes
 (`directive-syntax.ts`) and both carries (`opaque-carry.ts`) through that `JSON.parse`, so on Node,
-Deno and Chrome the round-trip would refuse its own output. Confirm with a fixture first; then read
-JSON with our own parser or record the gap with an ending item. Found by the README-goals audit,
-2026-10-03.
+Deno and Chrome the round-trip would refuse its own output or read back a different key; the fixture
+tells which. Confirm with a fixture first; then read JSON with our own parser or record the gap with
+an ending item. Found by the README-goals audit, 2026-10-03.
 
 ### 43. Give each markdown input its own reader, strict to its own standard.
 
@@ -110,11 +110,11 @@ a code fence whose info string opens `adf:` becomes the block carry where Common
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
-### 65. Read a mid-text or titled CommonMark image as Goal 6 allows, in place of refusing it with `unmappable-image`.
+### 65. Read a mid-text or titled CommonMark image as Goal 6 allows.
 
-§CommonMark is a subset keeps the image gap and no item ends it: a bot's `See ![diagram](url) here`
-or a titled image is refused, 14 examples in `corpus/commonmark-spec/refusals.json`. Settle what such
-an image builds — Goal 6 drops form and keeps the target — and have the decision cite this item.
+A mid-text or titled image, such as a bot's `See ![diagram](url) here`, is refused: 14 examples in
+`corpus/commonmark-spec/refusals.json`. Settle what such an image builds. Goal 6 drops form and
+keeps the target.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.
 
@@ -173,12 +173,13 @@ input. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gai
 `pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
 which counts one fewer.
 
-### 62. Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `plain/` and `emit/` no longer import each other.
+### 62. Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.
 
 Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts`, the `mintTaskIds` call and
-the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks`
-in `emit/adf-to-markdown.ts`. Every comprehension seat on 2026-10-03 named the plain flavour's
-spread across three directories.
+the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
+`emit/adf-to-markdown.ts`. And `highlightDelimiter`, `highlightFlanking` and `Flavour` move out of
+`plain/conventions.ts`, which `emit/` imports them from. Every comprehension reader on 2026-10-03
+named the plain flavour's spread across three directories.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
