@@ -50,7 +50,7 @@
 | 33 | 0.3.0 |  | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 9 | 10.3 |
-| 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
+| 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
 | 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 7 | 1.2 |
 | 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 7 | -2.2 |
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 9 | 10.6 |
@@ -247,11 +247,14 @@ or report the unminified gzip). The figure lands in README §The package beside 
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
 kB.
 
-### 56. Give each piece of `blocks.ts`'s block-walk state one owner that returns what it changes.
+### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
 Technical principle "One owner per value": the `Walk` record passes through twelve functions that
 mutate it and return `void`; `walk.leaf` alone is written in seven places. `ContainerStack` in the
 same file shows the shape to follow.
+`inline-content.ts`'s `Scan` has the same shape: about fifteen functions write `pending`, `pieces`,
+`deactivatedBefore` and `openingSpellableLink` and return `void`, and `parseInlineContent` reads a
+flag `scanInline` leaves on it.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 
