@@ -69,6 +69,10 @@ export function isBareText(node: AdfNode): boolean {
   return node.type === 'text' && node.attrs === undefined && node.content === undefined && node.marks?.length !== 0
 }
 
+export function isUnmarkedBareText(node: AdfNode): boolean {
+  return isBareText(node) && node.marks === undefined
+}
+
 export function identicalMark(left: AdfMark, right: AdfMark): boolean {
   return marksKey([left]) === marksKey([right])
 }

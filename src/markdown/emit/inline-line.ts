@@ -267,8 +267,13 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
   return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
 
+function textHoldingContent(node: AdfNode, path: ConvertErrorPath): Result<never> | undefined {
+  return node.type === 'text' && nodeContent(node).length > 0 ? failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path) : undefined
+}
+
 function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
-  if (nodeContent(node).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
+  const holding = textHoldingContent(node, path)
+  if (holding !== undefined) return holding
   if (!isBareText(node)) return success({ carry: { first: index, last: index } })
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
   if (/\r/.test(node.text)) return failure('unspellable-character', 'a text node holds a carriage return CommonMark rewrites', path)
@@ -323,7 +328,8 @@ function emitHighlight(nodes: readonly AdfNode[], depth: number, range: NodeRang
 function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange, path: ConvertErrorPath): Result<Emission> {
   const spans: string[] = []
   for (const node of nodes) {
-    if (node.type === 'text' && nodeContent(node).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
+    const holding = textHoldingContent(node, path)
+    if (holding !== undefined) return holding
     if (!isBareText(node) || nodeMarks(node).length !== depth + 1) return success({ carry: range })
     const { text } = node
     if (typeof text !== 'string' || text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)

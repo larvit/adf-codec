@@ -3,7 +3,7 @@ import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
-import { attributeNestingMessage, isBareText } from '../../adf/document.ts'
+import { attributeNestingMessage, isUnmarkedBareText } from '../../adf/document.ts'
 import { attributeValue, directivePrefix, spellAttributeValue, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument, blockDirectiveForm, marksAttribute, readMarkValues } from '../block-directive.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
@@ -92,7 +92,7 @@ function blockSpellingFault(name: string): ConvertFault | undefined {
 function slotText(content: readonly AdfNode[]): string | undefined {
   if (content.length === 0) return ''
   const only = content.length === 1 ? content[0] : undefined
-  if (only === undefined || !isBareText(only) || only.marks !== undefined || typeof only.text !== 'string') return undefined
+  if (only === undefined || !isUnmarkedBareText(only) || typeof only.text !== 'string') return undefined
   return only.text
 }
 
