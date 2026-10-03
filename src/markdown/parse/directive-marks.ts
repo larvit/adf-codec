@@ -13,11 +13,11 @@ export function readDirectiveMark(name: string, attributes: DirectiveAttributes,
   if (spelling === undefined) return undefined
   const markdown = markdownForm(spelling)
   if (markdown !== undefined) return failure('unsupported-node-shape', `${name} is spelled ${markdown}, never as a directive`, path)
-  const empty = readEmptyKeys(attributes, ['attrs'])
+  const empty = readEmptyKeys(name, attributes, ['attrs'], false)
   if (empty.fault !== undefined) return faulted(empty.fault, path)
   const attrs = readVocabulary(name, empty.value.rest, spelling.attributes, undefined, path)
   if (!attrs.ok) return attrs
-  if (empty.value.empty.has('attrs')) return Object.keys(attrs.value).length === 0 ? success({ attrs: {}, type: name }) : failure('unsupported-node-shape', `${name} spells attrs=empty beside an attribute it holds`, path)
+  if (empty.value.empty.has('attrs')) return success({ attrs: {}, type: name })
   return success(Object.keys(attrs.value).length === 0 ? { type: name } : { attrs: attrs.value, type: name })
 }
 

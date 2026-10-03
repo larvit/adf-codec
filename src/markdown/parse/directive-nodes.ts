@@ -17,8 +17,7 @@ import { slotLineEndingFault } from '../directive-syntax.ts'
 import { textBreakName } from '../text-break.ts'
 import { textDirectiveName } from '../text-directive.ts'
 
-// `emptyContent` is whether the directive spells content=empty, which holds no body.
-export type BlockDirectiveNode = { contentModel: BlockNodeModel['contentModel']; emptyContent: boolean; node: AdfNode }
+export type BlockDirectiveNode = { contentModel: BlockNodeModel['contentModel']; node: AdfNode }
 
 export function readBlockDirectiveNode(
   name: string,
@@ -33,7 +32,7 @@ export function readBlockDirectiveNode(
   if (model === undefined) return faulted(inlineSpellingFault(name) ?? unknownDirectiveFault(name), path)
   const argumentKey = blockArgument(name)
   const spelled = attributes.get(marksAttribute)
-  const empty = readEmptyKeys(attributes, spellsEmpty(spelled) ? ['attrs', 'content', 'marks'] : ['attrs', 'content'])
+  const empty = readEmptyKeys(name, attributes, spellsEmpty(spelled) ? ['attrs', 'content', 'marks'] : ['attrs', 'content'], argument !== undefined)
   if (empty.fault !== undefined) return faulted(empty.fault, path)
   const { rest } = empty.value
   rest.delete(marksAttribute)
@@ -46,9 +45,7 @@ export function readBlockDirectiveNode(
   }
   const marks: Result<AdfMark[] | undefined> = spelled === undefined || spellsEmpty(spelled) ? success(undefined) : readMarks(name, spelled, path)
   if (!marks.ok) return marks
-  const node = namedNode(name, attrs.value, marks.value, empty.value.empty, path)
-  if (!node.ok) return node
-  return success({ contentModel: model.contentModel, emptyContent: empty.value.empty.has('content'), node: node.value })
+  return success({ contentModel: model.contentModel, node: namedNode(name, attrs.value, marks.value, empty.value.empty) })
 }
 
 export function readInlineDirectiveNode(
@@ -62,7 +59,7 @@ export function readInlineDirectiveNode(
   const slot = model.textAttribute
   if (slot === undefined && content !== undefined) return failure('unsupported-node-shape', `${name} takes no content: this one holds some`, path)
   const elsewhere: Elsewhere | undefined = slot === undefined ? undefined : { key: slot, slot: 'content' }
-  const empty = readEmptyKeys(attributes, ['attrs', 'content', 'marks'])
+  const empty = readEmptyKeys(name, attributes, ['attrs', 'content', 'marks'], slot !== undefined && content !== undefined)
   if (empty.fault !== undefined) return faulted(empty.fault, path)
   const attrs = readVocabulary(name, empty.value.rest, model.attributes, elsewhere, path)
   if (!attrs.ok) return attrs
@@ -75,7 +72,7 @@ export function readInlineDirectiveNode(
     if (spans !== undefined) return faulted(spans, path)
     attrs.value[slot] = text
   }
-  return namedNode(name, attrs.value, undefined, empty.value.empty, path)
+  return success(namedNode(name, attrs.value, undefined, empty.value.empty))
 }
 
 // A name the other position spells names that spelling, never the code a later MINOR may fill (docs/decisions.md §Which code a cause takes).
@@ -109,11 +106,9 @@ function readMarks(type: string, spelled: DirectiveValue, path: ConvertErrorPath
   return success(marks)
 }
 
-function namedNode(type: string, attrs: AdfAttributes, marks: readonly AdfMark[] | undefined, empty: ReadonlySet<EmptyKey>, path: ConvertErrorPath): Result<AdfNode> {
-  const held = Object.keys(attrs).length > 0
-  if (held && empty.has('attrs')) return failure('unsupported-node-shape', `${type} spells attrs=empty beside an attribute it holds`, path)
-  const node: AdfNode = held || empty.has('attrs') ? { attrs, type } : { type }
+function namedNode(type: string, attrs: AdfAttributes, marks: readonly AdfMark[] | undefined, empty: ReadonlySet<EmptyKey>): AdfNode {
+  const node: AdfNode = Object.keys(attrs).length > 0 || empty.has('attrs') ? { attrs, type } : { type }
   if (empty.has('content')) node.content = []
   if (marks !== undefined || empty.has('marks')) node.marks = [...(marks ?? [])]
-  return success(node)
+  return node
 }

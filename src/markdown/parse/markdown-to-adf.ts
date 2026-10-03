@@ -229,9 +229,10 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
 }
 
 function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const { contentModel, emptyContent, node } = read
+  const { contentModel, node } = read
   if (blocks === undefined) return success(node)
-  if (emptyContent) return blocks.length === 0 ? success(node) : failure('unsupported-node-shape', `${node.type} spells content=empty, which holds no body: this one holds one`, path)
+  // A directive builds a content key only from content=empty, which holds no body.
+  if (node.content !== undefined) return blocks.length === 0 ? success(node) : failure('unsupported-node-shape', `${node.type} spells content=empty, which holds no body: this one holds one`, path)
   if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
   if (contentModel === 'inline') return inlineBodyNode(node, blocks, reading, path)
   return containerNode(node, blocks, reading, path, depth)
