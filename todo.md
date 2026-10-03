@@ -33,7 +33,7 @@
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
 | 54 | 0.2.0 |  | **Make `docs/decisions.md` §The source parts by ADF and format name every import `parse/` takes from `emit/`.** | 2 | 2 | 2 | 5 | 1 | 11.5 |
-| 53 | 0.2.0 |  | **Bench a block's `marks` spelling with the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 5 | 11.5 |
+| 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 5 | 11.5 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
@@ -117,7 +117,7 @@ The entry says `parse/` imports only `commonMarkSpelling` and `openingLinkTakesD
 `emit/`; `parse/markdown-to-adf.ts` also imports `inlineLeaves` from `emit/plain-inline.ts`. Either
 the entry names it with its reason, or the reader stops importing it.
 
-### 53. Bench a block's `marks` spelling with the writer panel and adopt its pick.
+### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 
 Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
