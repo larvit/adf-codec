@@ -34,8 +34,8 @@
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 5 | 11.5 |
-| 60 | 0.2.0 | decision | **Give the parser's questions to the emitter one named module, so the parse→emit dependency reads as intended.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
-| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, and move `Read<T>` to `result.ts` and `Flavour` out of the plain flavour.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
+| 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
+| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
 | 62 | 0.2.0 | decision | **Move the plain reader out of `parse/markdown-to-adf.ts` into `markdown/plain/`.** | 3 | 4 | 2 | 5 | 2 | 8.9 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
@@ -106,7 +106,7 @@ spellings" bullet, which counts one fewer.
 
 The comprehension panel's worst place: `escapeClaims` and `escapeClosedRuns` re-implement the
 reader's view — flanking, code-span closers, link-definition openings, highlight flanking — and
-only the property tests catch drift. It caps Locality.
+only the property tests catch drift. It caps the panel's Locality score.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
@@ -126,16 +126,17 @@ Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the mar
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
 
-### 60. Give the parser's questions to the emitter one named module, so the parse→emit dependency reads as intended.
+### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
 `parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
 from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
 parts by ADF and format true as they grow.
 
-### 59. Group the directive grammar into `src/markdown/directive/`, and move `Read<T>` to `result.ts` and `Flavour` out of the plain flavour.
+### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.
 
 Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
-needs `Read<T>`, `Flavour`, the carry and the mark spellings out of `markdown/`.
+needs `Read<T>` and `Flavour` out of the plain flavour and `markdown/`; it needs the carry and the
+mark spellings too, which item 7 moves where it learns what HTML shares.
 
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 
@@ -148,7 +149,8 @@ which counts one fewer.
 
 ### 62. Move the plain reader out of `parse/markdown-to-adf.ts` into `markdown/plain/`.
 
-
+What moves: the plain reader's code in `markdown-to-adf.ts` — the alert and task-marker reads, the
+`mintTaskIds` call and the `inlineLeaves` use.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
@@ -172,8 +174,8 @@ punctuation — and, where they do, read the code point, with a fixture per dire
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
-`plain/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`, quadratic in a run
-of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
+`plain/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`, quadratic
+in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 `adfToPlainMarkdown`. Scan backward, as the expand title's trim does.
 
 ### 48. Keep the release path publishing past npm's bypass-2FA token retirement.

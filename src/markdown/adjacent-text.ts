@@ -14,7 +14,7 @@ export function joinsWhenRead(previous: AdfNode, node: AdfNode): boolean {
   return isPlainText(previous) && isPlainText(node) && identicalMarks(nodeMarks(previous), nodeMarks(node))
 }
 
-// The editor's rule, parting from the reader's only on shapes editor-normal ADF erases: an empty attrs, content or marks, and -0 in a mark.
+// The editor's rule, differing from the reader's only on shapes editor-normal ADF erases: an empty attrs, content or marks, and -0 in a mark.
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
   if (!joinsAsEditorText(previous) || !joinsAsEditorText(node)) return false
   return identicalMarks(nodeMarks(previous).map(normalMark), nodeMarks(node).map(normalMark))

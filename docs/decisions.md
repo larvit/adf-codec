@@ -496,14 +496,13 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
-## The comprehension floor ships under 7 until items 59, 60, 61 and 62 land
+## The project ships under the comprehension floor until items 59, 60, 61 and 62 land
 
 2026-10-03, the maintainer. KISS, a technical principle, and its comprehension floor of 7. Valid
 while `todo.md` items 59, 60, 61 and 62 are open.
 
-A four-seat comprehension panel scored the project 6 against the floor of 7, and the project ships
-under it while the restructures it named land: `todo.md` items 59, 60, 61 and 62 end this. The
-scores are the baseline — a later panel may not score lower on any dimension:
+A four-seat comprehension panel scored the project 6 against the floor of 7. The scores are the
+baseline: a later panel may not score lower on any dimension.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
@@ -672,16 +671,14 @@ them. A primitive knowing neither ADF nor a format stays at `src/` root. A const
 `spec/flavour.md` draws, and a placement nothing here settles goes beside its only reader, or in
 what both read where there are two.
 
-Each format directory parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest of it
-holding what both directions read. A construct's reader lives there beside the regex the emitter
-escapes against, so the two cannot drift; a reader with no emit counterpart goes in `parse/`,
-unless it is part of a construct that side already holds — a grammar stays in one file rather than
-splitting across the seam. A rule both directions must answer alike — whether a list marker
-interrupts a paragraph — is one function there too, never a copy per direction, however
-conservative the copy would be. Where the rule is the emitter's own choice, input consults it
-rather than restating it, and that is the only import `parse/` takes from `emit/` —
+A flavour's own code, both directions included, sits in its own directory: `markdown/plain/`.
+Otherwise each format directory parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest
+of it holding what both directions read. A construct's reader lives there beside the regex the
+emitter escapes against, so the two cannot drift; a reader with no emit counterpart goes in
+`parse/`, unless it is part of a construct that side already holds — a grammar stays in one file
+rather than splitting across the seam. A rule both directions must answer alike — whether a list
+marker interrupts a paragraph — is one function there too, never a copy per direction, however
+conservative the copy would be. Where the rule is the emitter's own choice, input consults it rather
+than restating it, and that is the only value import `parse/` takes from `emit/` —
 `commonMarkSpelling` and `openingLinkTakesDirective` — so no fixture the emitter writes can be
 refused, and a spelling the emitter refuses gives its own error rather than a second name for it.
-`markdown/plain/` holds the plain flavour's own code — the writer's reduction to editor-normal ADF
-and the conventions and task ids the reader takes — so neither direction reaches into the other
-for it.

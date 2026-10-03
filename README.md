@@ -198,7 +198,7 @@ emit refuses:
 | `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take, or lacks one it needs — or markdown writes as a directive a node or mark the lossless flavour spells as CommonMark, or a reserved directive stands out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` beside another block | fix what the message names, or give the node the shape it names; `spec/flavour.md` lists every type's attributes and body |
+| `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take, or lacks one it needs — or markdown writes as a directive a node or mark the lossless flavour spells as CommonMark, or a reserved directive stands out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
 
