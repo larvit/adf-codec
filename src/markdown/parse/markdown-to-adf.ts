@@ -8,13 +8,13 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
+import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { inlineLeaves } from '../emit/plain-inline.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
 import { mintTaskIds } from './task-ids.ts'
-import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
@@ -255,6 +255,7 @@ function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: Conver
   if ((slot.kind === 'fence') !== fromFence || (fromFence && attribute !== undefined)) {
     return failure('unsupported-node-shape', `${node.type} spells its language in the fence info string, or in the attribute where no info string carries it back`, path)
   }
+  if (fromFence && emptyKeys(node).includes('attrs')) return failure('unsupported-node-shape', `${node.type} spells attrs=empty beside an attribute it holds`, path)
   const spelled = fromFence ? { ...node, attrs: { ...node.attrs, language: first.language } } : node
   return success(withContent(spelled, first.text === '' ? [] : fences.map((fence): AdfNode => ({ text: fence.text, type: 'text' }))))
 }
