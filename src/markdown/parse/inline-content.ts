@@ -67,6 +67,9 @@ type Scan = {
   spans: NestedSpans
 }
 
+// What a directive's content slot inherits from the content holding it.
+type SharedScan = Pick<Scan, 'definitions' | 'ownMarks' | 'path'>
+
 type SlotContent = { carry: boolean; nodes: Inline[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry or an inline node spelling marks=empty: its marks are its own'
@@ -79,7 +82,7 @@ const textBreak: TextBreak = { kind: 'textBreak' }
 
 // The outermost content: only here does a text break see both its neighbours.
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
-  const scan: Scan = { container, deactivatedBefore: 0, definitions, highlights: flavour === 'plain', openingSpellableLink: false, ownMarks: new Set(), path, pending: '', pieces: [], source, spans: noSpans }
+  const scan = freshScan(source, { definitions, ownMarks: new Set(), path }, { container, highlights: flavour === 'plain', spans: noSpans })
   const scanned = scanInline(scan)
   if (!scanned.ok) return scanned
   if (scanned.value.image !== undefined) return success({ image: scanned.value.image })
@@ -91,6 +94,10 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
     if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, path)
   }
   return success({ carry: scanned.value.carry, nodes: nodes.value })
+}
+
+function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'container' | 'highlights' | 'spans'>): Scan {
+  return { ...shared, ...own, deactivatedBefore: 0, openingSpellableLink: false, pending: '', pieces: [], source }
 }
 
 function scanInline(scan: Scan): Result<Scanned> {
@@ -274,7 +281,8 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[]
 
 function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | undefined> {
   if (span.content === undefined) return success(undefined)
-  const parsed = scanInline({ ...scan, container: undefined, deactivatedBefore: 0, highlights: false, openingSpellableLink: false, pending: '', pieces: [], source: span.content, spans: span.spans })
+  const { definitions, ownMarks, path } = scan
+  const parsed = scanInline(freshScan(span.content, { definitions, ownMarks, path }, { container: undefined, highlights: false, spans: span.spans }))
   if (!parsed.ok) return parsed
   if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
   return success(parsed.value)
