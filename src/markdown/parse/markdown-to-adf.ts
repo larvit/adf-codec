@@ -18,6 +18,7 @@ import { mintTaskIds } from './task-ids.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
+import { spellsEmpty } from '../empty-keys.ts'
 import { unsupportedNodeShape } from '../directive-syntax.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
@@ -58,7 +59,7 @@ function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErr
   for (const [index, block] of blocks.entries()) {
     const nodePath = [...path, 'content', content.length]
     if (block.kind === 'directive' && block.name === documentName) {
-      const fault = documentFault(block) ?? unsupportedNodeShape(`${documentSpelling} spells a whole document holding no content key, alone: this one stands among other blocks`)
+      const fault = documentFault(block) ?? unsupportedNodeShape(`delete the ${documentSpelling} line to give the document content: it stands only as the whole document`)
       return positioned(faulted(fault, nodePath), block.position)
     }
     if (block.kind === 'directive' && block.name === listBreakName) {
@@ -85,6 +86,9 @@ function listBreakFault(block: DirectiveBlock, previous: Block | undefined, next
 function documentFault(block: DirectiveBlock): ConvertFault | undefined {
   const spelled = block.attributes.get(documentAttribute.key)
   if (block.argument === undefined && block.attributes.size === 1 && spelled?.spelling === documentAttribute.value) return undefined
+  if (block.argument === undefined && block.attributes.size === 1 && spellsEmpty(spelled)) {
+    return unsupportedNodeShape(`an empty document is empty markdown, and ${documentSpelling} spells a document holding no content key: this one spells ${documentAttribute.key}=empty`)
+  }
   return unsupportedNodeShape(`${documentName} spells the one form ${documentSpelling}: this one spells another`)
 }
 
@@ -232,7 +236,7 @@ function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, re
   const { contentModel, node } = read
   if (blocks === undefined) return success(node)
   // A directive builds a content key only from content=empty, which holds no body.
-  if (node.content !== undefined) return blocks.length === 0 ? success(node) : failure('unsupported-node-shape', `${node.type} spells content=empty, which holds no body: this one holds one`, path)
+  if (node.content !== undefined) return blocks.length === 0 ? success(node) : failure('unsupported-node-shape', `remove content=empty to give the ${node.type} a body: content=empty holds none, and this one holds one`, path)
   if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
   if (contentModel === 'inline') return inlineBodyNode(node, blocks, reading, path)
   return containerNode(node, blocks, reading, path, depth)
@@ -248,7 +252,7 @@ function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: Conver
   const [first] = fences
   if (first === undefined) return failure('unsupported-node-shape', `${node.type} takes code blocks as its body: this body holds none`, path)
   if (fences.some((fence) => fence.language !== first.language)) return failure('unsupported-node-shape', `${node.type} holds one language, so its fences carry one info string: these differ`, path)
-  if (fences.length > 1 && fences.some((fence) => fence.text === '')) return failure('unsupported-node-shape', `a fence beside another spells a text node, which holds text: this one is empty`, path)
+  if (fences.length > 1 && fences.some((fence) => fence.text === '')) return failure('unsupported-node-shape', `delete the empty fence: a fence beside another holds code, and this one holds none`, path)
   const attribute = nodeAttrs(node)['language']
   const fromFence = first.language !== ''
   const slot = languageSlot(fromFence ? first.language : attribute)

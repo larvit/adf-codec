@@ -92,9 +92,12 @@ test('builds an empty document from input holding no block, and one holding no c
   const form = 'unsupported-node-shape: doc spells the one form !adf:doc {content=none}: this one spells another'
   assert.equal(content(markdownToAdf('!adf:doc\n')), form)
   assert.equal(content(markdownToAdf('!adf:doc x {content=none}\n')), form)
-  assert.equal(content(markdownToAdf('!adf:doc {content=empty}\n')), form)
+  assert.equal(
+    content(markdownToAdf('!adf:doc {content=empty}\n')),
+    'unsupported-node-shape: an empty document is empty markdown, and !adf:doc {content=none} spells a document holding no content key: this one spells content=empty',
+  )
   assert.equal(content(markdownToAdf('!adf:doc {content="none"}\n')), form)
-  const alone = 'unsupported-node-shape: !adf:doc {content=none} spells a whole document holding no content key, alone: this one stands among other blocks'
+  const alone = 'unsupported-node-shape: delete the !adf:doc {content=none} line to give the document content: it stands only as the whole document'
   assert.equal(content(markdownToAdf('x\n\n!adf:doc {content=none}\n')), alone)
   assert.equal(content(markdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n')), alone)
   assert.equal(content(markdownToAdf('!adf:doc\n!adf:/doc\n')), 'malformed-directive: doc takes no body, so no !adf:/doc closes it; \\!adf: keeps the prefix literal')
@@ -1087,7 +1090,7 @@ test('names the directive mark left without the content it wraps', () => {
 test('reads the text break only between two text nodes CommonMark joins, building no node', () => {
   assert.deepEqual(content(markdownToAdf('a!adf:textBreak{}b\n')), [{ content: [text('a'), text('b')], type: 'paragraph' }])
   assert.deepEqual(content(markdownToAdf('==a!adf:textBreak{}b==\n')), [{ content: [text('==a'), text('b==')], type: 'paragraph' }])
-  const parts = 'unsupported-node-shape: textBreak parts two text nodes CommonMark reads back as one: this one parts something else'
+  const parts = 'unsupported-node-shape: delete !adf:textBreak{} here: it stands only between two runs of text with the same formatting, which would otherwise read as one'
   const carried = '!adf:carry{json="{\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
   for (const markdown of ['!adf:textBreak{}a\n', 'a!adf:textBreak{}\n', 'a!adf:textBreak{}!adf:textBreak{}b\n', '**a**!adf:textBreak{}b\n', '[!adf:textBreak{}](/u)\n', `a!adf:textBreak{}${carried}\n`]) {
     assert.equal(content(markdownToAdf(markdown)), parts, markdown)
@@ -1096,4 +1099,15 @@ test('reads the text break only between two text nodes CommonMark joins, buildin
   assert.equal(content(markdownToAdf('![a!adf:textBreak{}b](/i)\n')), 'unsupported-node-shape: textBreak parts two text nodes: an image description holds plain text')
   assert.equal(content(markdownToAdf('a!adf:textBreak{x=y}b\n')), 'unsupported-node-shape: textBreak spells the bare leaf form, !adf:textBreak{}: this one spells more')
   assert.deepEqual(content(markdownToAdf('!adf:carry{json="{\\"type\\":\\"textBreak\\"}"}\n')), [{ content: [{ type: 'textBreak' }], type: 'paragraph' }])
+})
+
+test('leads a refusal ordinary editing meets with the edit that fixes it', () => {
+  assert.equal(
+    content(markdownToAdf('!adf:paragraph {content=empty}\nText.\n!adf:/paragraph\n')),
+    'unsupported-node-shape: remove content=empty to give the paragraph a body: content=empty holds none, and this one holds one',
+  )
+  assert.equal(
+    content(markdownToAdf('!adf:codeBlock\n```\na\n```\n```\n```\n!adf:/codeBlock\n')),
+    'unsupported-node-shape: delete the empty fence: a fence beside another holds code, and this one holds none',
+  )
 })

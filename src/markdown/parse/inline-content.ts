@@ -313,7 +313,7 @@ function partText(items: readonly Inline[], scan: Scan): Result<AdfNode[]> {
     const previous = items[index - 1]
     const next = items[index + 1]
     if (previous === undefined || next === undefined || !isNode(previous) || !isNode(next) || !readsAsOne(previous, next)) {
-      return failure('unsupported-node-shape', `${textBreakName} parts two text nodes CommonMark reads back as one: this one parts something else`, scan.path)
+      return failure('unsupported-node-shape', `delete ${textBreakSpelling} here: it stands only between two runs of text with the same formatting, which would otherwise read as one`, scan.path)
     }
   }
   return success(parted)
