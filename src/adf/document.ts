@@ -77,7 +77,7 @@ export function identicalMarks(left: readonly AdfMark[], right: readonly AdfMark
   return marksKey(left) === marksKey(right)
 }
 
-// `joins` is the caller's: a reader joins what CommonMark reads as one, editor-normal ADF what the editor would.
+// Callers say when two nodes join.
 export function mergeAdjacentText(nodes: readonly AdfNode[], joins: (previous: AdfNode, node: AdfNode) => boolean): AdfNode[] {
   const merged: AdfNode[] = []
   for (const node of nodes) {
