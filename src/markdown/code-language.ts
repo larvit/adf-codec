@@ -1,5 +1,5 @@
 import type { JsonValue } from '../json-value.ts'
-import { carryFencePrefix } from './opaque-carry.ts'
+import { carryFenceType } from './opaque-carry.ts'
 import { infoStringCarries } from './commonmark/grammar.ts'
 
 export type LanguageSlot = { info: string; kind: 'fence' } | { kind: 'attribute' } | { kind: 'none' }
@@ -7,6 +7,6 @@ export type LanguageSlot = { info: string; kind: 'fence' } | { kind: 'attribute'
 // spec/flavour.md, The CommonMark blocks: the one slot a codeBlock's language rides.
 export function languageSlot(language: JsonValue | undefined): LanguageSlot {
   if (language === undefined) return { kind: 'none' }
-  if (typeof language !== 'string' || language.startsWith(carryFencePrefix) || !infoStringCarries(language)) return { kind: 'attribute' }
+  if (typeof language !== 'string' || carryFenceType(language) !== undefined || !infoStringCarries(language)) return { kind: 'attribute' }
   return { info: language, kind: 'fence' }
 }

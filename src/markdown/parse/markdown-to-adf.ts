@@ -5,7 +5,7 @@ import type { ConvertFault } from '../../result.ts'
 import type { Flavour } from '../plain-conventions.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { carryFencePrefix, readCarriedBlock } from '../opaque-carry.ts'
+import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
@@ -303,8 +303,9 @@ function listNode(node: AdfNode, items: readonly Block[][], reading: Reading, pa
 }
 
 function codeBlockNode(language: string, text: string, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  if (language.startsWith(carryFencePrefix)) {
-    const carried = readCarriedBlock(language.slice(carryFencePrefix.length), text, depth)
+  const carriedType = carryFenceType(language)
+  if (carriedType !== undefined) {
+    const carried = readCarriedBlock(carriedType, text, depth)
     if (carried.fault !== undefined) return faulted(carried.fault, path)
     reading.carried.add(carried.value)
     return success(carried.value)

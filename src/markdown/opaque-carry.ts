@@ -32,6 +32,11 @@ export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<str
   return success(spellInlineLeafDirective(carryName, spellAttributes([[jsonAttribute, spellStringAttribute(json.value.json)]])))
 }
 
+// The type a fence's info string names, `undefined` where the info string opens no carry.
+export function carryFenceType(info: string): string | undefined {
+  return info.startsWith(carryFencePrefix) ? info.slice(carryFencePrefix.length) : undefined
+}
+
 export function readCarriedBlock(type: string, body: string, depth: number): Read<AdfNode> {
   if (type !== '' && !infoStringCarries(type)) {
     return { fault: unsupportedNodeShape(`the carry fence names a type no info string carries back: spell it ${carryFencePrefix} with the type in the JSON`) }
