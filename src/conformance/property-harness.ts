@@ -2,17 +2,17 @@ import assert from 'node:assert/strict'
 import { env } from 'node:process'
 import fc from 'fast-check'
 
-import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode, EmptyKey } from '../adf/document.ts'
 import type { Arbitrary } from 'fast-check'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { JsonValue } from '../json-value.ts'
 import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
+import { emptyKeys, mergeAdjacentText } from '../adf/document.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { joinsNormally } from '../adf/editor-normal.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
-import { mergeAdjacentText } from '../adf/document.ts'
 
 type Positions = { block: AdfNode; inline: AdfNode }
 
@@ -85,10 +85,8 @@ function occasionallyEmpty<T extends AdfMark | AdfNode>(arbitrary: Arbitrary<T>)
 }
 
 function withoutEmptyKeys<T extends AdfMark | AdfNode>(held: T): T {
-  const kept = { ...held }
-  if (kept.attrs !== undefined && Object.keys(kept.attrs).length === 0) delete kept.attrs
-  if ('content' in kept && kept.content?.length === 0) delete kept.content
-  if ('marks' in kept && kept.marks?.length === 0) delete kept.marks
+  const kept: Partial<Record<EmptyKey, unknown>> & T = { ...held }
+  for (const key of emptyKeys(held)) delete kept[key]
   return kept
 }
 
