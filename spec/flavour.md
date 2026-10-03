@@ -1,9 +1,10 @@
 # The markdown flavour
 
 The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
-CommonMark is a subset apart from raw HTML (below), with three carve-outs: literal text that matches
-directive syntax below or reads as a pipe table is claimed by the flavour, and a matched `~~` pair
-spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal) — and one gap: a CommonMark
+CommonMark is a subset apart from raw HTML (below), with four carve-outs: literal text that matches
+directive syntax below or reads as a pipe table is claimed by the flavour, a matched `~~` pair
+spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal), and a code fence whose info
+string opens `adf:` is the opaque carry (The opaque carry says how to keep it code) — and one gap: a CommonMark
 image fits only as its own title-less paragraph — mid-text and titled images are named errors. The
 emitted form is contract (`docs/decisions.md` §The formats are API). Per-node syntaxes build on this
 grammar in the sections below.

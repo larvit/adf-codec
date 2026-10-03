@@ -374,7 +374,7 @@ test('reads the carry fence back to the node its info string names and its JSON 
     "unsupported-node-shape: the adf:blockCard fence names its node's type: this JSON holds a type as well",
   )
   assert.equal(content(markdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the carry fence names a type its info string carries: spell it adf:blockCard')
-  assert.equal(content(markdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node")
+  assert.equal(content(markdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; !adf:codeBlock {language=\"adf:\"} around a bare fence keeps it a code block")
   const unnamed = 'unsupported-node-shape: the carry fence names a type no info string carries back: spell it adf: with the type in the JSON'
   assert.equal(content(markdownToAdf('```adf:\\\\\n{}\n```\n')), unnamed)
 })
@@ -385,26 +385,31 @@ test('reads the inline carry back to the node its json attribute holds', () => {
   ])
 })
 
-test('names the invalid JSON no opaque carry holds', () => {
-  const invalid = 'malformed-directive: the opaque carry holds invalid JSON'
-  assert.equal(content(markdownToAdf('```adf:x\n{"attrs":\n```\n')), invalid)
-  assert.equal(content(markdownToAdf('```adf:x\n```\n')), invalid)
-  assert.equal(content(markdownToAdf('!adf:carry{json="{"}\n')), invalid)
-  assert.equal(content(markdownToAdf('!adf:carry{json=abc}\n')), invalid)
+test('names the invalid JSON no opaque carry holds, and the spelling that keeps it literal', () => {
+  const invalid = 'malformed-directive: the opaque carry holds invalid JSON; '
+  const fence = `${invalid}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`
+  assert.equal(content(markdownToAdf('```adf:x\n{"attrs":\n```\n')), fence)
+  assert.equal(content(markdownToAdf('```adf:x\n```\n')), fence)
+  assert.equal(content(markdownToAdf('!adf:carry{json="{"}\n')), `${invalid}\\!adf: keeps the prefix literal`)
+  assert.equal(content(markdownToAdf('!adf:carry{json=abc}\n')), `${invalid}\\!adf: keeps the prefix literal`)
 })
 
 test('names the canonical spelling a carried JSON reads alone', () => {
   const canonically = "unsupported-node-shape: the opaque carry spells its node's JSON canonically: "
-  assert.equal(content(markdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n')), `${canonically}two-space indent, keys sorted`)
-  assert.equal(content(markdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n')), `${canonically}compact, keys sorted`)
-  assert.equal(content(markdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n')), `${canonically}compact, keys sorted`)
+  const literal = '; \\!adf: keeps the prefix literal'
+  assert.equal(
+    content(markdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n')),
+    `${canonically}two-space indent, keys sorted; !adf:codeBlock {language="adf:blockCard"} around a bare fence keeps it a code block`,
+  )
+  assert.equal(content(markdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n')), `${canonically}compact, keys sorted${literal}`)
+  assert.equal(content(markdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n')), `${canonically}compact, keys sorted${literal}`)
 })
 
 test('names the node JSON an opaque carry restores alone', () => {
-  const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node"
-  assert.equal(content(markdownToAdf('```adf:x\n[]\n```\n')), node)
-  assert.equal(content(markdownToAdf('!adf:carry{json=null}\n')), node)
-  assert.equal(content(markdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n')), node)
+  const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; "
+  assert.equal(content(markdownToAdf('```adf:x\n[]\n```\n')), `${node}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`)
+  assert.equal(content(markdownToAdf('!adf:carry{json=null}\n')), `${node}\\!adf: keeps the prefix literal`)
+  assert.equal(content(markdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n')), `${node}\\!adf: keeps the prefix literal`)
 })
 
 test('names the shape the inline carry reads alone', () => {
@@ -421,7 +426,7 @@ test('holds a carried JSON value to the nesting its position leaves', () => {
   assert.equal(content(markdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`)), deeper(largestNesting))
   assert.equal(
     content(markdownToAdf(fence('', largestNesting + 1))),
-    "unsupported-node-shape: the opaque carry spells its node's JSON canonically: two-space indent, keys sorted",
+    'unsupported-node-shape: the opaque carry spells its node\'s JSON canonically: two-space indent, keys sorted; !adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block',
   )
   assert.equal(content(markdownToAdf(fence('> ', largestNesting + 1))), deeper(largestNesting - 1))
 })

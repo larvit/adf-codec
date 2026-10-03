@@ -8,7 +8,7 @@ import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
-import { malformedDirective, readSoleStringAttribute, spellAttributes, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
+import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export const carryFencePrefix = 'adf:'
@@ -58,8 +58,9 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
 
 // `type` is the one the fence's info string names, `undefined` for the inline carry.
 function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, type?: string): Read<AdfNode> {
+  const wayOut = type === undefined ? directiveEscape : fenceEscape(type)
   const parsed = parseJsonText(raw)
-  if (parsed === undefined) return { fault: malformedDirective('the opaque carry holds invalid JSON') }
+  if (parsed === undefined) return { fault: malformedDirective(`the opaque carry holds invalid JSON; ${wayOut}`) }
   const { value } = parsed
   if (!isJsonValue(value)) return { fault: unsupportedNodeShape('the opaque carry holds a number JSON cannot spell') }
   const typed = type === undefined || type === '' ? { value } : typedValue(value, type)
@@ -70,10 +71,15 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, ty
   }
   if (serializeCanonicalJson(value, spelling) !== raw) {
     const shape = spelling === 'compact' ? 'compact, keys sorted' : 'two-space indent, keys sorted'
-    return { fault: unsupportedNodeShape(`the opaque carry spells its node's JSON canonically: ${shape}`) }
+    return { fault: unsupportedNodeShape(`the opaque carry spells its node's JSON canonically: ${shape}; ${wayOut}`) }
   }
-  if (!isAdfNode(held)) return { fault: unsupportedNodeShape("the opaque carry holds one ADF node's JSON: this JSON is no ADF node") }
+  if (!isAdfNode(held)) return { fault: unsupportedNodeShape(`the opaque carry holds one ADF node's JSON: this JSON is no ADF node; ${wayOut}`) }
   return { value: held }
+}
+
+// A code fence the carry claims stays code under the directive, whose language rides the attribute.
+function fenceEscape(type: string): string {
+  return `${spellDirectiveOpener('codeBlock', undefined, spellAttributes([['language', spellStringAttribute(`${carryFencePrefix}${type}`)]]))} around a bare fence keeps it a code block`
 }
 
 function typedValue(value: JsonValue, type: string): Read<JsonValue> {
