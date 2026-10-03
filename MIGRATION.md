@@ -65,6 +65,7 @@ it named converts.
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |
+| a `codeBlock` holding other than plain text nodes, on emit | `unsupported-node-shape` | rides the block carry |
 | a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |
