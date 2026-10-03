@@ -3,7 +3,7 @@ import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { joinsNormally, sameMark } from './editor-normal.ts'
+import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { plainLineFallback, type PlainLineFallback } from '../emit/inline-line.ts'
@@ -175,11 +175,11 @@ function highlighted(leaves: readonly AdfNode[]): AdfNode[] {
     const marks = nodeMarks(leaf)
     if (marks[0]?.type === highlight) {
       const held = marks.slice(1)
-      shared = run.length === 0 ? held : shared.filter((mark) => held.some((other) => sameMark(other, mark)))
+      shared = run.length === 0 ? held : shared.filter((mark) => held.some((other) => sameMarkWhenEditorNormal(other, mark)))
       run.push(leaf)
       continue
     }
-    for (const held of run) spelled.push(withMarks(held, [...shared, highlightMark, ...nodeMarks(held).slice(1).filter((mark) => !shared.some((other) => sameMark(other, mark)))]))
+    for (const held of run) spelled.push(withMarks(held, [...shared, highlightMark, ...nodeMarks(held).slice(1).filter((mark) => !shared.some((other) => sameMarkWhenEditorNormal(other, mark)))]))
     run = []
     spelled.push(leaf)
   }
@@ -193,7 +193,7 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 
 function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   for (let current = leaves; ; ) {
-    const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsNormally))
+    const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
     let changed = false
     const trimmed: AdfNode[] = []
     for (const [index, leaf] of merged.entries()) {
@@ -251,7 +251,7 @@ function edgeDepth(marks: readonly AdfMark[], neighbour: AdfNode | undefined, wh
 function sameMarkAt(marks: readonly AdfMark[], others: readonly AdfMark[], index: number): boolean {
   const mark = marks[index]
   const other = others[index]
-  return mark !== undefined && other !== undefined && sameMark(mark, other)
+  return mark !== undefined && other !== undefined && sameMarkWhenEditorNormal(mark, other)
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {

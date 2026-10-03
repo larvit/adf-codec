@@ -12,6 +12,7 @@ import { failure, faulted, success, type ConvertErrorPath, type Result } from '.
 import { highlightDelimiter, highlightFlanking } from '../plain/conventions.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
+import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
 import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
 import { openingLinkTakesDirective } from '../emit/inline-line.ts'
@@ -19,7 +20,6 @@ import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
 import { readTextDirective } from '../text-directive.ts'
-import { readsAsOne, textBreakName, textBreakSpelling } from '../text-break.ts'
 
 export type InlineContent = { carry?: undefined; image: AdfNode; nodes?: undefined } | { carry: boolean; image?: undefined; nodes: AdfNode[] }
 
@@ -312,7 +312,7 @@ function partText(items: readonly Inline[], scan: Scan): Result<AdfNode[]> {
     }
     const previous = items[index - 1]
     const next = items[index + 1]
-    if (previous === undefined || next === undefined || !isNode(previous) || !isNode(next) || !readsAsOne(previous, next)) {
+    if (previous === undefined || next === undefined || !isNode(previous) || !isNode(next) || !joinsWhenRead(previous, next)) {
       return failure('unsupported-node-shape', `delete ${textBreakSpelling} here: it stands only between two runs of text with the same formatting, which would otherwise read as one`, scan.path)
     }
   }
@@ -508,11 +508,11 @@ function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean)
   writeUnpaired(nodes, runs, pairings)
   if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', carriedInMark, scan.path)
   markHighlights(pieces, nodes, highlights ? pairedHighlights(pieces, nodes) : [])
-  return success(mergeText(nodes.flat()))
+  return success(mergeReadText(nodes.flat()))
 }
 
 // A text break and a carried node are walls: the text on either side joins only its own side.
-function mergeText(items: readonly Inline[]): Inline[] {
+function mergeReadText(items: readonly Inline[]): Inline[] {
   const merged: Inline[] = []
   let run: AdfNode[] = []
   for (const item of items) {
@@ -520,11 +520,11 @@ function mergeText(items: readonly Inline[]): Inline[] {
       run.push(item)
       continue
     }
-    for (const node of mergeAdjacentText(run, readsAsOne)) merged.push(node)
+    for (const node of mergeAdjacentText(run, joinsWhenRead)) merged.push(node)
     merged.push(item)
     run = []
   }
-  for (const node of mergeAdjacentText(run, readsAsOne)) merged.push(node)
+  for (const node of mergeAdjacentText(run, joinsWhenRead)) merged.push(node)
   return merged
 }
 

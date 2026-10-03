@@ -11,9 +11,9 @@ import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../plain/conventions.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
+import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
-import { readsAsOne, textBreakSpelling } from '../text-break.ts'
 import { slotLineEndingFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
@@ -186,7 +186,7 @@ function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, c
   const runs = inlineRuns(nodes, depth, firstIndex, context.carried)
   const segments: InlineSegment[] = []
   for (const [offset, run] of runs.entries()) {
-    if (partsText(runs[offset - 1], run, context.carried)) segments.push(syntax(textBreakSpelling))
+    if (takesTextBreak(runs[offset - 1], run, context.carried)) segments.push(syntax(textBreakSpelling))
     const runContext = { ...context, atBlockEnd: context.atBlockEnd && offset === runs.length - 1 }
     const emitted = run.kind === 'plain' ? emitLeaf(run.node, runContext, run.index) : emitMarkedRun(run.nodes, run.mark, depth, run.index, runContext)
     if (!emitted.ok) return emitted
@@ -213,10 +213,10 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
   return runs
 }
 
-function partsText(previous: InlineRun | undefined, run: InlineRun, carried: ReadonlySet<number>): boolean {
+function takesTextBreak(previous: InlineRun | undefined, run: InlineRun, carried: ReadonlySet<number>): boolean {
   if (previous?.kind !== 'plain' || run.kind !== 'plain') return false
   if (carries(previous.node, carried, previous.index) || carries(run.node, carried, run.index)) return false
-  return readsAsOne(previous.node, run.node)
+  return joinsWhenRead(previous.node, run.node)
 }
 
 function nodePath(context: InlineContext, index: number): ConvertErrorPath {

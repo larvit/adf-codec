@@ -14,7 +14,7 @@ import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { readEmptyKeys, spellsEmpty } from '../empty-keys.ts'
 import { readVocabulary } from './directive-attributes.ts'
 import { slotLineEndingFault } from '../directive-syntax.ts'
-import { textBreakName } from '../text-break.ts'
+import { textBreakName } from '../adjacent-text.ts'
 import { textDirectiveName } from '../text-directive.ts'
 
 export type BlockDirectiveNode = { contentModel: BlockNodeModel['contentModel']; node: AdfNode }
