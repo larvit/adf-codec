@@ -327,7 +327,7 @@ function isTextBreak(item: Inline): item is TextBreak {
   return 'kind' in item && item.kind === 'textBreak'
 }
 
-// The nodes the items hold, own-marks ones unwrapped and text breaks dropped.
+// The nodes the items hold, with text breaks dropped.
 function adfNodes(items: readonly Inline[]): AdfNode[] {
   const nodes: AdfNode[] = []
   for (const item of items) {
