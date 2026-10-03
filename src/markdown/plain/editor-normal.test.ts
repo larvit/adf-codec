@@ -75,3 +75,8 @@ test('normalizes blocks and mark attributes nesting far past the levels a recurs
   const merged = toEditorNormal({ content: [{ content: [{ marks, text: 'a', type: 'text' }, { marks, text: 'b', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 })
   assert.deepEqual(merged.content?.[0]?.content?.map((text) => text.text), ['ab'])
 })
+
+test('joins a text node holding content to its neighbour, as editor-normal forms hold no content to part them', () => {
+  const paragraph: AdfNode = { content: [{ content: [{ text: 'lost', type: 'text' }], text: 'a', type: 'text' }, { text: 'b', type: 'text' }], type: 'paragraph' }
+  assert.deepEqual(toEditorNormal({ content: [paragraph], type: 'doc', version: 1 }).content, [{ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'ab', type: 'text' }], type: 'paragraph' }])
+})

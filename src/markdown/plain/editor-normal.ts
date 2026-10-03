@@ -1,8 +1,20 @@
-import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { joinsWhenEditorNormal, normalAttributes, normalMark } from '../adjacent-text.ts'
-import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { JsonValue } from '../../json-value.ts'
+import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { joinsWhenRead } from '../adjacent-text.ts'
+
+type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
 type NodeHolder = { content?: AdfNode[] }
+
+// The editor's rule is the reader's over the pair's editor-normal forms, which hold no content: a text node's content never parts it.
+export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
+  return joinsWhenRead(normalNode(previous), normalNode(node))
+}
+
+export function sameMarkWhenEditorNormal(left: AdfMark, right: AdfMark): boolean {
+  return identicalMark(normalMark(left), normalMark(right))
+}
 
 export function toEditorNormal(document: AdfDocument): AdfDocument {
   const normal: AdfDocument = { type: document.type, version: Object.is(document.version, -0) ? 0 : document.version }
@@ -27,4 +39,28 @@ function normalNode(node: AdfNode): AdfNode {
   if (marks.length > 0) normal.marks = marks
   if (node.text !== undefined) normal.text = node.text
   return normal
+}
+
+function normalMark(mark: AdfMark): AdfMark {
+  const attrs = normalAttributes(nodeAttrs(mark))
+  return attrs === undefined ? { type: mark.type } : { attrs, type: mark.type }
+}
+
+function normalAttributes(attrs: AdfAttributes): AdfAttributes | undefined {
+  if (Object.keys(attrs).length === 0) return undefined
+  const normal = { ...attrs }
+  const pending: JsonContainer[] = [normal]
+  for (let held = pending.pop(); held !== undefined; held = pending.pop()) {
+    if (Array.isArray(held)) for (const [index, value] of held.entries()) held[index] = normalValue(value, pending)
+    else for (const [key, value] of Object.entries(held)) held[key] = normalValue(value, pending)
+  }
+  return normal
+}
+
+function normalValue(value: JsonValue, pending: JsonContainer[]): JsonValue {
+  if (Object.is(value, -0)) return 0
+  if (value === null || typeof value !== 'object') return value
+  const copy = Array.isArray(value) ? [...value] : { ...value }
+  pending.push(copy)
+  return copy
 }

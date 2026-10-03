@@ -11,7 +11,7 @@ import { blockNodes } from '../adf/block-nodes.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { emptyKeys, mergeAdjacentText } from '../adf/document.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { joinsWhenEditorNormal } from '../markdown/adjacent-text.ts'
+import { joinsWhenEditorNormal } from '../markdown/plain/editor-normal.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
 
 type Positions = { block: AdfNode; inline: AdfNode }
