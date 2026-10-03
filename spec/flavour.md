@@ -4,10 +4,11 @@ The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` p
 CommonMark is a subset apart from raw HTML (below), with four carve-outs: literal text that matches
 directive syntax below or reads as a pipe table is claimed by the flavour, a matched `~~` pair
 spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal), and a code fence whose info
-string opens `adf:` is the opaque carry (The opaque carry says how to keep it code) — and one gap: a CommonMark
-image fits only as its own title-less paragraph — mid-text and titled images are named errors. The
-emitted form is contract (`docs/decisions.md` §The formats are API). Per-node syntaxes build on this
-grammar in the sections below.
+string opens `adf:` is the opaque carry (wrap it as a bare fence in `!adf:codeBlock
+{language="adf:…"}` to keep it code) — and one gap: a CommonMark image fits only as its own
+title-less paragraph — mid-text and titled images are named errors. The emitted form is contract
+(`docs/decisions.md` §The formats are API). Per-node syntaxes build on this grammar in the sections
+below.
 
 ## Canonical form
 
@@ -446,8 +447,8 @@ Attributes and the carry fallback read as in the block sections, the carry in it
 the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot as
 plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
 parsing to anything but one text node carrying neither marks, attributes nor content is a named
-error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the slot. The rest take no content,
-`!adf:text` included; content on a node that takes none is a named error.
+error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the slot.
+The rest take no content, `!adf:text` included; content on a node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
 - `emoji` — Attributes: `id` (string), `localId` (string), `shortName` (string, `:name:`), `text`
@@ -527,14 +528,14 @@ that depth: `attrs: {}` differs from no `attrs`, and a directive spells it `{att
 breaks at every node the emitter carries, so no emitted carry sits inside a mark spelling.
 
 An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
-spelling does not list, a value that is not the spelling's type, an attribute the spelling needs
-and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside another mark, `code` over anything but a
-text node or over text holding a newline, or a spelling CommonMark's flanking rules cannot open or
-close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere — the
-intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave the
-merged run's pairing to another delimiter — rides the inline carry whole. An opaque carry inside a
-mark spelling is a named error in input: the carry restores its node exactly, marks included
-(`docs/decisions.md` §Unknown nodes ride the carry).
+spelling does not list, a value that is not the spelling's type, an attribute the spelling needs and
+the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside
+another mark, `code` over anything but a text node or over text holding a newline, or a spelling
+CommonMark's flanking rules cannot open or close where the run sits (`un**-real**istic`), or one
+CommonMark's matching pairs elsewhere — the intra-word `*` runs together with a neighbouring `**`,
+and the multiple-of-3 rule can leave the merged run's pairing to another delimiter — rides the
+inline carry whole. An opaque carry inside a mark spelling is a named error in input: the carry
+restores its node exactly, marks included (`docs/decisions.md` §Unknown nodes ride the carry).
 
 ```
 !adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].

@@ -9,8 +9,8 @@
   `type`: text holding an unescaped `!adf:` and a code fence whose info string opens `adf:` are
   claimed, and `adf` is an ordinary code block language. Convert stored markdown per `MIGRATION.md`.
 - **Breaking:** `markdownToAdf` and `plainMarkdownToAdf` read markdown holding no block as a
-  document whose `content` is empty, as Atlassian's schema requires; `!adf:doc {content=none}` spells a document holding no
-  `content` key.
+  document whose `content` is empty, as Atlassian's schema requires; `!adf:doc {content=none}`
+  spells a document holding no `content` key.
 - `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc`: two adjacent text nodes a reader would
   join are parted by `!adf:textBreak{}`, an empty `attrs`, `content` or `marks` is spelled
   `{attrs=empty}`, `{content=empty}` or `{marks=empty}`, `-0` is spelled `-0`, and a `codeBlock`

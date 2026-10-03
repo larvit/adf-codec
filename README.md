@@ -212,14 +212,13 @@ Serves Goals 1, 3 and 4.
   `0.2.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
-  names, with four carve-outs — literal text matching directive, pipe-table or strikethrough
-  syntax, and a code fence whose info string opens `adf:`, is claimed (escapable — `spec/flavour.md`)
-  — and one gap: a CommonMark image fits only as
-  its own title-less paragraph; mid-text and titled images are error results, save an image inside
-  another's description, which flattens into the alt text. Converting back yields the library's
-  canonical spelling, which round-trips byte-identically — where it converts back at all: a parse
-  succeeding is no promise of that, so keep the source until the way back succeeds.
-  ``` ` `` ` ``` reads cleanly and then refuses.
+  names, with four carve-outs — literal text matching directive, pipe-table or strikethrough syntax,
+  and a code fence whose info string opens `adf:`, are claimed (escapable — `spec/flavour.md`) — and
+  one gap: a CommonMark image fits only as its own title-less paragraph; mid-text and titled images
+  are error results, save an image inside another's description, which flattens into the alt text.
+  Converting back yields the library's canonical spelling, which round-trips byte-identically —
+  where it converts back at all: a parse succeeding is no promise of that, so keep the source until
+  the way back succeeds. ``` ` `` ` ``` reads cleanly and then refuses.
 - Four CommonMark spellings parse without an error and build a document the reference
   implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
   empty link, a list continuing past a marker change stays one list against CommonMark's two, a
