@@ -113,7 +113,9 @@ node's JSON without `type`: ```` ```adf:blockCard ````. A type no info string ca
 rule a code language follows — leaves the info string `adf:` and keeps `type` in the body. Every
 info string opening `adf:` is reserved, so a `codeBlock` whose language opens so takes the
 `language` attribute, and `carry` is an ordinary language. A body holding `type` under a named
-type, or an `adf:` fence whose type an info string carries, is `unsupported-node-shape`.
+type, or an `adf:` fence whose type an info string carries, is `unsupported-node-shape`. The
+reservation claims a fence CommonMark reads as code until `todo.md` item 43 gives CommonMark its own
+reader.
 
 ## A code block is a fence per text node
 
@@ -171,7 +173,9 @@ opener nests by itself and leaf versus container falls out of the node's content
 2026-08-23, the maintainer. Goal 4. Valid while prose rarely writes the shapes the carve-outs claim.
 
 Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
-directive, a pipe table or a `~~` pair is claimed — plus one image gap.
+directive, a pipe table or a `~~` pair is claimed, and so is a code fence whose info string opens
+`adf:` (§The carry fence names the node type) — plus one image gap. `todo.md` item 43 ends the
+claims, giving CommonMark its own reader.
 
 ## Tables
 

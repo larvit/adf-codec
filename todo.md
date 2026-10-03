@@ -68,7 +68,8 @@ HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three
 ### 43. Give each markdown input its own reader, strict to its own standard.
 
 Today `markdownToAdf` reads CommonMark and the lossless flavour as one input: text shaped like a
-directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark reads plain text. A
+directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark reads plain text, and
+a code fence whose info string opens `adf:` becomes the block carry where CommonMark reads code. A
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
