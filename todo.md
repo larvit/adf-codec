@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 55`
+`Next ID = 59`
 
 | Goal | W |
 |---|---|
@@ -25,9 +25,10 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
+| 55 | 0.2.0 | defect | **Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start or a newline inside an emoji, mention or status.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
-| 43 | 0.2.0 |  | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
+| 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
@@ -43,6 +44,9 @@
 | 33 | 0.3.0 |  | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 9 | 10.3 |
+| 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
+| 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 7 | 1.2 |
+| 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 7 | -2.2 |
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 9 | 10.6 |
 
 ## Details
@@ -52,6 +56,16 @@
 Lands after item 6. The CommonMark spec suite also runs against `markdownToHtml`. The README
 documents HTML as it documents markdown, and its tagline and `package.json`'s `description` regain
 HTML.
+
+### 55. Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start or a newline inside an emoji, mention or status.
+
+`inline-line.ts` refuses a carriage return or NUL in text (`unspellable-character`) and a paragraph
+opening with a code-span run (`unspellable-line-start`); `fencedTexts` refuses the same characters
+in a code block; `directive-syntax.ts` refuses a newline in an emoji, mention or status
+(`unspellable-whitespace`). The inline carry's JSON escapes all of them, so a lossless spelling
+exists, and §The code list says a cause the carry answers gets no code. Fixing it revises §Which
+code a cause takes and §Markdown in is a canonical fixpoint, which the maintainer decides. Found by
+the README-goals audit, 2026-10-03.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -184,6 +198,23 @@ ours ships tsc's unminified output and no minifier yet (decide here whether to m
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
 kB.
+
+### 56. Give each piece of `blocks.ts`'s block-walk state one owner that returns what it changes.
+
+Technical principle "One owner per value": the `Walk` record passes through twelve functions that
+mutate it and return `void`; `walk.leaf` alone is written in seven places. `ContainerStack` in the
+same file shows the shape to follow.
+
+### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
+
+Technical principle "Compose, do not entangle": Deno, Bun and the tests read the install leg's
+`node_modules`, the floor and consumer legs the pack leg's, and the browser leg whatever `dist/` the
+build leg left, so a leg run alone can pass on stale output.
+
+### 58. Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.
+
+Technical principle "Prefer a standalone Python script over a shell script": `AGENTS.md` §3 teaches
+bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes.
 
 ### 8. Ship a CLI.
 
