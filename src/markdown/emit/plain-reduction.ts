@@ -51,8 +51,8 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // docs/decisions.md §Equality is deep: the plain flavour reads and writes editor-normal ADF.
-  const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
+  // A refusal's path indexes the caller's document, so only the reduction's output normalizes (docs/decisions.md §Equality is deep).
+  const blocks = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
   return blocks.ok ? success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 }) : blocks
 }
 

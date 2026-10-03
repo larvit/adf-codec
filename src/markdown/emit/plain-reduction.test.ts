@@ -64,6 +64,7 @@ test('refuses what the document guard refuses, and nothing else', () => {
   let deep: AdfNode = said('x')
   for (let level = 0; level <= largestNesting; level += 1) deep = { content: [deep], type: 'layoutColumn' }
   assert.match(plainDocument(document(deep)), /^unsupported-nesting-depth at \/content\/0(\/content\/0)+$/)
+  assert.match(plainDocument(document(paragraph(text('a'), text('b')), text('c'), text('d'), deep)), /^unsupported-nesting-depth at \/content\/3(\/content\/0)+$/)
   let deepInline: AdfNode = text('x')
   for (let level = 0; level <= largestNesting; level += 1) deepInline = { content: [deepInline], type: 'unknownInline' }
   assert.match(plainDocument(document(paragraph(deepInline))), /^unsupported-nesting-depth at /)
