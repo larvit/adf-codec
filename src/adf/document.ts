@@ -64,6 +64,11 @@ export function emptyKeys(held: { attrs?: AdfAttributes; content?: AdfNode[]; ma
   return keys
 }
 
+// A text node holding its text and marks alone: a format spells it as text, where anything more rides a carry.
+export function isPlainText(node: AdfNode): boolean {
+  return node.type === 'text' && node.attrs === undefined && node.content === undefined && node.marks?.length !== 0
+}
+
 export function identicalMark(left: AdfMark, right: AdfMark): boolean {
   return marksKey([left]) === marksKey([right])
 }

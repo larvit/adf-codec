@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { Flavour } from '../plain-conventions.ts'
-import { adfDocumentFault, carriesOnly, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { adfDocumentFault, carriesOnly, isPlainText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../plain-conventions.ts'
 import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
@@ -278,7 +278,7 @@ function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertEr
 // The text each fence holds, or `undefined` where a child is no plain text node, which the carry holds instead.
 function fencedTexts(node: AdfNode, path: ConvertErrorPath): Result<string[] | undefined> {
   if (node.content === undefined) return success([''])
-  if (node.content.some((child) => child.type !== 'text' || child.attrs !== undefined || child.content !== undefined || child.marks !== undefined)) return success(undefined)
+  if (node.content.some((child) => !isPlainText(child) || child.marks !== undefined)) return success(undefined)
   const texts: string[] = []
   for (const [index, child] of node.content.entries()) {
     const childPath = [...path, 'content', index]
