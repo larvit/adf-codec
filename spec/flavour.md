@@ -181,8 +181,9 @@ product). Block and inline positions canonicalize differently, each fitting wher
 - **Block position**: a fenced code block with info string `adf:` and the node's type, body = the
   node's JSON without its `type` — two-space indent, object keys sorted: ```` ```adf:blockCard ````.
   A type no info string carries back, by the rule a `codeBlock`'s language follows, leaves the info
-  string `adf:` and keeps `type` in the body. A body holding `type` under a named type, or a bare
-  `adf:` fence whose body's `type` an info string could carry, is a named error.
+  string `adf:` and keeps `type` in the body. A body holding `type` under a named type, or a fence
+  whose info string is `adf:` alone while its body's `type` could be spelled in the info string, is
+  a named error.
 - **Inline position**: `!adf:carry{json="…"}` — compact serialization (keys sorted, no whitespace),
   JSON-string-escaped into the attribute.
 

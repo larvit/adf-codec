@@ -110,9 +110,9 @@ node's JSON without `type`: ```` ```adf:blockCard ````. A type no info string ca
 rule a code language follows — leaves the info string `adf:` and keeps `type` in the body. Every
 info string opening `adf:` is reserved, so a `codeBlock` whose language opens so takes the
 `language` attribute, and `carry` is an ordinary language. A body holding `type` under a named type,
-or a bare `adf:` fence whose body's `type` an info string could carry, is `unsupported-node-shape`.
-The reservation claims a fence CommonMark reads as code until `todo.md` item 43 gives CommonMark its
-own reader.
+or a fence whose info string is `adf:` alone while its body's `type` could be spelled in the info
+string, is `unsupported-node-shape`. The reservation claims a fence CommonMark reads as code until
+`todo.md` item 43 gives CommonMark its own reader.
 
 ## A code block is a fence per text node
 

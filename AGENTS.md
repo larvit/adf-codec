@@ -175,8 +175,8 @@ settle it; otherwise four more read, five of seven settle it, and less is a miss
 The verdict lands in `docs/decisions.md`.
 
 A writer panel settles every new or changed markdown or HTML spelling: a reader panel whose readers
-are the people who read and write that format (README `## Audience`). A question about what an app
-relies on goes to the developer personas instead.
+are the people who read and write that format (README `## Audience`). A panel of the developer
+personas settles a question about what an app relies on.
 
 ### Stated numbers
 

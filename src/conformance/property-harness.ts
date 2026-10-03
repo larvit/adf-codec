@@ -78,7 +78,7 @@ function heldAttributes(held: Readonly<Record<string, JsonValue | undefined>>): 
   return attrs
 }
 
-// An empty attrs, content or marks key, and adjacent text a reader would merge, stay occasional: each takes a spelling outside CommonMark.
+// An empty attrs, content or marks key, and adjacent text CommonMark would read back as one, stay occasional: each takes a spelling outside CommonMark.
 // The copy gives fast-check's null-prototype records the prototype a parsed node has.
 function occasionallyEmpty<T extends AdfMark | AdfNode>(arbitrary: Arbitrary<T>): Arbitrary<T> {
   return fc.tuple(arbitrary, fc.nat({ max: 9 })).map(([held, roll]) => (roll === 0 ? { ...held } : withoutEmptyKeys(held)))
