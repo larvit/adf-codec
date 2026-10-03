@@ -22,10 +22,10 @@ type BlockSpelling = 'commonmark' | 'directive' | 'list'
 type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
+type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // Keyed by reference: only a caller building one object per position (the parse, the plain reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
-type Walk = { blocks: readonly PlacedBlock[]; headroom: number }
-type WalkedItem = { node: AdfNode; walk: Walk }
+type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
 export type Writing = { flavour: Flavour; memo: SpellingMemo | undefined }
 
 export const largestListMarker = 999999999
@@ -48,7 +48,7 @@ export function writeMarkdown(document: AdfDocument, flavour: Flavour): Result<s
 }
 
 // headroom: the least slack any depth guard below the walk has.
-function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {
+function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
@@ -181,13 +181,13 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   return lines.includes(undefined) ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success({ headroom, spelling: 'list', text: lines.join('\n') })
 }
 
-function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {
+function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   const block = emitBlock(node, path, depth, writing)
   return block.ok ? success({ blocks: [{ ...block.value, node }], headroom: block.value.headroom }) : block
 }
 
 // The marker leads the first paragraph, or stands as one where the blocks open with another.
-function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<Walk> {
+function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   const marker = taskMarker(nodeAttrs(task)['state'])
   const markerBlock: PlacedBlock = { node: { type: 'paragraph' }, spelling: 'commonmark', text: marker }
   if (task.type === 'taskItem') {
@@ -220,7 +220,7 @@ function directivePair(node: AdfNode, opener: string, body: string, headroom: nu
   return { headroom, spelling: 'directive', text: `${opener}\n${body === '' ? '' : `${body}\n`}${spellDirectiveCloser(node.type)}` }
 }
 
-function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number, walkBody: () => Result<Walk>): Result<EmittedBlock> {
+function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number, walkBody: () => Result<PlacedBlocks>): Result<EmittedBlock> {
   if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
   if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (model.contentModel === 'code') return emitCodeDirective(node, model, path, depth)
@@ -230,7 +230,7 @@ function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertE
   return emitDirectiveBody(node, model, opener.value, path, walkBody)
 }
 
-function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string, path: ConvertErrorPath, walkBody: () => Result<Walk>): Result<EmittedBlock> {
+function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string, path: ConvertErrorPath, walkBody: () => Result<PlacedBlocks>): Result<EmittedBlock> {
   if (blockDirectiveForm(node.type) === 'leaf') return success({ headroom: Number.POSITIVE_INFINITY, spelling: 'directive', text: opener })
   if (model.contentModel === 'inline') {
     const line = emitInlineLine(nodeContent(node), 'paragraph', path, 'lossless')
