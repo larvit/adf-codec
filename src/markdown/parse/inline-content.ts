@@ -23,6 +23,13 @@ import { readsAsOne, textBreakName, textBreakSpelling } from '../text-break.ts'
 
 export type InlineContent = { carry?: undefined; image: AdfNode; nodes?: undefined } | { carry: boolean; image?: undefined; nodes: AdfNode[] }
 
+// The text break leaf: it holds no marks, and stands between the nodes it parts until the outermost content checks and drops it.
+type TextBreak = { kind: 'textBreak' }
+
+type Inline = AdfNode | TextBreak
+
+type Scanned = { carry?: undefined; image: AdfNode; nodes?: undefined } | { carry: boolean; image?: undefined; nodes: Inline[] }
+
 export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
 
 type Bracket = { active: boolean; image: boolean; kind: 'open'; start: number }
@@ -34,10 +41,10 @@ type Pairing = EmphasisPairing<Run>
 // A carry piece holds a node whose marks are its own: an opaque carry, or an inline node spelling marks=empty.
 type Piece =
   | Bracket
-  | { kind: 'break' }
   | { kind: 'carry'; node: AdfNode }
   | { alt: string; kind: 'image'; node: AdfNode }
-  | { kind: 'nodes'; nodes: AdfNode[] }
+  | { kind: 'nodes'; nodes: Inline[] }
+  | TextBreak
   | { canClose: boolean; canOpen: boolean; character: string; kind: 'run'; length: number }
   | { closes: boolean; kind: 'highlight'; opens: boolean }
 
@@ -45,14 +52,14 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
-  // Nodes a carry piece restored: they never merge, and only identity tells a carried textBreak from the leaf.
-  carried: Set<AdfNode>
   container: LineContainer | undefined
   // Pieces below this have been walked for openers to deactivate: an image close folds the link-marked piece into alt text, leaving this the only record that the brackets around it are doomed.
   deactivatedBefore: number
   definitions: LinkDefinitions
   highlights: boolean
   openingSpellableLink: boolean
+  // The nodes carry pieces hold: none joins its neighbour.
+  ownMarks: Set<AdfNode>
   path: ConvertErrorPath
   pending: string
   pieces: Piece[]
@@ -60,7 +67,7 @@ type Scan = {
   spans: NestedSpans
 }
 
-type SlotContent = { carry: boolean; nodes: AdfNode[] }
+type SlotContent = { carry: boolean; nodes: Inline[] }
 
 const carriedInMark = 'no mark spelling wraps an opaque carry or an inline node spelling marks=empty: its marks are its own'
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
@@ -68,13 +75,26 @@ const hreflessLink = 'the link mark spells its href: this one spells none'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
 const linkInLink = 'no link wraps a link: the [content] this one marks already holds one'
 const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
+const textBreak: TextBreak = { kind: 'textBreak' }
 
+// The outermost content: only here does a text break see both its neighbours.
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
-  return parseInline(source, { carried: new Set(), container, definitions, highlights: flavour === 'plain', path, spans: noSpans })
+  const scan: Scan = { container, deactivatedBefore: 0, definitions, highlights: flavour === 'plain', openingSpellableLink: false, ownMarks: new Set(), path, pending: '', pieces: [], source, spans: noSpans }
+  const scanned = scanInline(scan)
+  if (!scanned.ok) return scanned
+  if (scanned.value.image !== undefined) return success({ image: scanned.value.image })
+  const nodes = partText(scanned.value.nodes, scan)
+  if (!nodes.ok) return nodes
+  if (scan.openingSpellableLink) {
+    const takesDirective = openingLinkTakesDirective(nodes.value, path)
+    if (!takesDirective.ok) return takesDirective
+    if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, path)
+  }
+  return success({ carry: scanned.value.carry, nodes: nodes.value })
 }
 
-function parseInline(source: string, context: Pick<Scan, 'carried' | 'container' | 'definitions' | 'highlights' | 'path' | 'spans'>): Result<InlineContent> {
-  const scan: Scan = { ...context, deactivatedBefore: 0, openingSpellableLink: false, pending: '', pieces: [], source }
+function scanInline(scan: Scan): Result<Scanned> {
+  const { source } = scan
   let index = 0
   while (index < source.length) {
     switch (source.charAt(index)) {
@@ -211,7 +231,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
     if (carried.fault !== undefined) return faulted(carried.fault, scan.path)
     return success(carryPiece(scan, carried.value))
   }
-  if (span.name === textBreakName) return span.content === undefined && span.attributes.size === 0 ? success({ kind: 'break' }) : failure('unsupported-node-shape', `${textBreakName} spells the bare leaf form, ${textBreakSpelling}: this one spells more`, scan.path)
+  if (span.name === textBreakName) return span.content === undefined && span.attributes.size === 0 ? success(textBreak) : failure('unsupported-node-shape', `${textBreakName} spells the bare leaf form, ${textBreakSpelling}: this one spells more`, scan.path)
   const text = readTextDirective(span)
   if (text?.fault !== undefined) return faulted(text.fault, scan.path)
   if (text !== undefined) return success({ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] })
@@ -219,13 +239,15 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
   if (!slot.ok) return slot
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
   if (mark !== undefined) return mark.ok ? directiveMarkPiece(scan, span.name, mark.value, slot.value, index) : mark
-  const node = readInlineDirectiveNode(span.name, span.attributes, slot.value?.nodes, scan.path)
+  const content = slot.value?.nodes
+  if (content?.some(isTextBreak) === true) return failure('unsupported-node-shape', `${textBreakName} parts two text nodes: a content slot holds plain text`, scan.path)
+  const node = readInlineDirectiveNode(span.name, span.attributes, content === undefined ? undefined : adfNodes(content), scan.path)
   if (!node.ok) return node
   return success(node.value.marks === undefined ? { kind: 'nodes', nodes: [node.value] } : carryPiece(scan, node.value))
 }
 
 function carryPiece(scan: Scan, node: AdfNode): Piece {
-  scan.carried.add(node)
+  scan.ownMarks.add(node)
   return { kind: 'carry', node }
 }
 
@@ -240,11 +262,11 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
 }
 
 // spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
-function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[], index: number): Result<Piece> | undefined {
+function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[], index: number): Result<Piece> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.path)
   if (marksLink(nodes)) return failure('unsupported-node-shape', linkInLink, scan.path)
-  if (commonMarkLink(nodeAttrs(mark), href, nodes, 0, scan.container === undefined) === undefined) return undefined
+  if (commonMarkLink(nodeAttrs(mark), href, adfNodes(nodes), 0, scan.container === undefined) === undefined) return undefined
   if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.path)
   scan.openingSpellableLink = true
   return undefined
@@ -252,7 +274,7 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly AdfNode[
 
 function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | undefined> {
   if (span.content === undefined) return success(undefined)
-  const parsed = parseInline(span.content, { ...scan, container: undefined, highlights: false, spans: span.spans })
+  const parsed = scanInline({ ...scan, container: undefined, deactivatedBefore: 0, highlights: false, openingSpellableLink: false, pending: '', pieces: [], source: span.content, spans: span.spans })
   if (!parsed.ok) return parsed
   if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
   return success(parsed.value)
@@ -268,40 +290,44 @@ function pushNode(scan: Scan, node: AdfNode): void {
   scan.pieces.push({ kind: 'nodes', nodes: [node] })
 }
 
-function assemble(scan: Scan): Result<InlineContent> {
+function assemble(scan: Scan): Result<Scanned> {
   const only = scan.pieces[0]
   if (scan.pieces.length === 1 && only?.kind === 'image') return success({ image: only.node })
   if (holdsImage(scan.pieces)) return failure('unmappable-image', imageAlone, scan.path)
-  const resolved = resolveNodes(scan.pieces, scan, true)
-  const nodes = resolved.ok && scan.container !== undefined ? partText(resolved.value, scan) : resolved
+  const nodes = resolveNodes(scan.pieces, scan, true)
   if (!nodes.ok) return nodes
-  if (scan.openingSpellableLink) {
-    const takesDirective = openingLinkTakesDirective(nodes.value, scan.path)
-    if (!takesDirective.ok) return takesDirective
-    if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, scan.path)
-  }
   return success({ carry: holdsCarry(scan.pieces), nodes: nodes.value })
 }
 
 // spec/flavour.md, Inline nodes: the leaf builds no node, so only the pair it parts spells it.
-function partText(nodes: readonly AdfNode[], scan: Scan): Result<AdfNode[]> {
+function partText(items: readonly Inline[], scan: Scan): Result<AdfNode[]> {
   const parted: AdfNode[] = []
-  for (const [index, node] of nodes.entries()) {
-    if (!isTextBreak(node, scan.carried)) {
-      parted.push(node)
+  for (const [index, item] of items.entries()) {
+    if (!isTextBreak(item)) {
+      parted.push(item)
       continue
     }
-    const previous = nodes[index - 1]
-    const next = nodes[index + 1]
-    if (previous === undefined || next === undefined || scan.carried.has(previous) || scan.carried.has(next) || !readsAsOne(previous, next)) {
+    const previous = items[index - 1]
+    const next = items[index + 1]
+    if (previous === undefined || next === undefined || isTextBreak(previous) || isTextBreak(next) || !readJoins(scan)(previous, next)) {
       return failure('unsupported-node-shape', `${textBreakName} parts two text nodes CommonMark reads back as one: this one parts something else`, scan.path)
     }
   }
   return success(parted)
 }
 
-function isTextBreak(node: AdfNode, carried: ReadonlySet<AdfNode>): boolean {
-  return node.type === textBreakName && !carried.has(node)
+function readJoins(scan: Scan): (previous: AdfNode, node: AdfNode) => boolean {
+  return (previous, node) => !scan.ownMarks.has(previous) && !scan.ownMarks.has(node) && readsAsOne(previous, node)
+}
+
+function isTextBreak(item: Inline): item is TextBreak {
+  return 'kind' in item
+}
+
+function adfNodes(items: readonly Inline[]): AdfNode[] {
+  const nodes: AdfNode[] = []
+  for (const item of items) if (!isTextBreak(item)) nodes.push(item)
+  return nodes
 }
 
 function holdsCarry(pieces: readonly Piece[]): boolean {
@@ -317,8 +343,8 @@ function holdsLink(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'nodes' && marksLink(piece.nodes))
 }
 
-function marksLink(nodes: readonly AdfNode[]): boolean {
-  return nodes.some((node) => nodeMarks(node).some((mark) => mark.type === 'link'))
+function marksLink(nodes: readonly Inline[]): boolean {
+  return adfNodes(nodes).some((node) => nodeMarks(node).some((mark) => mark.type === 'link'))
 }
 
 function readDelimiterRun(scan: Scan, index: number): number {
@@ -455,8 +481,8 @@ function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition:
 function imageAlt(inner: readonly Piece[], scan: Scan): Result<string> {
   const nodes = resolveNodes(inner, scan, false)
   if (!nodes.ok) return nodes
-  if (nodes.value.some((node) => isTextBreak(node, scan.carried))) return failure('unsupported-node-shape', `${textBreakName} parts two text nodes: an image description holds plain text`, scan.path)
-  return success(nodes.value.map(altText).join(''))
+  if (nodes.value.some(isTextBreak)) return failure('unsupported-node-shape', `${textBreakName} parts two text nodes: an image description holds plain text`, scan.path)
+  return success(adfNodes(nodes.value).map(altText).join(''))
 }
 
 // spec/flavour.md, The CommonMark image: the description's plain text, the content slot included.
@@ -468,22 +494,37 @@ function altText(node: AdfNode): string {
 }
 
 // An image's alt text is plain, so `highlights` is off there and every `==` stays text.
-function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean): Result<AdfNode[]> {
+function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean): Result<Inline[]> {
   const nodes = pieces.map(pieceNodes)
   const runs = delimiterRuns(pieces)
   const pairings = matchEmphasis(runs)
   writeUnpaired(nodes, runs, pairings)
   if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', carriedInMark, scan.path)
   markHighlights(pieces, nodes, highlights ? pairedHighlights(pieces, nodes) : [])
-  return success(mergeAdjacentText(nodes.flat(), (previous, node) => !scan.carried.has(previous) && !scan.carried.has(node) && readsAsOne(previous, node)))
+  return success(mergeText(nodes.flat(), readJoins(scan)))
+}
+
+// A text break is a wall: the text on either side joins only its own side.
+function mergeText(items: readonly Inline[], joins: (previous: AdfNode, node: AdfNode) => boolean): Inline[] {
+  const merged: Inline[] = []
+  let run: AdfNode[] = []
+  for (const item of items) {
+    if (!isTextBreak(item)) {
+      run.push(item)
+      continue
+    }
+    for (const node of mergeAdjacentText(run, joins)) merged.push(node)
+    merged.push(item)
+    run = []
+  }
+  for (const node of mergeAdjacentText(run, joins)) merged.push(node)
+  return merged
 }
 
 // Only `imageAlt` reaches the image arm: everywhere else an image amid other content is refused first.
 // A highlight delimiter holds an empty text node until it pairs, so the emphasis around it marks it.
-function pieceNodes(piece: Piece): AdfNode[] {
+function pieceNodes(piece: Piece): Inline[] {
   switch (piece.kind) {
-    case 'break':
-      return [{ type: textBreakName }]
     case 'carry':
       return [piece.node]
     case 'highlight':
@@ -496,6 +537,8 @@ function pieceNodes(piece: Piece): AdfNode[] {
       return bracketNodes(piece)
     case 'run':
       return []
+    case 'textBreak':
+      return [piece]
   }
 }
 
@@ -508,7 +551,7 @@ function delimiterRuns(pieces: readonly Piece[]): Run[] {
 }
 
 // A run gives its delimiters up from the head closing and the tail opening; what is left between them is text.
-function writeUnpaired(nodes: AdfNode[][], runs: readonly Run[], pairings: readonly Pairing[]): void {
+function writeUnpaired(nodes: Inline[][], runs: readonly Run[], pairings: readonly Pairing[]): void {
   const heads = new Map<Run, number>()
   const tails = new Map<Run, number>()
   for (const pairing of pairings) {
@@ -523,7 +566,7 @@ function writeUnpaired(nodes: AdfNode[][], runs: readonly Run[], pairings: reado
 }
 
 // Innermost pairing first, so prepending leaves the marks array outermost first (spec/flavour.md, Marks).
-function markPairings(pieces: readonly Piece[], nodes: AdfNode[][], pairings: readonly Pairing[]): boolean {
+function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: readonly Pairing[]): boolean {
   for (const pairing of pairings) {
     const mark: AdfMark = { type: markType(pairing.opener.character, pairing.used) }
     for (let index = pairing.opener.index + 1; index < pairing.closer.index; index += 1) {
@@ -534,12 +577,12 @@ function markPairings(pieces: readonly Piece[], nodes: AdfNode[][], pairings: re
   return true
 }
 
-function highlightDelimiters(pieces: readonly Piece[], nodes: readonly AdfNode[][]): HighlightDelimiter[] {
+function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][]): HighlightDelimiter[] {
   const found: HighlightDelimiter[] = []
   let line = 0
   let position = 0
   for (const [index, piece] of pieces.entries()) {
-    const held = nodes[index] ?? []
+    const held = adfNodes(nodes[index] ?? [])
     const [holder] = held
     if (piece.kind === 'highlight' && holder !== undefined) {
       found.push({ closes: piece.closes, holder, index, line, opens: piece.opens, position })
@@ -555,7 +598,7 @@ function highlightDelimiters(pieces: readonly Piece[], nodes: readonly AdfNode[]
 }
 
 // Each opener takes the next closer holding at least one character after it, both in one line and under the same marks.
-function pairedHighlights(pieces: readonly Piece[], nodes: readonly AdfNode[][]): { closer: number; opener: number }[] {
+function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]): { closer: number; opener: number }[] {
   const found = highlightDelimiters(pieces, nodes)
   const paired: { closer: number; opener: number }[] = []
   let closer = 0
@@ -574,9 +617,9 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly AdfNode[][])
 }
 
 // Atlassian's schema refuses a highlight on code, a node holds one highlight, and a rebuilt node would lose its attributes.
-function markHighlights(pieces: readonly Piece[], nodes: AdfNode[][], paired: readonly { closer: number; opener: number }[]): void {
+function markHighlights(pieces: readonly Piece[], nodes: Inline[][], paired: readonly { closer: number; opener: number }[]): void {
   for (const [index, piece] of pieces.entries()) {
-    if (piece.kind === 'highlight') nodes[index] = (nodes[index] ?? []).map((holder) => ({ ...holder, text: highlightDelimiter }))
+    if (piece.kind === 'highlight') nodes[index] = adfNodes(nodes[index] ?? []).map((holder) => ({ ...holder, text: highlightDelimiter }))
   }
   for (const { closer, opener } of paired) {
     nodes[opener] = []
@@ -585,7 +628,8 @@ function markHighlights(pieces: readonly Piece[], nodes: AdfNode[][], paired: re
   }
 }
 
-function highlighted(node: AdfNode): AdfNode {
+function highlighted(node: Inline): Inline {
+  if (isTextBreak(node)) return node
   const marks = nodeMarks(node)
   if (node.type !== 'text' || Object.keys(nodeAttrs(node)).length > 0 || marks.some((mark) => mark.type === 'code' || mark.type === 'backgroundColor')) return node
   return { ...node, marks: [editorHighlight, ...marks] }
@@ -597,8 +641,9 @@ function markType(character: string, used: number): string {
 }
 
 // A node cannot carry one mark type twice (docs/decisions.md §No schema validation).
-function applyMark(nodes: readonly AdfNode[], mark: AdfMark): AdfNode[] {
+function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
   return nodes.map((node) => {
+    if (isTextBreak(node)) return node
     const marks = nodeMarks(node)
     return marks.some((carried) => carried.type === mark.type) ? node : { ...node, marks: [mark, ...marks] }
   })

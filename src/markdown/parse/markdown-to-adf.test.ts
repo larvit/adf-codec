@@ -1076,3 +1076,17 @@ test('names the directive mark left without the content it wraps', () => {
   assert.equal(content(markdownToAdf('!adf:underline[]\n')), named)
   assert.equal(content(markdownToAdf('!adf:underline{}\n')), named)
 })
+
+test('reads the text break only between two text nodes CommonMark joins, building no node', () => {
+  assert.deepEqual(content(markdownToAdf('a!adf:textBreak{}b\n')), [{ content: [text('a'), text('b')], type: 'paragraph' }])
+  assert.deepEqual(content(markdownToAdf('==a!adf:textBreak{}b==\n')), [{ content: [text('==a'), text('b==')], type: 'paragraph' }])
+  const parts = 'unsupported-node-shape: textBreak parts two text nodes CommonMark reads back as one: this one parts something else'
+  const carried = '!adf:carry{json="{\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
+  for (const markdown of ['!adf:textBreak{}a\n', 'a!adf:textBreak{}\n', 'a!adf:textBreak{}!adf:textBreak{}b\n', '**a**!adf:textBreak{}b\n', '[!adf:textBreak{}](/u)\n', `a!adf:textBreak{}${carried}\n`]) {
+    assert.equal(content(markdownToAdf(markdown)), parts, markdown)
+  }
+  assert.equal(content(markdownToAdf('!adf:status[a!adf:textBreak{}b]\n')), 'unsupported-node-shape: textBreak parts two text nodes: a content slot holds plain text')
+  assert.equal(content(markdownToAdf('![a!adf:textBreak{}b](/i)\n')), 'unsupported-node-shape: textBreak parts two text nodes: an image description holds plain text')
+  assert.equal(content(markdownToAdf('a!adf:textBreak{x=y}b\n')), 'unsupported-node-shape: textBreak spells the bare leaf form, !adf:textBreak{}: this one spells more')
+  assert.deepEqual(content(markdownToAdf('!adf:carry{json="{\\"type\\":\\"textBreak\\"}"}\n')), [{ content: [{ type: 'textBreak' }], type: 'paragraph' }])
+})
