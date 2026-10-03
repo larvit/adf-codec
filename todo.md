@@ -78,8 +78,8 @@ in a code block; `directive-syntax.ts` refuses a newline in an emoji, mention or
 (`unspellable-whitespace`). The inline carry's JSON escapes all of them, so a lossless spelling
 exists, and §The code list says a cause the carry answers gets no code. Fixing it revises §Which
 code a cause takes and §Markdown in is a canonical fixpoint, which the maintainer decides. Also a
-text node whose `text` is empty or missing, or which holds `content`: `inline-line.ts` refuses it
-inline and `fencedTexts` in a code block. Found by the README-goals audit, 2026-10-03.
+text node whose `text` is empty or missing, which `inline-line.ts` and `fencedTexts` refuse, or
+which holds `content`, which `inline-line.ts` refuses. Found by the README-goals audit, 2026-10-03.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
