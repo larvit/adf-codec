@@ -1,8 +1,7 @@
 try {
   const { adfToMarkdown, isAdfDocument, markdownToAdf } = await import('/dist/index.js')
-  const { serializeCanonicalJson } = await import('/dist/canonical-json.js')
-  // WebDriver's JSON reads -0 back as 0, so a document crosses as its canonical spelling.
-  const spelled = (result) => (result.ok ? { ok: true, value: `${serializeCanonicalJson(result.value, 'two-space')}\n` } : result)
+  // WebDriver's JSON reads -0 back as 0, so a document crosses as JSON text with -0 tagged; run.js revives it.
+  const spelled = (result) => (result.ok ? { ok: true, value: JSON.stringify(result.value, (_, value) => (Object.is(value, -0) ? '\u0000-0' : value)) } : result)
   window.convertCorpus = (corpus) => ({
     errors: corpus.errors.map(({ markdown, name }) => ({ name, parsed: markdownToAdf(markdown) })),
     normalization: corpus.normalization.map(({ markdown, name }) => ({ name, parsed: spelled(markdownToAdf(markdown)) })),

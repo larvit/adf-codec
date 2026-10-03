@@ -49,6 +49,11 @@ function fixtureNames(kind, extension) {
     .sort()
 }
 
+// convert-corpus.js tags -0 so it survives WebDriver's JSON.
+function revived(text) {
+  return JSON.parse(text, (_, value) => (value === '\u0000-0' ? -0 : value))
+}
+
 function refusal(result) {
   return result.ok ? '' : `${result.error.code}: ${result.error.message}`
 }
@@ -106,7 +111,7 @@ for (const [index, { json, markdown, name }] of corpus.roundTrip.entries()) {
     assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
     assert.equal(result.emitted.value, markdown)
     assert.ok(result.parsed.ok, `it did not parse — ${refusal(result.parsed)}`)
-    assert.equal(result.parsed.value, json)
+    assert.deepEqual(revived(result.parsed.value), JSON.parse(json))
   })
 }
 
@@ -114,7 +119,7 @@ for (const [index, { name }] of corpus.normalization.entries()) {
   const result = results.normalization[index]
   checking(name, result, () => {
     assert.ok(result.parsed.ok, `it did not parse — ${refusal(result.parsed)}`)
-    assert.equal(result.parsed.value, fixture(name, '.json'))
+    assert.deepEqual(revived(result.parsed.value), JSON.parse(fixture(name, '.json')))
   })
 }
 
@@ -124,7 +129,7 @@ for (const [index, { json, name }] of corpus.realPayloads.entries()) {
     assert.ok(result.isDocument, `${name}.json is no ADF document`)
     assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
     assert.ok(result.parsed.ok, `it did not parse back — ${refusal(result.parsed)}`)
-    assert.equal(result.parsed.value, json)
+    assert.deepEqual(revived(result.parsed.value), JSON.parse(json))
   })
 }
 
