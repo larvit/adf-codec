@@ -177,8 +177,8 @@ which counts one fewer.
 
 Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts`, the `mintTaskIds` call and
 the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
-`emit/adf-to-markdown.ts`. And `highlightDelimiter`, `highlightFlanking` and `Flavour` move out of
-`plain/conventions.ts`, which `emit/` imports them from. Every comprehension reader on 2026-10-03
+`emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
+`plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every comprehension reader on 2026-10-03
 named the plain flavour's spread across three directories.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
