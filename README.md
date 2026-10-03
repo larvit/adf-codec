@@ -52,6 +52,10 @@ which is free text.
 - **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
   Relies on the round-trip and on markdown a reader half-knowing the lossless flavour can still edit.
 
+Behind those apps, the people who read and write the markdown, and later the HTML: product
+managers, engineers and support agents working in Atlassian products through a plugin or another
+UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
+
 ## The shape
 
 ```sh

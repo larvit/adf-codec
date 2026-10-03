@@ -162,11 +162,15 @@ nearest text, a candidate entry in that file's voice, and the instance it yields
 keeps collecting instances is wrong: rewrite it.
 
 Which output the audience expects — README goal 5 — is settled by a reader panel rather than
-asked: three fresh-context readers, one per README persona the conversion serves, each given only
+asked: three fresh-context readers, one per README persona the question serves, each given only
 `## Audience` and the input, writing what they expect before picking among outputs the goals
 allow, rendered, shuffled, with no rationale and nothing saying what is implemented. Three agreeing
 settle it; otherwise four more read, five of seven settle it, and less is a missing goal, asked.
 The verdict lands in `docs/decisions.md`.
+
+Every new or changed markdown or HTML spelling goes to such a panel, seated by the people who read
+and write that format (README `## Audience`); a question about what an app relies on seats the
+developer personas.
 
 ### Stated numbers
 
