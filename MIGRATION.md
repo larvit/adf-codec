@@ -22,7 +22,8 @@ import { markdownToAdf as markdownToAdf010 } from 'adf-codec-0.1'
 
 function migrateMarkdown(stored: string) {
   const parsed = markdownToAdf010(stored)
-  return parsed.ok ? adfToMarkdown(parsed.value) : parsed
+  // 0.1.0's reader was editor-normal, so a document with no content key always meant an empty one.
+  return parsed.ok ? adfToMarkdown({ ...parsed.value, content: parsed.value.content ?? [] }) : parsed
 }
 ```
 
