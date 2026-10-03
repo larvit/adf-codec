@@ -7,8 +7,9 @@ type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
 type NodeHolder = { content?: AdfNode[] }
 
-// The editor's rule is the reader's over the pair's editor-normal forms, which hold no content: a text node's content never parts it.
+// The editor's rule is the reader's over the pair's editor-normal forms; a text node holding content never joins, so its content is kept.
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
+  if (previous.type !== 'text' || node.type !== 'text' || nodeContent(previous).length > 0 || nodeContent(node).length > 0) return false
   return joinsWhenRead(normalNode(previous), normalNode(node))
 }
 

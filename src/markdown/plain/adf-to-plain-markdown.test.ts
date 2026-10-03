@@ -344,3 +344,9 @@ test('writes what the editor-normal form of the document writes', () => {
   assert.equal(plain({ content: [], text: 'hi', type: 'futureInline' }), 'hi\n')
   assert.equal(plain(paragraph({ marks: [{ attrs: {}, type: 'code' }], text: 'a', type: 'text' }, { marks: [{ type: 'code' }], text: '|b', type: 'text' })), '`a|b`\n')
 })
+
+test('writes a text node holding content the same in either order beside its neighbour', () => {
+  const holding: AdfNode = { content: [text('inner')], text: 'a', type: 'text' }
+  assert.equal(plain(paragraph(holding, text('b'))), 'ab\n')
+  assert.equal(plain(paragraph(text('b'), holding)), 'ba\n')
+})

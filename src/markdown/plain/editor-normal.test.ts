@@ -50,7 +50,7 @@ test('reads negative zero as zero, as JSON does', () => {
   )
 })
 
-test('reads an empty attrs object, marks array or content array as the absent key, but on doc', () => {
+test('reads an empty attrs object, marks array or content array as the absent key, except on doc', () => {
   const paragraph: AdfNode = { attrs: {}, content: [{ attrs: {}, marks: [], text: 'a', type: 'text' }, { marks: [{ attrs: {}, type: 'em' }], text: 'b', type: 'text' }], marks: [], type: 'paragraph' }
   assert.deepEqual(toEditorNormal({ content: [paragraph, { content: [], type: 'rule' }], type: 'doc', version: 1 }), {
     content: [{ content: [{ text: 'a', type: 'text' }, { marks: [{ type: 'em' }], text: 'b', type: 'text' }], type: 'paragraph' }, { type: 'rule' }],
@@ -77,7 +77,9 @@ test('normalizes blocks and mark attributes nesting far past the levels a recurs
   assert.deepEqual(merged.content?.[0]?.content?.map((text) => text.text), ['ab'])
 })
 
-test('joins a text node holding content to its neighbour, as editor-normal forms hold no content to part them', () => {
-  const paragraph: AdfNode = { content: [{ content: [{ text: 'lost', type: 'text' }], text: 'a', type: 'text' }, { text: 'b', type: 'text' }], type: 'paragraph' }
-  assert.deepEqual(toEditorNormal({ content: [paragraph], type: 'doc', version: 1 }).content, [{ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'ab', type: 'text' }], type: 'paragraph' }])
+test('joins a text node holding content to no neighbour, so its content is kept', () => {
+  const holding: AdfNode = { content: [{ text: 'kept', type: 'text' }], text: 'a', type: 'text' }
+  for (const content of [[holding, { text: 'b', type: 'text' }], [{ text: 'b', type: 'text' }, holding]]) {
+    assert.deepEqual(toEditorNormal({ content: [{ content, type: 'paragraph' }], type: 'doc', version: 1 }).content, [{ content, type: 'paragraph' }])
+  }
 })
