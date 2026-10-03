@@ -30,3 +30,6 @@ Next
 ```js
 ```
 !adf:/codeBlock
+
+!adf:codeBlock {content=empty language=js}
+!adf:/codeBlock

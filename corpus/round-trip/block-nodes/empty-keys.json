@@ -82,6 +82,13 @@
       },
       "marks": [],
       "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "js"
+      },
+      "content": [],
+      "type": "codeBlock"
     }
   ],
   "type": "doc",
