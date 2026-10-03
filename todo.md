@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 52`
+`Next ID = 54`
 
 | Goal | W |
 |---|---|
@@ -24,13 +24,14 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 40 | 0.2.0 | decision | **Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document `adfToMarkdown` takes.** | 6 | 7 | 8 | 9 | 1 | 26.2 |
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 43 | 0.2.0 |  | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
+| 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
+| 53 | 0.2.0 |  | **Bench a block's `marks` spelling with the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 5 | 11.5 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
@@ -44,14 +45,6 @@
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 9 | 10.6 |
 
 ## Details
-
-### 40. Make `markdownToAdf(adfToMarkdown(doc))` deep-equal `doc` for every document `adfToMarkdown` takes.
-
-Today it holds for editor-normal documents only: two adjacent text nodes with the same marks merge,
-an empty `attrs`, `marks` or `content` drops, and `-0` reads back `0` — shapes pipelines and bots
-build. Spell each so it reads back as written; CommonMark's spelling stays wherever the document
-holds none of these shapes. The spellings are part of the chunk. `docs/decisions.md` §Equality is
-editor-normal, `spec/flavour.md` and `corpus/README.md` follow, and the tests drop `toEditorNormal`.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
@@ -90,12 +83,23 @@ Readings table gains its row, and its Spellings table one if `!adf:listBreak` re
 and 302 lose their `pending` exceptions, and the spelling leaves the README's "Four CommonMark
 spellings" bullet, which counts one fewer.
 
+### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
+
+A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]"`. Breaking:
+`MIGRATION.md`'s Spellings table gains its row.
+
 ### 51. Match a reference label to its definition under Unicode case folding.
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
 example 540); lowercasing and then uppercasing folds it. Breaking, so it ships beside item 43:
 `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go, and its spelling leaves
 the README's "Four CommonMark spellings" bullet, which counts one fewer.
+
+### 53. Bench a block's `marks` spelling with the writer panel and adopt its pick.
+
+Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
+escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
+gains its row.
 
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 

@@ -44,7 +44,8 @@ normalizes to it through the round-trip.
   CommonMark admits no spelling — the end of a block, inside an ATX heading — or where the node
   carries an attribute, it is the inline directive.
 - An empty paragraph — real payloads carry them — is an `!adf:paragraph` … `!adf:/paragraph` pair
-  holding nothing.
+  holding nothing, and one whose `content` is an empty array the pair
+  `!adf:paragraph {content=empty}` … `!adf:/paragraph` (Attributes).
 - Links `[text](url)`; `<…>` around a destination containing spaces, `<>` an empty one beside a
   title; title in double quotes. A backslash escapes a parenthesis the destination leaves
   unbalanced, and a quote inside the title; a balanced pair stays bare. `<url>` autolink form only
@@ -67,7 +68,10 @@ normalizes to it through the round-trip.
   matching below, which is what lets the emitter decide its own pairings.
 - Blocks separated by one blank line at document level, inside a blockquote and between CommonMark
   blocks; inside a directive container a pair holding a directive block takes none. No trailing
-  whitespace outside a code block's content, single trailing newline; a document with no blocks is the empty string.
+  whitespace outside a code block's content, single trailing newline. A document whose `content` is
+  an empty array is the empty string, and markdown holding no block reads back to it; a document
+  holding no `content` key is the leaf `!adf:doc {content=none}` as its only block, which is a
+  named error anywhere else or spelled any other way.
 
 ## Directives
 
@@ -79,9 +83,11 @@ result naming it at the opener, whatever follows it — so output an old emitter
 escaped, and erroring input gaining meaning later is MINOR, never a reparse (`docs/decisions.md`
 §The formats are API). Each name belongs to one position, and a name the other one spells — a mark
 or an inline node written as a block directive, a block node written inline — is a different error,
-naming the spelling it takes. Two reserved names read back to no node: `carry` for the opaque carry,
-as both directive name and fence info string, and `listBreak` for the leaf that parts two adjacent
-lists (Canonical form).
+naming the spelling it takes. Four reserved names read back to no node: `carry` for the inline
+opaque carry, `listBreak` for the leaf that parts two adjacent lists and `doc` for a document
+holding no `content` key (Canonical form), and `textBreak` for the leaf that parts two text nodes
+(Inline nodes). Every fence info string opening `adf:` is reserved for the block carry (The opaque
+carry).
 
 **Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`
 closes a container, and a name picks by what follows it in turn — a space or the line's end a block
@@ -142,6 +148,13 @@ ends the name (`!adf:hardBreak{}`). Input reads that spelling alone: keys out of
 quoted where bare carries it, an escape longer than it need be, an empty `{attrs}` on a block line
 or after a `[content]`, and a number or `json` value outside its canonical JSON spelling are each a
 named error naming the spelling to write instead.
+`attrs`, `content` and `marks` are reserved keys on every directive — block, inline node and mark —
+whose bare value `empty` spells the node's or mark's key holding an empty object or array:
+`!adf:underline[a]{attrs=empty}`, `!adf:date{content=empty}`, `!adf:hardBreak{marks=empty}`. A
+container spelling `content=empty` closes with no body; `attrs=empty` stands beside no other
+attribute, argument or content slot; and an inline node spelling `marks=empty` stands inside no
+mark spelling. Any other value of a reserved key is a named error, except on a block's `marks`
+(Block nodes).
 
 **Escaping**: the emitter backslash-escapes whatever literal text would otherwise parse as
 directive syntax — every literal `!adf:`, `]` inside content, a bracket a link's destination and
@@ -163,15 +176,18 @@ and restores to a deep-equal node. A carry may hold a node the emitter spells na
 unreinterpreted, and the next emit spells it canonically (`docs/decisions.md` §The round-trip is the
 product). Block and inline positions canonicalize differently, each fitting where it sits:
 
-- **Block position**: a fenced code block with info string `carry`, body = the node's JSON —
-  two-space indent, object keys sorted.
+- **Block position**: a fenced code block with info string `adf:` and the node's type, body = the
+  node's JSON without its `type` — two-space indent, object keys sorted: ```` ```adf:blockCard ````.
+  A type no info string carries back, by the rule a `codeBlock`'s language follows, leaves the info
+  string `adf:` and keeps `type` in the body. A body holding `type` under a named type, or an
+  `adf:` fence whose type an info string carries, is a named error.
 - **Inline position**: `!adf:carry{json="…"}` — compact serialization (keys sorted, no whitespace),
   JSON-string-escaped into the attribute.
 
-The info string `carry` is reserved: a genuine `codeBlock` whose `language` is exactly `carry` takes
+Every info string opening `adf:` is reserved: a genuine `codeBlock` whose `language` opens so takes
 the attribute the section below keeps for a language no info string holds, so the reservation
-stays absolute.
-In block-directive position `!adf:carry` is a named error — the carry's block form is the fence.
+stays absolute. In block-directive position `!adf:carry` is a named error — the carry's block form
+is the fence.
 
 ## Raw HTML in input
 
@@ -193,13 +209,14 @@ Each section lists attributes as `name (type)`. A parenthesized value set docume
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
 type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
 (`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys sorted),
-quoted. `markdownToAdf` emits `attrs`, `content` and `marks` keys only when non-empty; editor-normal
-ADF reads an empty attrs object, marks array or content array as the absent key (`docs/decisions.md`
-§Equality is editor-normal) — the grammar's empty-`{attrs}` omission already collapses the two
-spellings.
+quoted, `-0` spelled `-0`. `markdownToAdf` builds an `attrs`, `content` or `marks` key only where the
+markdown spells one, an empty one through its reserved key (Attributes), so a document reads back
+deep-equal (`docs/decisions.md` §Equality is deep). A node CommonMark spells takes the directive
+form to hold an empty key.
 
 Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
-`json` value: `!adf:layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
+`json` value, `marks=empty` where it is empty:
+`!adf:layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
 A section saying its body is inline takes at most one paragraph, whose inline content becomes
 the node's `content`; any other body is a named error, and an empty pair is a node holding none.
 
@@ -215,14 +232,17 @@ cannot — `localId` (string) on any of them, marks, and the values below — ta
 form.
 
 - `blockquote`, `bulletList`, `listItem` — containers, block body. Attributes: `localId` (string).
-- `codeBlock` — container, body one fenced code block whose info string is the language and whose
-  content is the node's. Attributes: `hideLineNumbers` (boolean), `language` (string), `localId`
-  (string), `uniqueId` (string), `wrap` (boolean). A language no info string carries back — empty,
-  the reserved `carry`, or holding a backtick, a backslash, a control character, edge whitespace or
-  an entity reference — rides the `language` attribute instead and the fence carries no info
-  string; writing it in the slot that rule leaves empty, or in both, is a named error. The body is
-  one ordinary code block, and a fence's info string decodes escapes and entity references as any
-  other does.
+- `codeBlock` — container, body one fenced code block per text node, each fence's info string the
+  language and its content the node's text; a node holding no `content` key is one empty fence.
+  Attributes: `hideLineNumbers` (boolean), `language` (string), `localId` (string), `uniqueId`
+  (string), `wrap` (boolean). A language no info string carries back — empty, opening the reserved
+  `adf:`, or holding a backtick, a backslash, a control character, edge whitespace or an entity
+  reference — rides the `language` attribute instead and the fences carry no info string, and so
+  does a language beside `content=empty`, which has no fence; writing it in the slot that rule
+  leaves empty, or in both, is a named error, and so are fences whose info strings differ and an
+  empty fence beside another. Each fence is an ordinary code block, and its info string decodes
+  escapes and entity references as any other does. A node holding a child no fence holds — any but
+  a text node carrying no marks, `attrs` or `content` — rides the block carry.
 - `heading` — container, inline body. Attributes: `level` (number), `localId` (string). `level` is
   the `#` count, so a heading carrying none, or one that is no whole number from 1 to 6, has no
   CommonMark spelling.
@@ -424,9 +444,8 @@ Right.
 Attributes and the carry fallback read as in the block sections, the carry in its inline form. Of
 the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in the content slot as
 plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
-parsing to anything but one text node carrying neither marks, attributes nor content — adjacent text
-nodes with identical marks and no attributes merged first — is a named error, and so is a `text` key
-in `{attrs}`. An enclosing mark spelling does not reach into the slot. The rest take no content,
+parsing to anything but one text node carrying neither marks, attributes nor content is a named
+error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the slot. The rest take no content,
 `!adf:text` included; content on a node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
@@ -453,14 +472,25 @@ Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=175608000000
 CommonMark strips or refuses one — a block's inline content edges, either side of a line break, an
 em, strong or strike spelling's inner edges, a pipe cell's edges — is spelled `!adf:text{text="…"}`,
 the reserved key carrying the node's text, escaped by the attribute grammar and never literal: pipe
-cells trim and pad. The emitter wraps the whitespace run alone and leaves the rest plain text;
-`markdownToAdf` merges adjacent text nodes carrying identical marks and no attributes
-(`docs/decisions.md` §Equality is editor-normal). Input reads that spelling alone: the value is one
-run of spaces and tabs, or one run of newlines, and anything else — a mixed run, or text CommonMark
-carries plainly — is a named error.
+cells trim and pad. The emitter wraps the whitespace run alone and leaves the rest plain text, which
+the spelled run joins on reading. Input reads that spelling alone: the value is one run of spaces
+and tabs, or one run of newlines, and anything else — a mixed run, or text CommonMark carries
+plainly — is a named error.
 
 ```
 !adf:text{text="  "}Two leading spaces held, and one text node split!adf:text{text="\n"}over two lines.
+```
+
+**Adjacent text nodes.** CommonMark reads two adjacent text nodes back as one where neither is
+carried, neither holds `attrs` or an empty key, and their marks are identical, attributes included.
+The reserved leaf `!adf:textBreak{}` parts such a pair, inside every mark spelling the two share; a
+code span holds no directive, so it closes and reopens. It builds no node and reads only between
+two such nodes: elsewhere, or with `[content]` or `{attrs}`, it is a named error (`docs/decisions.md`
+§`!adf:textBreak{}` parts text CommonMark would join). A text node holding `attrs` or an empty key
+rides the inline carry.
+
+```
+Hello, !adf:textBreak{}world — **Hello, !adf:textBreak{}world** — `a`!adf:textBreak{}`b`
 ```
 
 ## Marks
@@ -490,14 +520,14 @@ the directive form, open to no literal reading, is a named error.
 A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
 outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the
 reverse. `adfToMarkdown` nests in the order the array holds rather than sorting it —
-`docs/decisions.md` §Equality is editor-normal restores the array, not a set — and opens each
-spelling once over the longest run of adjacent inline nodes carrying an identical mark, attributes
-included, at that depth. A run breaks at every node the emitter carries, so no emitted carry sits
-inside a mark spelling.
+`docs/decisions.md` §Equality is deep restores the array, not a set — and opens each spelling once
+over the longest run of adjacent inline nodes carrying an identical mark, attributes included, at
+that depth: `attrs: {}` differs from no `attrs`, and a directive spells it `{attrs=empty}`. A run
+breaks at every node the emitter carries, so no emitted carry sits inside a mark spelling.
 
 An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
 spelling does not list, a value that is not the spelling's type, an attribute the spelling needs
-and the mark lacks, an order putting a code span outside another mark, `code` over anything but a
+and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside another mark, `code` over anything but a
 text node or over text holding a newline, or a spelling CommonMark's flanking rules cannot open or
 close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere — the
 intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave the

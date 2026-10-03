@@ -51,7 +51,7 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // The plain flavour is lossy: it reads and writes editor-normal ADF, whose shapes CommonMark spells.
+  // docs/decisions.md §Equality is deep: the plain flavour reads and writes editor-normal ADF.
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
   return blocks.ok ? success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 }) : blocks
 }

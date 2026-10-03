@@ -175,7 +175,7 @@ Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in a `carry` | write the spelling the message names, or escape the prefix — `\!adf:`, block and inline alike — to keep it literal text |
+| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or escape the prefix — `\!adf:`, block and inline alike — to keep it literal text |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.2.0` | remove the construct, or write what it holds in the lossless flavour |
@@ -204,7 +204,9 @@ emit refuses:
 
 Serves Goals 1, 3 and 4.
 
-- `markdownToAdf(adfToMarkdown(doc))` equals `doc` — unknown node types included, carried opaquely
+- `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc` — every key and value as `doc` holds it,
+  adjacent text nodes, an empty `attrs`, `content` or `marks` and `-0` included, and unknown node
+  types carried opaquely
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.2.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
@@ -239,7 +241,7 @@ Serves Goals 1, 3 and 4.
   makes a call loop forever.
 - The emitted formats are semver surface
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#the-formats-are-api)).
-- **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` equals `doc`; fidelity HTML cannot express rides
+- **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
   `data-*` attributes. Foreign HTML maps a documented element set, which markdown's raw HTML reads
   through as well, and a construct outside it is an error; well-formed HTML only — no tag-soup
   recovery.

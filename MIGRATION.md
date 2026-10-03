@@ -40,12 +40,12 @@ function migrateMarkdown(stored: string) {
 | `::media {id=a type=file}` | `!adf:media {id=a type=file}` |
 | `::taskItem TODO {localId=i}`: an empty `caption`, `decisionItem`, `paragraph` or `taskItem`, or an empty `heading` carrying `localId` | `!adf:taskItem TODO {localId=i}` then `!adf:/taskItem` |
 | `:mention[@Mikael]{id=5b10a2}` | `!adf:mention[@Mikael]{id=5b10a2}` |
-| the `adf` code fence and `:adf{json="…"}` | the `carry` code fence and `!adf:carry{json="…"}` |
+| the `adf` code fence and `:adf{json="…"}` | the `adf:<type>` code fence, its JSON without `type`, and `!adf:carry{json="…"}` |
 | `\:` keeps a directive literal | `\!adf:` keeps a directive literal |
 | `:adf{json="…"}` carrying a link for its `collection`, `id` or `occurrenceKey` | `!adf:link[text]{attrs}` |
 
 A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
-holding an unescaped `!adf:` and a `carry` fence are claimed instead.
+holding an unescaped `!adf:` and a code fence whose info string opens `adf:` are claimed instead.
 
 ### Readings
 
@@ -54,6 +54,8 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
+| markdown holding no block (`markdownToAdf("")`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
+| a code fence whose info string opens `adf:` (```` ```adf:x ````) | a `codeBlock` with that language | the block carry; write `!adf:codeBlock {language="adf:x"}` around a bare fence to keep the code block |
 
 ### Error codes
 

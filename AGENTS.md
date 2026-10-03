@@ -10,8 +10,14 @@ In `docs/decisions.md`:
 - Plain markdown is a flavour of the grammar
 - The round-trip is the product
 - Markdown in is a canonical fixpoint
-- Equality is editor-normal
+- Equality is deep
+- `!adf:textBreak{}` parts text CommonMark would join
+- An empty key spells `empty`
+- `-0` is spelled `-0`
+- Empty markdown is a document of no blocks
 - Unknown nodes ride the carry
+- The carry fence names the node type
+- A code block is a fence per text node
 - Foreign HTML sorts three ways
 - Names stay text
 - Directives under `!adf:`

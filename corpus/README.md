@@ -18,8 +18,8 @@ One directory per contract kind:
   `reason`. `kind` is `mark-model` (the permanent count divergence from ADF's mark-per-text-node
   model), `unspellable` (parses but the flavour has no spelling) or `pending` (a parser gap).
 
-JSON is editor-normal (`docs/decisions.md` §Equality is editor-normal), two-space indent, keys
-sorted. `spec.json` is the vendored, upstream machine-readable suite, byte-exact from
+JSON is two-space indent, keys sorted, and a document read back must deep-equal the fixture's
+(`docs/decisions.md` §Equality is deep). `spec.json` is the vendored, upstream machine-readable suite, byte-exact from
 [spec.commonmark.org](https://spec.commonmark.org/0.31.2/spec.json) (CommonMark 0.31.2, © John
 MacFarlane, [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/)), and is not
 re-serialized by the corpus gate.
