@@ -642,8 +642,8 @@ is the markdown flavour's choice, not ADF's.
 
 ## The source parts by ADF and format
 
-2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, the maintainer. Goal 2. Valid while
-each format has a reader and a writer through ADF.
+2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, `plain/` 2026-10-03, the maintainer.
+Goal 2. Valid while each format has a reader and a writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
 lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a content
@@ -666,3 +666,6 @@ conservative the copy would be. Where the rule is the emitter's own choice, inpu
 rather than restating it, and that is the only import `parse/` takes from `emit/` —
 `commonMarkSpelling` and `openingLinkTakesDirective` — so no fixture the emitter writes can be
 refused, and a spelling the emitter refuses gives its own error rather than a second name for it.
+`markdown/plain/` holds the plain flavour's own code — the writer's reduction to editor-normal ADF
+and the conventions and task ids the reader takes — so neither direction reaches into the other
+for it.

@@ -1,4 +1,4 @@
-import { isWordCharacter } from './commonmark/emphasis-matching.ts'
+import { isWordCharacter } from '../commonmark/emphasis-matching.ts'
 
 export type Flavour = 'lossless' | 'plain'
 

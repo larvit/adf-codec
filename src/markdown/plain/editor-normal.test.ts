@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfNode } from './document.ts'
-import type { JsonValue } from '../json-value.ts'
+import type { AdfNode } from '../../adf/document.ts'
+import type { JsonValue } from '../../json-value.ts'
 import { toEditorNormal } from './editor-normal.ts'
 
 test('merges adjacent text nodes carrying identical marks, at every level', () => {

@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { adfToMarkdown } from '../emit/adf-to-markdown.ts'
-import { adfToPlainMarkdown } from '../emit/plain-reduction.ts'
+import { adfToPlainMarkdown } from '../plain/adf-to-plain-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markdownToAdf, plainMarkdownToAdf } from './markdown-to-adf.ts'
 

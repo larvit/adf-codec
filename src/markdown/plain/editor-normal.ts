@@ -1,6 +1,6 @@
-import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './document.ts'
-import type { JsonValue } from '../json-value.ts'
-import { identicalMark, identicalMarks, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from './document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { JsonValue } from '../../json-value.ts'
+import { identicalMark, identicalMarks, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 

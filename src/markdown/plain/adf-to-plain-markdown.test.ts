@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
-import { adfToPlainMarkdown, reduceToPlain } from './plain-reduction.ts'
+import { adfToPlainMarkdown, reduceToPlain } from './adf-to-plain-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
 
 const code: AdfMark = { type: 'code' }

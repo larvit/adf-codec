@@ -1,14 +1,14 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
-import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from './adf-to-markdown.ts'
+import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './plain-inline.ts'
+import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { taskMarker } from '../plain-conventions.ts'
-import { toEditorNormal } from '../../adf/editor-normal.ts'
+import { taskMarker } from './conventions.ts'
+import { toEditorNormal } from './editor-normal.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }

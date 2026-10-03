@@ -154,7 +154,7 @@ punctuation — and, where they do, read the code point, with a fixture per dire
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
-`plain-inline.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`, quadratic in a run
+`plain/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`, quadratic in a run
 of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 `adfToPlainMarkdown`. Scan backward, as the expand title's trim does.
 

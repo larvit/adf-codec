@@ -5,10 +5,10 @@ import test from 'node:test'
 import type { AdfNode } from '../adf/document.ts'
 import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
-import { adfToPlainMarkdown, reduceToPlain } from '../markdown/emit/plain-reduction.ts'
+import { adfToPlainMarkdown, reduceToPlain } from '../markdown/plain/adf-to-plain-markdown.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { markdownToAdf, plainMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
-import { toEditorNormal } from '../adf/editor-normal.ts'
+import { toEditorNormal } from '../markdown/plain/editor-normal.ts'
 
 const gateRuns = 1600
 const renamedPrefix = '!adg:'
