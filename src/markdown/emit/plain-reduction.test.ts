@@ -338,3 +338,9 @@ test('keeps the nodes the plain flavour spells and degrades only what it cannot'
   const reduced = reduceToPlain(document(node('panel', { localId: '01a0d99b-1f56-7a50-889a-f4375f09ee05', panelType: 'info' }, said('x')), tasks))
   assert.deepEqual(reduced.ok ? reduced.value : undefined, document(node('panel', { panelType: 'info' }, said('x')), { content: [node('taskItem', { state: 'DONE' }, text('t'))], type: 'taskList' }))
 })
+
+test('writes what the editor-normal form of the document writes', () => {
+  assert.equal(plain({ attrs: { order: -0 }, content: [{ content: [], type: 'listItem' }], type: 'orderedList' }), '0.\n')
+  assert.equal(plain({ content: [], text: 'hi', type: 'futureInline' }), 'hi\n')
+  assert.equal(plain(paragraph({ marks: [{ attrs: {}, type: 'code' }], text: 'a', type: 'text' }, { marks: [{ type: 'code' }], text: '|b', type: 'text' })), '`a|b`\n')
+})

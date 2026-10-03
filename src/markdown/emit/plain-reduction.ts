@@ -51,9 +51,14 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // A refusal's path indexes the caller's document, so only the reduction's output normalizes (docs/decisions.md §Equality is deep).
-  const blocks = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
-  return blocks.ok ? success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 }) : blocks
+  // docs/decisions.md §Equality is deep: the reduction reads and writes editor-normal ADF.
+  const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
+  if (!blocks.ok) {
+    // Merging text renumbers siblings, so the caller's document names the refusal's path.
+    const raw = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
+    return raw.ok ? blocks : raw
+  }
+  return success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 })
 }
 
 function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
@@ -86,7 +91,7 @@ function reduceStanding(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
 
 function standsInline(node: AdfNode): boolean {
   if (node.type === 'text' || inlineNodeModel(node.type) !== undefined) return true
-  return !isBlockNodeType(node.type) && node.content === undefined
+  return !isBlockNodeType(node.type) && nodeContent(node).length === 0
 }
 
 function reduceBody(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {

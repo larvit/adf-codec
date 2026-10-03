@@ -8,6 +8,7 @@ import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPlainMarkdown, reduceToPlain } from '../markdown/emit/plain-reduction.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { markdownToAdf, plainMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { toEditorNormal } from '../adf/editor-normal.ts'
 
 const gateRuns = 1600
 const renamedPrefix = '!adg:'
@@ -57,6 +58,15 @@ test('a generated document writes plain markdown refusing only what the guard re
       const reduced = reduceToPlain(document)
       assert.deepEqual(shownText(read.value.content ?? []), reduced.ok ? shownText(reduced.value.content ?? []) : reduced, `reading ${JSON.stringify(written.value)}`)
       assert.deepEqual(adfToPlainMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('a generated document writes the plain markdown its editor-normal form writes', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(adfDocument, (document) => {
+      assert.deepEqual(adfToPlainMarkdown(document), adfToPlainMarkdown(toEditorNormal(document)))
     }),
     propertyRuns(gateRuns),
   )

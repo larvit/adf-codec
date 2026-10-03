@@ -40,8 +40,9 @@ shape the editor would not.
 empty `attrs`, `content` or `marks` and `-0` included, with no normalization on either side.
 CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader
 builds what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction
-writes editor-normal ADF — adjacent text nodes of identical marks and no attributes merged, `-0`
-as `0`, and an empty `attrs`, `content` or `marks` the absent key.
+reads and writes editor-normal ADF — adjacent text nodes of identical marks and no attributes
+merged, `-0` as `0`, and an empty `attrs`, `content` or `marks` the absent key — so two documents
+the editor holds equal write the same plain markdown.
 
 ## `!adf:textBreak{}` parts text CommonMark would join
 
