@@ -190,3 +190,14 @@ and `todo.md` and trusting them over anything remembered from earlier iterations
 is a thin driver: each chunk's work runs in a fresh-context subagent holding this file as its
 charter, and the driver only relays maintainer questions, runs the review flow, merges, and cleans
 up. The loop stops when only maintainer-reserved acts remain.
+
+## 8. Scoring run
+
+The comprehension panel's fill-ins:
+
+- Language: TypeScript.
+- Kind: a pure-function document converter with hand-written parsers and emitters.
+- Domain: Atlassian Document Format and CommonMark parsing.
+- Domain docs: the CommonMark spec, ADF's JSON schema and `spec/flavour.md`.
+- 3am question: a viewer/editor app reports that a document it saved comes back with two text
+  nodes merged and a mark gone after `markdownToAdf(adfToMarkdown(doc))`.
