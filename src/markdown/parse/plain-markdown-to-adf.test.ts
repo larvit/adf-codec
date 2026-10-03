@@ -30,10 +30,6 @@ function read(markdown: string): readonly AdfNode[] | string {
   return blocks
 }
 
-function blocks(...content: AdfNode[]): readonly AdfNode[] {
-  return content
-}
-
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
 }
@@ -100,7 +96,7 @@ test('reads the rest of an alert marker line as the panel first body paragraph, 
   assert.deepEqual(read('> [!tip] Title\n> body\n'), [panel('tip', said('Title'), said('body'))])
   assert.deepEqual(read('> [!tip] Title\\\n> body\n'), [panel('tip', said('Title'), said('body'))])
   assert.deepEqual(read('> [!NOTE]\\\n> Broken.\n'), [panel('info', said('Broken.'))])
-  assert.deepEqual(read('> [!NOTE]\n'), blocks(panel('info', paragraph())))
+  assert.deepEqual(read('> [!NOTE]\n'), [panel('info', paragraph())])
   assert.deepEqual(read('> > [!WARNING]\n> > Inner.\n'), [bare('blockquote', panel('warning', said('Inner.')))])
 })
 
@@ -119,27 +115,27 @@ test('reads a folded callout to an expand titled by the rest of its marker line,
     node('expand', { title: 'Why?' }, paragraph(text('See '), text('the docs', link), text(', '), text('now', strong), text('.'))),
   ])
   assert.deepEqual(read('> [!NOTE]- Two\\\n> lines\n'), [node('expand', { title: 'Two' }, said('lines'))])
-  assert.deepEqual(read('> [!faq]- See [x](http://y)\n'), blocks(node('expand', { title: 'See x (http://y)' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- [a **b**](u "t")[c](u) and [d](v)\n'), blocks(node('expand', { title: 'a bc (u) and d (v)' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- <http://y> or <a@b.c> or <http://a\\b>\n'), blocks(node('expand', { title: 'http://y or a@b.c or http://a\\b' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- [a&#10;b](u)\n'), blocks(node('expand', { title: 'a\nb (u)' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- [!adf:mention[@M]{id=5}](u) !adf:inlineCard{url="http://y"}\n'), blocks(node('expand', { title: '@M (u) http://y' }, paragraph())))
-  assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), blocks(node('expand', { title: 'Set ==x== here' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- See [x](http://y)\n'), [node('expand', { title: 'See x (http://y)' }, paragraph())])
+  assert.deepEqual(read('> [!faq]- [a **b**](u "t")[c](u) and [d](v)\n'), [node('expand', { title: 'a bc (u) and d (v)' }, paragraph())])
+  assert.deepEqual(read('> [!faq]- <http://y> or <a@b.c> or <http://a\\b>\n'), [node('expand', { title: 'http://y or a@b.c or http://a\\b' }, paragraph())])
+  assert.deepEqual(read('> [!faq]- [a&#10;b](u)\n'), [node('expand', { title: 'a\nb (u)' }, paragraph())])
+  assert.deepEqual(read('> [!faq]- [!adf:mention[@M]{id=5}](u) !adf:inlineCard{url="http://y"}\n'), [node('expand', { title: '@M (u) http://y' }, paragraph())])
+  assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), [node('expand', { title: 'Set ==x== here' }, paragraph())])
   assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })
 
 test('reads a folded callout inside an expand to a nested expand', () => {
   const markdown = '> [!NOTE]- Outer\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n>\n> > [!TIP]\n> >\n> > > [!NOTE]-\n'
-  assert.deepEqual(read(markdown), blocks(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))))
-  assert.deepEqual(read('- > [!NOTE]-\n'), blocks(bare('bulletList', bare('listItem', bare('expand', paragraph())))))
-  assert.deepEqual(read('!adf:expand\n> [!NOTE]- Inner\n!adf:/expand\n'), blocks(bare('expand', node('nestedExpand', { title: 'Inner' }, paragraph()))))
+  assert.deepEqual(read(markdown), [node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))])
+  assert.deepEqual(read('- > [!NOTE]-\n'), [bare('bulletList', bare('listItem', bare('expand', paragraph())))])
+  assert.deepEqual(read('!adf:expand\n> [!NOTE]- Inner\n!adf:/expand\n'), [bare('expand', node('nestedExpand', { title: 'Inner' }, paragraph()))])
 })
 
 test('reads a bullet list whose every item leads with a task marker to a task list', () => {
   assert.deepEqual(read('- [x] Write the spec\n- [ ] Ship **it**\n- [X] Tell\n'), [
     bare('taskList', task('DONE', text('Write the spec')), task('TODO', text('Ship '), text('it', strong)), task('DONE', text('Tell'))),
   ])
-  assert.deepEqual(read('- [x]\n- [ ]\\\n  after\n'), blocks(bare('taskList', task('DONE'), task('TODO', text('after')))))
+  assert.deepEqual(read('- [x]\n- [ ]\\\n  after\n'), [bare('taskList', task('DONE'), task('TODO', text('after')))])
   const minted = plainMarkdownToAdf('- [x] Parent\n  - [ ] Child\n')
   assert.deepEqual(minted.ok ? minted.value.content : minted.error.code, [
     node(
@@ -201,7 +197,7 @@ test('reads what the reduction wrote back to the node it reduced, less the attri
     assert.deepEqual(roundTripped(node('panel', { localId, panelType }, said('Check.'))), [panel(panelType, said('Check.'))], panelType)
   }
   const expand = node('expand', { localId, title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))
-  assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), blocks(panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())))
+  assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), [panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())])
   assert.deepEqual(roundTripped(expand), [node('expand', { title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))])
   const tasks = bare(
     'taskList',
@@ -268,5 +264,5 @@ test('keeps what markdownToAdf reads that no row reads, and refuses only what it
 
 test('joins a carried text node to no neighbour, inside a highlight too', () => {
   const carried = '!adf:carry{json="{\\"marks\\":[],\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
-  assert.deepEqual(read(`==a${carried}==\n`), blocks(paragraph(text('a', highlight), { marks: [], text: 'b', type: 'text' })))
+  assert.deepEqual(read(`==a${carried}==\n`), [paragraph(text('a', highlight), { marks: [], text: 'b', type: 'text' })])
 })
