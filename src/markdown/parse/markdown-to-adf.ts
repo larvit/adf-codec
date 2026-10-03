@@ -7,7 +7,7 @@ import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryFencePrefix, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
-import { documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
+import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { inlineLeaves } from '../emit/plain-inline.ts'
 import { languageSlot } from '../code-language.ts'
@@ -83,8 +83,8 @@ function listBreakFault(block: DirectiveBlock, previous: Block | undefined, next
 }
 
 function documentFault(block: DirectiveBlock): ConvertFault | undefined {
-  const content = block.attributes.get('content')
-  if (block.argument === undefined && block.attributes.size === 1 && content?.spelling === 'none') return undefined
+  const spelled = block.attributes.get(documentAttribute.key)
+  if (block.argument === undefined && block.attributes.size === 1 && spelled?.spelling === documentAttribute.value) return undefined
   return unsupportedNodeShape(`${documentName} spells the one form ${documentSpelling}: this one spells another`)
 }
 

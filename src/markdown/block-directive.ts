@@ -4,7 +4,7 @@ import type { JsonValue } from '../json-value.ts'
 import { blockNodeModel } from '../adf/block-nodes.ts'
 import { isAdfMark } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
-import { spellDirectiveOpener } from './directive-syntax.ts'
+import { spellAttributes, spellDirectiveOpener } from './directive-syntax.ts'
 
 const argumentByType = new Map(
   Object.entries({
@@ -17,7 +17,9 @@ const argumentByType = new Map(
 export const documentName = 'doc'
 
 // spec/flavour.md, Directives: a document holding no content key, which the empty string cannot spell.
-export const documentSpelling = spellDirectiveOpener(documentName, undefined, '{content=none}')
+export const documentAttribute = { key: 'content', value: 'none' } as const
+
+export const documentSpelling = spellDirectiveOpener(documentName, undefined, spellAttributes([[documentAttribute.key, documentAttribute.value]]))
 
 export const listBreakName = 'listBreak'
 
