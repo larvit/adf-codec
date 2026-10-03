@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 54`
+`Next ID = 55`
 
 | Goal | W |
 |---|---|
@@ -31,6 +31,7 @@
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
+| 54 | 0.2.0 |  | **Make `docs/decisions.md` §The source parts by ADF and format name every import `parse/` takes from `emit/`.** | 2 | 2 | 2 | 5 | 1 | 11.5 |
 | 53 | 0.2.0 |  | **Bench a block's `marks` spelling with the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 5 | 11.5 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
@@ -94,6 +95,12 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 example 540); lowercasing and then uppercasing folds it. Breaking, so it ships beside item 43:
 `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go, and its spelling leaves
 the README's "Four CommonMark spellings" bullet, which counts one fewer.
+
+### 54. Make `docs/decisions.md` §The source parts by ADF and format name every import `parse/` takes from `emit/`.
+
+The entry says `parse/` imports only `commonMarkSpelling` and `openingLinkTakesDirective` from
+`emit/`; `parse/markdown-to-adf.ts` also imports `inlineLeaves` from `emit/plain-inline.ts`. Either
+the entry names it with its reason, or the reader stops importing it.
 
 ### 53. Bench a block's `marks` spelling with the writer panel and adopt its pick.
 
