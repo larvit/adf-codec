@@ -265,3 +265,8 @@ test('keeps what markdownToAdf reads that no row reads, and refuses only what it
   for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
   assert.equal(typeof read(deep), 'object')
 })
+
+test('joins a carried text node to no neighbour, inside a highlight too', () => {
+  const carried = '!adf:carry{json="{\\"marks\\":[],\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
+  assert.deepEqual(read(`==a${carried}==\n`), blocks(paragraph(text('a', highlight), { marks: [], text: 'b', type: 'text' })))
+})
