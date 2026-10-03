@@ -204,9 +204,9 @@ emit refuses:
 
 Serves Goals 1, 3 and 4.
 
-- `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc` — every key and value as `doc` holds it,
-  adjacent text nodes, an empty `attrs`, `content` or `marks` and `-0` included, and unknown node
-  types carried opaquely
+- `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc` as JSON, for a document of plain objects
+  as `JSON.parse` builds them — every key and value as `doc` holds it, adjacent text nodes, an
+  empty `attrs`, `content` or `marks` and `-0` included, and unknown node types carried opaquely
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.2.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below

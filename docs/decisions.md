@@ -36,8 +36,10 @@ does not imply a spellable document; `corpus/commonmark-spec/exceptions.json` na
 2026-08-24, deep 2026-10-03, the maintainer. Goal 1. Valid while a pipeline or a bot can build a
 shape the editor would not.
 
-"Equals" is `assert.deepStrictEqual`: every key and value `doc` holds, two adjacent text nodes, an
-empty `attrs`, `content` or `marks` and `-0` included, with no normalization on either side.
+"Equals" is deep equality over the document's JSON values: `assert.deepStrictEqual` on plain
+objects as `JSON.parse` builds them, since ADF is JSON. Every key and value `doc` holds counts, two
+adjacent text nodes, an empty `attrs`, `content` or `marks` and `-0` included, with no
+normalization on either side.
 CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader
 builds what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction
 reads and writes editor-normal ADF — adjacent text nodes of identical marks and no attributes
