@@ -17,7 +17,7 @@ const argumentByType = new Map(
 export const documentName = 'doc'
 
 // spec/flavour.md, Directives: a document holding no content key, which the empty string cannot spell.
-export const documentAttribute = { key: 'content', value: 'none' } as const
+export const documentAttribute = { key: 'content', value: 'none' }
 
 export const documentSpelling = spellDirectiveOpener(documentName, undefined, spellAttributes([[documentAttribute.key, documentAttribute.value]]))
 
