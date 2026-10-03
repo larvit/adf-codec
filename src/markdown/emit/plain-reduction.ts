@@ -54,9 +54,9 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
   // docs/decisions.md §Equality is deep: the reduction reads and writes editor-normal ADF.
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
   if (!blocks.ok) {
-    // Merging text renumbers siblings, so the caller's document names the refusal's path.
+    // Merging text renumbers siblings, so the caller's document names the path of the refusal the editor-normal one meets.
     const raw = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
-    return raw.ok ? blocks : raw
+    return !raw.ok && raw.error.code === blocks.error.code ? raw : blocks
   }
   return success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 })
 }
