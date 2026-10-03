@@ -23,10 +23,10 @@ export function readEmptyKeys(type: string, attributes: DirectiveAttributes, key
   for (const key of keys) {
     const spelled = rest.get(key)
     if (spelled === undefined) continue
-    if (!spellsEmpty(spelled)) return { fault: unsupportedNodeShape(`the reserved key ${key} reads ${key}=${emptyValue} alone: this one spells ${key}=${spelled.spelling}`) }
+    if (!spellsEmpty(spelled)) return { fault: unsupportedNodeShape(`the reserved key ${key} takes only the value ${emptyValue}: this one spells ${key}=${spelled.spelling}`) }
     empty.add(key)
     rest.delete(key)
   }
-  if (empty.has('attrs') && (held || [...rest.keys()].some((key) => key !== 'marks'))) return { fault: unsupportedNodeShape(`${type} spells attrs=empty beside an attribute it holds`) }
+  if (empty.has('attrs') && (held || [...rest.keys()].some((key) => key !== 'marks'))) return { fault: unsupportedNodeShape(`${type} spells attrs=empty beside another attribute, an argument or content: drop attrs=empty or the rest`) }
   return { value: { empty, rest } }
 }

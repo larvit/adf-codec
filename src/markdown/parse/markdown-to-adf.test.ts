@@ -166,7 +166,7 @@ test('reads the codeBlock directive body as the node content, the info string it
 
 test('names the slot a codeBlock spells its language outside of', () => {
   const slot = 'unsupported-node-shape: codeBlock spells its language in the fence info string, or in the attribute where no info string carries it back'
-  assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n')), slot)
+  assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n')), "unsupported-node-shape: move language=rust to the fence's info string: a fence carries the language wherever its info string can")
   assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n')), slot)
   assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n')), slot)
   assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n')), slot)
@@ -376,7 +376,7 @@ test('reads the carry fence back to the node its info string names and its JSON 
     content(markdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n')),
     'unsupported-node-shape: the adf:blockCard fence names its node\'s type: this JSON holds a type as well; !adf:codeBlock {language="adf:blockCard"} around a bare fence keeps it a code block',
   )
-  assert.equal(content(markdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the carry fence names a type its info string carries: spell it adf:blockCard')
+  assert.equal(content(markdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the adf: fence holds a type its info string can carry: spell the fence adf:blockCard and drop type from the JSON')
   assert.equal(content(markdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; !adf:codeBlock {language=\"adf:\"} around a bare fence keeps it a code block")
   const unnamed = 'unsupported-node-shape: the carry fence names a type no info string carries back: spell it adf: with the type in the JSON; !adf:codeBlock {language="adf:\\\\"} around a bare fence keeps it a code block'
   assert.equal(content(markdownToAdf('```adf:\\\\\n{}\n```\n')), unnamed)
@@ -441,7 +441,7 @@ test('names the number no JSON spelling carries in an opaque carry', () => {
 })
 
 test('names the mark spelling no opaque carry sits inside', () => {
-  const named = 'unsupported-node-shape: no mark spelling wraps an opaque carry or an inline node spelling marks=empty: its marks are its own'
+  const named = 'unsupported-node-shape: move the opaque carry, or the node spelling marks=empty, out of the mark spelling: it holds its own marks'
   assert.equal(content(markdownToAdf(`_a ${carried} b_\n`)), named)
   assert.equal(content(markdownToAdf(`**${carried}**\n`)), named)
   assert.equal(content(markdownToAdf(`~~a ${carried}~~\n`)), named)
@@ -1095,8 +1095,8 @@ test('reads the text break only between two text nodes CommonMark joins, buildin
   for (const markdown of ['!adf:textBreak{}a\n', 'a!adf:textBreak{}\n', 'a!adf:textBreak{}!adf:textBreak{}b\n', '**a**!adf:textBreak{}b\n', '[!adf:textBreak{}](/u)\n', `a!adf:textBreak{}${carried}\n`]) {
     assert.equal(content(markdownToAdf(markdown)), parts, markdown)
   }
-  assert.equal(content(markdownToAdf('!adf:status[a!adf:textBreak{}b]\n')), 'unsupported-node-shape: textBreak parts two text nodes: a content slot holds plain text')
-  assert.equal(content(markdownToAdf('![a!adf:textBreak{}b](/i)\n')), 'unsupported-node-shape: textBreak parts two text nodes: an image description holds plain text')
+  assert.equal(content(markdownToAdf('!adf:status[a!adf:textBreak{}b]\n')), 'unsupported-node-shape: delete !adf:textBreak{} from this content slot: a slot holds one text node')
+  assert.equal(content(markdownToAdf('![a!adf:textBreak{}b](/i)\n')), 'unsupported-node-shape: delete !adf:textBreak{} from this image description: the description reads as plain alt text')
   assert.equal(content(markdownToAdf('a!adf:textBreak{x=y}b\n')), 'unsupported-node-shape: textBreak spells the bare leaf form, !adf:textBreak{}: this one spells more')
   assert.deepEqual(content(markdownToAdf('!adf:carry{json="{\\"type\\":\\"textBreak\\"}"}\n')), [{ content: [{ type: 'textBreak' }], type: 'paragraph' }])
 })
@@ -1109,5 +1109,13 @@ test('leads a refusal ordinary editing meets with the edit that fixes it', () =>
   assert.equal(
     content(markdownToAdf('!adf:codeBlock\n```\na\n```\n```\n```\n!adf:/codeBlock\n')),
     'unsupported-node-shape: delete the empty fence: a fence beside another holds code, and this one holds none',
+  )
+  assert.equal(
+    content(markdownToAdf('!adf:codeBlock {attrs=empty}\n```js\na\n```\n```js\nb\n```\n!adf:/codeBlock\n')),
+    "unsupported-node-shape: remove attrs=empty to give the codeBlock the fence's language: attrs=empty holds no language, and this fence names one",
+  )
+  assert.equal(
+    content(markdownToAdf('!adf:panel info {attrs=empty}\nText.\n!adf:/panel\n')),
+    'unsupported-node-shape: panel spells attrs=empty beside another attribute, an argument or content: drop attrs=empty or the rest',
   )
 })

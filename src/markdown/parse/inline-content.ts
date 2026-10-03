@@ -72,7 +72,7 @@ type SharedScan = Pick<Scan, 'definitions' | 'path'>
 
 type SlotContent = { carry: boolean; nodes: Inline[] }
 
-const carriedInMark = 'no mark spelling wraps an opaque carry or an inline node spelling marks=empty: its marks are its own'
+const carriedInMark = 'move the opaque carry, or the node spelling marks=empty, out of the mark spelling: it holds its own marks'
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 const hreflessLink = 'the link mark spells its href: this one spells none'
 const imageAlone = 'an image fits only as a paragraph of its own: this one sits inside other content'
@@ -247,7 +247,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
   if (mark !== undefined) return mark.ok ? directiveMarkPiece(scan, span.name, mark.value, slot.value, index) : mark
   const content = slot.value?.nodes
-  if (content?.some(isTextBreak) === true) return failure('unsupported-node-shape', `${textBreakName} parts two text nodes: a content slot holds plain text`, scan.path)
+  if (content?.some(isTextBreak) === true) return failure('unsupported-node-shape', `delete ${textBreakSpelling} from this content slot: a slot holds one text node`, scan.path)
   const node = readInlineDirectiveNode(span.name, span.attributes, content === undefined ? undefined : adfNodes(content), scan.path)
   if (!node.ok) return node
   return success(node.value.marks === undefined ? { kind: 'nodes', nodes: [node.value] } : { kind: 'carry', node: node.value })
@@ -488,7 +488,7 @@ function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition:
 function imageAlt(inner: readonly Piece[], scan: Scan): Result<string> {
   const nodes = resolveNodes(inner, scan, false)
   if (!nodes.ok) return nodes
-  if (nodes.value.some(isTextBreak)) return failure('unsupported-node-shape', `${textBreakName} parts two text nodes: an image description holds plain text`, scan.path)
+  if (nodes.value.some(isTextBreak)) return failure('unsupported-node-shape', `delete ${textBreakSpelling} from this image description: the description reads as plain alt text`, scan.path)
   return success(adfNodes(nodes.value).map(altText).join(''))
 }
 

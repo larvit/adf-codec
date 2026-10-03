@@ -43,7 +43,7 @@ export function readCarriedBlock(type: string, body: string, depth: number): Rea
   }
   const read = readCarriedJson(body, 'two-space', largestNesting - depth, type)
   if (read.fault !== undefined || type !== '' || !infoStringCarries(read.value.type)) return read
-  return { fault: unsupportedNodeShape(`the carry fence names a type its info string carries: spell it ${carryFencePrefix}${read.value.type}`) }
+  return { fault: unsupportedNodeShape(`the ${carryFencePrefix} fence holds a type its info string can carry: spell the fence ${carryFencePrefix}${read.value.type} and drop type from the JSON`) }
 }
 
 export function readCarriedInline(span: DirectiveSpan): Read<AdfNode> | undefined {
