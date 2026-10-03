@@ -42,8 +42,8 @@ adjacent text nodes, an empty `attrs`, `content` or `marks`, and `-0`. Neither s
 CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader builds
 what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction reads and
 writes editor-normal ADF — adjacent text nodes of identical marks and no attributes merged, `-0` as
-`0`, and an empty `attrs`, `content` or `marks` the absent key, but the doc's `content` — so two
-documents the editor holds equal write the same plain markdown.
+`0`, and an empty `attrs`, `content` or `marks` the absent key, except the doc's `content`, which
+ADF's schema requires — so two documents the editor holds equal write the same plain markdown.
 
 ## `!adf:textBreak{}` parts text CommonMark would join
 
@@ -60,16 +60,16 @@ around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text 
 spells an empty object or array.
 
 An `attrs`, `content` or `marks` key holding an empty object or array is the reserved key with the
-bare value `empty`, so an empty pair stays the node holding no content key. A writer panel chose
-the spelling, 5 of 7. The grammar: `spec/flavour.md` §Directives, **Attributes**, and §Marks.
+bare value `empty`, so a container opener and closer with nothing between them stays the node
+holding no `content` key. A writer panel chose the spelling, 5 of 7. The grammar: `spec/flavour.md`
+§Directives, **Attributes**, and §Marks.
 
 ## `-0` is spelled `-0`
 
 2026-10-03, the maintainer. Goal 1. Valid while JSON's own serialization writes `-0` as `0`.
 
 `-0` is spelled `-0` wherever the flavour writes a number or a JSON value, since JSON's grammar
-reads it back as `-0` and no list marker spells the sign. The grammar: `spec/flavour.md` §Block
-nodes and §The CommonMark blocks.
+reads it back as `-0`. The grammar: `spec/flavour.md` §Block nodes and §The CommonMark blocks.
 
 ## Empty markdown is a document of no blocks
 
@@ -495,15 +495,18 @@ exits 0 on.
 2026-10-03, the maintainer. KISS, a technical principle, and its comprehension floor of 7. Valid
 while `todo.md` items 59, 60, 61 and 62 are open.
 
-A four-seat comprehension panel scored the project 6 against the floor of 7. The scores are the
-baseline: a later panel may not score lower on any dimension.
+A four-seat comprehension panel scored the project under the floor of 7. Its round-5 scores
+(2026-10-03) are the baseline: a later panel may not score lower on any dimension.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
-| Junior | 6.5 | 5.5 | 6 | 5.5 | 6 |
-| Mid | 7 | 5.5 | 6 | 5 | 5.5 |
-| Senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
-| Architect | 6 | 5.5 | 5.5 | 6 | 6 |
+| Junior | 6 | 5 | 6 | 5 | 5.5 |
+| Mid | 6.5 | 5 | 6 | 4.5 | 5.5 |
+| Senior | 6.5 | 5.5 | 6.5 | 5.5 | 6 |
+| Architect | 6.5 | 5.5 | 6 | 6 | 6 |
+
+Three panels on near-identical code scored overall means of 5.88, 5.75 and 5.75, and a seat moves
+±0.5 between runs.
 
 ## Properties on a fixed seed
 
@@ -665,14 +668,15 @@ them. A primitive knowing neither ADF nor a format stays at `src/` root. A const
 `spec/flavour.md` draws, and a placement nothing here settles goes beside its only reader, or in
 what both read where there are two.
 
-A flavour's own code, both directions included, sits in its own directory: `markdown/plain/`.
-Otherwise each format directory parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest
-of it holding what both directions read. A construct's reader lives there beside the regex the
-emitter escapes against, so the two cannot drift; a reader with no emit counterpart goes in
-`parse/`, unless it is part of a construct that side already holds — a grammar stays in one file
-rather than splitting across the seam. A rule both directions must answer alike — whether a list
-marker interrupts a paragraph — is one function there too, never a copy per direction, however
-conservative the copy would be. Where the rule is the emitter's own choice, input consults it rather
-than restating it, and that is the only value import `parse/` takes from `emit/` —
-`commonMarkSpelling` and `openingLinkTakesDirective` — so no fixture the emitter writes can be
-refused, and a spelling the emitter refuses gives its own error rather than a second name for it.
+A flavour's own code, both directions included, sits in its own directory: `markdown/plain/`;
+`todo.md` item 62 moves what still sits in `parse/` and `emit/`. Otherwise each format directory
+parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest of it holding what both
+directions read. A construct's reader lives there beside the regex the emitter escapes against, so
+the two cannot drift; a reader with no emit counterpart goes in `parse/`, unless it is part of a
+construct that side already holds — a grammar stays in one file rather than splitting across the
+seam. A rule both directions must answer alike — whether a list marker interrupts a paragraph — is
+one function there too, never a copy per direction, however conservative the copy would be. Where
+the rule is the emitter's own choice, input consults it rather than restating it, and that is the
+only value import `parse/` takes from `emit/` — `commonMarkSpelling` and `openingLinkTakesDirective`
+— so no fixture the emitter writes can be refused, and a spelling the emitter refuses gives its own
+error rather than a second name for it.
