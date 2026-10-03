@@ -38,10 +38,10 @@ shape the editor would not.
 
 "Equals" is `assert.deepStrictEqual`: every key and value `doc` holds, two adjacent text nodes, an
 empty `attrs`, `content` or `marks` and `-0` included, with no normalization on either side.
-CommonMark's spelling stays wherever a document holds none of those shapes. The plain flavour is
-lossy and stays editor-normal: its reduction reads and writes ADF with adjacent text nodes of
-identical marks and no attributes merged, `-0` read as `0`, and an empty `attrs`, `content` or
-`marks` the absent key.
+CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader
+builds what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction
+writes editor-normal ADF — adjacent text nodes of identical marks and no attributes merged, `-0`
+as `0`, and an empty `attrs`, `content` or `marks` the absent key.
 
 ## `!adf:textBreak{}` parts text CommonMark would join
 

@@ -6,7 +6,6 @@ import { adfToMarkdown } from '../emit/adf-to-markdown.ts'
 import { adfToPlainMarkdown } from '../emit/plain-reduction.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markdownToAdf, plainMarkdownToAdf } from './markdown-to-adf.ts'
-import { toEditorNormal } from '../../adf/editor-normal.ts'
 
 const code: AdfMark = { type: 'code' }
 const em: AdfMark = { type: 'em' }
@@ -18,7 +17,7 @@ const taskTypes = ['blockTaskItem', 'taskItem', 'taskList']
 function read(markdown: string): readonly AdfNode[] | string {
   const parsed = plainMarkdownToAdf(markdown)
   if (!parsed.ok) return parsed.error.code
-  const blocks = toEditorNormal(parsed.value).content ?? []
+  const blocks = parsed.value.content ?? []
   const pending = [...blocks]
   for (let block = pending.pop(); block !== undefined; block = pending.pop()) {
     for (const child of block.content ?? []) pending.push(child)
@@ -31,8 +30,8 @@ function read(markdown: string): readonly AdfNode[] | string {
   return blocks
 }
 
-function normal(...blocks: AdfNode[]): readonly AdfNode[] {
-  return toEditorNormal(document(...blocks)).content ?? []
+function blocks(...content: AdfNode[]): readonly AdfNode[] {
+  return content
 }
 
 function document(...content: AdfNode[]): AdfDocument {
@@ -57,7 +56,7 @@ function bare(type: string, ...content: AdfNode[]): AdfNode {
 }
 
 function paragraph(...content: AdfNode[]): AdfNode {
-  return bare('paragraph', ...content)
+  return content.length === 0 ? { type: 'paragraph' } : bare('paragraph', ...content)
 }
 
 function said(value: string): AdfNode {
@@ -101,7 +100,7 @@ test('reads the rest of an alert marker line as the panel first body paragraph, 
   assert.deepEqual(read('> [!tip] Title\n> body\n'), [panel('tip', said('Title'), said('body'))])
   assert.deepEqual(read('> [!tip] Title\\\n> body\n'), [panel('tip', said('Title'), said('body'))])
   assert.deepEqual(read('> [!NOTE]\\\n> Broken.\n'), [panel('info', said('Broken.'))])
-  assert.deepEqual(read('> [!NOTE]\n'), normal(panel('info', paragraph())))
+  assert.deepEqual(read('> [!NOTE]\n'), blocks(panel('info', paragraph())))
   assert.deepEqual(read('> > [!WARNING]\n> > Inner.\n'), [bare('blockquote', panel('warning', said('Inner.')))])
 })
 
@@ -120,27 +119,27 @@ test('reads a folded callout to an expand titled by the rest of its marker line,
     node('expand', { title: 'Why?' }, paragraph(text('See '), text('the docs', link), text(', '), text('now', strong), text('.'))),
   ])
   assert.deepEqual(read('> [!NOTE]- Two\\\n> lines\n'), [node('expand', { title: 'Two' }, said('lines'))])
-  assert.deepEqual(read('> [!faq]- See [x](http://y)\n'), normal(node('expand', { title: 'See x (http://y)' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- [a **b**](u "t")[c](u) and [d](v)\n'), normal(node('expand', { title: 'a bc (u) and d (v)' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- <http://y> or <a@b.c> or <http://a\\b>\n'), normal(node('expand', { title: 'http://y or a@b.c or http://a\\b' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- [a&#10;b](u)\n'), normal(node('expand', { title: 'a\nb (u)' }, paragraph())))
-  assert.deepEqual(read('> [!faq]- [!adf:mention[@M]{id=5}](u) !adf:inlineCard{url="http://y"}\n'), normal(node('expand', { title: '@M (u) http://y' }, paragraph())))
-  assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), normal(node('expand', { title: 'Set ==x== here' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- See [x](http://y)\n'), blocks(node('expand', { title: 'See x (http://y)' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- [a **b**](u "t")[c](u) and [d](v)\n'), blocks(node('expand', { title: 'a bc (u) and d (v)' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- <http://y> or <a@b.c> or <http://a\\b>\n'), blocks(node('expand', { title: 'http://y or a@b.c or http://a\\b' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- [a&#10;b](u)\n'), blocks(node('expand', { title: 'a\nb (u)' }, paragraph())))
+  assert.deepEqual(read('> [!faq]- [!adf:mention[@M]{id=5}](u) !adf:inlineCard{url="http://y"}\n'), blocks(node('expand', { title: '@M (u) http://y' }, paragraph())))
+  assert.deepEqual(read('> [!NOTE]- Set ==x== here\n'), blocks(node('expand', { title: 'Set ==x== here' }, paragraph())))
   assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })
 
 test('reads a folded callout inside an expand to a nested expand', () => {
   const markdown = '> [!NOTE]- Outer\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n>\n> > [!TIP]\n> >\n> > > [!NOTE]-\n'
-  assert.deepEqual(read(markdown), normal(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))))
-  assert.deepEqual(read('- > [!NOTE]-\n'), normal(bare('bulletList', bare('listItem', bare('expand', paragraph())))))
-  assert.deepEqual(read('!adf:expand\n> [!NOTE]- Inner\n!adf:/expand\n'), normal(bare('expand', node('nestedExpand', { title: 'Inner' }, paragraph()))))
+  assert.deepEqual(read(markdown), blocks(node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))))
+  assert.deepEqual(read('- > [!NOTE]-\n'), blocks(bare('bulletList', bare('listItem', bare('expand', paragraph())))))
+  assert.deepEqual(read('!adf:expand\n> [!NOTE]- Inner\n!adf:/expand\n'), blocks(bare('expand', node('nestedExpand', { title: 'Inner' }, paragraph()))))
 })
 
 test('reads a bullet list whose every item leads with a task marker to a task list', () => {
   assert.deepEqual(read('- [x] Write the spec\n- [ ] Ship **it**\n- [X] Tell\n'), [
     bare('taskList', task('DONE', text('Write the spec')), task('TODO', text('Ship '), text('it', strong)), task('DONE', text('Tell'))),
   ])
-  assert.deepEqual(read('- [x]\n- [ ]\\\n  after\n'), normal(bare('taskList', task('DONE'), task('TODO', text('after')))))
+  assert.deepEqual(read('- [x]\n- [ ]\\\n  after\n'), blocks(bare('taskList', task('DONE'), task('TODO', text('after')))))
   const minted = plainMarkdownToAdf('- [x] Parent\n  - [ ] Child\n')
   assert.deepEqual(minted.ok ? minted.value.content : minted.error.code, [
     node(
@@ -202,7 +201,7 @@ test('reads what the reduction wrote back to the node it reduced, less the attri
     assert.deepEqual(roundTripped(node('panel', { localId, panelType }, said('Check.'))), [panel(panelType, said('Check.'))], panelType)
   }
   const expand = node('expand', { localId, title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))
-  assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), normal(panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())))
+  assert.deepEqual(roundTripped(node('panel', { panelType: 'tip' }, paragraph()), node('expand', { title: 'Empty' }, paragraph())), blocks(panel('tip', paragraph()), node('expand', { title: 'Empty' }, paragraph())))
   assert.deepEqual(roundTripped(expand), [node('expand', { title: 'Log' }, said('Line.'), node('nestedExpand', { title: 'Inner' }, said('Deep.')))])
   const tasks = bare(
     'taskList',
