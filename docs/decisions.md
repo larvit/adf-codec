@@ -496,6 +496,22 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
+## The comprehension floor ships under 7 until items 59, 60, 61 and 62 land
+
+2026-10-03, the maintainer. KISS, a technical principle, and its comprehension floor of 7. Valid
+while `todo.md` items 59, 60, 61 and 62 are open.
+
+A four-seat comprehension panel scored the project 6 against the floor of 7, and the project ships
+under it while the restructures it named land: `todo.md` items 59, 60, 61 and 62 end this. The
+scores are the baseline — a later panel may not score lower on any dimension:
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior | 6.5 | 5.5 | 6 | 5.5 | 6 |
+| Mid | 7 | 5.5 | 6 | 5 | 5.5 |
+| Senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Architect | 6 | 5.5 | 5.5 | 6 | 6 |
+
 ## Properties on a fixed seed
 
 2026-09-14, the maintainer. Goal 1. Valid while a red gate must reproduce.

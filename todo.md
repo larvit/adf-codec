@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 59`
+`Next ID = 63`
 
 | Goal | W |
 |---|---|
@@ -30,11 +30,14 @@
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
+| 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
-| 54 | 0.2.0 |  | **Make `docs/decisions.md` §The source parts by ADF and format name every import `parse/` takes from `emit/`.** | 2 | 2 | 2 | 5 | 1 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 5 | 11.5 |
+| 60 | 0.2.0 | decision | **Give the parser's questions to the emitter one named module, so the parse→emit dependency reads as intended.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
+| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, and move `Read<T>` to `result.ts` and `Flavour` out of the plain flavour.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 3, 4, 6 | 10.4 |
+| 62 | 0.2.0 | decision | **Move the plain reader out of `parse/markdown-to-adf.ts` into `markdown/plain/`.** | 3 | 4 | 2 | 5 | 2 | 8.9 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 9 | 14.0 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 3, 4 | 12.6 |
@@ -53,9 +56,9 @@
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
-Lands after item 6. The CommonMark spec suite also runs against `markdownToHtml`. The README
-documents HTML as it documents markdown, and its tagline and `package.json`'s `description` regain
-HTML.
+Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs against
+`markdownToHtml`. The README documents HTML as it documents markdown, and its tagline and
+`package.json`'s `description` regain HTML.
 
 ### 55. Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start or a newline inside an emoji, mention or status.
 
@@ -99,6 +102,12 @@ Readings table gains its row, and its Spellings table one if `!adf:listBreak` re
 and 302 lose their `pending` exceptions, and the spelling leaves the README's "Four CommonMark
 spellings" bullet, which counts one fewer.
 
+### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
+
+The comprehension panel's worst place: `escapeClaims` and `escapeClosedRuns` re-implement the
+reader's view — flanking, code-span closers, link-definition openings, highlight flanking — and
+only the property tests catch drift. It caps Locality.
+
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
 A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]"`. Breaking:
@@ -111,17 +120,22 @@ example 540); lowercasing and then uppercasing folds it. Breaking, so it ships b
 `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go, and its spelling leaves
 the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
-### 54. Make `docs/decisions.md` §The source parts by ADF and format name every import `parse/` takes from `emit/`.
-
-The entry says `parse/` imports only `commonMarkSpelling` and `openingLinkTakesDirective` from
-`emit/`; `parse/markdown-to-adf.ts` also imports `inlineLeaves` from `emit/plain-inline.ts`. Either
-the entry names it with its reason, or the reader stops importing it.
-
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 
 Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
+
+### 60. Give the parser's questions to the emitter one named module, so the parse→emit dependency reads as intended.
+
+`parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
+from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
+parts by ADF and format true as they grow.
+
+### 59. Group the directive grammar into `src/markdown/directive/`, and move `Read<T>` to `result.ts` and `Flavour` out of the plain flavour.
+
+Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
+needs `Read<T>`, `Flavour`, the carry and the mark spellings out of `markdown/`.
 
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 
@@ -131,6 +145,10 @@ not decide; whatever it builds, both still parse, since a bot relies on plain Co
 input. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
 `pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
 which counts one fewer.
+
+### 62. Move the plain reader out of `parse/markdown-to-adf.ts` into `markdown/plain/`.
+
+
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
