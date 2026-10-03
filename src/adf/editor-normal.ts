@@ -77,7 +77,7 @@ function mergesText(node: AdfNode): boolean {
   return node.type === 'text' && Object.keys(nodeAttrs(node)).length === 0
 }
 
-export function sameMarks(previous: AdfNode, node: AdfNode): boolean {
+function sameMarks(previous: AdfNode, node: AdfNode): boolean {
   return marksKey(nodeMarks(previous)) === marksKey(nodeMarks(node))
 }
 
@@ -86,5 +86,5 @@ function marksKey(marks: readonly AdfMark[]): string {
 }
 
 function markKey(mark: AdfMark): string {
-  return `${mark.type} ${serializeCanonicalJson(nodeAttrs(mark), 'compact')}`
+  return `${mark.type} ${serializeCanonicalJson(normalAttributes(nodeAttrs(mark)) ?? {}, 'compact')}`
 }

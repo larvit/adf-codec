@@ -1,0 +1,5 @@
+```adf:
+{
+  "type": "blockCard"
+}
+```

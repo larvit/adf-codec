@@ -84,9 +84,21 @@ function table(...rows: AdfNode[]): AdfNode {
   return { content: rows, type: 'table' }
 }
 
-test('builds an empty document from input holding no block', () => {
-  assert.deepEqual(markdownToAdf(''), { ok: true, value: { type: 'doc', version: 1 } })
-  assert.deepEqual(content(markdownToAdf('\n \n\t\n')), [])
+test('builds an empty document from input holding no block, and one holding no content key from the doc directive alone', () => {
+  assert.deepEqual(markdownToAdf(''), { ok: true, value: { content: [], type: 'doc', version: 1 } })
+  assert.deepEqual(markdownToAdf('\n \n\t\n'), { ok: true, value: { content: [], type: 'doc', version: 1 } })
+  assert.deepEqual(markdownToAdf('!adf:doc {content=none}\n'), { ok: true, value: { type: 'doc', version: 1 } })
+  assert.deepEqual(markdownToAdf('\n!adf:doc {content=none}\n\n'), { ok: true, value: { type: 'doc', version: 1 } })
+  const form = 'unsupported-node-shape: doc spells the one form !adf:doc {content=none}: this one spells another'
+  assert.equal(content(markdownToAdf('!adf:doc\n')), form)
+  assert.equal(content(markdownToAdf('!adf:doc x {content=none}\n')), form)
+  assert.equal(content(markdownToAdf('!adf:doc {content=empty}\n')), form)
+  assert.equal(content(markdownToAdf('!adf:doc {content="none"}\n')), form)
+  const alone = 'unsupported-node-shape: !adf:doc {content=none} spells a whole document holding no content key, alone: this one stands among other blocks'
+  assert.equal(content(markdownToAdf('x\n\n!adf:doc {content=none}\n')), alone)
+  assert.equal(content(markdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n')), alone)
+  assert.equal(content(markdownToAdf('!adf:doc\n!adf:/doc\n')), 'malformed-directive: doc takes no body, so no !adf:/doc closes it; \\!adf: keeps the prefix literal')
+  assert.equal(content(markdownToAdf('a !adf:doc{content=none}\n')), 'unsupported-node-shape: doc takes the block form, !adf:doc, never the inline form')
 })
 
 test('builds one paragraph from the lines a blank line does not part', () => {
@@ -153,7 +165,7 @@ test('names the slot a codeBlock spells its language outside of', () => {
   const slot = 'unsupported-node-shape: codeBlock spells its language in the fence info string, or in the attribute where no info string carries it back'
   assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n')), slot)
   assert.equal(content(markdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n')), slot)
-  assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```carry\nx\n```\n!adf:/codeBlock\n')), slot)
+  assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n')), slot)
   assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n')), slot)
 })
 
@@ -343,18 +355,26 @@ test('names the position a directive name the other one spells belongs to', () =
 })
 
 test('names the reserved carry name a block directive spells', () => {
-  const reserved = 'malformed-directive: the name carry is reserved for the opaque carry, whose block form is the carry fence'
+  const reserved = 'malformed-directive: the name carry is reserved for the opaque carry, whose block form is the adf: fence'
   assert.equal(content(markdownToAdf('!adf:carry\n')), reserved)
   assert.equal(content(markdownToAdf('!adf:carry\nx\n!adf:/carry\n')), reserved)
   assert.deepEqual(content(markdownToAdf('```adf\nx\n```\n')), [{ attrs: { language: 'adf' }, content: [text('x')], type: 'codeBlock' }])
+  assert.deepEqual(content(markdownToAdf('```carry\nx\n```\n')), [{ attrs: { language: 'carry' }, content: [text('x')], type: 'codeBlock' }])
 })
 
 const carried = '!adf:carry{json="{\\"type\\":\\"placeholder\\"}"}'
 
-test('reads the carry fence back to the node its JSON holds', () => {
-  assert.deepEqual(content(markdownToAdf('```carry\n{\n  "attrs": {\n    "url": "https://example.com/x"\n  },\n  "type": "blockCard"\n}\n```\n')), [
+test('reads the carry fence back to the node its info string names and its JSON holds', () => {
+  assert.deepEqual(content(markdownToAdf('```adf:blockCard\n{\n  "attrs": {\n    "url": "https://example.com/x"\n  }\n}\n```\n')), [
     { attrs: { url: 'https://example.com/x' }, type: 'blockCard' },
   ])
+  assert.deepEqual(content(markdownToAdf('```adf:\n{\n  "type": "a`b"\n}\n```\n')), [{ type: 'a`b' }])
+  assert.equal(
+    content(markdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n')),
+    "unsupported-node-shape: the adf:blockCard fence names its node's type: this JSON holds a type as well",
+  )
+  assert.equal(content(markdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the carry fence names a type its info string carries: spell it adf:blockCard')
+  assert.equal(content(markdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node")
 })
 
 test('reads the inline carry back to the node its json attribute holds', () => {
@@ -365,22 +385,22 @@ test('reads the inline carry back to the node its json attribute holds', () => {
 
 test('names the invalid JSON no opaque carry holds', () => {
   const invalid = 'malformed-directive: the opaque carry holds invalid JSON'
-  assert.equal(content(markdownToAdf('```carry\n{"type":\n```\n')), invalid)
-  assert.equal(content(markdownToAdf('```carry\n```\n')), invalid)
+  assert.equal(content(markdownToAdf('```adf:x\n{"attrs":\n```\n')), invalid)
+  assert.equal(content(markdownToAdf('```adf:x\n```\n')), invalid)
   assert.equal(content(markdownToAdf('!adf:carry{json="{"}\n')), invalid)
   assert.equal(content(markdownToAdf('!adf:carry{json=abc}\n')), invalid)
 })
 
 test('names the canonical spelling a carried JSON reads alone', () => {
   const canonically = "unsupported-node-shape: the opaque carry spells its node's JSON canonically: "
-  assert.equal(content(markdownToAdf('```carry\n{"type":"blockCard"}\n```\n')), `${canonically}two-space indent, keys sorted`)
+  assert.equal(content(markdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n')), `${canonically}two-space indent, keys sorted`)
   assert.equal(content(markdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n')), `${canonically}compact, keys sorted`)
   assert.equal(content(markdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n')), `${canonically}compact, keys sorted`)
 })
 
 test('names the node JSON an opaque carry restores alone', () => {
   const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node"
-  assert.equal(content(markdownToAdf('```carry\n[]\n```\n')), node)
+  assert.equal(content(markdownToAdf('```adf:x\n[]\n```\n')), node)
   assert.equal(content(markdownToAdf('!adf:carry{json=null}\n')), node)
   assert.equal(content(markdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n')), node)
 })
@@ -394,7 +414,7 @@ test('names the shape the inline carry reads alone', () => {
 
 test('holds a carried JSON value to the nesting its position leaves', () => {
   const nested = (levels: number): string => `${'['.repeat(levels)}${']'.repeat(levels)}`
-  const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`carry\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
+  const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`adf:x\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
   const deeper = (levels: number): string => `unsupported-nesting-depth: a carried node's JSON nests deeper than the ${levels} levels its position leaves`
   assert.equal(content(markdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`)), deeper(largestNesting))
   assert.equal(
@@ -407,11 +427,11 @@ test('holds a carried JSON value to the nesting its position leaves', () => {
 test('names the number no JSON spelling carries in an opaque carry', () => {
   const named = 'unsupported-node-shape: the opaque carry holds a number JSON cannot spell'
   assert.equal(content(markdownToAdf('!adf:carry{json="{\\"attrs\\":{\\"width\\":1e999},\\"type\\":\\"blockCard\\"}"}\n')), named)
-  assert.equal(content(markdownToAdf('```carry\n1e999\n```\n')), named)
+  assert.equal(content(markdownToAdf('```adf:x\n1e999\n```\n')), named)
 })
 
 test('names the mark spelling no opaque carry sits inside', () => {
-  const named = 'unsupported-node-shape: no mark spelling wraps an opaque carry: the carried node restores exactly, marks included'
+  const named = 'unsupported-node-shape: no mark spelling wraps an opaque carry or an inline node spelling marks=empty: its marks are its own'
   assert.equal(content(markdownToAdf(`_a ${carried} b_\n`)), named)
   assert.equal(content(markdownToAdf(`**${carried}**\n`)), named)
   assert.equal(content(markdownToAdf(`~~a ${carried}~~\n`)), named)
@@ -454,7 +474,9 @@ test('names the marks key no marks array reads back from', () => {
   assert.equal(content(markdownToAdf('!adf:rule {marks="[1]"}\n')), named)
   assert.equal(content(markdownToAdf('!adf:rule {marks="{}"}\n')), named)
   assert.equal(content(markdownToAdf('!adf:rule {marks=x}\n')), named)
-  assert.equal(content(markdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n')), named)
+  assert.equal(content(markdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n')), named)
+  assert.deepEqual(content(markdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n')), [{ marks: [{ attrs: {}, type: 'em' }], type: 'rule' }])
+  assert.deepEqual(content(markdownToAdf('!adf:rule {marks=empty}\n')), [{ marks: [], type: 'rule' }])
 })
 
 test('names the attribute a node holds no reading for', () => {
@@ -487,7 +509,8 @@ test('names the argument and the body a node takes no reading for', () => {
   assert.equal(content(markdownToAdf('!adf:rule x\n')), 'unsupported-node-shape: rule takes no argument: this one spells one')
   assert.equal(content(markdownToAdf('!adf:paragraph\nOne.\n\nTwo.\n!adf:/paragraph\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
   assert.equal(content(markdownToAdf('!adf:paragraph\n---\n!adf:/paragraph\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
-  assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes one code block as its body: this body is not one')
+  assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes code blocks as its body: this body holds another block')
+  assert.equal(content(markdownToAdf('!adf:codeBlock {wrap=true}\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes code blocks as its body: this body holds none')
   assert.equal(content(markdownToAdf('!adf:paragraph\n![a](/u)\n!adf:/paragraph\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
   assert.equal(content(markdownToAdf('Part !adf:date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content: this one holds some')
 })
@@ -545,7 +568,7 @@ test('names the line and the offset in the input a refusal sits at, the innermos
   assert.deepEqual(position(markdownToAdf('- Part.\n- a <span>b</span>\n')), { line: 2, offset: 8 })
   assert.deepEqual(position(markdownToAdf('Part.\n\n!adf:panel info\nMore.\n')), { line: 3, offset: 7 })
   assert.deepEqual(position(markdownToAdf('x\n\na <span>b</span>\n===\n')), { line: 3, offset: 3 })
-  assert.deepEqual(position(markdownToAdf('x\n\n```carry\n{\n```\n')), { line: 3, offset: 3 })
+  assert.deepEqual(position(markdownToAdf('x\n\n```adf:x\n{\n```\n')), { line: 3, offset: 3 })
   assert.deepEqual(position(markdownToAdf('x\n\n| a |\n')), { line: 3, offset: 3 })
   assert.deepEqual(position(markdownToAdf('a\nb <span>c</span>\n')), { line: 1, offset: 0 })
   assert.deepEqual(position(markdownToAdf('Part.\r\n\r\n<div>\r\n')), { line: 3, offset: 9 })

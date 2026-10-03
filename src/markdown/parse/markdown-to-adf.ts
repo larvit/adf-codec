@@ -5,14 +5,14 @@ import type { ConvertFault } from '../../result.ts'
 import type { Flavour } from '../plain-conventions.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from './inline-content.ts'
-import { carryName, readCarriedBlock } from '../opaque-carry.ts'
+import { carryFencePrefix, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
+import { documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { inlineLeaves } from '../emit/plain-inline.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from '../plain-conventions.ts'
-import { listBreakName, listBreakSpelling } from '../block-directive.ts'
 import { mintTaskIds } from './task-ids.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { parseBlocks } from './blocks.ts'
@@ -39,10 +39,15 @@ export function plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseE
 
 function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
   const parsed = parseBlocks(markdown)
+  const [only] = parsed.blocks
+  if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
+    const fault = documentFault(only)
+    return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
+  }
   const reading: Reading = { carried: new Set(), definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
   const content = positioned(readBlocks(parsed.blocks, reading, [], 0), documentStart)
   if (!content.ok) return content
-  const document: AdfDocument = content.value.length === 0 ? { type: 'doc', version: 1 } : { content: content.value, type: 'doc', version: 1 }
+  const document: AdfDocument = { content: content.value, type: 'doc', version: 1 }
   if (flavour === 'plain') mintTaskIds(document, markdown, reading.carried)
   return success(document)
 }
@@ -52,6 +57,10 @@ function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErr
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
     const nodePath = [...path, 'content', content.length]
+    if (block.kind === 'directive' && block.name === documentName) {
+      const fault = documentFault(block) ?? unsupportedNodeShape(`${documentSpelling} spells a whole document holding no content key, alone: this one stands among other blocks`)
+      return positioned(faulted(fault, nodePath), block.position)
+    }
     if (block.kind === 'directive' && block.name === listBreakName) {
       const fault = listBreakFault(block, blocks[index - 1], blocks[index + 1])
       if (fault !== undefined) return positioned(faulted(fault, nodePath), block.position)
@@ -71,6 +80,12 @@ function listBreakFault(block: DirectiveBlock, previous: Block | undefined, next
   }
   if (previous?.kind !== 'bulletList' && previous?.kind !== 'orderedList') return partsFault()
   return previous.kind === next?.kind ? undefined : partsFault()
+}
+
+function documentFault(block: DirectiveBlock): ConvertFault | undefined {
+  const content = block.attributes.get('content')
+  if (block.argument === undefined && block.attributes.size === 1 && content?.spelling === 'none') return undefined
+  return unsupportedNodeShape(`${documentName} spells the one form ${documentSpelling}: this one spells another`)
 }
 
 function partsFault(): ConvertFault {
@@ -214,24 +229,33 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
 }
 
 function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const { contentModel, node } = read
+  const { contentModel, emptyContent, node } = read
   if (blocks === undefined) return success(node)
+  if (emptyContent) return blocks.length === 0 ? success(node) : failure('unsupported-node-shape', `${node.type} spells content=empty, which holds no body: this one holds one`, path)
   if (contentModel === 'code') return codeDirectiveNode(node, blocks, path)
   if (contentModel === 'inline') return inlineBodyNode(node, blocks, reading, path)
   return containerNode(node, blocks, reading, path, depth)
 }
 
+// spec/flavour.md, The CommonMark blocks: one fence per text node, every fence carrying the one language.
 function codeDirectiveNode(node: AdfNode, blocks: readonly Block[], path: ConvertErrorPath): Result<AdfNode> {
-  const only = blocks.length === 1 ? blocks[0] : undefined
-  if (only?.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes one code block as its body: this body is not one`, path)
+  const fences: Extract<Block, { kind: 'code' }>[] = []
+  for (const block of blocks) {
+    if (block.kind !== 'code') return failure('unsupported-node-shape', `${node.type} takes code blocks as its body: this body holds another block`, path)
+    fences.push(block)
+  }
+  const [first] = fences
+  if (first === undefined) return failure('unsupported-node-shape', `${node.type} takes code blocks as its body: this body holds none`, path)
+  if (fences.some((fence) => fence.language !== first.language)) return failure('unsupported-node-shape', `${node.type} holds one language, so its fences carry one info string: these differ`, path)
+  if (fences.length > 1 && fences.some((fence) => fence.text === '')) return failure('unsupported-node-shape', `a fence beside another spells a text node, which holds text: this one is empty`, path)
   const attribute = nodeAttrs(node)['language']
-  const fromFence = only.language !== ''
-  const slot = languageSlot(fromFence ? only.language : attribute)
+  const fromFence = first.language !== ''
+  const slot = languageSlot(fromFence ? first.language : attribute)
   if ((slot.kind === 'fence') !== fromFence || (fromFence && attribute !== undefined)) {
     return failure('unsupported-node-shape', `${node.type} spells its language in the fence info string, or in the attribute where no info string carries it back`, path)
   }
-  const spelled = fromFence ? { ...node, attrs: { ...node.attrs, language: only.language } } : node
-  return success(withContent(spelled, only.text === '' ? [] : [{ text: only.text, type: 'text' }]))
+  const spelled = fromFence ? { ...node, attrs: { ...node.attrs, language: first.language } } : node
+  return success(withContent(spelled, first.text === '' ? [] : fences.map((fence): AdfNode => ({ text: fence.text, type: 'text' }))))
 }
 
 function tableNode(rows: readonly string[][], reading: Reading, path: ConvertErrorPath): Result<AdfNode> {
@@ -278,8 +302,8 @@ function listNode(node: AdfNode, items: readonly Block[][], reading: Reading, pa
 }
 
 function codeBlockNode(language: string, text: string, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  if (language === carryName) {
-    const carried = readCarriedBlock(text, depth)
+  if (language.startsWith(carryFencePrefix)) {
+    const carried = readCarriedBlock(language.slice(carryFencePrefix.length), text, depth)
     if (carried.fault !== undefined) return faulted(carried.fault, path)
     reading.carried.add(carried.value)
     return success(carried.value)

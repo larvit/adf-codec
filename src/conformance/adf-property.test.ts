@@ -8,7 +8,6 @@ import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPlainMarkdown, reduceToPlain } from '../markdown/emit/plain-reduction.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { markdownToAdf, plainMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
-import { toEditorNormal } from '../adf/editor-normal.ts'
 
 const gateRuns = 1600
 const renamedPrefix = '!adg:'
@@ -41,7 +40,7 @@ test('a generated document refuses to emit, or its markdown reads back to it', {
       if (!emitted.ok) return
       const read = markdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
-      assert.deepEqual(toEditorNormal(read.value), document, `reading ${JSON.stringify(emitted.value)}`)
+      assert.deepEqual(read.value, document, `reading ${JSON.stringify(emitted.value)}`)
     }),
     propertyRuns(gateRuns),
   )

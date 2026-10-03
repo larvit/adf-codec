@@ -5,6 +5,7 @@ import { blockArgument, markValues, marksAttribute } from '../block-directive.ts
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { isBareToken, spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
 import { overNested } from '../../json-value.ts'
+import { spellEmptyKeys } from '../empty-keys.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
 export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, spelledByBody: readonly string[] = []): Result<string> | undefined {
@@ -14,7 +15,7 @@ export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, 
   const spelled = argumentAttribute === undefined ? spelledByBody : [argumentAttribute, ...spelledByBody]
   const pairs = vocabularyPairs(nodeAttrs(node), model.attributes, spelled)
   if (pairs === undefined) return undefined
-  const spelledPairs = spellVocabulary(pairs)
+  const spelledPairs = [...spellVocabulary(pairs), ...spellEmptyKeys(node)]
   const marks = nodeMarks(node)
   if (marks.length > 0) {
     const values = markValues(marks)

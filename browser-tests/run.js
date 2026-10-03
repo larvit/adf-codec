@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { extname, join } from 'node:path'
 import { readFileSync, readdirSync } from 'node:fs'
-import { toEditorNormal } from '../dist/adf/editor-normal.js'
 
 const contentTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript' }
 const driver = 'http://127.0.0.1:4444'
@@ -107,7 +106,7 @@ for (const [index, { json, markdown, name }] of corpus.roundTrip.entries()) {
     assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
     assert.equal(result.emitted.value, markdown)
     assert.ok(result.parsed.ok, `it did not parse — ${refusal(result.parsed)}`)
-    assert.deepEqual(toEditorNormal(result.parsed.value), JSON.parse(json))
+    assert.equal(result.parsed.value, json)
   })
 }
 
@@ -115,7 +114,7 @@ for (const [index, { name }] of corpus.normalization.entries()) {
   const result = results.normalization[index]
   checking(name, result, () => {
     assert.ok(result.parsed.ok, `it did not parse — ${refusal(result.parsed)}`)
-    assert.deepEqual(toEditorNormal(result.parsed.value), JSON.parse(fixture(name, '.json')))
+    assert.equal(result.parsed.value, fixture(name, '.json'))
   })
 }
 
@@ -125,7 +124,7 @@ for (const [index, { json, name }] of corpus.realPayloads.entries()) {
     assert.ok(result.isDocument, `${name}.json is no ADF document`)
     assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
     assert.ok(result.parsed.ok, `it did not parse back — ${refusal(result.parsed)}`)
-    assert.deepEqual(toEditorNormal(result.parsed.value), JSON.parse(json))
+    assert.equal(result.parsed.value, json)
   })
 }
 

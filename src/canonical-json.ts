@@ -18,7 +18,7 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
     const { depth, value: held } = next
     if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ label: '', value: item })), ']', indent, depth)
     else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held, indent), '}', indent, depth)
-    else text.push(JSON.stringify(held))
+    else text.push(Object.is(held, -0) ? '-0' : JSON.stringify(held))
   }
   return text.join('')
 }

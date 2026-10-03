@@ -11,7 +11,7 @@ import { blockNodes } from '../adf/block-nodes.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
-import { toEditorNormal } from '../adf/editor-normal.ts'
+import { mergeAdjacentText } from '../adf/editor-normal.ts'
 
 type Positions = { block: AdfNode; inline: AdfNode }
 
@@ -36,7 +36,11 @@ export function textOf(minLength: number): Arbitrary<string> {
 
 const text = textOf(1)
 const unknownType = fc.oneof(fc.stringMatching(/^[a-z][A-Za-z0-9]{0,7}$/), text).filter((type) => !spelledTypes.has(type))
-const numberValue = fc.oneof({ arbitrary: fc.integer({ max: 10, min: -1 }), weight: 3 }, { arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 1 })
+const numberValue = fc.oneof(
+  { arbitrary: fc.integer({ max: 10, min: -1 }), weight: 6 },
+  { arbitrary: fc.double({ noDefaultInfinity: true, noNaN: true }), weight: 2 },
+  { arbitrary: fc.constant(-0), weight: 1 },
+)
 
 // V8's JSON.parse returns a wrong key after parsing a key holding an escaped backslash (https://issues.chromium.org/issues/521080746); Bun is unaffected.
 const keyPiece = fc
@@ -73,19 +77,37 @@ function heldAttributes(held: Readonly<Record<string, JsonValue | undefined>>): 
   return attrs
 }
 
+// An empty attrs, content or marks key, and adjacent text a reader would merge, stay occasional: each takes a spelling outside CommonMark.
+// The copy gives fast-check's null-prototype records the prototype a parsed node has.
+function occasionallyEmpty<T extends AdfMark | AdfNode>(arbitrary: Arbitrary<T>): Arbitrary<T> {
+  return fc.tuple(arbitrary, fc.nat({ max: 9 })).map(([held, roll]) => (roll === 0 ? { ...held } : withoutEmptyKeys(held)))
+}
+
+function withoutEmptyKeys<T extends AdfMark | AdfNode>(held: T): T {
+  const kept = { ...held }
+  if (kept.attrs !== undefined && Object.keys(kept.attrs).length === 0) delete kept.attrs
+  if ('content' in kept && kept.content?.length === 0) delete kept.content
+  if ('marks' in kept && kept.marks?.length === 0) delete kept.marks
+  return kept
+}
+
+function occasionallyApart(arbitrary: Arbitrary<AdfNode[]>): Arbitrary<AdfNode[]> {
+  return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes)))
+}
+
 function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): AdfNode {
   const rows = [header, ...body.map((cells) => header.map((_, index) => cells[index] ?? emptyCell))]
   return { content: rows.map((content): AdfNode => ({ content, type: 'tableRow' })), type: 'table' }
 }
 
-const mark: Arbitrary<AdfMark> = fc.oneof(
+const mark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(
   { arbitrary: fc.oneof(...Object.entries(markAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))), weight: 9 },
   { arbitrary: attributes({ color: 'string' }).map((attrs) => ({ attrs, type: 'backgroundColor' })), weight: 2 },
   { arbitrary: fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
-)
+))
 const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type })
 
-const textNode = fc.record({ marks, text }).map((held): AdfNode => ({ ...held, type: 'text' }))
+const textNode = occasionallyEmpty(fc.record({ marks, text }).map((held): AdfNode => ({ ...held, type: 'text' })))
 
 const backtickRunNode = fc
   .record({ marks: fc.oneof(fc.constant<AdfMark[]>([]), fc.constant<AdfMark[]>([{ type: 'code' }]), marks), text: fc.string({ maxLength: 6, minLength: 1, unit: fc.constantFrom('`', '``', ' ', 'a') }) })
@@ -96,7 +118,7 @@ const autolinkTextNode = fc
   .map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
 
 const inlineArbitraries = Object.entries(inlineNodes).map(([type, model]) =>
-  fc.record({ attrs: attributes(model.attributes), marks }).map((held): AdfNode => ({ ...held, type })),
+  occasionallyEmpty(fc.record({ attrs: attributes(model.attributes), marks }).map((held): AdfNode => ({ ...held, type }))),
 )
 
 function weighted(arbitraries: readonly Arbitrary<AdfNode>[], weight: number): { arbitrary: Arbitrary<AdfNode>; weight: number }[] {
@@ -105,10 +127,10 @@ function weighted(arbitraries: readonly Arbitrary<AdfNode>[], weight: number): {
 
 const positions = fc.letrec<Positions>((tie) => {
   const blockContent = fc.array(tie('block'), { depthIdentifier, maxLength: 3 })
-  const inlineContent = fc.array(tie('inline'), { depthIdentifier, maxLength: 4 })
+  const inlineContent = occasionallyApart(fc.array(tie('inline'), { depthIdentifier, maxLength: 4 }))
   const contentByModel = {
     block: blockContent,
-    code: fc.array(text.map((held): AdfNode => ({ text: held, type: 'text' })), { maxLength: 2 }),
+    code: occasionallyApart(fc.array(text.map((held): AdfNode => ({ text: held, type: 'text' })), { maxLength: 2 })),
     inline: inlineContent,
     none: fc.constant<AdfNode[]>([]),
   }
@@ -116,35 +138,40 @@ const positions = fc.letrec<Positions>((tie) => {
   const blockArbitraries = Object.entries(blockNodes).map(([type, model]) => {
     const argument = blockArgument(type)
     const vocabulary: AttributeVocabulary = argument === undefined ? model.attributes : { ...model.attributes, [argument]: 'string' }
-    const node = fc.record({ attrs: attributes(vocabulary), content: contentByModel[model.contentModel], marks: blockMarks }).map((held): AdfNode => ({ ...held, type }))
+    const node = occasionallyEmpty(fc.record({ attrs: attributes(vocabulary), content: contentByModel[model.contentModel], marks: blockMarks }).map((held): AdfNode => ({ ...held, type })))
     return { leaf: model.contentModel === 'code' || model.contentModel === 'none', node }
   })
-  const unknownNode = fc
-    .record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType })
-    .map((held): AdfNode => held)
+  const unknownNode = occasionallyEmpty(
+    fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), content: fc.array(tie('inline'), { depthIdentifier, maxLength: 2 }), marks, type: unknownType }),
+  )
   const leafBlocks = blockArbitraries.filter((entry) => entry.leaf).map((entry) => entry.node)
   const containerBlocks = blockArbitraries.filter((entry) => !entry.leaf).map((entry) => entry.node)
   const misplacedWeight = 7
-  const paragraph = fc.oneof({ arbitrary: inlineContent, weight: 3 }, { arbitrary: fc.array(backtickRunNode, { maxLength: 4, minLength: 2 }), weight: 1 }).map((content): AdfNode => ({ content, type: 'paragraph' }))
+  const paragraph = occasionallyEmpty(
+    fc.oneof({ arbitrary: inlineContent, weight: 3 }, { arbitrary: occasionallyApart(fc.array(backtickRunNode, { maxLength: 4, minLength: 2 })), weight: 1 }).map((content): AdfNode => ({ content, type: 'paragraph' })),
+  )
   const cell = (type: string) => paragraph.map((held): AdfNode => ({ content: [held], type }))
   const listItems = fc.array(
-    blockContent.map((content): AdfNode => ({ content, type: 'listItem' })),
+    occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'listItem' }))),
     { depthIdentifier, maxLength: 3, minLength: 1 },
   )
   const flatCommonMarkShapes = [
-    fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' })),
+    occasionallyEmpty(fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' }))),
     paragraph,
     fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
   ]
   const task = (type: string, content: Arbitrary<AdfNode[]>) =>
-    fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type }))
+    occasionallyEmpty(fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type })))
   const taskItem = fc.oneof({ arbitrary: task('taskItem', inlineContent), weight: 3 }, { arbitrary: task('blockTaskItem', blockContent), weight: 1 })
   const nestingCommonMarkShapes = [
-    blockContent.map((content): AdfNode => ({ content, type: 'blockquote' })),
+    occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'blockquote' }))),
     fc.array(fc.oneof({ arbitrary: taskItem, weight: 3 }, { arbitrary: tie('block'), weight: 1 }), { depthIdentifier, maxLength: 3, minLength: 1 }).map((content): AdfNode => ({ content, type: 'taskList' })),
     listItems.map((content): AdfNode => ({ content, type: 'bulletList' })),
     fc
-      .record({ content: listItems, order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 4 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 1 }) })
+      .record({
+        content: listItems,
+        order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 8 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 2 }, { arbitrary: fc.constant(-0), weight: 1 }),
+      })
       .map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
   ]
   const flatBlocks = [...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)]
@@ -167,7 +194,11 @@ const positions = fc.letrec<Positions>((tie) => {
   }
 })
 
-export const adfDocument = fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => toEditorNormal({ content, type: 'doc', version: 1 }))
+export const adfDocument = fc.oneof(
+  { arbitrary: fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => ({ content, type: 'doc', version: 1 })), weight: 30 },
+  { arbitrary: fc.constant<AdfDocument>({ content: [], type: 'doc', version: 1 }), weight: 1 },
+  { arbitrary: fc.constant<AdfDocument>({ type: 'doc', version: 1 }), weight: 1 },
+)
 
 export function propertyRuns(gateRuns: number): { gate: boolean; numRuns: number; seed?: number } {
   const deepRuns = env[deepRunsVariable]

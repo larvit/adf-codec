@@ -1,16 +1,16 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { Flavour } from '../plain-conventions.ts'
-import { adfDocumentFault, carriesOnly, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { adfDocumentFault, carriesOnly, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../plain-conventions.ts'
-import { blockDirectiveForm, listBreakSpelling } from '../block-directive.ts'
+import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
-import { languageSlot } from '../code-language.ts'
+import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { spellBlockDirectiveOpener } from './block-directive-spelling.ts'
 import { spellDirectiveCloser, spellDirectiveOpener } from '../directive-syntax.ts'
@@ -40,7 +40,8 @@ export function writeMarkdown(document: AdfDocument, flavour: Flavour): Result<s
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  const walk = walkBlocks(nodeContent(document), [], 0, { flavour, memo: undefined })
+  if (document.content === undefined) return success(`${documentSpelling}\n`)
+  const walk = walkBlocks(document.content, [], 0, { flavour, memo: undefined })
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
   return success(text === '' ? '' : `${text}\n`)
@@ -254,40 +255,39 @@ function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBloc
   if (!carriesOnly(node, ['language'])) return undefined
   const slot = languageSlot(nodeAttrs(node)['language'])
   if (slot.kind === 'attribute') return undefined
-  const text = codeBlockText(node, path)
-  if (!text.ok) return text
-  return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
+  const texts = fencedTexts(node, path)
+  if (!texts.ok) return texts
+  const [only, ...others] = texts.value ?? []
+  if (only === undefined || others.length > 0) return undefined
+  return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', only)))
 }
 
+// spec/flavour.md, The CommonMark blocks: one fence per text node, the language on each; with no fence to carry it, the attribute does.
 function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
-  const slot = languageSlot(nodeAttrs(node)['language'])
+  const texts = fencedTexts(node, path)
+  if (!texts.ok) return texts
+  if (texts.value === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  const slot: LanguageSlot = texts.value.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'])
   const opener = spellBlockDirectiveOpener(node, model, path, slot.kind === 'attribute' ? [] : ['language'])
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   if (!opener.ok) return opener
-  const text = codeBlockText(node, path)
-  if (!text.ok) return text
-  return success(directivePair(node, opener.value, fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', text.value)))
+  const info = slot.kind === 'fence' ? slot.info : ''
+  return success(directivePair(node, opener.value, texts.value.map((text) => fencedCodeBlock(info, text)).join('\n')))
 }
 
-function codeBlockText(node: AdfNode, path: ConvertErrorPath): Result<string> {
-  let text = ''
-  for (const [index, child] of nodeContent(node).entries()) {
+// The text each fence holds, or `undefined` where a child is no plain text node, which the carry holds instead.
+function fencedTexts(node: AdfNode, path: ConvertErrorPath): Result<string[] | undefined> {
+  if (node.content === undefined) return success([''])
+  if (node.content.some((child) => child.type !== 'text' || child.attrs !== undefined || child.content !== undefined || child.marks !== undefined)) return success(undefined)
+  const texts: string[] = []
+  for (const [index, child] of node.content.entries()) {
     const childPath = [...path, 'content', index]
-    if (
-      child.type !== 'text' ||
-      typeof child.text !== 'string' ||
-      child.text === '' ||
-      nodeContent(child).length > 0 ||
-      nodeMarks(child).length > 0 ||
-      Object.keys(nodeAttrs(child)).length > 0
-    ) {
-      return failure('unsupported-node-shape', `a codeBlock holds plain text nodes only: this ${child.type} node is not one`, childPath)
-    }
+    if (typeof child.text !== 'string' || child.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', childPath)
     if (/\r/.test(child.text)) return failure('unspellable-character', 'a codeBlock holds no carriage return CommonMark keeps: this text holds one', childPath)
     if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
-    text += child.text
+    texts.push(child.text)
   }
-  return success(text)
+  return success(texts)
 }
 
 function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
@@ -340,7 +340,7 @@ function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {
 function listStart(node: AdfNode, items: number): number | undefined {
   if (node.type !== 'orderedList') return 0
   const start = nodeAttrs(node)['order']
-  if (typeof start !== 'number' || !Number.isInteger(start) || start < 0 || start > largestListMarker) return undefined
+  if (typeof start !== 'number' || !Number.isInteger(start) || start < 0 || Object.is(start, -0) || start > largestListMarker) return undefined
   return start + items - 1 > largestListMarker ? undefined : start
 }
 

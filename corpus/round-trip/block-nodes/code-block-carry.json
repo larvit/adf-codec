@@ -14,7 +14,19 @@
     },
     {
       "attrs": {
-        "language": "carry"
+        "language": "adf:blockCard"
+      },
+      "content": [
+        {
+          "text": "{\n  \"attrs\": {}\n}",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "adf:"
       },
       "content": [
         {

@@ -9,7 +9,6 @@ import { isAdfDocument } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
 import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
-import { toEditorNormal } from '../adf/editor-normal.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus')
 const errorsRoot = join(corpusRoot, 'errors')
@@ -97,7 +96,7 @@ for (const directory of roundTripDirectories) {
       assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
       const result = markdownToAdf(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8'))
       assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
-      assert.deepEqual(toEditorNormal(result.value), expected)
+      assert.deepEqual(result.value, expected)
     })
   }
 }
@@ -125,12 +124,12 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
     assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
     const result = markdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
     assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
-    assert.deepEqual(toEditorNormal(result.value), expected)
+    assert.deepEqual(result.value, expected)
     const emitted = adfToMarkdown(result.value)
     assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
     const again = markdownToAdf(emitted.value)
     assert.ok(again.ok, again.ok ? '' : `${again.error.code}: ${again.error.message}`)
-    assert.deepEqual(toEditorNormal(again.value), expected)
+    assert.deepEqual(again.value, expected)
   })
 }
 
@@ -146,7 +145,7 @@ for (const name of names(realPayloadsRoot, '.json')) {
     assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
     const parsed = markdownToAdf(emitted.value)
     assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
-    assert.deepEqual(toEditorNormal(parsed.value), payload)
+    assert.deepEqual(parsed.value, payload)
   })
 }
 

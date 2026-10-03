@@ -1,12 +1,18 @@
-!adf:codeBlock {language=carry}
-```
+```carry
 {
   "type": "blockCard"
 }
 ```
+
+!adf:codeBlock {language="adf:blockCard"}
+```
+{
+  "attrs": {}
+}
+```
 !adf:/codeBlock
 
-!adf:codeBlock {language=carry}
+!adf:codeBlock {language="adf:"}
 ````
 ```
 ````

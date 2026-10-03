@@ -1,0 +1,98 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {},
+          "type": "date"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "content": [],
+          "type": "date"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "a",
+          "type": "text"
+        },
+        {
+          "marks": [],
+          "type": "hardBreak"
+        },
+        {
+          "text": "b",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "id": "x",
+            "text": "@M"
+          },
+          "content": [],
+          "type": "mention"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "bare",
+          "type": "text"
+        },
+        {
+          "marks": [],
+          "text": "marked",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {},
+              "type": "em"
+            }
+          ],
+          "text": "x",
+          "type": "text"
+        },
+        {
+          "text": " and ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "shortName": ":a:"
+          },
+          "marks": [
+            {
+              "attrs": {},
+              "type": "strong"
+            }
+          ],
+          "type": "emoji"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

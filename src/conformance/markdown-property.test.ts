@@ -31,7 +31,6 @@ import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { nodeContent, nodeMarks } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 import { textDirectiveName } from '../markdown/text-directive.ts'
-import { toEditorNormal } from '../adf/editor-normal.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Choice = { arbitrary: Arbitrary<string>; hostile?: true; weight: number }
@@ -433,7 +432,7 @@ test('generated markdown refuses, or what it parses to refuses to emit, or its s
       if (holdsDirectiveShape(parsed.value)) directiveShaped += 1
       const read = markdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
-      assert.deepEqual(toEditorNormal(read.value), toEditorNormal(parsed.value), `reading ${JSON.stringify(emitted.value)}`)
+      assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
       const respelled = adfToMarkdown(read.value)
       assert.ok(respelled.ok, respelled.ok ? '' : `${respelled.error.code}: ${respelled.error.message} — spelling ${JSON.stringify(emitted.value)} again`)
       assert.equal(respelled.value, emitted.value)

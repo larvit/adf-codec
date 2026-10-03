@@ -7,6 +7,7 @@ import { holdsEntityReference } from './commonmark/entity-references.ts'
 import { isAutolink } from './commonmark/grammar.ts'
 import { isMarkType, markAttributes } from '../adf/mark-attributes.ts'
 import { nodeAttrs, nodeMarks } from '../adf/document.ts'
+import { spellEmptyKeys } from './empty-keys.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | { kind: 'emphasis'; spelling: string }
@@ -55,7 +56,10 @@ function isBareLink(nodes: readonly AdfNode[], href: string, marksInside: number
   return nodes.length === 1 && node !== undefined && node.type === 'text' && node.text === href && nodeMarks(node).length === marksInside
 }
 
-export function spellMarkAttributes(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {
-  const pairs = vocabularyPairs(nodeAttrs(mark), vocabulary, [])
-  return pairs === undefined ? undefined : spellAttributes(spellVocabulary(pairs))
+// `undefined` where the spelling holds no such attrs: only a directive spells attrs=empty.
+export function spellMarkAttributes(mark: AdfMark, spelling: MarkSpelling): string | undefined {
+  const pairs = vocabularyPairs(nodeAttrs(mark), spelling.attributes, [])
+  const empty = spellEmptyKeys(mark)
+  if (pairs === undefined || (empty.length > 0 && spelling.kind !== 'directive')) return undefined
+  return spellAttributes([...spellVocabulary(pairs), ...empty])
 }

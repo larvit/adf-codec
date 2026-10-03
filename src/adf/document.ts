@@ -1,6 +1,7 @@
 import type { ConvertFault } from '../result.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
 
@@ -16,6 +17,8 @@ export type AdfNode = {
   text?: string
   type: string
 }
+
+export type EmptyKey = 'attrs' | 'content' | 'marks'
 
 export type AdfDocument = {
   content?: AdfNode[]
@@ -49,8 +52,24 @@ export function attributeNestingMessage(key: string, type: string): string {
 }
 
 export function carriesOnly(node: AdfNode, attributes: readonly string[]): boolean {
-  if (nodeMarks(node).length > 0 || node.text !== undefined) return false
+  if (nodeMarks(node).length > 0 || node.text !== undefined || emptyKeys(node).length > 0) return false
   return holdsOnly(nodeAttrs(node), attributes)
+}
+
+export function emptyKeys(held: { attrs?: AdfAttributes; content?: AdfNode[]; marks?: AdfMark[] }): EmptyKey[] {
+  const keys: EmptyKey[] = []
+  if (held.attrs !== undefined && Object.keys(held.attrs).length === 0) keys.push('attrs')
+  if (held.content?.length === 0) keys.push('content')
+  if (held.marks?.length === 0) keys.push('marks')
+  return keys
+}
+
+export function identicalMark(left: AdfMark, right: AdfMark): boolean {
+  return marksKey([left]) === marksKey([right])
+}
+
+export function identicalMarks(left: AdfNode, right: AdfNode): boolean {
+  return marksKey(nodeMarks(left)) === marksKey(nodeMarks(right))
 }
 
 // Depth is the walks' business, not the shape's: the guard waves a deep document through as blocks and marks do.
@@ -97,6 +116,13 @@ function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {
     }
   }
   return true
+}
+
+function marksKey(marks: readonly AdfMark[]): string {
+  return serializeCanonicalJson(
+    marks.map((mark) => (mark.attrs === undefined ? [mark.type] : [mark.type, mark.attrs])),
+    'compact',
+  )
 }
 
 function nestingFault(nodes: readonly AdfNode[]): ConvertFault | undefined {

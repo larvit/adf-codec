@@ -139,7 +139,7 @@ export function spellStringAttribute(text: string): string {
 export function spellAttributeValue(value: VocabularyValue): string {
   if (value.kind === 'boolean') return `${value.value}`
   if (value.kind === 'json') return spellJsonAttribute(value.value)
-  if (value.kind === 'number') return spellStringAttribute(JSON.stringify(value.value))
+  if (value.kind === 'number') return spellStringAttribute(serializeCanonicalJson(value.value, 'compact'))
   return spellStringAttribute(value.value)
 }
 

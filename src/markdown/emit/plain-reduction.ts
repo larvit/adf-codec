@@ -8,6 +8,7 @@ import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { taskMarker } from '../plain-conventions.ts'
+import { toEditorNormal } from '../../adf/editor-normal.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
@@ -50,8 +51,9 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  const blocks = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
-  return blocks.ok ? success({ content: blocks.value, type: 'doc', version: 1 }) : blocks
+  // The plain flavour is lossy: it reads and writes editor-normal ADF, whose shapes CommonMark spells.
+  const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
+  return blocks.ok ? success({ content: nodeContent(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 })).slice(), type: 'doc', version: 1 }) : blocks
 }
 
 function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
@@ -262,7 +264,8 @@ function listItem(blocks: Result<AdfNode[]>): Result<AdfNode[]> {
 // A list item's first line reads as no rule and holds no line of spaces alone: the rule and the spaces give way.
 function itemOf(blocks: readonly AdfNode[]): AdfNode {
   const rules = blocks.findIndex((block) => block.type !== 'rule')
-  return { content: blankedCode(blocks.slice(rules === -1 ? blocks.length : rules)), type: 'listItem' }
+  const content = blankedCode(blocks.slice(rules === -1 ? blocks.length : rules))
+  return content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' }
 }
 
 function blankedCode(blocks: readonly AdfNode[]): AdfNode[] {

@@ -1,17 +1,15 @@
-> ```carry
+> ```adf:blockCard
 > {
 >   "attrs": {
 >     "url": "https://example.com/quoted"
->   },
->   "type": "blockCard"
+>   }
 > }
 > ```
 
-- ```carry
+- ```adf:blockCard
   {
     "attrs": {
       "url": "https://example.com/listed"
-    },
-    "type": "blockCard"
+    }
   }
   ```

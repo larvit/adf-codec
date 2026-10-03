@@ -1,0 +1,21 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "url": "https://example.com/"
+      },
+      "type": "has`tick"
+    },
+    {
+      "type": ""
+    },
+    {
+      "type": " padded"
+    },
+    {
+      "type": "two words"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

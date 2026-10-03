@@ -1,4 +1,4 @@
-import { readEntityReference, replacementCharacter } from './entity-references.ts'
+import { holdsEntityReference, readEntityReference, replacementCharacter } from './entity-references.ts'
 
 export type LinePosition = 'first' | 'later'
 
@@ -131,6 +131,11 @@ export function escapesLineClaim(line: string, offset: number, position: LinePos
 
 export function holdsControlCharacter(text: string): boolean {
   return controlCharacter.test(text)
+}
+
+// What a backtick fence's info string reads back verbatim: escapes and entity references decode, and the edges trim.
+export function infoStringCarries(text: string): boolean {
+  return text !== '' && !/[`\\]/.test(text) && !holdsControlCharacter(text) && text === text.trim() && !holdsEntityReference(text)
 }
 
 export function holdsNullCharacter(text: string): boolean {

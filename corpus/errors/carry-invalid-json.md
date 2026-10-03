@@ -1,3 +1,3 @@
-```carry
-{"type":
+```adf:blockCard
+{"attrs":
 ```

@@ -3,8 +3,9 @@ import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes } from '../directive-syntax.ts'
 import type { MarkSpelling } from '../mark-spellings.ts'
 import { directivePrefix } from '../directive-syntax.ts'
-import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { markSpelling } from '../mark-spellings.ts'
+import { readEmptyKeys } from '../empty-keys.ts'
 import { readVocabulary } from './directive-attributes.ts'
 
 export function readDirectiveMark(name: string, attributes: DirectiveAttributes, path: ConvertErrorPath): Result<AdfMark> | undefined {
@@ -12,8 +13,11 @@ export function readDirectiveMark(name: string, attributes: DirectiveAttributes,
   if (spelling === undefined) return undefined
   const markdown = markdownForm(spelling)
   if (markdown !== undefined) return failure('unsupported-node-shape', `${name} is spelled ${markdown}, never as a directive`, path)
-  const attrs = readVocabulary(name, attributes, spelling.attributes, undefined, path)
+  const empty = readEmptyKeys(attributes, ['attrs'])
+  if (empty.fault !== undefined) return faulted(empty.fault, path)
+  const attrs = readVocabulary(name, empty.value.rest, spelling.attributes, undefined, path)
   if (!attrs.ok) return attrs
+  if (empty.value.empty.has('attrs')) return Object.keys(attrs.value).length === 0 ? success({ attrs: {}, type: name }) : failure('unsupported-node-shape', `${name} spells attrs=empty beside an attribute it holds`, path)
   return success(Object.keys(attrs.value).length === 0 ? { type: name } : { attrs: attrs.value, type: name })
 }
 

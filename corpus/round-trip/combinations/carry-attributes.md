@@ -1,4 +1,4 @@
-```carry
+```adf:panel
 {
   "attrs": {
     "rounded": true
@@ -13,12 +13,11 @@
       ],
       "type": "paragraph"
     }
-  ],
-  "type": "panel"
+  ]
 }
 ```
 
-```carry
+```adf:panel
 {
   "attrs": {
     "panelType": "extra info"
@@ -33,8 +32,7 @@
       ],
       "type": "paragraph"
     }
-  ],
-  "type": "panel"
+  ]
 }
 ```
 

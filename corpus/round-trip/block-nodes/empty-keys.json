@@ -1,0 +1,89 @@
+{
+  "content": [
+    {
+      "content": [],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {},
+      "content": [
+        {
+          "text": "Plain words.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [],
+      "type": "rule"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Title",
+          "type": "text"
+        }
+      ],
+      "marks": [],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [],
+      "type": "panel"
+    },
+    {
+      "content": [
+        {
+          "attrs": {},
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Item",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Next",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "content": [],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "js"
+      },
+      "marks": [],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

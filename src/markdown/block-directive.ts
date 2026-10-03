@@ -2,7 +2,7 @@ import type { AdfMark } from '../adf/document.ts'
 import type { BlockType } from '../adf/block-nodes.ts'
 import type { JsonValue } from '../json-value.ts'
 import { blockNodeModel } from '../adf/block-nodes.ts'
-import { isAdfMark, nodeAttrs } from '../adf/document.ts'
+import { isAdfMark } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 import { spellDirectiveOpener } from './directive-syntax.ts'
 
@@ -13,6 +13,11 @@ const argumentByType = new Map(
     taskItem: 'state',
   } satisfies Partial<Record<BlockType, string>>),
 )
+
+export const documentName = 'doc'
+
+// spec/flavour.md, Directives: a document holding no content key, which the empty string cannot spell.
+export const documentSpelling = spellDirectiveOpener(documentName, undefined, '{content=none}')
 
 export const listBreakName = 'listBreak'
 
@@ -25,17 +30,14 @@ export function blockArgument(type: string): string | undefined {
 }
 
 export function blockDirectiveForm(name: string): 'container' | 'leaf' | undefined {
-  if (name === listBreakName) return 'leaf'
+  if (name === listBreakName || name === documentName) return 'leaf'
   const model = blockNodeModel(name)
   if (model === undefined) return undefined
   return model.contentModel === 'none' ? 'leaf' : 'container'
 }
 
 export function markValues(marks: readonly AdfMark[]): JsonValue {
-  return marks.map((mark) => {
-    const attrs = nodeAttrs(mark)
-    return Object.keys(attrs).length === 0 ? { type: mark.type } : { attrs, type: mark.type }
-  })
+  return marks.map((mark) => (mark.attrs === undefined ? { type: mark.type } : { attrs: mark.attrs, type: mark.type }))
 }
 
 export function readMarkValues(value: JsonValue): AdfMark[] | undefined {

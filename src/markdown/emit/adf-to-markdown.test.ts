@@ -6,14 +6,13 @@ import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
 import { adfToMarkdown, markdownToAdf } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
-import { toEditorNormal } from '../../adf/editor-normal.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
 }
 
 function paragraph(...content: AdfNode[]): AdfNode {
-  return { content, type: 'paragraph' }
+  return content.length === 0 ? { type: 'paragraph' } : { content, type: 'paragraph' }
 }
 
 function code(result: Result<string>): string {
@@ -168,21 +167,24 @@ test('parts two adjacent lists of the same kind, the marker spelling being what 
   const nested: AdfNode = { content: [{ content: [list, list], type: 'listItem' }], type: 'bulletList' }
   assert.equal(markdown(adfToMarkdown(document(nested))), '- - x\n\n  !adf:listBreak\n\n  - x\n')
   const carried: AdfNode = { ...list, attrs: { unknown: 'x' } }
-  assert.ok(markdown(adfToMarkdown(document(carried, carried))).includes('```\n\n```carry\n'))
+  assert.ok(markdown(adfToMarkdown(document(carried, carried))).includes('```\n\n```adf:bulletList\n'))
   assert.ok(markdown(adfToMarkdown(document(carried, list))).endsWith('```\n\n- x\n'))
-  assert.ok(markdown(adfToMarkdown(document(list, carried))).startsWith('- x\n\n```carry\n'))
+  assert.ok(markdown(adfToMarkdown(document(list, carried))).startsWith('- x\n\n```adf:bulletList\n'))
 })
 
-test('carries a node type no section spells', () => {
-  assert.equal(markdown(adfToMarkdown(document({ type: 'blockCard' }))), '```carry\n{\n  "type": "blockCard"\n}\n```\n')
-  assert.equal(markdown(adfToMarkdown(document({ type: 'toString' }))), '```carry\n{\n  "type": "toString"\n}\n```\n')
+test('carries a node type no section spells, the fence naming the type wherever an info string carries it', () => {
+  assert.equal(markdown(adfToMarkdown(document({ type: 'blockCard' }))), '```adf:blockCard\n{}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'toString' }))), '```adf:toString\n{}\n```\n')
   assert.equal(markdown(adfToMarkdown(document(paragraph({ type: 'blockCard' })))), '!adf:carry{json="{\\"type\\":\\"blockCard\\"}"}\n')
-  assert.equal(markdown(adfToMarkdown(document({ text: 'x', type: 'text' }))), '```carry\n{\n  "text": "x",\n  "type": "text"\n}\n```\n')
-  assert.equal(markdown(adfToMarkdown(document({ type: 'hardBreak' }))), '```carry\n{\n  "type": "hardBreak"\n}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ text: 'x', type: 'text' }))), '```adf:text\n{\n  "text": "x"\n}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'hardBreak' }))), '```adf:hardBreak\n{}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'a&amp;b' }))), '```adf:\n{\n  "type": "a&amp;b"\n}\n```\n')
+  assert.equal(markdown(adfToMarkdown(document({ type: 'a\\b' }))), '```adf:\n{\n  "type": "a\\\\b"\n}\n```\n')
 })
 
-test('spells the code block whose language is the reserved info string', () => {
-  assert.equal(markdown(adfToMarkdown(document({ attrs: { language: 'carry' }, type: 'codeBlock' }))), '!adf:codeBlock {language=carry}\n```\n```\n!adf:/codeBlock\n')
+test('spells the code block whose language opens with the reserved info string prefix', () => {
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { language: 'adf:x' }, type: 'codeBlock' }))), '!adf:codeBlock {language="adf:x"}\n```\n```\n!adf:/codeBlock\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { language: 'carry' }, type: 'codeBlock' }))), '```carry\n```\n')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { language: 'adf' }, type: 'codeBlock' }))), '```adf\n```\n')
 })
 
@@ -208,21 +210,17 @@ test('refuses a carried node nested deeper than the levels its position leaves',
   assert.equal(code(adfToMarkdown(document(quoted))), 'unsupported-nesting-depth')
 })
 
-test('refuses a node whose content model the canonical form cannot emit', () => {
-  assert.equal(
-    markdown(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))),
-    'unsupported-node-shape: a codeBlock holds plain text nodes only: this paragraph node is not one',
-  )
-  assert.equal(
-    markdown(adfToMarkdown(document({ content: [{ content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }], type: 'codeBlock' }))),
-    'unsupported-node-shape: a codeBlock holds plain text nodes only: this text node is not one',
-  )
+test('carries a code block holding a node no fence holds', () => {
+  assert.equal(markdown(adfToMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), '```adf:codeBlock\n{\n  "content": [\n    {\n      "type": "paragraph"\n    }\n  ]\n}\n```\n')
+  for (const child of [{ attrs: {}, text: 'x', type: 'text' }, { content: [], text: 'x', type: 'text' }, { marks: [], text: 'x', type: 'text' }, { content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }]) {
+    assert.ok(markdown(adfToMarkdown(document({ content: [child], type: 'codeBlock' }))).startsWith('```adf:codeBlock\n'), JSON.stringify(child))
+  }
 })
 
 test('spells a list its own content shape cannot hold as a directive', () => {
   assert.equal(markdown(adfToMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), '!adf:bulletList\n!adf:paragraph\n!adf:/paragraph\n!adf:/bulletList\n')
   assert.equal(markdown(adfToMarkdown(document({ type: 'bulletList' }))), '!adf:bulletList\n!adf:/bulletList\n')
-  assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), '!adf:orderedList {order=2}\n!adf:/orderedList\n')
+  assert.equal(markdown(adfToMarkdown(document({ attrs: { order: 2 }, content: [], type: 'orderedList' }))), '!adf:orderedList {content=empty order=2}\n!adf:/orderedList\n')
 })
 
 test('spells an ordered list no marker fits as a directive', () => {
@@ -334,7 +332,7 @@ test('refuses a node carrying one mark type twice', () => {
 })
 
 test('parts a nested list the tight spelling would swallow from the block above it', () => {
-  const item = (...content: AdfNode[]): AdfNode => ({ content, type: 'listItem' })
+  const item = (...content: AdfNode[]): AdfNode => (content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' })
   const text = (value: string): AdfNode => ({ content: [{ text: value, type: 'text' }], type: 'paragraph' })
   const outer = (...content: AdfNode[]): AdfDocument => document({ content: [item(...content)], type: 'bulletList' })
   const ordered: AdfNode = { attrs: { order: 2 }, content: [item(text('b'))], type: 'orderedList' }
@@ -345,7 +343,7 @@ test('parts a nested list the tight spelling would swallow from the block above 
   const list: AdfNode = { content: [item(text('b'))], type: 'bulletList' }
   const panel: AdfNode = { attrs: { panelType: 'info' }, content: [text('p')], type: 'panel' }
   assert.equal(markdown(adfToMarkdown(outer(panel, list))), '- !adf:panel info\n  p\n  !adf:/panel\n\n  - b\n')
-  assert.ok(markdown(adfToMarkdown(outer(text('a'), { ...list, attrs: { unknown: 'x' } }))).startsWith('- a\n\n  ```carry\n'))
+  assert.ok(markdown(adfToMarkdown(outer(text('a'), { ...list, attrs: { unknown: 'x' } }))).startsWith('- a\n\n  ```adf:bulletList\n'))
 })
 
 test('refuses marks and attributes nested deeper than the emitter carries', () => {
@@ -372,7 +370,7 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
     assert.ok(spelled.ok, spelled.ok ? '' : spelled.error.message)
     const read = markdownToAdf(spelled.value)
     assert.ok(read.ok, read.ok ? '' : read.error.message)
-    assert.deepEqual(toEditorNormal(read.value), document(node))
+    assert.deepEqual(read.value, document(node))
   }
 
   assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ attrs, type: 'em' }], text: 'x', type: 'text' })))), deeper('depth', 'em'))
@@ -442,7 +440,7 @@ test('escapes a hyphen underline a hard break would expose', () => {
 })
 
 test('spells a list item whose marker completes a thematic break as a directive', () => {
-  const item = (...content: AdfNode[]): AdfNode => ({ content, type: 'listItem' })
+  const item = (...content: AdfNode[]): AdfNode => (content.length === 0 ? { type: 'listItem' } : { content, type: 'listItem' })
   assert.equal(markdown(adfToMarkdown(document({ content: [item({ type: 'rule' })], type: 'bulletList' }))), '!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')
   const nested: AdfNode = { content: [item({ content: [item()], type: 'bulletList' })], type: 'bulletList' }
   assert.equal(markdown(adfToMarkdown(document(nested))), '- -\n')
@@ -469,10 +467,7 @@ test('refuses the characters CommonMark rewrites', () => {
   )
   assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\u0000b', type: 'text' })))), 'unspellable-character')
   assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))), 'unspellable-character')
-  assert.equal(
-    markdown(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))),
-    'unsupported-node-shape: a codeBlock holds plain text nodes only: this text node is not one',
-  )
+  assert.equal(markdown(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape: a text node holds text: this one has none')
 })
 
 test('refuses a text node the spelling would empty out', () => {
@@ -501,11 +496,11 @@ test('pads a code span whose edges CommonMark would strip', () => {
   assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: ' \t ', type: 'text' })))), '`  \t  `\n')
 })
 
-test('spells one code span over a run of code-marked nodes', () => {
+test('spells a code span per code-marked node, parted by the text break', () => {
   const code_ = { type: 'code' }
   assert.equal(
     markdown(adfToMarkdown(document(paragraph({ marks: [code_], text: 'a', type: 'text' }, { marks: [code_], text: 'b', type: 'text' })))),
-    '`ab`\n',
+    '`a`!adf:textBreak{}`b`\n',
   )
 })
 
@@ -545,7 +540,7 @@ test('emits an empty list item without trailing whitespace', () => {
 test('spells a block directive as its node type, arg and attributes', () => {
   const panel = (attrs: AdfAttributes): AdfDocument => document({ attrs, content: [paragraph({ text: 'x', type: 'text' })], type: 'panel' })
   assert.equal(markdown(adfToMarkdown(panel({ panelType: 'warning' }))), '!adf:panel warning\nx\n!adf:/panel\n')
-  assert.equal(markdown(adfToMarkdown(panel({}))), '!adf:panel\nx\n!adf:/panel\n')
+  assert.equal(markdown(adfToMarkdown(panel({}))), '!adf:panel {attrs=empty}\nx\n!adf:/panel\n')
   assert.equal(markdown(adfToMarkdown(document({ content: [{ text: 'x', type: 'text' }], type: 'caption' }))), '!adf:caption\nx\n!adf:/caption\n')
   assert.equal(markdown(adfToMarkdown(document({ type: 'caption' }))), '!adf:caption\n!adf:/caption\n')
   assert.equal(markdown(adfToMarkdown(document({ attrs: { localId: 'a' }, type: 'syncBlock' }))), '!adf:syncBlock {localId=a}\n')
@@ -553,20 +548,20 @@ test('spells a block directive as its node type, arg and attributes', () => {
 
 test('carries a directive attribute no section spells', () => {
   const carried = (node: AdfNode): string => markdown(adfToMarkdown(document(node)))
-  assert.equal(carried({ attrs: { rounded: true }, type: 'panel' }), '```carry\n{\n  "attrs": {\n    "rounded": true\n  },\n  "type": "panel"\n}\n```\n')
-  assert.equal(carried({ attrs: { toString: 'x' }, type: 'panel' }), '```carry\n{\n  "attrs": {\n    "toString": "x"\n  },\n  "type": "panel"\n}\n```\n')
-  assert.equal(carried({ attrs: { localId: 4 }, type: 'panel' }), '```carry\n{\n  "attrs": {\n    "localId": 4\n  },\n  "type": "panel"\n}\n```\n')
+  assert.equal(carried({ attrs: { rounded: true }, type: 'panel' }), '```adf:panel\n{\n  "attrs": {\n    "rounded": true\n  }\n}\n```\n')
+  assert.equal(carried({ attrs: { toString: 'x' }, type: 'panel' }), '```adf:panel\n{\n  "attrs": {\n    "toString": "x"\n  }\n}\n```\n')
+  assert.equal(carried({ attrs: { localId: 4 }, type: 'panel' }), '```adf:panel\n{\n  "attrs": {\n    "localId": 4\n  }\n}\n```\n')
   assert.equal(
     carried({ attrs: { width: '50' }, type: 'layoutColumn' }),
-    '```carry\n{\n  "attrs": {\n    "width": "50"\n  },\n  "type": "layoutColumn"\n}\n```\n',
+    '```adf:layoutColumn\n{\n  "attrs": {\n    "width": "50"\n  }\n}\n```\n',
   )
   assert.equal(
     carried({ attrs: { isNumberColumnEnabled: 'true' }, type: 'table' }),
-    '```carry\n{\n  "attrs": {\n    "isNumberColumnEnabled": "true"\n  },\n  "type": "table"\n}\n```\n',
+    '```adf:table\n{\n  "attrs": {\n    "isNumberColumnEnabled": "true"\n  }\n}\n```\n',
   )
   assert.equal(
     carried({ content: [{ attrs: { alt: 4 }, type: 'media' }], type: 'mediaGroup' }),
-    '!adf:mediaGroup\n```carry\n{\n  "attrs": {\n    "alt": 4\n  },\n  "type": "media"\n}\n```\n!adf:/mediaGroup\n',
+    '!adf:mediaGroup\n```adf:media\n{\n  "attrs": {\n    "alt": 4\n  }\n}\n```\n!adf:/mediaGroup\n',
   )
 })
 
@@ -574,15 +569,16 @@ test('carries an arg slot value no bare token spells', () => {
   const carried = (node: AdfNode): string => markdown(adfToMarkdown(document(node)))
   assert.equal(
     carried({ attrs: { panelType: 'extra info' }, type: 'panel' }),
-    '```carry\n{\n  "attrs": {\n    "panelType": "extra info"\n  },\n  "type": "panel"\n}\n```\n',
+    '```adf:panel\n{\n  "attrs": {\n    "panelType": "extra info"\n  }\n}\n```\n',
   )
-  assert.equal(carried({ attrs: { state: 2 }, type: 'taskItem' }), '```carry\n{\n  "attrs": {\n    "state": 2\n  },\n  "type": "taskItem"\n}\n```\n')
+  assert.equal(carried({ attrs: { state: 2 }, type: 'taskItem' }), '```adf:taskItem\n{\n  "attrs": {\n    "state": 2\n  }\n}\n```\n')
 })
 
 test('carries a block node mark in the reserved attribute', () => {
   const section = (...marks: AdfMark[]): AdfDocument => document({ marks, type: 'layoutSection' })
   assert.equal(markdown(adfToMarkdown(section({ type: 'breakout' }))), '!adf:layoutSection {marks="[{\\"type\\":\\"breakout\\"}]"}\n!adf:/layoutSection\n')
-  assert.equal(markdown(adfToMarkdown(section({ attrs: {}, type: 'breakout' }))), '!adf:layoutSection {marks="[{\\"type\\":\\"breakout\\"}]"}\n!adf:/layoutSection\n')
+  assert.equal(markdown(adfToMarkdown(section({ attrs: {}, type: 'breakout' }))), '!adf:layoutSection {marks="[{\\"attrs\\":{},\\"type\\":\\"breakout\\"}]"}\n!adf:/layoutSection\n')
+  assert.equal(markdown(adfToMarkdown(section())), '!adf:layoutSection {marks=empty}\n!adf:/layoutSection\n')
 })
 
 test('refuses the content a directive body has no room for', () => {
@@ -604,7 +600,7 @@ test('separates blocks in a container body by a blank line only where a directiv
 test('spells the image form for exactly the centered external media shape', () => {
   const url = 'https://example.com/moon.png'
   const single = (attrs: AdfAttributes, ...content: AdfNode[]): AdfDocument =>
-    document({ attrs: { layout: 'center' }, content: [{ attrs, content, type: 'media' }], type: 'mediaSingle' })
+    document({ attrs: { layout: 'center' }, content: [content.length === 0 ? { attrs, type: 'media' } : { attrs, content, type: 'media' }], type: 'mediaSingle' })
   assert.equal(markdown(adfToMarkdown(single({ alt: 'The moon', type: 'external', url }))), `![The moon](${url})\n`)
   assert.equal(markdown(adfToMarkdown(single({ type: 'external', url }))), `![](${url})\n`)
   assert.equal(markdown(adfToMarkdown(single({ alt: 'a [b] c', type: 'external', url }))), `![a \\[b\\] c](${url})\n`)
@@ -701,7 +697,8 @@ test('spells the directive marks around the longest run they cover', () => {
   const emitted = (...content: AdfNode[]): string => markdown(adfToMarkdown(document(paragraph(...content))))
   const underline: AdfMark = { type: 'underline' }
   assert.equal(emitted(marked('x', underline)), '!adf:underline[x]\n')
-  assert.equal(emitted(marked('a', underline), marked('b', underline)), '!adf:underline[ab]\n')
+  assert.equal(emitted(marked('a', underline), marked('b', underline)), '!adf:underline[a!adf:textBreak{}b]\n')
+  assert.equal(emitted(marked('a', { attrs: {}, type: 'underline' }), marked('b', underline)), '!adf:underline[a]{attrs=empty}!adf:underline[b]\n')
   assert.equal(emitted(marked('x', { attrs: { type: 'sub' }, type: 'subsup' })), '!adf:subsup[x]{type=sub}\n')
   assert.equal(emitted(marked('x', { attrs: { color: '#ae2e24' }, type: 'textColor' })), '!adf:textColor[x]{color="#ae2e24"}\n')
   assert.equal(emitted(marked('x', { attrs: { color: '#091e42', size: 2 }, type: 'border' })), '!adf:border[x]{color="#091e42" size=2}\n')
@@ -746,5 +743,5 @@ test('carries whitespace CommonMark strips in the reserved text directive', () =
 
 test("joins a mark run's segments as a walk rather than as one call's arguments", () => {
   const run = Array.from({ length: 200000 }, (): AdfNode => ({ marks: [{ type: 'strong' }], text: 'a', type: 'text' }))
-  assert.equal(markdown(adfToMarkdown(document({ content: run, type: 'paragraph' }))), `**${'a'.repeat(200000)}**\n`)
+  assert.equal(markdown(adfToMarkdown(document({ content: run, type: 'paragraph' }))), `**${Array.from({ length: 200000 }, () => 'a').join('!adf:textBreak{}')}**\n`)
 })

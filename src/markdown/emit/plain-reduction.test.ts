@@ -177,7 +177,7 @@ test('keeps the CommonMark blocks in their spelling and drops their attributes a
   assert.equal(plain(node('paragraph', localId, text('x')), node('heading', { level: 2, localId: '01a0d99b-1f57-7fec-94ae-50c2ee25c9de' }, text('h'))), 'x\n\n## h\n')
   assert.equal(plain({ attrs: localId, content: [said('q')], marks: [{ type: 'breakout' }], type: 'blockquote' }), '> q\n')
   assert.equal(plain(node('codeBlock', { language: 'ts', wrap: true }, text('a\r\nb\u0000'))), '```ts\na\nb\n```\n')
-  assert.equal(plain(node('codeBlock', { language: 'carry' }, text('a'), { type: 'hardBreak' }, text('b', strong))), '```\na\nb\n```\n')
+  assert.equal(plain(node('codeBlock', { language: 'adf:x' }, text('a'), { type: 'hardBreak' }, text('b', strong))), '```\na\nb\n```\n')
   assert.equal(plain(node('codeBlock', {})), '```\n```\n')
   assert.equal(plain(node('rule', { color: '#000' })), '---\n')
   assert.equal(plain(node('orderedList', { localId: '01a0d99b-1f58-7b95-829b-6f9860371d54', order: 3 }, item(said('c')))), '3. c\n')

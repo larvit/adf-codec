@@ -1,0 +1,56 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "language": "js"
+      },
+      "content": [
+        {
+          "text": "const a = 1\n",
+          "type": "text"
+        },
+        {
+          "text": "const b = 2",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "content": [
+        {
+          "text": "a",
+          "type": "text"
+        },
+        {
+          "text": "```",
+          "type": "text"
+        },
+        {
+          "text": "\n",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "has`tick",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "x",
+          "type": "text"
+        },
+        {
+          "text": " y ",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
