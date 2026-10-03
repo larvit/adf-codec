@@ -5,9 +5,9 @@
 Directives moved under the `!adf:` prefix. `0.2.0` reads `0.1.0`'s spelling without an error,
 turning each directive into text and each carried node into an `adf` code block. Before `0.2.0`
 reads any `0.1.0` markdown, convert what is stored or in flight (an open editor, a queue) with the
-recipe below, and rewrite markdown your code writes or matches (templates, prompts, patterns) by
-the tables below. Stored ADF needs one change: a document `0.1.0` read from empty markdown holds
-no `content` key, and gets `content: []`, the empty document it meant.
+recipe below, and rewrite markdown your code writes or matches (templates, prompts, patterns) by the
+tables below. Stored ADF needs one change: give a document holding no `content` key `content: []`.
+`0.1.0` read empty markdown to that shape, meaning the empty document.
 
 ### Convert markdown
 
@@ -23,7 +23,7 @@ import { markdownToAdf as markdownToAdf010 } from 'adf-codec-0.1'
 
 function migrateMarkdown(stored: string) {
   const parsed = markdownToAdf010(stored)
-  // 0.1.0's reader was editor-normal, so a document with no content key always meant an empty one.
+  // 0.1.0 dropped an empty content array, so a document with no content key meant an empty one.
   return parsed.ok ? adfToMarkdown({ ...parsed.value, content: parsed.value.content ?? [] }) : parsed
 }
 ```

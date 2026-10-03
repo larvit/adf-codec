@@ -4,18 +4,21 @@
 
 - **Breaking:** directives, the inline opaque carry among them (now `!adf:carry{json="…"}`), are
   spelled under an `!adf:` prefix (`!adf:name … !adf:/name`, `!adf:name[content]{attrs}`,
-  `!adf:name arg {attrs}`) in place of the `:::`/`::`/`:name` forms, and the block carry is a code
-  fence whose info string `adf:<type>` names the node's type, its body the node's JSON without
-  `type`: text holding an unescaped `!adf:` and a code fence whose info string opens `adf:` are
-  claimed, and `adf` is an ordinary code block language. Convert stored markdown per `MIGRATION.md`.
+  `!adf:name arg {attrs}`) in place of the `:::`/`::`/`:name` forms: text holding an unescaped
+  `!adf:` is claimed, and `adf` is an ordinary code block language. Convert stored markdown per
+  `MIGRATION.md`.
+- **Breaking:** the block carry is a code fence whose info string `adf:<type>` names the node's
+  type, its body the node's JSON without `type`, and a code fence whose info string opens `adf:` is
+  claimed. Convert stored markdown per `MIGRATION.md`.
 - **Breaking:** `markdownToAdf` and `plainMarkdownToAdf` read markdown holding no block as a
   document whose `content` is empty, as Atlassian's schema requires; `!adf:doc {content=none}`
   spells a document holding no `content` key.
-- `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc`: two adjacent text nodes a reader would
-  join are parted by `!adf:textBreak{}`, an empty `attrs`, `content` or `marks` is spelled
-  `{attrs=empty}`, `{content=empty}` or `{marks=empty}`, `-0` is spelled `-0`, and a `codeBlock`
-  of several text nodes is a fence per node. A `codeBlock` holding other than plain text nodes
-  rides the block carry, where it was refused.
+- `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc` as JSON, for a document of plain objects as
+  `JSON.parse` builds them: two adjacent text nodes CommonMark would read back as one are parted by
+  `!adf:textBreak{}`, an empty `attrs`, `content` or `marks` is spelled `{attrs=empty}`,
+  `{content=empty}` or `{marks=empty}`, `-0` is spelled `-0`, and a `codeBlock` of several text
+  nodes is a fence per node. A `codeBlock` holding other than plain text nodes rides the block
+  carry, where it was refused.
 - **Breaking:** `unspellable-link` leaves `ConvertErrorCode`; a link whose `href` or `title` no
   CommonMark escape spells is written as `!adf:link[text]{attrs}`.
 - **Breaking:** some directive refusals carry `malformed-directive` where they carried

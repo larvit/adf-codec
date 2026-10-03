@@ -175,7 +175,7 @@ Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or wrap a code fence whose info string opens `adf:` in `!adf:codeBlock {language="adf:…"}` with a bare fence |
+| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.2.0` | remove the construct, or write what it holds in the lossless flavour |
@@ -198,7 +198,7 @@ emit refuses:
 | `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take, or lacks one it needs — or markdown writes as a directive a node or mark the lossless flavour spells as CommonMark | write the shape the message names, or remove the reserved directive it names; `spec/flavour.md` lists every type's attributes and body |
+| `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take, or lacks one it needs — or markdown writes as a directive a node or mark the lossless flavour spells as CommonMark, or a reserved directive (`!adf:textBreak{}`, `!adf:listBreak`, `!adf:doc`) stands where it parts nothing | make the edit the message opens with; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
 
@@ -213,12 +213,13 @@ Serves Goals 1, 3 and 4.
   name every exception.
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
   names, with four carve-outs — literal text matching directive, pipe-table or strikethrough syntax,
-  and a code fence whose info string opens `adf:`, are claimed (escapable — `spec/flavour.md`) — and
-  one gap: a CommonMark image fits only as its own title-less paragraph; mid-text and titled images
-  are error results, save an image inside another's description, which flattens into the alt text.
-  Converting back yields the library's canonical spelling, which round-trips byte-identically —
-  where it converts back at all: a parse succeeding is no promise of that, so keep the source until
-  the way back succeeds. ``` ` `` ` ``` reads cleanly and then refuses.
+  and a code fence whose info string opens `adf:`, are claimed (each can be kept literal —
+  `spec/flavour.md`) — and one gap: a CommonMark image fits only as its own title-less paragraph;
+  mid-text and titled images are error results, save an image inside another's description, which
+  flattens into the alt text. Converting back yields the library's canonical spelling, which
+  round-trips byte-identically — where it converts back at all: a parse succeeding is no promise of
+  that, so keep the source until the way back succeeds. ``` ` `` ` ``` reads cleanly and then
+  refuses.
 - Four CommonMark spellings parse without an error and build a document the reference
   implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
   empty link, a list continuing past a marker change stays one list against CommonMark's two, a

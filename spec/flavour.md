@@ -4,7 +4,7 @@ The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` p
 CommonMark is a subset apart from raw HTML (below), with four carve-outs: literal text that matches
 directive syntax below or reads as a pipe table is claimed by the flavour, a matched `~~` pair
 spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal), and a code fence whose info
-string opens `adf:` is the opaque carry (wrap it as a bare fence in
+string opens `adf:` is the opaque carry (drop the info string and wrap the fence in
 `!adf:codeBlock {language="adf:…"}` to keep it code) — and one gap: a CommonMark image fits only as
 its own title-less paragraph — mid-text and titled images are named errors. The emitted form is
 contract (`docs/decisions.md` §The formats are API). Per-node syntaxes build on this grammar in the

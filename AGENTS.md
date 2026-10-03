@@ -174,9 +174,9 @@ allow, rendered, shuffled, with no rationale and nothing saying what is implemen
 settle it; otherwise four more read, five of seven settle it, and less is a missing goal, asked.
 The verdict lands in `docs/decisions.md`.
 
-Every new or changed markdown or HTML spelling goes to such a panel, seated by the people who read
-and write that format (README `## Audience`); a question about what an app relies on seats the
-developer personas.
+A writer panel settles every new or changed markdown or HTML spelling: a reader panel whose readers
+are the people who read and write that format (README `## Audience`). A question about what an app
+relies on goes to the developer personas instead.
 
 ### Stated numbers
 
