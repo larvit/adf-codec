@@ -10,8 +10,9 @@ import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
+import { joinsNormally } from '../adf/editor-normal.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
-import { mergeAdjacentText } from '../adf/editor-normal.ts'
+import { mergeAdjacentText } from '../adf/document.ts'
 
 type Positions = { block: AdfNode; inline: AdfNode }
 
@@ -92,7 +93,7 @@ function withoutEmptyKeys<T extends AdfMark | AdfNode>(held: T): T {
 }
 
 function occasionallyApart(arbitrary: Arbitrary<AdfNode[]>): Arbitrary<AdfNode[]> {
-  return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes)))
+  return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes, joinsNormally)))
 }
 
 function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): AdfNode {

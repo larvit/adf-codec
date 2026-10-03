@@ -10,7 +10,7 @@ import { commonMarkLink, linkHref } from '../mark-spellings.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter, highlightFlanking } from '../plain-conventions.ts'
-import { identicalMarks, nodeAttrs, nodeMarks } from '../../adf/document.ts'
+import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
@@ -475,20 +475,7 @@ function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean)
   writeUnpaired(nodes, runs, pairings)
   if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', carriedInMark, scan.path)
   markHighlights(pieces, nodes, highlights ? pairedHighlights(pieces, nodes) : [])
-  return success(mergeText(nodes.flat(), scan.carried))
-}
-
-function mergeText(nodes: readonly AdfNode[], carried: ReadonlySet<AdfNode>): AdfNode[] {
-  const merged: AdfNode[] = []
-  for (const node of nodes) {
-    const previous = merged[merged.length - 1]
-    if (previous !== undefined && !carried.has(previous) && !carried.has(node) && readsAsOne(previous, node)) {
-      merged[merged.length - 1] = { ...previous, text: `${previous.text ?? ''}${node.text ?? ''}` }
-      continue
-    }
-    merged.push(node)
-  }
-  return merged
+  return success(mergeAdjacentText(nodes.flat(), (previous, node) => !scan.carried.has(previous) && !scan.carried.has(node) && readsAsOne(previous, node)))
 }
 
 // Only `imageAlt` reaches the image arm: everywhere else an image amid other content is refused first.
@@ -579,7 +566,7 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly AdfNode[][])
     let candidate = found[closer]
     while (candidate !== undefined && (!candidate.closes || candidate.position < earliest)) candidate = found[(closer += 1)]
     if (candidate === undefined) break
-    if (candidate.line !== opener.line || !identicalMarks(opener.holder, candidate.holder)) continue
+    if (candidate.line !== opener.line || !identicalMarks(nodeMarks(opener.holder), nodeMarks(candidate.holder))) continue
     paired.push({ closer: candidate.index, opener: opener.index })
     resume = candidate.position + highlightDelimiter.length
   }

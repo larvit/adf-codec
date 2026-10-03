@@ -3,9 +3,9 @@ import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from './line-escaping.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { joinsNormally, sameMark } from '../../adf/editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
-import { mergeAdjacentText, sameMark } from '../../adf/editor-normal.ts'
-import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { plainLineFallback, type PlainLineFallback } from './inline-line.ts'
 import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 
@@ -193,7 +193,7 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 
 function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   for (let current = leaves; ; ) {
-    const merged = withoutEdgeBreaks(mergeAdjacentText(current))
+    const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsNormally))
     let changed = false
     const trimmed: AdfNode[] = []
     for (const [index, leaf] of merged.entries()) {

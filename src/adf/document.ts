@@ -68,8 +68,22 @@ export function identicalMark(left: AdfMark, right: AdfMark): boolean {
   return marksKey([left]) === marksKey([right])
 }
 
-export function identicalMarks(left: AdfNode, right: AdfNode): boolean {
-  return marksKey(nodeMarks(left)) === marksKey(nodeMarks(right))
+export function identicalMarks(left: readonly AdfMark[], right: readonly AdfMark[]): boolean {
+  return marksKey(left) === marksKey(right)
+}
+
+// `joins` is the caller's: a reader joins what CommonMark reads as one, editor-normal ADF what the editor would.
+export function mergeAdjacentText(nodes: readonly AdfNode[], joins: (previous: AdfNode, node: AdfNode) => boolean): AdfNode[] {
+  const merged: AdfNode[] = []
+  for (const node of nodes) {
+    const previous = merged[merged.length - 1]
+    if (previous !== undefined && joins(previous, node)) {
+      merged[merged.length - 1] = { ...previous, text: `${previous.text ?? ''}${node.text ?? ''}` }
+      continue
+    }
+    merged.push(node)
+  }
+  return merged
 }
 
 // Depth is the walks' business, not the shape's: the guard waves a deep document through as blocks and marks do.

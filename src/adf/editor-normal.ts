@@ -1,34 +1,25 @@
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
-import { nodeAttrs, nodeContent, nodeMarks } from './document.ts'
-import { serializeCanonicalJson } from '../canonical-json.ts'
+import { identicalMark, identicalMarks, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from './document.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
 type NodeHolder = { content?: AdfNode[] }
 
-export function sameMark(candidate: AdfMark, mark: AdfMark): boolean {
-  return markKey(candidate) === markKey(mark)
+export function sameMark(left: AdfMark, right: AdfMark): boolean {
+  return identicalMark(normalMark(left), normalMark(right))
 }
 
-export function mergeAdjacentText(nodes: readonly AdfNode[]): AdfNode[] {
-  const merged: AdfNode[] = []
-  for (const node of nodes) {
-    const previous = merged[merged.length - 1]
-    if (previous !== undefined && mergesText(previous) && mergesText(node) && sameMarks(previous, node)) {
-      merged[merged.length - 1] = { ...previous, text: `${previous.text ?? ''}${node.text ?? ''}` }
-      continue
-    }
-    merged.push(node)
-  }
-  return merged
+export function joinsNormally(previous: AdfNode, node: AdfNode): boolean {
+  if (!mergesText(previous) || !mergesText(node)) return false
+  return identicalMarks(nodeMarks(previous).map(normalMark), nodeMarks(node).map(normalMark))
 }
 
 export function toEditorNormal(document: AdfDocument): AdfDocument {
   const normal: AdfDocument = { type: document.type, version: Object.is(document.version, -0) ? 0 : document.version }
   const pending: { holder: NodeHolder; source: NodeHolder }[] = [{ holder: normal, source: document }]
   for (let entry = pending.pop(); entry !== undefined; entry = pending.pop()) {
-    const content = mergeAdjacentText(nodeContent(entry.source))
+    const content = mergeAdjacentText(nodeContent(entry.source), joinsNormally)
     if (content.length === 0) continue
     entry.holder.content = content.map((source) => {
       const holder = normalNode(source)
@@ -75,16 +66,4 @@ function normalValue(value: JsonValue, pending: JsonContainer[]): JsonValue {
 
 function mergesText(node: AdfNode): boolean {
   return node.type === 'text' && Object.keys(nodeAttrs(node)).length === 0
-}
-
-function sameMarks(previous: AdfNode, node: AdfNode): boolean {
-  return marksKey(nodeMarks(previous)) === marksKey(nodeMarks(node))
-}
-
-function marksKey(marks: readonly AdfMark[]): string {
-  return marks.map(markKey).join('\n')
-}
-
-function markKey(mark: AdfMark): string {
-  return `${mark.type} ${serializeCanonicalJson(normalAttributes(nodeAttrs(mark)) ?? {}, 'compact')}`
 }
