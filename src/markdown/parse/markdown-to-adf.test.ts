@@ -374,11 +374,11 @@ test('reads the carry fence back to the node its info string names and its JSON 
   assert.deepEqual(content(markdownToAdf('```adf:\n{\n  "type": "a`b"\n}\n```\n')), [{ type: 'a`b' }])
   assert.equal(
     content(markdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n')),
-    "unsupported-node-shape: the adf:blockCard fence names its node's type: this JSON holds a type as well",
+    'unsupported-node-shape: the adf:blockCard fence names its node\'s type: this JSON holds a type as well; !adf:codeBlock {language="adf:blockCard"} around a bare fence keeps it a code block',
   )
   assert.equal(content(markdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the carry fence names a type its info string carries: spell it adf:blockCard')
   assert.equal(content(markdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; !adf:codeBlock {language=\"adf:\"} around a bare fence keeps it a code block")
-  const unnamed = 'unsupported-node-shape: the carry fence names a type no info string carries back: spell it adf: with the type in the JSON'
+  const unnamed = 'unsupported-node-shape: the carry fence names a type no info string carries back: spell it adf: with the type in the JSON; !adf:codeBlock {language="adf:\\\\"} around a bare fence keeps it a code block'
   assert.equal(content(markdownToAdf('```adf:\\\\\n{}\n```\n')), unnamed)
 })
 

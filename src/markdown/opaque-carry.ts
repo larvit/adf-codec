@@ -39,7 +39,7 @@ export function carryFenceType(info: string): string | undefined {
 
 export function readCarriedBlock(type: string, body: string, depth: number): Read<AdfNode> {
   if (type !== '' && !infoStringCarries(type)) {
-    return { fault: unsupportedNodeShape(`the carry fence names a type no info string carries back: spell it ${carryFencePrefix} with the type in the JSON`) }
+    return { fault: unsupportedNodeShape(`the carry fence names a type no info string carries back: spell it ${carryFencePrefix} with the type in the JSON; ${fenceEscape(type)}`) }
   }
   const read = readCarriedJson(body, 'two-space', largestNesting - depth, type)
   if (read.fault !== undefined || type !== '' || !infoStringCarries(read.value.type)) return read
@@ -89,7 +89,7 @@ function fenceEscape(type: string): string {
 
 function typedValue(value: JsonValue, type: string): Read<JsonValue> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return { value }
-  if ('type' in value) return { fault: unsupportedNodeShape(`the ${carryFencePrefix}${type} fence names its node's type: this JSON holds a type as well`) }
+  if ('type' in value) return { fault: unsupportedNodeShape(`the ${carryFencePrefix}${type} fence names its node's type: this JSON holds a type as well; ${fenceEscape(type)}`) }
   return { value: { ...value, type } }
 }
 
