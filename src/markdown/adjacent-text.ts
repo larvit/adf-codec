@@ -1,6 +1,6 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../adf/document.ts'
 import type { JsonValue } from '../json-value.ts'
-import { identicalMark, identicalMarks, isPlainText, nodeAttrs, nodeMarks } from '../adf/document.ts'
+import { identicalMark, identicalMarks, isBareText, nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { spellInlineLeafDirective } from './directive-syntax.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
@@ -11,7 +11,7 @@ export const textBreakSpelling = spellInlineLeafDirective(textBreakName, '')
 
 // The lossless reader's rule: CommonMark reads the pair back as one text run (spec/flavour.md, Inline nodes).
 export function joinsWhenRead(previous: AdfNode, node: AdfNode): boolean {
-  return isPlainText(previous) && isPlainText(node) && identicalMarks(nodeMarks(previous), nodeMarks(node))
+  return isBareText(previous) && isBareText(node) && identicalMarks(nodeMarks(previous), nodeMarks(node))
 }
 
 // The editor's rule, differing from the reader's only on shapes editor-normal ADF erases: an empty attrs, content or marks, and -0 in a mark.

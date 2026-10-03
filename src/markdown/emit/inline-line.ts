@@ -6,7 +6,7 @@ import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, 
 import { carriedInline } from '../opaque-carry.ts'
 import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
-import { identicalMark, isPlainText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { identicalMark, isBareText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../plain/conventions.ts'
@@ -269,7 +269,7 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
 
 function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
   if (nodeContent(node).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
-  if (!isPlainText(node)) return success({ carry: { first: index, last: index } })
+  if (!isBareText(node)) return success({ carry: { first: index, last: index } })
   if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
   if (/\r/.test(node.text)) return failure('unspellable-character', 'a text node holds a carriage return CommonMark rewrites', path)
   if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
@@ -324,7 +324,7 @@ function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange
   const spans: string[] = []
   for (const node of nodes) {
     if (node.type === 'text' && nodeContent(node).length > 0) return failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path)
-    if (!isPlainText(node) || nodeMarks(node).length !== depth + 1) return success({ carry: range })
+    if (!isBareText(node) || nodeMarks(node).length !== depth + 1) return success({ carry: range })
     const { text } = node
     if (typeof text !== 'string' || text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
     if (/[\n\r]/.test(text)) return success({ carry: range })
