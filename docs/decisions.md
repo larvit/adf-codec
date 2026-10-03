@@ -36,28 +36,23 @@ does not imply a spellable document; `corpus/commonmark-spec/exceptions.json` na
 2026-08-24, deep 2026-10-03, the maintainer. Goal 1. Valid while a pipeline or a bot can build a
 shape the editor would not.
 
-"Equals" is deep equality over the document's JSON values: `assert.deepStrictEqual` on plain
-objects as `JSON.parse` builds them, since ADF is JSON. Every key and value `doc` holds counts, two
-adjacent text nodes, an empty `attrs`, `content` or `marks` and `-0` included, with no
-normalization on either side.
-CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader
-builds what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction
-reads and writes editor-normal ADF — adjacent text nodes of identical marks and no attributes
-merged, `-0` as `0`, and an empty `attrs`, `content` or `marks` the absent key — so two documents
-the editor holds equal write the same plain markdown.
+"Equals" is deep equality over the document's JSON values: `assert.deepStrictEqual` on plain objects
+as `JSON.parse` builds them, since ADF is JSON. Every key and value in `doc` counts, including two
+adjacent text nodes, an empty `attrs`, `content` or `marks`, and `-0`. Neither side is normalized.
+CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader builds
+what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction reads and
+writes editor-normal ADF — adjacent text nodes of identical marks and no attributes merged, `-0` as
+`0`, and an empty `attrs`, `content` or `marks` the absent key — so two documents the editor holds
+equal write the same plain markdown.
 
 ## `!adf:textBreak{}` parts text CommonMark would join
 
 2026-10-03, the maintainer. Goal 1. Valid while CommonMark reads adjacent text as one run.
 
-Two adjacent text nodes a reader would build back as one — neither carried, neither holding
-`attrs` or an empty key, their marks identical, attributes included — are parted by the reserved
-inline leaf `!adf:textBreak{}`, mirroring `!adf:listBreak`: it builds no node, and anywhere but
-between two such nodes, or given `[content]` or `{attrs}`, it is `unsupported-node-shape`. It sits
-inside every mark spelling the pair shares, `**Hello, !adf:textBreak{}world**`; a code span holds
-no directive, so it closes and reopens, `` `a`!adf:textBreak{}`b` ``. A carried node never joins
-its neighbour, so a carry needs no break. A mark run breaks on any difference in the mark, `attrs:
-{}` against no `attrs` included.
+Two adjacent text nodes CommonMark would read back as one are parted by the reserved inline leaf
+`!adf:textBreak{}`, mirroring `!adf:listBreak`: a leaf building no node keeps both nodes and asks
+nothing of the text around it. A code span holds no directive, so the spans close and reopen
+around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text nodes**.
 
 ## An empty key spells `empty`
 
@@ -84,14 +79,14 @@ the directive form, since no list marker spells the sign.
 
 ## Empty markdown is a document of no blocks
 
-2026-10-03, a panel and the maintainer. Goals 1 and 5. Valid while ADF's schema requires
+2026-10-03, a writer panel and the maintainer. Goals 1 and 5. Valid while ADF's schema requires
 `content` on `doc`.
 
 Markdown holding no block reads as `{ content: [], type: 'doc', version: 1 }`, the document
 `spec/adf-schema/full.json` requires. A document holding no `content` key is
-`!adf:doc {content=none}` standing alone as its only block, and a named error anywhere else. The
-writer panel split 4 for `none` and 3 for `absent`, and the maintainer chose `none`; all seven rejected a
-bare `!adf:doc`.
+`!adf:doc {content=none}` as its only block, and a named error anywhere else. The writer panel split
+4 for `none` and 3 for `absent`, and the maintainer chose `none`; all seven rejected a bare
+`!adf:doc`.
 
 ## Unknown nodes ride the carry
 
@@ -114,10 +109,10 @@ The block carry is a code fence whose info string `adf:<type>` names the node's 
 node's JSON without `type`: ```` ```adf:blockCard ````. A type no info string carries back — by the
 rule a code language follows — leaves the info string `adf:` and keeps `type` in the body. Every
 info string opening `adf:` is reserved, so a `codeBlock` whose language opens so takes the
-`language` attribute, and `carry` is an ordinary language. A body holding `type` under a named
-type, or an `adf:` fence whose type an info string carries, is `unsupported-node-shape`. The
-reservation claims a fence CommonMark reads as code until `todo.md` item 43 gives CommonMark its own
-reader.
+`language` attribute, and `carry` is an ordinary language. A body holding `type` under a named type,
+or a bare `adf:` fence whose body's `type` an info string could carry, is `unsupported-node-shape`.
+The reservation claims a fence CommonMark reads as code until `todo.md` item 43 gives CommonMark its
+own reader.
 
 ## A code block is a fence per text node
 
@@ -125,11 +120,9 @@ reader.
 node.
 
 A `codeBlock` holding several text nodes is the `!adf:codeBlock` container holding one fence per
-node, each fence's info string the language; its other attributes sit on the opener, and a
-language no info string carries stays the opener's `language` with bare fences. A `codeBlock`
-spelling `content=empty` has no fence to carry the language, so the opener does. Fences with
-differing info strings are `unsupported-node-shape` — ADF holds one language — and so is an empty
-fence beside another, since a text node holds text.
+node, so each node keeps its own text. The fences carry one info string, since ADF holds one
+language, and none is empty beside another, since a text node holds text. The grammar:
+`spec/flavour.md` §The CommonMark blocks, the `codeBlock` bullet.
 
 ## Foreign HTML sorts three ways
 
@@ -372,14 +365,14 @@ handles one cause alike whichever node, attribute or direction raised it.
   colon rather than ADF's missing column model doing it. What the grammar itself refuses stays a
   claim code, key order among it, and a leaf given a body is refused at its opener, as a container
   missing its closer is (2026-09-16).
-- A directive whose name reads back to no node is `unknown-directive-name` rather than a claim
-  code — the spelling is well formed, and telling that apart from a typo is what a consumer
-  switches on when a later MINOR gives the name meaning. A reserved name is a known name, so never
-  that code, and the names the flavour reserves part on form: a form the grammar does not have is
-  a claim code — `!adf:carry`, whose carry is the fence — and a well-formed form in the wrong place
-  is `unsupported-node-shape`, `!adf:listBreak` parting anything but two adjacent lists of one
-  type, `!adf:textBreak{}` anything but two text nodes a reader joins, `!adf:doc` standing beside
-  another block (2026-09-01, the text break and `doc` 2026-10-03).
+- A directive whose name reads back to no node is `unknown-directive-name` rather than a claim code
+  — the spelling is well formed, and telling that apart from a typo is what a consumer switches on
+  when a later MINOR gives the name meaning. A reserved name is a known name, so never that code,
+  and the names the flavour reserves part on form: a form the grammar does not have is a claim code
+  — `!adf:carry`, whose carry is the fence — and a well-formed form in the wrong place is
+  `unsupported-node-shape`, `!adf:listBreak` parting anything but two adjacent lists of one type,
+  `!adf:textBreak{}` anything but two adjacent text nodes CommonMark would read back as one,
+  `!adf:doc` standing beside another block (2026-09-01, the text break and `doc` 2026-10-03).
 - A well-formed directive the node tables refuse — an attribute a node does not hold or spells
   elsewhere, a value outside its kind or its canonical spelling, an argument, or a body of a shape
   its content model does not take — is `unsupported-node-shape`, the emitter's code for the same
