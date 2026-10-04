@@ -47,7 +47,7 @@ export function writeMarkdown(document: AdfDocument, flavour: Flavour): Result<s
   return success(text === '' ? '' : `${text}\n`)
 }
 
-// headroom: the least slack any depth guard below the walk has.
+// headroom: the nesting levels the deepest node below may still spend before the 500-level guard refuses it.
 function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)

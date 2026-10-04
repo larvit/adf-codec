@@ -15,6 +15,7 @@ export type InlineEscaping = 'backslash' | 'bracketed' | 'bracketed-link-target'
 
 export type NodeRange = { first: number; last: number }
 
+// `depth` is the index into each node's marks array that the run spells.
 export type MarkRun = NodeRange & { depth: number }
 
 export type InlineSegment =
