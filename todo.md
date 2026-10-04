@@ -73,18 +73,19 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 ### 55. Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.
 
 Today `inline-line.ts` refuses a carriage return or NUL in text, and a NUL in an emoji, mention or
-status (`unspellable-character`), and a paragraph opening with a code-span run (`unspellable-line-start`); `fencedTexts` refuses the same
-characters in a code block; `inline-line.ts` refuses a newline in an emoji, mention or status
-(`unspellable-whitespace`); `inline-line.ts` and `fencedTexts` refuse a text node whose `text` is
-empty or missing, and `inline-line.ts` one holding `content`. The carries spell all of them: the
-inline carry in a paragraph, the block carry in a code block. Inline, a carriage return or NUL
-could ride `!adf:text{text="…"}` instead, which keeps the text readable — a writer panel picks.
+status (`unspellable-character`); and a paragraph opening with a code-span run
+(`unspellable-line-start`); `fencedTexts` refuses the same characters in a code block;
+`inline-line.ts` refuses a newline in an emoji, mention or status (`unspellable-whitespace`);
+`inline-line.ts` and `fencedTexts` refuse a text node whose `text` is empty or missing, and
+`inline-line.ts` one holding `content`. The carries spell all of them: the inline carry in a
+paragraph, the block carry in a code block. Inline, a carriage return or NUL could ride
+`!adf:text{text="…"}` instead, which keeps the text readable — a writer panel picks.
 
 The maintainer approved on 2026-10-04: §Markdown in is a canonical fixpoint drops its code-span
-exception, §Which code a cause takes drops `unspellable-character`, and drops `unspellable-whitespace` as an
-emitter cause, and `unspellable-character` and `unspellable-line-start` retire.
-`unspellable-whitespace` stays, since the reader raises it for a content slot spanning a newline.
-Found by the README-goals audit, 2026-10-03.
+exception, §Which code a cause takes drops `unspellable-whitespace` as an emitter cause;
+`unspellable-character` and `unspellable-line-start` retire. `unspellable-whitespace` stays, since
+the reader raises it for a content slot spanning a newline. Found by the README-goals audit,
+2026-10-03.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -122,19 +123,21 @@ Both are refused today with `unmappable-image`: 14 examples in
 takes only Atlassian media ids, never a URL. An image not alone in its paragraph reads as its alt
 text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
 as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
-title as a `caption` (the maintainer, 2026-10-04). By Goal 4, the lossless flavour reads both the same way. An image inside
-a link, `[![moon](moon.jpg)](/uri)` (spec example 517), would need two links on one text node: the
-chunk settles which link the alt text keeps by Goal 6, and asks where it does not decide.
+title as a `caption` (the maintainer, 2026-10-04). By Goal 4, the lossless flavour reads both as
+CommonMark does. An image inside a link, `[![moon](moon.jpg)](/uri)` (spec example 517), would need
+two links on one text node: the chunk settles which link the alt text keeps by Goal 6, and asks
+where it does not decide.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
 Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
 two (spec examples 301 and 302). Goal 4 settles it for the lossless flavour too: CommonMark spells
-adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` alternate `-`
-and `*` between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and
-`!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04); ordered lists have only `)`. Breaking, so it ships beside item 43: `MIGRATION.md`'s
-Readings and Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions,
-and the spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
+adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` alternate `-` and
+`*` between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and
+`!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking, so it ships beside
+item 43: `MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose
+their `pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet,
+which counts one fewer.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 
@@ -186,8 +189,8 @@ which counts one fewer.
 Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts`, the `mintTaskIds` call and
 the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
 `emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
-`plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every comprehension reader on 2026-10-03
-named the plain flavour's spread across three directories.
+`plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every
+comprehension reader on 2026-10-03 named the plain flavour's spread across three directories.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
@@ -260,10 +263,9 @@ kB.
 
 Technical principle "One owner per value": the `Walk` record passes through twelve functions that
 mutate it and return `void`; `walk.leaf` alone is written in seven places. `ContainerStack` in the
-same file shows the shape to follow.
-`inline-content.ts`'s `Scan` has the same shape: about fifteen functions write `pending`, `pieces`,
-`deactivatedBefore` and `openingSpellableLink` and return `void`, and `parseInlineContent` reads a
-flag `scanInline` leaves on it.
+same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
+functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
+`void`, and `parseInlineContent` reads a flag `scanInline` leaves on it.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 
