@@ -65,7 +65,7 @@ export function emptyKeys(held: { attrs?: AdfAttributes; content?: AdfNode[]; ma
   return keys
 }
 
-// A format spells this node as text; anything more rides a carry.
+// No attrs, content or empty marks; a format may spell this node as text, and anything more rides a carry.
 export function isBareText(node: AdfNode): boolean {
   return node.type === 'text' && node.attrs === undefined && node.content === undefined && node.marks?.length !== 0
 }

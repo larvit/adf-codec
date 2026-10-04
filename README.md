@@ -196,7 +196,7 @@ emit refuses:
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | parsing: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, writes as a directive a node or mark the lossless flavour spells as CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting: a node listed under "Not every document converts back" below | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
+| `unsupported-node-shape` | parsing: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, writes as a directive a node or mark the lossless flavour spells as CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting: a node carrying one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content` | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
 
@@ -224,9 +224,8 @@ Serves Goals 1, 3 and 4.
   text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other.
   The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite
   holds no example of the fourth.
-- Not every document converts back: `adfToMarkdown` refuses a document nesting past 500 levels, a
-  node carrying one mark type twice, a block or a non-text inline node holding `text`, and a leaf
-  block or a non-text inline node holding `content`. Show the refusal and keep the document
+- Not every document converts back: `adfToMarkdown` refuses a document nesting past 500 levels, and
+  the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the document
   read-only; saving markdown you could not produce is the loss the round-trip exists to stop.
 - The pipe table narrows GFM's twice: every row opens with a pipe, so GFM's bare form is an error
   result rather than the prose it reads as, and an alignment colon in the delimiter row is an

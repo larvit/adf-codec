@@ -272,7 +272,7 @@ function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertEr
   return success(directivePair(node, opener.value, texts.map((text) => fencedCodeBlock(info, text)).join('\n')))
 }
 
-// The text each fence holds, or `undefined` where a child is no text a fence keeps, which the carry holds instead.
+// The text of each fence, or `undefined` where a child holds what no fence keeps, so the block carry takes the node.
 function fencedTexts(node: AdfNode): string[] | undefined {
   if (node.content === undefined) return ['']
   const texts: string[] = []

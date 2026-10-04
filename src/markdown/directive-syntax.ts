@@ -100,7 +100,7 @@ export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<
   return { value: spelled.decoded }
 }
 
-// What no content slot holds, which the emitter carries instead: an inline directive never spans lines, and CommonMark reads a null character as U+FFFD.
+// No content slot holds a line ending or a null character, which only the text directive spells; the emitter carries such a node.
 export function slotFault(type: string, text: string): ConvertFault | undefined {
   if (/[\n\r]/.test(text)) return { code: 'unspellable-whitespace', message: `the ${type} content slot holds a newline no inline directive spans` }
   return holdsNullCharacter(text) ? unsupportedNodeShape(`the ${type} content slot holds a null character: write the node as !adf:carry`) : undefined

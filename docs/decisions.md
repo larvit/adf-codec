@@ -23,7 +23,7 @@ sanitized and a mention keeps the test user's real account id.
 
 ## Markdown in is a canonical fixpoint
 
-2026-08-23, the maintainer; the way back made total 2026-10-04. Goals 1 and 4. Valid while
+2026-08-23, the maintainer; every parsed document converts back since 2026-10-04. Goals 1 and 4. Valid while
 markdown input may be written by hand.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
@@ -347,10 +347,10 @@ handles one cause alike whichever node, attribute or direction raised it.
 
 - A code names the cause; where one cause recurs across node types, across one mark's attributes
   or across directions, one code covers them all and `path` and `message` say which —
-  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it. Where two codes
-  stay apart, the line between them is what they name: `unspellable-whitespace` is the newline an
-  inline directive's content slot spells in input, where the emitter carries the node
-  (2026-10-04).
+  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it.
+  `unspellable-whitespace` is the newline an inline directive's content slot spells in input; the
+  emitter carries such a node. A null character in that slot is `unsupported-node-shape`, since
+  `unspellable-whitespace` does not read true of it (2026-10-04).
 - A claim code names the spelling claimed, never the node that spelling would have built: a
   malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
   `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
@@ -493,8 +493,8 @@ exits 0 on.
 2026-10-03, the maintainer. KISS, a technical principle, and its comprehension floor of 7. Valid
 while `todo.md` items 59, 60, 61 and 62 are open.
 
-A four-seat comprehension panel scored the project under the floor of 7. Its last scoring run
-(item 55, 2026-10-04) is the baseline. Since 2026-10-04, a chunk whose panel scores any dimension
+A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
+2026-10-04 is the baseline. Since 2026-10-04, a chunk whose panel scores any dimension
 lower improves what the seats named and scores again, and after three such rounds asks the
 maintainer.
 

@@ -63,8 +63,8 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 ### Error codes
 
 `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`:
-a `switch` naming one stops compiling. The document a removed code named on emit converts; the
-markdown it named on parse refuses with the code the table gives.
+a `switch` naming one stops compiling. A document `adfToMarkdown` refused with one of them now
+converts; markdown the parser refused with one of them now refuses with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
@@ -73,7 +73,7 @@ markdown it named on parse refuses with the code the table gives.
 | a null character in text, on emit | `unspellable-character` | spells `!adf:text{text="\u0000"}` |
 | a carriage return or null character in a code block, or a null character in a code span, on emit | `unspellable-character` | rides the carry |
 | a paragraph line opening with a code span of three or more backticks, on emit | `unspellable-line-start` | spells the code span |
-| a block directive whose CommonMark spelling holds one of the above, on parse | `unspellable-character`, `unspellable-line-start` | `unsupported-node-shape`; write the CommonMark spelling |
+| a block directive whose CommonMark spelling holds a carriage return, a null character or a code span opening a line, on parse | `unspellable-character`, `unspellable-line-start` | `unsupported-node-shape`; write the CommonMark spelling |
 | an `emoji`, `mention` or `status` whose `text` holds a line ending or a null character, on emit | `unspellable-whitespace`, `unspellable-character` | rides the inline carry |
 | a text node holding no text, or holding `content`, on emit | `unsupported-node-shape` | rides the carry |
 | a `codeBlock` holding other than plain text nodes, on emit | `unsupported-node-shape` | rides the block carry |
