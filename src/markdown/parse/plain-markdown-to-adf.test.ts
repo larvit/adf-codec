@@ -124,6 +124,12 @@ test('reads a folded callout to an expand titled by the rest of its marker line,
   assert.deepEqual(read('> [!NOTE]-\n>\n> Line.\n'), [bare('expand', said('Line.'))])
 })
 
+test("reads a folded callout's title leaves as a walk rather than as one call's arguments", () => {
+  const children = Array.from({ length: 130000 }, () => '{\\"text\\":\\"a\\",\\"type\\":\\"text\\"}').join(',')
+  const parsed = plainMarkdownToAdf(`> [!NOTE]- !adf:carry{json="{\\"content\\":[${children}],\\"type\\":\\"unknownInline\\"}"}\n`)
+  assert.equal(parsed.ok && parsed.value.content?.[0]?.attrs?.['title'], 'a'.repeat(130000))
+})
+
 test('reads a folded callout inside an expand to a nested expand', () => {
   const markdown = '> [!NOTE]- Outer\n>\n> > [!NOTE]- Inner\n> >\n> > Deep.\n>\n> > [!TIP]\n> >\n> > > [!NOTE]-\n'
   assert.deepEqual(read(markdown), [node('expand', { title: 'Outer' }, node('nestedExpand', { title: 'Inner' }, said('Deep.')), panel('tip', bare('nestedExpand', paragraph())))])

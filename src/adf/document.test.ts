@@ -75,6 +75,16 @@ test('names the attribute nesting past the levels the parser reads one at, and s
 test('accepts the JSON values an attribute may hold', () => {
   assert.equal(isAdfDocument({ content: [{ attrs: { a: [1, 'x', null, true, { b: 2 }] }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
   assert.equal(isAdfDocument({ content: [{ attrs: { a: [() => 1] }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(isAdfDocument({ content: [{ attrs: { a: Object.assign(Object.create(null), { b: 1 }) }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
+})
+
+test('refuses an attribute value that is an object JSON does not hold', () => {
+  class Point { x = 1 }
+  for (const value of [new Date(0), new Map([['b', 1]]), new Set([1]), new Uint8Array([1, 2]), new Point(), [new Map()], { b: new Set() }]) {
+    assert.equal(isAdfDocument({ content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }), false, String(value))
+  }
+  assert.equal(isAdfDocument({ content: [{ attrs: new Map(), type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(isAdfDocument({ content: [{ marks: [{ attrs: { href: new URL('https://x.test') }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
 })
 
 test("reads a node's siblings as a walk rather than as one call's arguments", () => {

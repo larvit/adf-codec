@@ -154,7 +154,7 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   for (const [index, node] of title.value.nodes.entries()) {
     const held = node.text === undefined ? inlineLeaves([node], 'paragraph', [...path, 'content', index], depth) : success([node])
     if (!held.ok) return held
-    leaves.push(...held.value)
+    for (const leaf of held.value) leaves.push(leaf)
   }
   const text = titleText(leaves)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'

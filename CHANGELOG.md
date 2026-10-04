@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix an attribute value JSON does not hold — a `Date`, `Map`, `Set`, typed array or class instance —
+  passing `isAdfDocument` and converting as `{}`: it is `not-an-adf-document`.
 - The README opens with what the package does and for whom, and `package.json` carries search
   keywords.
 - The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where

@@ -27,11 +27,9 @@
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 78 | 0.2.0 | defect | **Return a result when `markdownToAdf` or `plainMarkdownToAdf` is handed a value that is not a string.** | 2 | 2 | 5 | 9 | 1 | 25.5 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
-| 67 | 0.2.0 | defect | **Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.** | 1 | 1 | 4 | 9 | 1 | 24.8 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
 | 77 | 0.2.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
-| 66 | 0.2.0 | defect | **Refuse an attribute value that is not a plain object, array or JSON primitive.** | 3 | 2 | 5 | 8 | 1 | 22.5 |
 | 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
@@ -75,7 +73,8 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
 document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
 The code the call returns follows `docs/decisions.md` §The code list. Found while checking the other
-ADF converters for item 71, 2026-10-05.
+ADF converters for item 71, 2026-10-05. No code reads true of it (`docs/decisions.md` §The code list):
+the chunk asks the maintainer for one first, proposing `not-a-string`.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -83,13 +82,6 @@ Lands with item 77: the reader returns item 77's copy. Goal 1 has every call ret
 boolean guard is the one export that does not, and it cannot say which branch refused, where
 `not-an-adf-document`'s message already does. Breaking: `MIGRATION.md` shows the guard's
 replacement.
-
-### 67. Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.
-
-`quoteNode`'s title loop (`parse/markdown-to-adf.ts`) spreads `inlineLeaves`'s result into
-`push`, against `docs/decisions.md` §Nothing spreads an unbounded array: an inline carry in a
-folded callout's title holding an unknown node with ~125k text children throws a `RangeError` from
-`plainMarkdownToAdf`. Found by the README-goals audit, 2026-10-04.
 
 ### 6. Specify the HTML dialect.
 
@@ -119,13 +111,6 @@ reads arrays by index, so no custom iterator runs. Every later step works on the
 still claim unbounded width, which the 500-level limit does not cover, so the copy needs a cap on
 the values it reads. No standard sets that number: the chunk asks the maintainer for it first. Found
 by the technical-principles audit, 2026-10-04.
-
-### 66. Refuse an attribute value that is not a plain object, array or JSON primitive.
-
-`isJsonValue` (`json-value.ts`) walks any object by `Object.values`, so a `Date`, `Map`, `Set` or
-typed array in `attrs`, as `structuredClone` keeps it, passes the guard and is written as `{}` or a
-key per element: `ok: true` with content lost. Accept an object whose prototype is
-`Object.prototype` or `null`, and an array. Found by the stability review of item 63, 2026-10-04.
 
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
 
