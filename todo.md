@@ -24,19 +24,21 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
+| 47 | 0.2.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 3 | 26.0 |
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 67 | 0.2.0 | defect | **Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.** | 1 | 1 | 4 | 9 | 1 | 24.8 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
 | 66 | 0.2.0 | defect | **Refuse an attribute value that is not a plain object, array or JSON primitive.** | 3 | 2 | 5 | 8 | 1 | 22.5 |
-| 71 | 0.2.0 |  | **Compare the package with the other ADF converters in the README, each claim checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
+| 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
 | 70 | 0.2.0 |  | **Give `package.json` the `keywords` someone searching npm for an ADF converter types.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
 | 72 | 0.2.0 |  | **Make GitHub the canonical repository, with `gitea.larvit.se/larvit/adf-codec` a read-only pull mirror of it.** | 5 | 6 | 5 | 8 | 3 | 16.0 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
+| 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
@@ -45,12 +47,9 @@
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
 | 62 | 0.2.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 4, 5, 7 | 9.0 |
-| 47 | 0.3.0 |  | **Open the README with what the package is, what it does and for whom.** | 1 | 4 | 7 | 9 | 3 | 26.0 |
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
-| 48 | 0.3.0 |  | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
-| 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
 | 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
 | 42 | 0.3.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
@@ -61,6 +60,15 @@
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
+
+### 47. Open the README with what the package is, what it does and for whom.
+
+It opens with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
+decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why"
+note left. The badges are npm's version and the GitHub Actions status, so it lands after item 72. The README names the lossy
+pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it writes and reads — GitHub
+Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a search for
+any of these names finds the package.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
@@ -102,13 +110,13 @@ typed array in `attrs`, as `structuredClone` keeps it, passes the guard and is w
 key per element: `ok: true` with content lost. Accept an object whose prototype is
 `Object.prototype` or `null`, and an array. Found by the stability review of item 63, 2026-10-04.
 
-### 71. Compare the package with the other ADF converters in the README, each claim checked against that package's own docs or behaviour.
+### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
 
-Lands after item 7, whose HTML the comparison names. A table: which directions each converts,
+Lands after items 7, 46 and 47: the table names HTML, compares item 46's size figure, and sits in the README item 47 reshapes. A table: which directions each converts,
 whether the round-trip holds, what an unknown node does, the formats, runtime dependencies and
 size. Candidates are the packages an npm search for ADF and markdown returns, marklassian among
-them. Every cell cites that package's README or a run against its published version, since a
-reader relies on it. Found while planning discoverability, 2026-10-04.
+them. Every cell cites that package's README or a run against its published version, and the
+table names each version and the date it was checked, since a reader relies on it. Found while planning discoverability, 2026-10-04.
 
 ### 43. Give each markdown input its own reader, strict to its own standard.
 
@@ -150,12 +158,16 @@ npm list and the names the README uses — ADF, Atlassian Document Format, markd
 
 The maintainer's call, 2026-10-04: GitHub is where an ADF converter is searched for, and the Gitea
 copy keeps the move back open. The workflows move to `.github/workflows/` with `ci.sh` and
-`publish.sh` unchanged; `package.json`'s `repository`, `bugs` and `homepage`, the README's,
-CHANGELOG's and MIGRATION's links, and AGENTS.md's forge commands and merge style follow.
+`publish.sh` unchanged. Publishing moves to npm's trusted publishing over OIDC, which GitHub-hosted
+Actions support, and which outlives the bypass-2FA token npm retires around January 2027.
+`package.json`'s `repository` moves and it gains `bugs` and `homepage`. The links in README,
+CHANGELOG and MIGRATION follow, as do AGENTS.md's forge commands and merge style.
 `docs/decisions.md` gains the entry "GitHub is canonical, and Gitea a pull mirror of it" (Goal 3),
-and every entry naming Gitea Actions is revised. Creating the GitHub repository, its `NPM_TOKEN`
-secret, and re-creating the Gitea copy as a mirror — Gitea converts a repository to a mirror only
-that way — are the maintainer's.
+and every entry naming Gitea Actions is revised. Gitea's open issues and its releases move to
+GitHub first, since a mirror carries only git refs; the mirror disables issues and its description
+points at GitHub. Creating the GitHub repository, configuring npm's trusted publisher, and
+re-creating the Gitea copy as a mirror (Gitea cannot convert an existing repository) are the
+maintainer's.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
@@ -167,6 +179,16 @@ adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdow
 item 43: `MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose
 their `pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet,
 which counts one fewer.
+
+### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
+
+Lands after item 7, which changes it. The quantity is what a consumer downloads and loads: the
+tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minified + gzipped — the
+figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
+ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
+or report the unminified gzip). The figure lands in README §The package beside the "no runtime
+dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
+kB.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 
@@ -223,49 +245,16 @@ link mark, so a link whose text is empty takes its URL as its text (the maintain
 `pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
 which counts one fewer.
 
-### 47. Open the README with what the package is, what it does and for whom.
-
-It opens with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
-decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why"
-note left. The badges are npm's version and the Gitea Actions status. The README names the lossy
-pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it writes and reads — GitHub
-Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a search for
-any of these names finds the package.
-
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Lands after `0.2.0` is published and items 71 and 72 land, so each post links the GitHub
-repository and the comparison. We draft each post for the place it goes; the maintainer posts
+Lands after `0.2.0` is published with items 47, 71 and 72, so each post links the GitHub
+repository, the comparison and a README that opens with what the package is. We draft each post for the place it goes; the maintainer posts
 them. Found while planning discoverability, 2026-10-04.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
 `adfToMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute values
 already escape it.
-
-### 48. Keep the release path publishing past npm's bypass-2FA token retirement.
-
-Lands after 2027-01-01, or after a release run fails on the token, whichever comes first: the
-maintainer chose on 2026-10-02 to wait and see whether the retirement bites. It holds back no
-release: when the rest of its release is done, it moves to the next. `0.1.0` published only once the
-npm token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
-answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct publishing
-around January 2027, leaving them `npm stage publish`, which a maintainer approves with 2FA; its
-replacement — trusted publishing over OIDC — supports GitHub-hosted Actions, GitLab.com's shared
-runners and CircleCI's cloud, self-hosted runners planned without a date. Revisit: whether npm has
-added Gitea or self-hosted OIDC, and otherwise whether the release moves to the staged publish —
-which fits badly with publish-on-merge, and is the maintainer's trade to weigh. The Goals and G
-cells are provisional: no README goal covers the release path.
-
-### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
-
-Lands after item 7, which changes it. The quantity is what a consumer downloads and loads: the
-tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minified + gzipped — the
-figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
-ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
-or report the unminified gzip). The figure lands in README §The package beside the "no runtime
-dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
-kB.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
