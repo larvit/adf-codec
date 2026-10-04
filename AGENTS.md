@@ -54,6 +54,7 @@ In `docs/decisions.md`:
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
 - Nothing recurses unbounded
+- The guards take what `JSON.parse` or `structuredClone` builds
 - Nothing spreads an unbounded array
 - A retry loop checks its own termination
 - Readers scan by index

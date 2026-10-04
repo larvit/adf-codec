@@ -106,7 +106,7 @@ export function isAdfNode(value: unknown): value is AdfNode {
 }
 
 export function isAdfMark(value: unknown): value is AdfMark {
-  if (!isRecord(value) || !holdsOnly(value, markKeys) || !ownsWhatItHolds(value, markKeys)) return false
+  if (!isRecord(value) || !holdsOnly(value, markKeys)) return false
   if (typeof value['type'] !== 'string') return false
   return !('attrs' in value) || isAttributes(value['attrs'])
 }
@@ -135,7 +135,7 @@ function holdsItself(root: object): boolean {
     if (onPath.has(entry.item)) return true
     ancestors.push(entry.item)
     onPath.add(entry.item)
-    for (const child of Array.isArray(entry.item) ? [...entry.item] : Object.values(entry.item)) if (typeof child === 'object' && child !== null) pending.push({ depth: entry.depth + 1, item: child })
+    for (const child of Object.values(entry.item)) if (typeof child === 'object' && child !== null) pending.push({ depth: entry.depth + 1, item: child })
   }
   return false
 }
@@ -144,7 +144,7 @@ function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {
   const pending: unknown[] = [...value]
   while (pending.length > 0) {
     const node = pending.pop()
-    if (!isRecord(node) || !holdsOnly(node, nodeKeys) || !ownsWhatItHolds(node, nodeKeys)) return false
+    if (!isRecord(node) || !holdsOnly(node, nodeKeys)) return false
     if (typeof node['type'] !== 'string') return false
     if ('attrs' in node && !isAttributes(node['attrs'])) return false
     if ('marks' in node && !isArrayOf(node['marks'], isAdfMark)) return false
@@ -217,11 +217,6 @@ function describe(value: unknown): string {
 
 function extraKey(value: Record<string, unknown>, keys: readonly string[]): string | undefined {
   return Object.keys(value).find((key) => !keys.includes(key))
-}
-
-// holdsItself walks own enumerable keys alone, so a guard reading any other key could walk a cycle forever.
-function ownsWhatItHolds(value: Record<string, unknown>, keys: readonly string[]): boolean {
-  return keys.every((key) => !(key in value) || Object.prototype.propertyIsEnumerable.call(value, key))
 }
 
 function holdsOnly(value: Record<string, unknown>, keys: readonly string[]): boolean {

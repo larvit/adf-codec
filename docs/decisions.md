@@ -563,6 +563,16 @@ format, as its parser does. A list giving way to the directive form refuses at z
 than walking again; counting every list twice halved the list limit, counting the directive form
 once doubled the parser's frames per level.
 
+## The guards take what `JSON.parse` or `structuredClone` builds
+
+2026-10-04, the maintainer. Goal 1. Valid while every persona hands in a value `JSON.parse`,
+`structuredClone` or an object literal builds.
+
+The guarantees speak of plain data: own enumerable keys and plain arrays, cycles and shared objects
+included. The guards walk it by `Object.values` and refuse a cycle. An inherited or non-enumerable
+key, a getter, a Proxy or a custom iterator is the caller's to rule out: no persona builds one, and
+each guarded shape asked for another.
+
 ## Nothing spreads an unbounded array
 
 2026-09-18, the maintainer. Goal 1. Valid while engines cap a call's arguments.

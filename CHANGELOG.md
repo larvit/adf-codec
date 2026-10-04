@@ -32,9 +32,7 @@
 - Fix an image inside another image's description: it flattens into the alt text, where it was
   refused.
 - Fix a cyclic document, in which an object holds itself: `adfToMarkdown` and `adfToPlainMarkdown`
-  refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`, where all three hung. A
-  node or mark whose `attrs`, `content`, `marks`, `text` or `type` is not its own enumerable key is
-  refused alike, where it was read.
+  refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`, where all three hung.
 
 ## 0.1.0
 

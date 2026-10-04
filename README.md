@@ -33,7 +33,7 @@ The most useful ADF conversion library available, judged by these goals, in prio
 5. **No surprises: output reads and edits the way its audience expects.**
 6. **Lossy conversion drops form, never content.**
 7. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
-8. **Fast, and linear in the document's size.**
+8. **Fast, and linear in the document's size as JSON.**
 9. **Easy to find, and clear at a glance what it does.**
 
 ## Audience
@@ -238,8 +238,8 @@ Serves Goals 1, 3 and 4.
   input.
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
   is the `taskList` directive — `plainMarkdownToAdf` turns the marker into a `taskList`.
-- A document nested deeper than 500 levels is an error result, not a stack overflow, and no input
-  makes a call loop forever.
+- A document nested deeper than 500 levels is an error result, not a stack overflow, and no value
+  `JSON.parse` or `structuredClone` builds makes a call loop forever.
 - The emitted formats are semver surface
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#the-formats-are-api)).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
