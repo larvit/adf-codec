@@ -43,6 +43,7 @@ export function adfDocumentFault(value: unknown): ConvertFault | undefined {
   const held: unknown = value['content']
   if (!Array.isArray(held)) return notADocument(`an ADF document's content is an array: found ${describe(held)}`)
   const content: readonly unknown[] = held
+  if (holdsItself(content)) return notADocument('an ADF document is a tree: a node or an attribute value holds itself')
   if (!isNodeArray(content)) return notADocument("an ADF document's content holds ADF nodes: one of them is not")
   return nestingFault(content)
 }
@@ -120,6 +121,23 @@ export function nodeContent(node: { content?: AdfNode[] }): readonly AdfNode[] {
 
 export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
   return node.marks ?? []
+}
+
+// Ancestors alone: a tree may share an object, but an object holding itself walks the guards forever.
+function holdsItself(root: object): boolean {
+  const pending = [{ depth: 0, item: root }]
+  const ancestors: object[] = []
+  const onPath = new Set<object>()
+  while (pending.length > 0) {
+    const entry = pending.pop()
+    if (entry === undefined) continue
+    for (const left of ancestors.splice(entry.depth)) onPath.delete(left)
+    if (onPath.has(entry.item)) return true
+    ancestors.push(entry.item)
+    onPath.add(entry.item)
+    for (const child of Object.values(entry.item)) if (typeof child === 'object' && child !== null) pending.push({ depth: entry.depth + 1, item: child })
+  }
+  return false
 }
 
 function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {

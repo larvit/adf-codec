@@ -384,9 +384,9 @@ input reads `message`.
   must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose
   it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
   inline alike, `\|` for every pipe row.
-- `not-an-adf-document` carries the document's own path throughout: seven of the guard's eight
-  branches read the document's own shape, and threading a path to the eighth — a malformed node
-  anywhere in the tree — wants the manual stack §Nothing recurses unbounded forces. The message
+- `not-an-adf-document` carries the document's own path throughout: seven of the guard's nine
+  branches read the document's own shape, and threading a path to the other two — a malformed node,
+  or an object holding itself, anywhere in the tree — wants the manual stack §Nothing recurses unbounded forces. The message
   names the violation instead.
 
 ## Publish on a version bump
