@@ -245,7 +245,8 @@ form.
   leaves empty, or in both, is a named error, and so are fences whose info strings differ and an
   empty fence beside another. Each fence is an ordinary code block, and its info string decodes
   escapes and entity references as any other does. A node holding a child no fence holds — any but
-  a text node carrying no marks, `attrs` or `content` — rides the block carry.
+  a text node holding text free of carriage returns and null characters, and carrying no marks,
+  `attrs` or `content` — rides the block carry.
 - `heading` — container, inline body. Attributes: `level` (number), `localId` (string). `level` is
   the `#` count, so a heading carrying none, or one that is no whole number from 1 to 6, has no
   CommonMark spelling.
@@ -449,6 +450,7 @@ the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in
 plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
 parsing to anything but one text node carrying neither marks, attributes nor content is a named
 error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the slot.
+A node whose `text` holds a line ending or a null character rides the inline carry.
 The rest take no content, `!adf:text` included; content on a node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
@@ -471,14 +473,15 @@ The rest take no content, `!adf:text` included; content on a node that takes non
 Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=1756080000000}.
 ```
 
-**Whitespace CommonMark cannot hold.** A newline inside a text node, and a space or tab where
-CommonMark strips or refuses one — a block's inline content edges, either side of a line break, an
-em, strong or strike spelling's inner edges, a pipe cell's edges — is spelled `!adf:text{text="…"}`,
-the reserved key carrying the node's text, escaped by the attribute grammar and never literal: pipe
-cells trim and pad. The emitter wraps the whitespace run alone and leaves the rest plain text, which
-the spelled run joins on reading. Input reads that spelling alone: the value is one run of spaces
-and tabs, or one run of newlines, and anything else — a mixed run, or text CommonMark carries
-plainly — is a named error.
+**Characters CommonMark cannot hold.** A carriage return in text is `&#13;`, which CommonMark reads
+back as the character. A newline inside a text node, a null character, which CommonMark reads as
+U+FFFD, and a space or tab where CommonMark strips or refuses one — a block's inline content edges,
+either side of a line break, an em, strong or strike spelling's inner edges, a pipe cell's edges —
+is spelled `!adf:text{text="…"}`, the reserved key carrying the node's text, escaped by the
+attribute grammar and never literal: pipe cells trim and pad. The emitter wraps the run alone and
+leaves the rest plain text, which the spelled run joins on reading. Input reads that spelling
+alone: the value is one run of spaces and tabs, one run of newlines, or one run of null characters,
+and anything else — a mixed run, or text CommonMark carries plainly — is a named error.
 
 ```
 !adf:text{text="  "}Two leading spaces held, and one text node split!adf:text{text="\n"}over two lines.
@@ -489,8 +492,8 @@ carried, neither holds `attrs` or an empty key, and their marks are identical, a
 The reserved leaf `!adf:textBreak{}` parts such a pair, inside every mark spelling the two share; a
 code span holds no directive, so it closes and reopens. It builds no node and reads only between
 two such nodes: elsewhere, or with `[content]` or `{attrs}`, it is a named error (`docs/decisions.md`
-§`!adf:textBreak{}` parts text CommonMark would join). A text node holding `attrs` or an empty key
-rides the inline carry.
+§`!adf:textBreak{}` parts text CommonMark would join). A text node holding `attrs`, `content` or an
+empty key, or holding no text, rides the inline carry.
 
 ```
 Hello, !adf:textBreak{}world — **Hello, !adf:textBreak{}world** — `a`!adf:textBreak{}`b`
@@ -531,7 +534,8 @@ breaks at every node the emitter carries, so no emitted carry sits inside a mark
 An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
 spelling does not list, a value that is not the spelling's type, an attribute the spelling needs and
 the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside
-another mark, `code` over anything but a text node or over text holding a newline, or a spelling
+another mark, `code` over anything but a text node holding text, over text holding a line ending or
+a null character, or opening a paragraph line its backticks would read back as a fence, or a spelling
 CommonMark's flanking rules cannot open or close where the run sits (`un**-real**istic`), or one
 CommonMark's matching pairs elsewhere — the intra-word `*` runs together with a neighbouring `**`,
 and the multiple-of-3 rule can leave the merged run's pairing to another delimiter — rides the

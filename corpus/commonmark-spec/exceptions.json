@@ -14,27 +14,6 @@
     "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
   },
   {
-    "check": "fixpoint",
-    "divergence": "unspellable-line-start",
-    "example": 330,
-    "kind": "unspellable",
-    "reason": "A paragraph opens with a code span whose backticks read back as a fence."
-  },
-  {
-    "check": "fixpoint",
-    "divergence": "unspellable-line-start",
-    "example": 331,
-    "kind": "unspellable",
-    "reason": "A paragraph opens with a code span whose backticks read back as a fence."
-  },
-  {
-    "check": "fixpoint",
-    "divergence": "unspellable-line-start",
-    "example": 340,
-    "kind": "unspellable",
-    "reason": "A paragraph opens with a code span whose backticks read back as a fence."
-  },
-  {
     "check": "count",
     "divergence": "em 2/1",
     "example": 369,

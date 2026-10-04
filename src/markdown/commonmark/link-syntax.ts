@@ -117,5 +117,5 @@ export function escapeUnbalanced(spelling: string, opener: string, closer: strin
 }
 
 function spellTitle(title: string): string | undefined {
-  return /[\n\r\\]/.test(title) || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
+  return /[\n\r\0\\]/.test(title) || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
 }

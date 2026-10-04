@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus',
 const checks = ['count', 'fixpoint', 'text'] as const
 
 type Check = (typeof checks)[number]
-type ExceptionKind = 'mark-model' | 'pending' | 'unspellable'
+type ExceptionKind = 'mark-model' | 'pending'
 
 type SpecExample = { example: number; html: string; markdown: string; section: string }
 
@@ -30,7 +30,7 @@ function isCheck(value: unknown): value is Check {
 }
 
 function isKind(value: unknown): value is ExceptionKind {
-  return value === 'mark-model' || value === 'pending' || value === 'unspellable'
+  return value === 'mark-model' || value === 'pending'
 }
 
 function isSpecExample(value: unknown): value is SpecExample {
@@ -77,12 +77,12 @@ test('the CommonMark spec suite is 0.31.2, vendored byte-exact', () => {
   assert.equal(digest, 'd431b29d97b6f73e69d547109cf5081578fac931e72afe95639ebe766c1b2a20')
 })
 
-test('every exception is unique, names a parsing example, and files a fixpoint only as unspellable', () => {
+test('every exception is unique, names a parsing example, and files no fixpoint divergence', () => {
   assert.equal(exceptionIndex.size, exceptions.length, 'one exception repeats an example and check another holds')
   for (const entry of exceptions) {
     assert.ok(spec.some((candidate) => candidate.example === entry.example), `exception ${entry.example} names no example in the suite`)
     assert.equal(exampleToRefusal.get(entry.example), undefined, `exception ${entry.example} is on the refusal list, not an exception`)
-    if (entry.check === 'fixpoint') assert.equal(entry.kind, 'unspellable', `exception ${entry.example} files a fixpoint divergence as ${entry.kind}; a fixable hole is given the spelling instead`)
+    assert.notEqual(entry.check, 'fixpoint', `exception ${entry.example} files a fixpoint divergence; the emitter spells every document the parser builds`)
   }
 })
 

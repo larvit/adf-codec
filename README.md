@@ -180,6 +180,7 @@ Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.2.0` | remove the construct, or write what it holds in the lossless flavour |
 | `unmappable-image` | an image sits inside other content that is not another image's description, or carries a title | give the image a paragraph of its own and drop the title |
+| `unspellable-whitespace` | an `emoji`, `mention` or `status` directive's content slot spells a newline or a carriage return — `&#10;`, `&#13;`, `!adf:text{text="\n"}` | replace it with a space, or write the node as `!adf:carry` — an inline directive never spans lines |
 
 Emitting — `adfToMarkdown`, and `adfToHtml` at `0.2.0`:
 
@@ -194,9 +195,6 @@ emit refuses:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `unspellable-character` | text or a code block holds a carriage return or a null character, which CommonMark rewrites wherever it sits | strip or replace the character; no escape carries it through the round-trip |
-| `unspellable-line-start` | a paragraph line begins with a code span whose backticks would read back as a code fence | put any text before the code span |
-| `unspellable-whitespace` | an `emoji`, `mention` or `status` holds a newline in the text its inline directive spells in the content slot | replace it with a space — an inline directive never spans lines |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
 | `unsupported-node-shape` | a node carries an attribute, value, argument or body its type does not take, or lacks one it needs — or markdown writes as a directive a node or mark the lossless flavour spells as CommonMark, or a reserved directive stands out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
 
@@ -217,9 +215,7 @@ Serves Goals 1, 3 and 4.
   `spec/flavour.md`) — and one gap: a CommonMark image fits only as its own title-less paragraph;
   mid-text and titled images are error results, save an image inside another's description, which
   flattens into the alt text. Converting back yields the library's canonical spelling, which
-  round-trips byte-identically — where it converts back at all: a parse succeeding is no promise of
-  that, so keep the source until the way back succeeds. ``` ` `` ` ``` reads cleanly and then
-  refuses.
+  round-trips byte-identically.
 - Four CommonMark spellings parse without an error and build a document the reference
   implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
   empty link, a list continuing past a marker change stays one list against CommonMark's two, a
@@ -228,10 +224,9 @@ Serves Goals 1, 3 and 4.
   text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other.
   The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite
   holds no example of the fourth.
-- Not every document converts back: `adfToMarkdown` is partial on valid ADF — a text node holding
-  a carriage return, or a paragraph line beginning with a code span whose backticks read back as a
-  fence. Show the refusal and keep the document read-only; saving markdown you could not produce
-  is the loss the round-trip exists to stop.
+- Not every document converts back: `adfToMarkdown` refuses with `unsupported-nesting-depth` or
+  `unsupported-node-shape` as the tables above say. Show the refusal and keep the document
+  read-only; saving markdown you could not produce is the loss the round-trip exists to stop.
 - The pipe table narrows GFM's twice: every row opens with a pipe, so GFM's bare form is an error
   result rather than the prose it reads as, and an alignment colon in the delimiter row is an
   error too — ADF holds no column alignment. The trailing pipe is canonical output, optional in

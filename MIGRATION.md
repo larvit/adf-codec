@@ -62,12 +62,18 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 
 ### Error codes
 
-`unspellable-link` leaves `ConvertErrorCode`: a `switch` naming it stops compiling, and the link
-it named converts.
+`unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`:
+a `switch` naming one stops compiling, and the document it named converts.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |
+| a carriage return in text, on emit | `unspellable-character` | spells `&#13;` |
+| a null character in text, on emit | `unspellable-character` | spells `!adf:text{text="\u0000"}` |
+| a carriage return or null character in a code block or code span, on emit | `unspellable-character` | rides the carry |
+| a paragraph line opening with a code span whose backticks read back as a fence, on emit | `unspellable-line-start` | rides the inline carry |
+| an `emoji`, `mention` or `status` whose `text` holds a line ending or a null character, on emit | `unspellable-whitespace`, `unspellable-character` | rides the inline carry |
+| a text node holding no text, or holding `content`, on emit | `unsupported-node-shape` | rides the carry |
 | a `codeBlock` holding other than plain text nodes, on emit | `unsupported-node-shape` | rides the block carry |
 | a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |

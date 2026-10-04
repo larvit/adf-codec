@@ -8,7 +8,7 @@ import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { identicalMark, isBareText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../plain/conventions.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
@@ -67,13 +67,12 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, f
   return emitted.value.line
 }
 
-export function tryImageLine(alt: string | undefined, href: string, path: ConvertErrorPath): string | undefined {
+export function tryImageLine(alt: string | undefined, href: string): string | undefined {
   if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
   const destination = spellDestination(href)
   if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
-  const attempt = attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', path, 'lossless')
-  return attempt.ok ? attempt.value.line : undefined
+  return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<EmittedLine> {
@@ -87,12 +86,11 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
       if (!taken.ok) return taken
       continue
     }
-    const attempt = attemptLine(emission.value.segments, container, path, flavour)
-    if (!attempt.ok) return attempt
-    if (attempt.value.line !== undefined) {
-      return success({ line: attempt.value.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: emission.value.segments })
+    const attempt = attemptLine(emission.value.segments, container, flavour)
+    if (attempt.line !== undefined) {
+      return success({ line: attempt.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: emission.value.segments })
     }
-    const taken = takeFallback(fallbacks, attempt.value.fallback, path)
+    const taken = takeFallback(fallbacks, attempt.fallback, path)
     if (!taken.ok) return taken
   }
 }
@@ -117,12 +115,23 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
   return success({ segments: spellEdgeWhitespace(emission.value.segments) })
 }
 
-function attemptLine(segments: readonly InlineSegment[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<LineAttempt> {
+function attemptLine(segments: readonly InlineSegment[], container: LineContainer, flavour: Flavour): LineAttempt {
   const verdict = lineVerdict(segments, container, flavour)
-  if (verdict.kind === 'opening-link') return success({ fallback: 'opening-link' })
-  if (verdict.kind === 'unspellable-run') return success({ fallback: verdict.runs[0] })
-  if (verdict.kind === 'claimed-line') return failure('unspellable-line-start', `block parsing would claim the emitted line ${JSON.stringify(verdict.text)}`, path)
-  return success({ line: verdict.text })
+  if (verdict.kind === 'opening-link') return { fallback: 'opening-link' }
+  if (verdict.kind === 'unspellable-run') return { fallback: verdict.runs[0] }
+  if (verdict.kind === 'line') return { line: verdict.text }
+  return { fallback: lineOpener(segments, verdict.line) }
+}
+
+// A code span's backticks are what block parsing claims, and its segment names its node; a segment naming none leaves takeFallback to refuse the line.
+function lineOpener(segments: readonly InlineSegment[], line: number): NodeRange {
+  let breaks = 0
+  const opener = segments.find((segment) => {
+    const opens = breaks === line && segment.text !== ''
+    breaks += segment.text.split('\n').length - 1
+    return opens
+  })
+  return opener?.nodes ?? { first: 0, last: -1 }
 }
 
 // The fallbacks in the order a line takes them, or the line where it takes none.
@@ -238,7 +247,7 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   const types = nodeMarks(node).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
   const model = inlineNodeModel(node.type)
-  if (model === undefined) return emitText(node, context, index, path)
+  if (model === undefined) return success(emitText(node, context, index))
   if (node.type === 'hardBreak') return emitHardBreak(node, model, context, index, path)
   return emitInlineDirective(node, model, index, path)
 }
@@ -260,38 +269,27 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
   if (slot === undefined) return success({ segments: [syntax(spellInlineLeafDirective(node.type, attributes))] })
   if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
-  const spans = slotLineEndingFault(node.type, slot)
-  if (spans !== undefined) return faulted(spans, path)
-  if (holdsNullCharacter(slot)) return failure('unspellable-character', `a ${node.type} content slot holds a null character CommonMark replaces`, path)
+  if (slotLineEndingFault(node.type, slot) !== undefined || holdsNullCharacter(slot)) return success({ carry: { first: index, last: index } })
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
   return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
 
-function textHoldingContent(node: AdfNode, path: ConvertErrorPath): Result<never> | undefined {
-  return node.type === 'text' && nodeContent(node).length > 0 ? failure('unsupported-node-shape', 'a text node holds no content: this one holds some', path) : undefined
-}
-
-function emitText(node: AdfNode, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
-  const holding = textHoldingContent(node, path)
-  if (holding !== undefined) return holding
-  if (!isBareText(node)) return success({ carry: { first: index, last: index } })
-  if (typeof node.text !== 'string' || node.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
-  if (/\r/.test(node.text)) return failure('unspellable-character', 'a text node holds a carriage return CommonMark rewrites', path)
-  if (holdsNullCharacter(node.text)) return failure('unspellable-character', 'a text node holds a null character CommonMark replaces', path)
+// spec/flavour.md, Inline nodes: CommonMark reads a carriage return as a line ending, and a null character as U+FFFD.
+function emitText(node: AdfNode, context: InlineContext, index: number): Emission {
+  if (!isBareText(node) || typeof node.text !== 'string' || node.text === '') return { carry: { first: index, last: index } }
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
-  const parts = node.text.split(/(\n+)/).filter((part) => part !== '')
-  return success({ segments: parts.map((part) => (part.startsWith('\n') ? textDirectiveSegment(part) : { escaping, text: part })) })
+  const parts = node.text.split(/(\n+|\0+|\r)/).filter((part) => part !== '')
+  return { segments: parts.map((part) => (part === '\r' ? syntax('&#13;') : /^[\n\0]/.test(part) ? textDirectiveSegment(part) : { escaping, text: part })) }
 }
 
 function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {
-  const path = nodePath(context, index)
   const range: NodeRange = { first: index, last: index + nodes.length - 1 }
   if (mark.type === 'backgroundColor' && context.flavour === 'plain') return emitHighlight(nodes, depth, range, context)
   const spelling = markSpelling(mark.type)
   if (spelling === undefined) return success({ carry: range })
   const attributes = spellMarkAttributes(mark, spelling)
   if (attributes === undefined) return success({ carry: range })
-  if (spelling.kind === 'code') return emitCodeSpan(nodes, depth, range, path)
+  if (spelling.kind === 'code') return success(emitCodeSpan(nodes, depth, range))
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
   const link = spelling.kind === 'link' ? tryLink(nodes, mark, depth, range, context) : undefined
   if (link !== undefined) return link
@@ -325,20 +323,17 @@ function emitHighlight(nodes: readonly AdfNode[], depth: number, range: NodeRang
 }
 
 // Each node its own span: CommonMark reads two adjacent text nodes in one span back as one.
-function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange, path: ConvertErrorPath): Result<Emission> {
-  const spans: string[] = []
-  for (const node of nodes) {
-    const holding = textHoldingContent(node, path)
-    if (holding !== undefined) return holding
-    if (!isBareText(node) || nodeMarks(node).length !== depth + 1) return success({ carry: range })
+function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange): Emission {
+  const segments: InlineSegment[] = []
+  for (const [offset, node] of nodes.entries()) {
     const { text } = node
-    if (typeof text !== 'string' || text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', path)
-    if (/[\n\r]/.test(text)) return success({ carry: range })
-    if (holdsNullCharacter(text)) return failure('unspellable-character', 'a code span holds a null character CommonMark replaces', path)
+    if (!isBareText(node) || nodeMarks(node).length !== depth + 1 || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return { carry: range }
+    if (offset > 0) segments.push(syntax(textBreakSpelling))
     const fence = '`'.repeat(longestBacktickRun(text) + 1)
-    spans.push(`${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}`)
+    const index = range.first + offset
+    segments.push({ escaping: 'none', nodes: { first: index, last: index }, text: `${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}` })
   }
-  return success({ segments: [syntax(spans.join(textBreakSpelling))] })
+  return { segments }
 }
 
 function needsPadding(text: string): boolean {

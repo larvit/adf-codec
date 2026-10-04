@@ -24,7 +24,7 @@ export const propertyTimeout = 600000
 const depthIdentifier = fc.createDepthIdentifier()
 const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell' }
 const flatCommonMarkShapeWeight = 4
-export const markdownPieces = fc.constantFrom(...'aZ09 \t\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉日ー한𠀀', '==', '[!NOTE]', '[x]', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
+export const markdownPieces = fc.constantFrom(...'aZ09 \t\n\r\0!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉日ー한𠀀', '==', '[!NOTE]', '[x]', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
 const nestingCommonMarkShapeWeight = 21
 const spelledTypes = new Set(['text', ...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes)])
 
@@ -106,7 +106,7 @@ const mark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(
 ))
 const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type })
 
-const textNode = occasionallyEmpty(fc.record({ marks, text }).map((held): AdfNode => ({ ...held, type: 'text' })))
+const textNode = occasionallyEmpty(fc.record({ marks, text: fc.oneof({ arbitrary: text, weight: 19 }, { arbitrary: fc.constant(''), weight: 1 }) }).map((held): AdfNode => ({ ...held, type: 'text' })))
 
 const backtickRunNode = fc
   .record({ marks: fc.oneof(fc.constant<AdfMark[]>([]), fc.constant<AdfMark[]>([{ type: 'code' }]), marks), text: fc.string({ maxLength: 6, minLength: 1, unit: fc.constantFrom('`', '``', ' ', 'a') }) })

@@ -35,7 +35,7 @@ test('names the node a refusal came from, and no source the emitter never read',
   const unspellable: AdfNode = { text: 'x', type: 'paragraph' }
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [unspellable], type: 'listItem' }], type: 'bulletList' }
   assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), ['content', 1, 'content', 1, 'content', 0])
-  assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { type: 'text' })))), ['content', 0, 'content', 1])
+  assert.deepEqual(path(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }, { text: 'x', type: 'status' })))), ['content', 0, 'content', 1])
   assert.deepEqual(path(adfToMarkdown({ type: 'doc', version: 2 })), [])
   assert.equal(position(adfToMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), undefined)
 })
@@ -147,8 +147,17 @@ test('carries a mark the canonical spellings cannot nest', () => {
   )
 })
 
-test('refuses a line whose start block parsing would claim', () => {
-  assert.equal(code(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '```', type: 'text' })))), 'unspellable-line-start')
+function readsBack(doc: AdfDocument): string {
+  const spelled = markdown(adfToMarkdown(doc))
+  assert.deepEqual(markdownToAdf(spelled), { ok: true, value: doc }, `reading ${JSON.stringify(spelled)}`)
+  return spelled
+}
+
+test('carries a code span whose backticks would open its line as a fence', () => {
+  const fence: AdfNode = { marks: [{ type: 'code' }], text: '```', type: 'text' }
+  const carried = '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"code\\"}],\\"text\\":\\"\\u0060\\u0060\\u0060\\",\\"type\\":\\"text\\"}"}'
+  assert.equal(readsBack(document(paragraph(fence))), `${carried}\n`)
+  assert.equal(readsBack(document(paragraph({ text: 'a', type: 'text' }, { type: 'hardBreak' }, fence, fence))), `a\\\n${carried}\`\`\`\` \`\`\` \`\`\`\`\n`)
 })
 
 test('escapes the delimiter row a hard break leaves opening a pipe table with no leading pipe', () => {
@@ -456,28 +465,26 @@ test('spells a list item whose marker completes a thematic break as a directive'
   )
 })
 
-test('refuses the characters CommonMark rewrites', () => {
-  assert.equal(
-    markdown(adfToMarkdown(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' }))),
-    'unspellable-character: a codeBlock holds no carriage return CommonMark keeps: this text holds one',
-  )
-  assert.equal(
-    markdown(adfToMarkdown(document(paragraph({ text: 'a\rb', type: 'text' })))),
-    'unspellable-character: a text node holds a carriage return CommonMark rewrites',
-  )
-  assert.equal(code(adfToMarkdown(document(paragraph({ text: 'a\u0000b', type: 'text' })))), 'unspellable-character')
-  assert.equal(code(adfToMarkdown(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))), 'unspellable-character')
-  assert.equal(markdown(adfToMarkdown(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))), 'unsupported-node-shape: a text node holds text: this one has none')
+test('spells the characters CommonMark rewrites', () => {
+  assert.equal(readsBack(document(paragraph({ text: 'a\r\r\nb', type: 'text' }))), 'a&#13;&#13;!adf:text{text="\\n"}b\n')
+  assert.equal(readsBack(document(paragraph({ marks: [{ type: 'strong' }], text: '\u0000\u0000a\u0000', type: 'text' }))), '**!adf:text{text="\\u0000\\u0000"}a!adf:text{text="\\u0000"}**\n')
+  assert.equal(readsBack(document(paragraph({ marks: [{ attrs: { href: 'u' }, type: 'link' }], text: 'a\rb\u0000', type: 'text' }))), '[a&#13;b!adf:text{text="\\u0000"}](u)\n')
+  assert.equal(readsBack(document({ attrs: { level: 1 }, content: [{ text: '\r', type: 'text' }], type: 'heading' })), '# &#13;\n')
+  assert.equal(readsBack(document({ content: [{ text: 'a\rb', type: 'text' }], type: 'codeBlock' })), '```adf:codeBlock\n{\n  "content": [\n    {\n      "text": "a\\rb",\n      "type": "text"\n    }\n  ]\n}\n```\n')
+  readsBack(document({ content: [{ text: 'a\u0000b', type: 'text' }], type: 'codeBlock' }))
+  readsBack(document(paragraph({ marks: [{ type: 'code' }], text: 'a\u0000b', type: 'text' })))
 })
 
-test('refuses a text node the spelling would empty out', () => {
+test('carries a text node holding no text, or holding content', () => {
   const nested: AdfNode[] = [{ text: 'lost', type: 'text' }]
-  const empty = 'unsupported-node-shape: a text node holds text: this one has none'
-  const holding = 'unsupported-node-shape: a text node holds no content: this one holds some'
-  assert.equal(markdown(adfToMarkdown(document(paragraph({ text: '', type: 'text' })))), empty)
-  assert.equal(markdown(adfToMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: '', type: 'text' })))), empty)
-  assert.equal(markdown(adfToMarkdown(document(paragraph({ content: nested, text: 'x', type: 'text' })))), holding)
-  assert.equal(markdown(adfToMarkdown(document(paragraph({ content: nested, marks: [{ type: 'code' }], text: 'x', type: 'text' })))), holding)
+  assert.equal(readsBack(document(paragraph({ text: '', type: 'text' }))), '!adf:carry{json="{\\"text\\":\\"\\",\\"type\\":\\"text\\"}"}\n')
+  assert.equal(readsBack(document(paragraph({ type: 'text' }, { text: 'a', type: 'text' }))), '!adf:carry{json="{\\"type\\":\\"text\\"}"}a\n')
+  readsBack(document(paragraph({ marks: [{ type: 'code' }], text: '', type: 'text' })))
+  readsBack(document(paragraph({ marks: [{ type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'em' }], text: '', type: 'text' })))
+  readsBack(document(paragraph({ content: nested, text: 'x', type: 'text' })))
+  readsBack(document(paragraph({ content: nested, marks: [{ type: 'code' }], text: 'x', type: 'text' })))
+  readsBack(document({ content: [{ text: '', type: 'text' }], type: 'codeBlock' }))
+  readsBack(document({ content: [{ text: 'a', type: 'text' }, { type: 'text' }], type: 'codeBlock' }))
 })
 
 test('carries a mark run whose edge holds whitespace CommonMark flanking counts', () => {
@@ -688,8 +695,12 @@ test('refuses the content and slot an inline directive has no room for', () => {
   assert.equal(refused({ text: 'x', type: 'status' }), neither('status', 'text'))
   assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'hardBreak' }), neither('hardBreak', 'content'))
   assert.equal(refused({ text: 'x', type: 'hardBreak' }), neither('hardBreak', 'text'))
-  assert.equal(refused({ attrs: { text: 'a\nb' }, type: 'status' }), 'unspellable-whitespace: the status content slot holds a newline no inline directive spans')
-  assert.equal(refused({ attrs: { text: 'a\u0000b' }, type: 'status' }), 'unspellable-character: a status content slot holds a null character CommonMark replaces')
+})
+
+test('carries an inline node whose content slot holds a line ending or a null character', () => {
+  assert.equal(readsBack(document(paragraph({ attrs: { text: 'a\nb' }, type: 'status' }))), '!adf:carry{json="{\\"attrs\\":{\\"text\\":\\"a\\\\nb\\"},\\"type\\":\\"status\\"}"}\n')
+  readsBack(document(paragraph({ attrs: { text: 'a\rb' }, type: 'emoji' })))
+  readsBack(document(paragraph({ attrs: { id: 'x', text: 'a\u0000b' }, type: 'mention' })))
 })
 
 test('spells the directive marks around the longest run they cover', () => {

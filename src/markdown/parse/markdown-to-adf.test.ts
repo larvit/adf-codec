@@ -304,10 +304,8 @@ test('names the directive form a node CommonMark spells refuses', () => {
   assert.deepEqual(content(markdownToAdf('!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')), [bulletList(item({ type: 'rule' }))])
 })
 
-// The spelling the emitter refuses gives the emitter's own error, never a second name for it.
-test('gives back the refusal the CommonMark spelling itself raises', () => {
-  const lineStart = '!adf:blockquote\n` `` `\n!adf:/blockquote\n'
-  assert.equal(content(markdownToAdf(lineStart)), 'unspellable-line-start: block parsing would claim the emitted line "``` `` ```"')
+test('refuses the directive form of a blockquote opening with a code span the carry spells', () => {
+  assert.equal(content(markdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')), 'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form')
 })
 
 test('names the directive name no node reads back to', () => {
@@ -1010,6 +1008,11 @@ test('names the content slot no lone plain text node reads back from', () => {
   assert.equal(content(markdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
 })
 
+test('reads the characters CommonMark rewrites from their spellings', () => {
+  assert.deepEqual(content(markdownToAdf('a&#13;b!adf:text{text="\\u0000\\u0000"}\n')), [paragraph('a\rb\u0000\u0000')])
+  assert.equal(content(markdownToAdf('!adf:text{text="\\u0000a"}\n')), 'unsupported-node-shape: text spells one run of spaces and tabs, one run of newlines, or one run of null characters: this one spells none of them')
+})
+
 test('reads the whitespace the reserved text directive carries', () => {
   assert.deepEqual(content(markdownToAdf('!adf:text{text="  "}a\n')), [paragraph('  a')])
   assert.deepEqual(content(markdownToAdf('a!adf:text{text="\\n"}b\n')), [paragraph('a\nb')])
@@ -1018,7 +1021,7 @@ test('reads the whitespace the reserved text directive carries', () => {
 })
 
 test('names the text directive spelling no whitespace run reads back from', () => {
-  const named = 'unsupported-node-shape: text spells one run of spaces and tabs, or one run of newlines: this one spells neither'
+  const named = 'unsupported-node-shape: text spells one run of spaces and tabs, one run of newlines, or one run of null characters: this one spells none of them'
   assert.equal(content(markdownToAdf('!adf:text{text=hi}\n')), named)
   assert.equal(content(markdownToAdf('!adf:text{text=" \\n"}\n')), named)
   assert.equal(content(markdownToAdf('!adf:text{text=""}\n')), named)

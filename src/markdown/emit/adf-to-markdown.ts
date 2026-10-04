@@ -128,9 +128,9 @@ function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   if (plain !== undefined) return plain
   if (node.type === 'blockquote') return tryBlockquote(node, path, depth, writing)
   if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, writing)
-  if (node.type === 'codeBlock') return tryCodeBlock(node, path)
+  if (node.type === 'codeBlock') return readableText(tryCodeBlock(node))
   if (node.type === 'heading') return tryHeading(node, path, writing.flavour)
-  if (node.type === 'mediaSingle') return readableText(tryImage(node, path))
+  if (node.type === 'mediaSingle') return readableText(tryImage(node))
   if (node.type === 'paragraph') return tryParagraph(node, path, writing.flavour)
   if (node.type === 'rule') return readableText(tryRule(node))
   if (node.type === 'table') return readableText(tryPipeTable(node, path, writing.flavour))
@@ -251,43 +251,36 @@ function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, wri
   return success(commonMarkText(quoted(alert ? `\\${text}` : text), inner.value.headroom))
 }
 
-function tryCodeBlock(node: AdfNode, path: ConvertErrorPath): Result<EmittedBlock> | undefined {
+function tryCodeBlock(node: AdfNode): string | undefined {
   if (!holdsOnlyAttributes(node, ['language'])) return undefined
   const slot = languageSlot(nodeAttrs(node)['language'])
   if (slot.kind === 'attribute') return undefined
-  const texts = fencedTexts(node, path)
-  if (!texts.ok) return texts
-  const [only, ...others] = texts.value ?? []
+  const [only, ...others] = fencedTexts(node) ?? []
   if (only === undefined || others.length > 0) return undefined
-  return success(commonMarkText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', only)))
+  return fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', only)
 }
 
 // spec/flavour.md, The CommonMark blocks: one fence per text node, the language on each; with no fence to carry it, the attribute does.
 function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
-  const texts = fencedTexts(node, path)
-  if (!texts.ok) return texts
-  if (texts.value === undefined) return commonMarkLine(carriedBlock(node, path, depth))
-  const slot: LanguageSlot = texts.value.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'])
+  const texts = fencedTexts(node)
+  if (texts === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  const slot: LanguageSlot = texts.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'])
   const opener = spellBlockDirectiveOpener(node, model, path, slot.kind === 'attribute' ? [] : ['language'])
   if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
   if (!opener.ok) return opener
   const info = slot.kind === 'fence' ? slot.info : ''
-  return success(directivePair(node, opener.value, texts.value.map((text) => fencedCodeBlock(info, text)).join('\n')))
+  return success(directivePair(node, opener.value, texts.map((text) => fencedCodeBlock(info, text)).join('\n')))
 }
 
-// The text each fence holds, or `undefined` where a child is no plain text node, which the carry holds instead.
-function fencedTexts(node: AdfNode, path: ConvertErrorPath): Result<string[] | undefined> {
-  if (node.content === undefined) return success([''])
-  if (node.content.some((child) => !isUnmarkedBareText(child))) return success(undefined)
+// The text each fence holds, or `undefined` where a child is no text a fence keeps, which the carry holds instead.
+function fencedTexts(node: AdfNode): string[] | undefined {
+  if (node.content === undefined) return ['']
   const texts: string[] = []
-  for (const [index, child] of node.content.entries()) {
-    const childPath = [...path, 'content', index]
-    if (typeof child.text !== 'string' || child.text === '') return failure('unsupported-node-shape', 'a text node holds text: this one has none', childPath)
-    if (/\r/.test(child.text)) return failure('unspellable-character', 'a codeBlock holds no carriage return CommonMark keeps: this text holds one', childPath)
-    if (holdsNullCharacter(child.text)) return failure('unspellable-character', 'a codeBlock holds a null character CommonMark replaces', childPath)
+  for (const child of node.content) {
+    if (!isUnmarkedBareText(child) || typeof child.text !== 'string' || child.text === '' || /\r/.test(child.text) || holdsNullCharacter(child.text)) return undefined
     texts.push(child.text)
   }
-  return success(texts)
+  return texts
 }
 
 function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {

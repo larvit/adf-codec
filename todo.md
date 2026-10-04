@@ -25,7 +25,6 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
-| 55 | 0.2.0 | defect | **Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 7 | 23.0 |
@@ -62,24 +61,6 @@
 Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs against
 `markdownToHtml`. The README documents HTML as it documents markdown, and its tagline and
 `package.json`'s `description` regain HTML.
-
-### 55. Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.
-
-Today `inline-line.ts` refuses a carriage return or NUL in text, and a NUL in an emoji, mention or
-status (`unspellable-character`); and a paragraph opening with a code-span run
-(`unspellable-line-start`); `fencedTexts` refuses the same characters in a code block;
-`inline-line.ts` refuses a newline in an emoji, mention or status (`unspellable-whitespace`);
-`inline-line.ts` and `fencedTexts` refuse a text node whose `text` is empty or missing, and
-`inline-line.ts` one holding `content`. In text, a carriage return is CommonMark's `&#13;` (Goal 4),
-and a NUL is `!adf:text{text="\u0000"}` holding just the NUL, since CommonMark reads `&#0;` as
-U+FFFD (a writer panel, 3 of 3, 2026-10-04). The carries spell every other case: the inline carry in
-a paragraph, the block carry in a code block.
-
-The maintainer approved on 2026-10-04: §Markdown in is a canonical fixpoint drops its code-span
-exception, §Which code a cause takes drops `unspellable-whitespace` as an emitter cause;
-`unspellable-character` and `unspellable-line-start` retire. `unspellable-whitespace` stays, since
-the reader raises it for a content slot spanning a newline. Found by the README-goals audit,
-2026-10-03.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 

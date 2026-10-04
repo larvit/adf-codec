@@ -100,7 +100,7 @@ export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<
   return { value: spelled.decoded }
 }
 
-// Both directions answer alike: an inline directive never spans lines, so no content slot holds a line ending.
+// An inline directive never spans lines, so no content slot holds a line ending.
 export function slotLineEndingFault(type: string, text: string): ConvertFault | undefined {
   if (!/[\n\r]/.test(text)) return undefined
   return { code: 'unspellable-whitespace', message: `the ${type} content slot holds a newline no inline directive spans` }

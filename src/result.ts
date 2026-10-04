@@ -5,8 +5,6 @@ export type ConvertErrorCode =
   | 'unknown-directive-name'
   | 'unmappable-html'
   | 'unmappable-image'
-  | 'unspellable-character'
-  | 'unspellable-line-start'
   | 'unspellable-whitespace'
   | 'unsupported-document-version'
   | 'unsupported-nesting-depth'

@@ -1,5 +1,4 @@
 import type { AdfNode } from '../../adf/document.ts'
-import type { ConvertErrorPath } from '../../result.ts'
 import { holdsOnlyAttributes, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 import { tryImageLine } from './inline-line.ts'
@@ -7,10 +6,10 @@ import { tryImageLine } from './inline-line.ts'
 const centeredMediaSingle = '{"layout":"center"}'
 const imageAttributes = ['alt', 'type', 'url']
 
-export function tryImage(node: AdfNode, path: ConvertErrorPath): string | undefined {
+export function tryImage(node: AdfNode): string | undefined {
   const image = imageShape(node)
   if (image === undefined) return undefined
-  return tryImageLine(image.alt, image.url, [...path, 'content', 0])
+  return tryImageLine(image.alt, image.url)
 }
 
 function imageShape(node: AdfNode): { alt: string | undefined; url: string } | undefined {

@@ -23,13 +23,11 @@ sanitized and a mention keeps the test user's real account id.
 
 ## Markdown in is a canonical fixpoint
 
-2026-08-23, the maintainer. Goals 1 and 4. Valid while markdown input may be written by hand.
+2026-08-23, the maintainer; the way back made total 2026-10-04. Goals 1 and 4. Valid while
+markdown input may be written by hand.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
-back yields the library's canonical spelling, and that spelling round-trips byte-identically —
-where there is a way back. CommonMark spells some things the flavour has no escape for — a
-paragraph opening with a code span whose backticks read back as a fence — so a parse succeeding
-does not imply a spellable document; `corpus/commonmark-spec/exceptions.json` names those.
+back yields the library's canonical spelling, and that spelling round-trips byte-identically.
 
 ## Equality is deep
 
@@ -338,8 +336,9 @@ switches on `code` with no `default`.
   `unsupported-node-shape` — since a code no input reaches is one no consumer can switch on
   (2026-09-20).
 - A refusal no spelling recovers from is a gap in the flavour rather than a code: give the flavour
-  the spelling and the code goes (`unspellable-link`, 2026-09-13). A cause the carry answers gets
-  no code: a mark no spelling writes rides the carry with its node.
+  the spelling and the code goes (`unspellable-link`, 2026-09-13; `unspellable-character` and
+  `unspellable-line-start`, 2026-10-04). A cause the carry answers gets no code: a mark no
+  spelling writes rides the carry with its node.
 
 ## Which code a cause takes
 
@@ -348,11 +347,10 @@ handles one cause alike whichever node, attribute or direction raised it.
 
 - A code names the cause; where one cause recurs across node types, across one mark's attributes
   or across directions, one code covers them all and `path` and `message` say which —
-  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it,
-  `unspellable-character` the text node and the code block alike. Where two codes stay apart, the
-  line between them is what they name: `unspellable-character` is a character CommonMark rewrites
-  wherever text holds it, `unspellable-whitespace` the newline no inline directive's content slot
-  spans, in either direction.
+  `unsupported-nesting-depth` is the 500-level guard whichever direction hits it. Where two codes
+  stay apart, the line between them is what they name: `unspellable-whitespace` is the newline an
+  inline directive's content slot spells in input, where the emitter carries the node
+  (2026-10-04).
 - A claim code names the spelling claimed, never the node that spelling would have built: a
   malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
   `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
@@ -525,8 +523,8 @@ Each example is a named error or markdown that parses and emits to itself byte f
 reference HTML's text, tags stripped and entities decoded, equals the parsed document's; and its
 elements count the marks and nodes they map to. The fixpoint alone passes a parser returning the
 empty document, the text alone one dropping every emphasis. An exception is the maintainer's to
-add, and valid CommonMark parsing to a document `adfToMarkdown` refuses where a spelling could exist
-is a bug to fix, never an exception.
+add, and valid CommonMark parsing to a document `adfToMarkdown` refuses is a bug to fix, never an
+exception.
 
 ## The flavour spec is read as a source
 

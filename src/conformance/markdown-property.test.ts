@@ -418,7 +418,7 @@ function holdsDirectiveShape(document: AdfDocument): boolean {
   return false
 }
 
-test('generated markdown refuses, or what it parses to refuses to emit, or its spelling reads back and spells itself', { timeout: propertyTimeout }, () => {
+test('generated markdown refuses, or its spelling reads back and spells itself', { timeout: propertyTimeout }, () => {
   const parameters = propertyRuns(gateRuns)
   let directiveShaped = 0
   let fixpoints = 0
@@ -427,7 +427,7 @@ test('generated markdown refuses, or what it parses to refuses to emit, or its s
       const parsed = markdownToAdf(input)
       if (!parsed.ok) return
       const emitted = adfToMarkdown(parsed.value)
-      if (!emitted.ok) return
+      assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
       fixpoints += 1
       if (holdsDirectiveShape(parsed.value)) directiveShaped += 1
       const read = markdownToAdf(emitted.value)
