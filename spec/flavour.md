@@ -450,7 +450,8 @@ the nodes below, `emoji`, `mention` and `status` spell their `text` attribute in
 plain text: `[]` is the empty string, absent content is the absent attribute, non-empty content
 parsing to anything but one text node carrying neither marks, attributes nor content is a named
 error, and so is a `text` key in `{attrs}`. An enclosing mark spelling does not reach into the slot.
-A node whose `text` holds a line ending or a null character rides the inline carry.
+A node whose `text` holds a line ending or a null character rides the inline carry; a slot spelling
+one is a named error.
 The rest take no content, `!adf:text` included; content on a node that takes none is a named error.
 
 - `date` — Attributes: `localId` (string), `timestamp` (string, epoch milliseconds).
@@ -473,7 +474,7 @@ The rest take no content, `!adf:text` included; content on a node that takes non
 Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=1756080000000}.
 ```
 
-**Characters CommonMark cannot hold.** A carriage return in text is `&#13;`, which CommonMark reads
+**Text CommonMark cannot hold plainly.** A carriage return in text is `&#13;`, which CommonMark reads
 back as the character. A newline inside a text node, a null character, which CommonMark reads as
 U+FFFD, and a space or tab where CommonMark strips or refuses one — a block's inline content edges,
 either side of a line break, an em, strong or strike spelling's inner edges, a pipe cell's edges —
@@ -534,8 +535,8 @@ breaks at every node the emitter carries, so no emitted carry sits inside a mark
 An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
 spelling does not list, a value that is not the spelling's type, an attribute the spelling needs and
 the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside
-another mark, `code` over anything but a text node holding text, over text holding a line ending or
-a null character, or opening a paragraph line its backticks would read back as a fence, or a spelling
+another mark, `code` over anything but a text node holding text or over text holding a line ending
+or a null character, or a spelling
 CommonMark's flanking rules cannot open or close where the run sits (`un**-real**istic`), or one
 CommonMark's matching pairs elsewhere — the intra-word `*` runs together with a neighbouring `**`,
 and the multiple-of-3 rule can leave the merged run's pairing to another delimiter — rides the

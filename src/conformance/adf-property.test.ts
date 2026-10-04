@@ -34,11 +34,11 @@ function shownText(nodes: readonly AdfNode[]): string[] {
   return shown.filter((text) => text !== '')
 }
 
-test('a generated document refuses to emit, or its markdown reads back to it', { timeout: propertyTimeout }, () => {
+test('a generated document emits markdown that reads back to it', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const emitted = adfToMarkdown(document)
-      if (!emitted.ok) return
+      assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
       const read = markdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
       assert.deepEqual(read.value, document, `reading ${JSON.stringify(emitted.value)}`)

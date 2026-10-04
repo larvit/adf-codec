@@ -224,8 +224,9 @@ Serves Goals 1, 3 and 4.
   text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other.
   The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite
   holds no example of the fourth.
-- Not every document converts back: `adfToMarkdown` refuses with `unsupported-nesting-depth` or
-  `unsupported-node-shape` as the tables above say. Show the refusal and keep the document
+- Not every document converts back: `adfToMarkdown` refuses a document nesting past 500 levels, a
+  node carrying one mark type twice, a block or a non-text inline node holding `text`, and a leaf
+  block or a non-text inline node holding `content`. Show the refusal and keep the document
   read-only; saving markdown you could not produce is the loss the round-trip exists to stop.
 - The pipe table narrows GFM's twice: every row opens with a pipe, so GFM's bare form is an error
   result rather than the prose it reads as, and an alignment colon in the delimiter row is an

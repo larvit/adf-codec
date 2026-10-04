@@ -149,7 +149,7 @@ function plainMarks(marks: readonly AdfMark[], container: LineContainer, text: s
 function plainLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
   const attrs = nodeAttrs(mark)
   const held = attrs['href']
-  const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/\r/g, '').replace(/\n/g, ' ') : undefined
+  const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/[\r\0]/g, '').replace(/\n/g, ' ') : undefined
   if (typeof held !== 'string') return undefined
   const href = writableHref(container === 'table-cell' ? held.replaceAll('|', '%7C') : held)
   if (title === undefined || spellLinkTarget(href, title) === undefined || (container === 'table-cell' && title.includes('|'))) return { attrs: { href }, type: 'link' }
@@ -267,21 +267,13 @@ function spellableLine(leaves: AdfNode[], container: LineContainer, path: Conver
 
 function withoutFallback(leaves: readonly AdfNode[], fallback: PlainLineFallback): AdfNode[] | undefined {
   if (fallback.kind === 'unspellable-run') return withoutMarks(leaves, fallback.runs)
-  const first = fallback.kind === 'opening-link' ? 0 : lineStart(leaves, fallback.line)
-  const mark = nodeMarks(leaves[first] ?? {})[0]
-  if (mark === undefined || mark.type !== (fallback.kind === 'opening-link' ? 'link' : 'code')) return undefined
-  let last = first
+  const mark = nodeMarks(leaves[0] ?? {})[0]
+  if (mark === undefined || mark.type !== 'link') return undefined
+  let last = 0
   while (sameMarkAt(nodeMarks(leaves[last + 1] ?? {}), [mark], 0)) last += 1
   // A code span is what binds the `]` a link definition reads, and dropping it keeps the link target.
-  const spans = leaves.slice(first, last + 1).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
-  if (mark.type === 'link' && spans) return leaves.map((leaf, index) => (index < first || index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code'))))
-  return withoutMarks(leaves, [{ depth: 0, first, last }])
-}
-
-function lineStart(leaves: readonly AdfNode[], line: number): number {
-  let index = 0
-  for (let breaks = 0; breaks < line && index < leaves.length; index += 1) if (leaves[index]?.type === 'hardBreak') breaks += 1
-  return index
+  const spans = leaves.slice(0, last + 1).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
+  return spans ? leaves.map((leaf, index) => (index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code')))) : undefined
 }
 
 // The runs cover disjoint leaves, so one pass drops them all.

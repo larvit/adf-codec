@@ -1,4 +1,4 @@
-import { backslashEscape, decodeTextEscapes, holdsControlCharacter } from './grammar.ts'
+import { backslashEscape, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
 import { holdsEntityReference } from './entity-references.ts'
 
 export type LinkDefinition = { destination: string; title?: string }
@@ -117,5 +117,5 @@ export function escapeUnbalanced(spelling: string, opener: string, closer: strin
 }
 
 function spellTitle(title: string): string | undefined {
-  return /[\n\r\0\\]/.test(title) || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
+  return /[\n\r\\]/.test(title) || holdsNullCharacter(title) || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
 }

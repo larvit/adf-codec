@@ -4,17 +4,17 @@ import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
 import type { LineContainer } from '../line-container.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
-import { claimsLine, holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
+import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
-import { identicalMark, isBareText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts'
+import { identicalMark, isBareText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../plain/conventions.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
-import { slotLineEndingFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
+import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
 
@@ -38,7 +38,7 @@ type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | 
 
 type LineFallbacks = { carried: Set<number>; flavour: Flavour; openingLinkAsDirective: boolean }
 
-export type PlainLineFallback = { kind: 'claimed-line'; line: number; text: string } | { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
+export type PlainLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: Flavour): Result<string> {
   const emitted = emitLine(nodes, container, path, flavour)
@@ -119,19 +119,7 @@ function attemptLine(segments: readonly InlineSegment[], container: LineContaine
   const verdict = lineVerdict(segments, container, flavour)
   if (verdict.kind === 'opening-link') return { fallback: 'opening-link' }
   if (verdict.kind === 'unspellable-run') return { fallback: verdict.runs[0] }
-  if (verdict.kind === 'line') return { line: verdict.text }
-  return { fallback: lineOpener(segments, verdict.line) }
-}
-
-// A code span's backticks are what block parsing claims, and its segment names its node; a segment naming none leaves takeFallback to refuse the line.
-function lineOpener(segments: readonly InlineSegment[], line: number): NodeRange {
-  let breaks = 0
-  const opener = segments.find((segment) => {
-    const opens = breaks === line && segment.text !== ''
-    breaks += segment.text.split('\n').length - 1
-    return opens
-  })
-  return opener?.nodes ?? { first: 0, last: -1 }
+  return { line: verdict.text }
 }
 
 // The fallbacks in the order a line takes them, or the line where it takes none.
@@ -139,10 +127,7 @@ function lineVerdict(segments: readonly InlineSegment[], container: LineContaine
   const assembled = assembleInlineLine(segments, container, flavour)
   if (assembled.openingLinkAsDirective) return { kind: 'opening-link' }
   const [run, ...others] = assembled.unspellableRuns
-  if (run !== undefined) return { kind: 'unspellable-run', runs: [run, ...others] }
-  const lines = assembled.line.split('\n')
-  const claimed = container === 'paragraph' ? lines.findIndex((single, index) => claimsLine(single, index === 0 ? 'first' : 'later')) : -1
-  return claimed === -1 ? { kind: 'line', text: assembled.line } : { kind: 'claimed-line', line: claimed, text: lines[claimed] ?? '' }
+  return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', runs: [run, ...others] }
 }
 
 // spec/flavour.md, Inline nodes.
@@ -269,7 +254,7 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
   if (slot === undefined) return success({ segments: [syntax(spellInlineLeafDirective(node.type, attributes))] })
   if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
-  if (slotLineEndingFault(node.type, slot) !== undefined || holdsNullCharacter(slot)) return success({ carry: { first: index, last: index } })
+  if (slotFault(node.type, slot) !== undefined) return success({ carry: { first: index, last: index } })
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
   return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
@@ -324,16 +309,14 @@ function emitHighlight(nodes: readonly AdfNode[], depth: number, range: NodeRang
 
 // Each node its own span: CommonMark reads two adjacent text nodes in one span back as one.
 function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange): Emission {
-  const segments: InlineSegment[] = []
-  for (const [offset, node] of nodes.entries()) {
+  const spans: string[] = []
+  for (const node of nodes) {
     const { text } = node
     if (!isBareText(node) || nodeMarks(node).length !== depth + 1 || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return { carry: range }
-    if (offset > 0) segments.push(syntax(textBreakSpelling))
     const fence = '`'.repeat(longestBacktickRun(text) + 1)
-    const index = range.first + offset
-    segments.push({ escaping: 'none', nodes: { first: index, last: index }, text: `${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}` })
+    spans.push(`${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}`)
   }
-  return { segments }
+  return { segments: [syntax(spans.join(textBreakSpelling))] }
 }
 
 function needsPadding(text: string): boolean {

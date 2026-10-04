@@ -313,12 +313,12 @@ test('breaks a line at a newline and trims whitespace at every edge CommonMark s
   assert.equal(plain(paragraph(text(' x ', code))), '`  x  `\n')
   assert.equal(plain(node('heading', { level: 1 }, text(' h\ni '))), '# h i\n')
   assert.equal(plain(paragraph(text('a\r\u0000b'))), 'ab\n')
+  assert.equal(plain(paragraph(text('x', link('/u', 't\r\u0000')))), '[x](/u "t")\n')
 })
 
-test('drops the code mark of a span opening a line with backticks that read as a fence', () => {
-  assert.equal(plain(paragraph(text('``` x', code))), '\\`\\`\\` x\n')
-  assert.equal(plain(paragraph(text('a\n'), text('``` x', code))), 'a\\\n\\`\\`\\` x\n')
-  assert.equal(plain(paragraph(text('a '), text('``` x', code))), 'a ```` ``` x ````\n')
+test('keeps a code span opening a line, whose backticks open no fence', () => {
+  assert.equal(plain(paragraph(text('``` x', code))), '```` ``` x ````\n')
+  assert.equal(plain(paragraph(text('a\n'), text('``` x', code))), 'a\\\n```` ``` x ````\n')
 })
 
 test('drops an empty paragraph and merges adjacent lists of one type', () => {

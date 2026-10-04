@@ -304,7 +304,7 @@ test('names the directive form a node CommonMark spells refuses', () => {
   assert.deepEqual(content(markdownToAdf('!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')), [bulletList(item({ type: 'rule' }))])
 })
 
-test('refuses the directive form of a blockquote opening with a code span the carry spells', () => {
+test('refuses the directive form of a blockquote opening with a code span', () => {
   assert.equal(content(markdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')), 'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form')
 })
 
@@ -1005,6 +1005,7 @@ test('names the content slot no lone plain text node reads back from', () => {
   assert.equal(content(markdownToAdf('!adf:status[!adf:text{text="\\n"}]{color=yellow}\n')), spans)
   assert.equal(content(markdownToAdf('!adf:status[a&#10;b]{color=yellow}\n')), spans)
   assert.equal(content(markdownToAdf('!adf:status[a&#13;b]{color=yellow}\n')), spans)
+  assert.equal(content(markdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n')), 'unsupported-node-shape: the status content slot holds a null character: write the node as !adf:carry')
   assert.equal(content(markdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
 })
 

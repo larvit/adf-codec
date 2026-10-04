@@ -1,7 +1,7 @@
 import type { AttributeKind, VocabularyPair, VocabularyValue } from '../adf/attribute-vocabulary.ts'
 import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
-import { backslashEscape } from './commonmark/grammar.ts'
+import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
 import { isJsonValue, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
@@ -100,10 +100,10 @@ export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<
   return { value: spelled.decoded }
 }
 
-// An inline directive never spans lines, so no content slot holds a line ending.
-export function slotLineEndingFault(type: string, text: string): ConvertFault | undefined {
-  if (!/[\n\r]/.test(text)) return undefined
-  return { code: 'unspellable-whitespace', message: `the ${type} content slot holds a newline no inline directive spans` }
+// What no content slot holds, which the emitter carries instead: an inline directive never spans lines, and CommonMark reads a null character as U+FFFD.
+export function slotFault(type: string, text: string): ConvertFault | undefined {
+  if (/[\n\r]/.test(text)) return { code: 'unspellable-whitespace', message: `the ${type} content slot holds a newline no inline directive spans` }
+  return holdsNullCharacter(text) ? unsupportedNodeShape(`the ${type} content slot holds a null character: write the node as !adf:carry`) : undefined
 }
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {

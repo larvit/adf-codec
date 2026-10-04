@@ -493,16 +493,18 @@ exits 0 on.
 2026-10-03, the maintainer. KISS, a technical principle, and its comprehension floor of 7. Valid
 while `todo.md` items 59, 60, 61 and 62 are open.
 
-A four-seat comprehension panel scored the project under the floor of 7. Its round-5 scores
-(2026-10-03) are the baseline. Since 2026-10-04, a chunk whose panel scores any dimension lower
-improves what the seats named and scores again, and after three such rounds asks the maintainer.
+A four-seat comprehension panel scored the project under the floor of 7. Its last scoring run
+(item 55, 2026-10-04) is the baseline. Since 2026-10-04, a chunk whose panel scores any dimension
+lower improves what the seats named and scores again, and after three such rounds asks the
+maintainer.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
-| Junior | 6 | 5 | 6 | 5 | 5.5 |
-| Mid | 6.5 | 5 | 6 | 4.5 | 5.5 |
-| Senior | 6.5 | 5.5 | 6.5 | 5.5 | 6 |
-| Architect | 6.5 | 5.5 | 6 | 6 | 6 |
+| Junior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Mid | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Architect | 6.5 | 5.5 | 6 | 6.5 | 6 |
+| Mean | 6.88 | 5.50 | 6.38 | 5.75 | 6.00 |
 
 Three panels on near-identical code scored overall means of 5.88, 5.75 and 5.75, and a seat moves
 ±0.5 between runs.

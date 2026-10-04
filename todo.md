@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 67`
+`Next ID = 69`
 
 | Goal | W |
 |---|---|
@@ -26,11 +26,13 @@
 |---|---|---|---|---|---|---|---|---|---|
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
+| 67 | 0.2.0 | defect | **Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.** | 1 | 1 | 4 | 9 | 1 | 24.8 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 7 | 23.0 |
 | 66 | 0.2.0 | defect | **Refuse an attribute value that is not a plain object, array or JSON primitive.** | 3 | 2 | 5 | 8 | 1 | 22.5 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
+| 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
@@ -60,13 +62,20 @@
 
 Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs against
 `markdownToHtml`. The README documents HTML as it documents markdown, and its tagline and
-`package.json`'s `description` regain HTML.
+`package.json`'s `description` keep naming HTML.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
 Goal 1 has every call return a result; the boolean guard is the one export that does not, and it
 cannot say which branch refused, where `not-an-adf-document`'s message already does. Breaking:
 `MIGRATION.md` shows the guard's replacement.
+
+### 67. Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.
+
+`quoteNode`'s title loop (`parse/markdown-to-adf.ts`) spreads `inlineLeaves`'s result into
+`push`, against `docs/decisions.md` §Nothing spreads an unbounded array: an inline carry in a
+folded callout's title holding an unknown node with ~125k text children throws a `RangeError` from
+`plainMarkdownToAdf`. Found by the README-goals audit of item 55, 2026-10-04.
 
 ### 6. Specify the HTML dialect.
 
@@ -111,6 +120,14 @@ its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `
 alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
 writer panel chose this reading 3 of 3 (2026-10-04), by Goal 5, which outranks Goal 6.
 
+### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
+
+`refuseContentAndText` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
+refuse these with `unsupported-node-shape`, though `isAdfDocument` accepts them and the carry
+round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. The
+README's "Not every document converts back" bullet loses them. Found by the README-goals audit of
+item 55, 2026-10-04.
+
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
 Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
@@ -126,7 +143,9 @@ which counts one fewer.
 
 The comprehension panel's worst place: `escapeClaims` and `escapeClosedRuns` re-implement the
 reader's view — flanking, code-span closers, link-definition openings, highlight flanking — and
-only the property tests catch drift. It caps the panel's Locality score.
+only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
+time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
+of one character from each of its characters.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
@@ -248,7 +267,11 @@ Technical principle "One owner per value": the `Walk` record passes through twel
 mutate it and return `void`; `walk.leaf` alone is written in seven places. `ContainerStack` in the
 same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
 functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
-`void`, and `parseInlineContent` reads a flag `scanInline` leaves on it.
+`void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
+`mintTaskIds` (`plain/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
+`takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
+`writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
+output; and `nestIn` (`plain/adf-to-plain-markdown.ts`), which pushes into its caller's array.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 

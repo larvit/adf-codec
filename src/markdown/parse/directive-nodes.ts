@@ -13,7 +13,7 @@ import { inlineMarkSpellingFault } from './directive-marks.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { readEmptyKeys, spellsEmpty } from '../empty-keys.ts'
 import { readVocabulary } from './directive-attributes.ts'
-import { slotLineEndingFault } from '../directive-syntax.ts'
+import { slotFault } from '../directive-syntax.ts'
 import { textBreakName } from '../adjacent-text.ts'
 import { textDirectiveName } from '../text-directive.ts'
 
@@ -68,8 +68,8 @@ export function readInlineDirectiveNode(
     if (text === undefined) {
       return failure('unsupported-node-shape', `the ${name} content slot holds one text node carrying neither marks, attributes nor content: this one holds something else`, path)
     }
-    const spans = slotLineEndingFault(name, text)
-    if (spans !== undefined) return faulted(spans, path)
+    const fault = slotFault(name, text)
+    if (fault !== undefined) return faulted(fault, path)
     attrs.value[slot] = text
   }
   return success(namedNode(name, attrs.value, undefined, empty.value.empty))

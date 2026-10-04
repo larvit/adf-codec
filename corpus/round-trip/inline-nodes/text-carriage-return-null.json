@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "a\r\nb\u0000c",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/",
+                "title": "t\u0000"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "link",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "color": "neutral",
+            "text": "a\nb"
+          },
+          "type": "status"
+        },
+        {
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -19,10 +19,10 @@
   other than plain text nodes rides the block carry, where it was refused.
 - **Breaking:** `unspellable-character` and `unspellable-line-start` leave `ConvertErrorCode`, and
   `adfToMarkdown` no longer refuses `unspellable-whitespace`. A carriage return in text is spelled
-  `&#13;` and a null character `!adf:text{text="\u0000"}`; a code block holding either, a text node
-  holding no text or holding `content`, a paragraph line opening with a code span whose backticks
-  read back as a fence, and an `emoji`, `mention` or `status` whose `text` holds a line ending or a
-  null character ride the carry. See `MIGRATION.md`.
+  `&#13;` and a null character `!adf:text{text="\u0000"}`; a paragraph line opening with a code span
+  is spelled as one, its backticks opening no fence; a code block holding either character, a text
+  node holding no text or holding `content`, and an `emoji`, `mention` or `status` whose `text` holds
+  a line ending or a null character ride the carry. See `MIGRATION.md`.
 - Fix a link `title` holding a null character: it is written as `!adf:link[text]{attrs}`, where it
   read back as U+FFFD.
 - **Breaking:** `unspellable-link` leaves `ConvertErrorCode`; a link whose `href` or `title` no

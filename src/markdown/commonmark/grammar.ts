@@ -83,10 +83,6 @@ export function backslashEscape(text: string, index: number): string | undefined
   return isAsciiPunctuation(escaped) ? escaped : undefined
 }
 
-export function claimsLine(line: string, position: LinePosition): boolean {
-  return escapesLineClaim(line, 0, position) || orderedListOpener.test(line)
-}
-
 export function claimsPipeLine(line: string): boolean {
   return pipeClaim.test(line)
 }

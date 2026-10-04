@@ -153,11 +153,10 @@ function readsBack(doc: AdfDocument): string {
   return spelled
 }
 
-test('carries a code span whose backticks would open its line as a fence', () => {
-  const fence: AdfNode = { marks: [{ type: 'code' }], text: '```', type: 'text' }
-  const carried = '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"code\\"}],\\"text\\":\\"\\u0060\\u0060\\u0060\\",\\"type\\":\\"text\\"}"}'
-  assert.equal(readsBack(document(paragraph(fence))), `${carried}\n`)
-  assert.equal(readsBack(document(paragraph({ text: 'a', type: 'text' }, { type: 'hardBreak' }, fence, fence))), `a\\\n${carried}\`\`\`\` \`\`\` \`\`\`\`\n`)
+test('spells a code span opening a line, whose backticks open no fence', () => {
+  const fence: AdfNode = { marks: [{ type: 'code' }], text: '``', type: 'text' }
+  assert.equal(readsBack(document(paragraph(fence))), '``` `` ```\n')
+  assert.equal(readsBack(document(paragraph({ text: 'a', type: 'text' }, { type: 'hardBreak' }, fence))), 'a\\\n``` `` ```\n')
 })
 
 test('escapes the delimiter row a hard break leaves opening a pipe table with no leading pipe', () => {
