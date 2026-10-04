@@ -130,7 +130,7 @@ function lineVerdict(segments: readonly InlineSegment[], container: LineContaine
   return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', runs: [run, ...others] }
 }
 
-// A space or tab CommonMark strips at a line edge rides !adf:text{} instead.
+// A space or tab CommonMark strips at a line edge rides !adf:text{text="…"}.
 function spellEdgeWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
   const spelled: InlineSegment[] = []
   for (const [index, segment] of segments.entries()) {

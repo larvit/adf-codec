@@ -196,9 +196,8 @@ is the fence.
 
 CommonMark input may contain raw HTML. `markdownToAdf` routes each construct through the foreign
 HTML element mapping (`docs/decisions.md` §Foreign HTML sorts three ways; specified with the HTML
-dialect) — ADF has no raw-HTML node, so a construct without a mapping, comments
-and processing instructions included, is an error result naming it. The flavour never emits raw
-HTML.
+dialect) — ADF has no raw-HTML node, so a construct without a mapping, comments and processing
+instructions included, is an error result naming it. The flavour never emits raw HTML.
 
 ## Block nodes
 
