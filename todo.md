@@ -31,7 +31,7 @@
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 7 | 23.0 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
-| 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title, in both readers.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
+| 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
@@ -72,8 +72,8 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 
 ### 55. Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.
 
-Today `inline-line.ts` refuses a carriage return or NUL in text (`unspellable-character`) and a
-paragraph opening with a code-span run (`unspellable-line-start`); `fencedTexts` refuses the same
+Today `inline-line.ts` refuses a carriage return or NUL in text, and a NUL in an emoji, mention or
+status (`unspellable-character`), and a paragraph opening with a code-span run (`unspellable-line-start`); `fencedTexts` refuses the same
 characters in a code block; `inline-line.ts` refuses a newline in an emoji, mention or status
 (`unspellable-whitespace`); `inline-line.ts` and `fencedTexts` refuse a text node whose `text` is
 empty or missing, and `inline-line.ts` one holding `content`. The carries spell all of them: the
@@ -81,8 +81,8 @@ inline carry in a paragraph, the block carry in a code block. Inline, a carriage
 could ride `!adf:text{text="…"}` instead, which keeps the text readable — a writer panel picks.
 
 The maintainer approved on 2026-10-04: §Markdown in is a canonical fixpoint drops its code-span
-exception, §Which code a cause takes drops `unspellable-character` and `unspellable-whitespace` as
-emitter causes, and `unspellable-character` and `unspellable-line-start` retire.
+exception, §Which code a cause takes drops `unspellable-character`, and drops `unspellable-whitespace` as an
+emitter cause, and `unspellable-character` and `unspellable-line-start` retire.
 `unspellable-whitespace` stays, since the reader raises it for a content slot spanning a newline.
 Found by the README-goals audit, 2026-10-03.
 
@@ -115,14 +115,14 @@ a code fence whose info string opens `adf:` becomes the block carry where Common
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
-### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title, in both readers.
+### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
 
 Both are refused today with `unmappable-image`: 14 examples in
 `corpus/commonmark-spec/refusals.json`, a bot's `See ![diagram](url) here` among them. `mediaInline`
 takes only Atlassian media ids, never a URL. An image not alone in its paragraph reads as its alt
 text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
 as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
-title as a `caption` (the maintainer, 2026-10-04). Goal 4 puts both readers on it. An image inside
+title as a `caption` (the maintainer, 2026-10-04). By Goal 4, the lossless flavour reads both the same way. An image inside
 a link, `[![moon](moon.jpg)](/uri)` (spec example 517), would need two links on one text node: the
 chunk settles which link the alt text keeps by Goal 6, and asks where it does not decide.
 
@@ -131,8 +131,8 @@ chunk settles which link the alt text keeps by Goal 6, and asks where it does no
 Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
 two (spec examples 301 and 302). Goal 4 settles it for the lossless flavour too: CommonMark spells
 adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` alternate `-`
-and `*` between adjacent bullet lists (the maintainer, 2026-10-04) and `.` and `)` between adjacent
-ordered lists, and `!adf:listBreak` retires. Breaking, so it ships beside item 43: `MIGRATION.md`'s
+and `*` between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and
+`!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04); ordered lists have only `)`. Breaking, so it ships beside item 43: `MIGRATION.md`'s
 Readings and Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions,
 and the spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
