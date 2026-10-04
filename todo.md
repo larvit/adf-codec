@@ -116,11 +116,11 @@ and the conversions read the caller's object many times, so a throwing getter, a
 getter minting a fresh child per access throws or walks forever. Item 45's reader copies the
 document once inside one tight `try/catch`, reading property descriptors so no getter runs: an
 accessor property, or a Proxy trap that throws, is `not-an-adf-document`. The copy keeps own
-enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops, and it reads
-arrays by index, so no custom iterator runs. Every later step works on the copy. A Proxy can still
-claim unbounded width, which the 500-level limit does not cover, so the copy needs a cap on the
-values it reads. No standard sets that number: the chunk asks the maintainer for it first. Found by
-the technical-principles audit, 2026-10-04.
+enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops. The reader
+reads arrays by index, so no custom iterator runs. Every later step works on the copy. A Proxy can
+still claim unbounded width, which the 500-level limit does not cover, so the copy needs a cap on
+the values it reads. No standard sets that number: the chunk asks the maintainer for it first. Found
+by the technical-principles audit, 2026-10-04.
 
 ### 66. Refuse an attribute value that is not a plain object, array or JSON primitive.
 
