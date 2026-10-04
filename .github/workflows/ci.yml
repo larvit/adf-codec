@@ -20,13 +20,17 @@ jobs:
     concurrency:
       cancel-in-progress: false
       group: publish
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: gate
     permissions:
       contents: write
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      # The write token reaches only the tag push, never the checkout the build containers mount.
       - env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          TAG_REMOTE: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
         run: bash publish.sh

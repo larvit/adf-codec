@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 75`
+`Next ID = 78`
 
 | Goal | W |
 |---|---|
@@ -33,13 +33,15 @@
 | 66 | 0.2.0 | defect | **Refuse an attribute value that is not a plain object, array or JSON primitive.** | 3 | 2 | 5 | 8 | 1 | 22.5 |
 | 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
+| 77 | 0.2.0 | question | **Decide whether Goal 1 promises a result for plain data only, or for any value, getters and Proxies included.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
+| 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
 | 70 | 0.2.0 |  | **Give `package.json` the `keywords` someone searching npm for an ADF converter types.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
-| 72 | 0.2.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
+| 72 | 0.2.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
@@ -56,6 +58,7 @@
 | 42 | 0.3.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
 | 33 | 0.3.0 | defect | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
+| 76 | 0.3.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
 | 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 8 | 0.6 |
 | 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 8 | -2.6 |
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
@@ -128,6 +131,16 @@ a code fence whose info string opens `adf:` becomes the block carry where Common
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
+### 77. Decide whether Goal 1 promises a result for plain data only, or for any value, getters and Proxies included.
+
+`docs/decisions.md` §No value `JSON.parse` or `structuredClone` builds loops a call leaves getters,
+Proxies and non-enumerable keys to the caller, so `adfToMarkdown`, `adfToPlainMarkdown` and
+`isAdfDocument` throw on a revoked Proxy or a throwing getter, and walk forever on a getter that
+mints a fresh child per access. Goal 1 says every call returns a result. Either Goal 1 names plain
+data, as the README's guarantees already do, or an item wraps the guard walk in a tight `try/catch`
+returning `not-an-adf-document` with a bound on nodes visited, and the decision cites it. The
+maintainer's call. Found by the technical-principles audit, 2026-10-04.
+
 ### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
 
 `refuseContentAndText` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
@@ -135,6 +148,14 @@ refuse these with `unsupported-node-shape`, though `isAdfDocument` accepts them 
 round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. Drop
 them from the emitting half of the README's `unsupported-node-shape` row. Found by the README-goals
 audit, 2026-10-04.
+
+### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
+
+`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
+whose info string is `carry`, an ordinary code language since §The carry fence names the node type.
+So the property reaches `readCarriedBlock`'s refusals only where a random edit lands in a canonical
+document. Write `adf:<type>` and `adf:` fences, canonical and hostile. Found by the
+technical-principles audit, 2026-10-04.
 
 ### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
 
@@ -185,13 +206,15 @@ only the property tests catch drift. It caps the panel's Locality score. The rep
 time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
 of one character from each of its characters.
 
-### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues off and its description pointing at GitHub.
+### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
 Lands after the maintainer confirms the GitHub repository's settings, history, CI gate and
 publishing. The maintainer does this. Gitea cannot convert an existing repository to a mirror, so
 the copy is deleted and re-created. That drops the copy's commit hashes from before the 2026-10-04
-history rewrite, and its Actions secrets. The Gitea copy holds no issues or releases to move. When
-this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its interim sentence.
+history rewrite, and its Actions secrets. The Gitea copy holds no issues or releases to move.
+Actions stay off on the mirror: Gitea runs `.github/workflows/` when `.gitea/workflows/` is absent,
+and the mirrored `publish` job would otherwise run there. When this lands, the `docs/decisions.md`
+entry "GitHub is canonical" loses its interim sentence.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
@@ -307,6 +330,14 @@ functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLi
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
 output; and `nestIn` (`plain/adf-to-plain-markdown.ts`), which pushes into its caller's array.
+
+### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
+
+Technical principle DRY: the set is written in `tsconfig.build.json`'s `exclude`, `.oxlintrc.json`'s
+`ignorePatterns` and the `test` script's two `--test-coverage-exclude` flags, and §The size ratchet
+assumes they agree. A helper added to one list lints test code under the shipped ceiling, or drops
+shipped code from coverage, silently. Derive two from the third, or assert in a test that the three
+agree. Found by the technical-principles audit, 2026-10-04.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 
