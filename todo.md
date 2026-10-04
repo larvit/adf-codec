@@ -133,13 +133,13 @@ read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a calle
 
 ### 77. Decide whether Goal 1 promises a result for plain data only, or for any value, getters and Proxies included.
 
-`docs/decisions.md` §No value `JSON.parse` or `structuredClone` builds loops a call leaves getters,
-Proxies and non-enumerable keys to the caller, so `adfToMarkdown`, `adfToPlainMarkdown` and
-`isAdfDocument` throw on a revoked Proxy or a throwing getter, and walk forever on a getter that
-mints a fresh child per access. Goal 1 says every call returns a result. Either Goal 1 names plain
-data, as the README's guarantees already do, or an item wraps the guard walk in a tight `try/catch`
-returning `not-an-adf-document` with a bound on nodes visited, and the decision cites it. The
-maintainer's call. Found by the technical-principles audit, 2026-10-04.
+The `docs/decisions.md` entry "No value `JSON.parse` or `structuredClone` builds loops a call"
+leaves getters, Proxies and non-enumerable keys to the caller, so `adfToMarkdown`,
+`adfToPlainMarkdown` and `isAdfDocument` throw on a revoked Proxy or a throwing getter, and walk
+forever on a getter that mints a fresh child per access. Goal 1 says every call returns a result.
+Either Goal 1 names plain data, as the README's guarantees already do, or an item wraps the guard
+walk in a tight `try/catch` returning `not-an-adf-document` with a bound on nodes visited, and that
+entry cites the item. The maintainer's call. Found by the technical-principles audit, 2026-10-04.
 
 ### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
 
@@ -152,10 +152,10 @@ audit, 2026-10-04.
 ### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
 
 `blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
-whose info string is `carry`, an ordinary code language since §The carry fence names the node type.
-So the property reaches `readCarriedBlock`'s refusals only where a random edit lands in a canonical
-document. Write `adf:<type>` and `adf:` fences, canonical and hostile. Found by the
-technical-principles audit, 2026-10-04.
+whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
+type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
+where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
+and hostile. Found by the technical-principles audit, 2026-10-04.
 
 ### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
 
