@@ -12,7 +12,7 @@
     "html",
     "jira",
     "markdown",
-    "prosemirror"
+    "typescript"
   ],
   "license": "MIT",
   "repository": {

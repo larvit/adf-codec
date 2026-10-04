@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 79`
+`Next ID = 80`
 
 | Goal | W |
 |---|---|
@@ -32,10 +32,12 @@
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
 | 77 | 0.2.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
 | 66 | 0.2.0 | defect | **Refuse an attribute value that is not a plain object, array or JSON primitive.** | 3 | 2 | 5 | 8 | 1 | 22.5 |
+| 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
+| 79 | 0.2.0 | question | **Decide whether the README's `## Goals` and `## Audience` sit below its quick start.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
@@ -71,9 +73,9 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 ### 78. Return a result when `markdownToAdf` or `plainMarkdownToAdf` is handed a value that is not a string.
 
 Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
-document. A JavaScript caller, or a TypeScript one past an untyped boundary, reaches both. The code
-it returns follows `docs/decisions.md` §Which code a cause takes. Found by the competitor probe for
-the README's comparison table, 2026-10-05.
+document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
+The code it returns follows `docs/decisions.md` §The code list. Found while checking the other ADF
+converters for item 71, 2026-10-05.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -125,6 +127,17 @@ typed array in `attrs`, as `structuredClone` keeps it, passes the guard and is w
 key per element: `ok: true` with content lost. Accept an object whose prototype is
 `Object.prototype` or `null`, and an array. Found by the stability review of item 63, 2026-10-04.
 
+### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
+
+Lands after items 7 and 46: the table names HTML and compares item 46's size figure. Its columns:
+which directions each converts, whether the round-trip holds, what an unknown node does, the
+formats, runtime dependencies and size. Candidates are the packages an npm search for ADF and
+markdown returns, marklassian among them. Every cell cites that package's README or a run against
+its published version, and the table names each version and the date it was checked. Found while
+planning discoverability, 2026-10-04. Checked 2026-10-05: no other package converts HTML or holds
+the round-trip; the candidates are `@atlaskit/editor-markdown-transformer`, `adf-to-markdown`,
+`adf-to-md`, `adf2markdown`, `extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
+
 ### 43. Give each markdown input its own reader, strict to its own standard.
 
 Today `markdownToAdf` reads CommonMark and the lossless flavour as one input: text shaped like a
@@ -161,6 +174,11 @@ CommonMark does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec examp
 its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not
 alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
 writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
+
+### 79. Decide whether the README's `## Goals` and `## Audience` sit below its quick start.
+
+A reader landing on npm scrolls past nine goals and four personas before `npm install`; the opening
+already says who the package is for. Raised by the product-owner review of item 47, 2026-10-05.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
@@ -250,9 +268,9 @@ which counts one fewer.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Lands after `0.2.0` is published, so each post links the GitHub repository, the comparison and a
-README that opens with what the package is. We draft each post for the place it goes; the
-maintainer posts them. Found while planning discoverability, 2026-10-04.
+Lands after `0.2.0` is published with item 71, so each post links the GitHub repository, the
+README's comparison table and a README that opens with what the package is. We draft each post for
+the place it goes; the maintainer posts them. Found while planning discoverability, 2026-10-04.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
