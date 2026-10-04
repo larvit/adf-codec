@@ -605,7 +605,7 @@ function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][
   return found
 }
 
-// Each opener takes the next closer holding at least one character after it, both in one stretch and under the same marks.
+// Each opener pairs with the next closer at least one character after it, and only when both sit in one stretch under the same marks.
 function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]): { closer: number; opener: number }[] {
   const found = highlightDelimiters(pieces, nodes)
   const paired: { closer: number; opener: number }[] = []

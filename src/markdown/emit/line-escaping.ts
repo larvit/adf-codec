@@ -121,10 +121,10 @@ function claimsHighlight(scan: string, index: number): boolean {
   return flanking.opens || flanking.closes
 }
 
-// CommonMark reads no escape inside a code span, so a backtick string an escape forms or splits off still closes one an earlier bare run opens.
+// CommonMark reads no escape inside a code span, so a backtick string left beside an escape still closes a span that an earlier bare run of its length opens.
 function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], claimed: ReadonlySet<number>): ReadonlySet<number> {
   const escaped = new Set(claimed)
-  // The lengths of the backtick strings an escape forms or splits off: a bare run that long closes the span one opens.
+  // The lengths of the backtick strings escapes leave: a bare run of one of these lengths would open a span one of them closes, so it is escaped too.
   const formed = new Set<number>()
   let end = scan.length - 1
   while (end >= 0) {
