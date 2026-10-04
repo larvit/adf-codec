@@ -13,9 +13,10 @@ products store as ADF.
 - **Plain CommonMark in:** a bot's or a model's markdown is valid input, apart from raw HTML and
   the exceptions [The guarantees](#the-guarantees) lists.
 - **Plain markdown, lossy:** `adfToPlainMarkdown` and `plainMarkdownToAdf` convert to and from
-  markdown GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts, task lists and
-  pipe tables, Obsidian Flavored Markdown's callouts and highlights. They keep the text, images and
-  link targets and drop the rest; to save edits back, use the lossless pair.
+  the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts, task
+  lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights. `adfToPlainMarkdown`
+  keeps the text, images by URL and link targets and drops the rest; to save edits back, use the
+  lossless pair.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
 - **HTML at `0.2.0`:** `adfToHtml`, `htmlToAdf`, `markdownToHtml`, `htmlToMarkdown`.
