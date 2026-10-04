@@ -4,8 +4,9 @@
 
 - **Breaking:** an attribute value that is not a plain object, array or JSON primitive, such as a
   `Date`, `Map`, typed array or class instance, makes `isAdfDocument` return `false` and the
-  converters refuse it as `not-an-adf-document`, where it was written as `{}` or its own keys.
-  Build it as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }`.
+  converters refuse it as `not-an-adf-document`. Before, the converters wrote it as `{}` or its own
+  keys. Build it as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`,
+  `Array.from(bytes)`, `{ ...instance }`.
 - The README opens with what the package does and for whom, and `package.json` carries search
   keywords.
 - The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where

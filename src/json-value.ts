@@ -19,7 +19,7 @@ export function isJsonValue(value: unknown): value is JsonValue {
   return true
 }
 
-// Any realm's Object.prototype has a null prototype; a Date, Map or typed array would serialize as {} or a key per element.
+// Any realm's Object.prototype has a null prototype; serializeCanonicalJson writes a Date or Map as {}.
 function isPlainObject(value: unknown): value is object {
   if (typeof value !== 'object' || value === null) return false
   const prototype: unknown = Object.getPrototypeOf(value)
