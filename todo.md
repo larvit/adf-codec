@@ -63,8 +63,8 @@
 
 ### 47. Open the README with what the package is, what it does and for whom.
 
-Lands after item 72: the badges are npm's version and the GitHub Actions status. The README opens
-with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
+Lands after item 72: the badges are npm's version and the GitHub Actions status. Today the README
+opens with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
 decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why"
 note left. The README names the lossy pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the
 flavours it writes and reads — GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored
