@@ -19,6 +19,7 @@ import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type BlockSpelling = 'commonmark' | 'directive' | 'list'
+// headroom: the nesting levels the deepest node below may still spend before `largestNesting` refuses it.
 type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
@@ -47,7 +48,6 @@ export function writeMarkdown(document: AdfDocument, flavour: Flavour): Result<s
   return success(text === '' ? '' : `${text}\n`)
 }
 
-// headroom: the nesting levels the deepest node below may still spend before the 500-level guard refuses it.
 function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
@@ -114,7 +114,7 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, wri
   const kept = memo?.get(node)
   if (kept !== undefined) {
     if (kept.block === undefined) return undefined
-    // A read below the fill would skip the depth guards the walk it replaces runs (docs/decisions.md §The spelling memo).
+    // An entry holds the spelling at its fill depth: a read at or above it rebases headroom, a read below re-spells, since a hit skips the depth guards the walk runs.
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
   const spelled = spellReadableBlock(node, path, depth, writing)
