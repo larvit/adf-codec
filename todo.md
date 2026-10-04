@@ -63,12 +63,12 @@
 
 ### 47. Open the README with what the package is, what it does and for whom.
 
-It opens with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
+Lands after item 72: the badges are npm's version and the GitHub Actions status. The README opens
+with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
 decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why"
-note left. The badges are npm's version and the GitHub Actions status, so it lands after item 72. The README names the lossy
-pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it writes and reads — GitHub
-Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's callouts — so a search for
-any of these names finds the package.
+note left. The README names the lossy pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the
+flavours it writes and reads — GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored
+Markdown's callouts — so a search for any of these names finds the package.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
@@ -112,11 +112,12 @@ key per element: `ok: true` with content lost. Accept an object whose prototype 
 
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
 
-Lands after items 7, 46 and 47: the table names HTML, compares item 46's size figure, and sits in the README item 47 reshapes. A table: which directions each converts,
-whether the round-trip holds, what an unknown node does, the formats, runtime dependencies and
-size. Candidates are the packages an npm search for ADF and markdown returns, marklassian among
-them. Every cell cites that package's README or a run against its published version, and the
-table names each version and the date it was checked, since a reader relies on it. Found while planning discoverability, 2026-10-04.
+Lands after items 7, 46 and 47: the table names HTML, compares item 46's size figure, and sits in
+the README item 47 reshapes. Its columns: which directions each converts, whether the round-trip
+holds, what an unknown node does, the formats, runtime dependencies and size. Candidates are the
+packages an npm search for ADF and markdown returns, marklassian among them. Every cell cites that
+package's README or a run against its published version, and the table names each version and the
+date it was checked. Found while planning discoverability, 2026-10-04.
 
 ### 43. Give each markdown input its own reader, strict to its own standard.
 
@@ -157,17 +158,18 @@ npm list and the names the README uses — ADF, Atlassian Document Format, markd
 ### 72. Make GitHub the canonical repository, with `gitea.larvit.se/larvit/adf-codec` a read-only pull mirror of it.
 
 The maintainer's call, 2026-10-04: GitHub is where an ADF converter is searched for, and the Gitea
-copy keeps the move back open. The workflows move to `.github/workflows/` with `ci.sh` and
-`publish.sh` unchanged. Publishing moves to npm's trusted publishing over OIDC, which GitHub-hosted
-Actions support, and which outlives the bypass-2FA token npm retires around January 2027.
-`package.json`'s `repository` moves and it gains `bugs` and `homepage`. The links in README,
-CHANGELOG and MIGRATION follow, as do AGENTS.md's forge commands and merge style.
+copy keeps the move back open. The workflows move to `.github/workflows/` with `ci.sh` unchanged.
+Publishing moves to npm's trusted publishing over OIDC, which GitHub-hosted Actions support, and
+which outlives the bypass-2FA token npm retires around January 2027: `publish.sh` drops `NPM_TOKEN`
+for the Actions OIDC variables, and AGENTS.md §7 reserves the trusted-publisher setup in place of
+the secret. `package.json`'s `repository` moves and it gains `bugs` and `homepage`. The links in
+README, CHANGELOG and MIGRATION follow, as do AGENTS.md's forge commands and merge style.
 `docs/decisions.md` gains the entry "GitHub is canonical, and Gitea a pull mirror of it" (Goal 3),
-and every entry naming Gitea Actions is revised. Gitea's open issues and its releases move to
-GitHub first, since a mirror carries only git refs; the mirror disables issues and its description
-points at GitHub. Creating the GitHub repository, configuring npm's trusted publisher, and
-re-creating the Gitea copy as a mirror (Gitea cannot convert an existing repository) are the
-maintainer's.
+and §Public on npm and §Publish on a version bump are revised: the source is public on GitHub, and
+CI publishes through npm's trusted publisher. Gitea's open issues and its releases move to GitHub
+first, since a mirror carries only git refs; the mirror disables issues and its description points
+at GitHub. Creating the GitHub repository, configuring npm's trusted publisher, and re-creating the
+Gitea copy as a mirror (Gitea cannot convert an existing repository) are the maintainer's.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
@@ -247,9 +249,9 @@ which counts one fewer.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Lands after `0.2.0` is published with items 47, 71 and 72, so each post links the GitHub
-repository, the comparison and a README that opens with what the package is. We draft each post for the place it goes; the maintainer posts
-them. Found while planning discoverability, 2026-10-04.
+Lands after `0.2.0` is published with items 47, 71 and 72, so each post links the GitHub repository,
+the comparison and a README that opens with what the package is. We draft each post for the place it
+goes; the maintainer posts them. Found while planning discoverability, 2026-10-04.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
