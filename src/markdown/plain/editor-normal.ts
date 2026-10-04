@@ -7,7 +7,7 @@ type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
 type NodeHolder = { content?: AdfNode[] }
 
-// The editor's rule is the reader's over the pair's editor-normal forms.
+// The editor joins two text nodes where the reader would join their editor-normal forms.
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
   if (previous.type !== 'text' || node.type !== 'text') return false
   return joinsWhenRead(normalNode(previous), normalNode(node))
@@ -25,7 +25,7 @@ export function toEditorNormal(document: AdfDocument): AdfDocument {
     if (content.length === 0) continue
     entry.holder.content = content.map((source) => {
       const holder = normalNode(source)
-      // Atlassian's schema allows a text node no content, so the editor keeps none.
+      // Atlassian's schema forbids content on a text node, so the editor drops it.
       if (source.type !== 'text') pending.push({ holder, source })
       return holder
     })

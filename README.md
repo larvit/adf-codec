@@ -136,7 +136,7 @@ read replaces mentions, attachments and macros with text.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.
-- A text node's `content`, which Atlassian's schema forbids, drops.
+- A text node's `content` drops: Atlassian's schema forbids it, so no rendered document shows it.
 - An ordered list numbered past `999999999`, or adjacent ordered lists whose numbering does not
   continue, is one bullet list keeping its numbers as text.
 - A task list beside a bullet or decision list, or holding a block other than a task, joins one
