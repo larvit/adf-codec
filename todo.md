@@ -50,7 +50,7 @@
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
-| 74 | 0.3.0 |  | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
+| 74 | 0.3.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
 | 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
 | 42 | 0.3.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
@@ -64,7 +64,7 @@
 
 ### 47. Open the README with what the package is, what it does and for whom.
 
-The badges are npm's version and the GitHub Actions status. Today the README opens with the
+Add badges for npm's version and the GitHub Actions status. Today the README opens with the
 pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being decommissioned, a
 link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why" note left. The
 README names the lossy pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it
@@ -188,10 +188,10 @@ of one character from each of its characters.
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues off and its description pointing at GitHub.
 
 Lands after the maintainer confirms the GitHub repository's settings, history, CI gate and
-publishing. The maintainer's: Gitea cannot convert an existing repository to a mirror, so the copy
-is deleted and re-created, which drops its hashes from before the history rewrite of 2026-10-04 and
-its Actions secrets. It holds no issues or releases to move. `docs/decisions.md` §GitHub is
-canonical, and Gitea a pull mirror of it loses its interim sentence when this lands.
+publishing. The maintainer does this. Gitea cannot convert an existing repository to a mirror, so
+the copy is deleted and re-created. That drops the copy's commit hashes from before the 2026-10-04
+history rewrite, and its Actions secrets. The Gitea copy holds no issues or releases to move. When
+this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its interim sentence.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
@@ -251,19 +251,19 @@ goes; the maintainer posts them. Found while planning discoverability, 2026-10-0
 `adfToMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute values
 already escape it.
 
-### 74. Keep the release path publishing past npm's bypass-2FA token retirement.
+### 74. Keep the release path publishing after npm retires bypass-2FA tokens.
 
 Lands after 2027-01-01, or after a release run fails on the token, whichever comes first: the
 maintainer chose on 2026-10-02 to wait and see whether the retirement bites. It holds back no
 release: when the rest of its release is done, it moves to the next. `0.1.0` published only once the
 npm token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
 answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct publishing
-around January 2027, leaving them `npm stage publish`, which a maintainer approves with 2FA. Its
-replacement, trusted publishing over OIDC, supports GitHub-hosted Actions, where the release runs
-since 2026-10-04 with the organization's `NPM_TOKEN` (the maintainer's choice). The trade is the
-maintainer's: move `publish.sh` to trusted publishing, or to the staged publish, which fits badly
-with publish-on-merge. The Goals and G cells are provisional: no README goal covers the release
-path.
+around January 2027, leaving them `npm stage publish`, which a maintainer approves with 2FA. Trusted
+publishing over OIDC replaces the token, and GitHub-hosted Actions support it. The release has run
+there since 2026-10-04, still with the organization's `NPM_TOKEN`: the maintainer chose to keep the
+token for now. The trade is the maintainer's: move `publish.sh` to trusted publishing, or to the
+staged publish, which fits badly with publish-on-merge. The Goals and G cells are provisional: no
+README goal covers the release path.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
