@@ -581,9 +581,9 @@ once doubled the parser's frames per level.
 `JSON.parse` or `structuredClone` builds it.
 
 The guards walk a value by `Object.values` and refuse a cycle in it. An inherited or non-enumerable
-key, a getter, a Proxy or a custom iterator is the caller's to rule out: no persona builds one. It stands until
-`todo.md` item 77 settles whether Goal 1 promises a result for plain data only.
-Goal 9's size counts ADF as JSON, so a shared object costs once per place it is held.
+key, a getter, a Proxy or a custom iterator is the caller's to rule out: no persona builds one. It
+stands until `todo.md` item 77 reads the input once into a plain copy. Goal 9's size counts ADF as
+JSON, so a shared object costs once per place it is held.
 
 ## Nothing spreads an unbounded array
 

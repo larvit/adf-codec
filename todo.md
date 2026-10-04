@@ -30,10 +30,10 @@
 | 67 | 0.2.0 | defect | **Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.** | 1 | 1 | 4 | 9 | 1 | 24.8 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
+| 77 | 0.2.0 | decision | **Read the input once into a plain copy, so a getter or Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
 | 66 | 0.2.0 | defect | **Refuse an attribute value that is not a plain object, array or JSON primitive.** | 3 | 2 | 5 | 8 | 1 | 22.5 |
 | 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
-| 77 | 0.2.0 | question | **Decide whether Goal 1 promises a result for plain data only, or for any value, getters and Proxies included.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
@@ -81,9 +81,10 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
-Goal 1 has every call return a result; the boolean guard is the one export that does not, and it
-cannot say which branch refused, where `not-an-adf-document`'s message already does. Breaking:
-`MIGRATION.md` shows the guard's replacement.
+Lands with item 77, whose copy the reader returns. Goal 1 has every call return a result; the
+boolean guard is the one export that does not, and it cannot say which branch refused, where
+`not-an-adf-document`'s message already does. Breaking: `MIGRATION.md` shows the guard's
+replacement.
 
 ### 67. Push an expand title's leaves one at a time, so a title carrying many text nodes returns a result.
 
@@ -106,6 +107,18 @@ HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three
 Deno and Chrome the round-trip would refuse its own output or read back a different key; the fixture
 tells which. Confirm with a fixture first; then read JSON with our own parser or record the gap with
 an ending item. Found by the README-goals audit, 2026-10-03.
+
+### 77. Read the input once into a plain copy, so a getter or Proxy yields `not-an-adf-document` and every call returns a result.
+
+Lands with item 45, in one chunk: its reader returns the copy. The maintainer's call, 2026-10-04:
+Goal 1 promises a result for any value, getters and Proxies included. Today the guards and the
+conversions read the caller's object many times, so a throwing getter, a revoked Proxy or a getter
+minting a fresh child per access throws or walks forever. The entry check copies the document once
+inside one tight `try/catch`, reading property descriptors so no getter runs: an accessor property,
+or a Proxy trap that throws, is `not-an-adf-document`. Every later step works on the copy. A Proxy
+can still claim unbounded width, which the 500-level limit does not cover, so the copy needs a cap
+on the values it reads. No standard sets that number: the chunk asks the maintainer for it first.
+Found by the technical-principles audit, 2026-10-04.
 
 ### 66. Refuse an attribute value that is not a plain object, array or JSON primitive.
 
@@ -130,16 +143,6 @@ directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark r
 a code fence whose info string opens `adf:` becomes the block carry where CommonMark reads code. A
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
-
-### 77. Decide whether Goal 1 promises a result for plain data only, or for any value, getters and Proxies included.
-
-The `docs/decisions.md` entry "No value `JSON.parse` or `structuredClone` builds loops a call"
-leaves getters, Proxies and non-enumerable keys to the caller, so `adfToMarkdown`,
-`adfToPlainMarkdown` and `isAdfDocument` throw on a revoked Proxy or a throwing getter, and walk
-forever on a getter that mints a fresh child per access. Goal 1 says every call returns a result.
-Either Goal 1 names plain data, as the README's guarantees already do, or an item wraps the guard
-walk in a tight `try/catch` returning `not-an-adf-document` with a bound on nodes visited, and that
-entry cites the item. The maintainer's call. Found by the technical-principles audit, 2026-10-04.
 
 ### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
 
