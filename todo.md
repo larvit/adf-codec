@@ -124,8 +124,8 @@ writer panel chose this reading 3 of 3 (2026-10-04), by Goal 5, which outranks G
 
 `refuseContentAndText` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
 refuse these with `unsupported-node-shape`, though `isAdfDocument` accepts them and the carry
-round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. The
-Drop them from the README's "Not every document converts back" bullet. Found by the README-goals
+round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. Drop
+them from the emitting half of the README's `unsupported-node-shape` row. Found by the README-goals
 audit, 2026-10-04.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
