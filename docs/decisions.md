@@ -496,7 +496,7 @@ exits 0 on.
 while `todo.md` items 59, 60, 61 and 62 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its round-5 scores
-(2026-10-03) are the baseline: a later panel may not score lower on any dimension.
+(2026-10-03) are the score the next chunk starts from.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|

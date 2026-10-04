@@ -26,13 +26,13 @@
 |---|---|---|---|---|---|---|---|---|---|
 | 63 | 0.2.0 | defect | **Refuse a cyclic input as `not-an-adf-document`.** | 2 | 2 | 6 | 9 | 1 | 27.5 |
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
-| 55 | 0.2.0 | defect | **Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
+| 55 | 0.2.0 | defect | **Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 3 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 7 | 23.0 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 3, 4 | 22.3 |
-| 65 | 0.2.0 | defect | **Read a mid-text or titled CommonMark image as Goal 6 allows.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
-| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
+| 65 | 0.2.0 | defect | **Read a mid-text CommonMark image as a link to it, and a titled one on its own line as an image captioned with its title.** | 5 | 5 | 7 | 7 | 3, 4, 6 | 18.7 |
+| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 3, 4 | 17.2 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 5 | 13.0 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 3, 4 | 12.4 |
@@ -70,16 +70,17 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 `markdownToHtml`. The README documents HTML as it documents markdown, and its tagline and
 `package.json`'s `description` regain HTML.
 
-### 55. Spell through the carry every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.
+### 55. Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.
 
+The maintainer approved on 2026-10-04 revising §Which code a cause takes and §Markdown in is a
+canonical fixpoint so these convert, and retiring every code nothing then raises. Today
 `inline-line.ts` refuses a carriage return or NUL in text (`unspellable-character`) and a paragraph
 opening with a code-span run (`unspellable-line-start`); `fencedTexts` refuses the same characters
 in a code block; `directive-syntax.ts` refuses a newline in an emoji, mention or status
-(`unspellable-whitespace`). The inline carry's JSON escapes all of them, so a lossless spelling
-exists, and §The code list says a cause the carry answers gets no code. Fixing it revises §Which
-code a cause takes and §Markdown in is a canonical fixpoint, which the maintainer decides. Also a
-text node whose `text` is empty or missing, which `inline-line.ts` and `fencedTexts` refuse, or
-which holds `content`, which `inline-line.ts` refuses. Found by the README-goals audit, 2026-10-03.
+(`unspellable-whitespace`); `inline-line.ts` and `fencedTexts` refuse a text node whose `text` is
+empty or missing, and `inline-line.ts` one holding `content`. The inline carry spells all of them;
+a carriage return or NUL could ride `!adf:text{text="…"}` instead, which keeps the text readable —
+a writer panel picks. Found by the README-goals audit, 2026-10-03.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -110,23 +111,24 @@ a code fence whose info string opens `adf:` becomes the block carry where Common
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
 
-### 65. Read a mid-text or titled CommonMark image as Goal 6 allows.
+### 65. Read a mid-text CommonMark image as a link to it, and a titled one on its own line as an image captioned with its title.
 
-A mid-text or titled image, such as a bot's `See ![diagram](url) here`, is refused: 14 examples in
-`corpus/commonmark-spec/refusals.json`. Settle what such an image builds. Goal 6 drops form and
-keeps the target.
+Both are refused today with `unmappable-image`: 14 examples in
+`corpus/commonmark-spec/refusals.json`, and a bot's `See ![diagram](url) here` among them. ADF's
+inline image takes only Atlassian media ids, so a mid-text image reads as its alt text linked to its
+URL, its title the link's `title` and an empty alt text the URL itself (item 50). A titled image on
+its own line reads as the image with its title as a `caption` (the maintainer, 2026-10-04).
 
-### 49. Read a list whose bullet or ordered delimiter changes as two lists in the CommonMark reader.
+### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
 Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
-two (spec examples 301 and 302), and so must the CommonMark reader. `spec/flavour.md` merges them in
-the lossless flavour on purpose and parts two adjacent lists with `!adf:listBreak`. The chunk
-settles by Goals 3 and 4 whether the flavour follows, and asks where the Goals do not decide. That
-answer also settles what `adfToMarkdown` and `adfToPlainMarkdown` write for two adjacent lists, and
-whether `!adf:listBreak` still reads. Breaking, so it ships beside item 43: `MIGRATION.md`'s
-Readings table gains its row, and its Spellings table one if `!adf:listBreak` retires. Examples 301
-and 302 lose their `pending` exceptions, and the spelling leaves the README's "Four CommonMark
-spellings" bullet, which counts one fewer.
+two (spec examples 301 and 302). Goal 4 settles it for the lossless flavour too: CommonMark spells
+two adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` write the
+second of two adjacent bullet lists with `*` (the maintainer, 2026-10-04) and the second of two
+ordered lists with `)`, and `!adf:listBreak` retires. Breaking, so it ships beside item 43:
+`MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose their
+`pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet, which
+counts one fewer.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 
@@ -167,9 +169,9 @@ mark spellings too, which item 7 moves where it learns what HTML shares.
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 
 Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
-link mark, so the chunk settles what the empty link builds by Goals 3 and 6, and asks where they do
-not decide; whatever it builds, both still parse, since a bot relies on plain CommonMark being valid
-input. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
+link mark, so a link whose text is empty takes its URL as its text (the maintainer, 2026-10-04):
+`[](/url)` reads as `/url` linked to `/url`. `[]()` has no URL to show; the chunk settles it by Goals
+3 and 6. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
 `pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
 which counts one fewer.
 
