@@ -217,9 +217,14 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
+// Whatever the node decides alone is decided here, so a line holding many such nodes is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
   if (carried.has(index)) return true
-  return node.type !== 'text' && inlineNodeModel(node.type) === undefined
+  if (node.type === 'text') return !isBareText(node) || typeof node.text !== 'string' || node.text === ''
+  const model = inlineNodeModel(node.type)
+  if (model === undefined) return true
+  const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
+  return typeof slot === 'string' && slotFault(node.type, slot) !== undefined && nodeContent(node).length === 0 && node.text === undefined
 }
 
 function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<Emission> {
@@ -253,8 +258,7 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
   if (attributes === undefined) return success({ carry: { first: index, last: index } })
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
   if (slot === undefined) return success({ segments: [syntax(spellInlineLeafDirective(node.type, attributes))] })
-  if (typeof slot !== 'string') return success({ carry: { first: index, last: index } })
-  if (slotFault(node.type, slot) !== undefined) return success({ carry: { first: index, last: index } })
+  if (typeof slot !== 'string' || slotFault(node.type, slot) !== undefined) return success({ carry: { first: index, last: index } })
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
   return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
