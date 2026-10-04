@@ -500,11 +500,11 @@ maintainer.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
-| Junior | 7 | 5.5 | 6.5 | 5.5 | 6 |
-| Mid | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Junior | 7 | 5.5 | 6.5 | 6 | 6 |
+| Mid | 7 | 5.5 | 6.5 | 6 | 6 |
 | Senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
-| Architect | 6.5 | 5.5 | 6 | 6.5 | 6 |
-| Mean | 6.88 | 5.50 | 6.38 | 5.75 | 6.00 |
+| Architect | 7 | 5.5 | 6 | 6 | 6 |
+| Mean | 7.00 | 5.50 | 6.38 | 5.88 | 6.00 |
 
 Three panels on near-identical code scored overall means of 5.88, 5.75 and 5.75, and a seat moves
 ±0.5 between runs.

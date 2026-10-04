@@ -63,7 +63,8 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 ### Error codes
 
 `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`:
-a `switch` naming one stops compiling, and the document it named converts.
+a `switch` naming one stops compiling. The document a removed code named on emit converts; the
+markdown it named on parse refuses with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
