@@ -53,7 +53,8 @@
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
 | 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
-| 42 | 0.3.0 |  | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
+| 42 | 0.3.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
+| 33 | 0.3.0 | defect | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
 | 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 8 | 0.6 |
 | 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 8 | -2.6 |
@@ -288,6 +289,14 @@ measured one.
 `plain/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`, quadratic
 in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 `adfToPlainMarkdown`. Scan backward, as the expand title's trim does.
+
+### 33. Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.
+
+`adfToMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its flanking
+cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and the plain
+reduction's `spellableLine` drops one mark per re-emit the same way. An inline node whose
+attributes no spelling writes re-emits the line the same way before riding the carry. Make all
+three linear.
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
