@@ -37,7 +37,7 @@
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
-| 79 | 0.2.0 | question | **Decide whether the README's `## Goals` and `## Audience` sit below its quick start.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
+| 79 | 0.2.0 | question | **Decide whether the README's `## Goals` and `## Audience` sit below `## The shape`.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
@@ -74,7 +74,7 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 
 Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
 document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
-The code it returns follows `docs/decisions.md` §The code list. Found while checking the other ADF
+The code the call returns follows `docs/decisions.md` §The code list. Found while checking the other ADF
 converters for item 71, 2026-10-05.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
@@ -132,11 +132,11 @@ key per element: `ok: true` with content lost. Accept an object whose prototype 
 Lands after items 7 and 46: the table names HTML and compares item 46's size figure. Its columns:
 which directions each converts, whether the round-trip holds, what an unknown node does, the
 formats, runtime dependencies and size. Candidates are the packages an npm search for ADF and
-markdown returns, marklassian among them. Every cell cites that package's README or a run against
-its published version, and the table names each version and the date it was checked. Found while
-planning discoverability, 2026-10-04. Checked 2026-10-05: no other package converts HTML or holds
-the round-trip; the candidates are `@atlaskit/editor-markdown-transformer`, `adf-to-markdown`,
-`adf-to-md`, `adf2markdown`, `extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
+markdown returns. Every cell cites that package's README or a run against its published version, and
+the table names each version and the date it was checked. Found while planning discoverability,
+2026-10-04. Checked 2026-10-05: no other package converts HTML or holds the round-trip; the
+candidates are `@atlaskit/editor-markdown-transformer`, `adf-to-markdown`, `adf-to-md`,
+`adf2markdown`, `extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
 
 ### 43. Give each markdown input its own reader, strict to its own standard.
 
@@ -175,7 +175,7 @@ its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `
 alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
 writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
 
-### 79. Decide whether the README's `## Goals` and `## Audience` sit below its quick start.
+### 79. Decide whether the README's `## Goals` and `## Audience` sit below `## The shape`.
 
 A reader landing on npm scrolls past nine goals and four personas before `npm install`; the opening
 already says who the package is for. Raised by the product-owner review of item 47, 2026-10-05.
