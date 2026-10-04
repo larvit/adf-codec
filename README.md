@@ -195,7 +195,7 @@ Emitting — `adfToMarkdown`, and `adfToHtml` at `0.2.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself | guard the boundary you receive JSON at with `isAdfDocument`; the message names the branch that refused |
+| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an attribute value JSON does not hold — a `Date`, `Map` or class instance —, an object in the document holding itself | guard the boundary you receive JSON at with `isAdfDocument`; the message names the branch that refused |
 | `unsupported-document-version` | the document's `version` is not 1 | keep the ADF and pass the document over, or show it read-only; the version is the site's, not yours to change |
 
 Either direction. The emitter's own refusals are in this group — a parse reaches them by asking it

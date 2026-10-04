@@ -13,10 +13,17 @@ export function isJsonValue(value: unknown): value is JsonValue {
     }
     // A hole is not a JSON value, and Array.prototype methods skip holes — spreading materialises them.
     if (Array.isArray(item)) for (const child of [...item]) pending.push(child)
-    else if (typeof item === 'object') for (const child of Object.values(item)) pending.push(child)
+    else if (isPlainObject(item)) for (const child of Object.values(item)) pending.push(child)
     else return false
   }
   return true
+}
+
+// A Date, Map or class instance passes typeof but JSON writes it as {} or a key per element.
+function isPlainObject(value: unknown): value is object {
+  if (typeof value !== 'object' || value === null) return false
+  const prototype: unknown = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
 }
 
 export function nestingDepth(value: unknown): number {
