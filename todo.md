@@ -77,9 +77,10 @@ status (`unspellable-character`); and a paragraph opening with a code-span run
 (`unspellable-line-start`); `fencedTexts` refuses the same characters in a code block;
 `inline-line.ts` refuses a newline in an emoji, mention or status (`unspellable-whitespace`);
 `inline-line.ts` and `fencedTexts` refuse a text node whose `text` is empty or missing, and
-`inline-line.ts` one holding `content`. The carries spell all of them: the inline carry in a
-paragraph, the block carry in a code block. Inline, a carriage return or NUL could ride
-`!adf:text{text="…"}` instead, which keeps the text readable — a writer panel picks.
+`inline-line.ts` one holding `content`. Inline, a carriage return is CommonMark's `&#13;` (Goal 4),
+and a NUL, which CommonMark reads as U+FFFD, is `!adf:text{text="\u0000"}` around the character
+alone (a writer panel, 3 of 3, 2026-10-04). The carries spell the rest: the inline carry in a
+paragraph, the block carry in a code block.
 
 The maintainer approved on 2026-10-04: §Markdown in is a canonical fixpoint drops its code-span
 exception, §Which code a cause takes drops `unspellable-whitespace` as an emitter cause;
@@ -124,9 +125,9 @@ takes only Atlassian media ids, never a URL. An image not alone in its paragraph
 text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
 as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
 title as a `caption` (the maintainer, 2026-10-04). By Goal 4, the lossless flavour reads both as
-CommonMark does. An image inside a link, `[![moon](moon.jpg)](/uri)` (spec example 517), would need
-two links on one text node: the chunk settles which link the alt text keeps by Goal 6, and asks
-where it does not decide.
+CommonMark does. An image inside a link, `[![moon](moon.jpg)](/uri)` (spec example 517), alone in
+its paragraph reads as the image with a `link` mark to `/uri`, which ADF's `media` takes; amid text,
+its alt text links to `/uri` and the image's URL drops (a writer panel, 3 of 3, 2026-10-04).
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
