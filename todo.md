@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 74`
+`Next ID = 75`
 
 | Goal | W |
 |---|---|
@@ -36,10 +36,10 @@
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
 | 70 | 0.2.0 |  | **Give `package.json` the `keywords` someone searching npm for an ADF converter types.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
-| 72 | 0.2.0 |  | **Make GitHub the canonical repository, with `gitea.larvit.se/larvit/adf-codec` a read-only pull mirror of it.** | 5 | 6 | 5 | 8 | 3 | 16.0 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
+| 72 | 0.2.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
@@ -50,6 +50,7 @@
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
+| 74 | 0.3.0 |  | **Keep the release path publishing past npm's bypass-2FA token retirement.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
 | 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
 | 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
 | 42 | 0.3.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
@@ -63,12 +64,12 @@
 
 ### 47. Open the README with what the package is, what it does and for whom.
 
-Lands after item 72: the badges are npm's version and the GitHub Actions status. Today the README
-opens with the pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being
-decommissioned, a link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why"
-note left. The README names the lossy pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the
-flavours it writes and reads — GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored
-Markdown's callouts — so a search for any of these names finds the package.
+The badges are npm's version and the GitHub Actions status. Today the README opens with the
+pre-launch rationale — Atlassian's REST APIs, `pf-editor-service/convert` being decommissioned, a
+link to JRACLOUD-77436. The background goes entirely, no endpoint, ticket or "why" note left. The
+README names the lossy pair, `adfToPlainMarkdown` and `plainMarkdownToAdf`, and the flavours it
+writes and reads — GitHub Flavored Markdown's alerts and task lists, Obsidian Flavored Markdown's
+callouts — so a search for any of these names finds the package.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
@@ -155,22 +156,6 @@ npm list and the names the README uses — ADF, Atlassian Document Format, markd
 — so a search for any of them can reach the package. Found while planning discoverability,
 2026-10-04.
 
-### 72. Make GitHub the canonical repository, with `gitea.larvit.se/larvit/adf-codec` a read-only pull mirror of it.
-
-The maintainer's call, 2026-10-04: GitHub is where an ADF converter is searched for, and the Gitea
-copy keeps the move back open. The workflows move to `.github/workflows/` with `ci.sh` unchanged.
-Publishing moves to npm's trusted publishing over OIDC, which GitHub-hosted Actions support, and
-which outlives the bypass-2FA token npm retires around January 2027: `publish.sh` drops `NPM_TOKEN`
-for the Actions OIDC variables, and AGENTS.md §7 reserves the trusted-publisher setup in place of
-the secret. `package.json`'s `repository` moves and it gains `bugs` and `homepage`. The links in
-README, CHANGELOG and MIGRATION follow, as do AGENTS.md's forge commands and merge style.
-`docs/decisions.md` gains the entry "GitHub is canonical, and Gitea a pull mirror of it" (Goal 3),
-and §Public on npm and §Publish on a version bump are revised: the source is public on GitHub, and
-CI publishes through npm's trusted publisher. Gitea's open issues and its releases move to GitHub
-first, since a mirror carries only git refs; the mirror disables issues and its description points
-at GitHub. Creating the GitHub repository, configuring npm's trusted publisher, and re-creating the
-Gitea copy as a mirror (Gitea cannot convert an existing repository) are the maintainer's.
-
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
 Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
@@ -199,6 +184,14 @@ reader's view — flanking, code-span closers, link-definition openings, highlig
 only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
 time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
 of one character from each of its characters.
+
+### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues off and its description pointing at GitHub.
+
+Lands after the maintainer confirms the GitHub repository's settings, history, CI gate and
+publishing. The maintainer's: Gitea cannot convert an existing repository to a mirror, so the copy
+is deleted and re-created, which drops its hashes from before the history rewrite of 2026-10-04 and
+its Actions secrets. It holds no issues or releases to move. `docs/decisions.md` §GitHub is
+canonical, and Gitea a pull mirror of it loses its interim sentence when this lands.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
@@ -249,14 +242,28 @@ which counts one fewer.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Lands after `0.2.0` is published with items 47, 71 and 72, so each post links the GitHub repository,
-the comparison and a README that opens with what the package is. We draft each post for the place it
+Lands after `0.2.0` is published with items 47 and 71, so each post links the GitHub repository, the
+comparison and a README that opens with what the package is. We draft each post for the place it
 goes; the maintainer posts them. Found while planning discoverability, 2026-10-04.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
 `adfToMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute values
 already escape it.
+
+### 74. Keep the release path publishing past npm's bypass-2FA token retirement.
+
+Lands after 2027-01-01, or after a release run fails on the token, whichever comes first: the
+maintainer chose on 2026-10-02 to wait and see whether the retirement bites. It holds back no
+release: when the rest of its release is done, it moves to the next. `0.1.0` published only once the
+npm token carried **Bypass 2FA**: the account requiring no 2FA on writes was not enough, and npm
+answered `EOTP` until the token itself bypassed. npm retires bypass-2FA tokens for direct publishing
+around January 2027, leaving them `npm stage publish`, which a maintainer approves with 2FA. Its
+replacement, trusted publishing over OIDC, supports GitHub-hosted Actions, where the release runs
+since 2026-10-04 with the organization's `NPM_TOKEN` (the maintainer's choice). The trade is the
+maintainer's: move `publish.sh` to trusted publishing, or to the staged publish, which fits badly
+with publish-on-merge. The Goals and G cells are provisional: no README goal covers the release
+path.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 

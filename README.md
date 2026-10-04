@@ -6,11 +6,11 @@ an HTML dialect.
 **Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
 `0.2.0`.**
 Plan:
-[`todo.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/todo.md). Decisions:
-[`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md). Changes:
-[`CHANGELOG.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/CHANGELOG.md). The lossless flavour's grammar:
-[`spec/flavour.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/spec/flavour.md).
-Upgrading from `0.1.0`: [convert your markdown first](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/MIGRATION.md).
+[`todo.md`](https://github.com/larvit/adf-codec/blob/main/todo.md). Decisions:
+[`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md). Changes:
+[`CHANGELOG.md`](https://github.com/larvit/adf-codec/blob/main/CHANGELOG.md). The lossless flavour's grammar:
+[`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md).
+Upgrading from `0.1.0`: [convert your markdown first](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md).
 
 ## What it is for
 
@@ -152,7 +152,7 @@ read replaces mentions, attachments and macros with text.
 ## The errors
 
 Serves Goal 1. An ADF node type this version does not know is not an error: the lossless pair
-carries it opaquely and restores it unchanged ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
+carries it opaquely and restores it unchanged ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 
 `ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
 stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text
@@ -206,7 +206,7 @@ Serves Goals 1, 4 and 5.
 - `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc` as JSON, for a document of plain objects
   as `JSON.parse` builds them — every key and value as `doc` holds it, adjacent text nodes, an
   empty `attrs`, `content` or `marks` and `-0` included, and unknown node types carried opaquely
-  ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
+  ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.2.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
@@ -237,7 +237,7 @@ Serves Goals 1, 4 and 5.
 - A document nested deeper than 500 levels is an error result, not a stack overflow, and no call
   loops forever on a string, or on a value `JSON.parse` or `structuredClone` builds.
 - The emitted formats are semver surface
-  ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#the-formats-are-api)).
+  ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#the-formats-are-api)).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
   `data-*` attributes. Foreign HTML maps a documented element set, which markdown's raw HTML reads
   through as well, and a construct outside it is an error; well-formed HTML only — no tag-soup
@@ -248,5 +248,5 @@ Serves Goals 1, 4 and 5.
 Serves Goal 8. ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts`
 beside it. Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs
 under Node, Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
-Contract: [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#any-es2022-engine), §Any
+Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine), §Any
 ES2022 engine to §Public on npm.

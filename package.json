@@ -5,8 +5,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://gitea.larvit.se/larvit/adf-codec.git"
+    "url": "git+https://github.com/larvit/adf-codec.git"
   },
+  "bugs": "https://github.com/larvit/adf-codec/issues",
+  "homepage": "https://github.com/larvit/adf-codec#readme",
   "type": "module",
   "exports": {
     ".": {

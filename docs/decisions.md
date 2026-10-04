@@ -304,9 +304,19 @@ an npm consumer.
 2026-08-23, the name 2026-09-01, the maintainer. Goals 2 and 8. Valid while the package's source
 stays public beside it.
 
-Published to public npm as `@larvit/adf-codec`. Public source: the Gitea repo goes public,
-LICENSE in place, before the first publish. A codec, since it converts both directions, and named
+Published to public npm as `@larvit/adf-codec`. Public source: the GitHub repository, LICENSE in
+place. A codec, since it converts both directions, and named
 for the hub rather than the formats around it.
+
+## GitHub is canonical, and Gitea a pull mirror of it
+
+2026-10-04, the maintainer. Goal 3. Valid while developers search GitHub for a library.
+
+`github.com/larvit/adf-codec` owns the history, its issues and its CI, and publishes to npm with the
+organization's `NPM_TOKEN` secret. `gitea.larvit.se/larvit/adf-codec` becomes a read-only pull
+mirror of it, so the move back stays open and never a second owner. Until `todo.md` item 72
+re-creates it as that mirror, the Gitea copy holds the history before the move under its old hashes
+and runs no workflow: push to GitHub only.
 
 ## The formats are API
 
