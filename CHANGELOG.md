@@ -3,7 +3,7 @@
 ## Unreleased
 
 - The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where
-  issues and pull requests go; `package.json`'s `repository`, `bugs` and `homepage` point there.
+  issues and pull requests go.
 - **Breaking:** directives, the inline opaque carry among them (now `!adf:carry{json="…"}`), are
   spelled under an `!adf:` prefix (`!adf:name … !adf:/name`, `!adf:name[content]{attrs}`,
   `!adf:name arg {attrs}`) in place of the `:::`/`::`/`:name` forms: text holding an unescaped
