@@ -74,8 +74,8 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
 document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
 No existing code reads true of a non-string input (`docs/decisions.md` §The code list), so the chunk
-first asks the maintainer for one, proposing `not-a-string`. Found while checking the other ADF converters
-for item 71, 2026-10-05.
+first asks the maintainer for one, proposing `not-a-string`. Found while checking the other ADF
+converters for item 71, 2026-10-05.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -134,11 +134,11 @@ read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a calle
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
-Lands with items 45 and 77, whose reader walks every node. Today any refused node, a `Date` in one
-attribute among them, reads `an ADF document's content holds ADF nodes: one of them is not` with an
-empty `path`, so an export tool refusing one document in thousands searches the whole tree. Name
-the key and the value's kind as the nesting message does. Found by the product-owner review of
-items 66 and 67, 2026-10-05.
+Lands with items 45 and 77, whose reader walks every node. Today every refused node, such as one
+with a `Date` in an attribute, reads `an ADF document's content holds ADF nodes: one of them is not`
+with an empty `path`. An export tool told this about one document in thousands then searches that
+document's whole tree. Give the node's path, and name its type and the attribute key as
+`attributeNestingMessage` does. Found by the product-owner review of items 66 and 67, 2026-10-05.
 
 ### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
 
