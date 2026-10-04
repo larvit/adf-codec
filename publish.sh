@@ -8,7 +8,7 @@ published_version() {
 }
 
 push_tag() {
-  git tag "v$version" && git push "${TAG_REMOTE:-origin}" "v$version"
+  git tag "v$version" && git push "$TAG_REMOTE" "v$version"
 }
 
 read_field() {
@@ -29,6 +29,7 @@ fi
 
 published=$(leg "ask npmjs for $name@$version ($node_image)" published_version "$name" "$version")
 tagged=$(leg "ask origin for v$version" git ls-remote --tags origin "v$version")
+[ -n "$tagged" ] || : "${TAG_REMOTE:?the tag push needs TAG_REMOTE, a remote URL that may push tags}"
 
 if [ -z "$published" ]; then
   : "${NPM_TOKEN:?the publish needs NPM_TOKEN}"
