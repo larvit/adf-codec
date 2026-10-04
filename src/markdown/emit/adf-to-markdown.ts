@@ -114,7 +114,7 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, wri
   const kept = memo?.get(node)
   if (kept !== undefined) {
     if (kept.block === undefined) return undefined
-    // An entry holds the spelling at its fill depth: a read at or above it rebases headroom, a read below re-spells, since a hit skips the depth guards the walk runs.
+    // An entry holds the spelling at its fill depth. A read at or above it rebases headroom; a read below re-spells, because a hit skips the walk's depth guards.
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
   const spelled = spellReadableBlock(node, path, depth, writing)
