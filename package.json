@@ -42,7 +42,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.build.json"
   },
   "devDependencies": {
-    "@types/node": "24.13.3",
+    "@types/node": "24.19.1",
     "fast-check": "4.10.2",
     "oxlint": "1.86.0",
     "typescript": "7.0.2"
