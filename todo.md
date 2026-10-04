@@ -151,10 +151,10 @@ writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks G
 
 ### 70. Give `package.json` the `keywords` someone searching npm for an ADF converter types.
 
-`package.json` has none, and npm's search ranks on them. Take the terms the other ADF converters on
-npm list and the names the README uses — ADF, Atlassian Document Format, markdown, CommonMark, HTML
-— so a search for any of them can reach the package. Found while planning discoverability,
-2026-10-04.
+`package.json` has none, and npm's search ranks on them. Take the GitHub repository's topics, so a
+search on npm matches what GitHub already does: adf, atlassian, atlassian-document-format,
+commonmark, confluence, converter, html, jira, markdown, typescript. Found while planning
+discoverability, 2026-10-04.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 

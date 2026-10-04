@@ -315,8 +315,8 @@ for the hub rather than the formats around it.
 `github.com/larvit/adf-codec` owns the history, its issues and its CI, and publishes to npm with the
 organization's `NPM_TOKEN` secret. `gitea.larvit.se/larvit/adf-codec` becomes a read-only pull
 mirror of it, so the move back stays open and never a second owner. Until `todo.md` item 72
-re-creates it as that mirror, the Gitea copy holds the history before the move under its old hashes
-and runs no workflow: push to GitHub only.
+re-creates it as that mirror, the Gitea copy holds the history before the move under its old hashes,
+its description points at GitHub, and its issues and Actions are off: push to GitHub only.
 
 ## The formats are API
 
