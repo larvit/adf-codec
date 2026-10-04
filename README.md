@@ -238,8 +238,8 @@ Serves Goals 1, 3 and 4.
   input.
 - Past that and `~~`, no GFM: an autolink literal and a `- [ ]` marker stay text, and a checklist
   is the `taskList` directive — `plainMarkdownToAdf` turns the marker into a `taskList`.
-- A document nested deeper than 500 levels is an error result, not a stack overflow, and no value
-  `JSON.parse` or `structuredClone` builds makes a call loop forever.
+- A document nested deeper than 500 levels is an error result, not a stack overflow, and no call
+  loops forever on a string, or on a value `JSON.parse` or `structuredClone` builds.
 - The emitted formats are semver surface
   ([`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#the-formats-are-api)).
 - **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
