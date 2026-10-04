@@ -217,7 +217,7 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
-// Whatever the node decides alone is decided here, so a line holding many such nodes is emitted once.
+// Decides the text-node and slot-fault carries up front, so a line holding many of them is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
   if (carried.has(index)) return true
   if (node.type === 'text') return !isBareText(node) || typeof node.text !== 'string' || node.text === ''
@@ -263,7 +263,7 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
   return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
 
-// spec/flavour.md, Inline nodes: CommonMark reads a carriage return as a line ending, and a null character as U+FFFD.
+// spec/flavour.md, Text CommonMark cannot hold plainly.
 function emitText(node: AdfNode, context: InlineContext, index: number): Emission {
   if (!isBareText(node) || typeof node.text !== 'string' || node.text === '') return { carry: { first: index, last: index } }
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
