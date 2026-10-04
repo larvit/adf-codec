@@ -28,13 +28,13 @@ The most useful ADF conversion library available, judged by these goals, in prio
 
 1. **Lossless, and every call returns a result, never a throw.**
 2. **ADF is the hub.**
-3. **Each format reads and writes as its standard says.**
-4. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
-5. **No surprises: output reads and edits the way its audience expects.**
-6. **Lossy conversion drops form, never content.**
-7. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
-8. **Fast, and linear in the document's size as JSON.**
-9. **Easy to find, and clear at a glance what it does.**
+3. **Easy to find, and clear at a glance what it does.**
+4. **Each format reads and writes as its standard says.**
+5. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
+6. **No surprises: output reads and edits the way its audience expects.**
+7. **Lossy conversion drops form, never content.**
+8. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
+9. **Fast, and linear in the document's size as JSON.**
 
 ## Audience
 
@@ -74,7 +74,7 @@ if (result.ok) {
 }
 ```
 
-Serves Goals 1, 2 and 7. Pure functions, each taking a whole document and returning a whole
+Serves Goals 1, 2 and 8. Pure functions, each taking a whole document and returning a whole
 result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF:
 they keep only what ADF holds, and refuse what `markdownToAdf` or `htmlToAdf` refuses.
 
@@ -96,7 +96,7 @@ htmlToMarkdown(html: string): Result<string>              // 0.2.0
 
 ## Plain markdown
 
-Serves Goal 6. Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` writes
+Serves Goal 7. Plain markdown is a second flavour of the same grammar. `adfToPlainMarkdown` writes
 markdown other tools render — GitHub, GitLab, Obsidian and the like — keeping the content and
 dropping the rest: attributes, colours, layout, identity. Content is what a reader of the rendered
 document sees or follows: its text, images and link targets. It refuses only
@@ -136,6 +136,7 @@ read replaces mentions, attachments and macros with text.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.
+- A text node's `content`, which Atlassian's schema forbids, drops.
 - An ordered list numbered past `999999999`, or adjacent ordered lists whose numbering does not
   continue, is one bullet list keeping its numbers as text.
 - A task list beside a bullet or decision list, or holding a block other than a task, joins one
@@ -200,7 +201,7 @@ emit refuses:
 
 ## The guarantees
 
-Serves Goals 1, 3 and 4.
+Serves Goals 1, 4 and 5.
 
 - `markdownToAdf(adfToMarkdown(doc))` deep-equals `doc` as JSON, for a document of plain objects
   as `JSON.parse` builds them — every key and value as `doc` holds it, adjacent text nodes, an
@@ -244,7 +245,7 @@ Serves Goals 1, 3 and 4.
 
 ## The package
 
-Serves Goal 7. ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts`
+Serves Goal 8. ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts`
 beside it. Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs
 under Node, Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
 Contract: [`docs/decisions.md`](https://gitea.larvit.se/larvit/adf-codec/src/branch/main/docs/decisions.md#any-es2022-engine), §Any

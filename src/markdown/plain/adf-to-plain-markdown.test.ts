@@ -314,6 +314,7 @@ test('breaks a line at a newline and trims whitespace at every edge CommonMark s
   assert.equal(plain(node('heading', { level: 1 }, text(' h\ni '))), '# h i\n')
   assert.equal(plain(paragraph(text('a\r\u0000b'))), 'ab\n')
   assert.equal(plain(paragraph(text('x', link('/u', 't\r\u0000')))), '[x](/u "t")\n')
+  assert.equal(plain(paragraph({ content: [text('dropped')], text: 'a', type: 'text' }, text('b'))), 'ab\n')
 })
 
 test('keeps a code span opening a line, whose backticks open no fence', () => {

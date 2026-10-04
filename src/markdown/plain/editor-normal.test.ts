@@ -77,9 +77,9 @@ test('normalizes blocks and mark attributes nesting far past the levels a recurs
   assert.deepEqual(merged.content?.[0]?.content?.map((text) => text.text), ['ab'])
 })
 
-test('joins a text node holding content to no neighbour, so its content is kept', () => {
-  const holding: AdfNode = { content: [{ text: 'kept', type: 'text' }], text: 'a', type: 'text' }
-  for (const content of [[holding, { text: 'b', type: 'text' }], [{ text: 'b', type: 'text' }, holding]]) {
-    assert.deepEqual(toEditorNormal({ content: [{ content, type: 'paragraph' }], type: 'doc', version: 1 }).content, [{ content, type: 'paragraph' }])
-  }
+test('drops the content a text node holds, and joins the node as any other', () => {
+  const holding: AdfNode = { content: [{ text: 'dropped', type: 'text' }], text: 'a', type: 'text' }
+  const normal = (content: AdfNode[]): AdfNode[] | undefined => toEditorNormal({ content: [{ content, type: 'paragraph' }], type: 'doc', version: 1 }).content
+  assert.deepEqual(normal([holding, { text: 'b', type: 'text' }]), [{ content: [{ text: 'ab', type: 'text' }], type: 'paragraph' }])
+  assert.deepEqual(normal([{ text: 'b', type: 'text' }, holding]), [{ content: [{ text: 'ba', type: 'text' }], type: 'paragraph' }])
 })
