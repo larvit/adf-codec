@@ -135,7 +135,7 @@ function holdsItself(root: object): boolean {
     if (onPath.has(entry.item)) return true
     ancestors.push(entry.item)
     onPath.add(entry.item)
-    for (const child of Object.values(entry.item)) if (typeof child === 'object' && child !== null) pending.push({ depth: entry.depth + 1, item: child })
+    for (const child of Array.isArray(entry.item) ? [...entry.item] : Object.values(entry.item)) if (typeof child === 'object' && child !== null) pending.push({ depth: entry.depth + 1, item: child })
   }
   return false
 }
@@ -219,7 +219,7 @@ function extraKey(value: Record<string, unknown>, keys: readonly string[]): stri
   return Object.keys(value).find((key) => !keys.includes(key))
 }
 
-// holdsItself walks own enumerable keys alone, so a guard reading an inherited one could walk a cycle forever.
+// holdsItself walks own enumerable keys alone, so a guard reading any other key could walk a cycle forever.
 function ownsWhatItHolds(value: Record<string, unknown>, keys: readonly string[]): boolean {
   return keys.every((key) => !(key in value) || Object.prototype.propertyIsEnumerable.call(value, key))
 }

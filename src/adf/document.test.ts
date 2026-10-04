@@ -83,7 +83,7 @@ test("reads a node's siblings as a walk rather than as one call's arguments", ()
   assert.equal(fault(wide), 'accepted')
 })
 
-test('refuses a node or an attribute value holding itself, and accepts one shared', () => {
+test('refuses an object holding itself or a key it does not own, and accepts one shared', () => {
   const holdsItself = 'an ADF document is a tree: an object in it holds itself'
   const paragraph: { content: unknown[]; type: string } = { content: [], type: 'paragraph' }
   paragraph.content.push(paragraph)
@@ -108,6 +108,14 @@ test('refuses a node or an attribute value holding itself, and accepts one share
   const link: Record<string, unknown> = Object.create({ attrs })
   link['type'] = 'link'
   assert.equal(fault({ content: [{ marks: [link], text: 'x', type: 'text' }], type: 'doc', version: 1 }), notANode)
+  const indexed: unknown[] = []
+  Object.defineProperty(indexed, 0, { value: indexed })
+  assert.equal(fault({ content: [{ attrs: { a: indexed }, type: 'paragraph' }], type: 'doc', version: 1 }), holdsItself)
+  const inheritedIndex: { content?: unknown[]; type: string } = { type: 'paragraph' }
+  const heirs: unknown[] = Object.setPrototypeOf([], [inheritedIndex])
+  heirs.length = 1
+  inheritedIndex.content = heirs
+  assert.equal(fault({ content: [inheritedIndex], type: 'doc', version: 1 }), holdsItself)
   const bold = { type: 'strong' }
   const text = { marks: [bold], text: 'x', type: 'text' }
   const shared = { content: [text, text], type: 'paragraph' }
