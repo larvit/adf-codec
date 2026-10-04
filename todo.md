@@ -72,9 +72,9 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 
 Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
 document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
-The code the call returns follows `docs/decisions.md` §The code list. Found while checking the other
-ADF converters for item 71, 2026-10-05. No code reads true of it (`docs/decisions.md` §The code list):
-the chunk asks the maintainer for one first, proposing `not-a-string`.
+No existing code reads true of the cause (`docs/decisions.md` §The code list), so the chunk asks the
+maintainer for one first, proposing `not-a-string`. Found while checking the other ADF converters
+for item 71, 2026-10-05.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
