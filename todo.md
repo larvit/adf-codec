@@ -127,8 +127,8 @@ as item 50 reads an empty link. A titled image alone in its paragraph reads as t
 title as a `caption` (the maintainer, 2026-10-04). By Goal 4, the lossless flavour reads both as
 CommonMark does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec example 517). Alone in
 its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not
-alone in its paragraph, its alt text links to `/uri` and the image's URL drops: a writer panel
-picked it 3 of 3 (2026-10-04) by Goal 5, which outranks Goal 6.
+alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
+writer panel chose this reading 3 of 3 (2026-10-04), by Goal 5, which outranks Goal 6.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
