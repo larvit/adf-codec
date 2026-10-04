@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 69`
+`Next ID = 70`
 
 | Goal | W |
 |---|---|
@@ -51,6 +51,7 @@
 | 33 | 0.3.0 |  | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 8 | 10.7 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 7, 9 | 10.3 |
 | 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 9 | 10.3 |
+| 69 | 0.3.0 | question | **Decide whether a text node's `content` is content `adfToPlainMarkdown` keeps, and keep or document it.** | 2 | 2 | 3 | 5 | 6 | 7.9 |
 | 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
 | 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 7 | 1.2 |
 | 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 7 | -2.2 |
@@ -249,7 +250,9 @@ measured one.
 
 `adfToMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its flanking
 cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and the plain
-reduction's `spellableLine` drops one mark per re-emit the same way. Make both linear.
+reduction's `spellableLine` drops one mark per re-emit the same way. An inline node whose
+attributes no spelling writes re-emits the line the same way before riding the carry. Make all
+three linear.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
@@ -260,6 +263,16 @@ ours ships tsc's unminified output and no minifier yet (decide here whether to m
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
 kB.
+
+### 69. Decide whether a text node's `content` is content `adfToPlainMarkdown` keeps, and keep or document it.
+
+`nodeLeaves` (`plain/inline-reduction.ts`) keeps only a text node's `text`, so
+`{ text: 'a', content: [{ text: 'kept', type: 'text' }] }` writes `a`, though `toEditorNormal`
+keeps that content (`plain/editor-normal.ts`) and an unknown node's children keep their text.
+Atlassian's schema allows no `content` on a text node, so no Atlassian reader saw it; an
+export/indexing tool fed a looser producer loses searchable text. Goal 6 reads two ways here: keep
+the children's text as an unknown node's, or name the drop in the README's plain section. Found by
+the product-owner review of item 55, 2026-10-04.
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
