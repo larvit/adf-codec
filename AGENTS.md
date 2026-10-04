@@ -36,6 +36,7 @@ In `docs/decisions.md`:
 - ESM only
 - One built entrypoint
 - Public on npm
+- GitHub is canonical, and Gitea a pull mirror of it
 - The formats are API
 - The code list
 - Which code a cause takes
