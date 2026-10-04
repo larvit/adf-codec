@@ -8,7 +8,7 @@ published_version() {
 }
 
 push_tag() {
-  git tag "v$version" && git push origin "v$version"
+  git tag "v$version" && git push "${TAG_REMOTE:-origin}" "v$version"
 }
 
 read_field() {
