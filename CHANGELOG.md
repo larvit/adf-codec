@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The README opens with what the package does and for whom, and compares it with the other ADF
+  converters on npm; `package.json` carries search keywords.
 - The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where
   issues and pull requests go.
 - **Breaking:** directives, the inline opaque carry among them (now `!adf:carry{json="…"}`), are

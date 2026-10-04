@@ -1,26 +1,31 @@
 # @larvit/adf-codec
 
-Lossless conversion between **Atlassian Document Format** (ADF), an extended markdown flavour, and
-an HTML dialect.
+[![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
+[![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-**Status: published — the markdown round-trip (`adfToMarkdown`, `markdownToAdf`); HTML at
-`0.2.0`.**
-Plan:
-[`todo.md`](https://github.com/larvit/adf-codec/blob/main/todo.md). Decisions:
-[`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md). Changes:
-[`CHANGELOG.md`](https://github.com/larvit/adf-codec/blob/main/CHANGELOG.md). The lossless flavour's grammar:
-[`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md).
-Upgrading from `0.1.0`: [convert your markdown first](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md).
+Convert Atlassian Document Format (ADF) to and from markdown and HTML, with a lossless round-trip.
 
-## What it is for
+For application developers whose app shows, edits, exports or generates the rich text Atlassian
+products store as ADF.
 
-Atlassian Cloud REST APIs hand out rich text — issue descriptions, comments, pages — as ADF, a
-ProseMirror-shaped JSON tree, and take it back the same way. No Atlassian endpoint converts it
-(`pf-editor-service/convert` is decommissioned,
-[JRACLOUD-77436](https://jira.atlassian.com/browse/JRACLOUD-77436) open), and the npm ecosystem is
-one-directional and lossy. A consumer that shows a document and lets someone edit it needs both
-directions lossless — otherwise saving destroys the panels, mentions and attachments it could not
-represent.
+- **Lossless:** `adfToMarkdown` and `markdownToAdf` give back the document they started from —
+  panels, mentions, statuses and node types this version does not know included.
+- **Plain CommonMark in:** a bot's or a model's markdown is valid input, nothing to learn first.
+- **Plain markdown out:** `adfToPlainMarkdown` and `plainMarkdownToAdf` convert to and from what
+  GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts and task lists, Obsidian
+  Flavored Markdown's callouts, highlights and pipe tables — keeping the content.
+- **No throws:** every call returns a result; a refusal carries a code from a closed list.
+- **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
+- **HTML** at `0.2.0`: `adfToHtml`, `htmlToAdf`, `markdownToHtml`, `htmlToMarkdown`.
+
+[Goals](#goals) · [Audience](#audience) · [The shape](#the-shape) ·
+[Other ADF converters](#other-adf-converters) · [Plain markdown](#plain-markdown) ·
+[The errors](#the-errors) · [The guarantees](#the-guarantees) · [The package](#the-package) ·
+[Grammar](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) ·
+[Changes](https://github.com/larvit/adf-codec/blob/main/CHANGELOG.md) ·
+[Upgrading from `0.1.0`](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md) ·
+[Plan](https://github.com/larvit/adf-codec/blob/main/todo.md) ·
+[Decisions](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md)
 
 ## Goals
 
@@ -93,6 +98,23 @@ htmlToMarkdown(html: string): Result<string>              // 0.2.0
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
+
+## Other ADF converters
+
+Serves Goal 3. Each package's latest version on npm, checked 2026-10-05 against its docs and by
+converting a document holding a paragraph, a mention, a status, an info panel and an unknown node
+type to markdown and back.
+
+| Package | ADF to markdown | Markdown to ADF | Round-trip | Invalid ADF | Runtime dependencies |
+| --- | --- | --- | --- | --- | --- |
+| `@larvit/adf-codec` | yes | yes | deep-equal | returns `not-an-adf-document` | 0 |
+| `@atlaskit/editor-markdown-transformer` 6.3.1 | no: `encode` throws | yes, through `@atlaskit/editor-json-transformer` | — | — | 5 |
+| `marklassian` 1.2.1 | no | yes | — | — | 1 |
+| `adf-to-md` 1.2.1 | yes | no | — | throws | 1 |
+| `extended-markdown-adf-parser` 2.4.0 | yes | yes | lossy: the mention reads back as a link, the status loses its `localId`, the unknown node as its JSON in a paragraph | writes empty markdown | 9 |
+| `md-to-adf` 0.6.4 | no | yes | — | — | 2 |
+| `adf-to-markdown` 1.0.1 | yes | no | — | throws on `null`, writes empty markdown for a `doc` without `content` | 0 |
+| `adf2markdown` 1.2.0 | yes | no | — | throws on `null`, writes a newline for a `doc` without `content` | 0 |
 
 ## Plain markdown
 

@@ -1,7 +1,19 @@
 {
   "name": "@larvit/adf-codec",
   "version": "0.1.0",
-  "description": "Lossless conversion between Atlassian Document Format, extended markdown and HTML",
+  "description": "Convert Atlassian Document Format (ADF) to and from markdown and HTML, with a lossless round-trip.",
+  "keywords": [
+    "adf",
+    "atlassian",
+    "atlassian-document-format",
+    "commonmark",
+    "confluence",
+    "converter",
+    "html",
+    "jira",
+    "markdown",
+    "prosemirror"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
