@@ -37,7 +37,7 @@ export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
 
 type Bracket = { active: boolean; image: boolean; kind: 'open'; start: number }
 
-type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; line: number; opens: boolean; position: number }
+type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; opens: boolean; position: number; stretch: number }
 
 type Pairing = EmphasisPairing<Run>
 
@@ -586,25 +586,26 @@ function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: rea
 
 function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][]): HighlightDelimiter[] {
   const found: HighlightDelimiter[] = []
-  let line = 0
+  // A stretch is a run of text no other inline node breaks.
+  let stretch = 0
   let position = 0
   for (const [index, piece] of pieces.entries()) {
     const held = adfNodes(nodes[index] ?? [])
     const [holder] = held
     if (piece.kind === 'highlight' && holder !== undefined) {
-      found.push({ closes: piece.closes, holder, index, line, opens: piece.opens, position })
+      found.push({ closes: piece.closes, holder, index, opens: piece.opens, position, stretch })
       position += highlightDelimiter.length
       continue
     }
     for (const node of held) {
       if (node.type === 'text') position += node.text?.length ?? 0
-      else line += 1
+      else stretch += 1
     }
   }
   return found
 }
 
-// Each opener takes the next closer holding at least one character after it, both in one line and under the same marks.
+// Each opener takes the next closer holding at least one character after it, both in one stretch and under the same marks.
 function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]): { closer: number; opener: number }[] {
   const found = highlightDelimiters(pieces, nodes)
   const paired: { closer: number; opener: number }[] = []
@@ -616,7 +617,7 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]):
     let candidate = found[closer]
     while (candidate !== undefined && (!candidate.closes || candidate.position < earliest)) candidate = found[(closer += 1)]
     if (candidate === undefined) break
-    if (candidate.line !== opener.line || !identicalMarks(nodeMarks(opener.holder), nodeMarks(candidate.holder))) continue
+    if (candidate.stretch !== opener.stretch || !identicalMarks(nodeMarks(opener.holder), nodeMarks(candidate.holder))) continue
     paired.push({ closer: candidate.index, opener: opener.index })
     resume = candidate.position + highlightDelimiter.length
   }
