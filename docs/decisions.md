@@ -385,9 +385,9 @@ input reads `message`.
   it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
   inline alike, `\|` for every pipe row.
 - `not-an-adf-document` carries the document's own path throughout: seven of the guard's nine
-  branches read the document's own shape, and threading a path to the other two — a malformed node,
-  or an object holding itself, anywhere in the tree — wants the manual stack §Nothing recurses unbounded forces. The message
-  names the violation instead.
+  branches read the document's own shape, and threading a path to the other two, which look anywhere
+  in the tree — a malformed node, or an object holding itself — wants the manual stack §Nothing
+  recurses unbounded forces. The message names the violation instead.
 
 ## Publish on a version bump
 
