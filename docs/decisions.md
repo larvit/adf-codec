@@ -23,8 +23,8 @@ sanitized and a mention keeps the test user's real account id.
 
 ## Markdown in is a canonical fixpoint
 
-2026-08-23, the maintainer; every parsed document converts back since 2026-10-04. Goals 1 and 4. Valid while
-markdown input may be written by hand.
+2026-08-23, the maintainer; every parsed document has converted back since 2026-10-04. Goals 1 and
+4. Valid while markdown input may be written by hand.
 
 The other direction is a canonical fixpoint, not byte-identity: human markdown normalizes, the way
 back yields the library's canonical spelling, and that spelling round-trips byte-identically.
@@ -494,9 +494,8 @@ exits 0 on.
 while `todo.md` items 59, 60, 61 and 62 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
-2026-10-04 is the baseline. Since 2026-10-04, a chunk whose panel scores any dimension
-lower improves what the seats named and scores again, and after three such rounds asks the
-maintainer.
+2026-10-04 is the baseline. Since 2026-10-04, a chunk whose panel scores any dimension lower
+improves what the seats named and scores again, and after three such rounds asks the maintainer.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|

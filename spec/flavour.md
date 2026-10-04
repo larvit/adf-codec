@@ -474,15 +474,15 @@ The rest take no content, `!adf:text` included; content on a node that takes non
 Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=1756080000000}.
 ```
 
-**Text CommonMark cannot hold plainly.** A carriage return in text is `&#13;`, which CommonMark reads
-back as the character. Three things are spelled `!adf:text{text="…"}`: a newline inside a text
+**Text CommonMark cannot hold plainly.** A carriage return in text is `&#13;`, which CommonMark
+reads back as the character. Three things are spelled `!adf:text{text="…"}`: a newline inside a text
 node; a null character, which CommonMark reads as U+FFFD; and a space or tab where CommonMark strips
 or refuses one — a block's inline content edges, either side of a line break, an em, strong or
 strike spelling's inner edges, a pipe cell's edges. The reserved key carries the node's text,
-escaped by the attribute grammar and never literal: pipe cells trim and pad. The emitter wraps the run alone and
-leaves the rest plain text, which the spelled run joins on reading. Input reads that spelling
-alone: the value is one run of spaces and tabs, one run of newlines, or one run of null characters,
-and anything else — a mixed run, or text CommonMark carries plainly — is a named error.
+escaped by the attribute grammar and never literal: pipe cells trim and pad. The emitter wraps the
+run alone and leaves the rest plain text, which the spelled run joins on reading. Input reads that
+spelling alone: the value is one run of spaces and tabs, one run of newlines, or one run of null
+characters, and anything else — a mixed run, or text CommonMark carries plainly — is a named error.
 
 ```
 !adf:text{text="  "}Two leading spaces held, and one text node split!adf:text{text="\n"}over two lines.
@@ -536,11 +536,12 @@ An inline node whose marks no nesting spells — a mark type not listed here, an
 spelling does not list, a value that is not the spelling's type, an attribute the spelling needs and
 the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside
 another mark, `code` over anything but a text node holding text, or over text holding a line ending
-or a null character, or a spelling CommonMark's flanking rules cannot open or close where the run sits (`un**-real**istic`), or one
-CommonMark's matching pairs elsewhere — the intra-word `*` runs together with a neighbouring `**`,
-and the multiple-of-3 rule can leave the merged run's pairing to another delimiter — rides the
-inline carry whole. An opaque carry inside a mark spelling is a named error in input: the carry
-restores its node exactly, marks included (`docs/decisions.md` §Unknown nodes ride the carry).
+or a null character, or a spelling CommonMark's flanking rules cannot open or close where the run
+sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere — the intra-word `*` runs
+together with a neighbouring `**`, and the multiple-of-3 rule can leave the merged run's pairing to
+another delimiter — rides the inline carry whole. An opaque carry inside a mark spelling is a named
+error in input: the carry restores its node exactly, marks included (`docs/decisions.md` §Unknown
+nodes ride the carry).
 
 ```
 !adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].
