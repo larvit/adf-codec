@@ -24,7 +24,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 63 | 0.2.0 | defect | **Refuse a cyclic input as `not-an-adf-document`.** | 2 | 2 | 6 | 9 | 1 | 27.5 |
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 3 | 25.8 |
 | 55 | 0.2.0 | defect | **Spell every document the emitter refuses today for a carriage return, a NUL, a code-span line start, a newline inside an emoji, mention or status, or a text node whose text is empty or missing, or which holds content.** | 5 | 5 | 7 | 9 | 1 | 25.8 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
@@ -56,13 +55,6 @@
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 9 | 10.6 |
 
 ## Details
-
-### 63. Refuse a cyclic input as `not-an-adf-document`.
-
-`adfDocumentFault` walks with `isNodeArray` (`adf/document.ts`) and `isJsonValue` (`json-value.ts`),
-worklists that record no visited object, so a node whose `content` holds itself hangs
-`adfToMarkdown`, `adfToPlainMarkdown` and `isAdfDocument`; README §The guarantees promises no input
-loops forever.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 

@@ -1,5 +1,5 @@
 import type { ConvertFault } from '../result.ts'
-import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
+import { everyInTree, isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
@@ -123,21 +123,16 @@ export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
 }
 
 function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {
-  const pending: unknown[] = [...value]
-  while (pending.length > 0) {
-    const node = pending.pop()
-    if (!isRecord(node) || !holdsOnly(node, nodeKeys)) return false
-    if (typeof node['type'] !== 'string') return false
-    if ('attrs' in node && !isAttributes(node['attrs'])) return false
-    if ('marks' in node && !isArrayOf(node['marks'], isAdfMark)) return false
-    if ('text' in node && typeof node['text'] !== 'string') return false
-    if ('content' in node) {
-      const content = node['content']
-      if (!Array.isArray(content)) return false
-      for (const child of content) pending.push(child)
-    }
-  }
-  return true
+  return everyInTree(value, (node) => {
+    if (!isRecord(node) || !holdsOnly(node, nodeKeys)) return undefined
+    if (typeof node['type'] !== 'string') return undefined
+    if ('attrs' in node && !isAttributes(node['attrs'])) return undefined
+    if ('marks' in node && !isArrayOf(node['marks'], isAdfMark)) return undefined
+    if ('text' in node && typeof node['text'] !== 'string') return undefined
+    if (!('content' in node)) return []
+    const content = node['content']
+    return Array.isArray(content) ? [...content] : undefined
+  })
 }
 
 function marksKey(marks: readonly AdfMark[]): string {

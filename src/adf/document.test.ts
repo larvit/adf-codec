@@ -82,3 +82,23 @@ test("reads a node's siblings as a walk rather than as one call's arguments", ()
   assert.equal(isAdfDocument(wide), true)
   assert.equal(fault(wide), 'accepted')
 })
+
+test('refuses a document that holds itself, and accepts one sharing a node or a mark', () => {
+  const notANode = "an ADF document's content holds ADF nodes: one of them is not"
+  const paragraph: { content: unknown[]; type: string } = { content: [], type: 'paragraph' }
+  paragraph.content.push(paragraph)
+  assert.equal(fault({ content: [paragraph], type: 'doc', version: 1 }), notANode)
+  const document: { content: unknown[]; type: string; version: number } = { content: [], type: 'doc', version: 1 }
+  document.content.push(document)
+  assert.equal(fault(document), notANode)
+  const attrs: Record<string, unknown> = {}
+  attrs['a'] = [attrs]
+  assert.equal(fault({ content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }), notANode)
+  assert.equal(fault({ content: [{ marks: [{ attrs, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), notANode)
+  assert.equal(isAdfDocument({ content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  const bold = { type: 'strong' }
+  const text = { marks: [bold], text: 'x', type: 'text' }
+  const shared = { content: [text, text], type: 'paragraph' }
+  const values = { b: 1 }
+  assert.equal(fault({ content: [shared, shared, { attrs: { a: [values, values] }, type: 'paragraph' }], type: 'doc', version: 1 }), 'accepted')
+})

@@ -31,6 +31,8 @@
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - Fix an image inside another image's description: it flattens into the alt text, where it was
   refused.
+- Fix a document holding itself, through a node's `content` or an attribute: `adfToMarkdown`,
+  `adfToPlainMarkdown` and `isAdfDocument` refuse it as `not-an-adf-document`, where they hung.
 
 ## 0.1.0
 
