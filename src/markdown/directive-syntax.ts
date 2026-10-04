@@ -40,7 +40,7 @@ const bareToken = new RegExp(`^${bareTokenSource}$`)
 const directiveName = /[a-z][A-Za-z0-9]*/y
 const inlineDirectiveOpener = new RegExp(`${directivePrefix}[a-z][A-Za-z0-9]*[[{]`, 'y')
 const lineEnd = /^[ \t]*$/
-// spec/flavour.md, Attributes.
+// A quoted value spells these as \uXXXX: CommonMark binds a code span, entity, HTML tag or pipe cell before a directive.
 const reservedSource = '[&<`|]'
 const quotedEscapes = new RegExp(reservedSource, 'g')
 const rawReserved = new RegExp(reservedSource)

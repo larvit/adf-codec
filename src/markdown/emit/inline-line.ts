@@ -130,7 +130,7 @@ function lineVerdict(segments: readonly InlineSegment[], container: LineContaine
   return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', runs: [run, ...others] }
 }
 
-// spec/flavour.md, Inline nodes.
+// A space or tab CommonMark strips at a line edge rides !adf:text{} instead.
 function spellEdgeWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
   const spelled: InlineSegment[] = []
   for (const [index, segment] of segments.entries()) {
@@ -194,7 +194,7 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
   const runs: InlineRun[] = []
   for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
-    // spec/flavour.md, Marks.
+    // `depth` indexes each node's marks, outermost first; a carried node spells its marks inside the carry.
     const mark = carries(node, carried, index) ? undefined : nodeMarks(node)[depth]
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
@@ -263,7 +263,7 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
   return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
 }
 
-// spec/flavour.md, Text CommonMark cannot hold plainly.
+// CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, so neither is written raw.
 function emitText(node: AdfNode, context: InlineContext, index: number): Emission {
   if (!isBareText(node) || typeof node.text !== 'string' || node.text === '') return { carry: { first: index, last: index } }
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
