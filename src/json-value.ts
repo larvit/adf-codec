@@ -19,11 +19,11 @@ export function isJsonValue(value: unknown): value is JsonValue {
   return true
 }
 
-// A Date, Map or class instance passes typeof but JSON writes it as {} or a key per element.
+// Any realm's Object.prototype has a null prototype; a Date, Map or typed array would serialize as {} or a key per element.
 function isPlainObject(value: unknown): value is object {
   if (typeof value !== 'object' || value === null) return false
   const prototype: unknown = Object.getPrototypeOf(value)
-  return prototype === Object.prototype || prototype === null
+  return prototype === null || (typeof prototype === 'object' && Object.getPrototypeOf(prototype) === null)
 }
 
 export function nestingDepth(value: unknown): number {

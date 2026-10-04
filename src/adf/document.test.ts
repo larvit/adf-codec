@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import vm from 'node:vm'
 
 import type { JsonValue } from '../json-value.ts'
 import { adfDocumentFault, isAdfDocument } from './document.ts'
@@ -76,6 +77,7 @@ test('accepts the JSON values an attribute may hold', () => {
   assert.equal(isAdfDocument({ content: [{ attrs: { a: [1, 'x', null, true, { b: 2 }] }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
   assert.equal(isAdfDocument({ content: [{ attrs: { a: [() => 1] }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
   assert.equal(isAdfDocument({ content: [{ attrs: { a: Object.assign(Object.create(null), { b: 1 }) }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
+  assert.equal(isAdfDocument(vm.runInNewContext("({ content: [{ attrs: { a: { b: [1] } }, type: 'paragraph' }], type: 'doc', version: 1 })")), true)
 })
 
 test('refuses an attribute value that is an object JSON does not hold', () => {
