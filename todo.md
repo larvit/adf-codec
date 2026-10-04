@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 80`
+`Next ID = 81`
 
 | Goal | W |
 |---|---|
@@ -32,6 +32,7 @@
 | 77 | 0.2.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
 | 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
+| 80 | 0.2.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 5 | 6 | 1 | 19.2 |
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
@@ -72,8 +73,8 @@ Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs agai
 
 Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
 document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
-No existing code reads true of the cause (`docs/decisions.md` §The code list), so the chunk asks the
-maintainer for one first, proposing `not-a-string`. Found while checking the other ADF converters
+No existing code reads true of a non-string input (`docs/decisions.md` §The code list), so the chunk
+first asks the maintainer for one, proposing `not-a-string`. Found while checking the other ADF converters
 for item 71, 2026-10-05.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
@@ -130,6 +131,14 @@ directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark r
 a code fence whose info string opens `adf:` becomes the block carry where CommonMark reads code. A
 caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
 read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
+
+### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
+
+Lands with items 45 and 77, whose reader walks every node. Today any refused node, a `Date` in one
+attribute among them, reads `an ADF document's content holds ADF nodes: one of them is not` with an
+empty `path`, so an export tool refusing one document in thousands searches the whole tree. Name
+the key and the value's kind as the nesting message does. Found by the product-owner review of
+items 66 and 67, 2026-10-05.
 
 ### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
 
