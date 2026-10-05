@@ -26,7 +26,6 @@ type Paragraph = Extract<Block, { kind: 'paragraph' }>
 // `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand.
 type Reading = { carried: Set<AdfNode>; definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
 
-const documentStart: SourcePosition = { line: 1, offset: 0 }
 const imageAfterMarker = 'an image fits only as a paragraph of its own: this one continues the paragraph a marker opens, which a blank line before it ends'
 const imageOnMarkerLine = 'an image fits only as a paragraph of its own: this one shares a line with a marker'
 
@@ -39,7 +38,7 @@ export function plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseE
 }
 
 function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
-  if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, []), documentStart)
+  if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, []), { line: 1, offset: 0 })
   const parsed = parseBlocks(markdown)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
@@ -47,7 +46,7 @@ function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, P
     return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
   }
   const reading: Reading = { carried: new Set(), definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
-  const content = positioned(readBlocks(parsed.blocks, reading, [], 0), documentStart)
+  const content = positioned(readBlocks(parsed.blocks, reading, [], 0), { line: 1, offset: 0 })
   if (!content.ok) return content
   const document: AdfDocument = { content: content.value, type: 'doc', version: 1 }
   if (flavour === 'plain') mintTaskIds(document, markdown, reading.carried)
