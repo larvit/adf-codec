@@ -75,10 +75,11 @@ Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` read
 document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
 No existing code reads true of a non-string input (`docs/decisions.md` §The code list). The
 maintainer chose a new one on 2026-10-05: `not-a-string`, with position `{ line: 1, offset: 0 }`
-and an empty path. The chunk adds it to `ConvertErrorCode` and the README's parsing table, and
-records in `docs/decisions.md` §Which code a cause takes that a value that is not a string is
-`not-a-string`. Breaking (§The code list): the changelog entry says so. Found while checking the
-other ADF converters for item 71.
+and an empty path. The chunk adds it to `ConvertErrorCode` and the README's parsing table, rewords
+the README's `position` paragraph, which assumes a string was passed in, and records under
+`docs/decisions.md` §Which code a cause takes that a non-string input takes `not-a-string`.
+Breaking (§The code list): the changelog entry says so. Found while checking the other ADF
+converters for item 71.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
