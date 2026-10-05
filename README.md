@@ -21,7 +21,7 @@ products store as ADF.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
 - **HTML at `0.2.0`:** `adfToHtml`, `htmlToAdf`, `markdownToHtml`, `htmlToMarkdown`.
 
-[Goals](#goals) · [Audience](#audience) · [The shape](#the-shape) ·
+[The shape](#the-shape) · [Goals](#goals) · [Audience](#audience) ·
 [Plain markdown](#plain-markdown) · [The errors](#the-errors) · [The guarantees](#the-guarantees) ·
 [The package](#the-package) ·
 [Grammar](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) ·
@@ -29,40 +29,6 @@ products store as ADF.
 [Upgrading from `0.1.0`](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md) ·
 [Plan](https://github.com/larvit/adf-codec/blob/main/todo.md) ·
 [Decisions](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md)
-
-## Goals
-
-The most useful ADF conversion library available, judged by these goals, in priority order:
-
-1. **Lossless, and every call returns a result, never a throw.**
-2. **ADF is the hub.**
-3. **Easy to find, and clear at a glance what it does.**
-4. **Each format reads and writes as its standard says.**
-5. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
-6. **No surprises: output reads and edits the way its audience expects.**
-7. **Lossy conversion drops form, never content.**
-8. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
-9. **Fast, and linear in the document's size as JSON.**
-
-## Audience
-
-Application developers embedding the library, in four personas. All four rely on the guarantees
-below and on an error's `code` being a closed list; none may rely on an error message's wording,
-which is free text.
-
-- **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the
-  round-trip holding for whatever the site's editor wrote, unknown node types included, and on a
-  refusal arriving before the save rather than after.
-- **Bot posting content** — turns generated markdown into ADF. Relies on plain CommonMark being
-  valid input, so nothing upstream has to learn a flavour.
-- **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
-  and on every refusal being deterministic, so a document that fails fails the same way next run.
-- **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
-  Relies on the round-trip and on markdown a reader half-knowing the lossless flavour can still edit.
-
-Behind those apps, the people who read and write the markdown, and later the HTML: product
-managers, engineers and support agents working in Atlassian products through a plugin or another
-UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
 
 ## The shape
 
@@ -101,6 +67,40 @@ htmlToMarkdown(html: string): Result<string>              // 0.2.0
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
+
+## Goals
+
+The most useful ADF conversion library available, judged by these goals, in priority order:
+
+1. **Lossless, and every call returns a result, never a throw.**
+2. **ADF is the hub.**
+3. **Easy to find, and clear at a glance what it does.**
+4. **Each format reads and writes as its standard says.**
+5. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
+6. **No surprises: output reads and edits the way its audience expects.**
+7. **Lossy conversion drops form, never content.**
+8. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
+9. **Fast, and linear in the document's size as JSON.**
+
+## Audience
+
+Application developers embedding the library, in four personas. All four rely on the guarantees
+below and on an error's `code` being a closed list; none may rely on an error message's wording,
+which is free text.
+
+- **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the
+  round-trip holding for whatever the site's editor wrote, unknown node types included, and on a
+  refusal arriving before the save rather than after.
+- **Bot posting content** — turns generated markdown into ADF. Relies on plain CommonMark being
+  valid input, so nothing upstream has to learn a flavour.
+- **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
+  and on every refusal being deterministic, so a document that fails fails the same way next run.
+- **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
+  Relies on the round-trip and on markdown a reader half-knowing the lossless flavour can still edit.
+
+Behind those apps, the people who read and write the markdown, and later the HTML: product
+managers, engineers and support agents working in Atlassian products through a plugin or another
+UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
 
 ## Plain markdown
 
