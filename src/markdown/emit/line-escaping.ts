@@ -11,6 +11,7 @@ import { readEntityReference } from '../commonmark/entity-references.ts'
 
 export type DelimiterRole = 'close' | 'open'
 
+// A segment's kind: `backslash` text, `bracketed` text inside `[…]` (link text, alt, a directive's content), `bracketed-link-target` a link target inside `[…]`, `none` syntax written as is.
 export type InlineEscaping = 'backslash' | 'bracketed' | 'bracketed-link-target' | 'none'
 
 export type NodeRange = { first: number; last: number }
@@ -143,6 +144,7 @@ function escapeClosedRuns(scan: string, escapings: readonly InlineEscaping[], cl
     if (segmentEnd !== end || claimed.has(start)) formed.add(segmentEnd - start + 1)
     else if (escapings[start] !== 'none' && formed.has(end - start + 1)) {
       for (let index = start; index <= end; index += 1) escaped.add(index)
+      // Each escaped backtick then stands alone, a string of length one.
       formed.add(1)
     }
     end = start - 1

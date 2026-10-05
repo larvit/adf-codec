@@ -648,7 +648,7 @@ function markType(character: string, used: number): string {
   return used === 2 ? 'strong' : 'em'
 }
 
-// A node cannot carry one mark type twice (docs/decisions.md §No schema validation).
+// Nested spellings of one mark (`*(*a*)*`) name it once: a node carries one mark of a type.
 function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
   return nodes.map((node) => {
     if (!isNode(node)) return node

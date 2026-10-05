@@ -2,13 +2,13 @@ import type { AdfNode } from '../adf/document.ts'
 import type { DirectiveSpan, Read } from './directive-syntax.ts'
 import type { JsonSpelling } from '../canonical-json.ts'
 import type { JsonValue } from '../json-value.ts'
+import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
 import { fencedCodeBlock } from './commonmark/backtick-runs.ts'
 import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
-import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export const carryFencePrefix = 'adf:'
@@ -32,7 +32,6 @@ export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<str
   return success(spellInlineLeafDirective(carryName, spellAttributes([[jsonAttribute, spellStringAttribute(json.value.json)]])))
 }
 
-// The type a fence's info string names, `undefined` where the info string opens no carry.
 export function carryFenceType(info: string): string | undefined {
   return info.startsWith(carryFencePrefix) ? info.slice(carryFencePrefix.length) : undefined
 }

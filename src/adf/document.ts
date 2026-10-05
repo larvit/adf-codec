@@ -208,7 +208,7 @@ function notADocument(message: string): ConvertFault {
   return { code: 'not-an-adf-document', message }
 }
 
-export function describe(value: unknown): string {
+function describe(value: unknown): string {
   if (typeof value === 'string') return JSON.stringify(value.length > 40 ? `${value.slice(0, 40)}…` : value)
   if (typeof value === 'function') return 'a function'
   if (typeof value === 'object' && value !== null) return Array.isArray(value) ? 'an array' : 'an object'

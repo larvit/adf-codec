@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 81`
+`Next ID = 83`
 
 | Goal | W |
 |---|---|
@@ -35,6 +35,7 @@
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
+| 81 | 0.2.0 |  | **Fail the gate when the README's error tables list other codes than `ConvertErrorCode`.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
@@ -56,6 +57,7 @@
 | 33 | 0.3.0 | defect | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
 | 76 | 0.3.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
+| 82 | 0.3.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 2 | 1 | 4.2 |
 | 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 8 | 0.6 |
 | 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 8 | -2.6 |
 | 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
@@ -162,6 +164,12 @@ CommonMark does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec examp
 its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not
 alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
 writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
+
+### 81. Fail the gate when the README's error tables list other codes than `ConvertErrorCode`.
+
+`src/result.test.ts` checks the union against the call sites only, so a code added or removed
+leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
+the union. Found by the technical-principles audit of item 78, 2026-10-05.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
@@ -324,6 +332,14 @@ Technical principle DRY: the set is written in `tsconfig.build.json`'s `exclude`
 assumes they agree. A helper added to one list lints test code under the shipped ceiling, or drops
 shipped code from coverage, silently. Derive two from the third, or assert in a test that the three
 agree. Found by the technical-principles audit, 2026-10-04.
+
+### 82. Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.
+
+Technical principle: tests use random UUID v7 ids. The placeholders sit in
+`markdown-to-adf.test.ts`, `adf-to-markdown.test.ts`, `blocks.test.ts` and
+`corpus/errors/directive-value-uncanonical.md`, so no lossless directive test reads the digit-led hex
+id an editor writes; `plain-markdown-to-adf.test.ts` already uses v7s. Found by the
+technical-principles audit of item 78, 2026-10-05.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 

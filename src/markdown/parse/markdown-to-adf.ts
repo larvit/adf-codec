@@ -8,7 +8,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
-import { describe, emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { inlineLeaves } from '../plain/inline-reduction.ts'
 import { languageSlot } from '../code-language.ts'
@@ -39,7 +39,7 @@ export function plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseE
 }
 
 function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
-  if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${describe(markdown)}`, []), documentStart)
+  if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, []), documentStart)
   const parsed = parseBlocks(markdown)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
@@ -52,6 +52,14 @@ function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, P
   const document: AdfDocument = { content: content.value, type: 'doc', version: 1 }
   if (flavour === 'plain') mintTaskIds(document, markdown, reading.carried)
   return success(document)
+}
+
+// `typeof` alone, since anything more throws on a revoked Proxy.
+function typeName(value: unknown): string {
+  if (value === null) return 'null'
+  const type = typeof value
+  if (type === 'undefined') return type
+  return type === 'object' ? 'an object' : `a ${type}`
 }
 
 function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
