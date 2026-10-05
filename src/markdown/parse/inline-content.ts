@@ -344,7 +344,7 @@ function holdsImage(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'image')
 }
 
-// An `ownMarks` piece restores its link with its node, so only a link a `nodes` piece spells counts.
+// Only a link a `nodes` piece spells makes the outer brackets literal; an `ownMarks` node's link is its own, so the own-marks guard in `closeLink` refuses it.
 function holdsLink(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'nodes' && marksLink(piece.nodes))
 }
@@ -647,7 +647,7 @@ function markType(character: string, used: number): string {
   return used === 2 ? 'strong' : 'em'
 }
 
-// Nested spellings of one mark (`*(*a*)*`) name it once: a node carries one mark of a type.
+// `*(*a*)*` builds one `em`: a node holds at most one mark of each type.
 function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
   return nodes.map((node) => {
     if (!isNode(node)) return node

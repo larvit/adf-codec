@@ -62,8 +62,9 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 
 ### Error codes
 
-`unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`:
-a `switch` naming one stops compiling. A document `adfToMarkdown` refused with one of them now
+`unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`
+and `not-a-string` joins it: a `switch` naming one of the three stops compiling, and one naming
+every code needs the new case. A document `adfToMarkdown` refused with one of them now
 converts; markdown the parser refused with one of them now refuses with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
@@ -83,6 +84,4 @@ converts; markdown the parser refused with one of them now refuses with the code
 | an empty node the `::taskItem` spelling row names, written with a closer | `unsupported-node-shape` | parses |
 | `null`, `undefined` or a non-empty array, on parse | throws a `TypeError` | `not-a-string` |
 | a `String` object, on parse | the document its text spells | `not-a-string`; pass `String(value)` |
-| a number, a boolean, a plain object or an empty array, on parse | an empty document | `not-a-string` |
-
-`ConvertErrorCode` gains `not-a-string`: a `switch` naming every code needs its case.
+| any other value that is not a string, such as a number or `{}`, on parse | an empty document | `not-a-string` |

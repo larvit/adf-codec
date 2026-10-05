@@ -35,7 +35,7 @@
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
-| 81 | 0.2.0 |  | **Fail the gate when the README's error tables list other codes than `ConvertErrorCode`.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
+| 81 | 0.2.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
@@ -166,7 +166,7 @@ its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `
 alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
 writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
 
-### 81. Fail the gate when the README's error tables list other codes than `ConvertErrorCode`.
+### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
@@ -336,11 +336,8 @@ agree. Found by the technical-principles audit, 2026-10-04.
 
 ### 82. Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.
 
-Technical principle: tests use random UUID v7 ids. The placeholders sit in
-`markdown-to-adf.test.ts`, `adf-to-markdown.test.ts`, `blocks.test.ts` and
-`corpus/errors/directive-value-uncanonical.md`, so no lossless directive test reads the digit-led hex
-id an editor writes; `plain-markdown-to-adf.test.ts` already uses v7s. Found by the
-technical-principles audit of item 78, 2026-10-05.
+Technical principle: tests use random UUID v7 ids; `plain-markdown-to-adf.test.ts` already does.
+Found by the technical-principles audit of item 78, 2026-10-05.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 
