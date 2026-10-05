@@ -1,6 +1,7 @@
 export type ConvertErrorCode =
   | 'malformed-directive'
   | 'malformed-pipe-table'
+  | 'not-a-string'
   | 'not-an-adf-document'
   | 'unknown-directive-name'
   | 'unmappable-html'

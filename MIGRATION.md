@@ -65,6 +65,8 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`:
 a `switch` naming one stops compiling. A document `adfToMarkdown` refused with one of them now
 converts; markdown the parser refused with one of them now refuses with the code the table gives.
+`not-a-string` joins it: a `switch` naming every code needs its case. The markdown readers return
+it for a value that is not a string, which threw or read as an empty document before.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
