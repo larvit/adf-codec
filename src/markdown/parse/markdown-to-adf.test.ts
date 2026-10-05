@@ -95,6 +95,7 @@ test('refuses a value that is not a string, in both readers, at the start of the
         ok: false,
       })
     }
+    assert.notStrictEqual(position(Reflect.apply(read, undefined, [null])), position(Reflect.apply(read, undefined, [null])))
   }
 })
 
