@@ -116,8 +116,8 @@ still claim unbounded width, which the 500-level limit does not cover, so the co
 million JSON values, each object, array, string, number, boolean and null counting one (the
 maintainer, 2026-10-05): roughly 50 to 100 MB of JSON, far past any real page, where 10 000 would
 refuse a 500-row table. Before reading an array, the reader checks its `length` against the values
-left, so a Proxy claiming 2³² elements is refused at once. The code that refusal takes follows
-`docs/decisions.md` §Which code a cause takes; where it reads two ways, the chunk asks. Found by the
+left, so a Proxy claiming 2³² elements is refused at once. The chunk asks whether that refusal
+shares the 500-level guard's `unsupported-nesting-depth` or takes another code. Found by the
 technical-principles audit, 2026-10-04.
 
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
