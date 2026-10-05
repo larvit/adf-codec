@@ -383,6 +383,9 @@ handles one cause alike whichever node, attribute or direction raised it.
   knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
+- A value handed to a markdown reader that is not a string is `not-a-string`, its position
+  `{ line: 1, offset: 0 }` and its path empty: no code read true of it, and `not-an-adf-document`
+  names the other direction's input (2026-10-05).
 
 ## `message` and `path`
 

@@ -178,7 +178,8 @@ the identical error: fix the input, or set the document aside.
 `position` is `{ line, offset }` into the string passed in: `line` counted from 1, `offset` a
 UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte offset. It points at
 or before the refusal — currently the start of the line the enclosing block begins on; a later
-minor may narrow that, never widen it.
+minor may narrow that, never widen it. `not-a-string`, having no string to point into, names
+`{ line: 1, offset: 0 }`.
 
 Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`:
 
@@ -186,6 +187,7 @@ Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`
 | --- | --- | --- |
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
+| `not-a-string` | the value handed in is not a string: `null`, `undefined`, a number, an object | pass the markdown as a string; the message names what was passed |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.2.0` | remove the construct, or write what it holds in the lossless flavour |
 | `unmappable-image` | an image sits inside other content that is not another image's description, or carries a title | give the image a paragraph of its own and drop the title |

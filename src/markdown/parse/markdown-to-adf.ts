@@ -8,7 +8,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
-import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { describe, emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { inlineLeaves } from '../plain/inline-reduction.ts'
 import { languageSlot } from '../code-language.ts'
@@ -39,6 +39,7 @@ export function plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseE
 }
 
 function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
+  if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${describe(markdown)}`, []), documentStart)
   const parsed = parseBlocks(markdown)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {

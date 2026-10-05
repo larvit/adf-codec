@@ -25,7 +25,6 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
-| 78 | 0.2.0 | defect | **Return a result when `markdownToAdf` or `plainMarkdownToAdf` is handed a value that is not a string.** | 2 | 2 | 5 | 9 | 1 | 25.5 |
 | 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
@@ -67,18 +66,6 @@
 
 Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs against
 `markdownToHtml`. The README documents HTML as it documents markdown.
-
-### 78. Return a result when `markdownToAdf` or `plainMarkdownToAdf` is handed a value that is not a string.
-
-Today `null` and `undefined` throw a `TypeError` reading `length`, and `42` reads as an empty
-document. A JavaScript caller, or a TypeScript one past an untyped boundary, can pass any of these.
-No existing code reads true of a non-string input (`docs/decisions.md` §The code list). The
-maintainer chose a new one on 2026-10-05: `not-a-string`, with position `{ line: 1, offset: 0 }`
-and an empty path. The chunk adds it to `ConvertErrorCode` and the README's parsing table, rewords
-the README's `position` paragraph, which assumes a string was passed in, and records under
-`docs/decisions.md` §Which code a cause takes that a non-string input takes `not-a-string`.
-Breaking (§The code list): the changelog entry says so. Found while checking the other ADF
-converters for item 71.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 

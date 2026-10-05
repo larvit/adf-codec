@@ -4,7 +4,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result, SourcePosition } from '../../result.ts'
 import { largestNesting } from '../../nesting.ts'
-import { markdownToAdf } from './markdown-to-adf.ts'
+import { markdownToAdf, plainMarkdownToAdf } from './markdown-to-adf.ts'
 
 const em: AdfMark = { type: 'em' }
 const strike: AdfMark = { type: 'strike' }
@@ -83,6 +83,18 @@ function row(...cells: AdfNode[]): AdfNode {
 function table(...rows: AdfNode[]): AdfNode {
   return { content: rows, type: 'table' }
 }
+
+test('refuses a value that is not a string, in both readers, at the start of the input', () => {
+  const found: [unknown, string][] = [[null, 'null'], [undefined, 'undefined'], [42, '42'], [{}, 'an object'], [['x'], 'an array']]
+  for (const read of [markdownToAdf, plainMarkdownToAdf]) {
+    for (const [value, described] of found) {
+      assert.deepEqual(Reflect.apply(read, undefined, [value]), {
+        error: { code: 'not-a-string', message: `markdown is a string: found ${described}`, path: [], position: { line: 1, offset: 0 } },
+        ok: false,
+      })
+    }
+  }
+})
 
 test('builds an empty document from input holding no block, and one holding no content key from the doc directive alone', () => {
   assert.deepEqual(markdownToAdf(''), { ok: true, value: { content: [], type: 'doc', version: 1 } })
