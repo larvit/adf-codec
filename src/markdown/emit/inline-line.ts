@@ -9,7 +9,7 @@ import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../plain/conventions.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
-import { identicalMark, isBareText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -220,7 +220,7 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
 // Decides the text-node and slot-fault carries up front, so a line holding many of them is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
   if (carried.has(index)) return true
-  if (node.type === 'text') return !isBareText(node) || typeof node.text !== 'string' || node.text === ''
+  if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
   const model = inlineNodeModel(node.type)
   if (model === undefined) return true
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
@@ -265,7 +265,7 @@ function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: numbe
 
 // CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, so neither is written raw.
 function emitText(node: AdfNode, context: InlineContext, index: number): Emission {
-  if (!isBareText(node) || typeof node.text !== 'string' || node.text === '') return { carry: { first: index, last: index } }
+  if (!isSpellableText(node) || typeof node.text !== 'string' || node.text === '') return { carry: { first: index, last: index } }
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
   const parts = node.text.split(/(\n+|\0+|\r)/).filter((part) => part !== '')
   return { segments: parts.map((part) => (part === '\r' ? syntax('&#13;') : /^[\n\0]/.test(part) ? textDirectiveSegment(part) : { escaping, text: part })) }
@@ -316,7 +316,7 @@ function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange
   const spans: string[] = []
   for (const node of nodes) {
     const { text } = node
-    if (!isBareText(node) || nodeMarks(node).length !== depth + 1 || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return { carry: range }
+    if (!isSpellableText(node) || nodeMarks(node).length !== depth + 1 || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return { carry: range }
     const fence = '`'.repeat(longestBacktickRun(text) + 1)
     spans.push(`${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}`)
   }

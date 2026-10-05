@@ -66,12 +66,12 @@ export function emptyKeys(held: { attrs?: AdfAttributes; content?: AdfNode[]; ma
 }
 
 // No attrs, content or empty marks; a format may spell this node as text, and anything more rides a carry.
-export function isBareText(node: AdfNode): boolean {
+export function isSpellableText(node: AdfNode): boolean {
   return node.type === 'text' && node.attrs === undefined && node.content === undefined && node.marks?.length !== 0
 }
 
-export function isUnmarkedBareText(node: AdfNode): boolean {
-  return isBareText(node) && node.marks === undefined
+export function isUnmarkedSpellableText(node: AdfNode): boolean {
+  return isSpellableText(node) && node.marks === undefined
 }
 
 export function identicalMark(left: AdfMark, right: AdfMark): boolean {

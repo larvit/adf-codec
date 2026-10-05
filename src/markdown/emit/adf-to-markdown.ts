@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { Flavour } from '../plain/conventions.ts'
-import { adfDocumentFault, holdsOnlyAttributes, isUnmarkedBareText, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { adfDocumentFault, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../plain/conventions.ts'
 import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
@@ -277,7 +277,7 @@ function fencedTexts(node: AdfNode): string[] | undefined {
   if (node.content === undefined) return ['']
   const texts: string[] = []
   for (const child of node.content) {
-    if (!isUnmarkedBareText(child) || typeof child.text !== 'string' || child.text === '' || /\r/.test(child.text) || holdsNullCharacter(child.text)) return undefined
+    if (!isUnmarkedSpellableText(child) || typeof child.text !== 'string' || child.text === '' || /\r/.test(child.text) || holdsNullCharacter(child.text)) return undefined
     texts.push(child.text)
   }
   return texts
