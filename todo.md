@@ -36,7 +36,6 @@
 | 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
-| 79 | 0.2.0 | question | **Decide whether the README's `## Goals` and `## Audience` sit below `## The shape`.** | 1 | 1 | 4 | 6 | 3 | 16.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
@@ -113,9 +112,11 @@ document once inside one tight `try/catch`, reading property descriptors so no g
 accessor property, or a Proxy trap that throws, is `not-an-adf-document`. The copy keeps own
 enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops. The reader
 reads arrays by index, so no custom iterator runs. Every later step works on the copy. A Proxy can
-still claim unbounded width, which the 500-level limit does not cover, so the copy needs a cap on
-the values it reads. No standard sets that number: the chunk asks the maintainer for it first. Found
-by the technical-principles audit, 2026-10-04.
+still claim unbounded width, which the 500-level limit does not cover, so the copy reads at most 10
+million values (the maintainer, 2026-10-05): roughly 50 to 100 MB of JSON, far past any real page,
+where 10 000 would refuse a 500-row table. Before reading an array, the reader checks its `length`
+against the values left, so a Proxy claiming 2³² elements is refused at once. Found by the
+technical-principles audit, 2026-10-04.
 
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
 
@@ -173,11 +174,6 @@ its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `
 alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
 writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
 
-### 79. Decide whether the README's `## Goals` and `## Audience` sit below `## The shape`.
-
-A reader landing on npm scrolls past nine goals and four personas before `npm install`; the opening
-already says who the package is for. Raised by the product-owner review of item 47, 2026-10-05.
-
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
 
 Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
@@ -209,8 +205,8 @@ of one character from each of its characters.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
-Lands after the maintainer confirms the GitHub repository's settings, history, CI gate and
-publishing. The maintainer does this. Gitea cannot convert an existing repository to a mirror, so
+Lands when `0.2.0` is getting ready to be cut (the maintainer, 2026-10-05). The maintainer does
+this. Gitea cannot convert an existing repository to a mirror, so
 the copy is deleted and re-created. That drops the copy's commit hashes from before the 2026-10-04
 history rewrite, and its Actions secrets. The Gitea copy holds no issues or releases to move.
 Actions stay off on the mirror: Gitea runs `.github/workflows/` when `.gitea/workflows/` is absent,
