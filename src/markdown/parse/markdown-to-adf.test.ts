@@ -85,7 +85,9 @@ function table(...rows: AdfNode[]): AdfNode {
 }
 
 test('refuses a value that is not a string, in both readers, at the start of the input', () => {
-  const found: [unknown, string][] = [[null, 'null'], [undefined, 'undefined'], [42, '42'], [{}, 'an object'], [['x'], 'an array']]
+  const revoked = Proxy.revocable({}, {})
+  revoked.revoke()
+  const found: [unknown, string][] = [[null, 'null'], [undefined, 'undefined'], [42, 'a number'], [10n, 'a bigint'], [['x'], 'an object'], [revoked.proxy, 'an object']]
   for (const read of [markdownToAdf, plainMarkdownToAdf]) {
     for (const [value, described] of found) {
       assert.deepEqual(Reflect.apply(read, undefined, [value]), {

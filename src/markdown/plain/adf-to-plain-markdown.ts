@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
-import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
@@ -51,7 +51,7 @@ export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // docs/decisions.md §Equality is deep: the reduction reads and writes editor-normal ADF.
+  // Two documents the editor holds equal write the same plain markdown (docs/decisions.md §Equality is deep).
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
   if (!blocks.ok) {
     // Merging text renumbers siblings, so a refusal's path comes from the caller's document.
@@ -122,6 +122,7 @@ function plainSequence(blocks: readonly AdfNode[], reduction: Reduction): Result
     const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'plain', memo: reduction.memo })?.ok === true
     if (spelled) continue
     sequence = spliced(sequence, index, block === listed ? nodeContent(block).flatMap(nodeContent) : [block])
+    // Step back to the merged neighbour, which may now take the directive form itself.
     index = Math.max(0, index - 1) - 1
   }
   return success(sequence)

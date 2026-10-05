@@ -17,7 +17,7 @@ const keptMarks: readonly string[] = [...edgeStrippingMarks, 'code', 'link']
 export function reduceInline(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodes, container, path, depth)
   if (!leaves.ok) return leaves
-  return spellableLine(trimmedEdges(highlighted(trimmedEdges(leaves.value))), container, path)
+  return spellableLine(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))), container, path)
 }
 
 export function isBlockNodeType(type: string): boolean {
@@ -167,7 +167,7 @@ export function writableHref(href: string): string {
 }
 
 // The marks a whole highlight run shares go outside the highlight, so its delimiters open and close inside them.
-function highlighted(leaves: readonly AdfNode[]): AdfNode[] {
+function highlightsInsideSharedMarks(leaves: readonly AdfNode[]): AdfNode[] {
   const spelled: AdfNode[] = []
   let run: AdfNode[] = []
   let shared: AdfMark[] = []
@@ -237,6 +237,7 @@ function leafEdges(leaf: AdfNode, previous: AdfNode | undefined, next: AdfNode |
   return edges
 }
 
+// How many of the leaf's marks the edge whitespace keeps, `undefined` where it goes at a line edge.
 function edgeDepth(marks: readonly AdfMark[], neighbour: AdfNode | undefined, whitespace: string): number | undefined {
   if (whitespace === '') return marks.length
   const lineEdge = neighbour === undefined || neighbour.type === 'hardBreak'

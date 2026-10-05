@@ -96,7 +96,7 @@ function interruptsParagraph(node: AdfNode): boolean {
 
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const model = blockNodeModel(node.type)
-  if (model === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  if (model === undefined) return carriedFence(carriedBlock(node, path, depth))
   const readable = readableBlock(node, path, depth, writing)
   if (readable !== undefined) return readable
   return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, writing))
@@ -207,7 +207,7 @@ function readableText(text: string | undefined): Result<EmittedBlock> | undefine
   return text === undefined ? undefined : success(commonMarkText(text))
 }
 
-function commonMarkLine(carried: Result<{ headroom: number; text: string }>): Result<EmittedBlock> {
+function carriedFence(carried: Result<{ headroom: number; text: string }>): Result<EmittedBlock> {
   if (!carried.ok) return carried
   return success({ ...carried.value, spelling: 'commonmark' })
 }
@@ -225,7 +225,7 @@ function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertE
   if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (model.contentModel === 'code') return emitCodeDirective(node, model, path, depth)
   const opener = spellBlockDirectiveOpener(node, model, path)
-  if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  if (opener === undefined) return carriedFence(carriedBlock(node, path, depth))
   if (!opener.ok) return opener
   return emitDirectiveBody(node, model, opener.value, path, walkBody)
 }
@@ -263,10 +263,10 @@ function tryCodeBlock(node: AdfNode): string | undefined {
 // spec/flavour.md, The CommonMark blocks: one fence per text node, the language on each; with no fence to carry it, the attribute does.
 function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const texts = fencedTexts(node)
-  if (texts === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  if (texts === undefined) return carriedFence(carriedBlock(node, path, depth))
   const slot: LanguageSlot = texts.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'])
   const opener = spellBlockDirectiveOpener(node, model, path, slot.kind === 'attribute' ? [] : ['language'])
-  if (opener === undefined) return commonMarkLine(carriedBlock(node, path, depth))
+  if (opener === undefined) return carriedFence(carriedBlock(node, path, depth))
   if (!opener.ok) return opener
   const info = slot.kind === 'fence' ? slot.info : ''
   return success(directivePair(node, opener.value, texts.map((text) => fencedCodeBlock(info, text)).join('\n')))
