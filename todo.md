@@ -67,7 +67,8 @@
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
 Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs against
-`markdownToHtml`. The README documents HTML as it documents markdown.
+`markdownToHtml`. The README documents HTML as it documents markdown. `htmlToAdf` refuses a value
+that is not a string as `not-a-string` (`docs/decisions.md` §Which code a cause takes).
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 

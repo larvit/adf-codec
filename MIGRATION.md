@@ -81,7 +81,8 @@ converts; markdown the parser refused with one of them now refuses with the code
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written with a closer | `unsupported-node-shape` | parses |
+| `null`, `undefined` or a non-empty array, on parse | throws a `TypeError` | `not-a-string` |
+| a `String` object, on parse | the document its text spells | `not-a-string`; pass `String(value)` |
+| a number, a boolean, a plain object or an empty array, on parse | an empty document | `not-a-string` |
 
-`ConvertErrorCode` gains `not-a-string`: a `switch` naming every code needs its case. The markdown
-readers return it for a value that is not a string, which threw or read as an empty document
-before.
+`ConvertErrorCode` gains `not-a-string`: a `switch` naming every code needs its case.

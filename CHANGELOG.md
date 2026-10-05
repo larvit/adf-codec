@@ -3,9 +3,10 @@
 ## Unreleased
 
 - **Breaking:** `markdownToAdf` and `plainMarkdownToAdf` refuse a value that is not a string with
-  the new code `not-a-string`, at position `{ line: 1, offset: 0 }`. Before, `null` and `undefined`
-  threw a `TypeError` and a number read as an empty document. A `switch` over `ConvertErrorCode`
-  naming every code needs the new case.
+  the new code `not-a-string`, at position `{ line: 1, offset: 0 }`. Before, `null`, `undefined`
+  and a non-empty array threw a `TypeError`, a `String` object converted its text, and a number
+  read as an empty document; pass `String(value)` where a boxed string arrives. A `switch` over
+  `ConvertErrorCode` naming every code needs the new case.
 - **Breaking:** an attribute value that is not a plain object, array or JSON primitive, such as a
   `Date`, `Map`, typed array or class instance, makes `isAdfDocument` return `false` and the
   converters refuse it as `not-an-adf-document`. Before, the converters wrote it as `{}` or its own
