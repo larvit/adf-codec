@@ -11,7 +11,7 @@ import { readEntityReference } from '../commonmark/entity-references.ts'
 
 export type DelimiterRole = 'close' | 'open'
 
-// A segment's kind: `backslash` text, `bracketed` text inside `[…]` (link text, alt, a directive's content), `bracketed-link-target` a link target inside `[…]`, `none` syntax written as is.
+// A segment's kind: `backslash` text, `bracketed` text inside `[…]` (link text, alt, a directive's content), `bracketed-link-target` syntax: a link target inside `[…]`, `none` syntax written as is.
 export type InlineEscaping = 'backslash' | 'bracketed' | 'bracketed-link-target' | 'none'
 
 export type NodeRange = { first: number; last: number }
