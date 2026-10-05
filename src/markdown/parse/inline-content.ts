@@ -327,7 +327,6 @@ function isTextBreak(item: Inline): item is TextBreak {
   return 'kind' in item && item.kind === 'textBreak'
 }
 
-// The nodes the items hold, with text breaks dropped.
 function adfNodes(items: readonly Inline[]): AdfNode[] {
   const nodes: AdfNode[] = []
   for (const item of items) {
@@ -345,7 +344,7 @@ function holdsImage(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'image')
 }
 
-// A node whose marks are its own rides its own piece, its marks restoring with it rather than riding a spelling, so the guard below answers for it.
+// An `ownMarks` piece restores its link with its node, so only a link a `nodes` piece spells counts.
 function holdsLink(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'nodes' && marksLink(piece.nodes))
 }
