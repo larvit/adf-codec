@@ -48,8 +48,8 @@ if (result.ok) {
 }
 ```
 
-Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a whole
-result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF:
+Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
+whole result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF:
 they keep only what ADF holds, and refuse what `markdownToAdf` or `htmlToAdf` refuses.
 
 ```ts
