@@ -113,9 +113,11 @@ accessor property, or a Proxy trap that throws, is `not-an-adf-document`. The co
 enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops. The reader
 reads arrays by index, so no custom iterator runs. Every later step works on the copy. A Proxy can
 still claim unbounded width, which the 500-level limit does not cover, so the copy reads at most 10
-million values (the maintainer, 2026-10-05): roughly 50 to 100 MB of JSON, far past any real page,
-where 10 000 would refuse a 500-row table. Before reading an array, the reader checks its `length`
-against the values left, so a Proxy claiming 2³² elements is refused at once. Found by the
+million JSON values, each object, array, string, number, boolean and null counting one (the
+maintainer, 2026-10-05): roughly 50 to 100 MB of JSON, far past any real page, where 10 000 would
+refuse a 500-row table. Before reading an array, the reader checks its `length` against the values
+left, so a Proxy claiming 2³² elements is refused at once. The code that refusal takes follows
+`docs/decisions.md` §Which code a cause takes; where it reads two ways, the chunk asks. Found by the
 technical-principles audit, 2026-10-04.
 
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
@@ -205,13 +207,13 @@ of one character from each of its characters.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
-Lands when `0.2.0` is getting ready to be cut (the maintainer, 2026-10-05). The maintainer does
-this. Gitea cannot convert an existing repository to a mirror, so
-the copy is deleted and re-created. That drops the copy's commit hashes from before the 2026-10-04
-history rewrite, and its Actions secrets. The Gitea copy holds no issues or releases to move.
-Actions stay off on the mirror: Gitea runs `.github/workflows/` when `.gitea/workflows/` is absent,
-and the mirrored `publish` job would otherwise run there. When this lands, the `docs/decisions.md`
-entry "GitHub is canonical" loses its interim sentence.
+Lands after every other `0.2.0` item (the maintainer, 2026-10-05). The maintainer does this. Gitea
+cannot convert an existing repository to a mirror, so the copy is deleted and re-created. That drops
+the copy's commit hashes from before the 2026-10-04 history rewrite, and its Actions secrets. The
+Gitea copy holds no issues or releases to move. Actions stay off on the mirror: Gitea runs
+`.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
+otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
+interim sentence.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 
