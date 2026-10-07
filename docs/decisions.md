@@ -508,21 +508,22 @@ exits 0 on.
 while `todo.md` items 59, 60, 61 and 62 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
-2026-10-04 is the baseline. Since 2026-10-04, a chunk whose panel scores any dimension lower
-improves what the seats named and scores again, and after three such rounds asks the maintainer.
+2026-10-05, the third round of item 78's chunk, is the baseline. Since 2026-10-04, a chunk whose
+panel scores any dimension lower improves what the seats named and scores again, and after three
+such rounds asks the maintainer.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
-| Junior | 7 | 5.5 | 7 | 5.5 | 6 |
+| Junior | 7 | 5 | 6 | 6 | 6 |
 | Mid | 6.5 | 5 | 6 | 5 | 5.5 |
-| Senior | 7 | 5 | 6 | 5.5 | 6 |
-| Architect | 6 | 5.5 | 6 | 6 | 6 |
-| Mean | 6.63 | 5.25 | 6.25 | 5.50 | 5.88 |
+| Senior | 6.5 | 5 | 6 | 5.5 | 6 |
+| Architect | 6 | 5.5 | 5.5 | 6 | 6 |
+| Mean | 6.50 | 5.13 | 5.88 | 5.63 | 5.88 |
 
-Three panels on near-identical code scored overall means of 5.88, 5.75 and 5.75, and a seat moves
-±0.5 between runs. The maintainer shipped the move to GitHub under the run before it, 2026-10-04,
-after three rounds: that chunk changed only comments in `src/`, and its runs scored overall means of
-5.88, 6.00 and 5.88.
+Panels on near-identical code scored overall means of 5.75 to 6.00, and a seat moves ±0.5 between
+runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub,
+2026-10-04, whose chunk changed only comments in `src/`; and item 78, 2026-10-07, whose three runs
+fell below the run before it on Navigation, Locality and Shape while the overall held.
 
 ## Properties on a fixed seed
 
