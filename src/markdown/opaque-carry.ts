@@ -9,6 +9,7 @@ import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export const carryFencePrefix = 'adf:'
@@ -90,13 +91,4 @@ function typedValue(value: JsonValue, type: string): Read<JsonValue> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return { value }
   if ('type' in value) return { fault: unsupportedNodeShape(`the ${carryFencePrefix}${type} fence names its node's type: this JSON holds a type as well; ${fenceEscape(type)}`) }
   return { value: { ...value, type } }
-}
-
-function parseJsonText(raw: string): { value: unknown } | undefined {
-  try {
-    const value: unknown = JSON.parse(raw)
-    return { value }
-  } catch {
-    return undefined
-  }
 }

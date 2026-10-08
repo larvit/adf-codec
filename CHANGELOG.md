@@ -51,6 +51,9 @@
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - Fix an image inside another image's description: it flattens into the alt text, where it was
   refused.
+- Fix a JSON key holding an escape, in a carried node or a JSON attribute such as `parameters`: on
+  Node 24, Deno and Chrome, `markdownToAdf` could read it as another key once the process had parsed
+  JSON holding a key with a backslash ([V8 bug](https://issues.chromium.org/issues/521080746)).
 - Fix a cyclic document, in which an object holds itself: `adfToMarkdown` and `adfToPlainMarkdown`
   refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`, where all three hung.
 
