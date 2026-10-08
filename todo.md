@@ -24,7 +24,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
 | 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
@@ -63,15 +62,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 64. Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.
-
-`property-harness.ts` strips `\`, `"` and control characters from generated JSON keys, citing V8's
-`JSON.parse` returning a wrong key for an escaped backslash. The library reads `json` attributes
-(`directive-syntax.ts`) and both carries (`opaque-carry.ts`) through that `JSON.parse`, so on Node,
-Deno and Chrome the round-trip would refuse its own output or read back a different key; the fixture
-tells which. Confirm with a fixture first; then read JSON with our own parser or record the gap with
-an ending item. Found by the README-goals audit, 2026-10-03.
 
 ### 43. Give each markdown input its own reader, strict to its own standard.
 

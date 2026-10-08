@@ -43,10 +43,7 @@ const numberValue = fc.oneof(
   { arbitrary: fc.constant(-0), weight: 1 },
 )
 
-// V8's JSON.parse returns a wrong key after parsing a key holding an escaped backslash (https://issues.chromium.org/issues/521080746); Bun is unaffected.
-const keyPiece = fc
-  .oneof({ arbitrary: markdownPieces, weight: 4 }, { arbitrary: fc.string({ maxLength: 1, minLength: 1, unit: 'grapheme' }), weight: 1 })
-  .filter((piece) => !/[\\"\x00-\x1f]/.test(piece))
+const keyPiece = fc.oneof({ arbitrary: markdownPieces, weight: 4 }, { arbitrary: fc.string({ maxLength: 1, minLength: 1, unit: 'grapheme' }), weight: 1 })
 export const jsonKey = fc.string({ maxLength: 8, unit: keyPiece })
 
 export const { jsonValue } = fc.letrec<{ jsonValue: JsonValue }>((tie) => ({
