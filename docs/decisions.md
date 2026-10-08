@@ -508,17 +508,17 @@ exits 0 on.
 while `todo.md` items 59, 60, 61 and 62 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
-2026-10-05, the third round of item 78's chunk, is the baseline. Since 2026-10-04, a chunk whose
-panel scores any dimension lower improves what the seats named and scores again, and after three
-such rounds asks the maintainer.
+2026-10-08, item 64's chunk, is the baseline. Since 2026-10-04, a chunk whose panel scores any
+dimension lower improves what the seats named and scores again, and after three such rounds asks
+the maintainer.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
-| Junior | 7 | 5 | 6 | 6 | 6 |
-| Mid | 6.5 | 5 | 6 | 5 | 5.5 |
-| Senior | 6.5 | 5 | 6 | 5.5 | 6 |
-| Architect | 6 | 5.5 | 5.5 | 6 | 6 |
-| Mean | 6.50 | 5.13 | 5.88 | 5.63 | 5.88 |
+| Junior | 7 | 5.5 | 6.5 | 6 | 6 |
+| Mid | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Senior | 7 | 5.5 | 6.5 | 6 | 6 |
+| Architect | 6.5 | 6 | 6 | 6 | 6.5 |
+| Mean | 6.88 | 5.63 | 6.38 | 5.88 | 6.13 |
 
 Panels on near-identical code scored overall means of 5.75 to 6.00, and a seat moves ±0.5 between
 runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub,
@@ -578,6 +578,16 @@ spelling that nests it deeper — the block directive's `marks`, the carry — r
 format, as its parser does. A list giving way to the directive form refuses at zero headroom rather
 than walking again; counting every list twice halved the list limit, counting the directive form
 once doubled the parser's frames per level.
+
+## JSON text is read by `parseJsonText`
+
+2026-10-08, item 64, whose remedy the maintainer planned. Goal 1. Valid while engines on a V8 with
+https://issues.chromium.org/issues/521080746 open run the library.
+
+The library reads JSON text with `parseJsonText`, never `JSON.parse`: from V8 13.6, `JSON.parse`
+can read an escaped key as another key it read before, and the round-trip then refuses its own
+output. A test fails on `JSON.parse(` in a shipped file. The tests' own oracles keep `JSON.parse`,
+since a misread there fails the gate and never hides a bug.
 
 ## No value `JSON.parse` or `structuredClone` builds loops a call
 

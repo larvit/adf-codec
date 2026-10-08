@@ -3,7 +3,7 @@ import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
 import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
-import { isJsonValue, overNested } from '../json-value.ts'
+import { overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
@@ -61,7 +61,7 @@ const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${d
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
   if (kind === 'string') return { value: { kind, value: text } }
   if (kind === 'boolean') return text === 'true' || text === 'false' ? { value: { kind, value: text === 'true' } } : { refusal: 'kind' }
-  const parsed = parseJson(text)
+  const parsed = parseJsonText(text).value
   if (parsed === undefined) return { refusal: 'kind' }
   if (kind === 'number') return typeof parsed === 'number' ? { value: { kind, value: parsed } } : { refusal: 'kind' }
   return overNested(parsed) ? { refusal: 'nesting' } : { value: { kind, value: parsed } }
@@ -325,12 +325,8 @@ function readQuotedValue(text: string, index: number): Read<{ end: number; value
   if (character !== undefined) {
     return { fault: malformedDirective(`a raw ${character} inside {attrs} breaks the directive: spell it \\u${escapeDigits(character)}`) }
   }
-  const parsed = parseJson(spelling)
+  const parsed = parseJsonText(spelling).value
   if (typeof parsed !== 'string') return { fault: malformedDirective('the {attrs} quoted value is not a JSON string') }
   return { value: { end: cursor + 1, value: { decoded: parsed, spelling } } }
 }
 
-function parseJson(raw: string): JsonValue | undefined {
-  const value = parseJsonText(raw)?.value
-  return value !== undefined && isJsonValue(value) ? value : undefined
-}
