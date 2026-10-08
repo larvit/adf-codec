@@ -405,6 +405,13 @@ test('reads the inline carry back to the node its json attribute holds', () => {
   ])
 })
 
+test('reads an escaped JSON key as the key it spells after reading a key holding a backslash (https://issues.chromium.org/issues/521080746)', () => {
+  const extension = (parameters: string): string => `!adf:extension {extensionKey=toc extensionType=x parameters=${JSON.stringify(parameters)}}\n`
+  const read = content(markdownToAdf([extension('{"\\b":1,"\\f":2}'), extension('{"\\b":3,"\\\\":4}'), extension('{"\\b":1,"\\f":2}')].join('\n')))
+  const node = (parameters: AdfAttributes): AdfNode => ({ attrs: { extensionKey: 'toc', extensionType: 'x', parameters }, type: 'extension' })
+  assert.deepEqual(read, [node({ '\b': 1, '\f': 2 }), node({ '\b': 3, '\\': 4 }), node({ '\b': 1, '\f': 2 })])
+})
+
 test('names the invalid JSON no opaque carry holds, and the spelling that keeps it literal', () => {
   const invalid = 'malformed-directive: the opaque carry holds invalid JSON; '
   const fence = `${invalid}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`

@@ -2,7 +2,15 @@ import type { JsonValue } from './json-value.ts'
 
 type Frame = { entries: [string, JsonValue][]; key: string; kind: 'object' } | { items: JsonValue[]; kind: 'array' }
 
+type Item = { end: number; frame: Frame; kind: 'opened' } | { end: number; kind: 'value'; value: JsonValue } | { kind: 'refused' }
+
+export type JsonReading = { refusal: JsonRefusal; value?: undefined } | { refusal?: undefined; value: JsonValue }
+
+type JsonRefusal = 'non-finite' | 'syntax'
+
 type Scanned<T> = { end: number; value: T } | undefined
+
+type State = { expect: 'separator'; index: number; value: JsonValue } | { expect: 'value'; index: number }
 
 const escapes = new Map([
   ['"', '"'],
@@ -21,57 +29,52 @@ const literals = new Map<string, JsonValue>([
   ['true', true],
 ])
 const numberSyntax = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?/y
+const syntaxRefusal: Item = { kind: 'refused' }
 
-// In place of JSON.parse: V8 reads an escaped key against keys earlier parses saw (https://issues.chromium.org/issues/521080746).
-export function parseJsonText(text: string): { value: JsonValue } | undefined {
+// In place of JSON.parse: V8 can read an escaped key as another key it read before (https://issues.chromium.org/issues/521080746).
+export function parseJsonText(text: string): JsonReading {
   const frames: Frame[] = []
-  let index = skipWhitespace(text, 0)
+  let overflowed = false
+  let state: State = { expect: 'value', index: skipWhitespace(text, 0) }
   for (;;) {
-    const opened = openValue(text, index, frames)
-    if (opened === undefined) return undefined
-    let { end, value } = opened
-    if (value === undefined) {
-      index = end
+    if (state.expect === 'value') {
+      const item = readItem(text, state.index)
+      if (item.kind === 'refused') return { refusal: 'syntax' }
+      if (item.kind === 'opened') frames.push(item.frame)
+      else if (typeof item.value === 'number' && !Number.isFinite(item.value)) overflowed = true
+      state = item.kind === 'opened' ? { expect: 'value', index: item.end } : { expect: 'separator', index: skipWhitespace(text, item.end), value: item.value }
       continue
     }
-    for (;;) {
-      index = skipWhitespace(text, end)
-      const frame = frames[frames.length - 1]
-      if (frame === undefined) return index === text.length ? { value } : undefined
-      if (frame.kind === 'array') frame.items.push(value)
-      else frame.entries.push([frame.key, value])
-      const separator = text.charAt(index)
-      if (separator === ',') break
-      if (separator !== (frame.kind === 'array' ? ']' : '}')) return undefined
-      frames.pop()
-      end = index + 1
-      value = frame.kind === 'array' ? frame.items : Object.fromEntries(frame.entries)
-    }
+    const index: number = state.index
+    const value = state.value
     const frame = frames[frames.length - 1]
-    index = skipWhitespace(text, index + 1)
-    if (frame?.kind === 'object') {
-      const key = readKey(text, index)
-      if (key === undefined) return undefined
-      frame.key = key.value
-      index = key.end
+    if (frame === undefined) return index !== text.length ? { refusal: 'syntax' } : overflowed ? { refusal: 'non-finite' } : { value }
+    if (frame.kind === 'array') frame.items.push(value)
+    else frame.entries.push([frame.key, value])
+    const separator = text.charAt(index)
+    if (separator === (frame.kind === 'array' ? ']' : '}')) {
+      frames.pop()
+      state = { expect: 'separator', index: skipWhitespace(text, index + 1), value: frame.kind === 'array' ? frame.items : Object.fromEntries(frame.entries) }
+      continue
     }
+    if (separator !== ',') return { refusal: 'syntax' }
+    state = { expect: 'value', index: skipWhitespace(text, index + 1) }
+    if (frame.kind === 'array') continue
+    const key = readKey(text, state.index)
+    if (key === undefined) return { refusal: 'syntax' }
+    frame.key = key.value
+    state = { expect: 'value', index: key.end }
   }
 }
 
-// A value whose `value` is undefined opened a container, and `end` is where its first member starts.
-function openValue(text: string, index: number, frames: Frame[]): Scanned<JsonValue | undefined> {
+function readItem(text: string, index: number): Item {
   const opener = text.charAt(index)
   if (opener !== '[' && opener !== '{') return readScalar(text, index)
   const first = skipWhitespace(text, index + 1)
-  if (text.charAt(first) === (opener === '[' ? ']' : '}')) return { end: first + 1, value: opener === '[' ? [] : {} }
-  if (opener === '[') {
-    frames.push({ items: [], kind: 'array' })
-    return { end: first, value: undefined }
-  }
+  if (text.charAt(first) === (opener === '[' ? ']' : '}')) return { end: first + 1, kind: 'value', value: opener === '[' ? [] : {} }
+  if (opener === '[') return { end: first, frame: { items: [], kind: 'array' }, kind: 'opened' }
   const key = readKey(text, first)
-  if (key === undefined) return undefined
-  frames.push({ entries: [], key: key.value, kind: 'object' })
-  return { end: key.end, value: undefined }
+  return key === undefined ? syntaxRefusal : { end: key.end, frame: { entries: [], key: key.value, kind: 'object' }, kind: 'opened' }
 }
 
 function readKey(text: string, index: number): Scanned<string> {
@@ -81,12 +84,15 @@ function readKey(text: string, index: number): Scanned<string> {
   return text.charAt(colon) === ':' ? { end: skipWhitespace(text, colon + 1), value: key.value } : undefined
 }
 
-function readScalar(text: string, index: number): Scanned<JsonValue> {
-  if (text.charAt(index) === '"') return readString(text, index)
-  for (const [spelling, value] of literals) if (text.startsWith(spelling, index)) return { end: index + spelling.length, value }
+function readScalar(text: string, index: number): Item {
+  if (text.charAt(index) === '"') {
+    const string = readString(text, index)
+    return string === undefined ? syntaxRefusal : { end: string.end, kind: 'value', value: string.value }
+  }
+  for (const [spelling, value] of literals) if (text.startsWith(spelling, index)) return { end: index + spelling.length, kind: 'value', value }
   numberSyntax.lastIndex = index
   const number = numberSyntax.exec(text)?.[0]
-  return number === undefined ? undefined : { end: index + number.length, value: Number(number) }
+  return number === undefined ? syntaxRefusal : { end: index + number.length, kind: 'value', value: Number(number) }
 }
 
 function readString(text: string, start: number): Scanned<string> {

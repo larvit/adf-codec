@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 83`
+`Next ID = 84`
 
 | Goal | W |
 |---|---|
@@ -36,6 +36,7 @@
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
+| 83 | 0.3.0 | defect | **Refuse with a result, never a `RangeError`, a document whose markdown would pass the engine's string limit.** | 3 | 4 | 5 | 8 | 1, 9 | 22.0 |
 | 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
 | 80 | 0.3.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 5 | 6 | 1 | 19.2 |
 | 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
@@ -168,6 +169,14 @@ refuse a 500-row table. Before reading an array, the reader checks its `length` 
 left, so a Proxy claiming 2³² elements is refused at once. The chunk asks whether that refusal
 shares the 500-level guard's `unsupported-nesting-depth` or takes another code. Found by the
 technical-principles audit, 2026-10-04.
+
+### 83. Refuse with a result, never a `RangeError`, a document whose markdown would pass the engine's string limit.
+
+The block carry indents its JSON two spaces a level, so one unknown block holding 497 nested arrays
+around 540,000 numbers, about 1.1 MB as JSON, spells about 540 million characters, past V8's
+2^29 − 24. `serializeCanonicalJson`'s `join` throws, and `adfToMarkdown` throws with it. Any output
+past the limit does the same. Refuse it with a code from the closed list, and add a fixture. Found
+by the README-goals audit, 2026-10-08.
 
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
 

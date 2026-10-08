@@ -65,9 +65,10 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
 function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, type?: string): Read<AdfNode> {
   const wayOut = type === undefined ? directiveEscape : fenceEscape(type)
   const parsed = parseJsonText(raw)
-  if (parsed === undefined) return { fault: malformedDirective(`the opaque carry holds invalid JSON; ${wayOut}`) }
+  if (parsed.refusal !== undefined) {
+    return { fault: parsed.refusal === 'syntax' ? malformedDirective(`the opaque carry holds invalid JSON; ${wayOut}`) : unsupportedNodeShape('the opaque carry holds a number JSON cannot spell') }
+  }
   const { value } = parsed
-  if (!isJsonValue(value)) return { fault: unsupportedNodeShape('the opaque carry holds a number JSON cannot spell') }
   const typed = type === undefined || type === '' ? { value } : typedValue(value, type)
   if (typed.fault !== undefined) return typed
   const held = typed.value

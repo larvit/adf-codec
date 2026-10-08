@@ -55,6 +55,7 @@ In `docs/decisions.md`:
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
 - Nothing recurses unbounded
+- JSON text is read by `parseJsonText`
 - No value `JSON.parse` or `structuredClone` builds loops a call
 - Nothing spreads an unbounded array
 - A retry loop checks its own termination
