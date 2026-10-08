@@ -508,17 +508,17 @@ exits 0 on.
 while `todo.md` items 59, 60, 61 and 62 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
-2026-10-08, item 64's chunk, is the baseline. Since 2026-10-04, a chunk whose panel scores any
+2026-10-08 is the baseline. Since 2026-10-04, a chunk whose panel scores any
 dimension lower improves what the seats named and scores again, and after three such rounds asks
 the maintainer.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|
-| Junior | 7 | 5.5 | 6.5 | 6 | 6 |
+| Junior | 7 | 5.5 | 6.5 | 5.5 | 6 |
 | Mid | 7 | 5.5 | 6.5 | 5.5 | 6 |
-| Senior | 7 | 5.5 | 6.5 | 6 | 6 |
-| Architect | 6.5 | 6 | 6 | 6 | 6.5 |
-| Mean | 6.88 | 5.63 | 6.38 | 5.88 | 6.13 |
+| Senior | 7 | 5.5 | 6 | 5 | 6 |
+| Architect | 6.5 | 6 | 6 | 6.5 | 6 |
+| Mean | 6.88 | 5.63 | 6.25 | 5.63 | 6.00 |
 
 Panels on near-identical code scored overall means of 5.75 to 6.00, and a seat moves ±0.5 between
 runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub,
@@ -581,8 +581,8 @@ once doubled the parser's frames per level.
 
 ## JSON text is read by `parseJsonText`
 
-2026-10-08, item 64, whose remedy the maintainer planned. Goal 1. Valid while engines on a V8 with
-https://issues.chromium.org/issues/521080746 open run the library.
+2026-10-08, a remedy the maintainer planned. Goal 1. Valid while a V8 engine with
+https://issues.chromium.org/issues/521080746 unfixed can run the library.
 
 The library reads JSON text with `parseJsonText`, never `JSON.parse`: from V8 13.6, `JSON.parse`
 can read an escaped key as another key it read before, and the round-trip then refuses its own
