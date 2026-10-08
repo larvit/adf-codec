@@ -31,7 +31,7 @@ const literals = new Map<string, JsonValue>([
 const numberSyntax = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[Ee][+-]?[0-9]+)?/y
 const syntaxRefusal: Item = { kind: 'refused' }
 
-// In place of JSON.parse: V8 can read an escaped key as another key it read before (https://issues.chromium.org/issues/521080746).
+// Stands in for JSON.parse (https://issues.chromium.org/issues/521080746).
 export function parseJsonText(text: string): JsonReading {
   const frames: Frame[] = []
   let overflowed = false
