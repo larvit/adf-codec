@@ -27,6 +27,10 @@
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
+| 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
+| 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
+| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
+| 62 | 0.2.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 4, 5, 7 | 9.0 |
 | 7 | 0.3.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
@@ -39,14 +43,10 @@
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
-| 61 | 0.3.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
-| 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
-| 59 | 0.3.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
-| 62 | 0.3.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.4.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
@@ -96,6 +96,34 @@ adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdow
 item 43: `MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose
 their `pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet,
 which counts one fewer.
+
+### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
+
+The comprehension panel's worst place: `escapeClaims` and `escapeClosedRuns` re-implement the
+reader's view — flanking, code-span closers, link-definition openings, highlight flanking — and
+only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
+time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
+of one character from each of its characters.
+
+### 60. Collect the questions `parse/` asks `emit/` into one named module.
+
+`parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
+from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
+parts by ADF and format true as they grow.
+
+### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.
+
+Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
+needs `Read<T>` and `Flavour` out of the plain flavour and `markdown/`; it needs the carry and the
+mark spellings too, which item 7 moves where it learns what HTML shares.
+
+### 62. Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.
+
+Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts`, the `mintTaskIds` call and
+the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
+`emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
+`plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every
+comprehension reader on 2026-10-03 named the plain flavour's spread across three directories.
 
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 
@@ -202,17 +230,9 @@ or report the unminified gzip). The figure lands in README §The package beside 
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
 kB.
 
-### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
-
-The comprehension panel's worst place: `escapeClaims` and `escapeClosedRuns` re-implement the
-reader's view — flanking, code-span closers, link-definition openings, highlight flanking — and
-only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
-time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
-of one character from each of its characters.
-
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
-Lands after every other `0.2.0` item (the maintainer, 2026-10-05). The maintainer does this. Gitea
+Lands after every other `0.3.0` item (the maintainer, 2026-10-05). The maintainer does this. Gitea
 cannot convert an existing repository to a mirror, so the copy is deleted and re-created. That drops
 the copy's commit hashes from before the 2026-10-04 history rewrite, and its Actions secrets. The
 Gitea copy holds no issues or releases to move. Actions stay off on the mirror: Gitea runs
@@ -232,35 +252,15 @@ example 540); lowercasing and then uppercasing folds it. Breaking, so it ships b
 `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go, and its spelling leaves
 the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
-### 60. Collect the questions `parse/` asks `emit/` into one named module.
-
-`parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
-from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
-parts by ADF and format true as they grow.
-
-### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.
-
-Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
-needs `Read<T>` and `Flavour` out of the plain flavour and `markdown/`; it needs the carry and the
-mark spellings too, which item 7 moves where it learns what HTML shares.
-
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 
 Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
 
-### 62. Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.
-
-Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts`, the `mintTaskIds` call and
-the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
-`emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
-`plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every
-comprehension reader on 2026-10-03 named the plain flavour's spread across three directories.
-
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Lands after `0.2.0` is published with item 71, so each post links the GitHub repository, the
+Lands after `0.3.0` is published with item 71, so each post links the GitHub repository, the
 README's comparison table and a README that opens with what the package is. We draft each post for
 the place it goes; the maintainer posts them. Found while planning discoverability, 2026-10-04.
 
