@@ -53,8 +53,9 @@
   refused.
 - Fix a JSON key holding an escape, in a carried node or a JSON attribute such as `parameters`:
   `markdownToAdf` and `plainMarkdownToAdf` read it as the key it spells, where on V8 13.6 and later
-  (Node 24, Deno, Chrome) they could refuse canonical markdown as `unsupported-node-shape` once the
-  process had read a key holding a backslash ([V8 bug](https://issues.chromium.org/issues/521080746)).
+  (Node 24, Deno, Chrome) they could refuse markdown `adfToMarkdown` wrote, as
+  `unsupported-node-shape`, once the process had read a key holding a backslash
+  ([V8 bug](https://issues.chromium.org/issues/521080746)).
 - Fix a cyclic document, in which an object holds itself: `adfToMarkdown` and `adfToPlainMarkdown`
   refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`, where all three hung.
 
