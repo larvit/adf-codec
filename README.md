@@ -19,7 +19,7 @@ products store as ADF.
   lossless pair.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
-- **HTML at `0.2.0`:** `adfToHtml`, `htmlToAdf`, `markdownToHtml`, `htmlToMarkdown`.
+- **HTML at `0.3.0`:** `adfToHtml`, `htmlToAdf`, `markdownToHtml`, `htmlToMarkdown`.
 
 [The shape](#the-shape) · [Goals](#goals) · [Audience](#audience) ·
 [Plain markdown](#plain-markdown) · [The errors](#the-errors) · [The guarantees](#the-guarantees) ·
@@ -60,10 +60,10 @@ isAdfDocument(v: unknown): v is AdfDocument
 adfToPlainMarkdown(doc: AdfDocument): Result<string>
 plainMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
 
-adfToHtml(doc: AdfDocument): Result<string>               // 0.2.0
-htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.2.0
-markdownToHtml(markdown: string): Result<string>          // 0.2.0
-htmlToMarkdown(html: string): Result<string>              // 0.2.0
+adfToHtml(doc: AdfDocument): Result<string>               // 0.3.0
+htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.3.0
+markdownToHtml(markdown: string): Result<string>          // 0.3.0
+htmlToMarkdown(html: string): Result<string>              // 0.3.0
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
@@ -180,7 +180,7 @@ UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte of
 or before the refusal — currently the start of the line the enclosing block begins on; a later
 minor may narrow that, never widen it. For `not-a-string` it is `{ line: 1, offset: 0 }`.
 
-Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`:
+Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.3.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -188,11 +188,11 @@ Parsing — `markdownToAdf` and `plainMarkdownToAdf`, and `htmlToAdf` at `0.2.0`
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.2.0` | remove the construct, or write what it holds in the lossless flavour |
+| `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.3.0` | remove the construct, or write what it holds in the lossless flavour |
 | `unmappable-image` | an image sits inside other content that is not another image's description, or carries a title | give the image a paragraph of its own and drop the title |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` directive's content slot spells a newline or a carriage return — `&#10;`, `&#13;`, `!adf:text{text="\n"}` | replace it with a space, or write the node as `!adf:carry` — an inline directive never spans lines |
 
-Emitting — `adfToMarkdown`, and `adfToHtml` at `0.2.0`:
+Emitting — `adfToMarkdown`, and `adfToHtml` at `0.3.0`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -217,7 +217,7 @@ Serves Goals 1, 4 and 5.
   empty `attrs`, `content` or `marks` and `-0` included, and unknown node types carried opaquely
   ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
-  `0.2.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
+  `0.3.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
 - Plain CommonMark is valid input to `markdownToAdf` apart from the raw HTML `unmappable-html`
   names, with four carve-outs — literal text matching directive, pipe-table or strikethrough syntax,
@@ -247,7 +247,7 @@ Serves Goals 1, 4 and 5.
   loops forever on a string, or on a value `JSON.parse` or `structuredClone` builds.
 - The emitted formats are semver surface
   ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#the-formats-are-api)).
-- **`0.2.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
+- **`0.3.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
   `data-*` attributes. Foreign HTML maps a documented element set, which markdown's raw HTML reads
   through as well, and a construct outside it is an error; well-formed HTML only — no tag-soup
   recovery.

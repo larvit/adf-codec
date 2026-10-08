@@ -24,45 +24,87 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 7 | 0.2.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
-| 45 | 0.2.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
-| 6 | 0.2.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 64 | 0.2.0 | defect | **Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.** | 4 | 4 | 6 | 8 | 1, 8 | 23.0 |
-| 77 | 0.2.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
-| 71 | 0.2.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
-| 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
-| 80 | 0.2.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 5 | 6 | 1 | 19.2 |
-| 68 | 0.2.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
-| 75 | 0.2.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
-| 81 | 0.2.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
-| 46 | 0.2.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
-| 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
-| 72 | 0.2.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
-| 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
-| 51 | 0.2.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
-| 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
-| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
-| 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
-| 62 | 0.2.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 4, 5, 7 | 9.0 |
-| 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
-| 9 | 0.3.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
-| 38 | 0.3.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
-| 74 | 0.3.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
-| 34 | 0.3.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
-| 31 | 0.3.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
-| 42 | 0.3.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
-| 33 | 0.3.0 | defect | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
-| 56 | 0.3.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
-| 76 | 0.3.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
-| 82 | 0.3.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 2 | 1 | 4.2 |
-| 57 | 0.3.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 8 | 0.6 |
-| 58 | 0.3.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 8 | -2.6 |
-| 8 | 0.4.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
+| 7 | 0.3.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
+| 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
+| 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
+| 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
+| 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
+| 43 | 0.3.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
+| 80 | 0.3.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 5 | 6 | 1 | 19.2 |
+| 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
+| 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
+| 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
+| 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
+| 61 | 0.3.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
+| 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
+| 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
+| 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
+| 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
+| 59 | 0.3.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
+| 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
+| 62 | 0.3.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
+| 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
+| 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
+| 38 | 0.4.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
+| 74 | 0.4.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
+| 34 | 0.4.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
+| 31 | 0.4.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
+| 42 | 0.4.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
+| 33 | 0.4.0 | defect | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
+| 56 | 0.4.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
+| 76 | 0.4.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
+| 82 | 0.4.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 2 | 1 | 4.2 |
+| 57 | 0.4.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 8 | 0.6 |
+| 58 | 0.4.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 8 | -2.6 |
+| 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
+
+### 64. Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.
+
+`property-harness.ts` strips `\`, `"` and control characters from generated JSON keys, citing V8's
+`JSON.parse` returning a wrong key for an escaped backslash. The library reads `json` attributes
+(`directive-syntax.ts`) and both carries (`opaque-carry.ts`) through that `JSON.parse`, so on Node,
+Deno and Chrome the round-trip would refuse its own output or read back a different key; the fixture
+tells which. Confirm with a fixture first; then read JSON with our own parser or record the gap with
+an ending item. Found by the README-goals audit, 2026-10-03.
+
+### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
+
+Both are refused today with `unmappable-image`: 14 examples in
+`corpus/commonmark-spec/refusals.json`, a bot's `See ![diagram](url) here` among them. `mediaInline`
+takes only Atlassian media ids, never a URL. An image not alone in its paragraph reads as its alt
+text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
+as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
+title as a `caption` (the maintainer, 2026-10-04). By Goal 5, the lossless flavour reads both as
+CommonMark does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec example 517). Alone in
+its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not
+alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
+writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
+
+### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
+
+Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
+two (spec examples 301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells
+adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` alternate `-` and
+`*` between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and
+`!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking, so it ships beside
+item 43: `MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose
+their `pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet,
+which counts one fewer.
+
+### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
+
+Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
+link mark, so a link whose text is empty takes its URL as its text (the maintainer, 2026-10-04):
+`[](/url)` reads as `/url` linked to `/url`. `[]()` has no URL to show; the chunk settles it by Goals
+4 and 7. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
+`pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
+which counts one fewer.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
@@ -82,15 +124,6 @@ replacement.
 Element-by-element mapping, the `data-*` fidelity scheme, the opaque-carry form, and the documented
 foreign-element set `htmlToAdf` accepts — the set `markdownToAdf` shares (`spec/flavour.md` §Raw
 HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
-
-### 64. Read back unchanged on V8 every JSON key the emitter writes, with a fixture whose key holds `\`, `"` or a control character.
-
-`property-harness.ts` strips `\`, `"` and control characters from generated JSON keys, citing V8's
-`JSON.parse` returning a wrong key for an escaped backslash. The library reads `json` attributes
-(`directive-syntax.ts`) and both carries (`opaque-carry.ts`) through that `JSON.parse`, so on Node,
-Deno and Chrome the round-trip would refuse its own output or read back a different key; the fixture
-tells which. Confirm with a fixture first; then read JSON with our own parser or record the gap with
-an ending item. Found by the README-goals audit, 2026-10-03.
 
 ### 77. Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.
 
@@ -153,35 +186,11 @@ type", that is an ordinary code language, so the property reaches `readCarriedBl
 where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
 and hostile. Found by the technical-principles audit, 2026-10-04.
 
-### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
-
-Both are refused today with `unmappable-image`: 14 examples in
-`corpus/commonmark-spec/refusals.json`, a bot's `See ![diagram](url) here` among them. `mediaInline`
-takes only Atlassian media ids, never a URL. An image not alone in its paragraph reads as its alt
-text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
-as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
-title as a `caption` (the maintainer, 2026-10-04). By Goal 5, the lossless flavour reads both as
-CommonMark does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec example 517). Alone in
-its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not
-alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
-writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
-
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
-
-### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
-
-Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
-two (spec examples 301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells
-adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` alternate `-` and
-`*` between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and
-`!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking, so it ships beside
-item 43: `MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose
-their `pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet,
-which counts one fewer.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
@@ -248,15 +257,6 @@ the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList`
 `emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
 `plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every
 comprehension reader on 2026-10-03 named the plain flavour's spread across three directories.
-
-### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
-
-Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
-link mark, so a link whose text is empty takes its URL as its text (the maintainer, 2026-10-04):
-`[](/url)` reads as `/url` linked to `/url`. `[]()` has no URL to show; the chunk settles it by Goals
-4 and 7. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
-`pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
-which counts one fewer.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 

@@ -133,7 +133,7 @@ drop of content:
 
 `<details><summary>Title</summary>…</details>` is an `expand` titled by its summary, a
 `nestedExpand` inside another; an empty one is refused, since `expand` requires content. A `style`
-attribute is not read at `0.2.0`: the `textColor` and `backgroundColor` it could reach cost more
+attribute is not read at `0.3.0`: the `textColor` and `backgroundColor` it could reach cost more
 than they buy.
 `plainMarkdownToAdf` reads through `markdownToAdf`'s parser, so it takes the same set.
 
