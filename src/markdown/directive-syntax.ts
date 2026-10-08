@@ -5,6 +5,7 @@ import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
 import { isJsonValue, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
@@ -330,10 +331,6 @@ function readQuotedValue(text: string, index: number): Read<{ end: number; value
 }
 
 function parseJson(raw: string): JsonValue | undefined {
-  try {
-    const value: unknown = JSON.parse(raw)
-    return isJsonValue(value) ? value : undefined
-  } catch {
-    return undefined
-  }
+  const value = parseJsonText(raw)?.value
+  return value !== undefined && isJsonValue(value) ? value : undefined
 }
