@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 94 | 0.2.0 | defect | **Read two lists a link reference definition parts as two lists, in every reader.** | 3 | 3 | 4 | 7 | 4, 5 | 13.6 |
 | 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
@@ -68,14 +67,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
-
-The comprehension panel's worst place: `escapeClaims` and `escapeClosedRuns` re-implement the
-reader's view — flanking, code-span closers, link-definition openings, highlight flanking — and
-only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
-time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
-of one character from each of its characters.
 
 ### 94. Read two lists a link reference definition parts as two lists, in every reader.
 
@@ -153,7 +144,7 @@ three linear.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
-Lands after items 6, 59, 60, 61 and 62. Which flavours get a composed call is this item's to settle;
+Lands after items 6, 59, 60 and 62. Which flavours get a composed call is this item's to settle;
 the CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as
 it documents markdown, and its tagline and `package.json`'s description and keywords name HTML
 again. `htmlToAdf` refuses a value that is not a string as `not-a-string`
@@ -286,7 +277,7 @@ gains its row.
 
 ### 91. Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.
 
-Lands after item 61. No reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then
+No reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then
 `_Two_`, and a link typed across a line as two links. Joining the run across the break in
 `inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be
 spelled needs its own fallback, first as a set of parted breaks, then as a flag the first fallback

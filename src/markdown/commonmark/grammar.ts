@@ -235,14 +235,6 @@ export function openingHtmlBlock(line: string, interrupting: boolean): OpenHtmlB
   return undefined
 }
 
-export function opensBracketedAutolink(text: string, index: number): boolean {
-  return readBracketedAutolink(text, index) !== undefined
-}
-
-export function opensEmailAutolink(text: string, index: number): boolean {
-  return readEmailAutolink(text, index) !== undefined
-}
-
 export function readBracketedAutolink(text: string, index: number): number | undefined {
   bracketedAutolink.lastIndex = index
   return bracketedAutolink.exec(text)?.[0].length

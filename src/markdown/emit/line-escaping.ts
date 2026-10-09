@@ -1,13 +1,12 @@
 import type { Claims, WrittenFlavour } from '../portable/conventions.ts'
+import type { InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
-import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark/grammar.ts'
-import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
-import { claimsDirectivePrefix } from '../directive-syntax.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
-import { flavourClaims, highlightDelimiter, highlightFlanking } from '../portable/conventions.ts'
+import { delimiterRunToken, readInlineToken } from '../inline-tokens.ts'
+import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
+import { flavourClaims, highlightFlanking } from '../portable/conventions.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
-import { readEntityReference } from '../commonmark/entity-references.ts'
 
 export type DelimiterRole = 'close' | 'open'
 
@@ -33,7 +32,7 @@ type EmittedDelimiter = { closes: boolean; offset: number; pair: number; width: 
 
 type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; delimiters: EmittedDelimiter[]; length: number; start: number }
 
-const delimiters = ['*', '_', '`', '~']
+const runCharacters = '*_`~'
 
 const followsLinkText = /[([]/
 
@@ -92,36 +91,68 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, cl
 function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer, claims: Claims): ReadonlySet<number> {
   const escaped = new Set<number>()
   const linkClose = lastLinkClose(scan, escapings)
+  const headingCloser = container === 'heading' ? closingHashes(scan) : undefined
   let line = scanLine(scan, 0)
-  let afterEscape = false
-  // Whether the `=` before opens a `==` the reader takes whole, so this one starts nothing.
-  let pairsEquals = false
-  for (let index = 0; index < scan.length; index += 1) {
-    if (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
+  let index = 0
+  while (index < scan.length) {
+    while (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
+    if (runCharacters.includes(scan.charAt(index))) {
+      index = escapeRun(scan, escapings, index, line, container, claims, escaped)
+      continue
+    }
     const escaping = escapings[index]
-    const escapable = escaping === 'backslash' || escaping === 'bracketed'
-    const opensEquals: boolean = claims.highlights && !pairsEquals && scan.startsWith(highlightDelimiter, index)
-    const opensDirective = claims.directives && claimsDirectivePrefix(scan, index)
-    const claimed: boolean =
-      (escapable &&
-        ((opensEquals && claimsHighlight(scan, index)) ||
-          claimsLineStart(line, index, container) ||
-          mergesWithSyntax(scan, escapings, index) ||
-          opensDirective ||
-          opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, afterEscape))) ||
-      (escaping === 'bracketed-link-target' &&
-        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, afterEscape)) || opensDirective))
+    const token = readInlineToken(scan, index, claims)
+    const claimed = isEscapable(escaping)
+      ? index === headingCloser || claimsLineStart(line, index, container) || claimsCharacter(scan, escapings, linkClose, index, token, container)
+      : escaping === 'bracketed-link-target' && token.kind === 'directive'
     if (claimed) escaped.add(index)
-    afterEscape = claimed
-    pairsEquals = opensEquals && !claimed
+    index += !claimed && token.kind === 'highlight' ? token.width : 1
   }
   return escaped
 }
 
-// Like an emphasis run, a `==` in text escapes where the reader can open or close with it.
-function claimsHighlight(scan: string, index: number): boolean {
-  const flanking = highlightFlanking(scan, index)
-  return flanking.opens || flanking.closes
+// A run joining the emitter's own delimiter escapes its text; a run of text escapes from its start while the reader claims what the escapes leave of it.
+function escapeRun(scan: string, escapings: readonly InlineEscaping[], start: number, line: ScanLine, container: LineContainer, claims: Claims, escaped: Set<number>): number {
+  const end = start + runLength(scan, start)
+  const run = escapings.slice(start, end)
+  if (run.some(isSyntax) && run.some(isEscapable)) {
+    for (let index = start; index < end; index += 1) if (isEscapable(escapings[index])) escaped.add(index)
+    return end
+  }
+  for (let index = start; index < end; index += 1) {
+    // A backtick run escapes whole: a rest left bare would be a raw run of another length for a closer.
+    if (!(index > start && scan.charAt(index) === '`') && !claimsRunRest(scan, escapings, index, end, line, container, claims)) break
+    escaped.add(index)
+  }
+  return end
+}
+
+function claimsRunRest(scan: string, escapings: readonly InlineEscaping[], index: number, end: number, line: ScanLine, container: LineContainer, claims: Claims): boolean {
+  const escaping = escapings[index]
+  if (escaping === 'bracketed-link-target') return readInlineToken(scan, index, claims).kind === 'code-span'
+  if (!isEscapable(escaping)) return false
+  if (claimsLineStart(line, index, container)) return true
+  const token = scan.charAt(index) === '`' ? readInlineToken(scan, index, claims) : delimiterRunToken(scan, index, end - index, claims)
+  return token.kind !== 'text'
+}
+
+function claimsCharacter(scan: string, escapings: readonly InlineEscaping[], linkClose: number, index: number, token: InlineToken, container: LineContainer): boolean {
+  const character = scan.charAt(index)
+  const inBrackets = escapings[index] === 'bracketed'
+  switch (token.kind) {
+    case 'bracket':
+      if (token.image) return isSyntax(escapings[index + 1])
+      return inBrackets || index < linkClose
+    case 'bracket-close':
+      return inBrackets
+    case 'highlight':
+      return token.opens || token.closes
+    case 'text':
+      if (character === '|') return container === 'table-cell'
+      return character === '{' && scan.charAt(index - 1) === ']' && isSyntax(escapings[index - 1])
+    default:
+      return true
+  }
 }
 
 // CommonMark reads no escape inside a code span, so a backtick string left beside an escape still closes a span that an earlier bare run of its length opens.
@@ -246,35 +277,12 @@ function emittedRuns(segments: readonly InlineSegment[], placements: readonly nu
   return { nodes, runs }
 }
 
-function mergesWithSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number): boolean {
-  const character = scan.charAt(index)
-  if (character === '!') return scan.charAt(index + 1) === '[' && isSyntax(escapings[index + 1])
-  if (character === '{') return scan.charAt(index - 1) === ']' && isSyntax(escapings[index - 1])
-  if (!delimiters.includes(character)) return false
-  return touchesSyntax(scan, escapings, index, -1) || touchesSyntax(scan, escapings, index, 1)
-}
-
-function touchesSyntax(scan: string, escapings: readonly (InlineEscaping | undefined)[], index: number, step: number): boolean {
-  const character = scan.charAt(index)
-  let cursor = index + step
-  while (scan.charAt(cursor) === character && !isSyntax(escapings[cursor])) cursor += step
-  return scan.charAt(cursor) === character && isSyntax(escapings[cursor])
+function isEscapable(escaping: InlineEscaping | undefined): boolean {
+  return escaping === 'backslash' || escaping === 'bracketed'
 }
 
 export function isSyntax(escaping: InlineEscaping | undefined): boolean {
   return escaping === 'none' || escaping === 'bracketed-link-target'
-}
-
-function opensConstruct(
-  scan: string,
-  linkClose: number,
-  index: number,
-  inBrackets: boolean,
-  container: LineContainer,
-  afterEscape: boolean,
-): boolean {
-  if (container === 'heading' && closesHeading(scan, index)) return true
-  return claimsCharacter(scan, linkClose, index, inBrackets, container, afterEscape)
 }
 
 // A hard break is the one spelling that puts a delimiter row under a row of its own, so only a later line claims.
@@ -284,34 +292,17 @@ function claimsLineStart(line: ScanLine, index: number, container: LineContainer
   return escapesLineClaim(line.text, index - line.start, line.position)
 }
 
+// Where the closing sequence an ATX heading would read in the text starts, `undefined` where it reads none.
+function closingHashes(scan: string): number | undefined {
+  let start = scan.length
+  while (scan.charAt(start - 1) === '#') start -= 1
+  if (start === scan.length) return undefined
+  return start === 0 || /[ \t]/.test(scan.charAt(start - 1)) ? start : undefined
+}
+
 function scanLine(scan: string, start: number): ScanLine {
   const end = scan.indexOf('\n', start)
   return { position: start === 0 ? 'first' : 'later', start, text: scan.slice(start, end === -1 ? undefined : end) }
-}
-
-function closesHeading(scan: string, index: number): boolean {
-  if (scan.charAt(index) !== '#' || !/^#+$/.test(scan.slice(index))) return false
-  return index === 0 || /[ \t]/.test(scan.charAt(index - 1))
-}
-
-function claimsCharacter(
-  scan: string,
-  linkClose: number,
-  index: number,
-  inBrackets: boolean,
-  container: LineContainer,
-  afterEscape: boolean,
-): boolean {
-  const character = scan.charAt(index)
-  if (inBrackets && (character === '[' || character === ']')) return true
-  if (character === '|') return container === 'table-cell'
-  if (character === '\\') return backslashEscape(scan, index) !== undefined
-  if (character === '&') return readEntityReference(scan, index) !== undefined
-  if (character === '<') return opensBracketedAutolink(scan, index) || opensEmailAutolink(scan, index) || inlineHtmlConstruct(scan, index) !== undefined
-  if (character === '[') return index < linkClose
-  if (character === '`') return opensCodeSpan(scan, index, afterEscape)
-  if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, afterEscape)
-  return false
 }
 
 // A `]` the emitter spelled sits inside a construct that binds before link text does.
@@ -321,28 +312,6 @@ function lastLinkClose(scan: string, escapings: readonly (InlineEscaping | undef
     if (followsLinkText.test(scan.charAt(cursor + 1))) return cursor
   }
   return -1
-}
-
-function opensCodeSpan(scan: string, index: number, afterEscape: boolean): boolean {
-  // A run escapes whole: a rest left bare would be a raw run of another length for a closer.
-  if (afterEscape && scan.charAt(index - 1) === '`') return true
-  if (!startsRun(scan, index, afterEscape)) return false
-  const opener = backtickRun(scan, index)
-  return closingBacktickRun(scan, index + opener, opener) !== undefined
-}
-
-function claimsEmphasis(scan: string, index: number, afterEscape: boolean): boolean {
-  if (!startsRun(scan, index, afterEscape)) return false
-  const character = scan.charAt(index)
-  const length = runLength(scan, index)
-  if (character === '~' && length !== 2) return false
-  const flags = delimiterFlags(character, index === 0 ? '' : scan.charAt(index - 1), scan.charAt(index + length))
-  return flags.canClose || flags.canOpen
-}
-
-function startsRun(scan: string, index: number, afterEscape: boolean): boolean {
-  if (index === 0 || afterEscape) return true
-  return scan.charAt(index - 1) !== scan.charAt(index)
 }
 
 function charAt(text: string, index: number): string {

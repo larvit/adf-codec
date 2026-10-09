@@ -88,8 +88,9 @@ export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined
   return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
-export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> | undefined {
-  return readNestedDirective(text, index, 1)
+// Reads the directive an `!adf:` at `index` claims.
+export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> {
+  return readClaimedDirective(text, index, 1)
 }
 
 export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<string> {
@@ -211,7 +212,10 @@ function readOpenerAttributes(rest: string, index: number): Read<Attributes> {
 }
 
 function readNestedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> | undefined {
-  if (!claimsDirectivePrefix(text, index)) return undefined
+  return claimsDirectivePrefix(text, index) ? readClaimedDirective(text, index, depth) : undefined
+}
+
+function readClaimedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> {
   const name = inlineDirectiveName(text, index)
   if (name === undefined) return { fault: malformedDirective(prefixFault) }
   if (depth > largestNesting) {
