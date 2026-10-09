@@ -465,14 +465,14 @@
     "check": "count",
     "divergence": "em 1/3",
     "example": 638,
-    "kind": "mark-model",
-    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+    "kind": "pending",
+    "reason": "The hard break carries the em mark, which ADF's schema forbids; todo.md item 87 strips it."
   },
   {
     "check": "count",
     "divergence": "em 1/3",
     "example": 639,
-    "kind": "mark-model",
-    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+    "kind": "pending",
+    "reason": "The hard break carries the em mark, which ADF's schema forbids; todo.md item 87 strips it."
   }
 ]
