@@ -444,7 +444,6 @@ test('generated markdown refuses, or its spelling reads back and spells itself',
   assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark outside CommonMark's own types, under the floor of ${directiveShapedFloor}`)
 })
 
-
 test('generated markdown read as CommonMark refuses, or its document reads back through the lossless pair', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(document, (input) => {

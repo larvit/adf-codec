@@ -11,7 +11,8 @@ products store as ADF.
 - **Lossless:** `adfToLosslessMarkdown` and `losslessMarkdownToAdf` give back the document they
   started from — panels, mentions, statuses and node types this version does not know included.
 - **CommonMark in:** `commonMarkToAdf` reads a bot's or a model's markdown as the CommonMark spec
-  says, apart from raw HTML and the exceptions [The guarantees](#the-guarantees) lists.
+  says, apart from raw HTML and the exceptions [The guarantees](#the-guarantees) lists; markdown
+  holding GFM's pipe tables or `~~` reads in `portableMarkdownToAdf`.
 - **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
   from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
   task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
@@ -19,7 +20,8 @@ products store as ADF.
   save edits back, use the lossless pair.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
-- **HTML at `0.3.0`:** `adfToHtml`, `htmlToAdf`, `markdownToHtml`, `htmlToMarkdown`.
+- **HTML at `0.3.0`:** `adfToHtml`, `htmlToAdf`, and markdown to and from HTML through ADF, each
+  call named by its markdown flavour.
 
 [The shape](#the-shape) · [Goals](#goals) · [Audience](#audience) ·
 [Portable markdown](#portable-markdown) · [The errors](#the-errors) ·
@@ -49,8 +51,8 @@ if (result.ok) {
 ```
 
 Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
-whole result; no I/O, no configuration. `markdownToHtml` and `htmlToMarkdown` convert through ADF:
-they keep only what ADF holds, and refuse what `losslessMarkdownToAdf` or `htmlToAdf` refuses.
+whole result; no I/O, no configuration. The `0.3.0` calls between markdown and HTML convert through
+ADF: they keep only what ADF holds, and refuse what their markdown reader or `htmlToAdf` refuses.
 
 ```ts
 adfToLosslessMarkdown(doc: AdfDocument): Result<string>
@@ -64,8 +66,6 @@ portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
 
 adfToHtml(doc: AdfDocument): Result<string>               // 0.3.0
 htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.3.0
-markdownToHtml(markdown: string): Result<string>          // 0.3.0
-htmlToMarkdown(html: string): Result<string>              // 0.3.0
 ```
 
 `Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
@@ -170,7 +170,7 @@ stable across minors and safe to `switch` on exhaustively with no `default`; `me
 and may change in any release. A parse always names a position, so the three markdown readers
 return `ParseError`, whose `position` reads without a guard; an emit reads no
 source and carries `path` alone; one handler typed on `ConvertError` takes both, which is what the
-composed `markdownToHtml` and `htmlToMarkdown` hand back. `path` is the node's place from the
+calls between markdown and HTML hand back. `path` is the node's place from the
 document root, alternating `'content'` and an index, so `path.map((step) => '/' + step).join('')`
 is a JSON Pointer at the node — the empty path being the document itself.
 

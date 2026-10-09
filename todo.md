@@ -32,7 +32,7 @@
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 4, 5, 7 | 9.0 |
-| 7 | 0.3.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
+| 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
@@ -106,6 +106,8 @@ parts by ADF and format true as they grow.
 Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
 needs `Read<T>` and `Flavour` out of the portable flavour and `markdown/`; it needs the carry and
 the mark spellings too, which item 7 moves where it learns what HTML shares.
+Once moved, a reader takes a `Flavour` and looks up its claims, as a writer does, so no reader is
+handed a set of claims no flavour holds.
 
 ### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
 
@@ -124,10 +126,10 @@ link mark, so a link whose text is empty takes its URL as its text (the maintain
 Goals 4 and 7. Breaking: `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go,
 and its spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
-### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
+### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
-Lands after items 6, 59, 60, 61 and 62. The CommonMark spec suite also runs against
-`markdownToHtml`. The README documents HTML as it documents markdown. `htmlToAdf` refuses a value
+Lands after items 6, 59, 60, 61 and 62. Which flavours get a composed call is this item's to
+settle; the CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it documents markdown. `htmlToAdf` refuses a value
 that is not a string as `not-a-string` (`docs/decisions.md` §Which code a cause takes).
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.

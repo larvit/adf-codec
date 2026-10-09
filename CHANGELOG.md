@@ -62,7 +62,8 @@
   once the process had read a key holding a backslash
   ([V8 bug](https://issues.chromium.org/issues/521080746)).
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
-  `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`, where all three hung.
+  `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
+  where all three hung.
 
 ## 0.1.0
 
