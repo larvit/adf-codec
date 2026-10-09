@@ -72,8 +72,10 @@
   ([V8 bug](https://issues.chromium.org/issues/521080746)).
 - **Breaking:** a hard break inside emphasis, strike, a link or a directive mark reads holding no
   marks, as Atlassian's schema requires, where every reader gave it the marks around it.
-  `adfToLosslessMarkdown` writes a hard break holding marks as `!adf:carry{json="…"}`. See
-  `MIGRATION.md`.
+  A link whose text is only hard breaks reads as an empty link text does, as its destination
+  linked, and `losslessMarkdownToAdf` refuses a directive mark wrapping only hard breaks as
+  `unsupported-node-shape`. `adfToLosslessMarkdown` writes a hard break holding marks as
+  `!adf:carry{json="…"}`. See `MIGRATION.md`.
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
   where all three hung.

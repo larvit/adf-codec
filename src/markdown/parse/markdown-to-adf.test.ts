@@ -837,7 +837,11 @@ test('builds the hard break a mark spelling spans with no marks, in every reader
   }
   assert.deepEqual(content(losslessMarkdownToAdf('~~a\\\nb~~\n')), broken(strike))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:hardBreak{}b]\n')), broken(underline))
-  assert.deepEqual(content(losslessMarkdownToAdf('_!adf:hardBreak{localId=x}_\n')), [{ content: [{ attrs: { localId: 'x' }, type: 'hardBreak' }], type: 'paragraph' }])
+  const localId = '01a0431d-201e-7400-a175-9c04d3628f95'
+  assert.deepEqual(content(losslessMarkdownToAdf(`_!adf:hardBreak{localId=${localId}}_\n`)), [{ content: [{ attrs: { localId }, type: 'hardBreak' }], type: 'paragraph' }])
+  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
+  }
 })
 
 test('decodes the fenced info string the block walk leaves raw', () => {
@@ -1177,9 +1181,11 @@ test('names the link a directive link wraps, no link holding another', () => {
 })
 
 test('names the directive mark left without the content it wraps', () => {
-  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps none'
+  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps nothing a mark rides'
   assert.equal(content(losslessMarkdownToAdf('!adf:underline[]\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:underline{}\n')), named)
+  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), named)
+  assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), named.replace('underline', 'link'))
 })
 
 test('reads the text break only between two text nodes CommonMark joins, building no node', () => {
