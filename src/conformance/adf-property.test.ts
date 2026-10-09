@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import test from 'node:test'
 
 import type { AdfNode } from '../adf/document.ts'
-import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'
+import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
@@ -23,16 +23,6 @@ function shownText(nodes: readonly AdfNode[]): string[] {
     else for (const text of shownText(content)) shown.push(text)
   }
   return shown.filter((text) => text !== '')
-}
-
-function heldByBlockTaskItems(nodes: readonly AdfNode[]): string[] {
-  const held: string[] = []
-  for (const node of nodes) {
-    const content = node.content ?? []
-    if (node.type === 'blockTaskItem') for (const child of content) held.push(child.type)
-    for (const type of heldByBlockTaskItems(content)) held.push(type)
-  }
-  return held
 }
 
 test('a generated document emits markdown that reads back to it', { timeout: propertyTimeout }, () => {
@@ -55,7 +45,7 @@ test('a generated document writes portable markdown refusing only what the guard
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
       const read = portableMarkdownToAdf(written.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
-      assert.deepEqual(heldByBlockTaskItems(read.value.content ?? []).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(written.value)}`)
+      assert.deepEqual(blockTaskItemChildren(read.value.content ?? []).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(written.value)}`)
       const reduced = reduceToPortable(document)
       assert.deepEqual(shownText(read.value.content ?? []), reduced.ok ? shownText(reduced.value.content ?? []) : reduced, `reading ${JSON.stringify(written.value)}`)
       assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
