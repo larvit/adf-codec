@@ -230,7 +230,7 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
   return runs
 }
 
-// A directive's [content] holds no line ending, so only an emphasis or link spelling spans the hard breaks between two nodes it marks.
+// A directive's [content] holds no line ending, and `!adf:hardBreak{}` there reads worse than closing and reopening it, so only an emphasis or link spelling spans the hard breaks between two nodes it marks.
 function joinsRun(nodes: readonly AdfNode[], offset: number, firstIndex: number, run: MarkedRun, depth: number, context: InlineContext): boolean {
   const kind = markSpelling(run.mark.type)?.kind
   if (kind !== 'emphasis' && kind !== 'link') return false
@@ -239,7 +239,7 @@ function joinsRun(nodes: readonly AdfNode[], offset: number, firstIndex: number,
     return node?.type === 'hardBreak' && !carries(node, context.carried, firstIndex + at) && !context.parted.has(firstIndex + at)
   }
   if (!joinable(offset)) return false
-  // A later break in a sequence joins because the first one found the node closing it.
+  // A later break in a sequence joins because the first one found the node closing the run.
   if (run.nodes.at(-1)?.type === 'hardBreak') return true
   let ahead = offset + 1
   while (joinable(ahead)) ahead += 1
@@ -259,7 +259,7 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
-// Decides the text-node, mark and slot-fault carries up front, so a line holding many of them is emitted once.
+// Decides the text-node, marked-hard-break and slot-fault carries up front, so a line holding many of them is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
   if (carried.has(index)) return true
   if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
@@ -327,7 +327,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  // A link `tryLink` gave back holds the hard breaks `joinsRun` joined; the carry's fallback parts them.
+  // A link `tryLink` declined holds the hard breaks `joinsRun` joined; the carry's fallback parts them.
   if (inner.value.segments.some((segment) => segment.text.includes('\n'))) return success({ carry: range })
   return success({ segments: [syntax(spellInlineDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })
 }

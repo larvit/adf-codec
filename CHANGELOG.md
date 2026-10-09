@@ -75,8 +75,8 @@
   whose text is only hard breaks reads as its destination linked, followed by those breaks, and
   `losslessMarkdownToAdf` refuses a directive mark wrapping only hard breaks as
   `unsupported-node-shape`. `adfToLosslessMarkdown` writes a hard break holding marks as
-  `!adf:carry{json="…"}`, and both writers spell an emphasis or link across the hard breaks inside
-  it once, `_a\` then `b_`, where they closed and reopened it. See `MIGRATION.md`.
+  `!adf:carry{json="…"}`, and spells an emphasis or link across the hard breaks inside it once,
+  `_a\` then `b_`, where `adfToMarkdown` closed and reopened it. See `MIGRATION.md`.
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
   where all three hung.

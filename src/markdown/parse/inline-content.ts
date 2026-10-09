@@ -325,7 +325,7 @@ function linkMark({ destination, title }: LinkDefinition): AdfMark {
   return { attrs: title === undefined ? { href: destination } : { href: destination, title }, type: 'link' }
 }
 
-// ADF holds no empty text node for a link mark to ride, so a link text holding nothing a mark rides reads as its destination, then the hard breaks it held, and an empty destination as those breaks alone.
+// ADF holds no empty text node and a hard break takes no marks, so the destination text carries the link.
 function linkTo(nodes: readonly Inline[], definition: LinkDefinition): Inline[] {
   if (!nodes.every(takesNoMarks)) return applyMark(nodes, linkMark(definition))
   return definition.destination === '' ? [...nodes] : [{ marks: [linkMark(definition)], text: definition.destination, type: 'text' }, ...nodes]

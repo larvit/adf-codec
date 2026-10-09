@@ -25,7 +25,7 @@ In `docs/decisions.md`:
 - CommonMark is a subset
 - Tables
 - Links
-- An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding nothing a mark rides reads as its destination, then the hard breaks it held
+- An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes marks reads as its destination, then its hard breaks
 - Ids stay site-local
 - Portable task ids come from position
 - A callout title keeps its link targets

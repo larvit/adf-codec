@@ -828,7 +828,7 @@ test('reads a hard break from a trailing backslash and from two trailing spaces 
   assert.deepEqual(content(losslessMarkdownToAdf('> One\\\n> two.\n')), [quote({ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' })])
 })
 
-test('builds the hard break a mark spelling spans with no marks, in every reader', () => {
+test('gives the hard break inside a mark spelling no marks, and reads a link of hard breaks as its destination, in every reader', () => {
   const broken = (...marks: AdfMark[]): AdfNode[] => [{ content: [marked('a', ...marks), hardBreak(), marked('b', ...marks)], type: 'paragraph' }]
   for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
     assert.deepEqual(content(read('*a  \nb*\n')), broken(em))
