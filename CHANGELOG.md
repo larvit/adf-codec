@@ -15,7 +15,7 @@
   keys. Build it as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`,
   `Array.from(bytes)`, `{ ...instance }`.
 - The README opens with what the package does and for whom, and `package.json` carries search
-  keywords.
+  keywords. Both describe markdown alone until HTML lands at `0.3.0`.
 - The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where
   issues and pull requests go.
 - **Breaking:** directives, the inline opaque carry among them (now `!adf:carry{json="…"}`), are

@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-Convert Atlassian Document Format (ADF) to and from markdown and HTML, with a lossless round-trip.
+Convert Atlassian Document Format (ADF) to and from markdown, with a lossless round-trip.
 
 For application developers whose app shows, edits, exports or generates the rich text Atlassian
 products store as ADF.

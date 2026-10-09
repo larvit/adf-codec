@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 90 | 0.2.0 |  | **Describe only the formats the release converts in `package.json`'s description and the README's tagline.** | 1 | 1 | 6 | 7 | 3 | 21.7 |
 | 88 | 0.2.0 | defect | **Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.** | 4 | 4 | 6 | 7 | 4 | 16.4 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
@@ -68,11 +67,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 90. Describe only the formats the release converts in `package.json`'s description and the README's tagline.
-
-Both say "to and from markdown and HTML", and `0.2.0` ships no HTML (item 7 brings it in `0.3.0`):
-`docs/decisions.md` §Docs describe the release being built.
 
 ### 88. Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.
 
