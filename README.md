@@ -155,8 +155,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
 - A task list holding a block other than a task is a bullet list keeping its states as text:
   `- \[x] Done`.
 - Text that would read as a marker takes a backslash: `==` wherever it could open or close a
-  highlight, `[!…]` opening a quote, `[x]` or `[ ]` opening any list item, since GitHub reads
-  that marker per item, and asterisks that would read as a rule after a `* ` marker: `* \**`.
+  highlight, `[!…]` opening a quote, asterisks that would read as a rule after a `* ` marker,
+  `* \**`, and `[x]` or `[ ]` opening any list item, since GitHub reads that marker per item.
 - A node read back carries no `localId` except a `taskList`, `taskItem` or `blockTaskItem`, which
   Atlassian's schema requires one on: each gets a UUID v4 hashed from the whole markdown and its
   position, the same on every read. Join markdown bound for one document and read it once: the same
