@@ -64,6 +64,8 @@ type Scan = {
   // Pieces below this have been walked for openers to deactivate: an image close folds the link-marked piece into alt text, leaving this the only record that the brackets around it are doomed.
   deactivatedBefore: number
   definitions: LinkDefinitions
+  // Whether an `!adf:link` slot holds this content, where an image reads as its plain alt text.
+  inLink: boolean
   openingSpellableLink: boolean
   path: ConvertErrorPath
   pending: string
@@ -86,7 +88,7 @@ const textBreak: TextBreak = { kind: 'textBreak' }
 
 // The outermost content: only here does a text break see both its neighbours.
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, claims: Claims): Result<InlineContent> {
-  const scan = freshScan(source, { definitions, path }, { claims, container, spans: noSpans })
+  const scan = freshScan(source, { definitions, path }, { claims, container, inLink: false, spans: noSpans })
   const scanned = scanInline(scan)
   if (!scanned.ok) return scanned
   const nodes = partText(scanned.value.nodes, scan)
@@ -100,7 +102,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
   return success(image === undefined ? { nodes: nodes.value } : { image, nodes: nodes.value })
 }
 
-function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'spans'>): Scan {
+function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'inLink' | 'spans'>): Scan {
   return { ...shared, ...own, deactivatedBefore: 0, openingSpellableLink: false, pending: '', pieces: [], source }
 }
 
@@ -281,7 +283,7 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[]
 function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | undefined> {
   if (span.content === undefined) return success(undefined)
   const { claims, definitions, path } = scan
-  const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, spans: span.spans }))
+  const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, inLink: scan.inLink || span.name === 'link', spans: span.spans }))
   if (!parsed.ok) return parsed
   return success({ nodes: parsed.value.nodes })
 }
@@ -297,7 +299,7 @@ function pushNode(scan: Scan, node: AdfNode): void {
 }
 
 function assemble(scan: Scan): Result<Scanned> {
-  const nodes = resolveNodes(scan.pieces.map(linkedAlt), scan, true)
+  const nodes = resolveNodes(scan.inLink ? scan.pieces : scan.pieces.map(linkedAlt), scan, true)
   if (!nodes.ok) return nodes
   const [only] = scan.pieces
   return success(scan.pieces.length === 1 && only?.kind === 'image' ? { image: mediaSingle(only), nodes: nodes.value } : { nodes: nodes.value })
