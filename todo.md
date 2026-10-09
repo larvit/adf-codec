@@ -29,10 +29,10 @@
 | 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
-| 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
-| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
-| 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
+| 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
+| 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
+| 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
 | 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
@@ -97,6 +97,13 @@ breaking change to stored markdown.
 Today `[![a](/u)](/v)` reads as the image whose `media` the link marks, and `adfToPortableMarkdown`
 writes `![a](/u)`, dropping `/v`: the README promises it keeps link targets (Goal 7).
 
+### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
+
+`*!adf:mention[@a]{id=…}*` and `[!adf:status[Done]{…}](/u)` build a node holding `em` or `link`.
+`full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
+may reject the document. Replace `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) with the
+mark types a node takes, and have the emitter carry a node holding another.
+
 ### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
 `parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
@@ -119,13 +126,6 @@ Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
 `portable/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour` and
 `flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
 three directories.
-
-### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
-
-`*!adf:mention[@a]{id=…}*` and `[!adf:status[Done]{…}](/u)` build a node holding `em` or `link`.
-`full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
-may reject the document. Replace `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) with the
-mark types a node takes, and have the emitter carry a node holding another.
 
 ### 96. Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.
 
