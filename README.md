@@ -230,13 +230,15 @@ Serves Goals 1, 4 and 5.
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.3.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
-- CommonMark is valid input to every reader, apart from the raw HTML `unmappable-html` names and
-  one gap: a CommonMark image fits only as its own title-less paragraph. Mid-text and titled images
-  are error results, save an image inside another's description, which flattens into the alt text.
-- `commonMarkToAdf` claims nothing else. `losslessMarkdownToAdf` claims four shapes: literal text
-  matching directive, pipe-table or strikethrough syntax, and a code fence whose info string opens
-  `adf:`. Each can be kept literal (`spec/flavour.md`). `portableMarkdownToAdf` claims what
-  [Portable markdown](#portable-markdown) lists.
+- CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names
+  and one gap every reader shares: a CommonMark image fits only as its own title-less paragraph.
+  Mid-text and titled images are error results, save an image inside another's description, which
+  flattens into the alt text.
+- The other readers claim shapes CommonMark reads as text. `losslessMarkdownToAdf` claims four:
+  literal text matching directive, pipe-table or strikethrough syntax, and a code fence whose info
+  string opens `adf:`. `portableMarkdownToAdf` claims what [Portable markdown](#portable-markdown)
+  lists. A claimed shape that does not complete, such as a pipe row without a delimiter row, is an
+  error result; each can be kept literal (`spec/flavour.md`).
 - A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
   canonical spelling, which round-trips byte-identically.
 - Four CommonMark spellings parse without an error and build a document the reference
