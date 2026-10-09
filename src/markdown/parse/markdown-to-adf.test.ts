@@ -1181,11 +1181,12 @@ test('names the link a directive link wraps, no link holding another', () => {
 })
 
 test('names the directive mark left without the content it wraps', () => {
-  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps nothing a mark rides'
+  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps none'
   assert.equal(content(losslessMarkdownToAdf('!adf:underline[]\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:underline{}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), named.replace('underline', 'link'))
+  const breaks = 'the [content] it marks: this one wraps only hard breaks, which take no marks'
+  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), `unsupported-node-shape: the underline mark wraps ${breaks}`)
+  assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), `unsupported-node-shape: the link mark wraps ${breaks}`)
 })
 
 test('reads the text break only between two text nodes CommonMark joins, building no node', () => {

@@ -205,8 +205,9 @@ where its reference implementation nests one `<a>` in another.
 ## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding nothing a mark rides reads as its destination
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
-maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, by Goal 7. Goals 4, 5, 6 and 7. Valid while `mediaInline` carries no URL and ADF
-holds no empty text node.
+maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, by Goal 7. Goals 4, 5, 6
+and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node and a hard break takes
+no marks.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
 and §Marks spell out. An image alone in its paragraph reads as the image, its title as the caption.

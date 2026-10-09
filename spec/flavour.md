@@ -538,9 +538,10 @@ gives no marks, and nesting is the marks array in order, outermost first: `_!adf
 gives marks `[em, underline]`, `!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in
 the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
 the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes
-carrying an identical mark, attributes included, at that depth: `attrs: {}` differs from no `attrs`,
-and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
-emitted carry sits inside a mark spelling.
+carrying an identical mark, attributes included, at that depth, an emphasis or link spelling also
+spanning a hard break between two of them: `attrs: {}` differs from no `attrs`, and a directive
+spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no emitted carry sits
+inside a mark spelling.
 
 An inline node whose marks no nesting spells — a hard break holding any mark, a mark type not listed
 here, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
