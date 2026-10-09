@@ -160,3 +160,25 @@ Inherited architect, decided by:
 - `src/markdown/emit/inline-line.ts:233` `joinsRun`: lookahead, shortcut and three conditions per break; `inlineRuns` takes the whole context
 - `src/adf/inline-nodes.ts:5` `InlineNodeModel.marks`: the name hides "takes marks"
 - `src/markdown/parse/inline-content.ts:328` `linkTo`: the comment no longer says an empty destination reads as nothing
+
+## 2026-10-09T09:57:25Z, PR #22 at 45b5446, against 78655bc
+
+Ruling: worse
+
+| Seat | Vote |
+|---|---|
+| Mid A | worse |
+| Inherited architect | worse |
+
+Mid A, decided by:
+
+- `src/markdown/emit/inline-line.ts:100` `takeFallback`: the first fallback is discarded to stop joining, known only from a comment
+- `src/markdown/emit/inline-line.ts:200` `inlineRuns`: an indexed loop moving its own counter by `joinedBreaks`' result
+- `src/markdown/emit/inline-line.ts:226` `joinedBreaks`: six positional parameters and two jobs
+
+Inherited architect, decided by:
+
+- `src/markdown/emit/inline-line.ts:101` `takeFallback`: a hidden first step that takes no fallback
+- `src/markdown/emit/inline-line.ts:200` `inlineRuns`: runs built by a forward scan the reader steps through by hand
+- `src/markdown/emit/inline-line.ts:56` `portableLineFallback`: checks an unjoined line while the final emit starts joined
+- `src/markdown/emit/inline-line.ts:40` `LineFallbacks.joinsBreaks`: a fallbacks field whose fallback value is false
