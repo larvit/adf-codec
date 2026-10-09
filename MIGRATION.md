@@ -74,14 +74,14 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 `unmappable-image`, `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave
 `ConvertErrorCode` and `not-a-string` joins it: a `switch` naming one of the four stops compiling,
 and one naming every code needs the new case. A document `adfToMarkdown` refused with one of the
-last three now converts in `adfToLosslessMarkdown`; markdown the parser refused with one of the
-four now reads, or refuses with the code the table gives.
+three `unspellable-` codes now converts in `adfToLosslessMarkdown`; markdown the parser refused
+with one of the four now reads, or refuses with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
-| an image anywhere but alone in a plain paragraph (`See ![a](u).`, `# ![a](u)`), on parse | `unmappable-image` | its alt text linked to its URL, or, inside a link, plain text the link marks; give the image a paragraph of its own, with a blank line between it and any text, to keep it an image |
+| an image not alone in its paragraph (`See ![a](u).`, `# ![a](u)`), on parse | `unmappable-image` | its alt text linked to its URL, or, inside a link, plain text the link marks; give the image a paragraph of its own, a blank line between it and any other line, to keep it an image |
 | a titled image alone in its paragraph (`![a](u "t")`), on parse | `unmappable-image` | the image, captioned with its title |
-| an image that is a link's whole text, alone in its paragraph (`[![a](u)](/v)`), on parse | `unmappable-image` | the image, its `media` marked with the link |
+| a link alone in its paragraph whose whole text is an image (`[![a](u)](/v)`), on parse | `unmappable-image` | the image, its `media` marked with the link |
 | a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |
 | a carriage return in text, on emit | `unspellable-character` | spells `&#13;` |
 | a null character in text, on emit | `unspellable-character` | spells `!adf:text{text="\u0000"}` |

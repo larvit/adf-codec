@@ -314,18 +314,18 @@ the destination, `alt` the description's plain-text content when non-empty — a
 it contributing its own text, a node spelling its text in the content slot contributing that text,
 and a break of either kind a space. A non-empty title, `![alt](url "title")`, adds a `caption`
 holding the title as one text node, and a link whose entire text is the image,
-`[![alt](url)](href)`, marks the `media`. `adfToLosslessMarkdown` emits the image form for exactly
-the shape with neither — those attrs and no others, no marks on either node, no caption, and a
+`[![alt](url)](href)`, marks the `media`. `adfToLosslessMarkdown` emits the image form only for the
+bare shape — those attrs and no others, no marks on either node, no caption, and a
 `media` carrying nothing beyond `alt`, `type` and `url` — and only where CommonMark spells the pair:
 a destination or a description the image form cannot hold, an empty `alt` included, takes the
 directive form instead.
 
-Anywhere else — beside other content, in a heading, a table cell or an `!adf:paragraph` — an image
-reads as its alt text linked to its destination, the link titled by the image's title, since
-`mediaInline` carries a media `collection` + `id`, never a URL. An empty alt text reads as the
-destination, as an empty link text does. Inside a link's text, the alt text is plain text the link
-marks, and the image's destination and title drop (`docs/decisions.md` §Every CommonMark image and
-empty link reads).
+`mediaInline` carries a media `collection` + `id`, never a URL, so anywhere else an image reads as
+its alt text linked to its destination, the link titled by the image's title: beside other
+content, in a heading, a table cell or an `!adf:paragraph`, and in the paragraph a portable alert,
+callout or task marker opens. An empty alt text reads as the destination, as an empty link text
+does. Inside a link's text, the alt text is plain text the link marks, and the image's destination
+and title drop (`docs/decisions.md` §An image reads as an image only alone in its paragraph).
 
 ### Tables
 

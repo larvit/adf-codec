@@ -318,7 +318,7 @@ function codeBlockNode(language: string, text: string, reading: Reading, path: C
   return success(text === '' ? node : { ...node, content: [{ text, type: 'text' }] })
 }
 
-// spec/flavour.md, The CommonMark image: only a plain paragraph gives a lone image the block it needs.
+// spec/flavour.md, The CommonMark image: only a `paragraph` block gives a lone image the block it needs.
 function paragraphNode(text: string, reading: Reading, path: ConvertErrorPath): Result<AdfNode> {
   const content = parseInlineContent(text, reading.definitions, path, 'paragraph', reading.claims)
   if (!content.ok) return content

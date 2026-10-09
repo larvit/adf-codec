@@ -17,8 +17,7 @@ One directory per contract kind:
   `exceptions.json` pins each known divergence by `check`, `example`, `kind` and the exact
   `divergence`, with a `reason`. `kind` is `mark-model` (the permanent count divergence from ADF's
   mark-per-node model), `node-model` (a permanent divergence where ADF holds no node for what
-  CommonMark renders: an empty link text, an image amid text, an image's title) or `pending` (a
-  parser gap).
+  CommonMark renders) or `pending` (a parser gap).
 
 JSON is two-space indent, keys sorted, and a document read back must deep-equal the fixture's
 (`docs/decisions.md` §Equality is deep). `spec.json` is the vendored, upstream machine-readable

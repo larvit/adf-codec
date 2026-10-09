@@ -28,7 +28,7 @@
 | 87 | 0.2.0 | defect | **Build a `hardBreak` carrying no marks where emphasis or a link spans a line break, in every reader.** | 4 | 3 | 6 | 7 | 4 | 16.6 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
-| 86 | 0.2.0 |  | **Write an image a link alone marks as `[![alt](url)](href)`, and one captioned with plain text as `![alt](url "caption")`, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
+| 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
@@ -81,7 +81,7 @@ changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alte
 between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and `!adf:listBreak`
 retires. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
 Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions, and the
-spelling leaves the README's "Six CommonMark spellings" bullet, which counts one fewer.
+spelling leaves the README's "Seven CommonMark spellings" bullet, which counts one fewer.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 
@@ -91,11 +91,12 @@ only the property tests catch drift. It caps the panel's Locality score. The rep
 time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
 of one character from each of its characters.
 
-### 86. Write an image a link alone marks as `[![alt](url)](href)`, and one captioned with plain text as `![alt](url "caption")`, in `adfToLosslessMarkdown`.
+### 86. Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.
 
-Every reader reads both spellings so; `adfToLosslessMarkdown` writes the `!adf:mediaSingle`
-directive for them. The emitted form is API (`docs/decisions.md` §The formats are API), so it
-changes before `0.2.0` ships. A writer panel settles the spelling.
+Every reader reads `[![alt](url)](href)` and `![alt](url "caption")` as these shapes, and
+`adfToLosslessMarkdown` writes the `!adf:mediaSingle` directive for both. The emitted form is API
+(`docs/decisions.md` §The formats are API): changing it inside `0.2.0` spares consumers a second
+breaking change to stored markdown.
 
 ### 85. Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.
 
@@ -248,8 +249,8 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
 example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
-gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Six CommonMark
-spellings" bullet, which counts one fewer.
+gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Seven
+CommonMark spellings" bullet, which counts one fewer.
 
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 
@@ -324,9 +325,8 @@ functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLi
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
 output; and `nestIn` (`portable/adf-to-portable-markdown.ts`), which pushes into its caller's array.
-Once `Scan`'s pieces have owners, the bracket resolution — `closeBracket` through `closeImage`,
-`linkPiece`, `linkTo`, `linkedAlt`, `mediaSingle`, `linkMark`, `holdsLink`, `imageAlt` and
-`altText` — can leave `inline-content.ts`, about 690 lines over five concerns, for a module of its own.
+Once `Scan`'s pieces have owners, the bracket resolution, `closeBracket` through `altText`, can
+leave `inline-content.ts` (about 690 lines) for a module of its own.
 
 ### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
 
