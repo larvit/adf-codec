@@ -35,6 +35,7 @@
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
+| 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
@@ -58,7 +59,6 @@
 | 34 | 0.4.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
 | 31 | 0.4.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
 | 42 | 0.4.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
-| 33 | 0.4.0 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 56 | 0.4.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
 | 76 | 0.4.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
 | 82 | 0.4.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 2 | 1 | 4.2 |
@@ -139,6 +139,14 @@ three directories.
 `full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
 may reject the document. `InlineNodeModel.marks` (`src/adf/inline-nodes.ts`) then names the mark
 types a node takes, and the emitter carries a node holding another.
+
+### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
+
+`adfToLosslessMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
+flanking cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and
+the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
+whose attributes no spelling writes re-emits the line the same way before riding the carry, and so
+does an emphasis or link run that parts at the hard breaks it spans. Make all four linear.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
@@ -319,14 +327,6 @@ measured one.
 `portable/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`,
 quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 `adfToPortableMarkdown`. Scan backward, as the expand title's trim does.
-
-### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
-
-`adfToLosslessMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
-flanking cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and
-the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
-whose attributes no spelling writes re-emits the line the same way before riding the carry, and so
-does an emphasis or link run that parts at the hard breaks it spans. Make all four linear.
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
