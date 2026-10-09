@@ -12,9 +12,9 @@ products store as ADF.
   started from — panels, mentions, statuses and node types this version does not know included.
 - **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, including `~~` and
   pipe tables whose every row opens with a pipe. `commonMarkToAdf` reads strict CommonMark as its
-  spec says: nothing becomes a table, task or panel. Both refuse raw HTML, and
-  `portableMarkdownToAdf` a claimed shape that does not complete
-  ([The guarantees](#the-guarantees)).
+  spec says: nothing becomes a table, task or panel. Both refuse raw HTML and nesting past 500
+  levels, and `portableMarkdownToAdf` a claimed shape that does not complete
+  ([The errors](#the-errors)).
 - **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
   from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
   task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
@@ -230,7 +230,8 @@ Serves Goals 1, 4 and 5.
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.3.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
-- CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names.
+- CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names
+  and nesting past 500 levels.
 - The other readers claim shapes CommonMark reads as text or code. `losslessMarkdownToAdf` claims
   four: literal text matching directive, pipe-table or strikethrough syntax, and a code fence whose
   info string opens `adf:`. `portableMarkdownToAdf` claims what [Portable
@@ -245,8 +246,8 @@ Serves Goals 1, 4 and 5.
   - An image anywhere but alone in a plain paragraph reads as its alt text linked to its URL,
     `See ![the moon](moon.png).` as `See [the moon](moon.png).`, and inside a link as plain text
     the link marks.
-  - An image's title reads as its caption where the image stands alone in a plain paragraph, and
-    as its link's title where it reads as linked alt text.
+  - An image's title reads as its caption where the image stands alone in a plain paragraph, as
+    its link's title where it reads as alt text linked to its URL, and inside a link it drops.
 
   And three more: a list continuing past a marker change stays one list against CommonMark's two,
   a shortcut reference matching its definition only under Unicode case folding stays unresolved,
