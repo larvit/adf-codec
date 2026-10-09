@@ -10,10 +10,10 @@ products store as ADF.
 
 - **Lossless:** `adfToLosslessMarkdown` and `losslessMarkdownToAdf` give back the document they
   started from — panels, mentions, statuses and node types this version does not know included.
-- **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, GFM's pipe tables
-  and `~~` included; `commonMarkToAdf` reads markdown known to be strict CommonMark as its spec
-  says, nothing in it becoming a table, task or panel. Both apart from raw HTML and the exceptions
-  [The guarantees](#the-guarantees) lists.
+- **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, `~~` and pipe tables
+  whose every row opens with a pipe included; `commonMarkToAdf` reads markdown known to be strict
+  CommonMark as its spec says, nothing in it becoming a table, task or panel. Both apart from raw
+  HTML and the exceptions [The guarantees](#the-guarantees) lists.
 - **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
   from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
   task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
@@ -187,8 +187,8 @@ minor may narrow that, never widen it. For `not-a-string` it is `{ line: 1, offs
 Parsing — `commonMarkToAdf` raises `not-a-string`, `unmappable-html` and `unmappable-image`;
 `portableMarkdownToAdf` those and `malformed-pipe-table`; `losslessMarkdownToAdf` every row; and
 `htmlToAdf`, at `0.3.0`, the rows its dialect reaches. Every reader also raises
-`unsupported-nesting-depth`, and `losslessMarkdownToAdf` `unsupported-node-shape`, from the table
-after next:
+`unsupported-nesting-depth`, and `losslessMarkdownToAdf` `unsupported-node-shape`, from the
+"Either direction" table:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
