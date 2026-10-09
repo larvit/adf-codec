@@ -27,7 +27,6 @@ type InlineContext = {
   bracketed: boolean
   carried: ReadonlySet<number>
   flavour: WrittenFlavour
-  joinsBreaks: boolean
   openingLinkAsDirective: boolean
   path: ConvertErrorPath
   spansLines: boolean
@@ -37,7 +36,7 @@ type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[
 
 type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | { fallback?: undefined; line: string }
 
-type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; joinsBreaks: boolean; openingLinkAsDirective: boolean }
+type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
 
 export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
@@ -54,8 +53,7 @@ export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: Conve
 }
 
 export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<PortableLineFallback | undefined> {
-  // Unjoined: the spelling `emitLine` falls back to where the joined one fails.
-  const emission = lineSegments(nodes, container, path, { carried: new Set(), flavour: 'portable', joinsBreaks: false, openingLinkAsDirective: false })
+  const emission = lineSegments(nodes, container, path, { carried: new Set(), flavour: 'portable', openingLinkAsDirective: false })
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
   const verdict = lineVerdict(emission.value.segments, container, 'portable')
@@ -78,7 +76,7 @@ export function tryImageLine(alt: string | undefined, href: string): string | un
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
-  const fallbacks: LineFallbacks = { carried: new Set(), flavour, joinsBreaks: nodes.some((node) => node.type === 'hardBreak'), openingLinkAsDirective: false }
+  const fallbacks: LineFallbacks = { carried: new Set(), flavour, openingLinkAsDirective: false }
   // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {
     const emission = lineSegments(nodes, container, path, fallbacks)
@@ -97,12 +95,7 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
   }
 }
 
-// A line's first fallback stops runs joining across hard breaks, so no fallback takes a break `joinedBreaks` joined.
 function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
-  if (fallbacks.joinsBreaks) {
-    fallbacks.joinsBreaks = false
-    return success(null)
-  }
   if (fallback === 'opening-link') {
     if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)
     fallbacks.openingLinkAsDirective = true
@@ -184,7 +177,7 @@ function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, c
   if (depth > largestNesting) {
     return failure('unsupported-nesting-depth', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
   }
-  const runs = inlineRuns(nodes, depth, firstIndex, context)
+  const runs = inlineRuns(nodes, depth, firstIndex, context.carried)
   const segments: InlineSegment[] = []
   for (const [offset, run] of runs.entries()) {
     if (takesTextBreak(runs[offset - 1], run, context.carried)) segments.push(syntax(textBreakSpelling))
@@ -197,45 +190,21 @@ function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, c
   return success({ segments })
 }
 
-function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number, context: InlineContext): InlineRun[] {
+function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number, carried: ReadonlySet<number>): InlineRun[] {
   const runs: InlineRun[] = []
-  for (let offset = 0; offset < nodes.length; offset += 1) {
-    const node = nodes[offset]
-    if (node === undefined) continue
+  for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
     // `depth` indexes each node's marks, outermost first; a carried node spells its marks inside the carry.
-    const mark = carries(node, context.carried, index) ? undefined : nodeMarks(node)[depth]
-    const previous = runs[runs.length - 1]
-    const joined = mark === undefined && previous?.kind === 'marked' && context.joinsBreaks ? joinedBreaks(nodes, offset, firstIndex, previous.mark, depth, context.carried) : 0
-    if (previous?.kind === 'marked' && joined > 0) {
-      for (const held of nodes.slice(offset, offset + joined)) previous.nodes.push(held)
-      offset += joined - 1
-      continue
-    }
+    const mark = carries(node, carried, index) ? undefined : nodeMarks(node)[depth]
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
       continue
     }
+    const previous = runs[runs.length - 1]
     if (previous?.kind === 'marked' && identicalMark(previous.mark, mark)) previous.nodes.push(node)
     else runs.push({ index, kind: 'marked', mark, nodes: [node] })
   }
   return runs
-}
-
-// The hard breaks from `offset` an emphasis or link run spans because the node after them holds its mark; a directive would spell each `!adf:hardBreak{}`.
-function joinedBreaks(nodes: readonly AdfNode[], offset: number, firstIndex: number, mark: AdfMark, depth: number, carried: ReadonlySet<number>): number {
-  const kind = markSpelling(mark.type)?.kind
-  if (kind !== 'emphasis' && kind !== 'link') return 0
-  let ahead = offset
-  while (isUncarriedBreak(nodes[ahead], carried, firstIndex + ahead)) ahead += 1
-  const next = nodes[ahead]
-  if (next === undefined || carries(next, carried, firstIndex + ahead)) return 0
-  const nextMark = nodeMarks(next)[depth]
-  return nextMark !== undefined && identicalMark(nextMark, mark) ? ahead - offset : 0
-}
-
-function isUncarriedBreak(node: AdfNode | undefined, carried: ReadonlySet<number>, index: number): boolean {
-  return node?.type === 'hardBreak' && !carries(node, carried, index)
 }
 
 function takesTextBreak(previous: InlineRun | undefined, run: InlineRun, carried: ReadonlySet<number>): boolean {
@@ -313,7 +282,7 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
   const link = spelling.kind === 'link' ? tryLink(nodes, mark, depth, range, context) : undefined
   if (link !== undefined) return link
-  const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
+  const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
   return success({ segments: [syntax(spellInlineDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })

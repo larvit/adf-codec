@@ -713,17 +713,17 @@ test('spells the directive marks around the longest run they cover', () => {
   assert.equal(emitted(marked('a', underline), { type: 'hardBreak' }, marked('b', underline)), '!adf:underline[a]\\\n!adf:underline[b]\n')
 })
 
-test('spells a mark run across the hard break between two nodes holding the mark', () => {
+test('closes a mark run at the hard break between two nodes holding the mark', () => {
   const em: AdfMark = { type: 'em' }
   const link: AdfMark = { attrs: { href: '/u' }, type: 'link' }
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const hardBreak: AdfNode = { type: 'hardBreak' }
-  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, marked('b', em)))), '_a\\\nb_\n')
-  assert.equal(readsBack(document(paragraph(marked('a', link), hardBreak, marked('b', link)))), '[a\\\nb](/u)\n')
-  assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)\\\nb_\n')
-  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a\\\n\\\nb_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, marked('b', em)))), '_a_\\\n_b_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', link), hardBreak, marked('b', link)))), '[a](/u)\\\n[b](/u)\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)_\\\n_b_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a_\\\n\\\n_b_\n')
   const directive: AdfMark = { attrs: { href: '/u', id: 'x' }, type: 'link' }
-  assert.equal(readsBack(document(paragraph(marked('a', directive), hardBreak, marked('b', directive)))), '!adf:link[a!adf:hardBreak{}b]{href="/u" id=x}\n')
+  assert.equal(readsBack(document(paragraph(marked('a', directive), hardBreak, marked('b', directive)))), '!adf:link[a]{href="/u" id=x}\\\n!adf:link[b]{href="/u" id=x}\n')
   readsBack(document(paragraph(marked(']: /x', link, { type: 'code' }), hardBreak, marked('b', link))))
   assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
 })
