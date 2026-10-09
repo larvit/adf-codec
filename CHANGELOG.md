@@ -57,11 +57,12 @@
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - Fix an image inside another image's description: it flattens into the alt text, where it was
   refused.
-- **Breaking:** `unmappable-image` leaves `ConvertErrorCode`, and every image reads. One not alone
-  in its paragraph reads as its alt text linked to its URL, a titled one alone in its paragraph as
-  the image captioned with its title, and one that is a link's whole text as the image the link
-  marks. An empty link text reads as its destination, `[](/url)` as `/url` linked, and `[]()` as
-  nothing, where both stayed literal text. See `MIGRATION.md`.
+- **Breaking:** `unmappable-image` leaves `ConvertErrorCode`, and every image reads. One anywhere
+  but alone in a plain paragraph reads as its alt text linked to its URL, or inside a link as plain
+  text the link marks. A titled one alone in a plain paragraph reads as the image captioned with
+  its title, and a link alone in a plain paragraph whose whole text is an image as the image the
+  link marks. An empty link text reads as its destination, `[](/url)` as `/url` linked, and
+  `[]()` as nothing, where both stayed literal text. See `MIGRATION.md`.
 - Fix a JSON key holding an escape, in a carried node or a JSON attribute such as `parameters`:
   `losslessMarkdownToAdf` reads it as the key it spells, where on V8 13.6 and later (Node 24, Deno,
   Chrome) `markdownToAdf` could refuse markdown `adfToMarkdown` wrote, as `unsupported-node-shape`,

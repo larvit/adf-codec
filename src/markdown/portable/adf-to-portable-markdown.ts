@@ -1,6 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, taskMarker } from './conventions.ts'
@@ -405,7 +406,5 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
   const alt = typeof held === 'string' ? oneLine(held).trim() : ''
-  const external: AdfNode = { attrs: alt === '' ? { type: 'external', url: writableHref(url) } : { alt, type: 'external', url: writableHref(url) }, type: 'media' }
-  const image: AdfNode = { attrs: { layout: 'center' }, content: [external], type: 'mediaSingle' }
-  return success([image])
+  return success([centeredImage([externalMedia(alt, writableHref(url))])])
 }

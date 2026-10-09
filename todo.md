@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 87`
+`Next ID = 88`
 
 | Goal | W |
 |---|---|
@@ -25,6 +25,7 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
+| 87 | 0.2.0 | defect | **Build a `hardBreak` carrying no marks where emphasis or a link spans a line break, in every reader.** | 4 | 3 | 6 | 7 | 4 | 16.6 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 86 | 0.2.0 |  | **Write an image a link alone marks as `[![alt](url)](href)`, and one captioned with plain text as `![alt](url "caption")`, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
@@ -64,6 +65,13 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
+
+### 87. Build a `hardBreak` carrying no marks where emphasis or a link spans a line break, in every reader.
+
+`*foo  \nbar*` builds a `hardBreak` marked `em` (CommonMark examples 638 and 639), which Atlassian's
+schema refuses: its `hardBreak_node` holds no `marks` (`spec/adf-schema/full.json`). So
+`commonMarkToAdf` builds a document a site may reject from plain CommonMark. The suite's `em 1/3`
+exceptions for 638 and 639 go back to `em 1/2`.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.
 
@@ -316,6 +324,9 @@ functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLi
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
 output; and `nestIn` (`portable/adf-to-portable-markdown.ts`), which pushes into its caller's array.
+Once `Scan`'s pieces have owners, the bracket resolution — `closeBracket` through `closeImage`,
+`linkPiece`, `linkTo`, `linkedAlt`, `mediaSingle`, `linkMark`, `holdsLink`, `imageAlt` and
+`altText` — can leave `inline-content.ts`, about 690 lines over five concerns, for a module of its own.
 
 ### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
 

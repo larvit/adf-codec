@@ -12,8 +12,9 @@ products store as ADF.
   started from — panels, mentions, statuses and node types this version does not know included.
 - **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, including `~~` and
   pipe tables whose every row opens with a pipe. `commonMarkToAdf` reads strict CommonMark as its
-  spec says: nothing becomes a table, task or panel. Both refuse raw HTML and the exceptions
-  [The guarantees](#the-guarantees) lists.
+  spec says: nothing becomes a table, task or panel. Both refuse raw HTML, and
+  `portableMarkdownToAdf` a claimed shape that does not complete
+  ([The guarantees](#the-guarantees)).
 - **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
   from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
   task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
@@ -241,10 +242,11 @@ Serves Goals 1, 4 and 5.
   implementation renders differently. Three because ADF holds no node for what it renders:
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and
     `[]()` as nothing.
-  - An image not alone in its paragraph reads as its alt text linked to its URL, `See ![the
-    moon](moon.png).` as `See [the moon](moon.png).`; beside other text inside a link, as plain
-    text the link marks.
-  - An image's title reads as its caption.
+  - An image anywhere but alone in a plain paragraph reads as its alt text linked to its URL,
+    `See ![the moon](moon.png).` as `See [the moon](moon.png).`, and inside a link as plain text
+    the link marks.
+  - An image's title reads as its caption where the image stands alone in a plain paragraph, and
+    as its link's title where it reads as linked alt text.
 
   And three more: a list continuing past a marker change stays one list against CommonMark's two,
   a shortcut reference matching its definition only under Unicode case folding stays unresolved,

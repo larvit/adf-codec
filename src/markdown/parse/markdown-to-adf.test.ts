@@ -1027,9 +1027,11 @@ test('reads an image no paragraph holds alone as its alt text, linked to its des
   assert.deepEqual(firstContent('# ![a](/u)\n'), [marked('a', link('/u'))])
   assert.deepEqual(firstContent('!adf:paragraph {localId=p}\n![a](/u)\n!adf:/paragraph\n'), [marked('a', link('/u'))])
   assert.deepEqual(firstContent('![a ![b](/c) d\n'), [text('![a '), marked('b', link('/c')), text(' d')])
+  assert.deepEqual(content(losslessMarkdownToAdf('![a]\n')), [paragraph('![a]')])
+  assert.deepEqual(content(losslessMarkdownToAdf('a ! b\n')), [paragraph('a ! b')])
 })
 
-test('reads an image beside other content in a link as its alt text, the link\'s own text', () => {
+test('reads an image inside a link not alone in its paragraph as plain alt text the link marks, dropping its own destination', () => {
   assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text('.')])
   assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text('.')])
   assert.deepEqual(firstContent('[b ![a](/u)](/v)\n'), [marked('b a', link('/v'))])

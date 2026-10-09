@@ -6,6 +6,7 @@ import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
+import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -309,11 +310,10 @@ function linkedAlt(piece: Piece): Piece {
 }
 
 function mediaSingle({ alt, definition, link }: Image): AdfNode {
-  const attrs = alt === '' ? { type: 'external', url: definition.destination } : { alt, type: 'external', url: definition.destination }
-  const media: AdfNode = link === undefined ? { attrs, type: 'media' } : { attrs, marks: [linkMark(link)], type: 'media' }
+  const media = externalMedia(alt, definition.destination)
   const { title } = definition
   const caption: AdfNode[] = title === undefined || title === '' ? [] : [{ content: [{ text: title, type: 'text' }], type: 'caption' }]
-  return { attrs: { layout: 'center' }, content: [media, ...caption], type: 'mediaSingle' }
+  return centeredImage([link === undefined ? media : { ...media, marks: [linkMark(link)] }, ...caption])
 }
 
 function linkMark({ destination, title }: LinkDefinition): AdfMark {
