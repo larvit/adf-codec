@@ -217,12 +217,12 @@ reads as that image, with the link marking its `media`. Inside any other link, t
 text the link marks, and the image's URL and title drop: the panel chose this by Goal 6, which
 outranks Goal 7.
 
-In `portableMarkdownToAdf`, an alert's or unfolded callout's marker line stands apart from the lines
-after it, and so do those after a folded callout's title line, so an image alone on either reads as
-the image: a reader panel of the bot, the LLM pipeline and a support agent, 3 of 3 on 2026-10-09,
-expected the picture in every case, a ticked task included.
-A task item holds no image in Atlassian's schema, so the paragraph a task marker opens reads its
-image as linked alt text, the fallback two of the three named.
+In `portableMarkdownToAdf`, a `[!WORD]` marker with no `+` or `-` stands apart from the lines after
+it, and so does a `+` or `-` callout's title line, so an image alone on the marker line or after the
+title reads as the image: a reader panel of the bot, the LLM pipeline and a support agent, 3 of 3
+on 2026-10-09, expected the picture in every case, a ticked task included. A task item holds no
+image in Atlassian's schema, so the paragraph a task marker opens reads its image as linked alt
+text, the fallback two of the three named.
 
 The same panel confirmed the other readings on 2026-10-09: a title as the caption, an image amid
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.

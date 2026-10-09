@@ -151,7 +151,7 @@ function markerLine(text: string): { line: string; rest: string } {
   return { line: (hardBreak ? line.slice(0, -1) : line).replace(/^[ \t]+/, ''), rest: lineEnd === -1 ? '' : text.slice(lineEnd + 1) }
 }
 
-// docs/decisions.md, An image reads as an image only alone in its paragraph: an alert's marker line stands apart from the lines after it.
+// docs/decisions.md, An image reads as an image only alone in its paragraph: a marker or title line stands apart from the lines after it.
 function paragraphsOf(position: SourcePosition, ...texts: string[]): Paragraph[] {
   return texts.filter((text) => text !== '').map((text) => ({ kind: 'paragraph', position, text }))
 }
