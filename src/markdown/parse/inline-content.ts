@@ -119,46 +119,49 @@ function scanInline(scan: Scan): Result<Scanned> {
 }
 
 function readToken(scan: Scan, index: number, token: InlineToken): Result<number> {
-  const end = index + token.width
   switch (token.kind) {
-    case 'autolink':
+    case 'autolink': {
+      const end = index + token.width
       flush(scan, false)
       pushNode(scan, linkedText(scan.source.slice(index + 1, end - 1), token.email ? 'mailto:' : ''))
       return success(end)
+    }
     case 'bracket':
       flush(scan, false)
-      scan.pieces.push({ active: true, image: token.image, kind: 'open', start: end })
-      return success(end)
+      scan.pieces.push({ active: true, image: token.image, kind: 'open', start: index + token.width })
+      return success(index + token.width)
     case 'bracket-close':
       return closeBracket(scan, index)
-    case 'code-span':
+    case 'code-span': {
+      const end = index + token.width
       flush(scan, false)
       pushNode(scan, { marks: [{ type: 'code' }], text: codeSpanText(scan.source.slice(index + token.opener, end - token.opener)), type: 'text' })
       return success(end)
+    }
     case 'delimiter-run':
       flush(scan, false)
       scan.pieces.push({ canClose: token.canClose, canOpen: token.canOpen, character: scan.source.charAt(index), kind: 'run', length: token.width })
-      return success(end)
+      return success(index + token.width)
     case 'directive':
       return readDirective(scan, index)
+    case 'entity':
+    case 'escape':
+    case 'text':
+      scan.pending += scan.source.slice(index, index + token.width)
+      return success(index + token.width)
     case 'hard-break':
       // CommonMark strips the spaces the two-space break is spelled with, and keeps those before a backslash.
       flush(scan, false)
       pushNode(scan, { type: 'hardBreak' })
-      return success(end)
+      return success(index + token.width)
     case 'highlight':
       flush(scan, false)
       scan.pieces.push({ closes: token.closes, kind: 'highlight', opens: token.opens })
-      return success(end)
+      return success(index + token.width)
     case 'html':
       return failure('unmappable-html', `no raw HTML converts at this version: ${token.construct}`, scan.path)
     case 'line-ending':
       return success(readLineEnding(scan, index))
-    case 'entity':
-    case 'escape':
-    case 'text':
-      scan.pending += scan.source.slice(index, end)
-      return success(end)
   }
 }
 

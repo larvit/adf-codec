@@ -88,7 +88,7 @@ export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined
   return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
-// Reads the directive an `!adf:` at `index` claims.
+// The caller has checked `claimsDirectivePrefix` at `index`.
 export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> {
   return readClaimedDirective(text, index, 1)
 }
