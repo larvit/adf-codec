@@ -364,8 +364,10 @@ function tryListItemLines(inner: string, marker: string): string | undefined {
   if (body.some((line) => line !== '' && isBlankLine(line))) return undefined
   const indent = ' '.repeat(marker.length)
   const lines = body.map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
-  if (isThematicBreak(lines[0] ?? '')) return undefined
-  return lines.join('\n')
+  const first = lines[0] ?? ''
+  if (!isThematicBreak(first)) return lines.join('\n')
+  // A first line of `*` alone beside the `* ` marker is text, since a rule is spelled `---`: a backslash keeps it from reading as one.
+  return inner.startsWith('*') ? [`${marker}\\${first.slice(marker.length)}`, ...lines.slice(1)].join('\n') : undefined
 }
 
 function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {

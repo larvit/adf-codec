@@ -71,6 +71,16 @@ Two adjacent text nodes CommonMark would read back as one are parted by the rese
 `!adf:textBreak{}`: a leaf building no node keeps both nodes and asks nothing of the text around
 it. A code span holds no directive, so the spans close and reopen around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text nodes**.
 
+## A list beside one of its kind takes the other marker
+
+2026-10-04, the maintainer. Goals 4 and 5. Valid while CommonMark starts a new list where the
+bullet character or the ordered delimiter changes.
+
+Every reader parts lists where the marker changes, as CommonMark does. Both writers give a bullet or
+task list right after a bullet or task list `* `, and an ordered list right after an ordered one
+`1)`; the list after that takes `- ` or `1.` again. CommonMark already spells two adjacent lists, so
+no directive parts them. The grammar: `spec/flavour.md` §Canonical form.
+
 ## An empty key spells `empty`
 
 2026-10-03, a writer panel and the maintainer. Goals 1 and 6. Valid while no attribute value
@@ -278,7 +288,9 @@ renderer confirming each shape. Reader panels settled `error` as an error panel,
 (3 of 3) and a Han, Hangul, kana, Thai, Lao, Khmer or Myanmar character on either side bounding a
 delimiter, so `は==日本語==で` (3 of 3), `==한국어==에서만` and `iPhone==専用==` (6 of 7) highlight,
 the external image's two forms (6 of 7), a rule opening a list item dropping and the omission
-notes (3 of 3), and a list's numbering overflowing into bullets (3 of 3, 5 of 7).
+notes (3 of 3), and a list's numbering overflowing into bullets (3 of 3). A 5 of 7 verdict joining
+adjacent ordered lists whose numbering breaks into one such list lapsed on 2026-10-09, when a
+delimiter change began parting them.
 An omission note reads as the converter's, never as the author's.
 Reading takes other tools' spellings, since it reads their output and writes none of them.
 Rejected: `~sub~` and `^sup^` (`~2~` is a strike on GitHub, so `subsup` drops), underline and colour
@@ -689,8 +701,8 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 per level above it otherwise.
 
 The parse and the portable reduction keep each node's readable spelling in a memo, so the
-`commonMarkSpelling` ask stops spelling a node once per level above it. `text` and `spelling` carry
-no depth and `headroom` is affine in it, so a read at or above the depth that filled the entry
+`commonMarkSpelling` ask stops spelling a node once per level above it. The spelled texts and
+`spelling` carry no depth and `headroom` is affine in it, so a read at or above the depth that filled the entry
 rebases; a read below re-spells, because a hit skips the depth guards the walk it replaces runs and
 an ordered list past the marker cap gives way, spending two emitter levels where the parser spent
 one. Only what succeeded is kept, so no path minted at another position is ever read.

@@ -13,6 +13,7 @@ In `docs/decisions.md`:
 - Markdown in is a canonical fixpoint
 - Equality is deep
 - `!adf:textBreak{}` parts text CommonMark would join
+- A list beside one of its kind takes the other marker
 - An empty key spells `empty`
 - `-0` is spelled `-0`
 - Empty markdown is a document of no blocks

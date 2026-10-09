@@ -177,6 +177,9 @@ test('alternates the marker between adjacent lists of a kind, the marker change 
   assert.equal(markdown(adfToLosslessMarkdown(document(nested))), '- - x\n  * x\n')
   const stars: AdfNode = { content: [{ content: [paragraph({ text: '* *', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
   assert.equal(markdown(adfToLosslessMarkdown(document(list, stars))), '- x\n\n* \\* *\n')
+  const strong: AdfNode = { content: [{ content: [paragraph({ text: '**', type: 'text' }), paragraph({ text: 'y', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
+  assert.equal(markdown(adfToLosslessMarkdown(document(strong))), '- **\n\n  y\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document(list, strong))), '- x\n\n* \\**\n\n  y\n')
   const carried: AdfNode = { ...list, attrs: { unknown: 'x' } }
   assert.ok(markdown(adfToLosslessMarkdown(document(carried, carried))).includes('```\n\n```adf:bulletList\n'))
   assert.ok(markdown(adfToLosslessMarkdown(document(carried, list))).endsWith('```\n\n- x\n'))

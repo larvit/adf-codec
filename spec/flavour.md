@@ -19,9 +19,10 @@ normalizes to it through the round-trip.
   single tilde or a run of three or more is literal text — and block structure resolves before
   inline, so a `~~~` line opens a CommonMark tilde code fence.
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
-  `order` attribute. A list right after a list of its kind takes the other marker, `* ` or `1)`,
-  since CommonMark starts a new list where the bullet character or the delimiter changes; the
-  list after that takes `- ` or `1.` again. Continuation lines align with the first character
+  `order` attribute. A bullet or task list right after a bullet or task list takes `* `, and an
+  ordered list right after an ordered one `1)`, since CommonMark starts a new list where the
+  bullet character or the delimiter changes; the list after that takes `- ` or `1.` again, and a
+  first line of `*` alone after `* ` opens with a backslash, `* \**`. Continuation lines align with the first character
   after the marker (two spaces for `- `, three for `1. `); blank lines inside an item are empty
   lines, none between a nested list and a CommonMark block above it — one wherever the nested
   list's own marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or
