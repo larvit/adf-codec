@@ -19,17 +19,14 @@ normalizes to it through the round-trip.
   single tilde or a run of three or more is literal text — and block structure resolves before
   inline, so a `~~~` line opens a CommonMark tilde code fence.
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
-  `order` attribute. Continuation lines align with the first character after the marker
-  (two spaces for `- `, three for `1. `); blank lines inside an item are empty lines, none
-  between a nested list and a CommonMark block above it — one wherever the nested list's own
-  marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or a list
-  whose first item is empty), whatever block sits above it. Blank lines between items normalize
-  away, and no list opens beside one of its own kind — the marker change CommonMark starts a
-  second list on merges instead: ADF records no tightness, so one `- ` spelling reads two
-  adjacent lists of a kind back as one. The leaf `!adf:listBreak` parts them, taking the separation
-  any directive block takes where it sits. It builds no node, and it reads only between two
-  adjacent lists of one type: elsewhere, or carrying an argument, `{attrs}` or a body, it is a
-  named error. A list whose item holds a line of spaces or tabs alone, which a list item reads
+  `order` attribute. A list right after a list of its kind takes the other marker, `* ` or `1)`,
+  since CommonMark starts a new list where the bullet character or the delimiter changes; the
+  list after that takes `- ` or `1.` again. Continuation lines align with the first character
+  after the marker (two spaces for `- `, three for `1. `); blank lines inside an item are empty
+  lines, none between a nested list and a CommonMark block above it — one wherever the nested
+  list's own marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or
+  a list whose first item is empty), whatever block sits above it. Blank lines between items
+  normalize away. A list whose item holds a line of spaces or tabs alone, which a list item reads
   back empty, takes the directive form.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
@@ -84,10 +81,9 @@ result naming it at the opener, whatever follows it — so output an old emitter
 escaped, and erroring input gaining meaning later is MINOR, never a reparse (`docs/decisions.md`
 §The formats are API). Each name belongs to one position, and a name the other one spells — a mark
 or an inline node written as a block directive, a block node written inline — is a different error,
-naming the spelling it takes. Four reserved names read back to no node: `carry` for the inline
-opaque carry, `listBreak` for the leaf that parts two adjacent lists and `doc` for a document
-holding no `content` key (Canonical form), and `textBreak` for the leaf that parts two text nodes
-(Inline nodes). Every fence info string opening `adf:` is reserved for the block carry (The opaque
+naming the spelling it takes. Three reserved names read back to no node: `carry` for the inline
+opaque carry, `doc` for a document holding no `content` key (Canonical form), and `textBreak` for
+the leaf that parts two text nodes (Inline nodes). Every fence info string opening `adf:` is reserved for the block carry (The opaque
 carry).
 
 **Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`

@@ -29,8 +29,8 @@ export type Block = { position: SourcePosition } & (
   | { blocks: Block[]; kind: 'blockquote' }
   | { construct: string; kind: 'html' }
   | { fault: ConvertFault; kind: 'fault' }
-  | { items: Block[][]; kind: 'bulletList' }
-  | { items: Block[][]; kind: 'orderedList'; start: number }
+  | { delimiter: string; items: Block[][]; kind: 'bulletList' }
+  | { delimiter: string; items: Block[][]; kind: 'orderedList'; start: number }
   | { kind: 'code'; language: string; text: string }
   | { kind: 'heading'; level: number; text: string }
   | { kind: 'paragraph'; text: string }
@@ -214,19 +214,23 @@ function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: 
   if (paragraphOpen && !markerInterruptsParagraph(marker.start, blank)) return undefined
   const spaces = leadingColumns(after)
   const padding = blank || spaces > indentedCodeColumns ? 1 : spaces
-  const kind = marker.start === undefined ? 'bulletList' : 'orderedList'
-  const continued = enclosing?.kind === 'item' && enclosing.list.kind === kind
+  const list = openList(marker.delimiter, marker.start, position)
+  const continued = enclosing?.kind === 'item' && continuesList(enclosing.list, list)
   return {
     fresh: !continued,
     indentation: leadingColumns(line) + marker.width + padding,
     kind: 'item',
-    list: continued ? enclosing.list : openList(marker.start, position),
+    list: continued ? enclosing.list : list,
     rest: blank ? after : removeColumns(after, padding),
   }
 }
 
-function openList(start: number | undefined, position: SourcePosition): ListBlock {
-  return start === undefined ? { items: [], kind: 'bulletList', position } : { items: [], kind: 'orderedList', position, start }
+function openList(delimiter: string, start: number | undefined, position: SourcePosition): ListBlock {
+  return start === undefined ? { delimiter, items: [], kind: 'bulletList', position } : { delimiter, items: [], kind: 'orderedList', position, start }
+}
+
+function continuesList(list: ListBlock, next: ListBlock): boolean {
+  return list.kind === next.kind && list.delimiter === next.delimiter
 }
 
 function openContainer(walk: Walk, start: ContainerStart): void {
@@ -242,12 +246,12 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
-// Two lists of a kind never sit adjacent: one `- ` spelling reads them back as one (spec/flavour.md).
+// An item after a closed one, such as an empty item a blank line ends, continues the list beside it.
 function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
   if (!start.fresh) return start.list
   const blocks = currentBlocks(walk)
   const previous = blocks.at(-1)
-  if ((previous?.kind === 'bulletList' || previous?.kind === 'orderedList') && previous.kind === start.list.kind) return previous
+  if ((previous?.kind === 'bulletList' || previous?.kind === 'orderedList') && continuesList(previous, start.list)) return previous
   blocks.push(start.list)
   return start.list
 }

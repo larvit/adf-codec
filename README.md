@@ -149,10 +149,9 @@ saving what this pair read replaces mentions, attachments and macros with text.
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.
 - A text node's `content` drops: Atlassian's schema forbids it, so no rendered document shows it.
-- An ordered list numbered past `999999999`, or adjacent ordered lists whose numbering does not
-  continue, is one bullet list keeping its numbers as text.
-- A task list beside a bullet or decision list, or holding a block other than a task, joins one
-  bullet list keeping its states as text: `- \[x] Done`.
+- An ordered list numbered past `999999999` is a bullet list keeping its numbers as text.
+- A task list holding a block other than a task is a bullet list keeping its states as text:
+  `- \[x] Done`.
 - Text that would read as a marker takes a backslash: `==` wherever it could open or close a
   highlight, `[!…]` opening a quote, and `[x]` or `[ ]` opening any list item, since GitHub reads
   that marker per item.
@@ -215,7 +214,7 @@ emit refuses:
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, wraps a directive mark around nothing or only hard breaks, writes as a directive a node or mark the lossless flavour spells as CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting: a node not riding the carry that carries one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content` | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
+| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, wraps a directive mark around nothing or only hard breaks, writes as a directive a node or mark the lossless flavour spells as CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting: a node not riding the carry that carries one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content` | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
 
@@ -238,7 +237,7 @@ Serves Goals 1, 4 and 5.
   without a delimiter row, is an error result; each can be kept literal (`spec/flavour.md`).
 - A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
   canonical spelling, which round-trips byte-identically.
-- Seven CommonMark spellings parse without an error and build a document the reference
+- Six CommonMark spellings parse without an error and build a document the reference
   implementation renders differently. Four because ADF holds no node for what it renders:
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and `[]()`
     as nothing. A link text holding only hard breaks reads the same, followed by its hard breaks.
@@ -252,12 +251,11 @@ Serves Goals 1, 4 and 5.
   - An image's title becomes its caption when the image stays an image, and its link's title when
     it becomes linked alt text. Inside another link, the title is dropped.
 
-  And three more: a list continuing past a marker change stays one list against CommonMark's two,
-  a shortcut reference matching its definition only under Unicode case folding stays unresolved,
-  and a link whose text holds an autolink keeps the inner link and leaves the outer brackets
-  literal text, which the spec requires and the reference itself breaks, nesting one `<a>` in the
-  other. `corpus/commonmark-spec/exceptions.json` pins the first four `node-model` where the suite
-  reaches them, and the next two `pending`; the suite holds no example of the last.
+  And two more: a shortcut reference matching its definition only under Unicode case folding stays
+  unresolved, and a link whose text holds an autolink keeps the inner link and leaves the outer
+  brackets literal text, which the spec requires and the reference itself breaks, nesting one `<a>`
+  in the other. `corpus/commonmark-spec/exceptions.json` pins the first four `node-model` where the
+  suite reaches them, and the next `pending`; the suite holds no example of the last.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to

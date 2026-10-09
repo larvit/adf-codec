@@ -3,7 +3,7 @@ import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { WrittenFlavour } from '../portable/conventions.ts'
 import { adfDocumentFault, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, flavourClaims, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../portable/conventions.ts'
-import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
+import { blockDirectiveForm, documentSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes, isTaskItem } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
@@ -18,18 +18,23 @@ import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
-type BlockSpelling = 'commonmark' | 'directive' | 'list'
+// The usual delimiter, then the one a list beside another of its kind takes.
+type Delimiters = readonly [string, string]
+// CommonMark starts a new list where the marker changes, so a list beside one of its kind takes `alternateText`.
+type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
 // headroom: the nesting levels the deepest node below may still spend before `largestNesting` refuses it.
-type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
+type EmittedBlock = SpelledBlock & { headroom: number }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
-type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
+type PlacedBlock = SpelledBlock & { node: AdfNode }
 type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
 export type Writing = { flavour: WrittenFlavour; memo: SpellingMemo | undefined }
 
+const bulletDelimiters: Delimiters = ['-', '*']
 export const largestListMarker = 999999999
+const orderedDelimiters: Delimiters = ['.', ')']
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 
@@ -67,23 +72,23 @@ function tooDeep(path: ConvertErrorPath): Result<never> {
 
 function joinBlocks(blocks: readonly PlacedBlock[], container: BlockContainer): string {
   let text = ''
+  let alternated = false
   for (const [index, block] of blocks.entries()) {
     const previous = blocks[index - 1]
     if (previous !== undefined) text += separationBetween(previous, block, container)
-    text += block.text
+    alternated = !alternated && previous?.spelling === 'list' && block.spelling === 'list' && isOrdered(previous.node) === isOrdered(block.node)
+    text += alternated && block.spelling === 'list' ? block.alternateText : block.text
   }
   return text
 }
 
+function isOrdered(node: AdfNode): boolean {
+  return node.type === 'orderedList'
+}
+
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
   const bothCommonMark = previous.spelling !== 'directive' && next.spelling !== 'directive'
-  if (bothCommonMark && next.spelling === 'list') {
-    if (previous.spelling === 'list' && previous.node.type === next.node.type) {
-      const gap = container === 'directive' ? '\n' : '\n\n'
-      return `${gap}${listBreakSpelling}${gap}`
-    }
-    if (container === 'list-item') return interruptsParagraph(next.node) ? '\n' : '\n\n'
-  }
+  if (bothCommonMark && next.spelling === 'list' && container === 'list-item') return interruptsParagraph(next.node) ? '\n' : '\n\n'
   return container === 'directive' && !bothCommonMark ? '\n' : '\n\n'
 }
 
@@ -175,9 +180,14 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
     if (task || previous === undefined) items.push([...walk.value.blocks])
     else for (const block of walk.value.blocks) previous.push(block)
   }
-  const lines = items.map((blocks) => tryListItemLines(joinBlocks(blocks, 'list-item'), '- '))
+  const list = spelledList(
+    items.map((blocks) => joinBlocks(blocks, 'list-item')),
+    () => '',
+    bulletDelimiters,
+    headroom,
+  )
   // The portable reduction leaves no task a list item cannot hold: a directive here would break the flavour.
-  return lines.includes(undefined) ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success({ headroom, spelling: 'list', text: lines.join('\n') })
+  return list === undefined ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success(list)
 }
 
 function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
@@ -309,20 +319,32 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
     headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })
   }
-  const lines: string[] = []
-  for (const [offset, item] of walked.entries()) {
+  const inners = walked.map((item) => {
     const inner = joinBlocks(item.walk.blocks, 'list-item')
     // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
-    const escaped = flavourClaims[writing.flavour].taskMarkers && leadingMarker(inner, readTaskMarker) !== undefined ? `\\${inner}` : inner
-    const line = tryListItemLines(escaped, ordered ? `${start + offset}. ` : '- ')
-    if (line === undefined) {
-      // The directive form spends a level the walk did not count.
-      if (headroom < 1) return tooDeep(path)
-      return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
-    }
+    return flavourClaims[writing.flavour].taskMarkers && leadingMarker(inner, readTaskMarker) !== undefined ? `\\${inner}` : inner
+  })
+  const list = ordered ? spelledList(inners, (offset) => `${start + offset}`, orderedDelimiters, headroom) : spelledList(inners, () => '', bulletDelimiters, headroom)
+  if (list !== undefined) return success(list)
+  // The directive form spends a level the walk did not count.
+  if (headroom < 1) return tooDeep(path)
+  return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
+}
+
+function spelledList(inners: readonly string[], number: (offset: number) => string, [usual, alternate]: Delimiters, headroom: number): EmittedBlock | undefined {
+  const text = listLines(inners, number, usual)
+  const alternateText = listLines(inners, number, alternate)
+  return text === undefined || alternateText === undefined ? undefined : { alternateText, headroom, spelling: 'list', text }
+}
+
+function listLines(inners: readonly string[], number: (offset: number) => string, delimiter: string): string | undefined {
+  const lines: string[] = []
+  for (const [offset, inner] of inners.entries()) {
+    const line = tryListItemLines(inner, `${number(offset)}${delimiter} `)
+    if (line === undefined) return undefined
     lines.push(line)
   }
-  return success({ headroom, spelling: 'list', text: lines.join('\n') })
+  return lines.join('\n')
 }
 
 function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {

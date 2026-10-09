@@ -7,7 +7,7 @@ import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
-import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
+import { documentAttribute, documentName, documentSpelling } from '../block-directive.ts'
 import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { flavourClaims, leadingMarker, readAlertMarker, readTaskMarker } from '../portable/conventions.ts'
@@ -70,16 +70,11 @@ function typeName(value: unknown): string {
 function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
-  for (const [index, block] of blocks.entries()) {
+  for (const block of blocks) {
     const nodePath = [...path, 'content', content.length]
     if (block.kind === 'directive' && block.name === documentName) {
       const fault = documentFault(block) ?? unsupportedNodeShape(`delete the ${documentSpelling} line to give the document content: it stands only as the whole document`)
       return positioned(faulted(fault, nodePath), block.position)
-    }
-    if (block.kind === 'directive' && block.name === listBreakName) {
-      const fault = listBreakFault(block, blocks[index - 1], blocks[index + 1])
-      if (fault !== undefined) return positioned(faulted(fault, nodePath), block.position)
-      continue
     }
     if (block.kind === 'bulletList' && reading.claims.taskMarkers) {
       const listed = positioned(bulletBlocks(block.items, reading, nodePath, depth), block.position)
@@ -94,15 +89,6 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
   return success(content)
 }
 
-// spec/flavour.md, Directives: the separator builds no node, so only the pair it parts spells it.
-function listBreakFault(block: DirectiveBlock, previous: ReadBlock | undefined, next: ReadBlock | undefined): ConvertFault | undefined {
-  if (block.argument !== undefined || block.attributes.size > 0) {
-    return unsupportedNodeShape(`${listBreakName} spells the bare leaf form, ${listBreakSpelling}: this one spells more`)
-  }
-  if (previous?.kind !== 'bulletList' && previous?.kind !== 'orderedList') return partsFault()
-  return previous.kind === next?.kind ? undefined : partsFault()
-}
-
 function documentFault(block: DirectiveBlock): ConvertFault | undefined {
   const spelled = block.attributes.get(documentAttribute.key)
   if (block.argument === undefined && block.attributes.size === 1 && spelled?.spelling === documentAttribute.value) return undefined
@@ -110,10 +96,6 @@ function documentFault(block: DirectiveBlock): ConvertFault | undefined {
     return unsupportedNodeShape(`an empty document is empty markdown, and ${documentSpelling} spells a document holding no content key: this one spells ${documentAttribute.key}=empty`)
   }
   return unsupportedNodeShape(`${documentName} spells the one form ${documentSpelling}: this one spells another`)
-}
-
-function partsFault(): ConvertFault {
-  return unsupportedNodeShape(`${listBreakName} parts two adjacent lists of one type: this one parts something else`)
 }
 
 function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {

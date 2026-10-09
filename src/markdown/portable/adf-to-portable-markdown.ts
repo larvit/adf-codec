@@ -116,24 +116,18 @@ function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> 
 
 // A list still taking the directive form gives way to its items' blocks.
 function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
-  let sequence = mergedLists(blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0))
+  let sequence = blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0)
   for (let index = 0; index < sequence.length; index += 1) {
     const listed = sequence[index]
     if (listed === undefined || (listed.type !== 'bulletList' && listed.type !== 'orderedList')) continue
     const block = numberedPastMarkers(listed)
     const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', memo: reduction.memo })?.ok === true
     if (spelled) continue
-    sequence = spliced(sequence, index, block === listed ? nodeContent(block).flatMap(nodeContent) : [block])
-    // Step back to the merged neighbour, which may now take the directive form itself.
-    index = Math.max(0, index - 1) - 1
+    sequence = [...sequence.slice(0, index), ...(block === listed ? nodeContent(block).flatMap(nodeContent) : [block]), ...sequence.slice(index + 1)]
+    // The replacement's first block takes this index, and may itself take the directive form.
+    index -= 1
   }
   return success(sequence)
-}
-
-// The replacement merges with the lists beside it, so no two lists of one type stand adjacent.
-function spliced(sequence: readonly AdfNode[], index: number, replacement: readonly AdfNode[]): AdfNode[] {
-  const from = Math.max(0, index - 1)
-  return [...sequence.slice(0, from), ...mergedLists([...sequence.slice(from, index), ...replacement, ...sequence.slice(index + 1, index + 2)]), ...sequence.slice(index + 2)]
 }
 
 // A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.
@@ -148,39 +142,13 @@ function numberedAsText(list: AdfNode): AdfNode {
   return { content: nodeContent(list).map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
 }
 
-// Adjacent lists of one marker read back as one list.
-function mergedLists(blocks: readonly AdfNode[]): AdfNode[] {
-  const merged: AdfNode[] = []
-  for (const block of blocks) {
-    let next = block
-    for (let previous = merged.at(-1); previous !== undefined && listMarker(next) !== undefined && listMarker(previous) === listMarker(next); previous = merged.at(-1)) {
-      merged.pop()
-      next = joinedLists(previous, next)
-    }
-    merged.push(next)
-  }
-  return merged
-}
-
-function listMarker(block: AdfNode): string | undefined {
-  if (block.type === 'orderedList') return '.'
-  return block.type === 'bulletList' || block.type === 'taskList' ? '-' : undefined
-}
-
-// Two numbered lists whose numbering breaks between them keep their numbers as text in one bullet list, and a task list joining a bullet list its markers.
-function joinedLists(first: AdfNode, second: AdfNode): AdfNode {
-  const breaks = first.type === 'orderedList' && nodeAttrs(second)['order'] !== Number(nodeAttrs(first)['order']) + nodeContent(first).length
-  const [head, tail] = breaks ? [numberedAsText(first), numberedAsText(second)] : first.type === second.type ? [first, second] : [tasksAsText(first), tasksAsText(second)]
-  return { ...head, content: [...nodeContent(head), ...nodeContent(tail)] }
-}
-
 // A task keeps its marker as text; a list item stands as one, and anything else nests in the item before it.
 function tasksAsText(list: AdfNode): AdfNode {
   if (list.type !== 'taskList') return list
   const items: AdfNode[] = []
   for (const child of nodeContent(list)) {
     const previous = isTaskItem(child) || child.type === 'listItem' ? undefined : items.pop()
-    items.push(itemOf(previous === undefined ? taskAsText(child) : mergedLists([...nodeContent(previous), child])))
+    items.push(itemOf(previous === undefined ? taskAsText(child) : [...nodeContent(previous), child]))
   }
   return { content: items, type: 'bulletList' }
 }
@@ -300,13 +268,8 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     const standsAlone = !regular && !isTaskItem(child) && child.type !== 'taskList'
     for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
   }
-  if (regular) return success(splitTasks({ content: tasks, type: 'taskList' }))
+  if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }))
   return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
-}
-
-// The split sets a task's nested lists beside the list after it, and adjacent lists read back as one.
-function splitTasks(list: AdfNode): AdfNode[] {
-  return splitTaskList(list).map((block) => (block.type === 'taskList' ? { ...block, content: mergedLists(nodeContent(block)) } : block))
 }
 
 function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {

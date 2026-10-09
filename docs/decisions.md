@@ -68,9 +68,8 @@ same portable markdown.
 2026-10-03, the maintainer. Goal 1. Valid while CommonMark reads adjacent text as one run.
 
 Two adjacent text nodes CommonMark would read back as one are parted by the reserved inline leaf
-`!adf:textBreak{}`, mirroring `!adf:listBreak`: a leaf building no node keeps both nodes and asks
-nothing of the text around it. A code span holds no directive, so the spans close and reopen
-around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text nodes**.
+`!adf:textBreak{}`: a leaf building no node keeps both nodes and asks nothing of the text around
+it. A code span holds no directive, so the spans close and reopen around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text nodes**.
 
 ## An empty key spells `empty`
 
@@ -430,9 +429,9 @@ handles one cause alike whichever node, attribute or direction raised it.
   when a later MINOR gives the name meaning. A reserved name is a known name, so never that code,
   and the names the flavour reserves part on form: a form the grammar does not have is a claim code
   — `!adf:carry`, whose carry is the fence — and a well-formed form in the wrong place is
-  `unsupported-node-shape`, `!adf:listBreak` parting anything but two adjacent lists of one type,
-  `!adf:textBreak{}` anything but two adjacent text nodes CommonMark would read back as one,
-  `!adf:doc` standing beside another block (2026-09-01, the text break and `doc` 2026-10-03).
+  `unsupported-node-shape`, `!adf:textBreak{}` parting anything but two adjacent text nodes
+  CommonMark would read back as one, `!adf:doc` standing beside another block (2026-09-01, the
+  text break and `doc` 2026-10-03).
 - A well-formed directive the node tables refuse — an attribute a node does not hold or spells
   elsewhere, a value outside its kind or its canonical spelling, an argument, or a body of a shape
   its content model does not take — is `unsupported-node-shape`, the emitter's code for the same

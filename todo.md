@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
@@ -68,18 +67,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 49. Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.
-
-Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads two (spec examples
-301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells adjacent lists by
-changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alternate `-` and `*`
-between adjacent bullet lists, a task list among them, and `.` and `)` between adjacent ordered
-lists, and `!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking:
-`MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose their
-`pending` exceptions, and the spelling leaves the README's "Seven CommonMark spellings" bullet,
-which counts one fewer. Until this lands, a bullet list written right after a task list would read
-back as part of it, so `adfToPortableMarkdown` writes that task list's markers as text.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 

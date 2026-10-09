@@ -1,20 +1,6 @@
 [
   {
     "check": "count",
-    "divergence": "ul 2/1",
-    "example": 301,
-    "kind": "pending",
-    "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
-  },
-  {
-    "check": "count",
-    "divergence": "ol 2/1",
-    "example": 302,
-    "kind": "pending",
-    "reason": "A list continuing past a marker change renders as two lists, the parser opens one."
-  },
-  {
-    "check": "count",
     "divergence": "em 2/1",
     "example": 369,
     "kind": "mark-model",
