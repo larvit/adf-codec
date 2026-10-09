@@ -1,11 +1,11 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath } from '../../result.ts'
-import type { Flavour } from '../plain/conventions.ts'
+import type { WrittenFlavour } from '../portable/conventions.ts'
 import { holdsOnlyAttributes, nodeContent } from '../../adf/document.ts'
 import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
 
-export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): string | undefined {
+export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): string | undefined {
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
   const lines: string[] = []

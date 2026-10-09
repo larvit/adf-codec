@@ -3,11 +3,11 @@ import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { flavourClaims, taskMarker } from './conventions.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { taskMarker } from './conventions.ts'
 import { toEditorNormal } from './editor-normal.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
@@ -42,16 +42,16 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
   taskList: reduceTaskList,
 }
 
-export function adfToPlainMarkdown(document: AdfDocument): Result<string> {
-  const reduced = reduceToPlain(document)
-  return reduced.ok ? writeMarkdown(reduced.value, 'plain') : reduced
+export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
+  const reduced = reduceToPortable(document)
+  return reduced.ok ? writeMarkdown(reduced.value, 'portable') : reduced
 }
 
-export function reduceToPlain(document: AdfDocument): Result<AdfDocument> {
+export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // Two documents the editor holds equal write the same plain markdown (docs/decisions.md §Equality is deep).
+  // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
   if (!blocks.ok) {
     // Merging text renumbers siblings, so a refusal's path comes from the caller's document.
@@ -75,7 +75,7 @@ function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<A
       return entry.loose === undefined ? reduceNode(entry.node, at) : paragraphOf(entry.loose, reduction)
     }),
   )
-  return blocks.ok ? plainSequence(blocks.value, reduction) : blocks
+  return blocks.ok ? portableSequence(blocks.value, reduction) : blocks
 }
 
 function reduceNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
@@ -86,7 +86,7 @@ function reduceNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 
 function reduceStanding(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const blocks = standsInline(node) ? paragraphOf([node], reduction) : reduceNode(node, reduction)
-  return blocks.ok ? plainSequence(blocks.value, reduction) : blocks
+  return blocks.ok ? portableSequence(blocks.value, reduction) : blocks
 }
 
 function standsInline(node: AdfNode): boolean {
@@ -113,13 +113,13 @@ function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> 
 }
 
 // A list still taking the directive form gives way to its items' blocks.
-function plainSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
+function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
   let sequence = mergedLists(blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0))
   for (let index = 0; index < sequence.length; index += 1) {
     const listed = sequence[index]
     if (listed === undefined || (listed.type !== 'bulletList' && listed.type !== 'orderedList')) continue
     const block = numberedPastMarkers(listed)
-    const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'plain', memo: reduction.memo })?.ok === true
+    const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', memo: reduction.memo })?.ok === true
     if (spelled) continue
     sequence = spliced(sequence, index, block === listed ? nodeContent(block).flatMap(nodeContent) : [block])
     // Step back to the merged neighbour, which may now take the directive form itself.
@@ -245,7 +245,7 @@ function reduceCodeBlock(node: AdfNode, reduction: Reduction): Result<AdfNode[]>
   const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction.path, reduction.depth)
   if (!leaves.ok) return leaves
   const code = leaves.value.map((leaf) => leaf.text ?? '\n').join('')
-  const slot = languageSlot(nodeAttrs(node)['language'])
+  const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims.portable)
   const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
   return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
 }

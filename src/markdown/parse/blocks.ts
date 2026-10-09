@@ -1,3 +1,4 @@
+import type { Claims } from '../portable/conventions.ts'
 import type { ConvertFault, SourcePosition } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveLine } from '../directive-syntax.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
@@ -73,6 +74,7 @@ type ContainerStack = {
 }
 
 type Walk = ParsedBlocks & {
+  claims: Claims
   leaf: OpenLeaf | undefined
   leafOpeners: Map<Block[], Map<string, LeafOpener>>
   position: SourcePosition
@@ -83,9 +85,10 @@ const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
 
-export function parseBlocks(markdown: string): ParsedBlocks {
+export function parseBlocks(markdown: string, claims: Claims): ParsedBlocks {
   const walk: Walk = {
     blocks: [],
+    claims,
     definitions: new Map(),
     leaf: undefined,
     leafOpeners: new Map(),
@@ -336,7 +339,7 @@ function continuesLazily(walk: Walk, line: Line): boolean {
   if (walk.leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = removeColumns(line, largestOpenerIndentation).text
-  if (readDirectiveLine(opener) !== undefined || claimsPipeLine(opener) || isThematicBreak(opener)) return false
+  if ((walk.claims.directives && readDirectiveLine(opener) !== undefined) || (walk.claims.pipeTables && claimsPipeLine(opener)) || isThematicBreak(opener)) return false
   return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, true) === undefined
 }
 
@@ -388,14 +391,14 @@ function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>
 
 function openLeaf(walk: Walk, line: Line): void {
   const opener = removeColumns(line, largestOpenerIndentation).text
-  const directive = readDirectiveLine(opener)
+  const directive = walk.claims.directives ? readDirectiveLine(opener) : undefined
   if (directive !== undefined) {
     closeLeaf(walk)
     if (directive.fault === undefined) applyDirectiveLine(walk, directive.value)
     else pushFault(walk, directive.fault)
     return
   }
-  const cells = pipeCells(opener)
+  const cells = walk.claims.pipeTables ? pipeCells(opener) : undefined
   if (cells !== undefined) {
     closeLeaf(walk)
     walk.leaf = { kind: 'pipe-table', position: walk.position, rows: [cells] }
@@ -424,7 +427,7 @@ function readLineBlock(walk: Walk, opener: string): boolean {
   if (level !== undefined) {
     const paragraph = takeParagraph(walk)
     if (paragraph !== undefined) {
-      currentBlocks(walk).push(bareTableFault(paragraph) ?? { kind: 'heading', level, position: paragraph.position, text: paragraph.text })
+      currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? { kind: 'heading', level, position: paragraph.position, text: paragraph.text })
       return true
     }
   }
@@ -456,7 +459,7 @@ function closeLeaf(walk: Walk): void {
   if (leaf === undefined) return
   if (leaf.kind === 'paragraph') {
     const paragraph = takeParagraph(walk)
-    if (paragraph !== undefined) currentBlocks(walk).push(bareTableFault(paragraph) ?? paragraph)
+    if (paragraph !== undefined) currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? paragraph)
     return
   }
   walk.leaf = undefined
@@ -480,7 +483,8 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
 }
 
 // spec/flavour.md, Tables: GFM's table without the leading pipes, which no line of it claims.
-function bareTableFault(paragraph: Extract<Block, { kind: 'paragraph' }>): Block | undefined {
+function bareTableFault(paragraph: Extract<Block, { kind: 'paragraph' }>, claims: Claims): Block | undefined {
+  if (!claims.pipeTables) return undefined
   let header: string[] | undefined
   for (const line of paragraph.text.split('\n')) {
     const cells = barePipeCells(line)

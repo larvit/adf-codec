@@ -1,8 +1,8 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
-import type { Flavour } from '../plain/conventions.ts'
+import type { WrittenFlavour } from '../portable/conventions.ts'
 import { adfDocumentFault, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
-import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../plain/conventions.ts'
+import { alertMarker, flavourClaims, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../portable/conventions.ts'
 import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
@@ -24,20 +24,20 @@ type EmittedBlock = { headroom: number; spelling: BlockSpelling; text: string }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = Omit<EmittedBlock, 'headroom'> & { node: AdfNode }
 type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
-// Keyed by reference: only a caller building one object per position (the parse, the plain reduction) passes one; a consumer's document may share a node.
+// Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
-export type Writing = { flavour: Flavour; memo: SpellingMemo | undefined }
+export type Writing = { flavour: WrittenFlavour; memo: SpellingMemo | undefined }
 
 export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 
-export function adfToMarkdown(document: AdfDocument): Result<string> {
+export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
   return writeMarkdown(document, 'lossless')
 }
 
-export function writeMarkdown(document: AdfDocument, flavour: Flavour): Result<string> {
+export function writeMarkdown(document: AdfDocument, flavour: WrittenFlavour): Result<string> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
@@ -124,11 +124,11 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, wri
 }
 
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  const plain = writing.flavour === 'plain' ? spellPlainBlock(node, path, depth, writing) : undefined
-  if (plain !== undefined) return plain
+  const portable = writing.flavour === 'portable' ? spellPortableBlock(node, path, depth, writing) : undefined
+  if (portable !== undefined) return portable
   if (node.type === 'blockquote') return tryBlockquote(node, path, depth, writing)
   if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, writing)
-  if (node.type === 'codeBlock') return readableText(tryCodeBlock(node))
+  if (node.type === 'codeBlock') return readableText(tryCodeBlock(node, writing.flavour))
   if (node.type === 'heading') return tryHeading(node, path, writing.flavour)
   if (node.type === 'mediaSingle') return readableText(tryImage(node))
   if (node.type === 'paragraph') return tryParagraph(node, path, writing.flavour)
@@ -137,15 +137,14 @@ function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   return undefined
 }
 
-// The plain flavour's nodes, in the shapes the plain reduction leaves them.
-function spellPlainBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+// The portable flavour's nodes, in the shapes the portable reduction leaves them.
+function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   if (node.type === 'panel') return quotedUnder(alertMarker(nodeAttrs(node)['panelType']), node, path, depth, writing)
   if (node.type === 'taskList') return tryTaskList(node, path, depth, writing)
   if (node.type !== 'expand' && node.type !== 'nestedExpand') return undefined
   const title = nodeAttrs(node)['title']
   if (typeof title !== 'string') return quotedUnder(foldedAlertMarker, node, path, depth, writing)
-  // The reader takes a title as lossless inline text.
-  const line = emitInlineLine([{ text: title, type: 'text' }], 'paragraph', path, 'lossless')
+  const line = emitInlineLine([{ text: title, type: 'text' }], 'paragraph', path, writing.flavour)
   return line.ok ? quotedUnder(`${foldedAlertMarker} ${line.value}`, node, path, depth, writing) : line
 }
 
@@ -177,7 +176,7 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
     else for (const block of walk.value.blocks) previous.push(block)
   }
   const lines = items.map((blocks) => tryListItemLines(joinBlocks(blocks, 'list-item'), '- '))
-  // The plain reduction leaves no task a list item cannot hold: a directive here would break the flavour.
+  // The portable reduction leaves no task a list item cannot hold: a directive here would break the flavour.
   return lines.includes(undefined) ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success({ headroom, spelling: 'list', text: lines.join('\n') })
 }
 
@@ -247,13 +246,13 @@ function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, wri
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
   const text = joinBlocks(inner.value.blocks, 'document')
-  const alert = writing.flavour === 'plain' && leadingMarker(text, readAlertMarker) !== undefined
+  const alert = flavourClaims[writing.flavour].alerts && leadingMarker(text, readAlertMarker) !== undefined
   return success(commonMarkText(quoted(alert ? `\\${text}` : text), inner.value.headroom))
 }
 
-function tryCodeBlock(node: AdfNode): string | undefined {
+function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): string | undefined {
   if (!holdsOnlyAttributes(node, ['language'])) return undefined
-  const slot = languageSlot(nodeAttrs(node)['language'])
+  const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims[flavour])
   if (slot.kind === 'attribute') return undefined
   const [only, ...others] = fencedTexts(node) ?? []
   if (only === undefined || others.length > 0) return undefined
@@ -264,7 +263,7 @@ function tryCodeBlock(node: AdfNode): string | undefined {
 function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
   const texts = fencedTexts(node)
   if (texts === undefined) return carriedFence(carriedBlock(node, path, depth))
-  const slot: LanguageSlot = texts.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'])
+  const slot: LanguageSlot = texts.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'], flavourClaims.lossless)
   const opener = spellBlockDirectiveOpener(node, model, path, slot.kind === 'attribute' ? [] : ['language'])
   if (opener === undefined) return carriedFence(carriedBlock(node, path, depth))
   if (!opener.ok) return opener
@@ -283,7 +282,7 @@ function fencedTexts(node: AdfNode): string[] | undefined {
   return texts
 }
 
-function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
+function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
   if (!holdsOnlyAttributes(node, ['level'])) return undefined
   const level = nodeAttrs(node)['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
@@ -314,7 +313,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   for (const [offset, item] of walked.entries()) {
     const inner = joinBlocks(item.walk.blocks, 'list-item')
     // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
-    const escaped = writing.flavour === 'plain' && leadingMarker(inner, readTaskMarker) !== undefined ? `\\${inner}` : inner
+    const escaped = flavourClaims[writing.flavour].taskMarkers && leadingMarker(inner, readTaskMarker) !== undefined ? `\\${inner}` : inner
     const line = tryListItemLines(escaped, ordered ? `${start + offset}. ` : '- ')
     if (line === undefined) {
       // The directive form spends a level the walk did not count.
@@ -347,7 +346,7 @@ function tryListItemLines(inner: string, marker: string): string | undefined {
   return lines.join('\n')
 }
 
-function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: Flavour): Result<EmittedBlock> | undefined {
+function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
   const content = nodeContent(node)
   if (content.length === 0 || !holdsOnlyAttributes(node, [])) return undefined
   const line = emitInlineLine(content, 'paragraph', path, flavour)

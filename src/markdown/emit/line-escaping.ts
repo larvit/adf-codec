@@ -1,10 +1,10 @@
-import type { Flavour } from '../plain/conventions.ts'
+import type { Claims, WrittenFlavour } from '../portable/conventions.ts'
 import type { LineContainer } from '../line-container.ts'
 import { backslashEscape, escapesLineClaim, inlineHtmlConstruct, opensBracketedAutolink, opensEmailAutolink, type LinePosition } from '../commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { claimsDirectivePrefix } from '../directive-syntax.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
-import { highlightDelimiter, highlightFlanking } from '../plain/conventions.ts'
+import { flavourClaims, highlightDelimiter, highlightFlanking } from '../portable/conventions.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 import { readEntityReference } from '../commonmark/entity-references.ts'
@@ -37,8 +37,8 @@ const delimiters = ['*', '_', '`', '~']
 
 const followsLinkText = /[([]/
 
-export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer, flavour: Flavour): AssembledLine {
-  return escape(resolveEmphasis(segments), container, flavour === 'plain')
+export function assembleInlineLine(segments: readonly InlineSegment[], container: LineContainer, flavour: WrittenFlavour): AssembledLine {
+  return escape(resolveEmphasis(segments), container, flavourClaims[flavour])
 }
 
 function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
@@ -70,11 +70,11 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
   return resolved
 }
 
-function escape(segments: readonly InlineSegment[], container: LineContainer, highlights: boolean): AssembledLine {
+function escape(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): AssembledLine {
   const scan = segments.map((segment) => segment.text).join('')
   const escapings: InlineEscaping[] = []
   for (const segment of segments) for (let index = 0; index < segment.text.length; index += 1) escapings.push(segment.escaping)
-  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container, highlights))
+  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container, claims))
   const placements: number[] = []
   let output = ''
   for (let index = 0; index < scan.length; index += 1) {
@@ -89,7 +89,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, hi
   return { line: output, unspellableRuns: unspellableRuns(segments, output, placements) }
 }
 
-function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer, highlights: boolean): ReadonlySet<number> {
+function escapeClaims(scan: string, escapings: readonly InlineEscaping[], container: LineContainer, claims: Claims): ReadonlySet<number> {
   const escaped = new Set<number>()
   const linkClose = lastLinkClose(scan, escapings)
   let line = scanLine(scan, 0)
@@ -100,15 +100,17 @@ function escapeClaims(scan: string, escapings: readonly InlineEscaping[], contai
     if (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
     const escaping = escapings[index]
     const escapable = escaping === 'backslash' || escaping === 'bracketed'
-    const opensEquals: boolean = highlights && !pairsEquals && scan.startsWith(highlightDelimiter, index)
+    const opensEquals: boolean = claims.highlights && !pairsEquals && scan.startsWith(highlightDelimiter, index)
+    const opensDirective = claims.directives && claimsDirectivePrefix(scan, index)
     const claimed: boolean =
       (escapable &&
         ((opensEquals && claimsHighlight(scan, index)) ||
           claimsLineStart(line, index, container) ||
           mergesWithSyntax(scan, escapings, index) ||
+          opensDirective ||
           opensConstruct(scan, linkClose, index, escaping === 'bracketed', container, afterEscape))) ||
       (escaping === 'bracketed-link-target' &&
-        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, afterEscape)) || claimsDirectivePrefix(scan, index)))
+        ((scan.charAt(index) === '`' && opensCodeSpan(scan, index, afterEscape)) || opensDirective))
     if (claimed) escaped.add(index)
     afterEscape = claimed
     pairsEquals = opensEquals && !claimed
@@ -306,7 +308,6 @@ function claimsCharacter(
   if (character === '\\') return backslashEscape(scan, index) !== undefined
   if (character === '&') return readEntityReference(scan, index) !== undefined
   if (character === '<') return opensBracketedAutolink(scan, index) || opensEmailAutolink(scan, index) || inlineHtmlConstruct(scan, index) !== undefined
-  if (character === '!') return claimsDirectivePrefix(scan, index)
   if (character === '[') return index < linkClose
   if (character === '`') return opensCodeSpan(scan, index, afterEscape)
   if (character === '*' || character === '_' || character === '~') return claimsEmphasis(scan, index, afterEscape)

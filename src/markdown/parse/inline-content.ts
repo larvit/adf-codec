@@ -1,7 +1,7 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import type { Claims } from '../portable/conventions.ts'
 import type { DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
-import type { Flavour } from '../plain/conventions.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark/grammar.ts'
@@ -9,7 +9,7 @@ import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
 import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { highlightDelimiter, highlightFlanking } from '../plain/conventions.ts'
+import { highlightDelimiter, highlightFlanking } from '../portable/conventions.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
@@ -54,11 +54,11 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
+  claims: Claims
   container: LineContainer | undefined
   // Pieces below this have been walked for openers to deactivate: an image close folds the link-marked piece into alt text, leaving this the only record that the brackets around it are doomed.
   deactivatedBefore: number
   definitions: LinkDefinitions
-  highlights: boolean
   openingSpellableLink: boolean
   path: ConvertErrorPath
   pending: string
@@ -81,8 +81,8 @@ const spellableLink = 'link takes the directive form only where CommonMark canno
 const textBreak: TextBreak = { kind: 'textBreak' }
 
 // The outermost content: only here does a text break see both its neighbours.
-export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
-  const scan = freshScan(source, { definitions, path }, { container, highlights: flavour === 'plain', spans: noSpans })
+export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, claims: Claims): Result<InlineContent> {
+  const scan = freshScan(source, { definitions, path }, { claims, container, spans: noSpans })
   const scanned = scanInline(scan)
   if (!scanned.ok) return scanned
   if (scanned.value.image !== undefined) return success({ image: scanned.value.image })
@@ -96,7 +96,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
   return success({ nodes: nodes.value })
 }
 
-function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'container' | 'highlights' | 'spans'>): Scan {
+function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'spans'>): Scan {
   return { ...shared, ...own, deactivatedBefore: 0, openingSpellableLink: false, pending: '', pieces: [], source }
 }
 
@@ -112,7 +112,7 @@ function scanInline(scan: Scan): Result<Scanned> {
         break
       }
       case '!': {
-        const directive = readDirective(scan, index)
+        const directive = scan.claims.directives ? readDirective(scan, index) : undefined
         if (directive === undefined) {
           index = openBracket(scan, index)
           break
@@ -276,8 +276,8 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[]
 
 function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | undefined> {
   if (span.content === undefined) return success(undefined)
-  const { definitions, path } = scan
-  const parsed = scanInline(freshScan(span.content, { definitions, path }, { container: undefined, highlights: false, spans: span.spans }))
+  const { claims, definitions, path } = scan
+  const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, spans: span.spans }))
   if (!parsed.ok) return parsed
   if (parsed.value.image !== undefined) return failure('unmappable-image', imageAlone, scan.path)
   return success(parsed.value)
@@ -357,7 +357,7 @@ function readDelimiterRun(scan: Scan, index: number): number {
   const character = scan.source.charAt(index)
   const length = runLength(scan.source, index)
   const flags = delimiterFlags(character, scan.source.charAt(index - 1), scan.source.charAt(index + length))
-  if ((character === '~' && length !== 2) || (!flags.canOpen && !flags.canClose)) scan.pending += scan.source.slice(index, index + length)
+  if ((character === '~' && (!scan.claims.strikethrough || length !== 2)) || (!flags.canOpen && !flags.canClose)) scan.pending += scan.source.slice(index, index + length)
   else {
     flush(scan, false)
     scan.pieces.push({ canClose: flags.canClose, canOpen: flags.canOpen, character, kind: 'run', length })
@@ -366,7 +366,7 @@ function readDelimiterRun(scan: Scan, index: number): number {
 }
 
 function readEquals(scan: Scan, index: number): number {
-  if (!scan.highlights || !scan.source.startsWith(highlightDelimiter, index)) {
+  if (!scan.claims.highlights || !scan.source.startsWith(highlightDelimiter, index)) {
     scan.pending += '='
     return index + 1
   }

@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
-import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { isAdfDocument } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
-import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus')
@@ -79,7 +79,7 @@ for (const directory of roundTripDirectories) {
     test(`${directory}/${name} emits its markdown byte for byte`, () => {
       const parsed: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
       assert.ok(isAdfDocument(parsed), `${name}.json is not an ADF document`)
-      const result = adfToMarkdown(parsed)
+      const result = adfToLosslessMarkdown(parsed)
       assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
       const expected = readFileSync(join(roundTripRoot, directory, `${name}.md`))
       const emitted = Buffer.from(result.value, 'utf8')
@@ -94,7 +94,7 @@ for (const directory of roundTripDirectories) {
     test(`${directory}/${name} reads its markdown back to the document beside it`, () => {
       const expected: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
       assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
-      const result = markdownToAdf(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8'))
+      const result = losslessMarkdownToAdf(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8'))
       assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
       assert.deepEqual(result.value, expected)
     })
@@ -122,12 +122,12 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
   test(`normalization/${name} parses to the document beside it, which emits and reads back to itself`, () => {
     const expected: unknown = JSON.parse(readFileSync(join(normalizationRoot, `${name}.json`), 'utf8'))
     assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
-    const result = markdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
+    const result = losslessMarkdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
     assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
     assert.deepEqual(result.value, expected)
-    const emitted = adfToMarkdown(result.value)
+    const emitted = adfToLosslessMarkdown(result.value)
     assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
-    const again = markdownToAdf(emitted.value)
+    const again = losslessMarkdownToAdf(emitted.value)
     assert.ok(again.ok, again.ok ? '' : `${again.error.code}: ${again.error.message}`)
     assert.deepEqual(again.value, expected)
   })
@@ -141,9 +141,9 @@ for (const name of names(realPayloadsRoot, '.json')) {
   test(`real-payloads/${name} emits markdown that reads back to it`, () => {
     const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
     assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
-    const emitted = adfToMarkdown(payload)
+    const emitted = adfToLosslessMarkdown(payload)
     assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
-    const parsed = markdownToAdf(emitted.value)
+    const parsed = losslessMarkdownToAdf(emitted.value)
     assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
     assert.deepEqual(parsed.value, payload)
   })
@@ -159,7 +159,7 @@ function lineStarting(markdown: string, offset: number): { line: number; offset:
 for (const name of pairedNames(errorsRoot, '.md', '.error')) {
   test(`errors/${name} is refused with the error it names, at a line of its own input`, () => {
     const markdown = readFileSync(join(errorsRoot, `${name}.md`), 'utf8')
-    const result = markdownToAdf(markdown)
+    const result = losslessMarkdownToAdf(markdown)
     assert.ok(!result.ok, result.ok ? `built ${JSON.stringify(result.value)}` : '')
     assert.equal(result.error.code, readFileSync(join(errorsRoot, `${name}.error`), 'utf8').trimEnd())
     const { position } = result.error

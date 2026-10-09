@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import type { AdfDocument, AdfNode } from '../adf/document.ts'
-import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
-import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus', 'commonmark-spec')
 const checks = ['count', 'fixpoint', 'text'] as const
@@ -289,9 +289,9 @@ function concatenatedText(document: AdfNode): string {
 }
 
 function fixpointRefused(example: SpecExample, document: AdfDocument): string | undefined {
-  const emitted = adfToMarkdown(document)
+  const emitted = adfToLosslessMarkdown(document)
   if (!emitted.ok) return emitted.error.code
-  const again = markdownToAdf(emitted.value)
+  const again = losslessMarkdownToAdf(emitted.value)
   assert.ok(again.ok, `example ${example.example} emits markdown it cannot read back`)
   assert.deepEqual(again.value, document, `example ${example.example} does not hold its own round-trip`)
   return undefined
@@ -312,7 +312,7 @@ function countMismatch(example: SpecExample, document: AdfDocument): string | un
 
 for (const example of spec) {
   test(`CommonMark example ${example.example} => ${example.section}`, () => {
-    const parse = markdownToAdf(example.markdown)
+    const parse = commonMarkToAdf(example.markdown)
     const refused = exampleToRefusal.get(example.example)
     if (refused !== undefined) {
       assert.ok(!parse.ok, `example ${example.example} was expected to refuse with ${refused} but parsed`)

@@ -4,23 +4,14 @@ import test from 'node:test'
 
 import type { AdfNode } from '../adf/document.ts'
 import { adfDocument, propertyRuns, propertyTimeout } from './property-harness.ts'
-import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
-import { adfToPlainMarkdown, reduceToPlain } from '../markdown/plain/adf-to-plain-markdown.ts'
-import { directivePrefix } from '../markdown/directive-syntax.ts'
-import { markdownToAdf, plainMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
-import { toEditorNormal } from '../markdown/plain/editor-normal.ts'
+import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
+import { losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { toEditorNormal } from '../markdown/portable/editor-normal.ts'
 
 const gateRuns = 1600
-const renamedPrefix = '!adg:'
 
-// Renaming the prefix changes what markdown reads only where a directive was read.
-function readsNoDirective(markdown: string): boolean {
-  const read = markdownToAdf(markdown)
-  const renamed = markdownToAdf(markdown.replaceAll(directivePrefix, renamedPrefix))
-  return read.ok && renamed.ok && JSON.stringify(read.value).replaceAll(directivePrefix, renamedPrefix) === JSON.stringify(renamed.value)
-}
-
-// Each block's text, an expand's title and an image's alt and url, in document order: what the plain pair keeps.
+// Each block's text, an expand's title and an image's alt and url, in document order: what the portable pair keeps.
 function shownText(nodes: readonly AdfNode[]): string[] {
   const shown: string[] = []
   for (const node of nodes) {
@@ -37,9 +28,9 @@ function shownText(nodes: readonly AdfNode[]): string[] {
 test('a generated document emits markdown that reads back to it', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
-      const emitted = adfToMarkdown(document)
+      const emitted = adfToLosslessMarkdown(document)
       assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
-      const read = markdownToAdf(emitted.value)
+      const read = losslessMarkdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
       assert.deepEqual(read.value, document, `reading ${JSON.stringify(emitted.value)}`)
     }),
@@ -47,26 +38,25 @@ test('a generated document emits markdown that reads back to it', { timeout: pro
   )
 })
 
-test('a generated document writes plain markdown refusing only what the guard refuses, and that markdown reads back to its text and to itself', { timeout: propertyTimeout }, () => {
+test('a generated document writes portable markdown refusing only what the guard refuses, and that markdown reads back to its text and to itself', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
-      const written = adfToPlainMarkdown(document)
+      const written = adfToPortableMarkdown(document)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
-      assert.ok(readsNoDirective(written.value), `a directive in ${JSON.stringify(written.value)}`)
-      const read = plainMarkdownToAdf(written.value)
+      const read = portableMarkdownToAdf(written.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
-      const reduced = reduceToPlain(document)
+      const reduced = reduceToPortable(document)
       assert.deepEqual(shownText(read.value.content ?? []), reduced.ok ? shownText(reduced.value.content ?? []) : reduced, `reading ${JSON.stringify(written.value)}`)
-      assert.deepEqual(adfToPlainMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
+      assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
     }),
     propertyRuns(gateRuns),
   )
 })
 
-test('a generated document writes the plain markdown its editor-normal form writes', { timeout: propertyTimeout }, () => {
+test('a generated document writes the portable markdown its editor-normal form writes', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
-      assert.deepEqual(adfToPlainMarkdown(document), adfToPlainMarkdown(toEditorNormal(document)))
+      assert.deepEqual(adfToPortableMarkdown(document), adfToPortableMarkdown(toEditorNormal(document)))
     }),
     propertyRuns(gateRuns),
   )
