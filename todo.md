@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 91`
+`Next ID = 92`
 
 | Goal | W |
 |---|---|
@@ -52,6 +52,7 @@
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
 | 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
+| 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.4.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
@@ -145,8 +146,8 @@ types a node takes, and the emitter carries a node holding another.
 `adfToLosslessMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
 flanking cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and
 the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
-whose attributes no spelling writes re-emits the line the same way before riding the carry, and so
-does an emphasis or link run that parts at the hard breaks it spans. Make all four linear.
+whose attributes no spelling writes re-emits the line the same way before riding the carry. Make all
+three linear.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
@@ -279,6 +280,15 @@ CommonMark spellings" bullet, which counts one fewer.
 Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
+
+### 91. Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.
+
+Lands after item 61. No reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then
+`_Two_`, and a link typed across a line as two links. Joining the run across the break in
+`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be
+spelled needs its own fallback, first as a set of parted breaks, then as a flag the first fallback
+clears. Once the emitter asks the reader how a line reads back, the joined spelling can be tried and
+kept only where it reads back.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
