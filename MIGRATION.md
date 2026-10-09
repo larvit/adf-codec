@@ -66,6 +66,7 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 | --- | --- | --- |
 | a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
 | markdown holding no block (`""`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
+| a hard break inside a mark's spelling (`*a\` then `b*` on the next line) | the hard break holds the mark | the hard break holds no marks, as Atlassian's schema requires; converting per the recipe above keeps a stored one's marks in the inline carry |
 | a link whose text is empty (`[](/url)`, `[]()`) | literal text | `/url` linked to `/url`, and nothing where the destination is empty too |
 | a code fence whose info string opens `adf:` (```` ```adf:x ````) | a `codeBlock` with that language | in `losslessMarkdownToAdf`, the block carry, refusing a body that is not one node's canonical JSON; write `!adf:codeBlock {language="adf:x"}` around a bare fence to keep the code block |
 

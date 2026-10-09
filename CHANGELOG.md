@@ -70,6 +70,10 @@
   Chrome) `markdownToAdf` could refuse markdown `adfToMarkdown` wrote, as `unsupported-node-shape`,
   once the process had read a key holding a backslash
   ([V8 bug](https://issues.chromium.org/issues/521080746)).
+- **Breaking:** a hard break inside emphasis, strike, a link or a directive mark reads holding no
+  marks, as Atlassian's schema requires, where every reader gave it the marks around it.
+  `adfToLosslessMarkdown` writes a hard break holding marks as `!adf:carry{json="…"}`. See
+  `MIGRATION.md`.
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
   where all three hung.

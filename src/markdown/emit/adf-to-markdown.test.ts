@@ -489,10 +489,6 @@ test('carries a text node holding no text, or holding content', () => {
 test('carries a mark run whose edge holds whitespace CommonMark flanking counts', () => {
   const em = { type: 'em' }
   assert.equal(
-    markdown(adfToLosslessMarkdown(document(paragraph({ marks: [em], text: 'a', type: 'text' }, { marks: [em], type: 'hardBreak' }, { text: 'b', type: 'text' })))),
-    '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"a\\",\\"type\\":\\"text\\"}"}!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"type\\":\\"hardBreak\\"}"}b\n',
-  )
-  assert.equal(
     markdown(adfToLosslessMarkdown(document(paragraph({ marks: [em], text: '\u00a0a', type: 'text' })))),
     '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"\u00a0a\\",\\"type\\":\\"text\\"}"}\n',
   )
@@ -714,15 +710,14 @@ test('spells the directive marks around the longest run they cover', () => {
   assert.equal(emitted(marked('x', { attrs: { color: '#091e42', size: 2 }, type: 'border' })), '!adf:border[x]{color="#091e42" size=2}\n')
   assert.equal(emitted(marked('x', { type: 'em' }, underline)), '_!adf:underline[x]_\n')
   assert.equal(emitted(marked('x', underline, { type: 'em' })), '!adf:underline[_x_]\n')
-  assert.equal(emitted(marked('a', underline), { marks: [underline], type: 'hardBreak' }, marked('b', underline)), '!adf:underline[a!adf:hardBreak{}b]\n')
+  assert.equal(emitted(marked('a', underline), { type: 'hardBreak' }, marked('b', underline)), '!adf:underline[a]\\\n!adf:underline[b]\n')
+})
+
+test('carries a hard break holding marks, which Atlassian\'s schema gives it none of', () => {
   const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
   assert.equal(
-    emitted(marked('a', underline, link), { marks: [underline, link], type: 'hardBreak' }, marked('b', underline, link)),
-    '!adf:underline[[a!adf:hardBreak{}b](https://example.com/)]\n',
-  )
-  assert.equal(
-    emitted(marked('a', link), { marks: [link], type: 'hardBreak' }, marked('b', link)),
-    '[a\\\nb](https://example.com/)\n',
+    readsBack(document(paragraph({ marks: [link], text: 'a', type: 'text' }, { marks: [link], type: 'hardBreak' }, { marks: [link], text: 'b', type: 'text' }))),
+    '[a](https://example.com/)!adf:carry{json="{\\"marks\\":[{\\"attrs\\":{\\"href\\":\\"https://example.com/\\"},\\"type\\":\\"link\\"}],\\"type\\":\\"hardBreak\\"}"}[b](https://example.com/)\n',
   )
 })
 
