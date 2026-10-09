@@ -181,3 +181,20 @@ Read most (opens and searches):
 - `src/markdown/portable/adf-to-portable-markdown.test.ts` 3
 - `AGENTS.md` 2
 - `package.json` 2
+
+## Reading cost, chunk 34d9f45b3745, finished 2026-10-09T14:24:14Z
+
+168135 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 8
+- `README.md` 7
+- `spec/flavour.md` 7
+- `src/markdown/parse/blocks.ts` 7
+- `CHANGELOG.md` 6
+- `todo.md` 6
+- `MIGRATION.md` 5
+- `src/markdown/parse/markdown-to-adf.test.ts` 5
+- `src/markdown/emit/adf-to-markdown.ts` 4
+- `src/conformance/markdown-property.test.ts` 3
