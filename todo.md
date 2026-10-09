@@ -328,8 +328,8 @@ README goal covers the release path.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
-Check whether `line-escaping.ts`'s `charAt` and the parser's flanking read one UTF-16 unit beside an
-astral symbol — a lone surrogate is neither punctuation nor symbol, where CommonMark reads `😀` as
+Check whether `delimiterRunToken` (`inline-tokens.ts`), which the reader and the escape walk share,
+and `emittedRuns` (`line-escaping.ts`) read one UTF-16 unit beside an astral symbol — a lone surrogate is neither punctuation nor symbol, where CommonMark reads `😀` as
 punctuation — and, where they do, read the code point, with a fixture per direction.
 
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
