@@ -522,8 +522,9 @@ reference definition. Every such spelling carries an `href`: a directive link Co
 is a named error, and so is one spelling none. No link wraps a link at any nesting, which is
 CommonMark's own rule: a `[text]` already holding one leaves the outer brackets literal text, and
 the directive form, open to no literal reading, is a named error. ADF holds no empty text node, so a
-link whose text is empty or holds only hard breaks reads as its destination linked, `[](/url)` as
-`/url`, and one whose destination is empty too, `[]()`, as nothing.
+link whose text is empty reads as its destination linked, `[](/url)` as `/url`, and one whose
+destination is empty too, `[]()`, as nothing. A link text holding only hard breaks reads the same,
+followed by its hard breaks.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.

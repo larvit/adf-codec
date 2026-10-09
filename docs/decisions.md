@@ -205,18 +205,20 @@ where its reference implementation nests one `<a>` in another.
 ## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding nothing a mark rides reads as its destination
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
-maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, by Goal 7. Goals 4, 5, 6
-and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node and a hard break takes
-no marks.
+maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer, after a
+reader panel split 4 to 3. Goals 4, 5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds
+no empty text node and a hard break takes no marks.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
 and §Marks spell out. An image alone in its paragraph reads as the image, its title as the caption.
 Anywhere else it reads as its alt text linked to its URL, titled by its title. An empty alt text
-reads as the URL, and an empty link text as its destination; so does a link text holding only hard
-breaks, which take no marks. `[]()` reads as nothing: it renders nothing, so Goal 7 loses no
-content. A link alone in its paragraph whose whole text is one image reads as that image, with the
-link marking its `media`. Inside any other link, the alt text is plain text the link marks, and the
-image's URL and title drop: the panel chose this by Goal 6, which outranks Goal 7.
+reads as the URL, and an empty link text as its destination; a link text holding only hard breaks,
+which take no marks, reads as its destination followed by those breaks, which four of seven readers
+expected over dropping them, and the maintainer kept as an edge case until real reports arrive.
+`[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
+paragraph whose whole text is one image reads as that image, with the link marking its `media`.
+Inside any other link, the alt text is plain text the link marks, and the image's URL and title
+drop: the panel chose this by Goal 6, which outranks Goal 7.
 
 In `portableMarkdownToAdf`, a `[!WORD]` marker with no `+` or `-` stands apart from the lines after
 it, and so does a `+` or `-` callout's title line, so an image alone on the marker line or after the

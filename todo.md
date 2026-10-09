@@ -30,11 +30,11 @@
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
-| 89 | 0.2.0 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
+| 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
@@ -105,13 +105,6 @@ Every reader reads `[![alt](url)](href)` and `![alt](url "caption")` as these sh
 (`docs/decisions.md` §The formats are API): changing it inside `0.2.0` spares consumers a second
 breaking change to stored markdown.
 
-### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
-
-`*!adf:mention[@a]{id=…}*` and `[!adf:status[Done]{…}](/u)` build a node holding `em` or `link`.
-`full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
-may reject the document. `InlineNodeModel.marks` (`src/adf/inline-nodes.ts`) then names the mark
-types a node takes, and the emitter carries a node holding another.
-
 ### 85. Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.
 
 Today `[![a](/u)](/v)` reads as the image whose `media` the link marks, and `adfToPortableMarkdown`
@@ -139,6 +132,13 @@ Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
 `portable/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour` and
 `flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
 three directories.
+
+### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
+
+`*!adf:mention[@a]{id=…}*` and `[!adf:status[Done]{…}](/u)` build a node holding `em` or `link`.
+`full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
+may reject the document. `InlineNodeModel.marks` (`src/adf/inline-nodes.ts`) then names the mark
+types a node takes, and the emitter carries a node holding another.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
