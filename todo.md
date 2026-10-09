@@ -128,9 +128,10 @@ and its spelling leaves the README's "Four CommonMark spellings" bullet, which c
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
-Lands after items 6, 59, 60, 61 and 62. Which flavours get a composed call is this item's to
-settle; the CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it documents markdown. `htmlToAdf` refuses a value
-that is not a string as `not-a-string` (`docs/decisions.md` §Which code a cause takes).
+Lands after items 6, 59, 60, 61 and 62. Which flavours get a composed call is this item's to settle;
+the CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as
+it documents markdown. `htmlToAdf` refuses a value that is not a string as `not-a-string`
+(`docs/decisions.md` §Which code a cause takes).
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
