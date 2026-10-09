@@ -52,7 +52,7 @@
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
 | 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
-| 95 | 0.3.0 |  | **Find the code-span closers an escape forms and the mark runs a line cannot spell by reading the line back, in place of `escapeClosedRuns` and `unspellableRuns` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
+| 95 | 0.3.0 | decision | **Find the code-span closers an escape forms and the mark runs a line cannot spell by reading the line back, in place of `escapeClosedRuns` and `unspellableRuns` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |

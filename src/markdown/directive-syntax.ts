@@ -75,10 +75,6 @@ export function claimDirectivePrefix(text: string, index: number): ClaimedPrefix
   return claimsDirectivePrefix(text, index) ? { [claimedPrefix]: true, index } : undefined
 }
 
-export function claimsDirectivePrefix(text: string, index: number): boolean {
-  return text.startsWith(directivePrefix, index)
-}
-
 export function holdsDirectivePrefix(text: string): boolean {
   return text.includes(directivePrefix)
 }
@@ -162,6 +158,10 @@ export function unknownDirectiveFault(name: string): ConvertFault {
 
 export function unsupportedNodeShape(message: string): ConvertFault {
   return { code: 'unsupported-node-shape', message }
+}
+
+function claimsDirectivePrefix(text: string, index: number): boolean {
+  return text.startsWith(directivePrefix, index)
 }
 
 function keyOrder(left: string, right: string): number {

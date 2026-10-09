@@ -53,7 +53,7 @@ In `docs/decisions.md`:
 - Firefox reads the build
 - The coverage floors
 - The size ratchet
-- The project ships under the comprehension floor until items 59, 60 and 62 land
+- The project ships under the comprehension floor until items 59, 60, 62 and 95 land
 - Properties on a fixed seed
 - The CommonMark suite checks three ways
 - The flavour spec is read as a source
