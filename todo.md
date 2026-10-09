@@ -72,7 +72,7 @@
 `*foo  \nbar*` builds a `hardBreak` marked `em` (CommonMark examples 638 and 639), which Atlassian's
 schema refuses: its `hardBreak_node` holds no `marks` (`spec/adf-schema/full.json`). So
 `commonMarkToAdf` builds a document a site may reject from plain CommonMark. The suite's `em 1/3`
-exceptions for 638 and 639 go back to `em 1/2`.
+`pending` exceptions for 638 and 639 then return to `mark-model` and `em 1/2`.
 
 ### 88. Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.
 
