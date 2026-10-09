@@ -202,7 +202,7 @@ link reference definition — and a directive link CommonMark could spell is ref
 link — the bracket form goes literal, the directive form refused — which is CommonMark's prose
 where its reference implementation nests one `<a>` in another.
 
-## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding nothing a mark rides reads as its destination
+## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding nothing a mark rides reads as its destination, then the hard breaks it held
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
 maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer, after a
