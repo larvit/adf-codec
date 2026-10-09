@@ -299,7 +299,7 @@ function pushNode(scan: Scan, node: AdfNode): void {
 }
 
 function assemble(scan: Scan): Result<Scanned> {
-  const nodes = resolveNodes(scan.inLink ? scan.pieces : scan.pieces.map(linkedAlt), scan, true)
+  const nodes = resolveNodes(scan.pieces.map((piece) => (scan.inLink && piece.kind === 'image' && piece.link === undefined ? piece : linkedAlt(piece))), scan, true)
   if (!nodes.ok) return nodes
   const [only] = scan.pieces
   return success(scan.pieces.length === 1 && only?.kind === 'image' ? { image: mediaSingle(only), nodes: nodes.value } : { nodes: nodes.value })
@@ -549,7 +549,7 @@ function mergeReadText(items: readonly Inline[]): Inline[] {
   return merged
 }
 
-// The image arm is an image inside an image's description or a link's text, which reads as its plain alt text: `assemble` links every other.
+// The image arm is an image inside an image's description or a link's text, which reads as its plain alt text.
 // A highlight delimiter holds an empty text node until it pairs, so the emphasis around it marks it.
 function pieceNodes(piece: Piece): Inline[] {
   switch (piece.kind) {

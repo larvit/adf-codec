@@ -985,6 +985,7 @@ test('reads a lone image as the media the flavour spells for it', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('![](/u)\n')), [image('/u')])
   assert.deepEqual(content(losslessMarkdownToAdf('![*a*](/u)\n')), [image('/u', 'a')])
   assert.deepEqual(content(losslessMarkdownToAdf('- ![a](/u)\n')), [bulletList(item(image('/u', 'a')))])
+  assert.deepEqual(content(losslessMarkdownToAdf('> ![a](/u)\n')), [quote(image('/u', 'a'))])
 })
 
 test('flattens the description of a lone image to the plain text alt holds', () => {
@@ -1040,6 +1041,7 @@ test('reads an image inside a link not alone in its paragraph as plain alt text 
   const unspellable = { attrs: { href: 'a\nb' }, type: 'link' }
   assert.deepEqual(firstContent('!adf:link[b ![a](/u)]{href="a\\nb"}\n'), [marked('b a', unspellable)])
   assert.deepEqual(firstContent('!adf:link[!adf:underline[![a](/u)]]{href="a\\nb"}\n'), [marked('a', unspellable, { type: 'underline' })])
+  assert.equal(content(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n')), 'unsupported-node-shape: no link wraps a link: the [content] this one marks already holds one')
 })
 
 test('carries the mark a spelling nested inside its own kind names once', () => {
