@@ -573,13 +573,11 @@ exits 0 on.
 ## The project ships under the comprehension floor until items 59, 60, 62 and 95 land
 
 2026-10-03, the maintainer; item 95 in place of item 61, 2026-10-09, the maintainer. KISS, a
-technical principle, and its comprehension floor of 7. Valid while `todo.md` items 59, 60, 62 and
-95 are open.
+technical principle, and its comprehension floor of 7.
+Valid while `todo.md` items 59, 60, 62 and 95 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
-2026-10-08 is the baseline. Since 2026-10-04, a chunk whose panel scores any
-dimension lower improves what the seats named and scores again, and after three such rounds asks
-the maintainer.
+2026-10-08 is the baseline.
 
 | Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
 |---|---|---|---|---|---|

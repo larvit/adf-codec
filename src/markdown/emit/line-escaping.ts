@@ -32,7 +32,6 @@ type EmittedDelimiter = { closes: boolean; offset: number; pair: number; width: 
 
 type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; delimiters: EmittedDelimiter[]; length: number; start: number }
 
-// What stays fixed while one line's escapes are decided.
 type EscapeWalk = {
   readonly claims: Claims
   readonly container: LineContainer
@@ -127,7 +126,7 @@ function escapeClaims(scan: string, escapings: readonly InlineEscaping[], contai
   return escaped
 }
 
-// A run joining the emitter's own delimiter escapes its text; a run of text escapes from its start while the reader claims what the escapes leave of it.
+// A text character beside one of the emitter's delimiters would lengthen that delimiter's run, so every text character in such a run escapes.
 function runEscapes(walk: EscapeWalk, start: number, end: number, line: ScanLine): number[] {
   const { escapings, scan } = walk
   const indexes: number[] = []
@@ -137,7 +136,7 @@ function runEscapes(walk: EscapeWalk, start: number, end: number, line: ScanLine
     return indexes
   }
   for (let index = start; index < end; index += 1) {
-    // A backtick run escapes whole: a rest left bare would be a raw run of another length for a closer.
+    // A backtick run escapes whole: a bare rest would be a shorter backtick string, which can close a span an earlier run opens.
     const claimed = (index > start && scan.charAt(index) === '`') || claimsRunRest(walk, index, end, line)
     if (!claimed) break
     indexes.push(index)
@@ -323,7 +322,7 @@ function claimsLineStart(line: ScanLine, index: number, container: LineContainer
   return escapesLineClaim(line.text, index - line.start, line.position)
 }
 
-// Where the closing sequence an ATX heading would read in the text starts, `undefined` where it reads none.
+// The start of the closing sequence an ATX heading would read at the text's end.
 function closingHashes(scan: string): number | undefined {
   let start = scan.length
   while (scan.charAt(start - 1) === '#') start -= 1

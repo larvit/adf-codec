@@ -7,7 +7,7 @@ import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
 import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
 import { readEntityReference } from './commonmark/entity-references.ts'
 
-// What the inline reader reads from a token start, `width` characters on; `text` reads literally, a directive reads by its own grammar, and HTML is refused.
+// `directive` and `html` carry no `width`: a directive reads by its own grammar, and the reader refuses HTML.
 export type InlineToken =
   | { email: boolean; kind: 'autolink'; width: number }
   | { image: boolean; kind: 'bracket'; width: number }
