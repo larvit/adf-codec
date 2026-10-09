@@ -164,3 +164,20 @@ Read most (opens and searches):
 - `ci.sh` 1
 - `docs/decisions.md` 1
 - `todo.md` 1
+
+## Reading cost, chunk 58dfb54bf4df, finished 2026-10-09T12:40:40Z
+
+320679 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/portable/adf-to-portable-markdown.ts` 12
+- `docs/decisions.md` 9
+- `README.md` 7
+- `CHANGELOG.md` 6
+- `src/markdown/parse/markdown-to-adf.ts` 5
+- `src/markdown/parse/portable-markdown-to-adf.test.ts` 5
+- `todo.md` 5
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 3
+- `AGENTS.md` 2
+- `package.json` 2
