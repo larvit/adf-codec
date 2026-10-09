@@ -18,18 +18,16 @@ normalizes to it through the round-trip.
   cannot parse (intra-word). Strike is GFM strikethrough narrowed to exactly two tildes — a
   single tilde or a run of three or more is literal text — and block structure resolves before
   inline, so a `~~~` line opens a CommonMark tilde code fence.
-- Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
-  `order` attribute. A bullet list right after a bullet list takes `* `, and an ordered list
-  right after an ordered one `1)`, since CommonMark starts a new list where the
-  bullet character or the delimiter changes; the list after that takes `- ` or `1.` again. An item
-  text of asterisks and spaces that would read as a rule after `* ` opens with a backslash,
-  `* \**`. Continuation lines align with the first character
-  after the marker (two spaces for `- `, three for `1. `); blank lines inside an item are empty
-  lines, none between a nested list and a CommonMark block above it — one wherever the nested
-  list's own marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or
-  a list whose first item is empty), whatever block sits above it. Blank lines between items
-  normalize away. A list whose item holds a line of spaces or tabs alone, which a list item reads
-  back empty, takes the directive form.
+- Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's `order`
+  attribute. CommonMark starts a new list where the bullet character or the delimiter changes, so
+  adjacent lists of a kind alternate markers, `- ` `* ` `- ` and `1.` `1)` `1.`. An item whose first
+  line would read as a rule after `* ` opens with a backslash, `* \**`. Continuation lines align
+  with the first character after the marker (two spaces for `- `, three for `1. `); blank lines
+  inside an item are empty lines, none between a nested list and a CommonMark block above it — one
+  wherever the nested list's own marker cannot interrupt a paragraph (an ordered list whose first
+  number is not 1, or a list whose first item is empty), whatever block sits above it. Blank lines
+  between items normalize away. A list whose item holds a line of spaces or tabs alone, which a list
+  item reads back empty, takes the directive form.
 - Blockquotes prefix lines with `> `; a blank line inside a blockquote is a bare `>`.
 - ATX headings (`#` … `######`); setext input normalizes to ATX.
 - Code fences ``` with the node's language as info string, the fence lengthened past any backtick

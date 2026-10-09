@@ -18,14 +18,13 @@ import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
-// The usual delimiter, then the one a list beside another of its kind takes.
 type Delimiters = readonly [string, string]
 // headroom: the nesting levels the deepest node below may still spend before `largestNesting` refuses it.
 type EmittedBlock = SpelledBlock & { headroom: number }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = SpelledBlock & { node: AdfNode }
 type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
-// CommonMark starts a new list where the marker changes, so a list beside one of its kind takes `alternateText`.
+// CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
 type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
@@ -367,7 +366,7 @@ function tryListItemLines(inner: string, marker: string): string | undefined {
   const lines = body.map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
   const first = lines[0] ?? ''
   if (!isThematicBreak(first)) return lines.join('\n')
-  // Only text opens an item with `*`, a rule being spelled `---`; where `* ` before it reads as a rule, a backslash keeps it text.
+  // An item opens with `*` only as text, a list there taking `- ` and a rule `---`; a backslash keeps a first line reading as a rule text.
   return inner.startsWith('*') ? [`${marker}\\${first.slice(marker.length)}`, ...lines.slice(1)].join('\n') : undefined
 }
 

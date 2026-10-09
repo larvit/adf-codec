@@ -125,7 +125,7 @@ function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Res
       sequence.push(block)
       continue
     }
-    // Read next, since a replacement may take the directive form itself.
+    // Back on `pending`: a replacement may take the directive form itself.
     const replacement = block === next ? nodeContent(block).flatMap(nodeContent) : [block]
     for (const node of replacement.reverse()) pending.push(node)
   }

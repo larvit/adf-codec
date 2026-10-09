@@ -246,7 +246,7 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
-// An item after a closed one, such as an empty item a blank line ends, continues the list beside it.
+// An item opening after its list's last item closed, as an empty item a blank line ends does, continues that list.
 function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
   if (!start.fresh) return start.list
   const blocks = currentBlocks(walk)

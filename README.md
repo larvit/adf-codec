@@ -155,8 +155,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
 - A task list holding a block other than a task is a bullet list keeping its states as text:
   `- \[x] Done`.
 - Text that would read as a marker takes a backslash: `==` wherever it could open or close a
-  highlight, `[!…]` opening a quote, asterisks that would read as a rule after a `* ` marker,
-  `* \**`, and `[x]` or `[ ]` opening any list item, since GitHub reads that marker per item.
+  highlight, `[!…]` opening a quote, asterisks that would read as a rule after a `* ` marker
+  (`* \**`), and `[x]` or `[ ]` opening any list item, since GitHub reads that marker per item.
 - A node read back carries no `localId` except a `taskList`, `taskItem` or `blockTaskItem`, which
   Atlassian's schema requires one on: each gets a UUID v4 hashed from the whole markdown and its
   position, the same on every read. Join markdown bound for one document and read it once: the same
@@ -239,7 +239,7 @@ Serves Goals 1, 4 and 5.
   without a delimiter row, is an error result; each can be kept literal (`spec/flavour.md`).
 - A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
   canonical spelling, which round-trips byte-identically.
-- Six CommonMark spellings parse without an error and build a document the reference
+- Seven CommonMark spellings parse without an error and build a document the reference
   implementation renders differently. Four because ADF holds no node for what it renders:
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and `[]()`
     as nothing. A link text holding only hard breaks reads the same, followed by its hard breaks.
@@ -253,11 +253,12 @@ Serves Goals 1, 4 and 5.
   - An image's title becomes its caption when the image stays an image, and its link's title when
     it becomes linked alt text. Inside another link, the title is dropped.
 
-  And two more: a shortcut reference matching its definition only under Unicode case folding stays
-  unresolved, and a link whose text holds an autolink keeps the inner link and leaves the outer
-  brackets literal text, which the spec requires and the reference itself breaks, nesting one `<a>`
-  in the other. `corpus/commonmark-spec/exceptions.json` pins the first four `node-model` where the
-  suite reaches them, and the next `pending`; the suite holds no example of the last.
+  And three more: a shortcut reference matching its definition only under Unicode case folding
+  stays unresolved, two lists a link reference definition parts stay one list against CommonMark's
+  two, and a link whose text holds an autolink keeps the inner link and leaves the outer brackets
+  literal text, which the spec requires and the reference itself breaks, nesting one `<a>` in the
+  other. `corpus/commonmark-spec/exceptions.json` pins the first four `node-model` where the suite
+  reaches them and the fifth `pending`; the suite holds no example of the last two.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to
