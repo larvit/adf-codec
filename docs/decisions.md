@@ -79,9 +79,9 @@ while CommonMark starts a new list where the bullet character or the ordered del
 
 Every reader parts lists where the marker changes, as CommonMark does, so both writers alternate the
 marker between adjacent lists of a kind and no directive parts them. `*` is the maintainer's pick.
-In portable markdown this replaces a reader panel's 5 of 7 (2026-09-25) for one bullet list with
-escaped numbers, which the panel picked while nothing else could part the lists; it needs no new
-panel. The grammar: `spec/flavour.md` §Canonical form.
+For ordered lists in portable markdown, this overrides a reader panel's 2026-09-25 verdict, 5 of
+7, for one bullet list with escaped numbers (`- 1\. a`). The panel chose that while no other
+portable spelling parted the lists, so the maintainer overrode it without a new panel. The grammar: `spec/flavour.md` §Canonical form.
 
 ## An empty key spells `empty`
 
