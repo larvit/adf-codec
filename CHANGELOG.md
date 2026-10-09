@@ -57,11 +57,11 @@
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - Fix an image inside another image's description: it flattens into the alt text, where it was
   refused.
-- **Breaking:** `unmappable-image` leaves `ConvertErrorCode`, and every image reads. One anywhere
-  but alone in a plain paragraph reads as its alt text linked to its URL, or inside a link as plain
-  text the link marks. A titled one alone in a plain paragraph reads as the image captioned with
-  its title, and a link alone in a plain paragraph whose whole text is an image as the image the
-  link marks. To keep an image an image, give it a paragraph of its own. See `MIGRATION.md`.
+- **Breaking:** `unmappable-image` leaves `ConvertErrorCode`, and every image reads. An image reads
+  as an image only alone in its paragraph, and its title becomes the caption. Anywhere else it
+  reads as its alt text linked to its URL; inside a link, as plain text the link marks. A link
+  alone in its paragraph whose whole text is one image reads as that image, with the link marking
+  it. To keep an image an image, give it a paragraph of its own. See `MIGRATION.md`.
 - **Breaking:** an empty link text reads as its destination, `[](/url)` as `/url` linked, and
   `[]()` as nothing, where both spellings stayed literal text. See `MIGRATION.md`.
 - Fix a JSON key holding an escape, in a carried node or a JSON attribute such as `parameters`:

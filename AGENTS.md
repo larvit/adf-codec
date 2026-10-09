@@ -25,7 +25,7 @@ In `docs/decisions.md`:
 - CommonMark is a subset
 - Tables
 - Links
-- Every CommonMark image and empty link reads: the image where it stands alone, else a link, `[]()` as nothing
+- An image reads as an image only alone in its paragraph, else as its alt text linked; an empty link text reads as its destination
 - Ids stay site-local
 - Portable task ids come from position
 - A callout title keeps its link targets

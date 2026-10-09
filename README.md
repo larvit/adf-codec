@@ -13,8 +13,7 @@ products store as ADF.
 - **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, including `~~` and
   pipe tables whose every row opens with a pipe. `commonMarkToAdf` reads strict CommonMark as its
   spec says: nothing becomes a table, task or panel. Both refuse raw HTML and nesting past 500
-  levels, and `portableMarkdownToAdf` a claimed shape that does not complete
-  ([The errors](#the-errors)).
+  levels; `portableMarkdownToAdf` also refuses a malformed pipe table ([The errors](#the-errors)).
 - **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
   from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
   task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
@@ -239,16 +238,17 @@ Serves Goals 1, 4 and 5.
   without a delimiter row, is an error result; each can be kept literal (`spec/flavour.md`).
 - A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
   canonical spelling, which round-trips byte-identically.
-- Six CommonMark spellings parse without an error and build a document the reference
-  implementation renders differently. Three because ADF holds no node for what it renders:
+- Seven CommonMark spellings parse without an error and build a document the reference
+  implementation renders differently. Four because ADF holds no node for what it renders:
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and
     `[]()` as nothing.
-  - An image anywhere but alone in a plain paragraph reads as its alt text linked to its URL,
-    `See ![the moon](moon.png).` as `See [the moon](moon.png).`, and inside a link as plain text
-    the link marks — unless the link's whole text is the image and the link stands alone in a
-    plain paragraph, which reads as the image the link marks. To keep an image an image, give it
-    a paragraph of its own: nothing else on its line, and a blank line between it and any text
-    above or below. Images on consecutive lines share a paragraph.
+  - An image reads as an image only alone in its paragraph. Anywhere else — beside other text, in
+    a heading or a table cell, or in the paragraph an alert or task marker opens — it reads as its
+    alt text linked to its URL: `See ![the moon](moon.png).` reads as
+    `See [the moon](moon.png).`. To keep an image an image, give it a paragraph of its own: a
+    blank line between it and any other line.
+  - Inside a link, an image reads as plain text the link marks. A link alone in its paragraph
+    whose whole text is one image reads as that image, with the link marking it.
   - An image's title becomes its caption when the image stays an image, and its link's title when
     it becomes linked alt text. Inside another link, the title is dropped.
 
@@ -256,8 +256,8 @@ Serves Goals 1, 4 and 5.
   a shortcut reference matching its definition only under Unicode case folding stays unresolved,
   and a link whose text holds an autolink keeps the inner link and leaves the outer brackets
   literal text, which the spec requires and the reference itself breaks, nesting one `<a>` in the
-  other. `corpus/commonmark-spec/exceptions.json` pins the first three `node-model` and the next
-  two `pending`; the suite holds no example of the last.
+  other. `corpus/commonmark-spec/exceptions.json` pins the first four `node-model` where the suite
+  reaches them, and the next two `pending`; the suite holds no example of the last.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to

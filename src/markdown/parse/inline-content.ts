@@ -22,7 +22,7 @@ import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
 import { readTextDirective } from '../text-directive.ts'
 
-// `image` is the `mediaSingle` a lone image builds, for the one container that holds it: a plain paragraph. `nodes` reads it as its linked alt text.
+// Only a `paragraph` block takes `image`, the `mediaSingle` a lone image builds; every other container takes `nodes`, where the image is its linked alt text.
 export type InlineContent = { image?: AdfNode; nodes: AdfNode[] }
 
 // The text break leaf: it holds no marks, and stands between the nodes it parts until the outermost content checks and drops it.

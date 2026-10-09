@@ -1,6 +1,6 @@
 import type { AdfNode } from '../adf/document.ts'
 
-// spec/flavour.md, The CommonMark image: `![alt](url)` reads to `centeredImage([externalMedia(alt, url)])`, the only shape written back as it.
+// spec/flavour.md, The CommonMark image: `![alt](url)` reads to `centeredImage([externalMedia(alt, url)])`, the only shape `adfToLosslessMarkdown` writes as `![alt](url)`.
 export function centeredImage(content: AdfNode[]): AdfNode {
   return { attrs: { layout: 'center' }, content, type: 'mediaSingle' }
 }
