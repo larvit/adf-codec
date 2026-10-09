@@ -3,9 +3,10 @@
 ## Unreleased
 
 - **Breaking:** each call names the markdown it reads or writes. `adfToMarkdown` and `markdownToAdf`
-  are now `adfToLosslessMarkdown` and `losslessMarkdownToAdf`, and the new `commonMarkToAdf` reads
-  markdown a person or a model wrote as the CommonMark spec says: a directive, a pipe table, `~~`
-  and an `adf:` fence read as text and code. `MIGRATION.md` says which call to take.
+  are now `adfToLosslessMarkdown` and `losslessMarkdownToAdf`. A bot's or a model's markdown reads
+  in `portableMarkdownToAdf`, and markdown known to be strict CommonMark in the new
+  `commonMarkToAdf`, where a directive, a pipe table, `~~` and an `adf:` fence read as text and
+  code. `MIGRATION.md` says which call to take.
 - **Breaking:** the markdown readers refuse a value that is not a string with the new code
   `not-a-string`; `MIGRATION.md` lists what each value did before.
 - **Breaking:** an attribute value that is not a plain object, array or JSON primitive, such as a

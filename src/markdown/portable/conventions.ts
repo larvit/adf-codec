@@ -1,6 +1,6 @@
 import { isWordCharacter } from '../commonmark/emphasis-matching.ts'
 
-export type Flavour = 'commonmark' | 'lossless' | 'portable'
+type Flavour = 'commonmark' | 'lossless' | 'portable'
 
 export type WrittenFlavour = Exclude<Flavour, 'commonmark'>
 
