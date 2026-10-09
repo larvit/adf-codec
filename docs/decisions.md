@@ -219,8 +219,8 @@ outranks Goal 7.
 
 In `portableMarkdownToAdf`, an alert's or unfolded callout's marker line stands apart from the lines
 after it, and so do those after a folded callout's title line, so an image alone on either reads as
-the image: a reader panel of the bot, the LLM pipeline and
-a support agent, 3 of 3 on 2026-10-09, expected the picture in every case, a ticked task included.
+the image: a reader panel of the bot, the LLM pipeline and a support agent, 3 of 3 on 2026-10-09,
+expected the picture in every case, a ticked task included.
 A task item holds no image in Atlassian's schema, so the paragraph a task marker opens reads its
 image as linked alt text, the fallback two of the three named.
 
