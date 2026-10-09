@@ -840,7 +840,8 @@ test('builds the hard break a mark spelling spans with no marks, in every reader
   const localId = '01a0431d-201e-7400-a175-9c04d3628f95'
   assert.deepEqual(content(losslessMarkdownToAdf(`_!adf:hardBreak{localId=${localId}}_\n`)), [{ content: [{ attrs: { localId }, type: 'hardBreak' }], type: 'paragraph' }])
   for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
-    assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
+    assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u')), hardBreak()], type: 'paragraph' }])
+    assert.deepEqual(content(read('a[\\\n]()b\n')), [{ content: [text('a'), hardBreak(), text('b')], type: 'paragraph' }])
   }
 })
 

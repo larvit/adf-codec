@@ -325,10 +325,10 @@ function linkMark({ destination, title }: LinkDefinition): AdfMark {
   return { attrs: title === undefined ? { href: destination } : { href: destination, title }, type: 'link' }
 }
 
-// ADF holds no empty text node for a link mark to ride, so a link text holding nothing a mark rides reads as its destination, and an empty destination as nothing.
+// ADF holds no empty text node for a link mark to ride, so a link text holding nothing a mark rides reads as its destination, then the hard breaks it held, and an empty destination as those breaks alone.
 function linkTo(nodes: readonly Inline[], definition: LinkDefinition): Inline[] {
   if (!nodes.every(takesNoMarks)) return applyMark(nodes, linkMark(definition))
-  return definition.destination === '' ? [] : [{ marks: [linkMark(definition)], text: definition.destination, type: 'text' }]
+  return definition.destination === '' ? [...nodes] : [{ marks: [linkMark(definition)], text: definition.destination, type: 'text' }, ...nodes]
 }
 
 // spec/flavour.md, Inline nodes: the leaf builds no node, so only the pair it parts spells it.

@@ -240,8 +240,8 @@ Serves Goals 1, 4 and 5.
   canonical spelling, which round-trips byte-identically.
 - Seven CommonMark spellings parse without an error and build a document the reference
   implementation renders differently. Four because ADF holds no node for what it renders:
-  - An empty link text, or one holding only hard breaks, reads as its destination, `[](/url)` as
-    `/url` linked to `/url`, and `[]()` as nothing.
+  - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and `[]()`
+    as nothing. A link text holding only hard breaks reads the same, followed by its hard breaks.
   - An image reads as an image only alone in its paragraph. Anywhere else — beside other text, in
     a heading or a table cell, or in the paragraph a task marker opens — it reads as its
     alt text linked to its URL: `See ![the moon](moon.png).` reads as
