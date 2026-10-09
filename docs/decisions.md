@@ -1,13 +1,31 @@
 # Decisions
 
-## Plain markdown is a flavour of the grammar
+## Each call names its flavour
 
-2026-09-27, the maintainer. Goal 2. Valid while the plain flavour's spellings are ones the markdown
-grammar can read and write.
+2026-10-09, the maintainer; names by a developer panel, 2026-10-09. Goals 4, 5 and 6.1. Valid while
+each flavour has a standard or a spec of its own.
 
-The lossy pair is the plain flavour: the markdown grammar's reader and writer with the flavour set,
-its spellings — alerts, callouts, task markers, `==` — read and written there, so a marker line and
-a backslash reach them intact; what the flavour cannot spell reduces ADF→ADF ahead of the writer.
+A function's name says which markdown it reads or writes, and a reader reads that flavour alone:
+
+| Call | Flavour |
+| --- | --- |
+| `adfToLosslessMarkdown`, `losslessMarkdownToAdf` | the lossless flavour, `spec/flavour.md` |
+| `commonMarkToAdf` | CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as CommonMark reads them |
+| `adfToPortableMarkdown`, `portableMarkdownToAdf` | CommonMark, GFM's pipe tables, `~~`, alerts and task markers, and Obsidian's callouts and `==`; no directive and no `adf:` fence |
+
+No `adfToCommonMark`: the portable writer serves every persona a CommonMark writer would. The panel
+picked `portable` 4 of 7 over `plain` 3, `gfm` and `rendered` none: the export readers read it as
+"renders anywhere, lossy", and three readers read `plain` as holding no tables or alerts.
+
+## Portable markdown is a flavour of the grammar
+
+2026-09-27, the maintainer. Goal 2. Valid while the portable flavour's spellings are ones the
+markdown grammar can read and write.
+
+The lossy pair is the portable flavour: the markdown grammar's reader and writer with the flavour
+set, its spellings — alerts, callouts, task markers, `==` — read and written there, so a marker line
+and a backslash reach them intact; what the flavour cannot spell reduces ADF→ADF ahead of the
+writer.
 
 ## The round-trip is the product
 
@@ -103,8 +121,7 @@ rule a code language follows — leaves the info string `adf:` and keeps `type` 
 info string opening `adf:` is reserved, so a `codeBlock` whose language opens so takes the
 `language` attribute, and `carry` is an ordinary language. A body holding `type` under a named type,
 or a fence whose info string is `adf:` alone while its body's `type` could be spelled in the info
-string, is `unsupported-node-shape`. The reservation claims a fence CommonMark reads as code until
-`todo.md` item 43 gives CommonMark its own reader.
+string, is `unsupported-node-shape`. The reservation is the lossless flavour's alone.
 
 ## A code block is a fence per text node
 
@@ -159,10 +176,10 @@ opener nests by itself and leaf versus container falls out of the node's content
 
 2026-08-23, the maintainer. Goal 5. Valid while prose rarely writes the shapes the carve-outs claim.
 
-Plain CommonMark is a subset, with carve-outs (`spec/flavour.md`): literal text shaped like a
-directive, a pipe table or a `~~` pair is claimed, and so is a code fence whose info string opens
-`adf:` (§The carry fence names the node type) — plus one image gap. `todo.md` item 43 ends the
-claims, giving CommonMark its own reader, and `todo.md` item 65 ends the image gap.
+CommonMark is a subset of the lossless flavour, with carve-outs (`spec/flavour.md`): literal text
+shaped like a directive, a pipe table or a `~~` pair is claimed, and so is a code fence whose info
+string opens `adf:` (§The carry fence names the node type) — plus one image gap, which `todo.md`
+item 65 ends. `commonMarkToAdf` claims none of them (§Each call names its flavour).
 
 ## Tables
 
