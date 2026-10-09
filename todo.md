@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 88 | 0.2.0 | defect | **Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.** | 4 | 4 | 6 | 7 | 4 | 16.4 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
@@ -68,20 +67,13 @@
 
 ## Details
 
-### 88. Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.
-
-`- [x] done\n\n  ![a](u)` builds a `blockTaskItem` holding a `mediaSingle`, and `- [x] done\n\n  > q`
-one holding a `blockquote`; the schema's `blockTaskItem_node` takes paragraphs and extensions only
-(`spec/adf-schema/full.json`), so a site may reject the document. The reader needs a reading for
-the other blocks, settled by Goals 4 and 7.
-
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.
 
 Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads two (spec examples
 301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells adjacent lists by
 changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alternate `-` and `*`
-between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and `!adf:listBreak`
-retires. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
+between adjacent bullet lists, a task list among them, and `.` and `)` between adjacent ordered
+lists, and `!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
 Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions, and the
 spelling leaves the README's "Seven CommonMark spellings" bullet, which counts one fewer.
 

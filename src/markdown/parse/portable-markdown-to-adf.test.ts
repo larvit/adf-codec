@@ -145,12 +145,31 @@ test('reads a bullet list whose every item leads with a task marker to a task li
   ])
 })
 
-test('moves a nested task list beside its item and makes an item holding more than one block a block task item', () => {
+test('moves a nested task list beside its item and makes an item holding more than one paragraph a block task item', () => {
   assert.deepEqual(read('- [x] Parent\n  - [ ] Child\n- [ ] Next\n'), [bare('taskList', task('DONE', text('Parent')), bare('taskList', task('TODO', text('Child'))), task('TODO', text('Next')))])
-  assert.deepEqual(read('- [x] First.\n\n  Second.\n- [ ]\n\n  ```\n  x\n  ```\n'), [
-    bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.')), node('blockTaskItem', { state: 'TODO' }, bare('codeBlock', text('x')))),
+  assert.deepEqual(read('- [x] First.\n\n  Second.\n- [ ] Next\n'), [bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.')), task('TODO', text('Next')))])
+})
+
+test('stands a block a task item cannot hold, and what follows it in the item, after the task list, which resumes at the next task', () => {
+  assert.deepEqual(read('- [x] Deploy\n\n  ![a](u)\n- [ ] Tell\n'), [
+    bare('taskList', task('DONE', text('Deploy'))),
+    node('mediaSingle', { layout: 'center' }, { attrs: { alt: 'a', type: 'external', url: 'u' }, type: 'media' }),
+    bare('taskList', task('TODO', text('Tell'))),
   ])
-  assert.deepEqual(read('- [x] A\n  - plain\n'), [bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('A'), bare('bulletList', bare('listItem', said('plain')))))])
+  assert.deepEqual(read('- [x] First.\n\n  Second.\n\n  > q\n\n  Third.\n- [ ]\n\n  ```\n  x\n  ```\n'), [
+    bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.'))),
+    bare('blockquote', said('q')),
+    said('Third.'),
+    bare('taskList', task('TODO')),
+    bare('codeBlock', text('x')),
+  ])
+  assert.deepEqual(read('- [x] A\n  - plain\n- [ ] B\n'), [bare('taskList', task('DONE', text('A'))), bare('bulletList', bare('listItem', said('plain'))), bare('taskList', task('TODO', text('B')))])
+  assert.deepEqual(read('- [ ] A\n\n  # h\n  - [ ] Child\n- [ ] B\n'), [
+    bare('taskList', task('TODO', text('A'))),
+    node('heading', { level: 1 }, text('h')),
+    bare('taskList', task('TODO', text('Child'))),
+    bare('taskList', task('TODO', text('B'))),
+  ])
 })
 
 test('leaves mixed, ordered and unmarked lists plain', () => {
@@ -209,9 +228,9 @@ test('reads what the reduction wrote back to the node it reduced, less the attri
     task('DONE', text('Write')),
     bare('taskList', task('TODO', text('Review'))),
     node('blockTaskItem', { state: 'TODO' }, said('First.'), said('Second.')),
-    node('blockTaskItem', { state: 'DONE' }, bare('codeBlock', text('x'))),
+    task('DONE'),
   )
-  assert.deepEqual(roundTripped(tasks), [plainTasks])
+  assert.deepEqual(roundTripped(tasks), [plainTasks, bare('codeBlock', text('x'))])
   const colour: AdfMark = { attrs: { color: '#c6edfb' }, type: 'backgroundColor' }
   assert.deepEqual(roundTripped(paragraph(text('a '), text('hi', colour, strong), text(' b'))), [paragraph(text('a '), text('hi', highlight, strong), text(' b'))])
   assert.deepEqual(roundTripped(paragraph(text('=', colour), text(' '), text('a==b', colour))), [paragraph(text('=', highlight), text(' '), text('a==b', highlight))])

@@ -52,7 +52,8 @@
   brackets literal text, where `0.1.0` split the outer link around it; see `MIGRATION.md`.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
   markdown GitHub, GitLab and Obsidian render: alerts, callouts, task lists, `==highlights==` and
-  pipe tables.
+  pipe tables. A task item holds only paragraphs, as Atlassian's schema requires: from its first
+  other block, such as an image or a code block, the rest of the item stands after the task list.
 - Spell `rule`'s `color`, `style` and `weight`, `layoutSection`'s `columnRuleStyle` and a link's
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - Fix an image inside another image's description: it flattens into the alt text, where it was

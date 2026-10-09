@@ -8,7 +8,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { documentAttribute, documentName, documentSpelling, listBreakName, listBreakSpelling } from '../block-directive.ts'
-import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { flavourClaims, leadingMarker, readAlertMarker, readTaskMarker } from '../portable/conventions.ts'
 import { languageSlot } from '../code-language.ts'
@@ -19,6 +19,7 @@ import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.ts'
 import { spellsEmpty } from '../empty-keys.ts'
+import { splitTaskList } from '../portable/task-list.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
 
@@ -82,7 +83,8 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
     }
     const node = positioned(readBlock(block, reading, nodePath, depth), block.position)
     if (!node.ok) return node
-    content.push(node.value)
+    if (node.value.type !== 'taskList' || block.kind !== 'bulletList') content.push(node.value)
+    else for (const split of splitTaskList(node.value)) content.push(split)
   }
   return success(content)
 }
@@ -212,11 +214,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
     if (!read.ok) return read
     let beside = read.value.length
     while (read.value[beside - 1]?.type === 'taskList') beside -= 1
-    const kept = read.value.slice(0, beside)
-    const [only] = kept
-    const attrs = { state: marker.state }
-    const inline = kept.length <= 1 && (only === undefined || only.type === 'paragraph')
-    tasks.push(inline ? { attrs, content: nodeContent(only ?? {}).slice(), type: 'taskItem' } : { attrs, content: kept, type: 'blockTaskItem' })
+    tasks.push({ attrs: { state: marker.state }, content: read.value.slice(0, beside), type: 'blockTaskItem' })
     for (const nested of read.value.slice(beside)) tasks.push(nested)
   }
   return success({ content: tasks, type: 'taskList' })
