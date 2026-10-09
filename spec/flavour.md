@@ -323,8 +323,8 @@ directive form instead.
 `mediaInline` carries a media `collection` + `id`, never a URL, so anywhere else an image reads as
 its alt text linked to its destination, the link titled by the image's title: beside other
 content, in a heading, a table cell or an `!adf:paragraph`, and in the paragraph a portable task
-marker opens. An alert's or callout's marker line stands apart from the lines after it, so an image
-alone on either reads as the image. An empty alt text reads as the destination, as an empty link text
+marker opens. An alert's or unfolded callout's marker line stands apart from the lines after it, and
+so do those after a folded callout's title line, so an image alone on either reads as the image. An empty alt text reads as the destination, as an empty link text
 does. Inside a link's text, the alt text is plain text the link marks, and the image's destination
 and title drop (`docs/decisions.md` §An image reads as an image only alone in its paragraph).
 
