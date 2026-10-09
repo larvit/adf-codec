@@ -65,6 +65,7 @@ function migrateMarkdown(stored: string) {
 | the `adf` code fence and `:adf{json="…"}` | the `adf:<type>` code fence, its JSON without `type`, and `!adf:carry{json="…"}` |
 | `\:` keeps a directive literal | `\!adf:` keeps a directive literal |
 | `:adf{json="…"}` carrying a link for its `collection`, `id` or `occurrenceKey` | `!adf:link[text]{attrs}` |
+| `::listBreak` between two lists of a kind | no separator, the second list's marker changed: `* ` for `- `, `1)` for `1.` |
 
 A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
 holding an unescaped `!adf:` and a code fence whose info string opens `adf:` are claimed instead.
@@ -75,6 +76,7 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
+| a list whose bullet character or ordered delimiter changes (`- a` then `* b`, `1. a` then `1) b`) | one list | two lists, as CommonMark reads them |
 | a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
 | markdown holding no block (`""`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
 | a hard break inside a mark's spelling (`*a\` then `b*` on the next line) | the hard break holds the mark | the hard break holds no marks, as Atlassian's schema requires, and the recipe above drops the marks `0.1.0` gave it wherever text beside it holds them. A link whose text is only hard breaks reads as its destination linked, followed by those breaks |
@@ -103,7 +105,7 @@ with one of the four now reads, or refuses with the code the table gives.
 | an `emoji`, `mention` or `status` whose `text` holds a line ending or a null character, on emit | `unspellable-whitespace`, `unspellable-character` | rides the inline carry |
 | a text node holding no text, or holding `content`, on emit | `unsupported-node-shape` | rides the carry |
 | a `codeBlock` holding other than plain text nodes, on emit | `unsupported-node-shape` | rides the block carry |
-| a leaf node given a body (`media`, `listBreak`) | `unsupported-node-shape` | `malformed-directive` |
+| a leaf node given a body (`media`) | `unsupported-node-shape` | `malformed-directive` |
 | a node with a block body written as a leaf (`panel`) | `unsupported-node-shape` | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written as a leaf | parses | `malformed-directive` |
 | an empty node the `::taskItem` spelling row names, written with a closer | `unsupported-node-shape` | parses |

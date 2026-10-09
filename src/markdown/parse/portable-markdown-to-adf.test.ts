@@ -180,6 +180,12 @@ test('stands a block a task item cannot hold, and what follows it in the item, a
   ])
 })
 
+test('reads a task list beside a list of another bullet character as two lists', () => {
+  const tasks = (state: string, value: string): AdfNode => bare('taskList', node('taskItem', { state }, text(value)))
+  assert.deepEqual(read('- [x] a\n* b\n'), [tasks('DONE', 'a'), bare('bulletList', bare('listItem', bare('paragraph', text('b'))))])
+  assert.deepEqual(read('- [x] a\n* [ ] b\n'), [tasks('DONE', 'a'), tasks('TODO', 'b')])
+})
+
 test('leaves mixed, ordered and unmarked lists plain', () => {
   for (const markdown of ['- \\[x] a\n', '- [x] a\n- \\[ ] b\n', '- [x] a\n- b\n', '1. [x] a\n', '- [x]a\n', '- **[x]** a\n', '- [x]**a**\n', '- [-] a\n', '- > [x] a\n']) {
     const blocks = read(markdown)

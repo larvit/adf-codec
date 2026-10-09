@@ -21,10 +21,6 @@ export const documentAttribute = { key: 'content', value: 'none' }
 
 export const documentSpelling = spellDirectiveOpener(documentName, undefined, spellAttributes([[documentAttribute.key, documentAttribute.value]]))
 
-export const listBreakName = 'listBreak'
-
-export const listBreakSpelling = spellDirectiveOpener(listBreakName, undefined, '')
-
 export const marksAttribute = 'marks'
 
 export function blockArgument(type: string): string | undefined {
@@ -32,7 +28,7 @@ export function blockArgument(type: string): string | undefined {
 }
 
 export function blockDirectiveForm(name: string): 'container' | 'leaf' | undefined {
-  if (name === listBreakName || name === documentName) return 'leaf'
+  if (name === documentName) return 'leaf'
   const model = blockNodeModel(name)
   if (model === undefined) return undefined
   return model.contentModel === 'none' ? 'leaf' : 'container'

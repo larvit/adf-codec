@@ -10,7 +10,7 @@ import type { Result } from '../result.ts'
 import { adfDocument, attributes, blockTaskItemChildren, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown } from '../markdown/portable/adf-to-portable-markdown.ts'
-import { blockArgument, listBreakName, marksAttribute } from '../markdown/block-directive.ts'
+import { blockArgument, marksAttribute } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { carryName } from '../markdown/opaque-carry.ts'
 import { commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
@@ -52,7 +52,7 @@ const vocabularies = [...Object.values(blockNodes).map((model) => model.attribut
 const attributeKeys = [
   ...new Set([...vocabularies.flatMap((vocabulary) => Object.keys(vocabulary)), ...Object.keys(blockNodes).flatMap((type) => blockArgument(type) ?? []), marksAttribute, 'json', textDirectiveName]),
 ]
-const directiveNames = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes), carryName, listBreakName, textDirectiveName]
+const directiveNames = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes), carryName, textDirectiveName]
 
 // Hostile generation reaches refusals; clean generation holds none a single piece would trip, so a whole document reaches the emitter.
 function choose(hostile: boolean, choices: readonly Choice[], depth?: { depthIdentifier: DepthIdentifier; maxDepth: number }): Arbitrary<string> {

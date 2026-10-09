@@ -84,7 +84,6 @@ test('carries a claimed line as the block it opens, the refusal the node layer b
 test('opens a container where the content model takes content, and holds it open until the closer naming it', () => {
   assert.deepEqual(kinds('!adf:panel info\nPart.\n!adf:/panel\nMore.\n'), ['directive', 'paragraph'])
   assert.deepEqual(kinds('!adf:rule\nPart.\n'), ['directive', 'paragraph'])
-  assert.deepEqual(kinds('!adf:listBreak\nPart.\n'), ['directive', 'paragraph'])
   assert.deepEqual(kinds('!adf:widget\nPart.\n'), ['directive', 'paragraph'])
   assert.deepEqual(kinds('!adf:mention\nPart.\n'), ['directive', 'paragraph'])
   assert.deepEqual(faults('!adf:panel info\n\nPart.\n\n!adf:/panel\n'), [])

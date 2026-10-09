@@ -111,7 +111,6 @@ test('reads each shape a flavour claims as the flavour of the reader it reaches'
     ['!adf:panel info\nx\n!adf:/panel\n', [paragraph('!adf:panel info x !adf:/panel')], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }], [paragraph('!adf:panel info x !adf:/panel')]],
     ['a!adf:textBreak{}a\n', [paragraph('a!adf:textBreak{}a')], [{ content: [text('a'), text('a')], type: 'paragraph' }], [paragraph('a!adf:textBreak{}a')]],
     ['!adf:doc {content=none}\n', [paragraph('!adf:doc {content=none}')], [], [paragraph('!adf:doc {content=none}')]],
-    ['- a\n\n!adf:listBreak\n\n- b\n', [bulletList(item(paragraph('a'))), paragraph('!adf:listBreak'), bulletList(item(paragraph('b')))], [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))], [bulletList(item(paragraph('a'))), paragraph('!adf:listBreak'), bulletList(item(paragraph('b')))]],
     ['| a |\n| --- |\n| b |\n', [paragraph('| a | | --- | | b |')], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))]],
     ['~~x~~\n', [paragraph('~~x~~')], [{ content: [marked('x', strike)], type: 'paragraph' }], [{ content: [marked('x', strike)], type: 'paragraph' }]],
     ['==x==\n', [paragraph('==x==')], [paragraph('==x==')], [{ content: [marked('x', highlight)], type: 'paragraph' }]],
@@ -271,27 +270,22 @@ test('gives back the refusal an inline body holds, never the shape check above i
   assert.equal(content(losslessMarkdownToAdf('!adf:caption\n- a\n!adf:/caption\n')), 'unsupported-node-shape: caption takes one paragraph as its body: this body is not one')
 })
 
-test('reads the separator that parts two adjacent lists of one kind', () => {
+test('reads a change of bullet character or ordered delimiter as a second list, in every reader', () => {
   const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n\n- b\n')), parted)
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n!adf:listBreak\n- b\n')), parted)
-  assert.deepEqual(content(losslessMarkdownToAdf('1. a\n\n!adf:listBreak\n\n1. b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('> - a\n> !adf:listBreak\n> - b\n')), [quote(...parted)])
-  assert.deepEqual(path(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n\n- b\n\n| x |\n')), ['content', 2])
+  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read('- a\n* b\n')), parted)
+    assert.deepEqual(content(read('- a\n\n+ b\n')), parted)
+    assert.deepEqual(content(read('- a\n-\n\n* b\n')), [bulletList(item(paragraph('a')), item()), bulletList(item(paragraph('b')))])
+    assert.deepEqual(content(read('- a\n* b\n- c\n')), [...parted, bulletList(item(paragraph('c')))])
+    assert.deepEqual(content(read('1. a\n1) b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
+    assert.deepEqual(content(read('> - a\n> * b\n')), [quote(...parted)])
+    assert.deepEqual(content(read('- - a\n  * b\n')), [bulletList(item(...parted))])
+  }
+  assert.deepEqual(path(losslessMarkdownToAdf('- a\n\n* b\n\n| x |\n')), ['content', 2])
 })
 
-test('refuses the list separator that parts anything else', () => {
-  const parts = 'unsupported-node-shape: listBreak parts two adjacent lists of one type: this one parts something else'
-  assert.equal(content(losslessMarkdownToAdf('!adf:listBreak\n')), parts)
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n')), parts)
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n\n1. b\n')), parts)
-  assert.equal(content(losslessMarkdownToAdf('Part.\n\n!adf:listBreak\n\n- b\n')), parts)
-  const bare = 'unsupported-node-shape: listBreak spells the bare leaf form, !adf:listBreak: this one spells more'
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak x\n\n- b\n')), bare)
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak {id=x}\n\n- b\n')), bare)
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n- b\n!adf:/listBreak\n')), 'malformed-directive: listBreak takes no body, so no !adf:/listBreak closes it; \\!adf: keeps the prefix literal')
-  assert.equal(content(losslessMarkdownToAdf('!adf:listBreak{}\n')), 'unsupported-node-shape: listBreak takes the block form, !adf:listBreak, never the inline form')
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:listBreak\n')), ['content', 1])
+test('reads the retired list separator as a directive no node spells', () => {
+  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n\n- b\n')), 'unknown-directive-name: the directive name listBreak reads back to no node; \\!adf: keeps the prefix literal')
 })
 
 test('reads the image a pipe cell holds as its linked alt text', () => {
@@ -382,8 +376,6 @@ test('names the leaf given a body at its opener, ahead of any refusal the leaf h
   const body = (name: string): string => `malformed-directive: ${name} takes no body, so no !adf:/${name} closes it; \\!adf: keeps the prefix literal`
   assert.equal(content(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n')), body('rule'))
   assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n!adf:/listBreak\n\n- b\n')), body('listBreak'))
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\nPart.\n!adf:/listBreak\n\n- b\n')), body('listBreak'))
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:rule {localId=a-2}\nPart.\n!adf:/rule\n')), ['content', 1])
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n')), ['content', 0])
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:/rule\n')), ['content', 1])
@@ -683,8 +675,6 @@ test('reads a bullet list, the marker width setting the continuation', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('-\n')), [bulletList(item())])
   assert.deepEqual(content(losslessMarkdownToAdf('- One\n\n  Two.\n')), [bulletList(item(paragraph('One'), paragraph('Two.')))])
   assert.deepEqual(content(losslessMarkdownToAdf('-     Code.\n')), [bulletList(item({ content: [text('Code.')], type: 'codeBlock' }))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n* b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n+ b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(losslessMarkdownToAdf('- a\n-\n\n- c\n')), [bulletList(item(paragraph('a')), item(), item(paragraph('c')))])
   assert.deepEqual(content(losslessMarkdownToAdf('- a\n1. b\n')), [bulletList(item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
   assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
@@ -694,7 +684,6 @@ test('reads a bullet list, the marker width setting the continuation', () => {
 test('reads an ordered list, its first marker the order attribute', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('9. Bolt M8\n10. Nut M8\n')), [orderedList(9, item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
   assert.deepEqual(content(losslessMarkdownToAdf('1) Loosen the clamp\n')), [orderedList(1, item(paragraph('Loosen the clamp')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('1. a\n1) b\n')), [orderedList(1, item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(losslessMarkdownToAdf('0. Zero\n')), [orderedList(0, item(paragraph('Zero')))])
 })
 

@@ -166,14 +166,17 @@ test('escapes the delimiter row a hard break leaves opening a pipe table with no
   assert.equal(broken('c | d'), 'a | b\\\nc | d\n')
 })
 
-test('parts two adjacent lists of the same kind, the marker spelling being what merges', () => {
+test('alternates the marker between adjacent lists of a kind, the marker change being what parts them', () => {
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
-  assert.equal(markdown(adfToLosslessMarkdown(document(list, list))), '- x\n\n!adf:listBreak\n\n- x\n')
-  const ordered: AdfNode = { attrs: { order: 1 }, content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'orderedList' }
-  assert.equal(markdown(adfToLosslessMarkdown(document(ordered, ordered))), '1. x\n\n!adf:listBreak\n\n1. x\n')
-  assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { panelType: 'info' }, content: [list, list], type: 'panel' }))), '!adf:panel info\n- x\n!adf:listBreak\n- x\n!adf:/panel\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document(list, list, list))), '- x\n\n* x\n\n- x\n')
+  const ordered: AdfNode = { attrs: { order: 9 }, content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [paragraph({ text: 'y', type: 'text' }), paragraph({ text: 'z', type: 'text' })], type: 'listItem' }], type: 'orderedList' }
+  assert.equal(markdown(adfToLosslessMarkdown(document(ordered, ordered))), '9. x\n10. y\n\n    z\n\n9) x\n10) y\n\n    z\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document(list, ordered, list))), '- x\n\n9. x\n10. y\n\n    z\n\n- x\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { panelType: 'info' }, content: [list, list], type: 'panel' }))), '!adf:panel info\n- x\n\n* x\n!adf:/panel\n')
   const nested: AdfNode = { content: [{ content: [list, list], type: 'listItem' }], type: 'bulletList' }
-  assert.equal(markdown(adfToLosslessMarkdown(document(nested))), '- - x\n\n  !adf:listBreak\n\n  - x\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document(nested))), '- - x\n  * x\n')
+  const stars: AdfNode = { content: [{ content: [paragraph({ text: '* *', type: 'text' })], type: 'listItem' }], type: 'bulletList' }
+  assert.equal(markdown(adfToLosslessMarkdown(document(list, stars))), '- x\n\n* \\* *\n')
   const carried: AdfNode = { ...list, attrs: { unknown: 'x' } }
   assert.ok(markdown(adfToLosslessMarkdown(document(carried, carried))).includes('```\n\n```adf:bulletList\n'))
   assert.ok(markdown(adfToLosslessMarkdown(document(carried, list))).endsWith('```\n\n- x\n'))
