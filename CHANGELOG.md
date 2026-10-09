@@ -53,7 +53,7 @@
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
   markdown GitHub, GitLab and Obsidian render: alerts, callouts, task lists, `==highlights==` and
   pipe tables. A task item holds only paragraphs: from its first other block, such as an image or
-  a code block, the rest of the item stands after the task list.
+  a code block, the rest of the item stands after the task list; a nested task list stays nested.
 - Spell `rule`'s `color`, `style` and `weight`, `layoutSection`'s `columnRuleStyle` and a link's
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - Fix an image inside another image's description: it flattens into the alt text, where it was

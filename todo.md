@@ -27,6 +27,7 @@
 |---|---|---|---|---|---|---|---|---|---|
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
+| 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
@@ -47,7 +48,6 @@
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
-| 93 | 0.3.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
@@ -87,6 +87,13 @@ reader's view — flanking, code-span closers, link-definition openings, highlig
 only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
 time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
 of one character from each of its characters.
+
+### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
+
+`readBlocks` fixes a block's path before `splitTaskList` and `bulletNode` move blocks beside or
+after their task, so `- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n` reports
+`/content/0/content/0/content/2` for a block that would stand at `/content/2`. The README says
+`path` is the node's place from the document root.
 
 ### 86. Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.
 
@@ -250,13 +257,6 @@ ours ships tsc's unminified output and no minifier yet (decide here whether to m
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
 kB.
-
-### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
-
-`readBlocks` fixes a block's path before `splitTaskList` and `bulletNode` move blocks beside or
-after their task, so `- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n` reports
-`/content/0/content/0/content/2` for a block that would stand at `/content/2`. The README says
-`path` is the node's place from the document root.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
