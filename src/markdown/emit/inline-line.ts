@@ -327,6 +327,8 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
+  // A link `tryLink` gave back holds the hard breaks `joinsRun` joined; the carry's fallback parts them.
+  if (inner.value.segments.some((segment) => segment.text.includes('\n'))) return success({ carry: range })
   return success({ segments: [syntax(spellInlineDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })
 }
 

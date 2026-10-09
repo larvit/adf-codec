@@ -325,8 +325,8 @@ quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces,
 `adfToLosslessMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
 flanking cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and
 the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
-whose attributes no spelling writes re-emits the line the same way before riding the carry. Make all
-three linear.
+whose attributes no spelling writes re-emits the line the same way before riding the carry, and so
+does an emphasis or link run that parts at the hard breaks it spans. Make all four linear.
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
