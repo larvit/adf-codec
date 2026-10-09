@@ -117,3 +117,20 @@ Read most (opens and searches):
 - `src/conformance/commonmark-spec.test.ts` 1
 - `src/index.ts` 1
 - `src/markdown/parse/blocks.ts` 1
+
+## Reading cost, chunk bea38172cf72, finished 2026-10-09T08:50:40Z
+
+178700 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/parse/markdown-to-adf.test.ts` 13
+- `README.md` 10
+- `docs/decisions.md` 10
+- `spec/flavour.md` 7
+- `src/markdown/parse/markdown-to-adf.ts` 7
+- `todo.md` 6
+- `corpus/commonmark-spec/exceptions.json` 5
+- `src/conformance/commonmark-spec.test.ts` 5
+- `CHANGELOG.md` 4
+- `MIGRATION.md` 3
