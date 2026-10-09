@@ -2,15 +2,15 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { Claims } from '../portable/conventions.ts'
 import type { DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
+import type { InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
-import { backslashEscape, decodeTextEscapes, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink, trimTrailingSpace } from '../commonmark/grammar.ts'
-import { backtickRun, closingBacktickRun } from '../commonmark/backtick-runs.ts'
+import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
-import { delimiterFlags, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
+import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { highlightDelimiter, highlightFlanking } from '../portable/conventions.ts'
+import { highlightDelimiter } from '../portable/conventions.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
@@ -20,6 +20,7 @@ import { openingLinkTakesDirective } from '../emit/inline-line.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
+import { readInlineToken } from '../inline-tokens.ts'
 import { readTextDirective } from '../text-directive.ts'
 
 // Only a `paragraph` block takes `image`, the `mediaSingle` a lone image builds; every other container takes `nodes`, where the image is its linked alt text.
@@ -107,73 +108,58 @@ function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' 
 }
 
 function scanInline(scan: Scan): Result<Scanned> {
-  const { source } = scan
   let index = 0
-  while (index < source.length) {
-    switch (source.charAt(index)) {
-      case '<': {
-        const angle = readAngle(scan, index)
-        if (!angle.ok) return angle
-        index = angle.value
-        break
-      }
-      case '!': {
-        const directive = scan.claims.directives ? readDirective(scan, index) : undefined
-        if (directive === undefined) {
-          index = openBracket(scan, index)
-          break
-        }
-        if (!directive.ok) return directive
-        index = directive.value
-        break
-      }
-      case '[':
-        index = openBracket(scan, index)
-        break
-      case ']': {
-        const closed = closeBracket(scan, index)
-        if (!closed.ok) return closed
-        index = closed.value
-        break
-      }
-      default:
-        index = readCharacter(scan, index)
-    }
+  while (index < scan.source.length) {
+    const read = readToken(scan, index, readInlineToken(scan.source, index, scan.claims))
+    if (!read.ok) return read
+    index = read.value
   }
   flush(scan, scan.container !== undefined)
   return assemble(scan)
 }
 
-function readCharacter(scan: Scan, index: number): number {
-  switch (scan.source.charAt(index)) {
-    case '\\':
-      return readBackslash(scan, index)
-    case '\n':
-      return readLineEnding(scan, index)
-    case '`':
-      return readBackticks(scan, index)
-    case '*':
-    case '_':
-    case '~':
-      return readDelimiterRun(scan, index)
-    case '=':
-      return readEquals(scan, index)
-    default:
-      scan.pending += scan.source.charAt(index)
-      return index + 1
+function readToken(scan: Scan, index: number, token: InlineToken): Result<number> {
+  const end = index + token.width
+  switch (token.kind) {
+    case 'autolink':
+      flush(scan, false)
+      pushNode(scan, linkedText(scan.source.slice(index + 1, end - 1), token.email ? 'mailto:' : ''))
+      return success(end)
+    case 'bracket':
+      flush(scan, false)
+      scan.pieces.push({ active: true, image: token.image, kind: 'open', start: end })
+      return success(end)
+    case 'bracket-close':
+      return closeBracket(scan, index)
+    case 'code-span':
+      flush(scan, false)
+      pushNode(scan, { marks: [{ type: 'code' }], text: codeSpanText(scan.source.slice(index + token.opener, end - token.opener)), type: 'text' })
+      return success(end)
+    case 'delimiter-run':
+      flush(scan, false)
+      scan.pieces.push({ canClose: token.canClose, canOpen: token.canOpen, character: scan.source.charAt(index), kind: 'run', length: token.width })
+      return success(end)
+    case 'directive':
+      return readDirective(scan, index)
+    case 'hard-break':
+      // CommonMark strips the spaces the two-space break is spelled with, and keeps those before a backslash.
+      flush(scan, false)
+      pushNode(scan, { type: 'hardBreak' })
+      return success(end)
+    case 'highlight':
+      flush(scan, false)
+      scan.pieces.push({ closes: token.closes, kind: 'highlight', opens: token.opens })
+      return success(end)
+    case 'html':
+      return failure('unmappable-html', `no raw HTML converts at this version: ${token.construct}`, scan.path)
+    case 'line-ending':
+      return success(readLineEnding(scan, index))
+    case 'entity':
+    case 'escape':
+    case 'text':
+      scan.pending += scan.source.slice(index, end)
+      return success(end)
   }
-}
-
-function readBackslash(scan: Scan, index: number): number {
-  if (scan.source.charAt(index + 1) === '\n') {
-    // CommonMark strips the spaces the two-space break is spelled with, and keeps those before a backslash.
-    flush(scan, false)
-    pushNode(scan, { type: 'hardBreak' })
-    return index + 2
-  }
-  const width = backslashEscape(scan.source, index) === undefined ? 1 : 2
-  scan.pending += scan.source.slice(index, index + width)
-  return index + width
 }
 
 function readLineEnding(scan: Scan, index: number): number {
@@ -184,48 +170,10 @@ function readLineEnding(scan: Scan, index: number): number {
   return index + 1
 }
 
-function readBackticks(scan: Scan, index: number): number {
-  const span = readCodeSpan(scan.source, index)
-  if (span === undefined) {
-    const run = backtickRun(scan.source, index)
-    scan.pending += scan.source.slice(index, index + run)
-    return index + run
-  }
-  flush(scan, false)
-  pushNode(scan, { marks: [{ type: 'code' }], text: span.text, type: 'text' })
-  return span.end
-}
-
-function readAngle(scan: Scan, index: number): Result<number> {
-  const autolink = readAutolink(scan.source, index)
-  if (autolink !== undefined) {
-    flush(scan, false)
-    pushNode(scan, autolink.node)
-    return success(index + autolink.length)
-  }
-  const construct = inlineHtmlConstruct(scan.source, index)
-  if (construct !== undefined) return failure('unmappable-html', `no raw HTML converts at this version: ${construct}`, scan.path)
-  scan.pending += '<'
-  return success(index + 1)
-}
-
-function openBracket(scan: Scan, index: number): number {
-  const image = scan.source.charAt(index) === '!'
-  if (image && scan.source.charAt(index + 1) !== '[') {
-    scan.pending += '!'
-    return index + 1
-  }
-  const width = image ? 2 : 1
-  flush(scan, false)
-  scan.pieces.push({ active: true, image, kind: 'open', start: index + width })
-  return index + width
-}
-
-function readDirective(scan: Scan, index: number): Result<number> | undefined {
+function readDirective(scan: Scan, index: number): Result<number> {
   const held = scan.spans.get(index)
   if (held !== undefined) return pushDirective(scan, held, index)
   const directive = readInlineDirective(scan.source, index)
-  if (directive === undefined) return undefined
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
   return pushDirective(scan, directive.value, index)
 }
@@ -380,36 +328,6 @@ function holdsLink(pieces: readonly Piece[]): boolean {
 
 function marksLink(nodes: readonly Inline[]): boolean {
   return adfNodes(nodes).some((node) => nodeMarks(node).some((mark) => mark.type === 'link'))
-}
-
-function readDelimiterRun(scan: Scan, index: number): number {
-  const character = scan.source.charAt(index)
-  const length = runLength(scan.source, index)
-  const flags = delimiterFlags(character, scan.source.charAt(index - 1), scan.source.charAt(index + length))
-  if ((character === '~' && (!scan.claims.strikethrough || length !== 2)) || (!flags.canOpen && !flags.canClose)) scan.pending += scan.source.slice(index, index + length)
-  else {
-    flush(scan, false)
-    scan.pieces.push({ canClose: flags.canClose, canOpen: flags.canOpen, character, kind: 'run', length })
-  }
-  return index + length
-}
-
-function readEquals(scan: Scan, index: number): number {
-  if (!scan.claims.highlights || !scan.source.startsWith(highlightDelimiter, index)) {
-    scan.pending += '='
-    return index + 1
-  }
-  flush(scan, false)
-  scan.pieces.push({ ...highlightFlanking(scan.source, index), kind: 'highlight' })
-  return index + highlightDelimiter.length
-}
-
-function readAutolink(source: string, index: number): { length: number; node: AdfNode } | undefined {
-  const bracketed = readBracketedAutolink(source, index)
-  if (bracketed !== undefined) return { length: bracketed, node: linkedText(source.slice(index + 1, index + bracketed - 1), '') }
-  const email = readEmailAutolink(source, index)
-  if (email === undefined) return undefined
-  return { length: email, node: linkedText(source.slice(index + 1, index + email - 1), 'mailto:') }
 }
 
 function linkedText(text: string, scheme: string): AdfNode {
@@ -683,13 +601,6 @@ function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
     const marks = nodeMarks(node)
     return marks.some((carried) => carried.type === mark.type) ? node : { ...node, marks: [mark, ...marks] }
   })
-}
-
-function readCodeSpan(source: string, index: number): { end: number; text: string } | undefined {
-  const opener = backtickRun(source, index)
-  const closer = closingBacktickRun(source, index + opener, opener)
-  if (closer === undefined) return undefined
-  return { end: closer + opener, text: codeSpanText(source.slice(index + opener, closer)) }
 }
 
 function codeSpanText(content: string): string {

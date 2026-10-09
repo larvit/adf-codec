@@ -570,10 +570,10 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
-## The project ships under the comprehension floor until items 59, 60, 61 and 62 land
+## The project ships under the comprehension floor until items 59, 60 and 62 land
 
 2026-10-03, the maintainer. KISS, a technical principle, and its comprehension floor of 7. Valid
-while `todo.md` items 59, 60, 61 and 62 are open.
+while `todo.md` items 59, 60 and 62 are open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
 2026-10-08 is the baseline. Since 2026-10-04, a chunk whose panel scores any
