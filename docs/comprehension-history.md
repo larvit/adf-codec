@@ -49,3 +49,28 @@ Inherited architect, decided by:
 - `src/markdown/portable/conventions.ts:8` `flavourClaims`: cost, the table for all three flavours lives under `portable/`
 - `src/markdown/emit/line-escaping.ts:92` `escapeClaims`: directive escaping under the flag the parser checks
 - `src/markdown/emit/adf-to-markdown.ts:146` `spellPortableBlock`: no hard-coded lossless title
+
+## 2026-10-09T01:43:11Z, PR #21 at c45320b, against 9a242c7
+
+Ruling: better
+
+| Seat | Vote |
+|---|---|
+| Mid A | better |
+| Inherited architect | better |
+
+Mid A, decided by:
+
+- `src/markdown/parse/markdown-to-adf.ts:23` `MarkerParagraph`: the block kind says a marker's paragraph holds no lone image, where `readMarked` scanned its output afterwards
+- `src/markdown/emit/image.ts:7` `tryImage`: builds what the reader would build and compares, where `imageShape` restated the shape by hand
+- `src/markdown/parse/inline-content.ts:25` `InlineContent`: one rule replaces five image refusal sites over two files
+- `src/markdown/external-image.ts:4` `centeredImage`: one builder for the shape three literals held
+- `src/markdown/parse/inline-content.ts:550` `pieceNodes`: costs more — its image arm relies on `assemble` having linked every top-level image
+
+Inherited architect, decided by:
+
+- `src/markdown/external-image.ts:4` `centeredImage`: the image's ADF shape is defined once for reader, emitter and portable reducer
+- `src/markdown/parse/markdown-to-adf.ts:23` `MarkerParagraph`: replaces `readMarked`'s after-the-fact search and its caller-computed flag
+- `src/result.ts:1` `ConvertErrorCode`: `unmappable-image` and its refusal paths are gone
+- `src/markdown/parse/inline-content.ts:43` `Image`: costs more — four functions must agree on the image's `link`
+- `src/markdown/parse/inline-content.ts:26` `InlineContent`: costs more — no longer image xor nodes
