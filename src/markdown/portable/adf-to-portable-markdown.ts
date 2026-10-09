@@ -136,23 +136,17 @@ function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Res
 function numberedPastMarkers(list: AdfNode): AdfNode {
   const order = nodeAttrs(list)['order']
   if (list.type !== 'orderedList' || typeof order !== 'number' || order + nodeContent(list).length - 1 <= largestListMarker) return list
-  return numberedAsText(list)
-}
-
-function numberedAsText(list: AdfNode): AdfNode {
-  const order = Number(nodeAttrs(list)['order'])
   return { content: nodeContent(list).map((item, offset) => itemOf(marked(nodeContent(item), `${order + offset}.`))), type: 'bulletList' }
 }
 
 // A task keeps its marker as text; a list item stands as one, and anything else nests in the item before it.
-function tasksAsText(list: AdfNode): AdfNode {
-  if (list.type !== 'taskList') return list
+function tasksAsText(tasks: readonly AdfNode[]): AdfNode[] {
   const items: AdfNode[] = []
-  for (const child of nodeContent(list)) {
+  for (const child of tasks) {
     const previous = isTaskItem(child) || child.type === 'listItem' ? undefined : items.pop()
     items.push(itemOf(previous === undefined ? taskAsText(child) : [...nodeContent(previous), child]))
   }
-  return { content: items, type: 'bulletList' }
+  return items
 }
 
 function taskAsText(child: AdfNode): readonly AdfNode[] {
@@ -271,7 +265,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
   }
   if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }))
-  return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
+  return success(listOf(tasksAsText(tasks), 'bulletList'))
 }
 
 function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
