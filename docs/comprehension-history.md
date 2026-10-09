@@ -282,3 +282,29 @@ Inherited architect, decided by:
 - Shape, Locality: `src/markdown/parse/markdown-to-adf.ts:84` `readBlocks`: a third special case ahead of the dispatch
 - Shape: `src/adf/block-nodes.ts:92` `isTaskItem`: one predicate replaces two copies
 - Self-sufficiency: `src/markdown/portable/task-list.ts:5` comment: states the schema limit and what follows from it
+
+## 2026-10-09T13:03:22Z, PR #25 at 2b211e9, against 875c0e5
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | same | better |
+| Inherited architect | same | better | better | same | better |
+
+Mid A, decided by:
+
+- Locality, Shape, Overall: `src/markdown/portable/adf-to-portable-markdown.ts:118` `portableSequence`: a plain splice with `index -= 1`, where the base merged neighbours after every splice through `spliced`, `mergedLists`, `joinedLists` and `splitTasks`
+- Locality, Navigation: `src/markdown/parse/markdown-to-adf.ts:98` `listBreakFault`: gone, with the base's look at `blocks[index - 1]` and `blocks[index + 1]` and the separator spelled in four places
+- Navigation, Shape: `src/markdown/parse/blocks.ts:232` `continuesList`: one named predicate on kind and delimiter that `itemStart` and `openedList` share
+- Locality: `src/markdown/emit/adf-to-markdown.ts:73` `joinBlocks`: a toggled `alternated` flag decides each list's text from the one before it, and `isOrdered` counts a task list as a bullet list unsaid
+- Shape: `src/markdown/emit/adf-to-markdown.ts:334` `spelledList`: `tryList` builds both spellings then falls back once, and `tryTaskList` shares the helper
+
+Inherited architect, decided by:
+
+- Locality, Shape, Overall: `src/markdown/portable/adf-to-portable-markdown.ts:118` `portableSequence`: a filter and a loop ending in `index -= 1`, where the base kept the splice window, the merge rules and the renumbering-as-text rule together
+- Locality, Shape: `src/markdown/parse/markdown-to-adf.ts:79` `readBlocks`: reads one block at a time, where the base judged a separator by its siblings
+- Locality: `src/markdown/emit/adf-to-markdown.ts:73` `joinBlocks`: a toggle carried across iterations sends a third adjacent list back to `-`, seen only by tracing
+- Shape: `src/markdown/emit/adf-to-markdown.ts:334` `spelledList`: the both-or-neither rule is one uncommented expression
+- Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:369` `tryListItemLines`: `inner.startsWith('*')` depends on the alternate bullet being `*`, and the comment needs the inline escaping worked out
+- Self-sufficiency: `src/markdown/parse/blocks.ts:232` `continuesList`: states the rule the base sent the reader to the spec for
