@@ -1037,6 +1037,9 @@ test('reads an image inside a link not alone in its paragraph as plain alt text 
   assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text('.')])
   assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text('.')])
   assert.deepEqual(firstContent('[b ![a](/u)](/v)\n'), [marked('b a', link('/v'))])
+  const unspellable = { attrs: { href: 'a\nb' }, type: 'link' }
+  assert.deepEqual(firstContent('!adf:link[b ![a](/u)]{href="a\\nb"}\n'), [marked('b a', unspellable)])
+  assert.deepEqual(firstContent('!adf:link[!adf:underline[![a](/u)]]{href="a\\nb"}\n'), [marked('a', unspellable, { type: 'underline' })])
 })
 
 test('carries the mark a spelling nested inside its own kind names once', () => {
