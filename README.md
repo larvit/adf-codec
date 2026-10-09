@@ -167,12 +167,12 @@ carries it opaquely and restores it unchanged ([`docs/decisions.md`](https://git
 
 `ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
 stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text
-and may change in any release. A parse always names a position, so the three markdown readers
-return `ParseError`, whose `position` reads without a guard; an emit reads no
-source and carries `path` alone; one handler typed on `ConvertError` takes both, which is what the
-calls between markdown and HTML hand back. `path` is the node's place from the
-document root, alternating `'content'` and an index, so `path.map((step) => '/' + step).join('')`
-is a JSON Pointer at the node — the empty path being the document itself.
+and may change in any release. A parse always names a position, so the three markdown readers return
+`ParseError`, whose `position` reads without a guard; an emit reads no source and carries `path`
+alone; one handler typed on `ConvertError` takes both, which is what the calls between markdown and
+HTML hand back. `path` is the node's place from the document root, alternating `'content'` and an
+index, so `path.map((step) => '/' + step).join('')` is a JSON Pointer at the node — the empty path
+being the document itself.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
