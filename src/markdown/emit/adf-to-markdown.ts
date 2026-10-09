@@ -209,7 +209,7 @@ function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writin
   const walk = walkBlocks(nodeContent(task), path, depth, writing)
   if (!walk.ok) return walk
   const [first, ...rest] = walk.value.blocks
-  const blocks = first?.node.type === 'paragraph' && first.spelling !== 'list' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
+  const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
   return success({ blocks, headroom: walk.value.headroom })
 }
 
