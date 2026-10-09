@@ -145,7 +145,7 @@ them 68188. Read most over the last five, opens and searches: `README.md` 32, `d
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
-`adfToLosslessMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
+`adfToLosslessMarkdown` spends 28 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
 flanking cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and
 the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
 whose attributes no spelling writes re-emits the line the same way before riding the carry. Make all
