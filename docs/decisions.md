@@ -247,6 +247,19 @@ editor's UUID v4 shape, hashed from the whole markdown and the node's order amon
 the same markdown reads to the same ids every run, different markdown to different ids. The same
 markdown pasted twice into one document repeats its ids: determinism wins over that case.
 
+## A block a task item cannot hold stands after its task list
+
+2026-10-09, a reader panel, 6 of 7. Goals 4, 6 and 7. Valid while Atlassian's schema holds a
+`blockTaskItem` to paragraphs and extensions.
+
+In `portableMarkdownToAdf` and `adfToPortableMarkdown`, a task item keeps its paragraphs up to its
+first other block. That block, the item's blocks after it and the task lists nested in the item
+stand after the task list, which resumes at the next task. The panel of two bots, two LLM
+pipelines, a support agent, a product manager and an engineer, shown an image, a code block and a
+nested bullet list in a task item, picked this over turning those blocks into text inside the item
+(1 of 7) and over a plain bullet list keeping the markers as text (none): every reader wanted the
+checkboxes, and six wanted the blocks in their own form.
+
 ## A callout title keeps its link targets
 
 2026-09-29, the maintainer. Goals 6 and 7. Valid while an expand's `title` is a string.

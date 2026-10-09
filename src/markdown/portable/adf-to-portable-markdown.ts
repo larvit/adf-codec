@@ -9,6 +9,7 @@ import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } fr
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { splitTaskList } from './task-list.ts'
 import { toEditorNormal } from './editor-normal.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
@@ -309,7 +310,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     for (const block of blocks) (isTask(child) ? tasks : nested).push(block)
   }
   nestIn(tasks, nested)
-  if (regular) return success([{ content: tasks, type: 'taskList' }])
+  if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }))
   return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
 }
 
@@ -331,7 +332,7 @@ function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
     return content.ok ? success([{ attrs, content: content.value, type: 'taskItem' }]) : content
   }
   const blocks = reduceBlocks(nodeContent(task), at)
-  return blocks.ok ? success([{ attrs, content: blankedCode(blocks.value), type: 'blockTaskItem' }]) : blocks
+  return blocks.ok ? success([{ attrs, content: blocks.value, type: 'blockTaskItem' }]) : blocks
 }
 
 // The marker leads the first paragraph, or stands as one where the blocks open with another.

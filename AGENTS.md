@@ -28,6 +28,7 @@ In `docs/decisions.md`:
 - An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes marks reads as its destination, then its hard breaks
 - Ids stay site-local
 - Portable task ids come from position
+- A block a task item cannot hold stands after its task list
 - A callout title keeps its link targets
 - The portable flavour's spellings
 - The HTML dialect
