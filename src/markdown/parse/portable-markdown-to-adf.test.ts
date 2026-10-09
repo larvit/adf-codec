@@ -226,20 +226,17 @@ test('reads text the writer kept from reading as a marker back as text', () => {
   assert.deepEqual(roundTripped(bare('taskList', task('DONE', text('[x] ==a==')))), [bare('taskList', task('DONE', text('[x] ==a==')))])
 })
 
-test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, and refuses only what it refuses', () => {
+test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, an image sharing its paragraph with a marker among it', () => {
   assert.deepEqual(read('!adf:panel\n'), [said('!adf:panel')])
   assert.deepEqual(read('a !adf:carry{json="{}"} \\!adf:x\n'), [said('a !adf:carry{json="{}"} !adf:x')])
   assert.deepEqual(read('```adf:blockCard\n{}\n```\n'), [node('codeBlock', { language: 'adf:blockCard' }, text('{}'))])
-  const refusal = (markdown: string): unknown => {
-    const parsed = portableMarkdownToAdf(markdown)
-    return parsed.ok ? parsed.value : [parsed.error.code, parsed.error.message]
-  }
-  for (const markdown of ['> [!tip] ![a](u)\n', '> [!NOTE]- ![a](u)\n', '- [x] ![a](u)\n']) {
-    assert.deepEqual(refusal(markdown), ['unmappable-image', 'an image fits only as a paragraph of its own: this one shares a line with a marker'], markdown)
-  }
-  for (const markdown of ['> [!tip]\n> ![a](u)\n', '> [!tip] t\n> ![a](u)\n', '> [!NOTE]- t\n> ![a](u)\n', '- [x]\n  ![a](u)\n']) {
-    assert.deepEqual(refusal(markdown), ['unmappable-image', 'an image fits only as a paragraph of its own: this one continues the paragraph a marker opens, which a blank line before it ends'], markdown)
-  }
+  const linked = paragraph(text('a', { attrs: { href: 'u' }, type: 'link' }))
+  assert.deepEqual(read('> [!tip] ![a](u)\n'), [panel('tip', linked)])
+  assert.deepEqual(read('> [!tip]\n> ![a](u)\n'), [panel('tip', linked)])
+  assert.deepEqual(read('> [!NOTE]- ![a](u)\n'), [node('expand', { title: 'a (u)' }, paragraph())])
+  assert.deepEqual(read('> [!NOTE]- t\n> ![a](u)\n'), [node('expand', { title: 't' }, linked)])
+  assert.deepEqual(read('- [x] ![a](u)\n'), [bare('taskList', task('DONE', ...(linked.content ?? [])))])
+  assert.deepEqual(read('> [!tip]\n>\n> ![a](u)\n'), [panel('tip', node('mediaSingle', { layout: 'center' }, { attrs: { alt: 'a', type: 'external', url: 'u' }, type: 'media' }))])
   let deep = 'x\n'
   for (let level = 0; level < largestNesting; level += 1) deep = `> ${deep}`
   assert.equal(typeof read(deep), 'object')

@@ -287,32 +287,18 @@
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
-    "check": "count",
-    "divergence": "a 1/0",
-    "example": 484,
-    "kind": "pending",
-    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
-  },
-  {
     "check": "text",
-    "divergence": "\"\" against \"[](./target.md)\"",
+    "divergence": "\"\" against \"./target.md\"",
     "example": 484,
-    "kind": "pending",
-    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
+    "kind": "node-model",
+    "reason": "ADF holds no empty text node, so an empty link text reads as its destination, and an empty destination as nothing."
   },
   {
     "check": "count",
     "divergence": "a 1/0",
     "example": 487,
-    "kind": "pending",
-    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
-  },
-  {
-    "check": "text",
-    "divergence": "\"\" against \"[]()\"",
-    "example": 487,
-    "kind": "pending",
-    "reason": "An empty link text stays literal text; CommonMark renders an empty link."
+    "kind": "node-model",
+    "reason": "ADF holds no empty text node, so an empty link text reads as its destination, and an empty destination as nothing."
   },
   {
     "check": "count",
@@ -378,15 +364,113 @@
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 572,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"train & tracks\"",
+    "example": 573,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"train & tracks\"",
+    "example": 576,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"train & tracks\"",
+    "example": 577,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
     "check": "count",
-    "divergence": "em 1/2",
+    "divergence": "a 0/1 img 1/0",
+    "example": 579,
+    "kind": "node-model",
+    "reason": "ADF holds no image amid text, so the image reads as its alt text, linked to its destination."
+  },
+  {
+    "check": "text",
+    "divergence": "\"My \" against \"My foo bar\"",
+    "example": 579,
+    "kind": "node-model",
+    "reason": "ADF holds no image amid text, so the image reads as its alt text, linked to its destination."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 584,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 585,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 586,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "count",
+    "divergence": "a 0/1 img 1/0",
+    "example": 587,
+    "kind": "node-model",
+    "reason": "ADF holds no image amid text, so the image reads as its alt text, linked to its destination."
+  },
+  {
+    "check": "text",
+    "divergence": "\" []\" against \"foo []\"",
+    "example": 587,
+    "kind": "node-model",
+    "reason": "ADF holds no image amid text, so the image reads as its alt text, linked to its destination."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 588,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 589,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "text",
+    "divergence": "\"\" against \"title\"",
+    "example": 591,
+    "kind": "node-model",
+    "reason": "ADF's media holds no title, so the image's title reads as its caption."
+  },
+  {
+    "check": "count",
+    "divergence": "em 1/3",
     "example": 638,
     "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
-    "divergence": "em 1/2",
+    "divergence": "em 1/3",
     "example": 639,
     "kind": "mark-model",
     "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."

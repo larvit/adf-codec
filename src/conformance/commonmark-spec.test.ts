@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus',
 const checks = ['count', 'fixpoint', 'text'] as const
 
 type Check = (typeof checks)[number]
-type ExceptionKind = 'mark-model' | 'pending'
+type ExceptionKind = 'mark-model' | 'node-model' | 'pending'
 
 type SpecExample = { example: number; html: string; markdown: string; section: string }
 
@@ -30,7 +30,7 @@ function isCheck(value: unknown): value is Check {
 }
 
 function isKind(value: unknown): value is ExceptionKind {
-  return value === 'mark-model' || value === 'pending'
+  return value === 'mark-model' || value === 'node-model' || value === 'pending'
 }
 
 function isSpecExample(value: unknown): value is SpecExample {
@@ -91,7 +91,7 @@ test('the refusal list is unique per example and names real examples', () => {
   for (const example of exampleToRefusal.keys()) assert.ok(spec.some((entry) => entry.example === example), `refusal ${example} names no example in the suite`)
 })
 
-// A mark is counted once per text node it touches (docs/decisions.md §No schema validation).
+// A mark is counted once per node it touches (docs/decisions.md §No schema validation).
 const countKeys = ['a', 'blockquote', 'br', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'img', 'li', 'ol', 'pre', 'strong', 'ul']
 const nodeElement: Record<string, string> = {
   blockquote: 'blockquote',
@@ -148,15 +148,13 @@ function nodeCounts(document: AdfNode): Record<string, number> {
   while (pending.length > 0) {
     const node = pending.pop()
     if (node === undefined) continue
-    if (node.text !== undefined) {
-      const seen = new Set<string>()
-      for (const mark of node.marks ?? []) {
-        const element = markElement[mark.type]
-        if (element !== undefined) seen.add(element)
-      }
-      for (const element of seen) counts[element] = (counts[element] ?? 0) + 1
-      continue
+    const seen = new Set<string>()
+    for (const mark of node.marks ?? []) {
+      const element = markElement[mark.type]
+      if (element !== undefined) seen.add(element)
     }
+    for (const element of seen) counts[element] = (counts[element] ?? 0) + 1
+    if (node.text !== undefined) continue
     if (node.type === 'heading') {
       const level = node.attrs?.['level']
       if (typeof level === 'number') counts[`h${level}`] = (counts[`h${level}`] ?? 0) + 1

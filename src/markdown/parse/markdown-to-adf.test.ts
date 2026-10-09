@@ -67,6 +67,11 @@ function link(href: string, title?: string): AdfMark {
   return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
 }
 
+function firstContent(markdown: string): unknown {
+  const [block] = content(losslessMarkdownToAdf(markdown))
+  return typeof block === 'object' ? block.content : block
+}
+
 function image(url: string, alt?: string): AdfNode {
   const media: AdfNode = { attrs: alt === undefined ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }
   return { attrs: { layout: 'center' }, content: [media], type: 'mediaSingle' }
@@ -289,9 +294,10 @@ test('refuses the list separator that parts anything else', () => {
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:listBreak\n')), ['content', 1])
 })
 
-test('refuses the image a pipe cell holds no ADF node for', () => {
-  assert.equal(content(losslessMarkdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
-  assert.deepEqual(path(losslessMarkdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), ['content', 0, 'content', 1, 'content', 0, 'content', 0])
+test('reads the image a pipe cell holds as its linked alt text', () => {
+  assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), [
+    { content: [{ content: [cell('tableHeader', text('a'))], type: 'tableRow' }, { content: [cell('tableCell', marked('x', link('/u')))], type: 'tableRow' }], type: 'table' },
+  ])
 })
 
 test('strips the opening fence indentation from the content lines it holds', () => {
@@ -567,7 +573,6 @@ test('names the argument and the body a node takes no reading for', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\n---\n!adf:/paragraph\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
   assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes code blocks as its body: this body holds another block')
   assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes code blocks as its body: this body holds none')
-  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\n![a](/u)\n!adf:/paragraph\n')), 'unmappable-image: no ADF node carries an image inside a paragraph')
   assert.equal(content(losslessMarkdownToAdf('Part !adf:date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content: this one holds some')
 })
 
@@ -992,25 +997,42 @@ test('flattens the description of a lone image to the plain text alt holds', () 
   assert.deepEqual(content(losslessMarkdownToAdf('![!adf:mention[@A]{id=b1c2}](/u)\n')), [image('/u', '@A')])
 })
 
-test('leaves the brackets of an empty link text the text they are', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('[](/u)\n')), [paragraph('[](/u)')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a [](/u) b\n')), [paragraph('a [](/u) b')])
-  // The pair gives the label back the way an unresolved one does, so the shortcut behind it still reads.
-  assert.deepEqual(content(losslessMarkdownToAdf('[][r]\n\n[r]: /u\n')), [{ content: [text('[]'), marked('r', link('/u'))], type: 'paragraph' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('![](/u)\n')), [image('/u')])
+test('reads an empty link text as its destination, and an empty destination as nothing', () => {
+  assert.deepEqual(content(losslessMarkdownToAdf('[](/u)\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('a [](/u "t") b\n')), [{ content: [text('a '), marked('/u', link('/u', 't')), text(' b')], type: 'paragraph' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('[][r]\n\n[r]: /u\n')), [{ content: [marked('/u', link('/u'))], type: 'paragraph' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('a []() b\n')), [paragraph('a  b')])
+  assert.deepEqual(content(losslessMarkdownToAdf('[]()\n')), [{ type: 'paragraph' }])
 })
 
-test('refuses the image no ADF node carries where it sits', () => {
-  assert.equal(content(losslessMarkdownToAdf('![a](/u "t")\n')), 'unmappable-image: no media node carries a link title')
-  assert.equal(content(losslessMarkdownToAdf('See ![a](/u).\n')), 'unmappable-image: an image fits only as a paragraph of its own: this one sits inside other content')
-  assert.equal(code(losslessMarkdownToAdf('# ![a](/u)\n')), 'unmappable-image')
-  assert.equal(code(losslessMarkdownToAdf('*![a](/u)*\n')), 'unmappable-image')
-  assert.equal(code(losslessMarkdownToAdf('[![a](/u)](/v)\n')), 'unmappable-image')
-  assert.equal(code(losslessMarkdownToAdf('![a](/u)![b](/v)\n')), 'unmappable-image')
-  assert.equal(code(losslessMarkdownToAdf('![a ![b](/c) d\n')), 'unmappable-image')
-  assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nSee ![a](/u).\n')), ['content', 1])
-  assert.deepEqual(content(losslessMarkdownToAdf('![a]\n')), [paragraph('![a]')])
-  assert.deepEqual(content(losslessMarkdownToAdf('a ! b\n')), [paragraph('a ! b')])
+test('reads a titled image alone in its paragraph as the image captioned with its title', () => {
+  const caption: AdfNode = { content: [text('The moon & stars')], type: 'caption' }
+  assert.deepEqual(content(losslessMarkdownToAdf('![a](/u "The moon &amp; stars")\n')), [{ ...image('/u', 'a'), content: [...(image('/u', 'a').content ?? []), caption] }])
+  assert.deepEqual(content(losslessMarkdownToAdf('![a](/u "")\n')), [image('/u', 'a')])
+})
+
+test('reads an image alone in a link as the image the link marks, and the link a title gives as its own', () => {
+  const linked = (node: AdfNode, mark: AdfMark): AdfNode => ({ ...node, content: (node.content ?? []).map((media) => ({ ...media, marks: [mark] })) })
+  assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u)](/v "t")\n')), [linked(image('/u', 'a'), link('/v', 't'))])
+  assert.deepEqual(content(losslessMarkdownToAdf('[![a][i]][v]\n\n[i]: /u\n[v]: /v\n')), [linked(image('/u', 'a'), link('/v'))])
+  assert.deepEqual(content(losslessMarkdownToAdf('[[![a](/u)](/v)](/w)\n')), [{ content: [text('['), marked('a', link('/v')), text('](/w)')], type: 'paragraph' }])
+})
+
+test('reads an image no paragraph holds alone as its alt text, linked to its destination', () => {
+  assert.deepEqual(firstContent('See ![a](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
+  assert.deepEqual(firstContent('See ![](/u).\n'), [text('See '), marked('/u', link('/u')), text('.')])
+  assert.deepEqual(firstContent('See ![]().\n'), [text('See .')])
+  assert.deepEqual(firstContent('*![a](/u)*\n'), [marked('a', { type: 'em' }, link('/u'))])
+  assert.deepEqual(firstContent('![a](/u)![b](/v)\n'), [marked('a', link('/u')), marked('b', link('/v'))])
+  assert.deepEqual(firstContent('# ![a](/u)\n'), [marked('a', link('/u'))])
+  assert.deepEqual(firstContent('!adf:paragraph {localId=p}\n![a](/u)\n!adf:/paragraph\n'), [marked('a', link('/u'))])
+  assert.deepEqual(firstContent('![a ![b](/c) d\n'), [text('![a '), marked('b', link('/c')), text(' d')])
+})
+
+test('reads an image beside other content in a link as its alt text, the link\'s own text', () => {
+  assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text('.')])
+  assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text('.')])
+  assert.deepEqual(firstContent('[b ![a](/u)](/v)\n'), [marked('b a', link('/v'))])
 })
 
 test('carries the mark a spelling nested inside its own kind names once', () => {
@@ -1041,7 +1063,7 @@ test('names the content slot no lone plain text node reads back from', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"content\\":[{\\"text\\":\\"B\\",\\"type\\":\\"text\\"}],\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n')), named)
   assert.equal(code(losslessMarkdownToAdf('!adf:status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(code(losslessMarkdownToAdf('!adf:status[!adf:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n')), 'unmappable-image: an image fits only as a paragraph of its own: this one sits inside other content')
+  assert.equal(content(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n')), named)
   assert.equal(code(losslessMarkdownToAdf('!adf:status[<div>]{color=yellow}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:date[<div>]{timestamp=1}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:widget[<div>]\n')), 'unmappable-html')

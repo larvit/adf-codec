@@ -16,7 +16,9 @@ One directory per contract kind:
   `spec.json` is the suite; `refusals.json` pins each refusing example to its error `code`;
   `exceptions.json` pins each known divergence by `check`, `example`, `kind` and the exact
   `divergence`, with a `reason`. `kind` is `mark-model` (the permanent count divergence from ADF's
-  mark-per-text-node model) or `pending` (a parser gap).
+  mark-per-node model), `node-model` (a permanent divergence where ADF holds no node for what
+  CommonMark renders: an empty link text, an image amid text, an image's title) or `pending` (a
+  parser gap).
 
 JSON is two-space indent, keys sorted, and a document read back must deep-equal the fixture's
 (`docs/decisions.md` §Equality is deep). `spec.json` is the vendored, upstream machine-readable
