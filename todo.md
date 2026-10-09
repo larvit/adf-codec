@@ -120,11 +120,12 @@ three directories.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
-The last five chunks' median is 97329 new input tokens before their first commit, the five before
-them 66995. Read most over the last five, opens and searches: `README.md` 26, `docs/decisions.md`
-23, `src/markdown/parse/markdown-to-adf.test.ts` 19, `todo.md` 17, `spec/flavour.md` 13,
-`CHANGELOG.md` 10, `MIGRATION.md` 8, `src/markdown/parse/markdown-to-adf.ts` 7,
-`src/conformance/commonmark-spec.test.ts` 6, `corpus/commonmark-spec/exceptions.json` 5.
+The last five chunks' median is 178700 new input tokens before their first commit, the five before
+them 68188. Read most over the last five, opens and searches: `docs/decisions.md` 32, `README.md`
+31, `todo.md` 20, `src/markdown/parse/markdown-to-adf.test.ts` 19, `CHANGELOG.md` 15,
+`spec/flavour.md` 13, `src/markdown/parse/markdown-to-adf.ts` 12,
+`src/markdown/portable/adf-to-portable-markdown.ts` 12, `MIGRATION.md` 8,
+`src/conformance/commonmark-spec.test.ts` 6.
 
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 
