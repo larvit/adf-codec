@@ -189,7 +189,7 @@ candidates are `@atlaskit/editor-markdown-transformer`, `adf-to-markdown`, `adf-
 Models write `|:---|` delimiter rows and tables without a leading pipe; both are
 `malformed-pipe-table` today, and `portableMarkdownToAdf` is the bot's reader. ADF holds no column
 alignment, so the portable reader drops it (Goal 7: form, never content). The lossless reader keeps
-§Tables' narrowing. Found by the product-owner review of item 43, 2026-10-09.
+§Tables' narrowing.
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
