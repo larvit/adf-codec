@@ -133,3 +133,30 @@ Ruling: same
 |---|---|
 | Mid A | same |
 | Inherited architect | same |
+
+## 2026-10-09T09:52:41Z, PR #22 at 6f1a16b, against 78655bc
+
+Ruling: worse
+
+| Seat | Vote |
+|---|---|
+| Mid A | worse |
+| Inherited architect | worse |
+
+Mid A, decided by:
+
+- `src/markdown/emit/inline-line.ts:106` `takeFallback`: a range may part joined breaks or carry, decided by state an earlier pass built
+- `src/markdown/emit/inline-line.ts:316` `emitMarkedRun`: a carry that signals parting to `takeFallback` two levels up
+- `src/markdown/emit/inline-line.ts:233` `joinsRun`: a lookahead whose shortcut holds only by `inlineRuns`' call order
+- `src/markdown/emit/inline-line.ts:58` `portableLineFallback`: a second retry loop sharing the parting
+- `src/adf/inline-nodes.ts:5` `InlineNodeModel.marks`: reads as "has marks", not "takes marks"
+- `src/markdown/parse/inline-content.ts:328` `linkTo`: the comment hides that the breaks stay after the destination
+
+Inherited architect, decided by:
+
+- `src/markdown/emit/inline-line.ts:331` `emitMarkedRun`: the newline check returns a carry that is a parting signal, one fact over three functions
+- `src/markdown/emit/inline-line.ts:106` `takeFallback`: two growing sets whose order matters
+- `src/markdown/emit/inline-line.ts:58` `portableLineFallback`: a second retry loop with its own exit rule
+- `src/markdown/emit/inline-line.ts:233` `joinsRun`: lookahead, shortcut and three conditions per break; `inlineRuns` takes the whole context
+- `src/adf/inline-nodes.ts:5` `InlineNodeModel.marks`: the name hides "takes marks"
+- `src/markdown/parse/inline-content.ts:328` `linkTo`: the comment no longer says an empty destination reads as nothing
