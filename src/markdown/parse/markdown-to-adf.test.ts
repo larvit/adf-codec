@@ -1014,6 +1014,8 @@ test('reads a titled image alone in its paragraph as the image captioned with it
 test('reads an image alone in a link as the image the link marks, and the link a title gives as its own', () => {
   const linked = (node: AdfNode, mark: AdfMark): AdfNode => ({ ...node, content: (node.content ?? []).map((media) => ({ ...media, marks: [mark] })) })
   assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u)](/v "t")\n')), [linked(image('/u', 'a'), link('/v', 't'))])
+  const captioned = linked(image('/u', 'a'), link('/v'))
+  assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u "c")](/v)\n')), [{ ...captioned, content: [...(captioned.content ?? []), { content: [text('c')], type: 'caption' }] }])
   assert.deepEqual(content(losslessMarkdownToAdf('[![a][i]][v]\n\n[i]: /u\n[v]: /v\n')), [linked(image('/u', 'a'), link('/v'))])
   assert.deepEqual(content(losslessMarkdownToAdf('[[![a](/u)](/v)](/w)\n')), [{ content: [text('['), marked('a', link('/v')), text('](/w)')], type: 'paragraph' }])
 })

@@ -202,7 +202,7 @@ link reference definition — and a directive link CommonMark could spell is ref
 link — the bracket form goes literal, the directive form refused — which is CommonMark's prose
 where its reference implementation nests one `<a>` in another.
 
-## Every CommonMark image and empty link reads: the image where it stands alone, else a link
+## Every CommonMark image and empty link reads: the image where it stands alone, else a link, `[]()` as nothing
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, settled by Goals 4 and 7
 as the maintainer's plan item directed. Goals 4, 5, 6 and 7. Valid while `mediaInline` carries no

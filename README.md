@@ -245,9 +245,10 @@ Serves Goals 1, 4 and 5.
     `[]()` as nothing.
   - An image anywhere but alone in a plain paragraph reads as its alt text linked to its URL,
     `See ![the moon](moon.png).` as `See [the moon](moon.png).`, and inside a link as plain text
-    the link marks.
-  - An image's title reads as its caption where the image stands alone in a plain paragraph, as
-    its link's title where it reads as alt text linked to its URL, and inside a link it drops.
+    the link marks — unless the link's whole text is the image and the link stands alone in a
+    plain paragraph, which reads as the image the link marks.
+  - An image's title reads as its caption where the image reads as an image, as its link's title
+    where it reads as alt text linked to its URL, and inside a link otherwise it drops.
 
   And three more: a list continuing past a marker change stays one list against CommonMark's two,
   a shortcut reference matching its definition only under Unicode case folding stays unresolved,
