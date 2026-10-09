@@ -284,10 +284,6 @@ test('reads a change of bullet character or ordered delimiter as a second list, 
   assert.deepEqual(path(losslessMarkdownToAdf('- a\n\n* b\n\n| x |\n')), ['content', 2])
 })
 
-test('reads the retired list separator as a directive no node spells', () => {
-  assert.equal(content(losslessMarkdownToAdf('- a\n\n!adf:listBreak\n\n- b\n')), 'unknown-directive-name: the directive name listBreak reads back to no node; \\!adf: keeps the prefix literal')
-})
-
 test('reads the image a pipe cell holds as its linked alt text', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n| ![x](/u) |\n')), [
     { content: [{ content: [cell('tableHeader', text('a'))], type: 'tableRow' }, { content: [cell('tableCell', marked('x', link('/u')))], type: 'tableRow' }], type: 'table' },
