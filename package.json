@@ -9,6 +9,7 @@
     "commonmark",
     "confluence",
     "converter",
+    "gfm",
     "jira",
     "markdown",
     "typescript"

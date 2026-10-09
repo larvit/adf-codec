@@ -147,7 +147,8 @@ three linear.
 
 Lands after items 6, 59, 60, 61 and 62. Which flavours get a composed call is this item's to settle;
 the CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as
-it documents markdown. `htmlToAdf` refuses a value that is not a string as `not-a-string`
+it documents markdown, and its tagline and `package.json`'s description and keywords name HTML
+again. `htmlToAdf` refuses a value that is not a string as `not-a-string`
 (`docs/decisions.md` §Which code a cause takes).
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
