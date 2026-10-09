@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 88`
+`Next ID = 89`
 
 | Goal | W |
 |---|---|
@@ -26,6 +26,7 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 87 | 0.2.0 | defect | **Build a `hardBreak` carrying no marks where emphasis or a link spans a line break, in every reader.** | 4 | 3 | 6 | 7 | 4 | 16.6 |
+| 88 | 0.2.0 | defect | **Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.** | 4 | 4 | 6 | 7 | 4 | 16.4 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
@@ -72,6 +73,13 @@
 schema refuses: its `hardBreak_node` holds no `marks` (`spec/adf-schema/full.json`). So
 `commonMarkToAdf` builds a document a site may reject from plain CommonMark. The suite's `em 1/3`
 exceptions for 638 and 639 go back to `em 1/2`.
+
+### 88. Build a `blockTaskItem` holding only the paragraphs and extensions Atlassian's schema allows, in `portableMarkdownToAdf`.
+
+`- [x] done\n\n  ![a](u)` builds a `blockTaskItem` holding a `mediaSingle`, and `- [x] done\n\n  > q`
+one holding a `blockquote`; the schema's `blockTaskItem_node` takes paragraphs and extensions only
+(`spec/adf-schema/full.json`), so a site may reject the document. The reader needs a reading for
+the other blocks, settled by Goals 4 and 7.
 
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.
 

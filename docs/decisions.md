@@ -217,6 +217,12 @@ reads as that image, with the link marking its `media`. Inside any other link, t
 text the link marks, and the image's URL and title drop: the panel chose this by Goal 6, which
 outranks Goal 7.
 
+In `portableMarkdownToAdf`, an alert's or callout's marker line stands apart from the lines after
+it, so an image alone on either reads as the image: a reader panel of the bot, the LLM pipeline and
+a support agent, 3 of 3 on 2026-10-09, expected the picture in every case, a ticked task included.
+A task item holds no image in Atlassian's schema, so the paragraph a task marker opens reads its
+image as linked alt text, the fallback two of the three named.
+
 ## Ids stay site-local
 
 2026-08-23, the maintainer. Goal 1. Valid while ADF ids are minted per site.

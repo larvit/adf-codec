@@ -243,7 +243,7 @@ Serves Goals 1, 4 and 5.
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and
     `[]()` as nothing.
   - An image reads as an image only alone in its paragraph. Anywhere else — beside other text, in
-    a heading or a table cell, or in the paragraph an alert or task marker opens — it reads as its
+    a heading or a table cell, or in the paragraph a task marker opens — it reads as its
     alt text linked to its URL: `See ![the moon](moon.png).` reads as
     `See [the moon](moon.png).`. To keep an image an image, give it a paragraph of its own: a
     blank line between it and any other line.
