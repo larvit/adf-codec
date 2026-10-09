@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 94`
+`Next ID = 95`
 
 | Goal | W |
 |---|---|
@@ -26,6 +26,7 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
+| 94 | 0.2.0 | defect | **Read two lists a link reference definition parts as two lists, in every reader.** | 3 | 3 | 4 | 7 | 4, 5 | 13.6 |
 | 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
@@ -75,6 +76,14 @@ reader's view — flanking, code-span closers, link-definition openings, highlig
 only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
 time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
 of one character from each of its characters.
+
+### 94. Read two lists a link reference definition parts as two lists, in every reader.
+
+`openedList` in `src/markdown/parse/blocks.ts` joins a fresh list to the list just before it when
+no block stands between, so `- a\n\n[r]: /u\n\n- b` reads as one list; CommonMark reads two,
+the definition closing the first. The join exists for an empty item a blank line ends, which
+continues its list. `markdown-to-adf.test.ts` asserts the one list. Breaking: `MIGRATION.md`'s
+Readings table gains its row.
 
 ### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
 
@@ -266,8 +275,8 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
 example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
-gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Seven
-CommonMark spellings" bullet, which counts one fewer.
+gains its row. Its `pending` exceptions go, and its spelling leaves the README's bullet counting
+the CommonMark spellings, which counts one fewer.
 
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 
