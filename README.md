@@ -247,8 +247,8 @@ Serves Goals 1, 4 and 5.
     `See ![the moon](moon.png).` as `See [the moon](moon.png).`, and inside a link as plain text
     the link marks — unless the link's whole text is the image and the link stands alone in a
     plain paragraph, which reads as the image the link marks. To keep an image an image, give it
-    a paragraph of its own, a blank line before and after, in a list item or a quote too: images
-    on consecutive lines share a paragraph.
+    a paragraph of its own: nothing else on its line, and a blank line between it and any text
+    above or below. Images on consecutive lines share a paragraph.
   - An image's title becomes its caption when the image stays an image, and its link's title when
     it becomes linked alt text. Inside another link, the title is dropped.
 
