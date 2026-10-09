@@ -74,12 +74,14 @@ A code span holds no directive, so the spans close and reopen around the leaf. T
 
 ## A list right after one of its kind takes the other marker
 
-2026-10-04, the maintainer. Goals 4 and 5. Valid while CommonMark starts a new list where the
-bullet character or the ordered delimiter changes.
+2026-10-04, ordered lists in portable markdown 2026-10-09, the maintainer. Goals 4 and 5. Valid
+while CommonMark starts a new list where the bullet character or the ordered delimiter changes.
 
 Every reader parts lists where the marker changes, as CommonMark does, so both writers alternate the
 marker between adjacent lists of a kind and no directive parts them. `*` is the maintainer's pick.
-The grammar: `spec/flavour.md` §Canonical form.
+In portable markdown this replaces a reader panel's 5 of 7 (2026-09-25) for one bullet list with
+escaped numbers, which the panel picked while nothing else could part the lists; it needs no new
+panel. The grammar: `spec/flavour.md` §Canonical form.
 
 ## An empty key spells `empty`
 
