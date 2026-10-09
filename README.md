@@ -149,12 +149,14 @@ saving what this pair read replaces mentions, attachments and macros with text.
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.
 - A text node's `content` drops: Atlassian's schema forbids it, so no rendered document shows it.
+- A list right after a list of its kind takes the other marker, `* ` or `1)`, since CommonMark
+  starts a new list where the marker changes; a task list counts as a bullet list, `* [x] Done`.
 - An ordered list numbered past `999999999` is a bullet list keeping its numbers as text.
 - A task list holding a block other than a task is a bullet list keeping its states as text:
   `- \[x] Done`.
 - Text that would read as a marker takes a backslash: `==` wherever it could open or close a
-  highlight, `[!…]` opening a quote, and `[x]` or `[ ]` opening any list item, since GitHub reads
-  that marker per item.
+  highlight, `[!…]` opening a quote, `[x]` or `[ ]` opening any list item, since GitHub reads
+  that marker per item, and asterisks that would read as a rule after a `* ` marker: `* \**`.
 - A node read back carries no `localId` except a `taskList`, `taskItem` or `blockTaskItem`, which
   Atlassian's schema requires one on: each gets a UUID v4 hashed from the whole markdown and its
   position, the same on every read. Join markdown bound for one document and read it once: the same
