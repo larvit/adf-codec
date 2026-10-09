@@ -7,8 +7,8 @@ Each call names the markdown it reads or writes:
 | `0.1.0` | `0.2.0` |
 | --- | --- |
 | `adfToMarkdown` | `adfToLosslessMarkdown` |
-| `markdownToAdf`, for markdown `adfToMarkdown` wrote | `losslessMarkdownToAdf` |
-| `markdownToAdf`, for markdown a person or a model wrote | `portableMarkdownToAdf`, which keeps GFM's pipe tables and `~~`; or `commonMarkToAdf`, which reads them, a directive and an `adf:` fence as CommonMark does, as text and code |
+| `markdownToAdf`, for markdown `adfToMarkdown` wrote, edited since or not | `losslessMarkdownToAdf` |
+| `markdownToAdf`, for markdown no `adfToMarkdown` output went into | `portableMarkdownToAdf`, which keeps GFM's pipe tables and `~~` and reads alerts, callouts, task markers and `==` as nodes (README §Portable markdown); or `commonMarkToAdf`, which reads all of them, a directive and an `adf:` fence as CommonMark does, as text and code |
 
 Directives moved under the `!adf:` prefix. `losslessMarkdownToAdf` reads `0.1.0`'s spelling without
 an error, turning each directive into text and each carried node into an `adf` code block. Before
