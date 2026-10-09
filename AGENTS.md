@@ -7,7 +7,8 @@ otherwise relitigate. Using the library: `README.md`. What is still to build: `t
 
 In `docs/decisions.md`:
 
-- Plain markdown is a flavour of the grammar
+- Each call names its flavour
+- Portable markdown is a flavour of the grammar
 - The round-trip is the product
 - Markdown in is a canonical fixpoint
 - Equality is deep

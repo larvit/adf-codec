@@ -78,6 +78,7 @@ The most useful ADF conversion library available, judged by these goals, in prio
 4. **Each format reads and writes as its standard says.**
 5. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
 6. **No surprises: output reads and edits the way its audience expects.**
+   1. **A function's name says what its markdown does where it goes.**
 7. **Lossy conversion drops form, never content.**
 8. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
 9. **Fast, and linear in the document's size as JSON.**
