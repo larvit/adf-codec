@@ -260,9 +260,12 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
 }
 
 function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotContent | undefined, index: number): Result<Piece> {
-  if (slot?.nodes.some(holdsOwnMarks) === true) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
-  if (slot === undefined || slot.nodes.every(takesNoMarks)) {
-    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps nothing a mark rides`, scan.path)
+  if (slot === undefined || slot.nodes.length === 0) {
+    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.path)
+  }
+  if (slot.nodes.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
+  if (slot.nodes.every(takesNoMarks)) {
+    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps only hard breaks, which take no marks`, scan.path)
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
   if (refused !== undefined) return refused

@@ -309,7 +309,7 @@ test('breaks a line at a newline and trims whitespace at every edge CommonMark s
   assert.equal(portable(paragraph(text(' \n a \n b\n'))), 'a\\\nb\n')
   assert.equal(portable(paragraph({ type: 'hardBreak' }, text('a'), { attrs: { text: '\n' }, type: 'hardBreak' }, text('b'), { type: 'hardBreak' })), 'a\\\nb\n')
   assert.equal(portable(paragraph(text('a'), text(' b ', strong), text('c'))), 'a **b** c\n')
-  assert.equal(portable(paragraph(text(' '), text('b', strong), text(' \n'), text('c', strong), text(' '))), '**b**\\\n**c**\n')
+  assert.equal(portable(paragraph(text(' '), text('b', strong), text(' \n'), text('c', strong), text(' '))), '**b\\\nc**\n')
   assert.equal(portable(paragraph(text('a'), text(' b ', em, strong), text(' ', em), text('c', em))), 'a _**b**  c_\n')
   assert.equal(portable(paragraph(text(' x ', code))), '`  x  `\n')
   assert.equal(portable(node('heading', { level: 1 }, text(' h\ni '))), '# h i\n')

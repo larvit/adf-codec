@@ -196,15 +196,28 @@ function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number
     const index = firstIndex + offset
     // `depth` indexes each node's marks, outermost first; a carried node spells its marks inside the carry.
     const mark = carries(node, carried, index) ? undefined : nodeMarks(node)[depth]
+    const previous = runs[runs.length - 1]
+    if (mark === undefined && previous?.kind === 'marked' && joinsRun(node, index, nodes[offset + 1], previous.mark, depth, carried)) {
+      previous.nodes.push(node)
+      continue
+    }
     if (mark === undefined) {
       runs.push({ index, kind: 'plain', node })
       continue
     }
-    const previous = runs[runs.length - 1]
     if (previous?.kind === 'marked' && identicalMark(previous.mark, mark)) previous.nodes.push(node)
     else runs.push({ index, kind: 'marked', mark, nodes: [node] })
   }
   return runs
+}
+
+// The reader marks no hard break, so one between two nodes holding an emphasis or link mark reads back inside its spelling.
+function joinsRun(node: AdfNode, index: number, next: AdfNode | undefined, mark: AdfMark, depth: number, carried: ReadonlySet<number>): boolean {
+  if (node.type !== 'hardBreak' || carries(node, carried, index) || next === undefined || carries(next, carried, index + 1)) return false
+  const kind = markSpelling(mark.type)?.kind
+  if (kind !== 'emphasis' && kind !== 'link') return false
+  const nextMark = nodeMarks(next)[depth]
+  return nextMark !== undefined && identicalMark(nextMark, mark)
 }
 
 function takesTextBreak(previous: InlineRun | undefined, run: InlineRun, carried: ReadonlySet<number>): boolean {
