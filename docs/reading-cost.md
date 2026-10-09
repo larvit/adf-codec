@@ -100,3 +100,20 @@ Read most (opens and searches):
 - `corpus/README.md` 1
 - `corpus/round-trip/combinations/attribute-escapes.md` 1
 - `corpus/round-trip/combinations/escaped-json-keys.json` 1
+
+## Reading cost, chunk 699382e915ea, finished 2026-10-09T01:17:43Z
+
+216143 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 9
+- `README.md` 6
+- `todo.md` 4
+- `CHANGELOG.md` 2
+- `AGENTS.md` 1
+- `MIGRATION.md` 1
+- `spec/flavour.md` 1
+- `src/conformance/commonmark-spec.test.ts` 1
+- `src/index.ts` 1
+- `src/markdown/parse/blocks.ts` 1
