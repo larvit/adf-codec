@@ -124,3 +124,12 @@ Inherited architect, decided by:
 - `src/result.ts:1` `ConvertErrorCode`: one rule no longer enforced at five sites
 - `src/markdown/parse/inline-content.ts:26` `InlineContent`: costs more — `contentNode` drops `image` silently
 - `src/markdown/parse/inline-content.ts:302` `assemble`: costs more — three routes from an image piece to text
+
+## 2026-10-09T09:00:13Z, PR #22 at fe5c731, against 78655bc
+
+Ruling: same
+
+| Seat | Vote |
+|---|---|
+| Mid A | same |
+| Inherited architect | same |

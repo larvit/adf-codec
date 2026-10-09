@@ -260,10 +260,10 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
 }
 
 function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotContent | undefined, index: number): Result<Piece> {
-  if (slot === undefined || slot.nodes.length === 0) {
-    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.path)
+  if (slot?.nodes.some(holdsOwnMarks) === true) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
+  if (slot === undefined || slot.nodes.every(takesNoMarks)) {
+    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps nothing a mark rides`, scan.path)
   }
-  if (slot.nodes.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
   if (refused !== undefined) return refused
   return success({ kind: 'nodes', nodes: applyMark(slot.nodes, mark) })
@@ -322,9 +322,9 @@ function linkMark({ destination, title }: LinkDefinition): AdfMark {
   return { attrs: title === undefined ? { href: destination } : { href: destination, title }, type: 'link' }
 }
 
-// ADF holds no empty text node for a link mark to ride, so an empty link text reads as its destination, and an empty destination as nothing.
+// ADF holds no empty text node for a link mark to ride, so a link text holding nothing a mark rides reads as its destination, and an empty destination as nothing.
 function linkTo(nodes: readonly Inline[], definition: LinkDefinition): Inline[] {
-  if (nodes.length > 0) return applyMark(nodes, linkMark(definition))
+  if (!nodes.every(takesNoMarks)) return applyMark(nodes, linkMark(definition))
   return definition.destination === '' ? [] : [{ marks: [linkMark(definition)], text: definition.destination, type: 'text' }]
 }
 
@@ -343,6 +343,10 @@ function partText(items: readonly Inline[], scan: Scan): Result<AdfNode[]> {
     }
   }
   return success(parted)
+}
+
+function takesNoMarks(item: Inline): boolean {
+  return isNode(item) && inlineNodeModel(item.type)?.marks === false
 }
 
 function isNode(item: Inline): item is AdfNode {
@@ -669,10 +673,10 @@ function markType(character: string, used: number): string {
   return used === 2 ? 'strong' : 'em'
 }
 
-// `*(*a*)*` builds one `em`: a node holds at most one mark of each type. Atlassian's schema gives a hard break no marks.
+// `*(*a*)*` builds one `em`: a node holds at most one mark of each type.
 function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
   return nodes.map((node) => {
-    if (!isNode(node) || node.type === 'hardBreak') return node
+    if (!isNode(node) || takesNoMarks(node)) return node
     const marks = nodeMarks(node)
     return marks.some((carried) => carried.type === mark.type) ? node : { ...node, marks: [mark, ...marks] }
   })

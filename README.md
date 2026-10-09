@@ -215,7 +215,7 @@ emit refuses:
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, writes as a directive a node or mark the lossless flavour spells as CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting: a node carrying one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content` | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
+| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, writes as a directive a node or mark the lossless flavour spells as CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` or `!adf:listBreak` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting: a node carrying one mark type twice, unless it rides the carry as a hard break holding marks or a type `spec/flavour.md` does not spell, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content` | fix what the message names; `spec/flavour.md` lists every type's attributes and body |
 
 ## The guarantees
 
@@ -240,8 +240,8 @@ Serves Goals 1, 4 and 5.
   canonical spelling, which round-trips byte-identically.
 - Seven CommonMark spellings parse without an error and build a document the reference
   implementation renders differently. Four because ADF holds no node for what it renders:
-  - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and
-    `[]()` as nothing.
+  - An empty link text, or one holding only hard breaks, reads as its destination, `[](/url)` as
+    `/url` linked to `/url`, and `[]()` as nothing.
   - An image reads as an image only alone in its paragraph. Anywhere else — beside other text, in
     a heading or a table cell, or in the paragraph a task marker opens — it reads as its
     alt text linked to its URL: `See ![the moon](moon.png).` reads as
