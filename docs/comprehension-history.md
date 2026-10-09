@@ -359,3 +359,28 @@ Inherited architect, decided by:
 - Shape: `src/markdown/emit/line-escaping.ts:158` `claimsCharacter`: switches on the token kind and takes the shared record; the heading closer is worked out once in `closingHashes`
 - Shape, Navigation: `src/markdown/parse/inline-content.ts:121` `readToken`: one exhaustive switch over `InlineToken['kind']` replaces a two-level dispatch
 - Locality: `src/markdown/emit/line-escaping.ts:173` `claimsCharacter`: `default: return true` claims every kind it does not name, so a new kind is escaped without its author deciding
+
+## 2026-10-09T17:14:17Z, PR #27 at 65d2a26, against a9fedb3
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | same | better |
+| Inherited architect | better | better | better | same | better |
+
+Mid A, decided by:
+
+- Navigation, Locality: `src/markdown/inline-tokens.ts:21` `readInlineToken`: the one place that says what a character opens, which the reader and the escaper both dispatch on, where each held a copy that could drift
+- Locality, Shape: `src/markdown/emit/line-escaping.ts:156` `claimsCharacter`: a flat switch on the token kind over a readonly `EscapeWalk`, where one character's escape hung on flags the previous iteration set
+- Shape: `src/markdown/parse/inline-content.ts:121` `readToken`: one flat switch, recognition in the tokenizer and action here, where a two-level character switch fanned out to eight helpers
+- Locality: `src/markdown/directive-syntax.ts:14` `ClaimedPrefix`: the directive read can no longer answer that no prefix stands there
+- Shape: `src/markdown/emit/line-escaping.ts:147` `claimsRunRest`: re-reading each suffix of a run is a step the name does not say
+
+Inherited architect, decided by:
+
+- Navigation, Locality: `src/markdown/inline-tokens.ts:21` `readInlineToken`: the 3am symptom of an unescaped character leads to one file both directions ask
+- Locality, Shape: `src/markdown/emit/line-escaping.ts:156` `claimsCharacter`: an exhaustive switch read one case at a time, where the decision needed replaying the loop for `pairsEquals`
+- Shape, Locality: `src/markdown/parse/inline-content.ts:121` `readToken`: one pure tokenizer and one switch that applies tokens
+- Shape: `src/markdown/directive-syntax.ts:14` `ClaimedPrefix`: the directive read needs proof of its prefix, and the misnamed `opensConstruct` is gone
+- Locality: `src/markdown/emit/line-escaping.ts:112` `escapeClaims`: the escaper steps one character at a time while the reader steps by token, which only the `==` comment explains
