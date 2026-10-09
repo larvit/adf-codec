@@ -539,7 +539,7 @@ gives marks `[em, underline]`, `!adf:underline[_x_]` the reverse. `adfToLossless
 the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
 the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes
 carrying an identical mark, attributes included, at that depth, an emphasis or link spelling also
-spanning a hard break between two of them: `attrs: {}` differs from no `attrs`, and a directive
+spanning the hard breaks between two of them: `attrs: {}` differs from no `attrs`, and a directive
 spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no emitted carry sits
 inside a mark spelling.
 

@@ -721,7 +721,8 @@ test('spells a mark run across the hard break between two nodes holding the mark
   assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, marked('b', em)))), '_a\\\nb_\n')
   assert.equal(readsBack(document(paragraph(marked('a', link), hardBreak, marked('b', link)))), '[a\\\nb](/u)\n')
   assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)\\\nb_\n')
-  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a_\\\n\\\n_b_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a\\\n\\\nb_\n')
+  assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
 })
 
 test('carries a hard break holding marks, which Atlassian\'s schema gives it none of', () => {
