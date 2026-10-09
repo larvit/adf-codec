@@ -99,3 +99,28 @@ Inherited architect, decided by:
 - `src/markdown/parse/markdown-to-adf.ts:136` `readBlock`: the task paragraph is routed where the block is classified
 - `src/markdown/parse/inline-content.ts:302` `assemble`: costs more — the most expensive line to decode
 - `src/markdown/parse/markdown-to-adf.ts:154` `paragraphsOf`: costs more — the name does not say it splits the marker line
+
+## 2026-10-09T08:46:45Z, PR #21 at e7029c1, against 9a242c7
+
+Ruling: better
+
+| Seat | Vote |
+|---|---|
+| Mid A | better |
+| Inherited architect | better |
+
+Mid A, decided by:
+
+- `src/markdown/emit/image.ts:7` `tryImage`: builds what the reader would build and compares, where `imageShape` restated the shape
+- `src/markdown/external-image.ts:4` `centeredImage`: the image shape lives in one named file
+- `src/markdown/parse/markdown-to-adf.ts:26` `TaskParagraph`: a typed block kind replaces `readMarked`'s after-the-fact search
+- `src/markdown/parse/inline-content.ts:302` `assemble`: costs more — one dense ternary over `inLink`
+- `src/markdown/parse/inline-content.ts:26` `InlineContent`: costs more — no longer a discriminated union
+
+Inherited architect, decided by:
+
+- `src/markdown/external-image.ts:4` `centeredImage`: one builder where three had to stay in step
+- `src/markdown/parse/markdown-to-adf.ts:136` `readBlock`: the task paragraph is routed by a named block kind
+- `src/result.ts:1` `ConvertErrorCode`: one rule no longer enforced at five sites
+- `src/markdown/parse/inline-content.ts:26` `InlineContent`: costs more — `contentNode` drops `image` silently
+- `src/markdown/parse/inline-content.ts:302` `assemble`: costs more — three routes from an image piece to text
