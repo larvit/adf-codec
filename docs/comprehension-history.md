@@ -308,3 +308,30 @@ Inherited architect, decided by:
 - Shape: `src/markdown/emit/adf-to-markdown.ts:334` `spelledList`: the both-or-neither rule is one uncommented expression
 - Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:369` `tryListItemLines`: `inner.startsWith('*')` depends on the alternate bullet being `*`, and the comment needs the inline escaping worked out
 - Self-sufficiency: `src/markdown/parse/blocks.ts:232` `continuesList`: states the rule the base sent the reader to the spec for
+
+## 2026-10-09T13:37:16Z, PR #25 at ca3d703, against 875c0e5
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | better | better |
+| Inherited architect | better | better | better | same | better |
+
+Mid A, decided by:
+
+- Locality, Shape, Overall: `src/markdown/portable/adf-to-portable-markdown.ts:118` `portableSequence`: a worklist that keeps a block that spells or pushes its items back, where the base spliced, merged neighbours and stepped the index back by hand
+- Navigation, Locality: `src/markdown/parse/markdown-to-adf.ts:70` `readBlocks`: handles each block alone, where the base judged a separator by its neighbours across five places
+- Shape, Self-sufficiency: `src/markdown/parse/blocks.ts:232` `continuesList`: one named predicate on kind and delimiter, its rule stated in place
+- Self-sufficiency, Locality: `src/markdown/emit/adf-to-markdown.ts:27` `SpelledBlock`: its comment states why `alternateText` exists, though `joinBlocks` now carries a toggle across siblings
+- Shape: `src/markdown/emit/adf-to-markdown.ts:334` `spelledList`: line building in small units, the fallback once after the loop, shared by `tryTaskList`
+- Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:369` `tryListItemLines`: the `*` branch's comment needs a reread
+
+Inherited architect, decided by:
+
+- Locality, Shape, Overall: `src/markdown/portable/adf-to-portable-markdown.ts:118` `portableSequence`: a work stack replacing six helpers and the base's cursor rewind
+- Locality, Navigation: `src/markdown/parse/markdown-to-adf.ts:70` `readBlocks`: each block reads alone, and two merged lists lead to one emitter and one parser unit
+- Locality, Navigation: `src/markdown/parse/blocks.ts:232` `continuesList`: a list continues exactly where CommonMark says, checkable without the spec
+- Locality: `src/markdown/emit/adf-to-markdown.ts:72` `joinBlocks`: a block's spelling depends on the run before it, where the base's separation was a pure function of a pair
+- Shape: `src/markdown/emit/adf-to-markdown.ts:334` `spelledList`: one exit to the directive form, though bullets pass `() => ''` as the number
+- Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:369` `tryListItemLines`: the `*` branch needs the spec open, cancelling the spec pointers removed
