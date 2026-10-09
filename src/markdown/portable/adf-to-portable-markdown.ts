@@ -296,26 +296,12 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
   }
   const regular = isTask(kept[0]?.child) && kept.every(({ child }) => isTask(child) || child.type === 'taskList')
   const tasks: AdfNode[] = []
-  let nested: AdfNode[] = []
   for (const { blocks, child } of kept) {
-    if (!regular) {
-      const standsAlone = !isTask(child) && child.type !== 'taskList'
-      for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
-      continue
-    }
-    if (isTask(child)) {
-      pushMerged(tasks, nested)
-      nested = []
-    }
-    for (const block of blocks) (isTask(child) ? tasks : nested).push(block)
+    const standsAlone = !regular && !isTask(child) && child.type !== 'taskList'
+    for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
   }
-  pushMerged(tasks, nested)
-  if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }))
+  if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }).map((block) => (block.type === 'taskList' ? { ...block, content: mergedLists(nodeContent(block)) } : block)))
   return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
-}
-
-function pushMerged(tasks: AdfNode[], nested: readonly AdfNode[]): void {
-  for (const block of mergedLists(nested)) tasks.push(block)
 }
 
 function isTask(node: AdfNode | undefined): boolean {
