@@ -1,21 +1,21 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import type { ClaimedPrefix, DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { Claims } from '../portable/conventions.ts'
-import type { DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
 import type { InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
-import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkLink, linkHref } from '../mark-spellings.ts'
-import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
+import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../portable/conventions.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
-import { noSpans, readInlineDirective } from '../directive-syntax.ts'
+import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
+import { noSpans, readInlineDirective } from '../directive-syntax.ts'
 import { openingLinkTakesDirective } from '../emit/inline-line.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
@@ -119,47 +119,42 @@ function scanInline(scan: Scan): Result<Scanned> {
 }
 
 function readToken(scan: Scan, index: number, token: InlineToken): Result<number> {
+  if (token.kind === 'directive') return readDirective(scan, index, token.prefix)
+  if (token.kind === 'html') return failure('unmappable-html', `no raw HTML converts at this version: ${token.construct}`, scan.path)
+  const end = index + token.width
   switch (token.kind) {
-    case 'autolink': {
-      const end = index + token.width
+    case 'autolink':
       flush(scan, false)
       pushNode(scan, linkedText(scan.source.slice(index + 1, end - 1), token.email ? 'mailto:' : ''))
       return success(end)
-    }
     case 'bracket':
       flush(scan, false)
-      scan.pieces.push({ active: true, image: token.image, kind: 'open', start: index + token.width })
-      return success(index + token.width)
+      scan.pieces.push({ active: true, image: token.image, kind: 'open', start: end })
+      return success(end)
     case 'bracket-close':
       return closeBracket(scan, index)
-    case 'code-span': {
-      const end = index + token.width
+    case 'code-span':
       flush(scan, false)
       pushNode(scan, { marks: [{ type: 'code' }], text: codeSpanText(scan.source.slice(index + token.opener, end - token.opener)), type: 'text' })
       return success(end)
-    }
     case 'delimiter-run':
       flush(scan, false)
       scan.pieces.push({ canClose: token.canClose, canOpen: token.canOpen, character: scan.source.charAt(index), kind: 'run', length: token.width })
-      return success(index + token.width)
-    case 'directive':
-      return readDirective(scan, index)
+      return success(end)
     case 'entity':
     case 'escape':
     case 'text':
-      scan.pending += scan.source.slice(index, index + token.width)
-      return success(index + token.width)
+      scan.pending += scan.source.slice(index, end)
+      return success(end)
     case 'hard-break':
       // CommonMark strips the spaces the two-space break is spelled with, and keeps those before a backslash.
       flush(scan, false)
       pushNode(scan, { type: 'hardBreak' })
-      return success(index + token.width)
+      return success(end)
     case 'highlight':
       flush(scan, false)
       scan.pieces.push({ closes: token.closes, kind: 'highlight', opens: token.opens })
-      return success(index + token.width)
-    case 'html':
-      return failure('unmappable-html', `no raw HTML converts at this version: ${token.construct}`, scan.path)
+      return success(end)
     case 'line-ending':
       return success(readLineEnding(scan, index))
   }
@@ -173,10 +168,10 @@ function readLineEnding(scan: Scan, index: number): number {
   return index + 1
 }
 
-function readDirective(scan: Scan, index: number): Result<number> {
+function readDirective(scan: Scan, index: number, prefix: ClaimedPrefix): Result<number> {
   const held = scan.spans.get(index)
   if (held !== undefined) return pushDirective(scan, held, index)
-  const directive = readInlineDirective(scan.source, index)
+  const directive = readInlineDirective(scan.source, prefix)
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
   return pushDirective(scan, directive.value, index)
 }

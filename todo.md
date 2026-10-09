@@ -34,7 +34,7 @@
 | 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 92 | 0.2.0 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
-| 96 | 0.2.1 | defect | **Read and write a text holding many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
+| 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
@@ -135,11 +135,13 @@ them 68188. Read most over the last five, opens and searches: `README.md` 32, `d
 may reject the document. Replace `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) with the
 mark types a node takes, and have the emitter carry a node holding another.
 
-### 96. Read and write a text holding many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator in time linear in the text.
+### 96. Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.
 
-`inlineHtmlConstruct` (`src/markdown/commonmark/grammar.ts`) searches the rest of the text for the
-opener's terminator at every opener, so `<!--` repeated with no `-->` is quadratic in both
-directions: the reader and the emitter's escape walk both ask it through `readInlineToken`.
+`readInlineToken` (`src/markdown/inline-tokens.ts`) searches the rest of the text at every opener:
+`closingBacktickRun` for a run of the same length, and `inlineHtmlConstruct` for the terminator. So
+backtick runs of lengths 1 to k with no closers cost about k·n, and `<!--` repeated with no `-->`
+is quadratic, in the reader and the emitter's escape walk alike. commonmark.js keeps a cache of
+backtick runs by length for the first.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 

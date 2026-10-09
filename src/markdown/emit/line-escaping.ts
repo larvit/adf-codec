@@ -32,15 +32,14 @@ type EmittedDelimiter = { closes: boolean; offset: number; pair: number; width: 
 
 type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; delimiters: EmittedDelimiter[]; length: number; start: number }
 
-// What stays fixed while one line's escapes are decided; `escaped` collects them.
+// What stays fixed while one line's escapes are decided.
 type EscapeWalk = {
-  claims: Claims
-  container: LineContainer
-  escaped: Set<number>
-  escapings: readonly InlineEscaping[]
-  headingCloser: number | undefined
-  linkClose: number
-  scan: string
+  readonly claims: Claims
+  readonly container: LineContainer
+  readonly escapings: readonly InlineEscaping[]
+  readonly headingCloser: number | undefined
+  readonly linkClose: number
+  readonly scan: string
 }
 
 const followsLinkText = /[([]/
@@ -73,7 +72,7 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
     const openOffset = offsets[openerIndex] ?? 0
     const closeOffset = offsets[index] ?? 0
     if (opener.text !== '_') continue
-    if (!isWordCharacter(charAt(scan, openOffset - 1)) && !isWordCharacter(charAt(scan, closeOffset + 1))) continue
+    if (!isWordCharacter(scan.charAt(openOffset - 1)) && !isWordCharacter(scan.charAt(closeOffset + 1))) continue
     opener.text = '*'
     segment.text = '*'
   }
@@ -103,47 +102,47 @@ function escapeClaims(scan: string, escapings: readonly InlineEscaping[], contai
   const walk: EscapeWalk = {
     claims,
     container,
-    escaped: new Set(),
     escapings,
     headingCloser: container === 'heading' ? closingHashes(scan) : undefined,
     linkClose: lastLinkClose(scan, escapings),
     scan,
   }
+  const escaped = new Set<number>()
   let line = scanLine(scan, 0)
   let index = 0
   while (index < scan.length) {
     while (index > line.start + line.text.length) line = scanLine(scan, line.start + line.text.length + 1)
     if (runCharacters.includes(scan.charAt(index))) {
-      index = escapeRun(walk, index, line)
+      const end = index + runLength(scan, index)
+      for (const claimed of runEscapes(walk, index, end, line)) escaped.add(claimed)
+      index = end
       continue
     }
-    const escaping = escapings[index]
     const token = readInlineToken(scan, index, claims)
-    const claimed = isEscapable(escaping)
-      ? index === walk.headingCloser || claimsLineStart(line, index, container) || claimsCharacter(walk, index, token)
-      : escaping === 'bracketed-link-target' && token.kind === 'directive'
-    if (claimed) walk.escaped.add(index)
+    const claimed = claimsCharacter(walk, index, token, line)
+    if (claimed) escaped.add(index)
     // The reader takes a `==` whole, so its second `=` starts nothing unless the first is escaped.
     index += !claimed && token.kind === 'highlight' ? token.width : 1
   }
-  return walk.escaped
+  return escaped
 }
 
 // A run joining the emitter's own delimiter escapes its text; a run of text escapes from its start while the reader claims what the escapes leave of it.
-function escapeRun(walk: EscapeWalk, start: number, line: ScanLine): number {
-  const { escaped, escapings, scan } = walk
-  const end = start + runLength(scan, start)
+function runEscapes(walk: EscapeWalk, start: number, end: number, line: ScanLine): number[] {
+  const { escapings, scan } = walk
+  const indexes: number[] = []
   const run = escapings.slice(start, end)
   if (run.some(isSyntax) && run.some(isEscapable)) {
-    for (let index = start; index < end; index += 1) if (isEscapable(escapings[index])) escaped.add(index)
-    return end
+    for (let index = start; index < end; index += 1) if (isEscapable(escapings[index])) indexes.push(index)
+    return indexes
   }
   for (let index = start; index < end; index += 1) {
     // A backtick run escapes whole: a rest left bare would be a raw run of another length for a closer.
-    if (!(index > start && scan.charAt(index) === '`') && !claimsRunRest(walk, index, end, line)) break
-    escaped.add(index)
+    const claimed = (index > start && scan.charAt(index) === '`') || claimsRunRest(walk, index, end, line)
+    if (!claimed) break
+    indexes.push(index)
   }
-  return end
+  return indexes
 }
 
 function claimsRunRest({ claims, container, escapings, scan }: EscapeWalk, index: number, end: number, line: ScanLine): boolean {
@@ -155,22 +154,35 @@ function claimsRunRest({ claims, container, escapings, scan }: EscapeWalk, index
   return token.kind !== 'text'
 }
 
-function claimsCharacter({ container, escapings, linkClose, scan }: EscapeWalk, index: number, token: InlineToken): boolean {
-  const character = scan.charAt(index)
-  const inBrackets = escapings[index] === 'bracketed'
+function claimsCharacter({ container, escapings, headingCloser, linkClose, scan }: EscapeWalk, index: number, token: InlineToken, line: ScanLine): boolean {
+  const escaping = escapings[index]
+  if (escaping === 'bracketed-link-target') return token.kind === 'directive'
+  if (!isEscapable(escaping)) return false
+  if (index === headingCloser || claimsLineStart(line, index, container)) return true
   switch (token.kind) {
+    case 'autolink':
+    case 'code-span':
+    case 'delimiter-run':
+    case 'directive':
+    case 'entity':
+    case 'escape':
+    case 'hard-break':
+    case 'html':
+      return true
     case 'bracket':
       if (token.image) return isSyntax(escapings[index + 1])
-      return inBrackets || index < linkClose
+      return escaping === 'bracketed' || index < linkClose
     case 'bracket-close':
-      return inBrackets
+      return escaping === 'bracketed'
     case 'highlight':
       return token.opens || token.closes
-    case 'text':
+    // A backslash before a line ending reads as a hard break, so no line ending escapes.
+    case 'line-ending':
+    case 'text': {
+      const character = scan.charAt(index)
       if (character === '|') return container === 'table-cell'
       return character === '{' && scan.charAt(index - 1) === ']' && isSyntax(escapings[index - 1])
-    default:
-      return true
+    }
   }
 }
 
@@ -289,7 +301,7 @@ function emittedRuns(segments: readonly InlineSegment[], placements: readonly nu
     })
   }
   for (const run of runs) {
-    const flags = delimiterFlags(run.character, charAt(output, run.start - 1), output.charAt(run.start + run.length))
+    const flags = delimiterFlags(run.character, output.charAt(run.start - 1), output.charAt(run.start + run.length))
     run.canClose = flags.canClose
     run.canOpen = flags.canOpen
   }
@@ -331,8 +343,4 @@ function lastLinkClose(scan: string, escapings: readonly (InlineEscaping | undef
     if (followsLinkText.test(scan.charAt(cursor + 1))) return cursor
   }
   return -1
-}
-
-function charAt(text: string, index: number): string {
-  return index < 0 ? '' : text.charAt(index)
 }
