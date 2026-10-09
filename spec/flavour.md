@@ -21,8 +21,9 @@ normalizes to it through the round-trip.
 - Bullet lists `- `; ordered lists incrementing `1.` `2.` `3.`, the first number the node's
   `order` attribute. A bullet or task list right after a bullet or task list takes `* `, and an
   ordered list right after an ordered one `1)`, since CommonMark starts a new list where the
-  bullet character or the delimiter changes; the list after that takes `- ` or `1.` again, and a
-  first line of `*` alone after `* ` opens with a backslash, `* \**`. Continuation lines align with the first character
+  bullet character or the delimiter changes; the list after that takes `- ` or `1.` again. An item
+  text of asterisks and spaces that would read as a rule after `* ` opens with a backslash,
+  `* \**`. Continuation lines align with the first character
   after the marker (two spaces for `- `, three for `1. `); blank lines inside an item are empty
   lines, none between a nested list and a CommonMark block above it — one wherever the nested
   list's own marker cannot interrupt a paragraph (an ordered list whose first number is not 1, or
@@ -84,8 +85,8 @@ escaped, and erroring input gaining meaning later is MINOR, never a reparse (`do
 or an inline node written as a block directive, a block node written inline — is a different error,
 naming the spelling it takes. Three reserved names read back to no node: `carry` for the inline
 opaque carry, `doc` for a document holding no `content` key (Canonical form), and `textBreak` for
-the leaf that parts two text nodes (Inline nodes). Every fence info string opening `adf:` is reserved for the block carry (The opaque
-carry).
+the leaf that parts two text nodes (Inline nodes). Every fence info string opening `adf:` is
+reserved for the block carry (The opaque carry).
 
 **Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`
 closes a container, and a name picks by what follows it in turn — a space or the line's end a block

@@ -68,8 +68,9 @@ same portable markdown.
 2026-10-03, the maintainer. Goal 1. Valid while CommonMark reads adjacent text as one run.
 
 Two adjacent text nodes CommonMark would read back as one are parted by the reserved inline leaf
-`!adf:textBreak{}`: a leaf building no node keeps both nodes and asks nothing of the text around
-it. A code span holds no directive, so the spans close and reopen around the leaf. The grammar: `spec/flavour.md` §Inline nodes, **Adjacent text nodes**.
+`!adf:textBreak{}`: a leaf building no node keeps both nodes and asks nothing of the text around it.
+A code span holds no directive, so the spans close and reopen around the leaf. The grammar:
+`spec/flavour.md` §Inline nodes, **Adjacent text nodes**.
 
 ## A list beside one of its kind takes the other marker
 
@@ -702,10 +703,11 @@ per level above it otherwise.
 
 The parse and the portable reduction keep each node's readable spelling in a memo, so the
 `commonMarkSpelling` ask stops spelling a node once per level above it. The spelled texts and
-`spelling` carry no depth and `headroom` is affine in it, so a read at or above the depth that filled the entry
-rebases; a read below re-spells, because a hit skips the depth guards the walk it replaces runs and
-an ordered list past the marker cap gives way, spending two emitter levels where the parser spent
-one. Only what succeeded is kept, so no path minted at another position is ever read.
+`spelling` carry no depth and `headroom` is affine in it, so a read at or above the depth that
+filled the entry rebases; a read below re-spells, because a hit skips the depth guards the walk it
+replaces runs and an ordered list past the marker cap gives way, spending two emitter levels where
+the parser spent one. Only what succeeded is kept, so no path minted at another position is ever
+read.
 
 ## Cost fixes are measured, never timed
 

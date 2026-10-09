@@ -116,16 +116,18 @@ function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> 
 
 // A list still taking the directive form gives way to its items' blocks.
 function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
-  let sequence = blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0)
-  for (let index = 0; index < sequence.length; index += 1) {
-    const listed = sequence[index]
-    if (listed === undefined || (listed.type !== 'bulletList' && listed.type !== 'orderedList')) continue
-    const block = numberedPastMarkers(listed)
-    const spelled = block === listed && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', memo: reduction.memo })?.ok === true
-    if (spelled) continue
-    sequence = [...sequence.slice(0, index), ...(block === listed ? nodeContent(block).flatMap(nodeContent) : [block]), ...sequence.slice(index + 1)]
-    // The replacement's first block takes this index, and may itself take the directive form.
-    index -= 1
+  const pending = blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0).reverse()
+  const sequence: AdfNode[] = []
+  for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
+    const block = numberedPastMarkers(next)
+    const listed = block.type === 'bulletList' || block.type === 'orderedList'
+    if (!listed || (block === next && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', memo: reduction.memo })?.ok === true)) {
+      sequence.push(block)
+      continue
+    }
+    // Read next, since a replacement may take the directive form itself.
+    const replacement = block === next ? nodeContent(block).flatMap(nodeContent) : [block]
+    for (const node of replacement.reverse()) pending.push(node)
   }
   return success(sequence)
 }

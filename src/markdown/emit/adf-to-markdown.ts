@@ -20,13 +20,13 @@ import { tryPipeTable } from './pipe-table.ts'
 type BlockContainer = 'directive' | 'document' | 'list-item'
 // The usual delimiter, then the one a list beside another of its kind takes.
 type Delimiters = readonly [string, string]
-// CommonMark starts a new list where the marker changes, so a list beside one of its kind takes `alternateText`.
-type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
 // headroom: the nesting levels the deepest node below may still spend before `largestNesting` refuses it.
 type EmittedBlock = SpelledBlock & { headroom: number }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = SpelledBlock & { node: AdfNode }
 type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
+// CommonMark starts a new list where the marker changes, so a list beside one of its kind takes `alternateText`.
+type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
@@ -34,9 +34,9 @@ export type Writing = { flavour: WrittenFlavour; memo: SpellingMemo | undefined 
 
 const bulletDelimiters: Delimiters = ['-', '*']
 export const largestListMarker = 999999999
-const orderedDelimiters: Delimiters = ['.', ')']
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
+const orderedDelimiters: Delimiters = ['.', ')']
 
 export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
   return writeMarkdown(document, 'lossless')
@@ -76,14 +76,15 @@ function joinBlocks(blocks: readonly PlacedBlock[], container: BlockContainer): 
   for (const [index, block] of blocks.entries()) {
     const previous = blocks[index - 1]
     if (previous !== undefined) text += separationBetween(previous, block, container)
-    alternated = !alternated && previous?.spelling === 'list' && block.spelling === 'list' && isOrdered(previous.node) === isOrdered(block.node)
+    alternated = !alternated && previous !== undefined && sharesMarker(previous, block)
     text += alternated && block.spelling === 'list' ? block.alternateText : block.text
   }
   return text
 }
 
-function isOrdered(node: AdfNode): boolean {
-  return node.type === 'orderedList'
+// A task list is spelled as a bullet list.
+function sharesMarker(previous: PlacedBlock, next: PlacedBlock): boolean {
+  return previous.spelling === 'list' && next.spelling === 'list' && (previous.node.type === 'orderedList') === (next.node.type === 'orderedList')
 }
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
@@ -208,7 +209,7 @@ function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writin
   const walk = walkBlocks(nodeContent(task), path, depth, writing)
   if (!walk.ok) return walk
   const [first, ...rest] = walk.value.blocks
-  const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
+  const blocks = first?.node.type === 'paragraph' && first.spelling !== 'list' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
   return success({ blocks, headroom: walk.value.headroom })
 }
 
@@ -366,7 +367,7 @@ function tryListItemLines(inner: string, marker: string): string | undefined {
   const lines = body.map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
   const first = lines[0] ?? ''
   if (!isThematicBreak(first)) return lines.join('\n')
-  // A first line of `*` alone beside the `* ` marker is text, since a rule is spelled `---`: a backslash keeps it from reading as one.
+  // Only text opens an item with `*`, a rule being spelled `---`; where `* ` before it reads as a rule, a backslash keeps it text.
   return inner.startsWith('*') ? [`${marker}\\${first.slice(marker.length)}`, ...lines.slice(1)].join('\n') : undefined
 }
 
