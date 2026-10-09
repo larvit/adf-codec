@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `adfToLosslessMarkdown` and `adfToPortableMarkdown` write text holding a long run of `*`, `_`, `~`
+  or backticks, or a heading ending in a long run of `#`, in time linear in the run.
 - **Breaking:** a list whose bullet character or ordered delimiter changes reads as two lists, as
   CommonMark reads it: `- a` then `* b`, `1. a` then `1) b`. `adfToLosslessMarkdown` gives a list
   right after one of its kind the other marker, `* ` or `1)`, in place of the `::listBreak`

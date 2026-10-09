@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 95`
+`Next ID = 96`
 
 | Goal | W |
 |---|---|
@@ -51,6 +51,7 @@
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
 | 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
+| 95 | 0.3.0 |  | **Find the code-span closers an escape forms and the mark runs a line cannot spell by reading the line back, in place of `escapeClosedRuns` and `unspellableRuns` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
@@ -275,14 +276,21 @@ Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the mar
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
 
+### 95. Find the code-span closers an escape forms and the mark runs a line cannot spell by reading the line back, in place of `escapeClosedRuns` and `unspellableRuns` predicting them.
+
+`src/markdown/emit/line-escaping.ts` asks the reader's tokens where text would read as syntax, but
+`escapeClosedRuns` still works out which backtick strings an escape leaves, and `unspellableRuns`
+rebuilds the reader's emphasis and highlight pairing to pick the run to carry. Reading the line
+back costs a parse per line attempt, and the run it picks may differ, changing output.
+
 ### 91. Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.
 
 No reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then
 `_Two_`, and a link typed across a line as two links. Joining the run across the break in
 `inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be
 spelled needs its own fallback, first as a set of parted breaks, then as a flag the first fallback
-clears. Once the emitter asks the reader how a line reads back, the joined spelling can be tried and
-kept only where it reads back.
+clears. Lands after item 95, which lets the joined spelling be tried and kept only where it reads
+back.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
