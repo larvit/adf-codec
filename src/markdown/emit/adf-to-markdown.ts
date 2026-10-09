@@ -4,7 +4,7 @@ import type { WrittenFlavour } from '../portable/conventions.ts'
 import { adfDocumentFault, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, flavourClaims, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../portable/conventions.ts'
 import { blockDirectiveForm, documentSpelling, listBreakSpelling } from '../block-directive.ts'
-import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
+import { blockNodeModel, blockNodes, isTaskItem } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -167,7 +167,7 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   let headroom = largestNesting - depth - 1
   // A child other than a task nests in the task before it.
   for (const [index, child] of nodeContent(node).entries()) {
-    const task = child.type === 'taskItem' || child.type === 'blockTaskItem'
+    const task = isTaskItem(child)
     const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, writing) : placedBlock(child, [...path, 'content', index], depth + 1, writing)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)

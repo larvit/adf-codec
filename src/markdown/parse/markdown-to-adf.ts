@@ -81,10 +81,15 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
       if (fault !== undefined) return positioned(faulted(fault, nodePath), block.position)
       continue
     }
+    if (block.kind === 'bulletList' && reading.claims.taskMarkers) {
+      const listed = positioned(bulletBlocks(block.items, reading, nodePath, depth), block.position)
+      if (!listed.ok) return listed
+      for (const node of listed.value) content.push(node)
+      continue
+    }
     const node = positioned(readBlock(block, reading, nodePath, depth), block.position)
     if (!node.ok) return node
-    if (node.value.type !== 'taskList' || block.kind !== 'bulletList') content.push(node.value)
-    else for (const split of splitTaskList(node.value)) content.push(split)
+    content.push(node.value)
   }
   return success(content)
 }
@@ -116,7 +121,7 @@ function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, d
     case 'blockquote':
       return reading.claims.alerts ? quoteNode(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
     case 'bulletList':
-      return reading.claims.taskMarkers ? bulletNode(block.items, reading, path, depth) : listNode({ type: 'bulletList' }, block.items, reading, path, depth)
+      return listNode({ type: 'bulletList' }, block.items, reading, path, depth)
     case 'code':
       return codeBlockNode(block.language, block.text, reading, path, depth)
     case 'directive':
@@ -198,11 +203,14 @@ function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> 
   return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
 }
 
-function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function bulletBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const led = []
   for (const [first, ...others] of items) {
     const marked = markerLed(first, readTaskMarker)
-    if (marked === undefined) return listNode({ type: 'bulletList' }, items, reading, path, depth)
+    if (marked === undefined) {
+      const list = listNode({ type: 'bulletList' }, items, reading, path, depth)
+      return list.ok ? success([list.value]) : list
+    }
     led.push({ ...marked, others })
   }
   const tasks: AdfNode[] = []
@@ -213,7 +221,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
     if (!read.ok) return read
     tasks.push({ attrs: { state: marker.state }, content: read.value, type: 'blockTaskItem' })
   }
-  return success({ content: tasks, type: 'taskList' })
+  return success(splitTaskList({ content: tasks, type: 'taskList' }))
 }
 
 function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
