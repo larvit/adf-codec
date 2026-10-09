@@ -119,7 +119,7 @@ function scanInline(scan: Scan): Result<Scanned> {
 }
 
 function readToken(scan: Scan, index: number, token: InlineToken): Result<number> {
-  if (token.kind === 'directive') return readDirective(scan, index, token.prefix)
+  if (token.kind === 'directive') return readDirective(scan, token.prefix)
   if (token.kind === 'html') return failure('unmappable-html', `no raw HTML converts at this version: ${token.construct}`, scan.path)
   const end = index + token.width
   switch (token.kind) {
@@ -168,12 +168,12 @@ function readLineEnding(scan: Scan, index: number): number {
   return index + 1
 }
 
-function readDirective(scan: Scan, index: number, prefix: ClaimedPrefix): Result<number> {
-  const held = scan.spans.get(index)
-  if (held !== undefined) return pushDirective(scan, held, index)
+function readDirective(scan: Scan, prefix: ClaimedPrefix): Result<number> {
+  const held = scan.spans.get(prefix.index)
+  if (held !== undefined) return pushDirective(scan, held, prefix.index)
   const directive = readInlineDirective(scan.source, prefix)
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
-  return pushDirective(scan, directive.value, index)
+  return pushDirective(scan, directive.value, prefix.index)
 }
 
 function pushDirective(scan: Scan, span: DirectiveSpan, index: number): Result<number> {
