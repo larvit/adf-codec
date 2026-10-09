@@ -58,8 +58,8 @@
 - Fix an image inside another image's description: it flattens into the alt text, where it was
   refused.
 - **Breaking:** `unmappable-image` leaves `ConvertErrorCode`, and every image reads. An image reads
-  as an image only alone in its paragraph, and its title becomes the caption. Anywhere else it
-  reads as its alt text linked to its URL; inside a link, as plain text the link marks. A link
+  as an image only alone in its paragraph, and its title becomes the caption. Anywhere else, after
+  a task marker too, it reads as its alt text linked to its URL; inside a link, as plain text the link marks. A link
   alone in its paragraph whose whole text is one image reads as that image, with the link marking
   it. To keep an image an image, give it a paragraph of its own. See `MIGRATION.md`.
 - **Breaking:** an empty link text reads as its destination, `[](/url)` as `/url` linked, and
