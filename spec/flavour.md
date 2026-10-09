@@ -1,18 +1,18 @@
 # The markdown flavour
 
-The grammar of the extended markdown `adfToMarkdown` emits and `markdownToAdf` parses. Plain
-CommonMark is a subset apart from raw HTML (below), with four carve-outs: literal text that matches
-directive syntax below or reads as a pipe table is claimed by the flavour, a matched `~~` pair
-spells `strike` (escape the `!adf:`, `|` or `~` to keep it literal), and a code fence whose info
-string opens `adf:` is the opaque carry (drop the info string and wrap the fence in
-`!adf:codeBlock {language="adf:…"}` to keep it code) — and one gap: a CommonMark image fits only as
-its own title-less paragraph — mid-text and titled images are named errors. The emitted form is
-contract (`docs/decisions.md` §The formats are API). Per-node syntaxes build on this grammar in the
-sections below.
+The grammar of the lossless flavour, the extended markdown `adfToLosslessMarkdown` emits and
+`losslessMarkdownToAdf` parses. CommonMark is a subset apart from raw HTML (below), with four
+carve-outs: literal text that matches directive syntax below or reads as a pipe table is claimed by
+the flavour, a matched `~~` pair spells `strike` (escape the `!adf:`, `|` or `~` to keep it
+literal), and a code fence whose info string opens `adf:` is the opaque carry (drop the info string
+and wrap the fence in `!adf:codeBlock {language="adf:…"}` to keep it code) — and one gap: a
+CommonMark image fits only as its own title-less paragraph — mid-text and titled images are named
+errors. `commonMarkToAdf` claims none of the four. The emitted form is contract (`docs/decisions.md`
+§The formats are API). Per-node syntaxes build on this grammar in the sections below.
 
 ## Canonical form
 
-`adfToMarkdown` emits exactly one spelling; every CommonMark variant of the same document
+`adfToLosslessMarkdown` emits exactly one spelling; every CommonMark variant of the same document
 normalizes to it through the round-trip.
 
 - Emphasis `_em_`, strong `**strong**`, strike `~~strike~~`; `*` replaces `_` only where `_`
@@ -194,27 +194,27 @@ is the fence.
 
 ## Raw HTML in input
 
-CommonMark input may contain raw HTML. `markdownToAdf` routes each construct through the foreign
-HTML element mapping (`docs/decisions.md` §Foreign HTML sorts three ways) — ADF has no raw-HTML
-node, so a construct without a mapping, comments and processing instructions included, is an error
-result naming it. The flavour never emits raw HTML.
+CommonMark input may contain raw HTML. Every markdown reader routes each construct through the
+foreign HTML element mapping (`docs/decisions.md` §Foreign HTML sorts three ways) — ADF has no
+raw-HTML node, so a construct without a mapping, comments and processing instructions included, is
+an error result naming it. The flavour never emits raw HTML.
 
 ## Block nodes
 
 The directive name is always the ADF node type. A container's body is the node's `content`; a leaf
-has none. Every directive parses in any position — `markdownToAdf` builds exactly what is written;
-validity against ADF's content models stays the author's business (`docs/decisions.md` §No schema
-validation). It parses only in the form the emitter picks, though: a directive spelling a node the
-emitter would have written as CommonMark is a named error.
+has none. Every directive parses in any position — `losslessMarkdownToAdf` builds exactly what is
+written; validity against ADF's content models stays the author's business (`docs/decisions.md` §No
+schema validation). It parses only in the form the emitter picks, though: a directive spelling a
+node the emitter would have written as CommonMark is a named error.
 
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
 type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
 (`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys sorted),
-quoted, `-0` spelled `-0`. `markdownToAdf` builds an `attrs`, `content` or `marks` key only where the
-markdown spells one, an empty one through its reserved key (Attributes), so a document reads back
-deep-equal (`docs/decisions.md` §Equality is deep). A node CommonMark spells takes the directive
-form to hold an empty key.
+quoted, `-0` spelled `-0`. `losslessMarkdownToAdf` builds an `attrs`, `content` or `marks` key only
+where the markdown spells one, an empty one through its reserved key (Attributes), so a document
+reads back deep-equal (`docs/decisions.md` §Equality is deep). A node CommonMark spells takes the
+directive form to hold an empty key.
 
 Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
 `json` value, `marks=empty` where it is empty:
@@ -309,16 +309,15 @@ The moon, at night.
 !adf:/mediaSingle
 ```
 
-**The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is
-a `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url`
-from the destination, `alt` the description's plain-text content when non-empty — a link or image
-inside it contributing its own text, a node spelling its text in the content slot contributing
-that text, and a break of either kind a space. `adfToMarkdown` emits the image form for exactly
-that shape — those attrs and no others, no marks on either node, no caption, and a `media`
-carrying nothing beyond `alt`, `type` and `url` — and only where
-CommonMark spells the pair: a destination or a description the image form cannot hold, an empty
-`alt` included, takes the directive form instead. An image amid
-other text, or one carrying a title, is a named error: `mediaInline` carries a media
+**The CommonMark image.** A paragraph whose entire inline content is one image `![alt](url)` is a
+`mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url` from
+the destination, `alt` the description's plain-text content when non-empty — a link or image inside
+it contributing its own text, a node spelling its text in the content slot contributing that text,
+and a break of either kind a space. `adfToLosslessMarkdown` emits the image form for exactly that
+shape — those attrs and no others, no marks on either node, no caption, and a `media` carrying
+nothing beyond `alt`, `type` and `url` — and only where CommonMark spells the pair: a destination or
+a description the image form cannot hold, an empty `alt` included, takes the directive form instead.
+An image amid other text, or one carrying a title, is a named error: `mediaInline` carries a media
 `collection` + `id`, never a URL, and no media node carries a title.
 
 ### Tables
@@ -525,7 +524,7 @@ the directive form, open to no literal reading, is a named error.
 
 A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
 outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the
-reverse. `adfToMarkdown` nests in the order the array holds rather than sorting it —
+reverse. `adfToLosslessMarkdown` nests in the order the array holds rather than sorting it —
 `docs/decisions.md` §Equality is deep restores the array, not a set — and opens each spelling once
 over the longest run of adjacent inline nodes carrying an identical mark, attributes included, at
 that depth: `attrs: {}` differs from no `attrs`, and a directive spells it `{attrs=empty}`. A run

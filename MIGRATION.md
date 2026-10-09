@@ -2,12 +2,20 @@
 
 ## From `0.1.0` to `0.2.0`
 
-Directives moved under the `!adf:` prefix. `0.2.0` reads `0.1.0`'s spelling without an error,
-turning each directive into text and each carried node into an `adf` code block. Before `0.2.0`
-reads any `0.1.0` markdown, convert what is stored or in flight (an open editor, a queue) with the
-recipe below, and rewrite markdown your code writes or matches (templates, prompts, patterns) by the
-tables below. Stored ADF needs one change: give a document holding no `content` key `content: []`.
-`0.1.0` built that shape from empty markdown, meaning the empty document.
+Each call names the markdown it reads or writes:
+
+| `0.1.0` | `0.2.0` |
+| --- | --- |
+| `adfToMarkdown` | `adfToLosslessMarkdown` |
+| `markdownToAdf`, for markdown `adfToMarkdown` wrote | `losslessMarkdownToAdf` |
+| `markdownToAdf`, for markdown a person or a model wrote | `commonMarkToAdf`, which reads a directive, a pipe table, `~~` and an `adf:` fence as CommonMark does, as text and code |
+
+Directives moved under the `!adf:` prefix. `losslessMarkdownToAdf` reads `0.1.0`'s spelling without
+an error, turning each directive into text and each carried node into an `adf` code block. Before
+`0.2.0` reads any `0.1.0` markdown, convert what is stored or in flight (an open editor, a queue)
+with the recipe below, and rewrite markdown your code writes or matches (templates, prompts,
+patterns) by the tables below. Stored ADF needs one change: give a document holding no `content` key
+`content: []`. `0.1.0` built that shape from empty markdown, meaning the empty document.
 
 ### Convert markdown
 
@@ -18,13 +26,13 @@ npm install @larvit/adf-codec@0.2.0 adf-codec-0.1@npm:@larvit/adf-codec@0.1.0
 ```
 
 ```ts
-import { adfToMarkdown } from '@larvit/adf-codec'
+import { adfToLosslessMarkdown } from '@larvit/adf-codec'
 import { markdownToAdf as markdownToAdf010 } from 'adf-codec-0.1'
 
 function migrateMarkdown(stored: string) {
   const parsed = markdownToAdf010(stored)
   // 0.1.0 dropped an empty content array, so a document with no content key meant an empty one.
-  return parsed.ok ? adfToMarkdown({ ...parsed.value, content: parsed.value.content ?? [] }) : parsed
+  return parsed.ok ? adfToLosslessMarkdown({ ...parsed.value, content: parsed.value.content ?? [] }) : parsed
 }
 ```
 
@@ -57,15 +65,15 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
-| markdown holding no block (`markdownToAdf("")`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
-| a code fence whose info string opens `adf:` (```` ```adf:x ````) | a `codeBlock` with that language | the block carry, refusing a body that is not one node's canonical JSON; write `!adf:codeBlock {language="adf:x"}` around a bare fence to keep the code block |
+| markdown holding no block (`""`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
+| a code fence whose info string opens `adf:` (```` ```adf:x ````) | a `codeBlock` with that language | in `losslessMarkdownToAdf`, the block carry, refusing a body that is not one node's canonical JSON; write `!adf:codeBlock {language="adf:x"}` around a bare fence to keep the code block |
 
 ### Error codes
 
 `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`
 and `not-a-string` joins it: a `switch` naming one of the three stops compiling, and one naming
-every code needs the new case. A document `adfToMarkdown` refused with one of the three now
-converts; markdown the parser refused with one of the three now refuses with the code the table
+every code needs the new case. A document `adfToMarkdown` refused with one of the three
+`adfToLosslessMarkdown` now converts; markdown the parser refused with one of the three now refuses with the code the table
 gives.
 
 | Input | `0.1.0` | `0.2.0` |

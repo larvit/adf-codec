@@ -32,12 +32,12 @@ writer.
 2026-08-23, real payloads 2026-09-15, the maintainer. Goal 1. Valid while a consumer saves back
 through the lossless pair.
 
-`markdownToAdf(adfToMarkdown(doc))` and `htmlToAdf(adfToHtml(doc))` must deep-equal `doc` — anything
-less silently destroys content an editor could not represent, in a document it did not author.
-When losslessness and readability conflict, losslessness wins. Round-trip equality is a property
-tested over a checked-in corpus (`corpus/README.md`), not a claim made in prose. Its real payloads
-are invented content written in Atlassian's editor on the maintainer's test site, so none is
-sanitized and a mention keeps the test user's real account id.
+`losslessMarkdownToAdf(adfToLosslessMarkdown(doc))` and `htmlToAdf(adfToHtml(doc))` must deep-equal
+`doc` — anything less silently destroys content an editor could not represent, in a document it did
+not author. When losslessness and readability conflict, losslessness wins. Round-trip equality is a
+property tested over a checked-in corpus (`corpus/README.md`), not a claim made in prose. Its real
+payloads are invented content written in Atlassian's editor on the maintainer's test site, so none
+is sanitized and a mention keeps the test user's real account id.
 
 ## Markdown in is a canonical fixpoint
 
@@ -55,11 +55,12 @@ shape the editor would not.
 "Equals" is deep equality over the document's JSON values: `assert.deepStrictEqual` on plain objects
 as `JSON.parse` builds them, since ADF is JSON. Every key and value in `doc` counts, including two
 adjacent text nodes, an empty `attrs`, `content` or `marks`, and `-0`. Neither side is normalized.
-CommonMark's spelling stays wherever a document holds none of those shapes. The plain reader builds
-what is written, as `markdownToAdf` does. Only the plain writer is lossy: its reduction reads and
-writes editor-normal ADF — adjacent text nodes of identical marks and no attributes merged, `-0` as
-`0`, and an empty `attrs`, `content` or `marks` the absent key, except the doc's `content`, which
-ADF's schema requires — so two documents the editor holds equal write the same plain markdown.
+CommonMark's spelling stays wherever a document holds none of those shapes. The portable reader
+builds what is written, as `losslessMarkdownToAdf` does. Only the portable writer is lossy: its
+reduction reads and writes editor-normal ADF — adjacent text nodes of identical marks and no
+attributes merged, `-0` as `0`, and an empty `attrs`, `content` or `marks` the absent key, except
+the doc's `content`, which ADF's schema requires — so two documents the editor holds equal write the
+same portable markdown.
 
 ## `!adf:textBreak{}` parts text CommonMark would join
 
@@ -138,8 +139,8 @@ language, and none is empty beside another, since a text node holds text. The gr
 2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 5. Valid while ADF holds no node
 for a bare container, a comment or a script. Lands with `todo.md` item 6.
 
-Every foreign element `htmlToAdf` and `markdownToAdf` read sorts one of three ways, never a silent
-drop of content:
+Every foreign element `htmlToAdf` and the markdown readers read sorts one of three ways, never a
+silent drop of content:
 
 - A container around document content that ADF has no node for unwraps to its children, its own
   attributes dropped: `<div align="center">text</div>` keeps `text`, losing the alignment.
@@ -152,7 +153,7 @@ drop of content:
 `nestedExpand` inside another; an empty one is refused, since `expand` requires content. A `style`
 attribute is not read at `0.3.0`: the `textColor` and `backgroundColor` it could reach cost more
 than they buy.
-`plainMarkdownToAdf` reads through `markdownToAdf`'s parser, so it takes the same set.
+The three markdown readers share one parser, so they take the same set.
 
 ## Names stay text
 
@@ -207,33 +208,31 @@ where its reference implementation nests one `<a>` in another.
 Identity-bearing nodes carry their ids in attributes; a document is only portable within its site —
 accepted.
 
-## Plain task ids come from position
+## Portable task ids come from position
 
 2026-09-26, spelling 2026-09-29, the maintainer. Goals 7 and 8. Valid while a site rejects a task
 node with no `localId`.
 
-`plainMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` lacking one a `localId`
-in the editor's UUID v4 shape, hashed from the whole markdown and the node's order among those it
-mints, skipping any id the document holds: the same markdown reads to the same ids every run,
-different markdown to different ids. The same markdown pasted twice into one document repeats its
-ids: determinism wins over that case. A node the carry restores stays deep-equal (§Unknown nodes ride the carry): its
-ids are only skipped.
+`portableMarkdownToAdf` gives each `taskList`, `taskItem` and `blockTaskItem` a `localId` in the
+editor's UUID v4 shape, hashed from the whole markdown and the node's order among those it mints:
+the same markdown reads to the same ids every run, different markdown to different ids. The same
+markdown pasted twice into one document repeats its ids: determinism wins over that case.
 
 ## A callout title keeps its link targets
 
 2026-09-29, the maintainer. Goals 6 and 7. Valid while an expand's `title` is a string.
 
-`plainMarkdownToAdf` writes a link in a folded callout's title as its text and its target in
+`portableMarkdownToAdf` writes a link in a folded callout's title as its text and its target in
 parentheses: `> [!faq]- See [x](http://y)` reads to the title `See x (http://y)`. A link whose text
 is its target, with or without `mailto:`, keeps its text alone: `<http://y>` titles `http://y`,
 `<a@b.c>` `a@b.c` — three persona readers agreeing, 2026-09-30.
 
-## The plain flavour's spellings
+## The portable flavour's spellings
 
 2026-09-14, panels 2026-09-25 and 2026-09-29, the maintainer. Goals 6 and 7. Valid while GitHub's
 renderer is the one the audience's markdown is read in.
 
-README §Plain markdown's rows come from a survey of GitHub, GitLab, Gitea, Obsidian, Pandoc,
+README §Portable markdown's rows come from a survey of GitHub, GitLab, Gitea, Obsidian, Pandoc,
 MkDocs, Docusaurus, Typora, Joplin, Logseq, Bear, Notion, Azure DevOps and Discord, GitHub's
 renderer confirming each shape. Reader panels settled `error` as an error panel, the `==` bounds
 (3 of 3) and a Han, Hangul, kana, Thai, Lao, Khmer or Myanmar character on either side bounding a
@@ -400,9 +399,9 @@ handles one cause alike whichever node, attribute or direction raised it.
   knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
-- `markdownToAdf`, `plainMarkdownToAdf` and `htmlToAdf` refuse a value that is not a string as
-  `not-a-string`, at position `{ line: 1, offset: 0 }` with an empty path: no existing code reads
-  true of it, and `not-an-adf-document` names the emitters' input (2026-10-05).
+- The markdown readers and `htmlToAdf` refuse a value that is not a string as `not-a-string`, at
+  position `{ line: 1, offset: 0 }` with an empty path: no existing code reads true of it, and
+  `not-an-adf-document` names the emitters' input (2026-10-05).
 
 ## `message` and `path`
 
@@ -551,15 +550,16 @@ markdown, on a fixed seed in the gate; a counterexample found becomes a round-tr
 
 ## The CommonMark suite checks three ways
 
-2026-08-27, the maintainer. Goals 1 and 4. Valid while the suite's answers are HTML ADF cannot be
-compared against.
+2026-08-27, against `commonMarkToAdf` 2026-10-09, the maintainer. Goals 1 and 4. Valid while the
+suite's answers are HTML ADF cannot be compared against.
 
-Each example is a named error or markdown that parses and emits to itself byte for byte; its
-reference HTML's text, tags stripped and entities decoded, equals the parsed document's; and its
-elements count the marks and nodes they map to. The fixpoint alone passes a parser returning the
-empty document, the text alone one dropping every emphasis. An exception is the maintainer's to
-add, and valid CommonMark parsing to a document `adfToMarkdown` refuses is a bug to fix, never an
-exception.
+Each example is a named error or markdown `commonMarkToAdf` reads to a document that
+`adfToLosslessMarkdown` writes and `losslessMarkdownToAdf` reads back deep-equal, since CommonMark
+has no writer of its own; its reference HTML's text, tags stripped and entities decoded, equals the
+parsed document's; and its elements count the marks and nodes they map to. The fixpoint alone
+passes a parser returning the empty document, the text alone one dropping every emphasis. An
+exception is the maintainer's to add, and valid CommonMark parsing to a document
+`adfToLosslessMarkdown` refuses is a bug to fix, never an exception.
 
 ## The flavour spec is read as a source
 
@@ -647,7 +647,7 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 2026-09-19, the maintainer. Goal 9. Valid while the `commonMarkSpelling` ask spells a node once
 per level above it otherwise.
 
-The parse and the plain reduction keep each node's readable spelling in a memo, so the
+The parse and the portable reduction keep each node's readable spelling in a memo, so the
 `commonMarkSpelling` ask stops spelling a node once per level above it. `text` and `spelling` carry
 no depth and `headroom` is affine in it, so a read at or above the depth that filled the entry
 rebases; a read below re-spells, because a hit skips the depth guards the walk it replaces runs and
@@ -720,7 +720,7 @@ them. A primitive knowing neither ADF nor a format stays at `src/` root. A const
 `spec/flavour.md` draws, and a placement nothing here settles goes beside its only reader, or in
 what both read where there are two.
 
-A flavour's own code, both directions included, sits in its own directory: `markdown/plain/`;
+A flavour's own code, both directions included, sits in its own directory: `markdown/portable/`;
 `todo.md` item 62 moves what still sits in `parse/` and `emit/`. Otherwise each format directory
 parts into `emit/` (ADF→format) and `parse/` (format→ADF), the rest of it holding what both
 directions read. A construct's reader lives there beside the regex the emitter escapes against, so
