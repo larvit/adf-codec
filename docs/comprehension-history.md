@@ -335,3 +335,27 @@ Inherited architect, decided by:
 - Locality: `src/markdown/emit/adf-to-markdown.ts:72` `joinBlocks`: a block's spelling depends on the run before it, where the base's separation was a pure function of a pair
 - Shape: `src/markdown/emit/adf-to-markdown.ts:334` `spelledList`: one exit to the directive form, though bullets pass `() => ''` as the number
 - Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:369` `tryListItemLines`: the `*` branch needs the spec open, cancelling the spec pointers removed
+
+## 2026-10-09T14:50:52Z, PR #27 at 2378782, against a9fedb3
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | better | better |
+| Inherited architect | better | better | better | same | better |
+
+Mid A, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/inline-tokens.ts:20` `readInlineToken`: the parser and the escaper ask one function what the reader takes at a character, where each held its own copy of the rules
+- Locality, Shape: `src/markdown/emit/line-escaping.ts:102` `escapeClaims`: the order-dependent `afterEscape` and `pairsEquals` flags are gone; runs go whole to `escapeRun` and fixed inputs ride one `EscapeWalk` record
+- Shape, Navigation: `src/markdown/parse/inline-content.ts:110` `scanInline`: a two-level character dispatch and eight helpers became one switch over token kinds
+- Shape: `src/markdown/emit/line-escaping.ts:158` `claimsCharacter`: switches on `token.kind` in place of a chain of character tests
+
+Inherited architect, decided by:
+
+- Navigation, Shape: `src/markdown/inline-tokens.ts:20` `readInlineToken`: one tokenizer answers what the reader sees at an index, where two parallel implementations had to agree
+- Locality: `src/markdown/emit/line-escaping.ts:112` `escapeClaims`: each step reads on its own, no flag carried from the previous character
+- Shape: `src/markdown/emit/line-escaping.ts:158` `claimsCharacter`: switches on the token kind and takes the shared record; the heading closer is worked out once in `closingHashes`
+- Shape, Navigation: `src/markdown/parse/inline-content.ts:121` `readToken`: one exhaustive switch over `InlineToken['kind']` replaces a two-level dispatch
+- Locality: `src/markdown/emit/line-escaping.ts:173` `claimsCharacter`: `default: return true` claims every kind it does not name, so a new kind is escaped without its author deciding

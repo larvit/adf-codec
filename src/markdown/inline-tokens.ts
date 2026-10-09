@@ -1,7 +1,8 @@
+import type { ClaimedPrefix } from './directive-syntax.ts'
 import type { Claims } from './portable/conventions.ts'
 import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from './commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
-import { claimsDirectivePrefix } from './directive-syntax.ts'
+import { claimDirectivePrefix } from './directive-syntax.ts'
 import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
 import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
 import { readEntityReference } from './commonmark/entity-references.ts'
@@ -13,7 +14,7 @@ export type InlineToken =
   | { kind: 'bracket-close' | 'entity' | 'escape' | 'hard-break' | 'line-ending' | 'text'; width: number }
   | { kind: 'code-span'; opener: number; width: number }
   | { canClose: boolean; canOpen: boolean; kind: 'delimiter-run'; width: number }
-  | { kind: 'directive' }
+  | { kind: 'directive'; prefix: ClaimedPrefix }
   | { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
   | { construct: string; kind: 'html' }
 
@@ -21,9 +22,11 @@ export function readInlineToken(source: string, index: number, claims: Claims): 
   switch (source.charAt(index)) {
     case '<':
       return angleToken(source, index)
-    case '!':
-      if (claims.directives && claimsDirectivePrefix(source, index)) return { kind: 'directive' }
+    case '!': {
+      const prefix = claims.directives ? claimDirectivePrefix(source, index) : undefined
+      if (prefix !== undefined) return { kind: 'directive', prefix }
       return source.charAt(index + 1) === '[' ? { image: true, kind: 'bracket', width: 2 } : text(1)
+    }
     case '[':
       return { image: false, kind: 'bracket', width: 1 }
     case ']':

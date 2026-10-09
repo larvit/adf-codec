@@ -2,8 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { DirectiveAttributes, DirectiveLine } from './directive-syntax.ts'
+import { claimDirectivePrefix, readDirectiveLine, readInlineDirective } from './directive-syntax.ts'
 import { largestNesting } from '../nesting.ts'
-import { claimsDirectivePrefix, readDirectiveLine, readInlineDirective } from './directive-syntax.ts'
 
 // A pair the input spells bare decodes to itself; a quoted one names its spelling beside the decoding.
 type Pair = [string, string, string?]
@@ -22,8 +22,9 @@ function fault(line: string): string {
 }
 
 function inline(text: string): unknown {
-  if (!claimsDirectivePrefix(text, 0)) return 'unclaimed'
-  const read = readInlineDirective(text, 0)
+  const prefix = claimDirectivePrefix(text, 0)
+  if (prefix === undefined) return 'unclaimed'
+  const read = readInlineDirective(text, prefix)
   if (read.fault !== undefined) return read.fault.message
   return { attributes: read.value.attributes, content: read.value.content, length: read.value.length, name: read.value.name }
 }

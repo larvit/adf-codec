@@ -10,6 +10,9 @@ import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
 
+// An `!adf:` standing at `index`, which only `claimDirectivePrefix` builds.
+export type ClaimedPrefix = { readonly [claimedPrefix]: true; readonly index: number }
+
 export type DirectiveValue = { decoded: string; spelling: string }
 
 export type DirectiveAttributes = ReadonlyMap<string, DirectiveValue>
@@ -35,6 +38,7 @@ type DirectiveContent = { end: number; spans: NestedSpans }
 
 export const directivePrefix = '!adf:'
 
+const claimedPrefix: unique symbol = Symbol('claimed prefix')
 const bareTokenSource = '[A-Za-z0-9_-]+'
 const bareRun = new RegExp(bareTokenSource, 'y')
 const bareToken = new RegExp(`^${bareTokenSource}$`)
@@ -67,6 +71,10 @@ export function attributeValue(text: string, kind: AttributeKind): AttributeRead
   return overNested(parsed) ? { refusal: 'nesting' } : { value: { kind, value: parsed } }
 }
 
+export function claimDirectivePrefix(text: string, index: number): ClaimedPrefix | undefined {
+  return claimsDirectivePrefix(text, index) ? { [claimedPrefix]: true, index } : undefined
+}
+
 export function claimsDirectivePrefix(text: string, index: number): boolean {
   return text.startsWith(directivePrefix, index)
 }
@@ -88,9 +96,8 @@ export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined
   return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
-// The caller has checked `claimsDirectivePrefix` at `index`.
-export function readInlineDirective(text: string, index: number): Read<DirectiveSpan> {
-  return readClaimedDirective(text, index, 1)
+export function readInlineDirective(text: string, prefix: ClaimedPrefix): Read<DirectiveSpan> {
+  return readClaimedDirective(text, prefix.index, 1)
 }
 
 export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<string> {
