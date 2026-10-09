@@ -134,3 +134,20 @@ Read most (opens and searches):
 - `src/conformance/commonmark-spec.test.ts` 5
 - `CHANGELOG.md` 4
 - `MIGRATION.md` 3
+
+## Reading cost, chunk 314d91e77138, finished 2026-10-09T10:53:07Z
+
+97329 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 6
+- `src/markdown/parse/markdown-to-adf.test.ts` 6
+- `spec/flavour.md` 5
+- `MIGRATION.md` 4
+- `src/markdown/emit/adf-to-markdown.test.ts` 4
+- `src/markdown/emit/inline-line.ts` 4
+- `src/markdown/parse/inline-content.ts` 4
+- `todo.md` 4
+- `docs/decisions.md` 3
+- `CHANGELOG.md` 2
