@@ -8,10 +8,11 @@ import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { JsonValue } from '../json-value.ts'
 import type { Result } from '../result.ts'
 import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
-import { adfToMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { blockArgument, listBreakName, marksAttribute } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { carryName } from '../markdown/opaque-carry.ts'
+import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import {
   directivePrefix,
   spellAttributes,
@@ -27,7 +28,6 @@ import { fencedCodeBlock } from '../markdown/commonmark/backtick-runs.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
 import { markSpelling } from '../markdown/mark-spellings.ts'
-import { markdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { nodeContent, nodeMarks } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 import { textDirectiveName } from '../markdown/text-directive.ts'
@@ -382,7 +382,7 @@ const cleanMarkdown = markdownOf(false)
 const hostileMarkdown = markdownOf(true)
 
 const canonical = adfDocument
-  .map((document) => adfToMarkdown(document))
+  .map((document) => adfToLosslessMarkdown(document))
   .filter((emitted): emitted is Extract<Result<string>, { ok: true }> => emitted.ok)
   .map((emitted) => emitted.value)
 
@@ -424,16 +424,16 @@ test('generated markdown refuses, or its spelling reads back and spells itself',
   let fixpoints = 0
   fc.assert(
     fc.property(document, (input) => {
-      const parsed = markdownToAdf(input)
+      const parsed = losslessMarkdownToAdf(input)
       if (!parsed.ok) return
-      const emitted = adfToMarkdown(parsed.value)
+      const emitted = adfToLosslessMarkdown(parsed.value)
       assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
       fixpoints += 1
       if (holdsDirectiveShape(parsed.value)) directiveShaped += 1
-      const read = markdownToAdf(emitted.value)
+      const read = losslessMarkdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
       assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
-      const respelled = adfToMarkdown(read.value)
+      const respelled = adfToLosslessMarkdown(read.value)
       assert.ok(respelled.ok, respelled.ok ? '' : `${respelled.error.code}: ${respelled.error.message} — spelling ${JSON.stringify(emitted.value)} again`)
       assert.equal(respelled.value, emitted.value)
     }),
@@ -444,3 +444,18 @@ test('generated markdown refuses, or its spelling reads back and spells itself',
   assert.ok(directiveShaped >= directiveShapedFloor, `${directiveShaped} runs reaching the fixpoint held a node or mark outside CommonMark's own types, under the floor of ${directiveShapedFloor}`)
 })
 
+
+test('generated markdown read as CommonMark refuses, or its document reads back through the lossless pair', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(document, (input) => {
+      const parsed = commonMarkToAdf(input)
+      if (!parsed.ok) return
+      const emitted = adfToLosslessMarkdown(parsed.value)
+      assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message} — spelling ${JSON.stringify(input)}`)
+      const read = losslessMarkdownToAdf(emitted.value)
+      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
+      assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})

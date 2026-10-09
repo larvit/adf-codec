@@ -6,7 +6,7 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { plainLineFallback, type PlainLineFallback } from '../emit/inline-line.ts'
+import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
@@ -118,7 +118,7 @@ function lineBreak(container: LineContainer): AdfNode {
 function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer, note?: string): AdfNode[] {
   if (typeof value !== 'string') return note === undefined ? [] : noteLeaves(note)
   const text = value.replace(/[\r\u0000]/g, '')
-  const kept = plainMarks(marks, container, text)
+  const kept = portableMarks(marks, container, text)
   const leaves: AdfNode[] = []
   for (const [index, line] of text.split('\n').entries()) {
     if (index > 0) leaves.push(lineBreak(container))
@@ -132,13 +132,13 @@ function textLeaf(text: string, marks: readonly AdfMark[]): AdfNode {
 }
 
 // A highlight goes first, where `highlighted` looks for it, and code last, the only place its spelling holds.
-function plainMarks(marks: readonly AdfMark[], container: LineContainer, text: string): AdfMark[] {
+function portableMarks(marks: readonly AdfMark[], container: LineContainer, text: string): AdfMark[] {
   const kept: AdfMark[] = []
   for (const mark of marks) {
     if (!keptMarks.includes(mark.type) || kept.some((held) => held.type === mark.type)) continue
     if (mark.type === 'code' && container === 'table-cell' && text.includes('|')) continue
-    const plain = mark.type === 'link' ? plainLink(mark, container) : { type: mark.type }
-    if (plain !== undefined) kept.push(plain)
+    const portable = mark.type === 'link' ? portableLink(mark, container) : { type: mark.type }
+    if (portable !== undefined) kept.push(portable)
   }
   const rank = (mark: AdfMark): number => (mark.type === highlight ? 0 : mark.type === 'code' ? 2 : 1)
   // The reader highlights no code, as Atlassian's schema allows none.
@@ -146,7 +146,7 @@ function plainMarks(marks: readonly AdfMark[], container: LineContainer, text: s
   return kept.filter((mark) => !code || mark.type !== highlight).sort((first, second) => rank(first) - rank(second))
 }
 
-function plainLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
+function portableLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
   const attrs = nodeAttrs(mark)
   const held = attrs['href']
   const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/[\r\0]/g, '').replace(/\n/g, ' ') : undefined
@@ -257,16 +257,16 @@ function sameMarkAt(marks: readonly AdfMark[], others: readonly AdfMark[], index
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
   for (let current = leaves; ; ) {
-    const fallback = plainLineFallback(current, container, path)
+    const fallback = portableLineFallback(current, container, path)
     if (!fallback.ok) return fallback
     if (fallback.value === undefined) return success(current)
     const fixed = withoutFallback(current, fallback.value)
-    if (fixed === undefined) return failure('unsupported-node-shape', 'a plain line keeps a spelling that dropping a mark does not change', path)
+    if (fixed === undefined) return failure('unsupported-node-shape', 'a portable line keeps a spelling that dropping a mark does not change', path)
     current = trimmedEdges(fixed)
   }
 }
 
-function withoutFallback(leaves: readonly AdfNode[], fallback: PlainLineFallback): AdfNode[] | undefined {
+function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallback): AdfNode[] | undefined {
   if (fallback.kind === 'unspellable-run') return withoutMarks(leaves, fallback.runs)
   const mark = nodeMarks(leaves[0] ?? {})[0]
   if (mark === undefined || mark.type !== 'link') return undefined

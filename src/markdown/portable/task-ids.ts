@@ -1,30 +1,20 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
-import { nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { nodeContent } from '../../adf/document.ts'
 
 const taskTypes = new Set(['blockTaskItem', 'taskItem', 'taskList'])
 
-export function mintTaskIds(document: AdfDocument, markdown: string, carried: ReadonlySet<AdfNode>): void {
-  const taken = new Set<string>()
-  for (const node of preorder(document, () => true)) {
-    const localId = nodeAttrs(node)['localId']
-    if (typeof localId === 'string') taken.add(localId)
-  }
+export function mintTaskIds(document: AdfDocument, markdown: string): void {
   const seed = hash128(markdown).join(' ')
   let count = 0
-  for (const node of preorder(document, (held) => !carried.has(held) && blockNodeModel(held.type)?.contentModel === 'block')) {
-    if (!taskTypes.has(node.type) || carried.has(node) || typeof nodeAttrs(node)['localId'] === 'string') continue
-    let localId = ''
-    do {
-      count += 1
-      localId = uuidV4(hash128(`${seed} ${count}`))
-    } while (taken.has(localId))
-    taken.add(localId)
-    node.attrs = { ...node.attrs, localId }
+  for (const node of preorder(document)) {
+    if (!taskTypes.has(node.type)) continue
+    count += 1
+    node.attrs = { ...node.attrs, localId: uuidV4(hash128(`${seed} ${count}`)) }
   }
 }
 
-function* preorder(document: AdfDocument, entered: (node: AdfNode) => boolean): Generator<AdfNode> {
+function* preorder(document: AdfDocument): Generator<AdfNode> {
   const pending: AdfNode[] = []
   const pushReversed = (nodes: readonly AdfNode[]): void => {
     for (let index = nodes.length - 1; index >= 0; index -= 1) {
@@ -35,7 +25,7 @@ function* preorder(document: AdfDocument, entered: (node: AdfNode) => boolean): 
   pushReversed(document.content ?? [])
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     yield node
-    if (entered(node)) pushReversed(nodeContent(node))
+    if (blockNodeModel(node.type)?.contentModel === 'block') pushReversed(nodeContent(node))
   }
 }
 

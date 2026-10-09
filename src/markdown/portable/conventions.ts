@@ -1,6 +1,25 @@
 import { isWordCharacter } from '../commonmark/emphasis-matching.ts'
 
-export type Flavour = 'lossless' | 'plain'
+export type Flavour = 'commonmark' | 'lossless' | 'portable'
+
+export type WrittenFlavour = Exclude<Flavour, 'commonmark'>
+
+// What a reader reads past CommonMark, and so what its writer escapes (docs/decisions.md §Each call names its flavour).
+export type Claims = {
+  alerts: boolean
+  carryFence: boolean
+  directives: boolean
+  highlights: boolean
+  pipeTables: boolean
+  strikethrough: boolean
+  taskMarkers: boolean
+}
+
+export const flavourClaims: Readonly<Record<Flavour, Claims>> = {
+  commonmark: { alerts: false, carryFence: false, directives: false, highlights: false, pipeTables: false, strikethrough: false, taskMarkers: false },
+  lossless: { alerts: false, carryFence: true, directives: true, highlights: false, pipeTables: true, strikethrough: true, taskMarkers: false },
+  portable: { alerts: true, carryFence: false, directives: false, highlights: true, pipeTables: true, strikethrough: true, taskMarkers: true },
+}
 
 type AlertMarker = { folded: boolean; length: number; panelType: string }
 

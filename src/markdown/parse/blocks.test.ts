@@ -3,14 +3,15 @@ import test from 'node:test'
 
 import type { Block } from './blocks.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
+import { flavourClaims } from '../portable/conventions.ts'
 import { parseBlocks } from './blocks.ts'
 
 function definitions(markdown: string): [string, LinkDefinition][] {
-  return [...parseBlocks(markdown).definitions]
+  return [...parseBlocks(markdown, flavourClaims.lossless).definitions]
 }
 
 function kinds(markdown: string): string[] {
-  return parseBlocks(markdown).blocks.map((block) => block.kind)
+  return parseBlocks(markdown, flavourClaims.lossless).blocks.map((block) => block.kind)
 }
 
 function faults(markdown: string): string[] {
@@ -23,7 +24,7 @@ function faults(markdown: string): string[] {
       if (block.kind === 'bulletList' || block.kind === 'orderedList') for (const item of block.items) walk(item)
     }
   }
-  walk(parseBlocks(markdown).blocks)
+  walk(parseBlocks(markdown, flavourClaims.lossless).blocks)
   return messages
 }
 
@@ -90,7 +91,7 @@ test('opens a container where the content model takes content, and holds it open
   assert.deepEqual(faults('!adf:panel info\n> Part.\n!adf:/panel\n'), [])
   assert.deepEqual(faults('!adf:panel info\n- !adf:panel warning\n  Part.\n  !adf:/panel\n!adf:/panel\n'), [])
   assert.deepEqual(faults('!adf:panel info\n```\n!adf:/panel\n```\n!adf:/panel\n'), [])
-  assert.deepEqual(parseBlocks('!adf:panel info {panelColor="#ff0000"}\nPart.\n!adf:/panel\n').blocks, [
+  assert.deepEqual(parseBlocks('!adf:panel info {panelColor="#ff0000"}\nPart.\n!adf:/panel\n', flavourClaims.lossless).blocks, [
     {
       argument: 'info',
       attributes: new Map([['panelColor', { decoded: '#ff0000', spelling: '"#ff0000"' }]]),
@@ -100,7 +101,7 @@ test('opens a container where the content model takes content, and holds it open
       position: { line: 1, offset: 0 },
     },
   ])
-  assert.deepEqual(parseBlocks('!adf:rule\n').blocks, [
+  assert.deepEqual(parseBlocks('!adf:rule\n', flavourClaims.lossless).blocks, [
     { argument: undefined, attributes: new Map(), blocks: undefined, kind: 'directive', name: 'rule', position: { line: 1, offset: 0 } },
   ])
 })
