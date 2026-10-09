@@ -828,6 +828,18 @@ test('reads a hard break from a trailing backslash and from two trailing spaces 
   assert.deepEqual(content(losslessMarkdownToAdf('> One\\\n> two.\n')), [quote({ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' })])
 })
 
+test('builds the hard break a mark spelling spans with no marks, in every reader', () => {
+  const broken = (...marks: AdfMark[]): AdfNode[] => [{ content: [marked('a', ...marks), hardBreak(), marked('b', ...marks)], type: 'paragraph' }]
+  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read('*a  \nb*\n')), broken(em))
+    assert.deepEqual(content(read('**a\\\nb**\n')), broken(strong))
+    assert.deepEqual(content(read('[a\\\nb](/u)\n')), broken(link('/u')))
+  }
+  assert.deepEqual(content(losslessMarkdownToAdf('~~a\\\nb~~\n')), broken(strike))
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:hardBreak{}b]\n')), broken(underline))
+  assert.deepEqual(content(losslessMarkdownToAdf('_!adf:hardBreak{localId=x}_\n')), [{ content: [{ attrs: { localId: 'x' }, type: 'hardBreak' }], type: 'paragraph' }])
+})
+
 test('decodes the fenced info string the block walk leaves raw', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('```java&#8203;script\nx\n```\n')), [
     { attrs: { language: 'java\u200bscript' }, content: [text('x')], type: 'codeBlock' },

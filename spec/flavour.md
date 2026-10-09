@@ -533,24 +533,25 @@ destination is empty too, `[]()`, as nothing.
 - `textColor` — Attributes: `color` (string, `#rrggbb`).
 - `underline` — Attributes: none.
 
-A spelling adds its mark to every inline node it wraps, and nesting is the marks array in order,
-outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the
-reverse. `adfToLosslessMarkdown` nests in the order the array holds rather than sorting it —
-`docs/decisions.md` §Equality is deep restores the array, not a set — and opens each spelling once
-over the longest run of adjacent inline nodes carrying an identical mark, attributes included, at
-that depth: `attrs: {}` differs from no `attrs`, and a directive spells it `{attrs=empty}`. A run
-breaks at every node the emitter carries, so no emitted carry sits inside a mark spelling.
+A spelling adds its mark to every inline node it wraps but a hard break, which Atlassian's schema
+gives no marks, and nesting is the marks array in order, outermost first: `_!adf:underline[x]_`
+gives marks `[em, underline]`, `!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in
+the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
+the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes
+carrying an identical mark, attributes included, at that depth: `attrs: {}` differs from no `attrs`,
+and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
+emitted carry sits inside a mark spelling.
 
-An inline node whose marks no nesting spells — a mark type not listed here, an attrs key its
-spelling does not list, a value that is not the spelling's type, an attribute the spelling needs and
-the mark lacks, an empty `attrs` on a mark CommonMark spells, an order putting a code span outside
-another mark, `code` over anything but a text node holding text, or over text holding a line ending
-or a null character, or a spelling CommonMark's flanking rules cannot open or close where the run
-sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere — the intra-word `*` runs
-together with a neighbouring `**`, and the multiple-of-3 rule can leave the merged run's pairing to
-another delimiter — rides the inline carry whole. An opaque carry inside a mark spelling is a named
-error in input: the carry restores its node exactly, marks included (`docs/decisions.md` §Unknown
-nodes ride the carry).
+An inline node whose marks no nesting spells — a hard break holding any mark, a mark type not listed
+here, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
+the spelling needs and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order
+putting a code span outside another mark, `code` over anything but a text node holding text, or over
+text holding a line ending or a null character, or a spelling CommonMark's flanking rules cannot
+open or close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere
+— the intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave
+the merged run's pairing to another delimiter — rides the inline carry whole. An opaque carry inside
+a mark spelling is a named error in input: the carry restores its node exactly, marks included
+(`docs/decisions.md` §Unknown nodes ride the carry).
 
 ```
 !adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].

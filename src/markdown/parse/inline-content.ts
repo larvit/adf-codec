@@ -669,10 +669,10 @@ function markType(character: string, used: number): string {
   return used === 2 ? 'strong' : 'em'
 }
 
-// `*(*a*)*` builds one `em`: a node holds at most one mark of each type.
+// `*(*a*)*` builds one `em`: a node holds at most one mark of each type. Atlassian's schema gives a hard break no marks.
 function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
   return nodes.map((node) => {
-    if (!isNode(node)) return node
+    if (!isNode(node) || node.type === 'hardBreak') return node
     const marks = nodeMarks(node)
     return marks.some((carried) => carried.type === mark.type) ? node : { ...node, marks: [mark, ...marks] }
   })

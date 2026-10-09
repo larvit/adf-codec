@@ -221,6 +221,7 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
   if (carried.has(index)) return true
   if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
+  if (node.type === 'hardBreak') return nodeMarks(node).length > 0
   const model = inlineNodeModel(node.type)
   if (model === undefined) return true
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
