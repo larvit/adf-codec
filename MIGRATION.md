@@ -65,7 +65,7 @@ function migrateMarkdown(stored: string) {
 | the `adf` code fence and `:adf{json="…"}` | the `adf:<type>` code fence, its JSON without `type`, and `!adf:carry{json="…"}` |
 | `\:` keeps a directive literal | `\!adf:` keeps a directive literal |
 | `:adf{json="…"}` carrying a link for its `collection`, `id` or `occurrenceKey` | `!adf:link[text]{attrs}` |
-| `::listBreak` between two lists of a kind | no separator, the second list's marker changed: `* ` for `- `, `1)` for `1.`, alternating |
+| `::listBreak` between two lists of a kind | no separator: adjacent lists of a kind alternate `- ` and `* `, or `1.` and `1)` |
 
 A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
 holding an unescaped `!adf:` and a code fence whose info string opens `adf:` are claimed instead.

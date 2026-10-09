@@ -83,7 +83,7 @@ of one character from each of its characters.
 no block stands between, so `- a\n\n[r]: /u\n\n- b` reads as one list; CommonMark reads two,
 the definition closing the first. The join exists for an empty item a blank line ends, which
 continues its list. `markdown-to-adf.test.ts` asserts the one list. Breaking: `MIGRATION.md`'s
-Readings table gains its row.
+Readings table gains its row, and the README's guarantees drop the exception and count one fewer.
 
 ### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
 
@@ -275,8 +275,8 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
 example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
-gains its row. Its `pending` exceptions go, and its spelling leaves the README's bullet counting
-the CommonMark spellings, which counts one fewer.
+gains its row. Its `pending` exceptions go, and the README's guarantees drop the case-folding
+exception and count one fewer.
 
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 

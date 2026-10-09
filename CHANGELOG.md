@@ -5,7 +5,7 @@
 - **Breaking:** a list whose bullet character or ordered delimiter changes reads as two lists, as
   CommonMark reads it: `- a` then `* b`, `1. a` then `1) b`. `adfToLosslessMarkdown` gives a list
   right after one of its kind the other marker, `* ` or `1)`, in place of the `::listBreak`
-  separator, and `adfToPortableMarkdown` does the same. Convert stored markdown per `MIGRATION.md`.
+  separator. Convert stored markdown per `MIGRATION.md`.
 - **Breaking:** each call names the markdown it reads or writes. `adfToMarkdown` and `markdownToAdf`
   are now `adfToLosslessMarkdown` and `losslessMarkdownToAdf`. A bot's or a model's markdown reads
   in `portableMarkdownToAdf`, and markdown known to be strict CommonMark in the new
