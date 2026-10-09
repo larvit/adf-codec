@@ -138,8 +138,8 @@ three directories.
 
 `*!adf:mention[@a]{id=…}*` and `[!adf:status[Done]{…}](/u)` build a node holding `em` or `link`.
 `full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
-may reject the document. `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) afterwards names the mark
-types a node takes, and the emitter carries a node holding another.
+may reject the document. Replace `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) with the
+mark types a node takes, and have the emitter carry a node holding another.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
