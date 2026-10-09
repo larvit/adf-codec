@@ -223,6 +223,10 @@ a support agent, 3 of 3 on 2026-10-09, expected the picture in every case, a tic
 A task item holds no image in Atlassian's schema, so the paragraph a task marker opens reads its
 image as linked alt text, the fallback two of the three named.
 
+The same panel confirmed the other readings on 2026-10-09: a title as the caption, an image amid
+text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
+Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
+
 ## Ids stay site-local
 
 2026-08-23, the maintainer. Goal 1. Valid while ADF ids are minted per site.
@@ -581,7 +585,8 @@ has no writer of its own. The example's reference HTML's text, tags stripped and
 equals the parsed document's; and its elements count the marks and nodes they map to. The fixpoint alone
 passes a parser returning the empty document, the text alone one dropping every emphasis. An
 exception is the maintainer's to add, and valid CommonMark parsing to a document
-`adfToLosslessMarkdown` refuses is a bug to fix, never an exception.
+`adfToLosslessMarkdown` refuses is a bug to fix, never an exception. Kind `node-model` (2026-10-09,
+the maintainer) is a permanent divergence where ADF holds no node for what CommonMark renders.
 
 ## The flavour spec is read as a source
 
