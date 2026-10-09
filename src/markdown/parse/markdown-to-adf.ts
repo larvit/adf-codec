@@ -198,7 +198,6 @@ function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> 
   return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
 }
 
-// A task list trailing an item's blocks stands beside it, as ADF nests one.
 function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const led = []
   for (const [first, ...others] of items) {
@@ -212,10 +211,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
     const marked: TaskParagraph[] = body === '' ? [] : [{ kind: 'taskParagraph', position, text: body }]
     const read = readBlocks([...marked, ...others], reading, [...path, 'content', index], depth + 1)
     if (!read.ok) return read
-    let beside = read.value.length
-    while (read.value[beside - 1]?.type === 'taskList') beside -= 1
-    tasks.push({ attrs: { state: marker.state }, content: read.value.slice(0, beside), type: 'blockTaskItem' })
-    for (const nested of read.value.slice(beside)) tasks.push(nested)
+    tasks.push({ attrs: { state: marker.state }, content: read.value, type: 'blockTaskItem' })
   }
   return success({ content: tasks, type: 'taskList' })
 }

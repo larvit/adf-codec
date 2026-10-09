@@ -304,17 +304,17 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
       continue
     }
     if (isTask(child)) {
-      nestIn(tasks, nested)
+      pushMerged(tasks, nested)
       nested = []
     }
     for (const block of blocks) (isTask(child) ? tasks : nested).push(block)
   }
-  nestIn(tasks, nested)
+  pushMerged(tasks, nested)
   if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }))
   return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
 }
 
-function nestIn(tasks: AdfNode[], nested: readonly AdfNode[]): void {
+function pushMerged(tasks: AdfNode[], nested: readonly AdfNode[]): void {
   for (const block of mergedLists(nested)) tasks.push(block)
 }
 

@@ -1,7 +1,7 @@
 import type { AdfNode } from '../../adf/document.ts'
 import { nodeContent } from '../../adf/document.ts'
 
-// Atlassian's schema holds a block task item to paragraphs: from its first other block, the item's blocks and the lists beside it stand after the list, which resumes at the next task.
+// Atlassian's schema holds a blockTaskItem to paragraphs and extensions, and nests a task list beside its item.
 export function splitTaskList(list: AdfNode): AdfNode[] {
   const blocks: AdfNode[] = []
   let tasks: AdfNode[] = []
@@ -12,9 +12,13 @@ export function splitTaskList(list: AdfNode): AdfNode[] {
     let stands: readonly AdfNode[] = standing || !(isTask || child.type === 'taskList') ? [child] : []
     if (child.type === 'blockTaskItem') {
       const content = nodeContent(child)
-      const held = content.findIndex((block) => block.type !== 'paragraph')
-      tasks.push(heldTask(child, held === -1 ? content : content.slice(0, held)))
-      stands = held === -1 ? [] : content.slice(held)
+      let held = 0
+      while (content[held]?.type === 'paragraph') held += 1
+      let nested = held
+      while (content[nested]?.type === 'taskList') nested += 1
+      tasks.push(heldTask(child, content.slice(0, held)))
+      for (const taskList of content.slice(held, nested)) tasks.push(taskList)
+      stands = content.slice(nested)
     } else if (stands.length === 0) tasks.push(child)
     if (stands.length === 0) continue
     if (tasks.length > 0) blocks.push({ ...list, content: tasks })

@@ -48,7 +48,7 @@ test('a generated document emits markdown that reads back to it', { timeout: pro
   )
 })
 
-test('a generated document writes portable markdown refusing only what the guard refuses, and that markdown reads back to its text and to itself, a block task item holding paragraphs alone', { timeout: propertyTimeout }, () => {
+test('a generated document writes portable markdown refusing only what the guard refuses, and that markdown reads back to its text, to itself and to block task items of paragraphs alone', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const written = adfToPortableMarkdown(document)
