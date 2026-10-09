@@ -167,6 +167,11 @@ test('stands a block a task item cannot hold, and what follows it in the item, a
     bare('codeBlock', text('x')),
   ])
   assert.deepEqual(read('- [x] A\n  - plain\n- [ ] B\n'), [bare('taskList', task('DONE', text('A'))), bare('bulletList', bare('listItem', said('plain'))), bare('taskList', task('TODO', text('B')))])
+  assert.deepEqual(read('- [ ] A\n  - [ ] Child\n\n  # h\n- [ ] B\n'), [
+    bare('taskList', task('TODO', text('A')), bare('taskList', task('TODO', text('Child')))),
+    node('heading', { level: 1 }, text('h')),
+    bare('taskList', task('TODO', text('B'))),
+  ])
   assert.deepEqual(read('- [ ] A\n\n  # h\n  - [ ] Child\n- [ ] B\n'), [
     bare('taskList', task('TODO', text('A'))),
     node('heading', { level: 1 }, text('h')),

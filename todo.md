@@ -75,10 +75,11 @@ Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads t
 301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells adjacent lists by
 changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alternate `-` and `*`
 between adjacent bullet lists, a task list among them, and `.` and `)` between adjacent ordered
-lists, and `!adf:listBreak` retires. Until then, a bullet list standing after a task list joins
-it when written, so `adfToPortableMarkdown` writes every task's marker as text. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
-Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions, and the
-spelling leaves the README's "Seven CommonMark spellings" bullet, which counts one fewer.
+lists, and `!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking:
+`MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose their
+`pending` exceptions, and the spelling leaves the README's "Seven CommonMark spellings" bullet,
+which counts one fewer. Until this lands, a bullet list written right after a task list would read
+back as part of it, so `adfToPortableMarkdown` writes that task list's markers as text.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 

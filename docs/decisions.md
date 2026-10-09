@@ -252,13 +252,12 @@ markdown pasted twice into one document repeats its ids: determinism wins over t
 2026-10-09, a reader panel, 6 of 7. Goals 4, 6 and 7. Valid while Atlassian's schema holds a
 `blockTaskItem` to paragraphs and extensions.
 
-In `portableMarkdownToAdf` and `adfToPortableMarkdown`, a task item keeps its paragraphs up to its
-first other block. That block, the item's blocks after it and the task lists nested in the item
-after that block stand after the task list, which resumes at the next task. The panel of two bots,
-two LLM pipelines, a support agent, a product manager and an engineer, shown an image, a code block
-and a nested bullet list in a task item, picked this over turning those blocks into text inside
-the item (1 of 7) and over a plain bullet list keeping the markers as text (none): every reader
-wanted the checkboxes, and six wanted the blocks in their own form.
+In `portableMarkdownToAdf` and `adfToPortableMarkdown`, a task item keeps its paragraphs, then its
+nested task lists. The rest of the item stands after the task list. The list resumes at the next
+task. The panel of two bots, two LLM pipelines, a support agent, a product manager and an engineer,
+shown an image, a code block and a nested bullet list in a task item, picked this over turning those
+blocks into text inside the item (1 of 7) and over a plain bullet list keeping the markers as text
+(none): every reader wanted the checkboxes, and six wanted the blocks in their own form.
 
 ## A callout title keeps its link targets
 
