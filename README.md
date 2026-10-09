@@ -246,9 +246,11 @@ Serves Goals 1, 4 and 5.
   - An image anywhere but alone in a plain paragraph reads as its alt text linked to its URL,
     `See ![the moon](moon.png).` as `See [the moon](moon.png).`, and inside a link as plain text
     the link marks — unless the link's whole text is the image and the link stands alone in a
-    plain paragraph, which reads as the image the link marks.
-  - An image's title reads as its caption where the image reads as an image, as its link's title
-    where it reads as alt text linked to its URL, and inside a link otherwise it drops.
+    plain paragraph, which reads as the image the link marks. To keep an image an image, give it
+    a paragraph of its own, a blank line before and after, in a list item or a quote too: images
+    on consecutive lines share a paragraph.
+  - An image's title becomes its caption when the image stays an image, and its link's title when
+    it becomes linked alt text. Inside another link, the title is dropped.
 
   And three more: a list continuing past a marker change stays one list against CommonMark's two,
   a shortcut reference matching its definition only under Unicode case folding stays unresolved,
