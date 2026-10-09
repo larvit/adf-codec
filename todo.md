@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 97`
+`Next ID = 98`
 
 | Goal | W |
 |---|---|
@@ -26,6 +26,7 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 94 | 0.2.0 | defect | **Read two lists a link reference definition parts as two lists, in every reader.** | 3 | 3 | 4 | 7 | 4, 5 | 13.6 |
+| 97 | 0.2.0 |  | **Put every Breaking entry first under `CHANGELOG.md`'s `## Unreleased`, then fixes and additions.** | 1 | 1 | 5 | 3 | 3 | 13.4 |
 | 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
@@ -52,7 +53,7 @@
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
 | 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
-| 95 | 0.3.0 | decision | **Find the code-span closers an escape forms and the mark runs a line cannot spell by reading the line back, in place of `escapeClosedRuns` and `unspellableRuns` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
+| 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
@@ -77,6 +78,11 @@ no block stands between, so `- a\n\n[r]: /u\n\n- b` reads as one list; CommonMar
 the definition closing the first. The join exists for an empty item a blank line ends, which
 continues its list. `markdown-to-adf.test.ts` asserts the one list. Breaking: `MIGRATION.md`'s
 Readings table gains its row, and the README's guarantees drop the exception and count one fewer.
+
+### 97. Put every Breaking entry first under `CHANGELOG.md`'s `## Unreleased`, then fixes and additions.
+
+The bullets run in the order the work landed, so an app developer upgrading meets a fix before the
+breaking changes they must act on.
 
 ### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
 
@@ -131,9 +137,9 @@ three directories.
 
 `readInlineToken` (`src/markdown/inline-tokens.ts`) searches the rest of the text at every opener:
 `closingBacktickRun` for a run of the same length, and `inlineHtmlConstruct` for the terminator. So
-backtick runs of lengths 1 to k with no closers cost about k·n, and `<!--` repeated with no `-->`
-is quadratic, in the reader and the emitter's escape walk alike. commonmark.js keeps a cache of
-backtick runs by length for the first.
+in a text of length n, backtick runs of lengths 1 to k with no closers cost about k·n, and `<!--`
+repeated with no `-->` is quadratic, in the reader and the emitter's escape walk alike.
+commonmark.js avoids the backtick cost by caching backtick runs by length.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
@@ -284,22 +290,21 @@ Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the mar
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
 
-### 95. Find the code-span closers an escape forms and the mark runs a line cannot spell by reading the line back, in place of `escapeClosedRuns` and `unspellableRuns` predicting them.
+### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
-`src/markdown/emit/line-escaping.ts` asks the reader's tokens where text would read as syntax, but
-`escapeClosedRuns` still works out which backtick strings an escape leaves, and `unspellableRuns`
-rebuilds the reader's emphasis and highlight pairing to pick the run to carry, and `lastLinkClose`
-guesses which text `[` opens link text. Reading the line
-back costs a parse per line attempt, and the run it picks may differ, changing output.
+`escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
+reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text `[` opens link
+text. Only the property tests catch drift between these and the reader, and it holds the project
+under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
+run it carries may differ from today's, which changes lossless output (§The formats are API).
 
 ### 91. Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.
 
-No reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then
-`_Two_`, and a link typed across a line as two links. Joining the run across the break in
-`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be
-spelled needs its own fallback, first as a set of parted breaks, then as a flag the first fallback
-clears. Lands after item 95, which lets the joined spelling be tried and kept only where it reads
-back.
+Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
+reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
+typed across a line as two links. Joining the run across the break in `inline-line.ts` ruled worse
+with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
+first as a set of parted breaks, then as a flag the first fallback clears.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
@@ -328,9 +333,10 @@ README goal covers the release path.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
-Check whether `delimiterRunToken` (`inline-tokens.ts`), which the reader and the escape walk share,
-and `emittedRuns` (`line-escaping.ts`) read one UTF-16 unit beside an astral symbol — a lone surrogate is neither punctuation nor symbol, where CommonMark reads `😀` as
-punctuation — and, where they do, read the code point, with a fixture per direction.
+Check whether `delimiterRunToken` (`inline-tokens.ts`), `emittedRuns` and `resolveEmphasis`
+(`line-escaping.ts`) read one UTF-16 unit beside an astral symbol. A lone surrogate is neither
+punctuation nor symbol, but CommonMark reads `😀` as punctuation. Where they do, read the code
+point, with a fixture per direction.
 
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
 

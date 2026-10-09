@@ -147,7 +147,7 @@ function readToken(scan: Scan, index: number, token: InlineToken): Result<number
       scan.pending += scan.source.slice(index, end)
       return success(end)
     case 'hard-break':
-      // CommonMark strips the spaces the two-space break is spelled with, and keeps those before a backslash.
+      // CommonMark keeps the spaces before a backslash hard break.
       flush(scan, false)
       pushNode(scan, { type: 'hardBreak' })
       return success(end)
