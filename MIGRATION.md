@@ -46,9 +46,8 @@ function migrateMarkdown(stored: string) {
 - Convert each document once: a second pass can return ok while turning the directives into text.
   Stop `0.1.0` writing first, and record which documents are converted.
 - A refusal carrying `position` is `0.1.0`'s parse, which refused that markdown before too. One
-  without is `0.2.0`'s emit: store the document `markdownToAdf010` read as ADF, with
-  `content: parsed.value.content ?? []` as the recipe gives it, rather than keeping the unconverted
-  markdown.
+  without is `0.2.0`'s emit: store the document `markdownToAdf010` read as ADF, with the `content`
+  the recipe passes to `adfToLosslessMarkdown`, rather than keeping the unconverted markdown.
 
 ### Spellings
 
