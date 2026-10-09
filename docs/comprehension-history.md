@@ -182,3 +182,12 @@ Inherited architect, decided by:
 - `src/markdown/emit/inline-line.ts:200` `inlineRuns`: runs built by a forward scan the reader steps through by hand
 - `src/markdown/emit/inline-line.ts:56` `portableLineFallback`: checks an unjoined line while the final emit starts joined
 - `src/markdown/emit/inline-line.ts:40` `LineFallbacks.joinsBreaks`: a fallbacks field whose fallback value is false
+
+## 2026-10-09T10:02:23Z, PR #22 at f195ebd, against 78655bc
+
+Ruling: same
+
+| Seat | Vote |
+|---|---|
+| Mid A | same |
+| Inherited architect | same |
