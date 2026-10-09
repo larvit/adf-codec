@@ -29,17 +29,22 @@ npm install @larvit/adf-codec@0.2.0 adf-codec-0.1@npm:@larvit/adf-codec@0.1.0
 import { adfToLosslessMarkdown, type AdfNode } from '@larvit/adf-codec'
 import { markdownToAdf as markdownToAdf010 } from 'adf-codec-0.1'
 
-// 0.1.0 gave a hard break the marks spelled around it; 0.2.0 writes such a break as !adf:carry{…}.
-function unmarkHardBreaks(node: AdfNode): AdfNode {
-  const { marks, ...unmarked } = node
-  if (node.type === 'hardBreak') return unmarked
-  return node.content === undefined ? node : { ...node, content: node.content.map(unmarkHardBreaks) }
+// 0.1.0 gave a hard break the marks spelled around it, which 0.2.0 writes as !adf:carry{…}. Drop them
+// only where text beside the break holds them too, so a break that was a link's whole text keeps its target.
+function unmarkHardBreaks(nodes: AdfNode[]): AdfNode[] {
+  return nodes.map((node, index) => {
+    if (node.type !== 'hardBreak') return node.content === undefined ? node : { ...node, content: unmarkHardBreaks(node.content) }
+    const holds = (side: AdfNode | undefined) =>
+      side?.type === 'text' && (node.marks ?? []).every((mark) => side.marks?.some((other) => JSON.stringify(other) === JSON.stringify(mark)))
+    const { marks, ...unmarked } = node
+    return holds(nodes[index - 1]) || holds(nodes[index + 1]) ? unmarked : node
+  })
 }
 
 function migrateMarkdown(stored: string) {
   const parsed = markdownToAdf010(stored)
   // 0.1.0 dropped an empty content array, so a document with no content key meant an empty one.
-  return parsed.ok ? adfToLosslessMarkdown({ ...parsed.value, content: (parsed.value.content ?? []).map(unmarkHardBreaks) }) : parsed
+  return parsed.ok ? adfToLosslessMarkdown({ ...parsed.value, content: unmarkHardBreaks(parsed.value.content ?? []) }) : parsed
 }
 ```
 
@@ -72,7 +77,7 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 | --- | --- | --- |
 | a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
 | markdown holding no block (`""`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
-| a hard break inside a mark's spelling (`*a\` then `b*` on the next line) | the hard break holds the mark | the hard break holds no marks, as Atlassian's schema requires, and the recipe above drops the marks `0.1.0` gave it. A link whose text is only hard breaks reads as its destination linked, followed by those breaks |
+| a hard break inside a mark's spelling (`*a\` then `b*` on the next line) | the hard break holds the mark | the hard break holds no marks, as Atlassian's schema requires, and the recipe above drops the marks `0.1.0` gave it wherever text beside it holds them. A link whose text is only hard breaks reads as its destination linked, followed by those breaks |
 | a link whose text is empty (`[](/url)`, `[]()`) | literal text | `/url` linked to `/url`, and nothing where the destination is empty too |
 | a code fence whose info string opens `adf:` (```` ```adf:x ````) | a `codeBlock` with that language | in `losslessMarkdownToAdf`, the block carry, refusing a body that is not one node's canonical JSON; write `!adf:codeBlock {language="adf:x"}` around a bare fence to keep the code block |
 
