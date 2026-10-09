@@ -81,7 +81,7 @@ The most useful ADF conversion library available, judged by these goals, in prio
 4. **Each format reads and writes as its standard says.**
 5. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
 6. **No surprises: output reads and edits the way its audience expects.**
-   1. **A function's name says what its markdown does where it goes.**
+   1. **A function's name says which markdown it reads or writes.**
 7. **Lossy conversion drops form, never content.**
 8. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
 9. **Fast, and linear in the document's size as JSON.**
@@ -95,8 +95,8 @@ which is free text.
 - **Viewer/editor app** — shows a document, lets a human edit, posts it back. Relies on the
   round-trip holding for whatever the site's editor wrote, unknown node types included, and on a
   refusal arriving before the save rather than after.
-- **Bot posting content** — turns generated markdown into ADF. Relies on plain CommonMark being
-  valid input, so nothing upstream has to learn a flavour.
+- **Bot posting content** — turns generated markdown into ADF. Relies on CommonMark being valid
+  input, so nothing upstream has to learn a flavour.
 - **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
   and on every refusal being deterministic, so a document that fails fails the same way next run.
 - **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
