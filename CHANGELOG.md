@@ -61,8 +61,9 @@
   but alone in a plain paragraph reads as its alt text linked to its URL, or inside a link as plain
   text the link marks. A titled one alone in a plain paragraph reads as the image captioned with
   its title, and a link alone in a plain paragraph whose whole text is an image as the image the
-  link marks. An empty link text reads as its destination, `[](/url)` as `/url` linked, and
-  `[]()` as nothing, where both stayed literal text. See `MIGRATION.md`.
+  link marks. To keep an image an image, give it a paragraph of its own. See `MIGRATION.md`.
+- **Breaking:** an empty link text reads as its destination, `[](/url)` as `/url` linked, and
+  `[]()` as nothing, where both spellings stayed literal text. See `MIGRATION.md`.
 - Fix a JSON key holding an escape, in a carried node or a JSON attribute such as `parameters`:
   `losslessMarkdownToAdf` reads it as the key it spells, where on V8 13.6 and later (Node 24, Deno,
   Chrome) `markdownToAdf` could refuse markdown `adfToMarkdown` wrote, as `unsupported-node-shape`,
