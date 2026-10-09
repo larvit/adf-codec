@@ -151,3 +151,16 @@ Read most (opens and searches):
 - `todo.md` 4
 - `docs/decisions.md` 3
 - `CHANGELOG.md` 2
+
+## Reading cost, chunk 5c2c2691022d, finished 2026-10-09T11:08:17Z
+
+45283 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 2
+- `package.json` 2
+- `CHANGELOG.md` 1
+- `ci.sh` 1
+- `docs/decisions.md` 1
+- `todo.md` 1
