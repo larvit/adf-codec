@@ -91,10 +91,10 @@ of one character from each of its characters.
 
 ### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
 
-`readBlocks` fixes a block's path before `splitTaskList` and `bulletNode` move blocks beside or
-after their task, so `- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n` reports
-`/content/0/content/0/content/2` for a block that would stand at `/content/2`. The README says
-`path` is the node's place from the document root.
+`bulletBlocks` fixes a block's path before `splitTaskList` moves it beside or after its task, so
+`- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n` reports `/content/0/content/0/content/2`
+for a block that would stand at `/content/2`. The README says `path` is the node's place from the
+document root.
 
 ### 86. Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.
 
@@ -354,7 +354,7 @@ functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLi
 `mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
-output; and `nestIn` (`portable/adf-to-portable-markdown.ts`), which pushes into its caller's array.
+output.
 Once `Scan`'s pieces have owners, the bracket resolution — `linkedAlt` through `linkTo`,
 `holdsLink`, and `closeBracket` through `altText` — can leave `inline-content.ts` (about 690 lines)
 for a module of its own.

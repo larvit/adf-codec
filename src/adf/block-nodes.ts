@@ -1,3 +1,4 @@
+import type { AdfNode } from './document.ts'
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
 export type BlockNodeModel = {
@@ -86,6 +87,10 @@ export type BlockType = keyof typeof blockNodes
 
 export function blockNodeModel(type: string): BlockNodeModel | undefined {
   return isBlockType(type) ? blockNodes[type] : undefined
+}
+
+export function isTaskItem(node: AdfNode | undefined): boolean {
+  return node?.type === 'taskItem' || node?.type === 'blockTaskItem'
 }
 
 function isBlockType(type: string): type is BlockType {

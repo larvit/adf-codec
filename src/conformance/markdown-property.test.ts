@@ -9,10 +9,11 @@ import type { JsonValue } from '../json-value.ts'
 import type { Result } from '../result.ts'
 import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { adfToPortableMarkdown } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { blockArgument, listBreakName, marksAttribute } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { carryName } from '../markdown/opaque-carry.ts'
-import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import {
   directivePrefix,
   spellAttributes,
@@ -409,6 +410,24 @@ const document = fc
   .tuple(markdown, fc.oneof({ arbitrary: fc.constant('\n'), weight: 8 }, { arbitrary: fc.constantFrom('\r\n', '\r'), weight: 1 }), fc.constantFrom('', '', '\n', '  \n'))
   .map(([held, ending, trailing]) => `${held}${trailing}`.replaceAll('\n', ending))
 
+function taskListOf(bodies: Arbitrary<string>): Arbitrary<string> {
+  return fc
+    .array(fc.tuple(fc.constantFrom('[ ]', '[x]'), fc.constantFrom('', 'Done\n\n', 'Done\n'), bodies), { maxLength: 3, minLength: 1 })
+    .map((items) => items.map(([marker, lead, body]) => prefixLines(`${lead}${body}`, `- ${marker} `, () => '      '.slice(0, marker.length + 3))).join('\n'))
+}
+
+const taskMarkdown = taskListOf(fc.oneof(cleanMarkdown, hostileMarkdown, taskListOf(cleanMarkdown)))
+
+function blockTaskItemChildren(document: AdfDocument): string[] {
+  const types: string[] = []
+  const pending = [...nodeContent(document)]
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node.type === 'blockTaskItem') for (const child of nodeContent(node)) types.push(child.type)
+    pending.push(...nodeContent(node))
+  }
+  return types
+}
+
 function holdsDirectiveShape(document: AdfDocument): boolean {
   const pending = [...nodeContent(document)]
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
@@ -454,6 +473,22 @@ test('generated markdown read as CommonMark refuses, or its document reads back 
       const read = losslessMarkdownToAdf(emitted.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(emitted.value)}`)
       assert.deepEqual(read.value, parsed.value, `reading ${JSON.stringify(emitted.value)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('generated task lists read as portable markdown refuse, or build block task items of paragraphs alone and write a fixpoint', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(taskMarkdown, (input) => {
+      const parsed = portableMarkdownToAdf(input)
+      if (!parsed.ok) return
+      assert.deepEqual(blockTaskItemChildren(parsed.value).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(input)}`)
+      const written = adfToPortableMarkdown(parsed.value)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message} — spelling ${JSON.stringify(input)}`)
+      const read = portableMarkdownToAdf(written.value)
+      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+      assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
     }),
     propertyRuns(gateRuns),
   )

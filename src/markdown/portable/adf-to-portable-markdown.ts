@@ -1,6 +1,6 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
-import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -179,7 +179,7 @@ function tasksAsText(list: AdfNode): AdfNode {
   if (list.type !== 'taskList') return list
   const items: AdfNode[] = []
   for (const child of nodeContent(list)) {
-    const previous = isTask(child) || child.type === 'listItem' ? undefined : items.pop()
+    const previous = isTaskItem(child) || child.type === 'listItem' ? undefined : items.pop()
     items.push(itemOf(previous === undefined ? taskAsText(child) : mergedLists([...nodeContent(previous), child])))
   }
   return { content: items, type: 'bulletList' }
@@ -285,27 +285,28 @@ function blankedLines(code: readonly AdfNode[]): AdfNode[] {
   return blanked === '' ? [] : [text(blanked)]
 }
 
-// A task list opening with a task and holding tasks and task lists alone keeps its spelling, a list nesting in the task before it; any other keeps its markers as text. A child reducing to nothing counts for neither.
+// A task list opening with a task and holding tasks and task lists alone keeps its spelling; any other keeps its markers as text. A child reducing to nothing counts for neither.
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const kept: { blocks: AdfNode[]; child: AdfNode }[] = []
   for (const [index, child] of nodeContent(node).entries()) {
     const at = childReduction(reduction, index)
-    const reduced = isTask(child) ? reduceTask(child, at) : reduceStanding(child, at)
+    const reduced = isTaskItem(child) ? reduceTask(child, at) : reduceStanding(child, at)
     if (!reduced.ok) return reduced
     if (reduced.value.length > 0) kept.push({ blocks: reduced.value, child })
   }
-  const regular = isTask(kept[0]?.child) && kept.every(({ child }) => isTask(child) || child.type === 'taskList')
+  const regular = isTaskItem(kept[0]?.child) && kept.every(({ child }) => isTaskItem(child) || child.type === 'taskList')
   const tasks: AdfNode[] = []
   for (const { blocks, child } of kept) {
-    const standsAlone = !regular && !isTask(child) && child.type !== 'taskList'
+    const standsAlone = !regular && !isTaskItem(child) && child.type !== 'taskList'
     for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
   }
-  if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }).map((block) => (block.type === 'taskList' ? { ...block, content: mergedLists(nodeContent(block)) } : block)))
+  if (regular) return success(splitTasks({ content: tasks, type: 'taskList' }))
   return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
 }
 
-function isTask(node: AdfNode | undefined): boolean {
-  return node?.type === 'taskItem' || node?.type === 'blockTaskItem'
+// The split sets a task's nested lists beside the list after it, and adjacent lists read back as one.
+function splitTasks(list: AdfNode): AdfNode[] {
+  return splitTaskList(list).map((block) => (block.type === 'taskList' ? { ...block, content: mergedLists(nodeContent(block)) } : block))
 }
 
 function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
