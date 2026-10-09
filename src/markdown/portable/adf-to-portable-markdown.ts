@@ -314,11 +314,8 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
   return success(listOf(nodeContent(tasksAsText({ content: tasks, type: 'taskList' })), 'bulletList'))
 }
 
-// The writer nests a list in the task before it, so one closing a block task item's blocks merges with it.
 function nestIn(tasks: AdfNode[], nested: readonly AdfNode[]): void {
-  const previous = tasks.at(-1)
-  if (previous?.type === 'blockTaskItem') tasks[tasks.length - 1] = { ...previous, content: mergedLists([...nodeContent(previous), ...nested]) }
-  else for (const block of mergedLists(nested)) tasks.push(block)
+  for (const block of mergedLists(nested)) tasks.push(block)
 }
 
 function isTask(node: AdfNode | undefined): boolean {

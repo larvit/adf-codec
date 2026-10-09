@@ -148,6 +148,9 @@ test('reads a bullet list whose every item leads with a task marker to a task li
 test('moves a nested task list beside its item and makes an item holding more than one paragraph a block task item', () => {
   assert.deepEqual(read('- [x] Parent\n  - [ ] Child\n- [ ] Next\n'), [bare('taskList', task('DONE', text('Parent')), bare('taskList', task('TODO', text('Child'))), task('TODO', text('Next')))])
   assert.deepEqual(read('- [x] First.\n\n  Second.\n- [ ] Next\n'), [bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.')), task('TODO', text('Next')))])
+  const nested = bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('p1'), said('p2')), bare('taskList', task('TODO', text('n'))), task('TODO', text('B')))
+  assert.deepEqual(read('- [x] p1\n\n  p2\n  - [ ] n\n- [ ] B\n'), [nested])
+  assert.deepEqual(roundTripped(nested), [nested])
 })
 
 test('stands a block a task item cannot hold, and what follows it in the item, after the task list, which resumes at the next task', () => {
