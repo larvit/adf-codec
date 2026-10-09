@@ -324,8 +324,8 @@ Anywhere else — beside other content, in a heading, a table cell or an `!adf:p
 reads as its alt text linked to its destination, the link titled by the image's title, since
 `mediaInline` carries a media `collection` + `id`, never a URL. An empty alt text reads as the
 destination, as an empty link text does. Inside a link's text, the alt text is plain text the link
-marks, and the image's destination and title drop (`docs/decisions.md` §What ADF holds no node for
-reads as a link).
+marks, and the image's destination and title drop (`docs/decisions.md` §Every CommonMark image and
+empty link reads).
 
 ### Tables
 
