@@ -234,7 +234,7 @@ Serves Goals 1, 4 and 5.
   and one gap every reader shares: a CommonMark image fits only as its own title-less paragraph.
   Mid-text and titled images are error results, save an image inside another's description, which
   flattens into the alt text.
-- The other readers claim shapes CommonMark reads as text. `losslessMarkdownToAdf` claims four:
+- The other readers claim shapes CommonMark reads as text or code. `losslessMarkdownToAdf` claims four:
   literal text matching directive, pipe-table or strikethrough syntax, and a code fence whose info
   string opens `adf:`. `portableMarkdownToAdf` claims what [Portable markdown](#portable-markdown)
   lists. A claimed shape that does not complete, such as a pipe row without a delimiter row, is an
