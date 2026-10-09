@@ -74,3 +74,28 @@ Inherited architect, decided by:
 - `src/result.ts:1` `ConvertErrorCode`: `unmappable-image` and its refusal paths are gone
 - `src/markdown/parse/inline-content.ts:43` `Image`: costs more — four functions must agree on the image's `link`
 - `src/markdown/parse/inline-content.ts:26` `InlineContent`: costs more — no longer image xor nodes
+
+## 2026-10-09T08:38:28Z, PR #21 at 1098b5e, against 9a242c7
+
+Ruling: better
+
+| Seat | Vote |
+|---|---|
+| Mid A | better |
+| Inherited architect | better |
+
+Mid A, decided by:
+
+- `src/markdown/external-image.ts:4` `centeredImage`: one builder where three places built the image node by hand
+- `src/markdown/emit/image.ts:7` `tryImage`: compares against what the reader builds, where `imageShape` restated the shape
+- `src/markdown/parse/markdown-to-adf.ts:26` `TaskParagraph`: a named block kind replaces `readMarked`'s after-the-fact index search
+- `src/markdown/parse/inline-content.ts:302` `assemble`: costs more — which of three readings an image takes hangs on a one-line condition and the `inLink` flag
+- `src/markdown/parse/inline-content.ts:26` `InlineContent`: costs more — no longer image xor nodes
+
+Inherited architect, decided by:
+
+- `src/markdown/external-image.ts:4` `centeredImage`: the image shape is defined once for reader and both writers
+- `src/markdown/emit/image.ts:7` `tryImage`: the emitter cannot drift from the reader
+- `src/markdown/parse/markdown-to-adf.ts:136` `readBlock`: the task paragraph is routed where the block is classified
+- `src/markdown/parse/inline-content.ts:302` `assemble`: costs more — the most expensive line to decode
+- `src/markdown/parse/markdown-to-adf.ts:154` `paragraphsOf`: costs more — the name does not say it splits the marker line
