@@ -5,9 +5,8 @@ The grammar of the lossless flavour, the extended markdown `adfToLosslessMarkdow
 carve-outs: literal text that matches directive syntax below or reads as a pipe table is claimed by
 the flavour, a matched `~~` pair spells `strike` (escape the `!adf:`, `|` or `~` to keep it
 literal), and a code fence whose info string opens `adf:` is the opaque carry (drop the info string
-and wrap the fence in `!adf:codeBlock {language="adf:…"}` to keep it code) — and one gap: a
-CommonMark image fits only as its own title-less paragraph — mid-text and titled images are named
-errors. `commonMarkToAdf` claims none of the four. The emitted form is contract (`docs/decisions.md`
+and wrap the fence in `!adf:codeBlock {language="adf:…"}` to keep it code). `commonMarkToAdf`
+claims none of the four. The emitted form is contract (`docs/decisions.md`
 §The formats are API). Per-node syntaxes build on this grammar in the sections below.
 
 ## Canonical form
@@ -313,12 +312,19 @@ The moon, at night.
 `mediaSingle` with attrs exactly `{"layout":"center"}` holding an `external` `media` — `url` from
 the destination, `alt` the description's plain-text content when non-empty — a link or image inside
 it contributing its own text, a node spelling its text in the content slot contributing that text,
-and a break of either kind a space. `adfToLosslessMarkdown` emits the image form for exactly that
-shape — those attrs and no others, no marks on either node, no caption, and a `media` carrying
-nothing beyond `alt`, `type` and `url` — and only where CommonMark spells the pair: a destination or
-a description the image form cannot hold, an empty `alt` included, takes the directive form instead.
-An image amid other text, or one carrying a title, is a named error: `mediaInline` carries a media
-`collection` + `id`, never a URL, and no media node carries a title.
+and a break of either kind a space. A non-empty title, `![alt](url "title")`, adds a `caption`
+holding the title as one text node, and a link whose entire text is the image,
+`[![alt](url)](href)`, marks the `media`. `adfToLosslessMarkdown` emits the image form for exactly
+the shape with neither — those attrs and no others, no marks on either node, no caption, and a
+`media` carrying nothing beyond `alt`, `type` and `url` — and only where CommonMark spells the pair:
+a destination or a description the image form cannot hold, an empty `alt` included, takes the
+directive form instead.
+
+Anywhere else — beside other content, in a heading, a table cell or an `!adf:paragraph` — an image
+reads as its alt text linked to its destination, the link titled by the image's title, since
+`mediaInline` carries a media `collection` + `id`, never a URL. An empty alt text reads as the
+destination, as an empty link text does. Inside a link's text, beside other content, the alt text
+is plain text the link marks, and the image's destination drops.
 
 ### Tables
 
@@ -512,7 +518,9 @@ newline in the title), or a link opening a paragraph whose markdown spelling wou
 reference definition. Every such spelling carries an `href`: a directive link CommonMark could
 spell is a named error, and so is one spelling none. No link wraps a link at any nesting, which is
 CommonMark's own rule: a `[text]` already holding one leaves the outer brackets literal text, and
-the directive form, open to no literal reading, is a named error.
+the directive form, open to no literal reading, is a named error. ADF holds no empty text node, so
+a link whose text is empty reads as its destination linked, `[](/url)` as `/url`, and one whose
+destination is empty too, `[]()`, as nothing.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.

@@ -187,7 +187,7 @@ minor may narrow that, never widen it. For `not-a-string` it is `{ line: 1, offs
 Parsing. Every reader also raises `unsupported-nesting-depth` from the "Either direction" table,
 and:
 
-- `commonMarkToAdf`: `not-a-string`, `unmappable-html` and `unmappable-image`.
+- `commonMarkToAdf`: `not-a-string` and `unmappable-html`.
 - `portableMarkdownToAdf`: those and `malformed-pipe-table`.
 - `losslessMarkdownToAdf`: every row below, and `unsupported-node-shape`.
 - `htmlToAdf`, at `0.3.0`: the rows its dialect reaches.
@@ -199,7 +199,6 @@ and:
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.3.0` | remove the construct, or write what it holds as markdown |
-| `unmappable-image` | an image sits inside other content that is not another image's description, or carries a title | give the image a paragraph of its own and drop the title |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` directive's content slot spells a newline or a carriage return — `&#10;`, `&#13;`, `!adf:text{text="\n"}` | replace it with a space, or write the node as `!adf:carry` — an inline directive never spans lines |
 
 Emitting — `adfToLosslessMarkdown` and `adfToPortableMarkdown`, and `adfToHtml` at `0.3.0`:
@@ -230,10 +229,7 @@ Serves Goals 1, 4 and 5.
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.3.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
-- CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names
-  and one gap every reader shares: a CommonMark image fits only as its own title-less paragraph.
-  Mid-text and titled images are error results, save an image inside another's description, which
-  flattens into the alt text.
+- CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names.
 - The other readers claim shapes CommonMark reads as text or code. `losslessMarkdownToAdf` claims
   four: literal text matching directive, pipe-table or strikethrough syntax, and a code fence whose
   info string opens `adf:`. `portableMarkdownToAdf` claims what [Portable
@@ -241,14 +237,21 @@ Serves Goals 1, 4 and 5.
   without a delimiter row, is an error result; each can be kept literal (`spec/flavour.md`).
 - A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
   canonical spelling, which round-trips byte-identically.
-- Four CommonMark spellings parse without an error and build a document the reference
-  implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
-  empty link, a list continuing past a marker change stays one list against CommonMark's two, a
-  shortcut reference matching its definition only under Unicode case folding stays unresolved, and
-  a link whose text holds an autolink keeps the inner link and leaves the outer brackets literal
-  text, which the spec requires and the reference itself breaks, nesting one `<a>` in the other.
-  The first three are pinned `pending` in `corpus/commonmark-spec/exceptions.json`; the suite
-  holds no example of the fourth.
+- Six CommonMark spellings parse without an error and build a document the reference
+  implementation renders differently. Three because ADF holds no node for what it renders:
+  - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and
+    `[]()` as nothing.
+  - An image not alone in its paragraph reads as its alt text linked to its URL, `See ![the
+    moon](moon.png).` as `See [the moon](moon.png).`; beside other text inside a link, as plain
+    text the link marks.
+  - An image's title reads as its caption.
+
+  And three more: a list continuing past a marker change stays one list against CommonMark's two,
+  a shortcut reference matching its definition only under Unicode case folding stays unresolved,
+  and a link whose text holds an autolink keeps the inner link and leaves the outer brackets
+  literal text, which the spec requires and the reference itself breaks, nesting one `<a>` in the
+  other. `corpus/commonmark-spec/exceptions.json` pins the first three `node-model` and the next
+  two `pending`; the suite holds no example of the last.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to

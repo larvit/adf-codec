@@ -1,0 +1,158 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "See ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/moon.png",
+                "title": "Full"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the moon",
+          "type": "text"
+        },
+        {
+          "text": " tonight, or ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/sun.png"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://example.com/sun.png",
+          "type": "text"
+        },
+        {
+          "text": ".",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "the moon",
+            "type": "external",
+            "url": "https://example.com/moon.png"
+          },
+          "type": "media"
+        },
+        {
+          "content": [
+            {
+              "text": "The moon, at night.",
+              "type": "text"
+            }
+          ],
+          "type": "caption"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "the moon",
+            "type": "external",
+            "url": "https://example.com/moon.png"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/"
+              },
+              "type": "link"
+            }
+          ],
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "content": [
+        {
+          "text": "Look ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "here the moon",
+          "type": "text"
+        },
+        {
+          "text": ", ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://example.com/",
+          "type": "text"
+        },
+        {
+          "text": " and .",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/moon.png"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "the moon",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

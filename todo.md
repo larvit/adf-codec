@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 85`
+`Next ID = 87`
 
 | Goal | W |
 |---|---|
@@ -25,13 +25,13 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
 | 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
+| 86 | 0.2.0 |  | **Write an image a link alone marks as `[![alt](url)](href)`, and one captioned with plain text as `![alt](url "caption")`, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
+| 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
-| 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 4, 5, 7 | 9.0 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
@@ -65,19 +65,6 @@
 
 ## Details
 
-### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
-
-Both are refused today with `unmappable-image`: 14 examples in
-`corpus/commonmark-spec/refusals.json`, a bot's `See ![diagram](url) here` among them. `mediaInline`
-takes only Atlassian media ids, never a URL. An image not alone in its paragraph reads as its alt
-text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
-as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
-title as a `caption` (the maintainer, 2026-10-04). By Goal 5, every reader reads both as CommonMark
-does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec example 517). Alone in its
-paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not alone
-in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A writer
-panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
-
 ### 49. Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.
 
 Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads two (spec examples
@@ -86,7 +73,7 @@ changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alte
 between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and `!adf:listBreak`
 retires. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
 Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions, and the
-spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
+spelling leaves the README's "Six CommonMark spellings" bullet, which counts one fewer.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 
@@ -95,6 +82,17 @@ reader's view — flanking, code-span closers, link-definition openings, highlig
 only the property tests catch drift. It caps the panel's Locality score. The replacement runs in
 time linear in the line: today `mergesWithSyntax`, `touchesSyntax` and `closesHeading` rescan a run
 of one character from each of its characters.
+
+### 86. Write an image a link alone marks as `[![alt](url)](href)`, and one captioned with plain text as `![alt](url "caption")`, in `adfToLosslessMarkdown`.
+
+Every reader reads both spellings so; `adfToLosslessMarkdown` writes the `!adf:mediaSingle`
+directive for them. The emitted form is API (`docs/decisions.md` §The formats are API), so it
+changes before `0.2.0` ships. A writer panel settles the spelling.
+
+### 85. Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.
+
+Today `[![a](/u)](/v)` reads as the image whose `media` the link marks, and `adfToPortableMarkdown`
+writes `![a](/u)`, dropping `/v`: the README promises it keeps link targets (Goal 7).
 
 ### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
@@ -118,14 +116,6 @@ Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
 `portable/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour` and
 `flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
 three directories.
-
-### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
-
-Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
-link mark, so a link whose text is empty takes its URL as its text (the maintainer, 2026-10-04):
-`[](/url)` reads as `/url` linked to `/url`. `[]()` has no URL to show; the chunk settles it by
-Goals 4 and 7. Breaking: `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go,
-and its spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
@@ -250,7 +240,7 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
 example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
-gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Four CommonMark
+gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Six CommonMark
 spellings" bullet, which counts one fewer.
 
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.

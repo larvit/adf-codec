@@ -20,13 +20,13 @@ import { readBlockDirectiveNode } from './directive-nodes.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.ts'
 import { spellsEmpty } from '../empty-keys.ts'
 
-type Paragraph = Extract<Block, { kind: 'paragraph' }>
+// A paragraph a marker opens: it shares its markdown paragraph with the marker, so no image there stands alone.
+type MarkedParagraph = { kind: 'markedParagraph'; position: SourcePosition; text: string }
+
+type ReadBlock = Block | MarkedParagraph
 
 // `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand.
 type Reading = { claims: Claims; definitions: LinkDefinitions; inExpand: boolean; memo: SpellingMemo }
-
-const imageAfterMarker = 'an image fits only as a paragraph of its own: this one continues the paragraph a marker opens, which a blank line before it ends'
-const imageOnMarkerLine = 'an image fits only as a paragraph of its own: this one shares a line with a marker'
 
 export function commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError> {
   return readDocument(markdown, flavourClaims.commonmark)
@@ -64,7 +64,7 @@ function typeName(value: unknown): string {
   return type === 'object' ? 'an object' : `a ${type}`
 }
 
-function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
   const content: AdfNode[] = []
   for (const [index, block] of blocks.entries()) {
@@ -86,7 +86,7 @@ function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErr
 }
 
 // spec/flavour.md, Directives: the separator builds no node, so only the pair it parts spells it.
-function listBreakFault(block: DirectiveBlock, previous: Block | undefined, next: Block | undefined): ConvertFault | undefined {
+function listBreakFault(block: DirectiveBlock, previous: ReadBlock | undefined, next: ReadBlock | undefined): ConvertFault | undefined {
   if (block.argument !== undefined || block.attributes.size > 0) {
     return unsupportedNodeShape(`${listBreakName} spells the bare leaf form, ${listBreakSpelling}: this one spells more`)
   }
@@ -107,7 +107,7 @@ function partsFault(): ConvertFault {
   return unsupportedNodeShape(`${listBreakName} parts two adjacent lists of one type: this one parts something else`)
 }
 
-function readBlock(block: Block, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':
       return reading.claims.alerts ? quoteNode(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
@@ -123,6 +123,8 @@ function readBlock(block: Block, reading: Reading, path: ConvertErrorPath, depth
       return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, reading, path, 'heading')
     case 'html':
       return failure('unmappable-html', `no raw HTML converts at this version: ${block.construct}`, path)
+    case 'markedParagraph':
+      return contentNode({ type: 'paragraph' }, block.text, reading, path, 'paragraph')
     case 'orderedList':
       return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, reading, path, depth)
     case 'paragraph':
@@ -147,8 +149,8 @@ function markerLine(text: string): { line: string; rest: string } {
   return { line: (hardBreak ? line.slice(0, -1) : line).replace(/^[ \t]+/, ''), rest: lineEnd === -1 ? '' : text.slice(lineEnd + 1) }
 }
 
-function paragraphsOf(position: SourcePosition, ...texts: string[]): Paragraph[] {
-  return texts.filter((text) => text !== '').map((text) => ({ kind: 'paragraph', position, text }))
+function paragraphsOf(position: SourcePosition, ...texts: string[]): MarkedParagraph[] {
+  return texts.filter((text) => text !== '').map((text) => ({ kind: 'markedParagraph', position, text }))
 }
 
 function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
@@ -157,13 +159,12 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   if (led === undefined) return containerNode({ type: 'blockquote' }, blocks, reading, path, depth)
   const { folded, panelType } = led.marker
   const { line, rest } = markerLine(led.text)
-  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readMarked(paragraphsOf(led.position, line, rest), line !== '', body, reading, path, depth))
+  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...paragraphsOf(led.position, line, rest), ...body], reading, path, depth + 1))
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.claims)
   if (!title.ok) return title
-  if (title.value.image !== undefined) return failure('unmappable-image', imageOnMarkerLine, path)
   const text = titleText(title.value.nodes)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
-  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readMarked(paragraphsOf(led.position, rest), false, body, { ...reading, inExpand: true }, path, depth))
+  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, inExpand: true }, path, depth + 1))
 }
 
 // docs/decisions.md, A callout title keeps its link targets.
@@ -192,15 +193,6 @@ function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> 
   return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
 }
 
-// A paragraph split off a marker still refuses the image it held beside it; `onMarkerLine` is whether the first one opens on the marker's line.
-function readMarked(marked: readonly Paragraph[], onMarkerLine: boolean, others: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
-  const read = readBlocks([...marked, ...others], reading, path, depth + 1)
-  if (!read.ok) return read
-  const image = read.value.slice(0, marked.length).findIndex((node) => node.type === 'mediaSingle')
-  if (image === -1) return read
-  return failure('unmappable-image', image === 0 && onMarkerLine ? imageOnMarkerLine : imageAfterMarker, [...path, 'content', image])
-}
-
 // A task list trailing an item's blocks stands beside it, as ADF nests one.
 function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const led = []
@@ -211,7 +203,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
   }
   const tasks: AdfNode[] = []
   for (const [index, { marker, others, position, text }] of led.entries()) {
-    const read = readMarked(paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), markerLine(text).line !== '', others, reading, [...path, 'content', index], depth)
+    const read = readBlocks([...paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), ...others], reading, [...path, 'content', index], depth + 1)
     if (!read.ok) return read
     let beside = read.value.length
     while (read.value[beside - 1]?.type === 'taskList') beside -= 1
@@ -326,7 +318,7 @@ function codeBlockNode(language: string, text: string, reading: Reading, path: C
   return success(text === '' ? node : { ...node, content: [{ text, type: 'text' }] })
 }
 
-// spec/flavour.md, The CommonMark image: only a plain paragraph gives an image the block it needs.
+// spec/flavour.md, The CommonMark image: only a plain paragraph gives a lone image the block it needs.
 function paragraphNode(text: string, reading: Reading, path: ConvertErrorPath): Result<AdfNode> {
   const content = parseInlineContent(text, reading.definitions, path, 'paragraph', reading.claims)
   if (!content.ok) return content
@@ -337,6 +329,5 @@ function paragraphNode(text: string, reading: Reading, path: ConvertErrorPath): 
 function contentNode(node: AdfNode, text: string, reading: Reading, path: ConvertErrorPath, container: LineContainer): Result<AdfNode> {
   const content = parseInlineContent(text, reading.definitions, path, container, reading.claims)
   if (!content.ok) return content
-  if (content.value.image !== undefined) return failure('unmappable-image', `no ADF node carries an image inside a ${node.type}`, path)
   return success(withContent(node, content.value.nodes))
 }

@@ -180,9 +180,8 @@ opener nests by itself and leaf versus container falls out of the node's content
 
 CommonMark is a subset of the lossless flavour, with carve-outs (`spec/flavour.md`): literal text
 shaped like a directive, a pipe table or a `~~` pair is claimed, and so is a code fence whose info
-string opens `adf:` (§The carry fence names the node type) — plus one image gap, which `todo.md`
-item 65 ends. `commonMarkToAdf` claims none of the carve-outs; the image gap holds there too (§Each call names
-its flavour).
+string opens `adf:` (§The carry fence names the node type). `commonMarkToAdf` claims none of the
+carve-outs (§Each call names its flavour).
 
 ## Tables
 
