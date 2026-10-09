@@ -10,10 +10,10 @@ products store as ADF.
 
 - **Lossless:** `adfToLosslessMarkdown` and `losslessMarkdownToAdf` give back the document they
   started from — panels, mentions, statuses and node types this version does not know included.
-- **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, `~~` and pipe tables
-  whose every row opens with a pipe included; `commonMarkToAdf` reads markdown known to be strict
-  CommonMark as its spec says, nothing in it becoming a table, task or panel. Both apart from raw
-  HTML and the exceptions [The guarantees](#the-guarantees) lists.
+- **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, including `~~` and
+  pipe tables whose every row opens with a pipe. `commonMarkToAdf` reads strict CommonMark as its
+  spec says: nothing becomes a table, task or panel. Both refuse raw HTML and the exceptions
+  [The guarantees](#the-guarantees) lists.
 - **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
   from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
   task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
@@ -184,11 +184,13 @@ UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte of
 or before the refusal — currently the start of the line the enclosing block begins on; a later
 minor may narrow that, never widen it. For `not-a-string` it is `{ line: 1, offset: 0 }`.
 
-Parsing — `commonMarkToAdf` raises `not-a-string`, `unmappable-html` and `unmappable-image`;
-`portableMarkdownToAdf` those and `malformed-pipe-table`; `losslessMarkdownToAdf` every row; and
-`htmlToAdf`, at `0.3.0`, the rows its dialect reaches. Every reader also raises
-`unsupported-nesting-depth`, and `losslessMarkdownToAdf` `unsupported-node-shape`, from the
-"Either direction" table:
+Parsing. Every reader also raises `unsupported-nesting-depth` from the "Either direction" table,
+and:
+
+- `commonMarkToAdf`: `not-a-string`, `unmappable-html` and `unmappable-image`.
+- `portableMarkdownToAdf`: those and `malformed-pipe-table`.
+- `losslessMarkdownToAdf`: every row below, and `unsupported-node-shape`.
+- `htmlToAdf`, at `0.3.0`: the rows its dialect reaches.
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -228,15 +230,15 @@ Serves Goals 1, 4 and 5.
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
   `0.3.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
   name every exception.
-- CommonMark is valid input to every reader apart from the raw HTML `unmappable-html` names, with
-  one gap: a CommonMark image fits only as its own title-less paragraph; mid-text and titled images
+- CommonMark is valid input to every reader, apart from the raw HTML `unmappable-html` names and
+  one gap: a CommonMark image fits only as its own title-less paragraph. Mid-text and titled images
   are error results, save an image inside another's description, which flattens into the alt text.
-  `commonMarkToAdf` reads it as its spec says. `losslessMarkdownToAdf` has four carve-outs —
-  literal text matching directive, pipe-table or strikethrough syntax, and a code fence whose info
-  string opens `adf:`, are claimed (each can be kept literal — `spec/flavour.md`) — and
-  `portableMarkdownToAdf` claims what [Portable markdown](#portable-markdown) lists. Converting a
-  read document back with `adfToLosslessMarkdown` yields the library's canonical spelling, which
-  round-trips byte-identically.
+- `commonMarkToAdf` claims nothing else. `losslessMarkdownToAdf` claims four shapes: literal text
+  matching directive, pipe-table or strikethrough syntax, and a code fence whose info string opens
+  `adf:`. Each can be kept literal (`spec/flavour.md`). `portableMarkdownToAdf` claims what
+  [Portable markdown](#portable-markdown) lists.
+- A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
+  canonical spelling, which round-trips byte-identically.
 - Four CommonMark spellings parse without an error and build a document the reference
   implementation renders differently: `[](/url)` and `[]()` stay literal text against CommonMark's
   empty link, a list continuing past a marker change stays one list against CommonMark's two, a
@@ -249,7 +251,7 @@ Serves Goals 1, 4 and 5.
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to
   stop.
-- The pipe table `losslessMarkdownToAdf` and `portableMarkdownToAdf` read narrows GFM's twice: every
+- The pipe table that `losslessMarkdownToAdf` and `portableMarkdownToAdf` read narrows GFM's twice: every
   row opens with a pipe, so GFM's bare form is an error result rather than the prose it reads as,
   and an alignment colon in the delimiter row is an error too — ADF holds no column alignment. The
   trailing pipe is canonical output, optional in input.

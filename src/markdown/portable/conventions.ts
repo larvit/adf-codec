@@ -15,7 +15,6 @@ export type Claims = {
   taskMarkers: boolean
 }
 
-// The writer spells pipe tables and `~~` in every flavour it writes.
 type WrittenClaims = Claims & { pipeTables: true; strikethrough: true }
 
 // Directives exclude alerts and highlights: an expand directive leaves `inExpand` unset and a directive's slot reads `==`.

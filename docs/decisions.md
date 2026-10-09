@@ -181,7 +181,8 @@ opener nests by itself and leaf versus container falls out of the node's content
 CommonMark is a subset of the lossless flavour, with carve-outs (`spec/flavour.md`): literal text
 shaped like a directive, a pipe table or a `~~` pair is claimed, and so is a code fence whose info
 string opens `adf:` (§The carry fence names the node type) — plus one image gap, which `todo.md`
-item 65 ends. `commonMarkToAdf` claims none of them (§Each call names its flavour).
+item 65 ends. `commonMarkToAdf` claims none of the carve-outs; the image gap holds there too (§Each call names
+its flavour).
 
 ## Tables
 
@@ -556,8 +557,8 @@ suite's answers are HTML ADF cannot be compared against.
 
 Each example is a named error or markdown `commonMarkToAdf` reads to a document that
 `adfToLosslessMarkdown` writes and `losslessMarkdownToAdf` reads back deep-equal, since CommonMark
-has no writer of its own; its reference HTML's text, tags stripped and entities decoded, equals the
-parsed document's; and its elements count the marks and nodes they map to. The fixpoint alone
+has no writer of its own. The example's reference HTML's text, tags stripped and entities decoded,
+equals the parsed document's; and its elements count the marks and nodes they map to. The fixpoint alone
 passes a parser returning the empty document, the text alone one dropping every emphasis. An
 exception is the maintainer's to add, and valid CommonMark parsing to a document
 `adfToLosslessMarkdown` refuses is a bug to fix, never an exception.
