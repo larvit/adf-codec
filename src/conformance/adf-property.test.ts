@@ -25,6 +25,16 @@ function shownText(nodes: readonly AdfNode[]): string[] {
   return shown.filter((text) => text !== '')
 }
 
+function heldByBlockTaskItems(nodes: readonly AdfNode[]): string[] {
+  const held: string[] = []
+  for (const node of nodes) {
+    const content = node.content ?? []
+    if (node.type === 'blockTaskItem') for (const child of content) held.push(child.type)
+    for (const type of heldByBlockTaskItems(content)) held.push(type)
+  }
+  return held
+}
+
 test('a generated document emits markdown that reads back to it', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
@@ -38,13 +48,14 @@ test('a generated document emits markdown that reads back to it', { timeout: pro
   )
 })
 
-test('a generated document writes portable markdown refusing only what the guard refuses, and that markdown reads back to its text and to itself', { timeout: propertyTimeout }, () => {
+test('a generated document writes portable markdown refusing only what the guard refuses, and that markdown reads back to its text and to itself, a block task item holding paragraphs alone', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const written = adfToPortableMarkdown(document)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
       const read = portableMarkdownToAdf(written.value)
       assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+      assert.deepEqual(heldByBlockTaskItems(read.value.content ?? []).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(written.value)}`)
       const reduced = reduceToPortable(document)
       assert.deepEqual(shownText(read.value.content ?? []), reduced.ok ? shownText(reduced.value.content ?? []) : reduced, `reading ${JSON.stringify(written.value)}`)
       assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)

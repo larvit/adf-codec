@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 93`
+`Next ID = 94`
 
 | Goal | W |
 |---|---|
@@ -47,6 +47,7 @@
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
+| 93 | 0.3.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
 | 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
@@ -74,7 +75,8 @@ Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads t
 301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells adjacent lists by
 changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alternate `-` and `*`
 between adjacent bullet lists, a task list among them, and `.` and `)` between adjacent ordered
-lists, and `!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
+lists, and `!adf:listBreak` retires. Until then, a bullet list standing after a task list joins
+it when written, so `adfToPortableMarkdown` writes every task's marker as text. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
 Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions, and the
 spelling leaves the README's "Seven CommonMark spellings" bullet, which counts one fewer.
 
@@ -248,6 +250,13 @@ ours ships tsc's unminified output and no minifier yet (decide here whether to m
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
 kB.
+
+### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
+
+`readBlocks` fixes a block's path before `splitTaskList` and `bulletNode` move blocks beside or
+after their task, so `- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n` reports
+`/content/0/content/0/content/2` for a block that would stand at `/content/2`. The README says
+`path` is the node's place from the document root.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
