@@ -32,9 +32,9 @@
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
-| 92 | 0.2.0 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
+| 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
@@ -120,14 +120,6 @@ Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
 `flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
 three directories.
 
-### 92. Lower the reading cost of the files a chunk reads most before its first commit.
-
-The last five chunks' median is 168135 new input tokens before their first commit, the five before
-them 68188. Read most over the last five, opens and searches: `README.md` 32, `docs/decisions.md`
-31, `src/markdown/parse/markdown-to-adf.test.ts` 24, `todo.md` 22, `CHANGELOG.md` 19,
-`spec/flavour.md` 19, `MIGRATION.md` 12, `src/markdown/parse/markdown-to-adf.ts` 12,
-`src/markdown/portable/adf-to-portable-markdown.ts` 12, `src/markdown/parse/blocks.ts` 7.
-
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 
 `*!adf:mention[@a]{id=…}*` and `[!adf:status[Done]{…}](/u)` build a node holding `em` or `link`.
@@ -142,6 +134,14 @@ mark types a node takes, and have the emitter carry a node holding another.
 backtick runs of lengths 1 to k with no closers cost about k·n, and `<!--` repeated with no `-->`
 is quadratic, in the reader and the emitter's escape walk alike. commonmark.js keeps a cache of
 backtick runs by length for the first.
+
+### 92. Lower the reading cost of the files a chunk reads most before its first commit.
+
+The last five chunks' median is 168135 new input tokens before their first commit, the five before
+them 68188. Read most over the last five, opens and searches: `README.md` 32, `docs/decisions.md`
+31, `src/markdown/parse/markdown-to-adf.test.ts` 24, `todo.md` 22, `CHANGELOG.md` 19,
+`spec/flavour.md` 19, `MIGRATION.md` 12, `src/markdown/parse/markdown-to-adf.ts` 12,
+`src/markdown/portable/adf-to-portable-markdown.ts` 12, `src/markdown/parse/blocks.ts` 7.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
