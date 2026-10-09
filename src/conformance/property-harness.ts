@@ -9,7 +9,7 @@ import type { JsonValue } from '../json-value.ts'
 import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
-import { emptyKeys, mergeAdjacentText } from '../adf/document.ts'
+import { emptyKeys, mergeAdjacentText, nodeContent } from '../adf/document.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { joinsWhenRead } from '../markdown/adjacent-text.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
@@ -201,4 +201,14 @@ export function propertyRuns(gateRuns: number): { gate: boolean; numRuns: number
   if (deepRuns === undefined) return { gate: true, numRuns: gateRuns, seed: gateSeed }
   assert.ok(/^[1-9]\d*$/.test(deepRuns), `${deepRunsVariable} is a run count in digits, such as ${deepRunsVariable}=10000: found ${JSON.stringify(deepRuns)}`)
   return { gate: false, numRuns: Number(deepRuns) }
+}
+
+export function blockTaskItemChildren(nodes: readonly AdfNode[]): string[] {
+  const types: string[] = []
+  const pending = [...nodes]
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node.type === 'blockTaskItem') for (const child of nodeContent(node)) types.push(child.type)
+    for (const child of nodeContent(node)) pending.push(child)
+  }
+  return types
 }

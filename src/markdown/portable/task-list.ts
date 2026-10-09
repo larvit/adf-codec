@@ -29,17 +29,16 @@ function itemsOf(children: readonly AdfNode[]): AdfNode[][] {
   return items
 }
 
+// The item reads as one run: the task's blocks, then the children after it.
 function itemParts(item: readonly AdfNode[]): { kept: AdfNode[]; rest: AdfNode[] } {
-  const [task] = item
+  const [task, ...after] = item
   if (task === undefined || !isTaskItem(task)) return { kept: [], rest: [...item] }
   const content = task.type === 'blockTaskItem' ? nodeContent(task) : []
+  const run = [...content, ...after]
   const paragraphs = runEnd(content, 0, 'paragraph')
-  const nested = runEnd(content, paragraphs, 'taskList')
-  const unheld = content.slice(nested)
-  const after = item.slice(1)
-  const beside = unheld.length === 0 ? runEnd(after, 0, 'taskList') : 0
+  const nested = runEnd(run, paragraphs, 'taskList')
   const head = task.type === 'blockTaskItem' ? taskOfParagraphs(task, content.slice(0, paragraphs)) : task
-  return { kept: [head, ...content.slice(paragraphs, nested), ...after.slice(0, beside)], rest: [...unheld, ...after.slice(beside)] }
+  return { kept: [head, ...run.slice(paragraphs, nested)], rest: run.slice(nested) }
 }
 
 function runEnd(nodes: readonly AdfNode[], start: number, type: string): number {

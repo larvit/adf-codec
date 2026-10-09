@@ -7,7 +7,7 @@ import type { Arbitrary, DepthIdentifier } from 'fast-check'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { JsonValue } from '../json-value.ts'
 import type { Result } from '../result.ts'
-import { adfDocument, attributes, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
+import { adfDocument, attributes, blockTaskItemChildren, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { blockArgument, listBreakName, marksAttribute } from '../markdown/block-directive.ts'
@@ -418,16 +418,6 @@ function taskListOf(bodies: Arbitrary<string>): Arbitrary<string> {
 
 const taskMarkdown = taskListOf(fc.oneof(cleanMarkdown, hostileMarkdown, taskListOf(cleanMarkdown)))
 
-function blockTaskItemChildren(document: AdfDocument): string[] {
-  const types: string[] = []
-  const pending = [...nodeContent(document)]
-  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    if (node.type === 'blockTaskItem') for (const child of nodeContent(node)) types.push(child.type)
-    pending.push(...nodeContent(node))
-  }
-  return types
-}
-
 function holdsDirectiveShape(document: AdfDocument): boolean {
   const pending = [...nodeContent(document)]
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
@@ -483,7 +473,7 @@ test('generated task lists read as portable markdown refuse, or build block task
     fc.property(taskMarkdown, (input) => {
       const parsed = portableMarkdownToAdf(input)
       if (!parsed.ok) return
-      assert.deepEqual(blockTaskItemChildren(parsed.value).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(input)}`)
+      assert.deepEqual(blockTaskItemChildren(nodeContent(parsed.value)).filter((type) => type !== 'paragraph'), [], `reading ${JSON.stringify(input)}`)
       const written = adfToPortableMarkdown(parsed.value)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message} — spelling ${JSON.stringify(input)}`)
       const read = portableMarkdownToAdf(written.value)

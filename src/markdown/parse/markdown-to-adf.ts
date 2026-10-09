@@ -121,6 +121,7 @@ function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, d
     case 'blockquote':
       return reading.claims.alerts ? quoteNode(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
     case 'bulletList':
+      // readBlocks reads a portable task list before it reaches here.
       return listNode({ type: 'bulletList' }, block.items, reading, path, depth)
     case 'code':
       return codeBlockNode(block.language, block.text, reading, path, depth)
