@@ -26,9 +26,9 @@ In `docs/decisions.md`:
 - Tables
 - Links
 - Ids stay site-local
-- Plain task ids come from position
+- Portable task ids come from position
 - A callout title keeps its link targets
-- The plain flavour's spellings
+- The portable flavour's spellings
 - The HTML dialect
 - No runtime dependencies
 - Standards ship as data
@@ -205,4 +205,4 @@ The comprehension panel's fill-ins:
 - Domain: Atlassian Document Format and CommonMark parsing.
 - Domain docs: the CommonMark spec, ADF's JSON schema and `spec/flavour.md`.
 - 3am question: a viewer/editor app reports that a document it saved comes back with two text
-  nodes merged and a mark gone after `markdownToAdf(adfToMarkdown(doc))`.
+  nodes merged and a mark gone after `losslessMarkdownToAdf(adfToLosslessMarkdown(doc))`.

@@ -25,13 +25,12 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 43 | 0.2.0 | decision | **Give each markdown input its own reader, strict to its own standard.** | 6 | 7 | 8 | 9 | 4, 5 | 20.3 |
 | 65 | 0.2.0 | defect | **Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.** | 5 | 5 | 7 | 7 | 4, 5, 7 | 17.1 |
-| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
+| 49 | 0.2.0 |  | **Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.** | 4 | 5 | 5 | 8 | 4, 5 | 15.5 |
 | 61 | 0.2.0 | decision | **Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.** | 6 | 8 | 3 | 8 | 1 | 14.0 |
 | 60 | 0.2.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
-| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
-| 62 | 0.2.0 | decision | **Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
+| 59 | 0.2.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
+| 62 | 0.2.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 50 | 0.2.0 |  | **Read `[](/url)` and `[]()` as CommonMark's empty link.** | 4 | 4 | 3 | 6 | 4, 5, 7 | 9.0 |
 | 7 | 0.3.0 |  | **Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
@@ -55,7 +54,7 @@
 | 34 | 0.4.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
 | 31 | 0.4.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
 | 42 | 0.4.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
-| 33 | 0.4.0 | defect | **Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
+| 33 | 0.4.0 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 56 | 0.4.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
 | 76 | 0.4.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
 | 82 | 0.4.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 2 | 1 | 4.2 |
@@ -65,14 +64,6 @@
 
 ## Details
 
-### 43. Give each markdown input its own reader, strict to its own standard.
-
-Today `markdownToAdf` reads CommonMark and the lossless flavour as one input: text shaped like a
-directive, a pipe table or a `~~` pair becomes a flavour node where CommonMark reads plain text, and
-a code fence whose info string opens `adf:` becomes the block carry where CommonMark reads code. A
-caller names the markdown it hands in: CommonMark, read as its spec says, or the lossless flavour,
-read as `spec/flavour.md` says. Breaking: `MIGRATION.md` says which call a caller takes.
-
 ### 65. Read an image not alone in its paragraph as its alt text linked to its URL, and a titled image alone in its paragraph as the image captioned with its title.
 
 Both are refused today with `unmappable-image`: 14 examples in
@@ -80,22 +71,21 @@ Both are refused today with `unmappable-image`: 14 examples in
 takes only Atlassian media ids, never a URL. An image not alone in its paragraph reads as its alt
 text, linked to its URL. Its title becomes the link's `title`. An empty alt text reads as the URL,
 as item 50 reads an empty link. A titled image alone in its paragraph reads as the image, with its
-title as a `caption` (the maintainer, 2026-10-04). By Goal 5, the lossless flavour reads both as
-CommonMark does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec example 517). Alone in
-its paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not
-alone in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A
-writer panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
+title as a `caption` (the maintainer, 2026-10-04). By Goal 5, every reader reads both as CommonMark
+does. An image inside a link: `[![moon](moon.jpg)](/uri)` (spec example 517). Alone in its
+paragraph, it reads as the image with a `link` mark to `/uri`, which ADF's `media` takes. Not alone
+in its paragraph, the image reads as its alt text linked to `/uri`, and its URL drops. A writer
+panel chose this reading 3 of 3 (2026-10-04), by Goal 6, which outranks Goal 7.
 
-### 49. Read a list whose bullet or ordered delimiter changes as two lists, in both readers, and retire `!adf:listBreak`.
+### 49. Read a list whose bullet or ordered delimiter changes as two lists, in every reader, and retire `!adf:listBreak`.
 
-Lands after item 43. Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads
-two (spec examples 301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells
-adjacent lists by changing the marker, so `adfToMarkdown` and `adfToPlainMarkdown` alternate `-` and
-`*` between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and
-`!adf:listBreak` retires. `*` is the maintainer's pick (2026-10-04). Breaking, so it ships beside
-item 43: `MIGRATION.md`'s Readings and Spellings tables gain their rows. Examples 301 and 302 lose
-their `pending` exceptions, and the spelling leaves the README's "Four CommonMark spellings" bullet,
-which counts one fewer.
+Today `- a` then `+ b`, or `1.` then `1)`, reads as one list; CommonMark reads two (spec examples
+301 and 302). Goal 5 settles it for the lossless flavour too: CommonMark spells adjacent lists by
+changing the marker, so `adfToLosslessMarkdown` and `adfToPortableMarkdown` alternate `-` and `*`
+between adjacent bullet lists and `.` and `)` between adjacent ordered lists, and `!adf:listBreak`
+retires. `*` is the maintainer's pick (2026-10-04). Breaking: `MIGRATION.md`'s Readings and
+Spellings tables gain their rows. Examples 301 and 302 lose their `pending` exceptions, and the
+spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
 ### 61. Have the emitter ask the inline reader how a line reads back, in place of `line-escaping.ts` predicting it.
 
@@ -111,28 +101,28 @@ of one character from each of its characters.
 from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
 parts by ADF and format true as they grow.
 
-### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` to `markdown/flavour.ts`.
+### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.
 
 Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
-needs `Read<T>` and `Flavour` out of the plain flavour and `markdown/`; it needs the carry and the
-mark spellings too, which item 7 moves where it learns what HTML shares.
+needs `Read<T>` and `Flavour` out of the portable flavour and `markdown/`; it needs the carry and
+the mark spellings too, which item 7 moves where it learns what HTML shares.
 
-### 62. Move the plain flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/plain/`, so `emit/` no longer imports `plain/`.
+### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
 
-Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts`, the `mintTaskIds` call and
-the `inlineLeaves` use. Writing: `spellPlainBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
+Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts` and the `mintTaskIds` call.
+Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
 `emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
-`plain/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour`. Every
-comprehension reader on 2026-10-03 named the plain flavour's spread across three directories.
+`portable/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour` and
+`flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
+three directories.
 
 ### 50. Read `[](/url)` and `[]()` as CommonMark's empty link.
 
 Both stay literal text today (spec examples 484 and 487). ADF holds no empty text node to carry a
 link mark, so a link whose text is empty takes its URL as its text (the maintainer, 2026-10-04):
-`[](/url)` reads as `/url` linked to `/url`. `[]()` has no URL to show; the chunk settles it by Goals
-4 and 7. Breaking, so it ships beside item 43: `MIGRATION.md`'s Readings table gains its row. Its
-`pending` exceptions go, and its spelling leaves the README's "Four CommonMark spellings" bullet,
-which counts one fewer.
+`[](/url)` reads as `/url` linked to `/url`. `[]()` has no URL to show; the chunk settles it by
+Goals 4 and 7. Breaking: `MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go,
+and its spelling leaves the README's "Four CommonMark spellings" bullet, which counts one fewer.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and `markdownToHtml` / `htmlToMarkdown` composed through ADF.
 
@@ -150,7 +140,7 @@ replacement.
 ### 6. Specify the HTML dialect.
 
 Element-by-element mapping, the `data-*` fidelity scheme, the opaque-carry form, and the documented
-foreign-element set `htmlToAdf` accepts — the set `markdownToAdf` shares (`spec/flavour.md` §Raw
+foreign-element set `htmlToAdf` accepts — the set the markdown readers share (`spec/flavour.md` §Raw
 HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
 
 ### 77. Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.
@@ -174,8 +164,8 @@ technical-principles audit, 2026-10-04.
 ### 83. Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.
 
 The block carry indents its JSON two spaces a level, so one unknown block holding 497 nested arrays
-around 540,000 numbers, about 1.1 MB as JSON, spells about 540 million characters, past V8's
-2^29 − 24. `serializeCanonicalJson`'s `join` throws, and `adfToMarkdown` throws with it. Any output
+around 540,000 numbers, about 1.1 MB as JSON, spells about 540 million characters, past V8's 2^29 −
+24. `serializeCanonicalJson`'s `join` throws, and `adfToLosslessMarkdown` throws with it. Any output
 past the limit does the same. Refuse it with a code from the closed list, and add a fixture. Found
 by the README-goals audit, 2026-10-08.
 
@@ -248,9 +238,9 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 ### 51. Match a reference label to its definition under Unicode case folding.
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
-example 540); lowercasing and then uppercasing folds it. Breaking, so it ships beside item 43:
-`MIGRATION.md`'s Readings table gains its row. Its `pending` exceptions go, and its spelling leaves
-the README's "Four CommonMark spellings" bullet, which counts one fewer.
+example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
+gains its row. Its `pending` exceptions go, and its spelling leaves the README's "Four CommonMark
+spellings" bullet, which counts one fewer.
 
 ### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
 
@@ -266,8 +256,8 @@ the place it goes; the maintainer posts them. Found while planning discoverabili
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
-`adfToMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute values
-already escape it.
+`adfToLosslessMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute
+values already escape it.
 
 ### 74. Keep the release path publishing after npm retires bypass-2FA tokens.
 
@@ -302,16 +292,16 @@ measured one.
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
-`plain/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`, quadratic
-in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
-`adfToPlainMarkdown`. Scan backward, as the expand title's trim does.
+`portable/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`,
+quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
+`adfToPortableMarkdown`. Scan backward, as the expand title's trim does.
 
-### 33. Emit a line in time linear in its mark runs, in `adfToMarkdown` and `adfToPlainMarkdown`.
+### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
-`adfToMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its flanking
-cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and the plain
-reduction's `spellableLine` drops one mark per re-emit the same way. An inline node whose
-attributes no spelling writes re-emits the line the same way before riding the carry. Make all
+`adfToLosslessMarkdown` spends 23 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
+flanking cannot spell re-emits the whole line before riding the carry, quadratic in the runs, and
+the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
+whose attributes no spelling writes re-emits the line the same way before riding the carry. Make all
 three linear.
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
@@ -321,10 +311,10 @@ mutate it and return `void`; `walk.leaf` alone is written in seven places. `Cont
 same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
 functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
 `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
-`mintTaskIds` (`plain/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
+`mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
-output; and `nestIn` (`plain/adf-to-plain-markdown.ts`), which pushes into its caller's array.
+output; and `nestIn` (`portable/adf-to-portable-markdown.ts`), which pushes into its caller's array.
 
 ### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
 
@@ -336,7 +326,7 @@ agree. Found by the technical-principles audit, 2026-10-04.
 
 ### 82. Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.
 
-Technical principle: tests use random UUID v7 ids; `plain-markdown-to-adf.test.ts` already does.
+Technical principle: tests use random UUID v7 ids; `portable-markdown-to-adf.test.ts` already does.
 Found by the technical-principles audit of item 78, 2026-10-05.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
