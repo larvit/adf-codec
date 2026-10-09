@@ -11,9 +11,10 @@ import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdo
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus', 'commonmark-spec')
 const checks = ['count', 'fixpoint', 'text'] as const
+const kinds = ['mark-model', 'node-model', 'pending'] as const
 
 type Check = (typeof checks)[number]
-type ExceptionKind = 'mark-model' | 'node-model' | 'pending'
+type ExceptionKind = (typeof kinds)[number]
 
 type SpecExample = { example: number; html: string; markdown: string; section: string }
 
@@ -30,7 +31,7 @@ function isCheck(value: unknown): value is Check {
 }
 
 function isKind(value: unknown): value is ExceptionKind {
-  return value === 'mark-model' || value === 'node-model' || value === 'pending'
+  return kinds.some((kind) => kind === value)
 }
 
 function isSpecExample(value: unknown): value is SpecExample {

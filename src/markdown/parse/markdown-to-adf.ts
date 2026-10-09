@@ -21,9 +21,9 @@ import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.
 import { spellsEmpty } from '../empty-keys.ts'
 
 // A paragraph a marker opens: it shares its markdown paragraph with the marker, so no image there stands alone.
-type MarkedParagraph = { kind: 'markedParagraph'; position: SourcePosition; text: string }
+type MarkerParagraph = { kind: 'markerParagraph'; position: SourcePosition; text: string }
 
-type ReadBlock = Block | MarkedParagraph
+type ReadBlock = Block | MarkerParagraph
 
 // `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand.
 type Reading = { claims: Claims; definitions: LinkDefinitions; inExpand: boolean; memo: SpellingMemo }
@@ -123,7 +123,7 @@ function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, d
       return contentNode({ attrs: { level: block.level }, type: 'heading' }, block.text, reading, path, 'heading')
     case 'html':
       return failure('unmappable-html', `no raw HTML converts at this version: ${block.construct}`, path)
-    case 'markedParagraph':
+    case 'markerParagraph':
       return contentNode({ type: 'paragraph' }, block.text, reading, path, 'paragraph')
     case 'orderedList':
       return listNode({ attrs: { order: block.start }, type: 'orderedList' }, block.items, reading, path, depth)
@@ -149,8 +149,8 @@ function markerLine(text: string): { line: string; rest: string } {
   return { line: (hardBreak ? line.slice(0, -1) : line).replace(/^[ \t]+/, ''), rest: lineEnd === -1 ? '' : text.slice(lineEnd + 1) }
 }
 
-function paragraphsOf(position: SourcePosition, ...texts: string[]): MarkedParagraph[] {
-  return texts.filter((text) => text !== '').map((text) => ({ kind: 'markedParagraph', position, text }))
+function markerParagraphs(position: SourcePosition, ...texts: string[]): MarkerParagraph[] {
+  return texts.filter((text) => text !== '').map((text) => ({ kind: 'markerParagraph', position, text }))
 }
 
 function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
@@ -159,12 +159,12 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   if (led === undefined) return containerNode({ type: 'blockquote' }, blocks, reading, path, depth)
   const { folded, panelType } = led.marker
   const { line, rest } = markerLine(led.text)
-  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...paragraphsOf(led.position, line, rest), ...body], reading, path, depth + 1))
+  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...markerParagraphs(led.position, line, rest), ...body], reading, path, depth + 1))
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.claims)
   if (!title.ok) return title
   const text = titleText(title.value.nodes)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
-  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, inExpand: true }, path, depth + 1))
+  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readBlocks([...markerParagraphs(led.position, rest), ...body], { ...reading, inExpand: true }, path, depth + 1))
 }
 
 // docs/decisions.md, A callout title keeps its link targets.
@@ -203,7 +203,7 @@ function bulletNode(items: readonly Block[][], reading: Reading, path: ConvertEr
   }
   const tasks: AdfNode[] = []
   for (const [index, { marker, others, position, text }] of led.entries()) {
-    const read = readBlocks([...paragraphsOf(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), ...others], reading, [...path, 'content', index], depth + 1)
+    const read = readBlocks([...markerParagraphs(position, text.replace(/^(?:[ \t\n]|\\\n)+/, '')), ...others], reading, [...path, 'content', index], depth + 1)
     if (!read.ok) return read
     let beside = read.value.length
     while (read.value[beside - 1]?.type === 'taskList') beside -= 1

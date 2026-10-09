@@ -79,7 +79,7 @@ four now reads, or refuses with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
-| an image not alone in its paragraph (`See ![a](u).`, `# ![a](u)`), on parse | `unmappable-image` | its alt text linked to its URL, or, beside other text inside a link, plain text the link marks |
+| an image anywhere but alone in a plain paragraph (`See ![a](u).`, `# ![a](u)`), on parse | `unmappable-image` | its alt text linked to its URL, or, inside a link, plain text the link marks |
 | a titled image alone in its paragraph (`![a](u "t")`), on parse | `unmappable-image` | the image, captioned with its title |
 | an image that is a link's whole text, alone in its paragraph (`[![a](u)](/v)`), on parse | `unmappable-image` | the image, its `media` marked with the link |
 | a link whose `href` or `title` no CommonMark escape spells, on emit | `unspellable-link` | spells `!adf:link[text]{attrs}` |

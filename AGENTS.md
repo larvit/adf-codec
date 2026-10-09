@@ -25,6 +25,7 @@ In `docs/decisions.md`:
 - CommonMark is a subset
 - Tables
 - Links
+- What ADF holds no node for reads as a link
 - Ids stay site-local
 - Portable task ids come from position
 - A callout title keeps its link targets
