@@ -191,3 +191,12 @@ Ruling: same
 |---|---|
 | Mid A | same |
 | Inherited architect | same |
+
+## 2026-10-09T10:07:15Z, PR #22 at 37629e4, against 78655bc
+
+Ruling: same
+
+| Seat | Vote |
+|---|---|
+| Mid A | same |
+| Inherited architect | same |
