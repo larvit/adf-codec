@@ -6,22 +6,23 @@ import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
 import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
 import { readEntityReference } from './commonmark/entity-references.ts'
 
-// What the inline reader reads from a token start, `width` characters on; `text` reads literally.
+// What the inline reader reads from a token start, `width` characters on; `text` reads literally, a directive reads by its own grammar, and HTML is refused.
 export type InlineToken =
-  | { kind: 'code-span'; opener: number; width: number }
-  | { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
-  | { canClose: boolean; canOpen: boolean; kind: 'delimiter-run'; width: number }
-  | { construct: string; kind: 'html'; width: 1 }
   | { email: boolean; kind: 'autolink'; width: number }
   | { image: boolean; kind: 'bracket'; width: number }
-  | { kind: 'bracket-close' | 'directive' | 'escape' | 'hard-break' | 'line-ending' | 'entity' | 'text'; width: number }
+  | { kind: 'bracket-close' | 'entity' | 'escape' | 'hard-break' | 'line-ending' | 'text'; width: number }
+  | { kind: 'code-span'; opener: number; width: number }
+  | { canClose: boolean; canOpen: boolean; kind: 'delimiter-run'; width: number }
+  | { kind: 'directive' }
+  | { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
+  | { construct: string; kind: 'html' }
 
 export function readInlineToken(source: string, index: number, claims: Claims): InlineToken {
   switch (source.charAt(index)) {
     case '<':
       return angleToken(source, index)
     case '!':
-      if (claims.directives && claimsDirectivePrefix(source, index)) return { kind: 'directive', width: 1 }
+      if (claims.directives && claimsDirectivePrefix(source, index)) return { kind: 'directive' }
       return source.charAt(index + 1) === '[' ? { image: true, kind: 'bracket', width: 2 } : text(1)
     case '[':
       return { image: false, kind: 'bracket', width: 1 }
@@ -63,7 +64,7 @@ function angleToken(source: string, index: number): InlineToken {
   const email = readEmailAutolink(source, index)
   if (email !== undefined) return { email: true, kind: 'autolink', width: email }
   const construct = inlineHtmlConstruct(source, index)
-  return construct === undefined ? text(1) : { construct, kind: 'html', width: 1 }
+  return construct === undefined ? text(1) : { construct, kind: 'html' }
 }
 
 function backtickToken(source: string, index: number): InlineToken {
