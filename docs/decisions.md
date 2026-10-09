@@ -202,19 +202,18 @@ link reference definition — and a directive link CommonMark could spell is ref
 link — the bracket form goes literal, the directive form refused — which is CommonMark's prose
 where its reference implementation nests one `<a>` in another.
 
-## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding nothing a mark rides reads as its destination, then the hard breaks it held
+## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes marks reads as its destination, then its hard breaks
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
-maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer, after a
-reader panel split 4 to 3. Goals 4, 5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds
-no empty text node and a hard break takes no marks.
+maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer. Goals 4, 5, 6 and 7. Valid while
+`mediaInline` carries no URL, ADF holds no empty text node, a hard break takes no marks and no
+consumer has reported a link of hard breaks alone.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
 and §Marks spell out. An image alone in its paragraph reads as the image, its title as the caption.
 Anywhere else it reads as its alt text linked to its URL, titled by its title. An empty alt text
-reads as the URL, and an empty link text as its destination; a link text holding only hard breaks,
-which take no marks, reads as its destination followed by those breaks, which four of seven readers
-expected over dropping them, and the maintainer kept as an edge case until real reports arrive.
+reads as the URL, and an empty link text as its destination. A link text holding only hard breaks
+reads as its destination, then those breaks: four of seven readers expected that over dropping them.
 `[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
 paragraph whose whole text is one image reads as that image, with the link marking its `media`.
 Inside any other link, the alt text is plain text the link marks, and the image's URL and title

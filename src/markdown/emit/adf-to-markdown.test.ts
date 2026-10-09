@@ -728,7 +728,7 @@ test('spells a mark run across the hard break between two nodes holding the mark
   assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
 })
 
-test('carries a hard break holding marks, which Atlassian\'s schema gives it none of', () => {
+test('carries a hard break holding marks, which Atlassian\'s schema withholds', () => {
   const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
   assert.equal(
     readsBack(document(paragraph({ marks: [link], text: 'a', type: 'text' }, { marks: [link], type: 'hardBreak' }, { marks: [link], text: 'b', type: 'text' }))),

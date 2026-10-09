@@ -466,13 +466,13 @@
     "divergence": "em 1/2",
     "example": 638,
     "kind": "mark-model",
-    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+    "reason": "The mark spans the text nodes either side of the hard break, counted once per node where CommonMark nests one element."
   },
   {
     "check": "count",
     "divergence": "em 1/2",
     "example": 639,
     "kind": "mark-model",
-    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+    "reason": "The mark spans the text nodes either side of the hard break, counted once per node where CommonMark nests one element."
   }
 ]
