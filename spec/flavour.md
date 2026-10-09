@@ -512,13 +512,13 @@ Hello, !adf:textBreak{}world — **Hello, !adf:textBreak{}world** — `a`!adf:te
 An inline node's marks ride the spelling wrapped around them, never the block sections' reserved
 `marks` key. `code`, `em`, `strike` and `strong` keep their markdown spellings, and are not
 directive names: `!adf:em[x]` is a named error. `border`, `subsup`, `textColor` and `underline` are
-inline directives, content required, holding more than hard breaks. `link` keeps its markdown
-spelling wherever CommonMark holds it — `<url>` for a bare autolink-shaped text, else `[text](url
-"title")` — and is the inline directive `!adf:link[text]{attrs}` only where CommonMark does not: an
-attribute besides `href` and `title`, an `href` or `title` no canonical escape spells (a control
-character, a backslash, an entity reference, an angle bracket beside a space or opening a bare
-destination, a newline in the title), or a link opening a paragraph whose markdown spelling would
-read as a link reference definition. Every such spelling carries an `href`: a directive link
+inline directives, content required, holding something besides hard breaks. `link` keeps its
+markdown spelling wherever CommonMark holds it — `<url>` for a bare autolink-shaped text, else
+`[text](url "title")` — and is the inline directive `!adf:link[text]{attrs}` only where CommonMark
+does not: an attribute besides `href` and `title`, an `href` or `title` no canonical escape spells
+(a control character, a backslash, an entity reference, an angle bracket beside a space or opening a
+bare destination, a newline in the title), or a link opening a paragraph whose markdown spelling
+would read as a link reference definition. Every such spelling carries an `href`: a directive link
 CommonMark could spell is a named error, and so is one spelling none. No link wraps a link at any
 nesting, which is CommonMark's own rule: a `[text]` already holding one leaves the outer brackets
 literal text, and the directive form, open to no literal reading, is a named error. ADF holds no
