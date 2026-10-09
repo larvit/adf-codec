@@ -8,7 +8,7 @@ Each call names the markdown it reads or writes:
 | --- | --- |
 | `adfToMarkdown` | `adfToLosslessMarkdown` |
 | `markdownToAdf`, for markdown `adfToMarkdown` wrote | `losslessMarkdownToAdf` |
-| `markdownToAdf`, for markdown a person or a model wrote | `commonMarkToAdf`, which reads a directive, a pipe table, `~~` and an `adf:` fence as CommonMark does, as text and code |
+| `markdownToAdf`, for markdown a person or a model wrote | `portableMarkdownToAdf`, which keeps GFM's pipe tables and `~~`; or `commonMarkToAdf`, which reads them, a directive and an `adf:` fence as CommonMark does, as text and code |
 
 Directives moved under the `!adf:` prefix. `losslessMarkdownToAdf` reads `0.1.0`'s spelling without
 an error, turning each directive into text and each carried node into an `adf` code block. Before
@@ -72,9 +72,9 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 
 `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave `ConvertErrorCode`
 and `not-a-string` joins it: a `switch` naming one of the three stops compiling, and one naming
-every code needs the new case. A document `adfToMarkdown` refused with one of the three
-`adfToLosslessMarkdown` now converts; markdown the parser refused with one of the three now refuses with the code the table
-gives.
+every code needs the new case. A document `adfToMarkdown` refused with one of the three now
+converts in `adfToLosslessMarkdown`; markdown the parser refused with one of the three now refuses
+with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |

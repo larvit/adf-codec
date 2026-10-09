@@ -13,7 +13,8 @@ A function's name says which markdown it reads or writes, and a reader reads tha
 | `commonMarkToAdf` | CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as CommonMark reads them |
 | `adfToPortableMarkdown`, `portableMarkdownToAdf` | CommonMark, GFM's pipe tables, `~~`, alerts and task markers, and Obsidian's callouts and `==`; no directive and no `adf:` fence |
 
-No `adfToCommonMark`: the portable writer serves every persona a CommonMark writer would. The panel
+The calls between markdown and HTML that `todo.md` item 7 ships take their flavour's name too. No
+`adfToCommonMark`: the portable writer serves every persona a CommonMark writer would. The panel
 picked `portable` 4 of 7 over `plain` 3, `gfm` and `rendered` none: the export readers read it as
 "renders anywhere, lossy", and three readers read `plain` as holding no tables or alerts.
 
