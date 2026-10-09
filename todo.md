@@ -333,8 +333,8 @@ functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLi
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
 output; and `nestIn` (`portable/adf-to-portable-markdown.ts`), which pushes into its caller's array.
-Once `Scan`'s pieces have owners, the bracket resolution, `closeBracket` through `altText`, can
-leave `inline-content.ts` (about 690 lines) for a module of its own.
+Once `Scan`'s pieces have owners, the bracket resolution, `linkedAlt` through `altText` with
+`holdsLink`, can leave `inline-content.ts` (about 690 lines) for a module of its own.
 
 ### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
 
