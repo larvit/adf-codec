@@ -78,7 +78,7 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
 
 test('the inline node table gives a type marks exactly where the ADF JSON Schemas give it a marks key', () => {
   const { marked } = schemaTypes()
-  for (const [type, model] of Object.entries(inlineNodes)) assert.equal(model.marks, marked.has(type), type)
+  for (const [type, model] of Object.entries(inlineNodes)) assert.equal(model.takesMarks, marked.has(type), type)
 })
 
 function spelled(): Spelled[] {

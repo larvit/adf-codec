@@ -723,7 +723,7 @@ test('spells a mark run across the hard break between two nodes holding the mark
   assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)\\\nb_\n')
   assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a\\\n\\\nb_\n')
   const directive: AdfMark = { attrs: { href: '/u', id: 'x' }, type: 'link' }
-  assert.equal(readsBack(document(paragraph(marked('a', directive), hardBreak, marked('b', directive)))), '!adf:link[a]{href="/u" id=x}\\\n!adf:link[b]{href="/u" id=x}\n')
+  assert.equal(readsBack(document(paragraph(marked('a', directive), hardBreak, marked('b', directive)))), '!adf:link[a!adf:hardBreak{}b]{href="/u" id=x}\n')
   readsBack(document(paragraph(marked(']: /x', link, { type: 'code' }), hardBreak, marked('b', link))))
   assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
 })
