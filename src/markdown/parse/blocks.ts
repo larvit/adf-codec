@@ -75,8 +75,8 @@ type ContainerStack = {
 
 type Walk = ParsedBlocks & {
   claims: Claims
-  // The block a paragraph of link reference definitions alone last closed after, which ends a list as any block does.
-  definedAfter: Block | undefined
+  // The last block before a paragraph of link reference definitions alone, which ends a list as any block does.
+  endedByDefinitions: Block | undefined
   leaf: OpenLeaf | undefined
   leafOpeners: Map<Block[], Map<string, LeafOpener>>
   position: SourcePosition
@@ -91,8 +91,8 @@ export function parseBlocks(markdown: string, claims: Claims): ParsedBlocks {
   const walk: Walk = {
     blocks: [],
     claims,
-    definedAfter: undefined,
     definitions: new Map(),
+    endedByDefinitions: undefined,
     leaf: undefined,
     leafOpeners: new Map(),
     position: { line: 1, offset: 0 },
@@ -249,12 +249,12 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
-// An item opening after its list's last item closed, as an empty item a blank line ends does, continues that list.
+// An item opening after its list's last item closed, as an empty item a blank line ends does, continues that list, unless definitions ended it.
 function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
   if (!start.fresh) return start.list
   const blocks = currentBlocks(walk)
   const previous = blocks.at(-1)
-  if ((previous?.kind === 'bulletList' || previous?.kind === 'orderedList') && previous !== walk.definedAfter && continuesList(previous, start.list)) return previous
+  if ((previous?.kind === 'bulletList' || previous?.kind === 'orderedList') && previous !== walk.endedByDefinitions && continuesList(previous, start.list)) return previous
   blocks.push(start.list)
   return start.list
 }
@@ -466,7 +466,8 @@ function closeLeaf(walk: Walk): void {
   if (leaf === undefined) return
   if (leaf.kind === 'paragraph') {
     const paragraph = takeParagraph(walk)
-    if (paragraph !== undefined) currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? paragraph)
+    if (paragraph === undefined) walk.endedByDefinitions = currentBlocks(walk).at(-1)
+    else currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? paragraph)
     return
   }
   walk.leaf = undefined
@@ -517,10 +518,7 @@ function takeParagraph(walk: Walk): Extract<Block, { kind: 'paragraph' }> | unde
   if (leaf?.kind !== 'paragraph') return undefined
   walk.leaf = undefined
   const text = readLinkDefinitions(walk.definitions, leaf.lines.join('\n'))
-  if (text === '') {
-    walk.definedAfter = currentBlocks(walk).at(-1)
-    return undefined
-  }
+  if (text === '') return undefined
   const kept = leaf.positions[leaf.lines.length - text.split('\n').length]
   return { kind: 'paragraph', position: kept ?? leaf.position, text }
 }
