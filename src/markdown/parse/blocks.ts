@@ -75,8 +75,7 @@ type ContainerStack = {
 
 type Walk = ParsedBlocks & {
   claims: Claims
-  // The last block before a paragraph of link reference definitions alone, which ends a list as any block does.
-  endedByDefinitions: Block | undefined
+  endedLists: Set<ListBlock>
   leaf: OpenLeaf | undefined
   leafOpeners: Map<Block[], Map<string, LeafOpener>>
   position: SourcePosition
@@ -92,7 +91,7 @@ export function parseBlocks(markdown: string, claims: Claims): ParsedBlocks {
     blocks: [],
     claims,
     definitions: new Map(),
-    endedByDefinitions: undefined,
+    endedLists: new Set(),
     leaf: undefined,
     leafOpeners: new Map(),
     position: { line: 1, offset: 0 },
@@ -249,14 +248,24 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
-// An item opening after its list's last item closed, as an empty item a blank line ends does, continues that list, unless definitions ended it.
+// An item opening after its list's last item closed, as an empty item a blank line ends does, continues that list.
 function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
   if (!start.fresh) return start.list
   const blocks = currentBlocks(walk)
   const previous = blocks.at(-1)
-  if ((previous?.kind === 'bulletList' || previous?.kind === 'orderedList') && previous !== walk.endedByDefinitions && continuesList(previous, start.list)) return previous
+  if (isList(previous) && !walk.endedLists.has(previous) && continuesList(previous, start.list)) return previous
   blocks.push(start.list)
   return start.list
+}
+
+// A paragraph of link reference definitions alone leaves no block, yet ends the list before it as any block does.
+function endList(walk: Walk): void {
+  const previous = currentBlocks(walk).at(-1)
+  if (isList(previous)) walk.endedLists.add(previous)
+}
+
+function isList(block: Block | undefined): block is ListBlock {
+  return block?.kind === 'bulletList' || block?.kind === 'orderedList'
 }
 
 function closeContainers(walk: Walk, depth: number): void {
@@ -466,7 +475,7 @@ function closeLeaf(walk: Walk): void {
   if (leaf === undefined) return
   if (leaf.kind === 'paragraph') {
     const paragraph = takeParagraph(walk)
-    if (paragraph === undefined) walk.endedByDefinitions = currentBlocks(walk).at(-1)
+    if (paragraph === undefined) endList(walk)
     else currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? paragraph)
     return
   }

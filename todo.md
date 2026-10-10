@@ -355,7 +355,7 @@ quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces,
 
 Technical principle "One owner per value": the `Walk` record passes through twelve functions that
 mutate it and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads
-the `endedByDefinitions` that `closeLeaf` leaves. `ContainerStack` in the
+the `endedLists` that `closeLeaf` fills. `ContainerStack` in the
 same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
 functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
 `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in

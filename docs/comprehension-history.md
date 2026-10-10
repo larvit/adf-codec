@@ -384,3 +384,34 @@ Inherited architect, decided by:
 - Shape, Locality: `src/markdown/parse/inline-content.ts:121` `readToken`: one pure tokenizer and one switch that applies tokens
 - Shape: `src/markdown/directive-syntax.ts:14` `ClaimedPrefix`: the directive read needs proof of its prefix, and the misnamed `opensConstruct` is gone
 - Locality: `src/markdown/emit/line-escaping.ts:112` `escapeClaims`: the escaper steps one character at a time while the reader steps by token, which only the `==` comment explains
+
+## 2026-10-10T09:16:56Z, PR #30 at 6182ba6, against c11aa91
+
+Ruling: worse
+
+Fell: Locality. Under the floor of 7.0: Locality 5.63, so the same ruling counts as worse.
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | same | same | same |
+| Inherited architect | better | worse | same | same | same |
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Mid A | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Maintainability senior | 7 | 6 | 6.5 | 6 | 6 |
+| Inherited architect | 6.5 | 5.5 | 6 | 6 | 6 |
+| Mean | 6.88 | 5.63 | 6.38 | 5.75 | 6.00 |
+
+Mid A, decided by:
+
+- Locality: `src/markdown/parse/blocks.ts:79` `Walk.endedByDefinitions`: written in `closeLeaf` at `:469` and read in `openedList` at `:257`, never cleared, correct only by identity with `blocks.at(-1)`; `closeLeaf` takes on recording where definitions ended a list
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/parse/blocks.ts:79` `Walk.endedByDefinitions`: a never-reset field `closeLeaf` writes and `openedList` reads, right only by identity and by `openContainers` closing before it opens; reordering those steps breaks the split silently
+- Locality: `src/markdown/parse/blocks.ts:432` `readLineBlock`: a second path that can find a paragraph emptied by definitions records nothing, which a reader must prove harmless by hand
+- Navigation: `src/markdown/parse/blocks.ts:252` `openedList`: the comment names the exception, so a reader of two lists merged or not lands on the right unit
+- Navigation: `README.md:242` the CommonMark exceptions bullet: each exception is named rather than counted by position
+- Navigation: `CHANGELOG.md:5` `## Unreleased`: breaking entries come first, other changes last
