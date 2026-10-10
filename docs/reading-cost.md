@@ -198,3 +198,20 @@ Read most (opens and searches):
 - `src/markdown/parse/markdown-to-adf.test.ts` 5
 - `src/markdown/emit/adf-to-markdown.ts` 4
 - `src/conformance/markdown-property.test.ts` 3
+
+## Reading cost, chunk 268926753bdb, finished 2026-10-10T09:02:04Z
+
+174429 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/line-escaping.ts` 9
+- `docs/decisions.md` 7
+- `src/markdown/directive-syntax.ts` 5
+- `todo.md` 5
+- `src/markdown/parse/inline-content.ts` 4
+- `README.md` 3
+- `spec/flavour.md` 3
+- `src/markdown/commonmark/grammar.ts` 3
+- `src/markdown/directive-syntax.test.ts` 3
+- `src/markdown/portable/conventions.ts` 3
