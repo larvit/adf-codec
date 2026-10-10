@@ -6,8 +6,6 @@
   CommonMark reads it: `- a` then `* b`, `1. a` then `1) b`. `adfToLosslessMarkdown` gives a list
   right after one of its kind the other marker, `* ` or `1)`, in place of the `::listBreak`
   separator. Convert stored markdown per `MIGRATION.md`.
-- **Breaking:** two lists a link reference definition parts read as two lists, as CommonMark
-  reads them, where they read as one; see `MIGRATION.md`.
 - **Breaking:** each call names the markdown it reads or writes. `adfToMarkdown` and `markdownToAdf`
   are now `adfToLosslessMarkdown` and `losslessMarkdownToAdf`. A bot's or a model's markdown reads
   in `portableMarkdownToAdf`, and markdown known to be strict CommonMark in the new
@@ -58,6 +56,8 @@
   `losslessMarkdownToAdf` refuses a directive mark wrapping only hard breaks as
   `unsupported-node-shape`. `adfToLosslessMarkdown` writes a hard break holding marks as
   `!adf:carry{json="…"}`. See `MIGRATION.md`.
+- **Breaking:** two lists a link reference definition parts read as two lists, as CommonMark
+  reads them, where `0.1.0` read one; see `MIGRATION.md`.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` write text holding a long run of `*`, `_`, `~`
   or backticks, or a heading ending in a long run of `#`, in time linear in the run: a run of 20000
   `*` took seconds before, and now takes milliseconds.
@@ -79,16 +79,16 @@
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
   where all three hung.
-- The README opens with what the package does and for whom, and `package.json` carries search
-  keywords.
-- The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where
-  issues and pull requests go.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
   markdown GitHub, GitLab and Obsidian render: alerts, callouts, task lists, `==highlights==` and
   pipe tables. A task item keeps its paragraphs, then its nested task lists; the rest of the item,
   such as an image or a code block, stands after the task list.
 - Spell `rule`'s `color`, `style` and `weight`, `layoutSection`'s `columnRuleStyle` and a link's
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
+- The README opens with what the package does and for whom, and `package.json` carries search
+  keywords.
+- The source moves to [github.com/larvit/adf-codec](https://github.com/larvit/adf-codec), where
+  issues and pull requests go.
 
 ## 0.1.0
 

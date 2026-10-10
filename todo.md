@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 98`
+`Next ID = 99`
 
 | Goal | W |
 |---|---|
@@ -35,6 +35,7 @@
 | 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
 | 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
+| 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 5 | 9 | 9 | 8.2 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
@@ -142,6 +143,15 @@ flanking cannot spell re-emits the whole line before riding the carry, quadratic
 the portable reduction's `spellableLine` drops one mark per re-emit the same way. An inline node
 whose attributes no spelling writes re-emits the line the same way before riding the carry. Make all
 three linear.
+
+### 98. Read blank lines inside deeply nested list items in time linear in the markdown.
+
+`matchContainers` in `src/markdown/parse/blocks.ts` continues every open item holding a block on
+each blank line, and `parseBlocks` holds no depth guard: `readBlocks` refuses past 500 levels only
+after the walk. `'- '.repeat(n) + 'a\n' + '\n'.repeat(n)` took 675 ms at n = 5000, 2.7 s at 10000
+and 10.7 s at 20000 (60 kB) before refusing as `unsupported-nesting-depth`. `docs/decisions.md`
+§Cost fixes are measured, never timed calls the re-scan bounded by that guard; correct it with the
+fix.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
@@ -344,7 +354,8 @@ quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces,
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
 Technical principle "One owner per value": the `Walk` record passes through twelve functions that
-mutate it and return `void`; `walk.leaf` alone is written in seven places. `ContainerStack` in the
+mutate it and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads
+the `endedByDefinitions` that `closeLeaf` leaves. `ContainerStack` in the
 same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
 functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
 `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
