@@ -590,7 +590,11 @@ A four-seat comprehension panel scored the project under the floor of 7. Its sco
 Panels on near-identical code scored overall means of 5.75 to 6.00, and a seat moves ±0.5 between
 runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub,
 2026-10-04, whose chunk changed only comments in `src/`; and item 78, 2026-10-07, whose three runs
-fell below the run before it on Navigation, Locality and Shape while the overall held.
+fell below the run before it on Navigation, Locality and Shape while the overall held. Item 94,
+2026-10-10, also shipped after three rounds: a definitions-only paragraph leaves no block, so ending
+the list it follows takes state carried across lines, and every design read worse on Locality while
+the overall held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean
+5.63. Item 56 gives that state one owner.
 
 ## Properties on a fixed seed
 
