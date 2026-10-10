@@ -150,8 +150,9 @@ three linear.
 each blank line, and `parseBlocks` holds no depth guard: `readBlocks` refuses past 500 levels only
 after the walk. `'- '.repeat(n) + 'a\n' + '\n'.repeat(n)` took 675 ms at n = 5000, 2.7 s at 10000
 and 10.7 s at 20000 (60 kB) before refusing as `unsupported-nesting-depth`. `docs/decisions.md`
-§Cost fixes are measured, never timed calls the re-scan bounded by that guard; correct it with the
-fix.
+§Cost fixes are measured, never timed says the 500-level guard bounds `continuesContainer`'s
+re-scan in depth; the guard runs only after the walk, so it bounds nothing. Correct that entry with
+the fix.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
@@ -353,10 +354,9 @@ quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces,
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
-Technical principle "One owner per value": the `Walk` record passes through twelve functions that
-mutate it and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads
-the `endedLists` that `closeLeaf` fills. `ContainerStack` in the
-same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
+Technical principle "One owner per value": the `Walk` record passes through functions that mutate it
+and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads the
+`endedLists` that `closeLeaf` fills. `ContainerStack` in the same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
 functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
 `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
 `mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
