@@ -673,8 +673,16 @@ test('reads a bullet list, the marker width setting the continuation', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('-     Code.\n')), [bulletList(item({ content: [text('Code.')], type: 'codeBlock' }))])
   assert.deepEqual(content(losslessMarkdownToAdf('- a\n-\n\n- c\n')), [bulletList(item(paragraph('a')), item(), item(paragraph('c')))])
   assert.deepEqual(content(losslessMarkdownToAdf('- a\n1. b\n')), [bulletList(item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
-  assert.deepEqual(content(losslessMarkdownToAdf('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
   assert.deepEqual(content(losslessMarkdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
+})
+
+test('reads two lists a link reference definition parts as two lists, in every reader', () => {
+  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
+    assert.deepEqual(content(read('- a\n\n[r]: /u\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
+    assert.deepEqual(content(read('-\n\n[r]: /u\n\n- b\n')), [bulletList(item()), bulletList(item(paragraph('b')))])
+    assert.deepEqual(content(read('- a\n\n  [r]: /u\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
+  }
 })
 
 test('reads an ordered list, its first marker the order attribute', () => {
