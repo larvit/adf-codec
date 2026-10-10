@@ -1,6 +1,6 @@
 : "${EPOCHREALTIME:?the gate times its legs with EPOCHREALTIME — bash 5 or newer}"
 
-bun_image=oven/bun:1.4.2-alpine
+bun_image=oven/bun:1.4.3-alpine
 deno_image=denoland/deno:2.9.7
 firefox_image=selenium/standalone-firefox:155.0.1
 floor_image=node:18.20.8-alpine3.21
