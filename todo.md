@@ -25,8 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 94 | 0.2.0 | defect | **Read two lists a link reference definition parts as two lists, in every reader.** | 3 | 3 | 4 | 7 | 4, 5 | 13.6 |
-| 97 | 0.2.0 |  | **Put every Breaking entry first under `CHANGELOG.md`'s `## Unreleased`, then fixes and additions.** | 1 | 1 | 5 | 3 | 3 | 13.4 |
 | 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
@@ -70,19 +68,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 94. Read two lists a link reference definition parts as two lists, in every reader.
-
-`openedList` in `src/markdown/parse/blocks.ts` joins a fresh list to the list just before it when
-no block stands between, so `- a\n\n[r]: /u\n\n- b` reads as one list; CommonMark reads two,
-the definition closing the first. The join exists for an empty item a blank line ends, which
-continues its list. `markdown-to-adf.test.ts` asserts the one list. Breaking: `MIGRATION.md`'s
-Readings table gains its row, and the README's guarantees drop the exception and count one fewer.
-
-### 97. Put every Breaking entry first under `CHANGELOG.md`'s `## Unreleased`, then fixes and additions.
-
-The bullets run in the order the work landed, so an app developer upgrading meets a fix before the
-breaking changes they must act on.
 
 ### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
 
