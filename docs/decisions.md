@@ -594,7 +594,7 @@ fell below the run before it on Navigation, Locality and Shape while the overall
 2026-10-10, also shipped after three rounds: a definitions-only paragraph leaves no block, so ending
 the list it follows takes state carried across lines, and every design read worse on Locality while
 the overall held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean
-5.63. Item 56 gives that state one owner.
+5.63. Item 56, still open, is to give that state one owner.
 
 ## Properties on a fixed seed
 
