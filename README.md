@@ -239,8 +239,8 @@ Serves Goals 1, 4 and 5.
   without a delimiter row, is an error result; each can be kept literal (`spec/flavour.md`).
 - A document any reader built, written back with `adfToLosslessMarkdown`, takes the library's
   canonical spelling, which round-trips byte-identically.
-- These CommonMark spellings parse without an error and build a document the reference
-  implementation renders differently, where ADF holds no node for what it renders:
+- These CommonMark spellings parse without an error but build a document the reference
+  implementation renders differently, because ADF holds no node for what the reference renders:
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and `[]()`
     as nothing. A link text holding only hard breaks reads the same, followed by its hard breaks.
   - An image reads as an image only alone in its paragraph. Anywhere else — beside other text, in
@@ -253,12 +253,12 @@ Serves Goals 1, 4 and 5.
   - An image's title becomes its caption when the image stays an image, and its link's title when
     it becomes linked alt text. Inside another link, the title is dropped.
 
-  And these, for other reasons: a shortcut reference matching its definition only under Unicode case folding stays
-  unresolved, and a link whose text holds an autolink keeps the inner link and leaves the outer
-  brackets literal text, which the spec requires and the reference itself breaks, nesting one `<a>`
-  in the other. `corpus/commonmark-spec/exceptions.json` pins the spellings ADF holds no node for
-  `node-model` where the suite reaches them, and the case-folded reference `pending`; the suite
-  holds no example of a link holding an autolink.
+  And these, for other reasons: a shortcut reference matching its definition only under Unicode case
+  folding stays unresolved, and a link whose text holds an autolink keeps the inner link and leaves
+  the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
+  one `<a>` in the other. `corpus/commonmark-spec/exceptions.json` marks each spelling ADF holds no
+  node for as `node-model` where the suite has an example of it, and the case-folded reference as
+  `pending`; the suite holds no example of a link holding an autolink.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to

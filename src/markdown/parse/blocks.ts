@@ -248,7 +248,7 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
-// An item opening after its list's last item closed, as an empty item a blank line ends does, continues that list.
+// An empty item closes at the blank line after it, yet the next item continues its list unless endList ended it.
 function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
   if (!start.fresh) return start.list
   const blocks = currentBlocks(walk)
@@ -258,7 +258,7 @@ function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>
   return start.list
 }
 
-// A paragraph of link reference definitions alone leaves no block, yet ends the list before it as any block does.
+// A paragraph holding only link reference definitions leaves no block, yet ends the list before it as any block does.
 function endList(walk: Walk): void {
   const previous = currentBlocks(walk).at(-1)
   if (isList(previous)) walk.endedLists.add(previous)

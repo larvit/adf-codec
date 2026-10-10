@@ -676,7 +676,7 @@ test('reads a bullet list, the marker width setting the continuation', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
 })
 
-test('reads two lists a link reference definition parts as two lists, in every reader', () => {
+test('ends a list at a link reference definition, in every reader', () => {
   for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
     assert.deepEqual(content(read('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
     assert.deepEqual(content(read('- a\n\n[r]: /u\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])

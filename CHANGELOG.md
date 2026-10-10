@@ -2,12 +2,6 @@
 
 ## Unreleased
 
-- **Breaking:** a list whose bullet character or ordered delimiter changes reads as two lists, as
-  CommonMark reads it: `- a` then `* b`, `1. a` then `1) b`. `adfToLosslessMarkdown` gives a list
-  right after one of its kind the other marker, `* ` or `1)`, in place of the `::listBreak`
-  separator. Convert stored markdown per `MIGRATION.md`.
-- **Breaking:** a link reference definition between two list items ends the list, as CommonMark
-  reads it: `- a`, `[r]: /u`, `- b` read as two lists, where `0.1.0` read one; see `MIGRATION.md`.
 - **Breaking:** each call names the markdown it reads or writes. `adfToMarkdown` and `markdownToAdf`
   are now `adfToLosslessMarkdown` and `losslessMarkdownToAdf`. A bot's or a model's markdown reads
   in `portableMarkdownToAdf`, and markdown known to be strict CommonMark in the new
@@ -58,11 +52,18 @@
   `losslessMarkdownToAdf` refuses a directive mark wrapping only hard breaks as
   `unsupported-node-shape`. `adfToLosslessMarkdown` writes a hard break holding marks as
   `!adf:carry{json="…"}`. See `MIGRATION.md`.
+- **Breaking:** a list whose bullet character or ordered delimiter changes reads as two lists, as
+  CommonMark reads it: `- a` then `* b`, `1. a` then `1) b`. `adfToLosslessMarkdown` gives a list
+  right after one of its kind the other marker, `* ` or `1)`, in place of the `::listBreak`
+  separator. Convert stored markdown per `MIGRATION.md`.
+- **Breaking:** a link reference definition between two list items, after a blank line and at the
+  list's own indentation, ends the list, as CommonMark reads it; `0.1.0` read one list. See
+  `MIGRATION.md`.
 - Fix the time `adfToLosslessMarkdown` and `adfToPortableMarkdown` take on text holding a long run of
-  `*`, `_`, `~` or backticks, or a heading ending in a long run of `#`: it is linear in the run, and
-  a run of 20000 `*` takes milliseconds where it took seconds.
-- Fix the round-trip: `losslessMarkdownToAdf(adfToLosslessMarkdown(doc))` deep-equals `doc` as
-  `JSON.parse` builds it: two adjacent text nodes CommonMark would read back as one are parted by
+  `*`, `_`, `~` or backticks, or a heading ending in a long run of `#`: the time is linear in the
+  run, and a run of 20000 `*` takes milliseconds where it took seconds.
+- Fix the round-trip, so `losslessMarkdownToAdf(adfToLosslessMarkdown(doc))` deep-equals `doc` as
+  `JSON.parse` builds it. Two adjacent text nodes CommonMark would read back as one are parted by
   `!adf:textBreak{}`, an empty `attrs`, `content` or `marks` is spelled `{attrs=empty}`,
   `{content=empty}` or `{marks=empty}`, `-0` is spelled `-0`, and a `codeBlock` of several text
   nodes is a fence per node. A `codeBlock` holding other than plain text nodes rides the block
