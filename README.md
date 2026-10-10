@@ -253,7 +253,7 @@ Serves Goals 1, 4 and 5.
   - An image's title becomes its caption when the image stays an image, and its link's title when
     it becomes linked alt text. Inside another link, the title is dropped.
 
-  And these: a shortcut reference matching its definition only under Unicode case folding stays
+  And these, for other reasons: a shortcut reference matching its definition only under Unicode case folding stays
   unresolved, and a link whose text holds an autolink keeps the inner link and leaves the outer
   brackets literal text, which the spec requires and the reference itself breaks, nesting one `<a>`
   in the other. `corpus/commonmark-spec/exceptions.json` pins the spellings ADF holds no node for
