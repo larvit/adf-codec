@@ -77,7 +77,7 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |
 | a list whose bullet character or ordered delimiter changes (`- a` then `* b`, `1. a` then `1) b`) | one list | two lists, as CommonMark reads them |
-| two lists a link reference definition parts (`- a`, `[r]: /u`, `- b`, a blank line between each) | one list | two lists, as CommonMark reads them |
+| a link reference definition between two list items, at the list's own indentation (`- a`, a blank line, `[r]: /u`, `- b`) | one list | two lists, as CommonMark reads them; indent the definition under the item, or move it below the list, to keep one list |
 | a link whose text already holds one (`[a<https://example.com/>b](/v)`) | marks every node the inner link does not, splitting the outer link around it | leaves the outer brackets literal text; write the pieces as separate links to keep them |
 | markdown holding no block (`""`) | `{ type: 'doc', version: 1 }` | `{ content: [], type: 'doc', version: 1 }`; `!adf:doc {content=none}` reads as the former |
 | a hard break inside a mark's spelling (`*a\` then `b*` on the next line) | the hard break holds the mark | the hard break holds no marks, as Atlassian's schema requires, and the recipe above drops the marks `0.1.0` gave it wherever text beside it holds them. A link whose text is only hard breaks reads as its destination linked, followed by those breaks |
