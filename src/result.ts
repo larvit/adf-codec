@@ -52,6 +52,6 @@ export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
   } catch (error) {
     // A stack overflow is a bug (docs/decisions.md §Nothing recurses unbounded), so it stays a throw.
     if (!(error instanceof Error) || !engineLimitThrows.includes(`${error.name}: ${error.message}`)) throw error
-    return failure('unsupported-node-shape', `the output runs past what this JavaScript engine holds: ${error.message}`, [])
+    return failure('unsupported-node-shape', `the output would be longer than the longest string or array this JavaScript engine builds (${error.message})`, [])
   }
 }

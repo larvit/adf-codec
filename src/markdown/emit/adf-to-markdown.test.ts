@@ -49,7 +49,7 @@ test('refuses a document whose markdown runs past the engine\'s longest string',
   let value: JsonValue = new Array<JsonValue>(2_200_000).fill(0)
   for (let level = 0; level < 495; level += 1) value = [value]
   const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
-  assert.match(markdown(result), /^unsupported-node-shape: the output runs past what this JavaScript engine holds: /)
+  assert.match(markdown(result), /^unsupported-node-shape: the output would be longer than the longest string or array this JavaScript engine builds \(/)
   assert.deepEqual(path(result), [])
 })
 

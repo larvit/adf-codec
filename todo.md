@@ -81,7 +81,9 @@ of markdown, a `!adf:blockquote` holding a list nested 490 levels whose paragrap
 lazy lines `b\`, crashed Node 24 out of heap: `directiveNode` re-spells the subtree, indenting each
 line to its depth. `adfToLosslessMarkdown` on nine text nodes sharing one 2^28-character string
 got Bun OOM-killed under 8 GB: `escape` in `line-escaping.ts` pushes one array element per
-character. The length to refuse past is a number no entry states yet (AGENTS.md §Stated numbers):
+character. Where the heap holds out, the readers' re-spelling can still throw a `RangeError`, and
+JavaScriptCore's `Out of memory`, which the writers refuse, may also mean a failed allocation a
+retry survives. The length to refuse past is a number no entry states yet (AGENTS.md §Stated numbers):
 V8's 2^29 − 24 on every engine, so the same document converts alike everywhere, is the candidate.
 Found by the principles audit of item 83, 2026-10-11.
 
