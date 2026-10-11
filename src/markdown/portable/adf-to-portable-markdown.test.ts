@@ -70,7 +70,7 @@ test('refuses what the document guard refuses, and nothing else', () => {
   assert.match(portableDocument(document(paragraph(deepInline))), /^unsupported-nesting-depth at /)
 })
 
-test('refuses a document whose text merges past the engine\'s longest string', () => {
+test('refuses a paragraph whose merged text passes the engine\'s longest string', () => {
   const long = 'a'.repeat(2 ** 28)
   const merged = paragraph(...Array.from({ length: 9 }, () => text(long)))
   assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /')
