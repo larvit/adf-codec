@@ -215,3 +215,20 @@ Read most (opens and searches):
 - `src/markdown/commonmark/grammar.ts` 3
 - `src/markdown/directive-syntax.test.ts` 3
 - `src/markdown/portable/conventions.ts` 3
+
+## Reading cost, chunk b00b273b412e, finished 2026-10-11T09:45:23Z
+
+75569 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/parse/blocks.ts` 8
+- `CHANGELOG.md` 6
+- `todo.md` 6
+- `README.md` 4
+- `corpus/commonmark-spec/exceptions.json` 3
+- `docs/decisions.md` 3
+- `src/markdown/parse/markdown-to-adf.test.ts` 3
+- `MIGRATION.md` 2
+- `AGENTS.md` 1
+- `ci.sh` 1
