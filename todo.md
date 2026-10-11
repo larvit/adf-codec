@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 103`
+`Next ID = 105`
 
 | Goal | W |
 |---|---|
@@ -25,6 +25,12 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
+| 83 | 0.2.0 | defect | **Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.** | 3 | 4 | 5 | 8 | 1, 9 | 22.0 |
+| 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
+| 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
+| 104 | 0.2.0 |  | **Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no file only the repo holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
+| 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
+| 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -41,18 +47,14 @@
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
 | 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
-| 83 | 0.3.0 | defect | **Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.** | 3 | 4 | 5 | 8 | 1, 9 | 22.0 |
 | 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
-| 84 | 0.3.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 80 | 0.3.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 5 | 6 | 1 | 19.2 |
 | 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
-| 52 | 0.3.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
-| 53 | 0.3.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
 | 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
@@ -70,6 +72,52 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
+
+### 83. Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.
+
+The block carry indents its JSON two spaces a level, so one unknown block holding 497 nested arrays
+around 540,000 numbers, about 1.1 MB as JSON, spells about 540 million characters, past V8's 2^29 −
+24. `serializeCanonicalJson`'s `join` throws, and `adfToLosslessMarkdown` throws with it. Any output
+past the limit does the same. Refuse it with a code from the closed list, and add a fixture. Found
+by the README-goals audit, 2026-10-08.
+
+### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
+
+`slotFault` in `directive-syntax.ts` gives a newline in an `emoji`, `mention` or `status` content
+slot `unspellable-whitespace` and a null character `unsupported-node-shape`, and the README gives
+both the same remedy. A consumer switching on `code` with no `default` keeps a case for one
+character class in one slot. 0.2.0 already removes the other `unspellable-*` codes; folding this
+one later is a break. Revise §Which code a cause takes, and add the change to the changelog's
+breaking entry, `MIGRATION.md` and the README's error table. Found by the product-owner review of
+0.2.0, 2026-10-11.
+
+### 84. Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.
+
+Models write `|:---|` delimiter rows and tables without a leading pipe; both are
+`malformed-pipe-table` today, and `portableMarkdownToAdf` is the bot's reader. ADF holds no column
+alignment, so the portable reader drops it (Goal 7: form, never content). The lossless reader keeps
+§Tables' narrowing. §Which code a cause takes then names the alignment colon as a lossless refusal.
+
+### 104. Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no file only the repo holds.
+
+- The README says `code` is stable across minors; §The code list changes codes in any 0.x minor.
+- The README lists `adfToHtml` and `htmlToAdf` in its signatures, error tables and guarantees,
+  marked `0.3.0`, against §Docs describe the release being built. Item 7 writes them back.
+- The CommonMark guarantees name `corpus/commonmark-spec/exceptions.json` and its kinds, which an
+  npm reader cannot open.
+
+Found by the product-owner review of 0.2.0, 2026-10-11.
+
+### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
+
+A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]"`. Breaking:
+`MIGRATION.md`'s Spellings table gains its row.
+
+### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
+
+Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
+escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
+gains its row.
 
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 
@@ -203,14 +251,6 @@ left, so a Proxy claiming 2³² elements is refused at once. The chunk asks whet
 shares the 500-level guard's `unsupported-nesting-depth` or takes another code. Found by the
 technical-principles audit, 2026-10-04.
 
-### 83. Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.
-
-The block carry indents its JSON two spaces a level, so one unknown block holding 497 nested arrays
-around 540,000 numbers, about 1.1 MB as JSON, spells about 540 million characters, past V8's 2^29 −
-24. `serializeCanonicalJson`'s `join` throws, and `adfToLosslessMarkdown` throws with it. Any output
-past the limit does the same. Refuse it with a code from the closed list, and add a fixture. Found
-by the README-goals audit, 2026-10-08.
-
 ### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
 
 Lands after items 7 and 46: the table names HTML and compares item 46's size figure. Its columns:
@@ -221,13 +261,6 @@ the table names each version and the date it was checked. Found while planning d
 2026-10-04. Checked 2026-10-05: no other package converts HTML or holds the round-trip; the
 candidates are `@atlaskit/editor-markdown-transformer`, `adf-to-markdown`, `adf-to-md`,
 `adf2markdown`, `extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
-
-### 84. Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.
-
-Models write `|:---|` delimiter rows and tables without a leading pipe; both are
-`malformed-pipe-table` today, and `portableMarkdownToAdf` is the bot's reader. ADF holds no column
-alignment, so the portable reader drops it (Goal 7: form, never content). The lossless reader keeps
-§Tables' narrowing.
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
@@ -279,23 +312,12 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
 
-### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
-
-A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]"`. Breaking:
-`MIGRATION.md`'s Spellings table gains its row.
-
 ### 51. Match a reference label to its definition under Unicode case folding.
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
 example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
 gains its row. Its `pending` exceptions go, and the README's guarantees drop the case-folding
 exception and count one fewer.
-
-### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
-
-Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
-escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
-gains its row.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
