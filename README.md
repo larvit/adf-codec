@@ -410,7 +410,8 @@ typed on `ConvertError` takes both.
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal is deterministic on one engine — there is no I/O anywhere — so a
 retry returns the identical error: fix the input, or set the document aside. Only the engine-limit
-refusal under `unsupported-node-shape` differs between engines.
+refusal under `unsupported-node-shape` differs between engines; on JavaScriptCore (Bun, Safari),
+retry it once, since that engine reports a heap running short the same way.
 
 ### Parsing
 
