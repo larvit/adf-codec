@@ -249,3 +249,20 @@ Read most (opens and searches):
 - `ci.sh` 1
 - `docker-runner.sh` 1
 - `docs/decisions.md` 1
+
+## Reading cost, chunk db4c6c9d8efd, finished 2026-10-11T18:21:17Z
+
+176277 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 6
+- `docs/decisions.md` 6
+- `todo.md` 6
+- `CHANGELOG.md` 4
+- `src/markdown/emit/adf-to-markdown.test.ts` 4
+- `src/markdown/emit/inline-line.ts` 4
+- `src/markdown/mark-spellings.ts` 4
+- `src/markdown/parse/inline-content.ts` 4
+- `MIGRATION.md` 3
+- `spec/flavour.md` 3
