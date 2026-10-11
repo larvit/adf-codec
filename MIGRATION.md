@@ -60,7 +60,7 @@ function migrateMarkdown(stored: string) {
 | --- | --- |
 | `:::panel info` … `:::`, the fence longer per nesting level | `!adf:panel info` … `!adf:/panel` at any depth |
 | `::media {id=a type=file}` | `!adf:media {id=a type=file}` |
-| `:::mediaSingle {layout=center}`, `::media {alt=a marks="[{\"attrs\":{\"href\":\"/v\"},\"type\":\"link\"}]" type=external url=u}`, `:::` | `[![a](u)](/v)` |
+| `:::mediaSingle {layout=center}` … `:::` around `::media {alt=a marks="[{\"attrs\":{\"href\":\"/v\"},\"type\":\"link\"}]" type=external url=u}` | `[![a](u)](/v)` |
 | `::taskItem TODO {localId=i}`: an empty `caption`, `decisionItem`, `paragraph` or `taskItem`, or an empty `heading` carrying `localId` | `!adf:taskItem TODO {localId=i}` then `!adf:/taskItem` |
 | `:mention[@Mikael]{id=5b10a2}` | `!adf:mention[@Mikael]{id=5b10a2}` |
 | the `adf` code fence and `:adf{json="…"}` | the `adf:<type>` code fence, its JSON without `type`, and `!adf:carry{json="…"}` |

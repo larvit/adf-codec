@@ -60,8 +60,8 @@
   list's own indentation, ends the list, as CommonMark reads it; `0.1.0` read one list. See
   `MIGRATION.md`.
 - **Breaking:** `adfToLosslessMarkdown` writes a centered, uncaptioned external image whose one
-  mark is a link holding only `href` and `title` as `[![alt](url)](href "title")`. Convert stored
-  markdown per `MIGRATION.md`.
+  mark is a link holding only `href` and `title` as `[![alt](url)](href "title")`, where it wrote the
+  `mediaSingle` directive. Convert stored markdown per `MIGRATION.md`.
 - Fix the time `adfToLosslessMarkdown` and `adfToPortableMarkdown` take on text holding a long run of
   `*`, `_`, `~` or backticks, or a heading ending in a long run of `#`: the time is linear in the
   run, and a run of 20000 `*` takes milliseconds where it took seconds.

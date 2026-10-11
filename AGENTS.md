@@ -27,6 +27,7 @@ In `docs/decisions.md`:
 - Tables
 - Links
 - An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes marks reads as its destination, then its hard breaks
+- A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 - Ids stay site-local
 - Portable task ids come from position
 - A block a task item cannot hold stands after its task list
