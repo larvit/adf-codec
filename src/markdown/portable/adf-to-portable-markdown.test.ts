@@ -220,6 +220,13 @@ test('spells a card as a link to its url, or to its data url named by its data n
   assert.equal(portable(node('blockCard', { data: {} })), '_(link card not included)_\n')
 })
 
+test('keeps the target of a link marking an external image', () => {
+  const linked = (href: string, ...marks: AdfMark[]): AdfNode => ({ attrs: { alt: 'Moon', type: 'external', url: 'https://example.com/moon.png' }, marks: [{ attrs: { href, title: 'Docs', id: 'x' }, type: 'link' }, ...marks], type: 'media' })
+  assert.equal(portable(node('mediaSingle', { layout: 'wide' }, linked('https://example.com/docs'))), '[![Moon](https://example.com/moon.png)](https://example.com/docs "Docs")\n')
+  assert.equal(portable(node('mediaSingle', {}, linked('a\\b', { attrs: { color: '#000', size: 1 }, type: 'border' }), node('caption', {}, text('The moon.')))), '[![Moon](https://example.com/moon.png)](a%5Cb "Docs")\n\nThe moon.\n')
+  assert.equal(portable(linked('')), '[![Moon](https://example.com/moon.png)](<> "Docs")\n')
+})
+
 test('keeps an external image wherever it stands and spells a stored file as its alt text, else a note', () => {
   const media = (attrs: AdfAttributes): AdfNode => ({ attrs, type: 'media' })
   const caption: AdfNode = node('caption', {}, text('The moon.'))

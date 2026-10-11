@@ -1,11 +1,11 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { adfDocumentFault, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { adfDocumentFault, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, taskMarker } from './conventions.ts'
-import { inlineLeaves, isBlockNodeType, oneLine, reduceInline, writableHref } from './inline-reduction.ts'
+import { inlineLeaves, isBlockNodeType, oneLine, portableLink, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -350,5 +350,8 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
   const alt = typeof held === 'string' ? oneLine(held).trim() : ''
-  return success([centeredImage([externalMedia(alt, writableHref(url))])])
+  const image = externalMedia(alt, writableHref(url))
+  const mark = nodeMarks(media).find((held) => held.type === 'link')
+  const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
+  return success([centeredImage([link === undefined ? image : { ...image, marks: [link] }])])
 }

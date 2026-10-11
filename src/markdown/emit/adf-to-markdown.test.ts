@@ -626,6 +626,28 @@ test('spells the image form for exactly the centered external media shape', () =
   assert.equal(code(adfToLosslessMarkdown(document({ attrs: { layout: 'center' }, content: [{ ...media, text: 'x' }], type: 'mediaSingle' }))), 'unsupported-node-shape')
 })
 
+test('spells a media only a link marks as the image the link wraps', () => {
+  const url = 'https://example.com/moon.png'
+  const linked = (alt: string | undefined, ...marks: AdfMark[]): AdfDocument =>
+    document({ attrs: { layout: 'center' }, content: [{ attrs: alt === undefined ? { type: 'external', url } : { alt, type: 'external', url }, marks, type: 'media' }], type: 'mediaSingle' })
+  const link = (attrs: AdfAttributes): AdfMark => ({ attrs, type: 'link' })
+  const spelled = (written: AdfDocument, expected: string): void => {
+    assert.equal(markdown(adfToLosslessMarkdown(written)), expected)
+    assert.deepEqual(losslessMarkdownToAdf(expected), { ok: true, value: written })
+  }
+  spelled(linked('The moon', link({ href: 'https://example.com/docs' })), `[![The moon](${url})](https://example.com/docs)\n`)
+  spelled(linked(undefined, link({ href: 'https://example.com/docs', title: 'Docs "v2"' })), `[![](${url})](https://example.com/docs "Docs \\"v2\\"")\n`)
+  spelled(linked('a [b] c', link({ href: '/a b' })), `[![a \\[b\\] c](${url})](</a b>)\n`)
+  spelled(linked('m', link({ href: '' })), `[![m](${url})]()\n`)
+  const fallback = (document: AdfDocument): boolean => markdown(adfToLosslessMarkdown(document)).startsWith('!adf:mediaSingle {layout=center}')
+  assert.ok(fallback(linked('m', link({ href: '/d', id: 'x' }))))
+  assert.ok(fallback(linked('m', link({ href: '/d' }), { attrs: { color: '#000', size: 1 }, type: 'border' })))
+  assert.ok(fallback(linked('m', link({ href: 'a\\b' }))))
+  assert.ok(fallback(linked('m', link({ title: 't' }))))
+  const captioned: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { alt: 'm', type: 'external', url }, type: 'media' }, { content: [{ text: 'c', type: 'text' }], type: 'caption' }], type: 'mediaSingle' }
+  assert.ok(fallback(document(captioned)))
+})
+
 test('spells a mediaSingle the image form does not fit as a directive', () => {
   const media: AdfNode = { attrs: { type: 'external', url: 'https://example.com/moon.png' }, type: 'media' }
   const single: AdfNode = { attrs: { layout: 'center' }, content: [media], marks: [{ type: 'border' }], type: 'mediaSingle' }

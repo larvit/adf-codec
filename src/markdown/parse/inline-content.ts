@@ -6,7 +6,7 @@ import type { InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
-import { commonMarkLink, linkHref } from '../mark-spellings.ts'
+import { commonMarkLink, linkHref, linkMark } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../portable/conventions.ts'
@@ -261,14 +261,9 @@ function linkedAlt(piece: Piece): Piece {
 }
 
 function mediaSingle({ alt, definition, link }: Image): AdfNode {
-  const media = externalMedia(alt, definition.destination)
   const { title } = definition
   const caption: AdfNode[] = title === undefined || title === '' ? [] : [{ content: [{ text: title, type: 'text' }], type: 'caption' }]
-  return centeredImage([link === undefined ? media : { ...media, marks: [linkMark(link)] }, ...caption])
-}
-
-function linkMark({ destination, title }: LinkDefinition): AdfMark {
-  return { attrs: title === undefined ? { href: destination } : { href: destination, title }, type: 'link' }
+  return centeredImage([externalMedia(alt, definition.destination, link), ...caption])
 }
 
 // ADF holds no empty text node and a hard break takes no marks, so the destination text carries the link ahead of the text's hard breaks; an empty destination leaves the breaks alone.

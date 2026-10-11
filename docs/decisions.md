@@ -241,6 +241,10 @@ The same panel confirmed the other readings on 2026-10-09: a title as the captio
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
 Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
 
+Writing, a writer panel of a product manager, an engineer and a support agent on 2026-10-11, 3 of
+3: `adfToLosslessMarkdown` writes an image only a link marks as `[![alt](url)](href)`, and a
+captioned image as the `!adf:caption` directive, since a title reads as hover text, not a caption.
+
 ## Ids stay site-local
 
 2026-08-23, the maintainer. Goal 1. Valid while ADF ids are minted per site.

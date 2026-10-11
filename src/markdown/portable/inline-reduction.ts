@@ -146,7 +146,7 @@ function portableMarks(marks: readonly AdfMark[], container: LineContainer, text
   return kept.filter((mark) => !code || mark.type !== highlight).sort((first, second) => rank(first) - rank(second))
 }
 
-function portableLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
+export function portableLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
   const attrs = nodeAttrs(mark)
   const held = attrs['href']
   const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/[\r\0]/g, '').replace(/\n/g, ' ') : undefined

@@ -1,6 +1,7 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
+import type { LinkDefinition } from './commonmark/link-syntax.ts'
 import { escapeUnbalanced, spellLinkTarget } from './commonmark/link-syntax.ts'
 import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './directive-syntax.ts'
 import { holdsEntityReference } from './commonmark/entity-references.ts'
@@ -34,6 +35,10 @@ export function markSpelling(type: string): MarkSpelling | undefined {
   const attributes = markAttributes[type]
   if (spelling.kind === 'emphasis') return { attributes, kind: spelling.kind, spelling: spelling.spelling }
   return { attributes, kind: spelling.kind }
+}
+
+export function linkMark({ destination, title }: LinkDefinition): AdfMark {
+  return { attrs: title === undefined ? { href: destination } : { href: destination, title }, type: 'link' }
 }
 
 export function linkHref(attrs: AdfAttributes): string | undefined {
