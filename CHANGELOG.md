@@ -88,7 +88,7 @@
   `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse it as `unsupported-node-shape`, where
   they threw.
 - Fix deeply nested compact JSON in an `adf:` fence: `losslessMarkdownToAdf` refuses it as
-  `unsupported-node-shape`, like any compact JSON there, where a megabyte of it threw.
+  `unsupported-node-shape`, as it refuses any compact JSON there, where about a megabyte of it threw.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
   markdown GitHub, GitLab and Obsidian render: alerts, callouts, task lists, `==highlights==` and
   pipe tables. A task item keeps its paragraphs, then its nested task lists; the rest of the item,

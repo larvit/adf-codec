@@ -25,7 +25,7 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 106 | 0.2.0 | defect | **Refuse a document or markdown whose spelling would pass a stated length before building it, so no call exhausts the heap.** | 4 | 6 | 5 | 8 | 1, 9 | 20.5 |
+| 106 | 0.2.0 | defect | **Refuse a document or markdown whose output would pass a stated length before building it, so no call exhausts the heap.** | 4 | 6 | 5 | 8 | 1, 9 | 20.5 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
@@ -73,19 +73,19 @@
 
 ## Details
 
-### 106. Refuse a document or markdown whose spelling would pass a stated length before building it, so no call exhausts the heap.
+### 106. Refuse a document or markdown whose output would pass a stated length before building it, so no call exhausts the heap.
 
 The writers return `unsupported-node-shape` where the engine throws past its longest string, but
-some documents exhaust the heap first, which no catch survives. `losslessMarkdownToAdf` on 2.1 MB
-of markdown, a `!adf:blockquote` holding a list nested 490 levels whose paragraph runs on in 700,000
+some documents exhaust the heap first, which no catch survives. `losslessMarkdownToAdf` on 2.1 MB of
+markdown, a `!adf:blockquote` holding a list nested 490 levels whose paragraph runs on in 700,000
 lazy lines `b\`, crashed Node 24 out of heap: `directiveNode` re-spells the subtree, indenting each
-line to its depth. `adfToLosslessMarkdown` on nine text nodes sharing one 2^28-character string
-got Bun OOM-killed under 8 GB: `escape` in `line-escaping.ts` pushes one array element per
-character. Where the heap holds out, the readers' re-spelling can still throw a `RangeError`, and
-JavaScriptCore's `Out of memory`, which the writers refuse, may also mean a failed allocation a
-retry survives. The length to refuse past is a number no entry states yet (AGENTS.md §Stated numbers):
-V8's 2^29 − 24 on every engine, so the same document converts alike everywhere, is the candidate.
-Found by the principles audit of item 83, 2026-10-11.
+line to its depth. `adfToLosslessMarkdown` on nine text nodes sharing one 2^28-character string got
+Bun OOM-killed under 8 GB: `escape` in `line-escaping.ts` pushes one array element per character.
+Where the heap holds out, the readers' re-spelling can still throw a `RangeError`. JavaScriptCore's
+`Out of memory`, which the writers refuse, may also mean a failed allocation that a retry survives.
+The candidate length to refuse past is V8's 2^29 − 24 on every engine, so the same document converts
+alike everywhere; no entry states it yet (AGENTS.md §Stated numbers). Found by the principles audit
+of item 83, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
@@ -313,11 +313,11 @@ interim sentence.
 
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
-The block carry indents two spaces a level, so a carried node's JSON about 1 MB deep in nested
-arrays spells past V8's longest string, which the writers refuse as `unsupported-node-shape`; the
-inline carry's compact JSON would fit. §The code list calls a refusal no spelling recovers from a
-gap in the flavour. A format change: §The formats are API. Found by the README-goals audit of item
-83, 2026-10-11.
+The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
+node's JSON spells past V8's longest string, which the writers refuse as `unsupported-node-shape`;
+the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
+spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
+are API). Found by the README-goals audit of item 83, 2026-10-11.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 

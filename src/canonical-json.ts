@@ -15,7 +15,7 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
   return text.join('')
 }
 
-// Stops at the first piece `text` does not hold: two-space indentation can spell a short compact text past the engine's longest string.
+// Stops at the first piece that does not match `text`: re-spelled with two-space indentation, a short compact text can pass the engine's longest string.
 export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string): boolean {
   let offset = 0
   const whole = writeCanonicalJson(value, spelling, (piece) => {
@@ -26,7 +26,6 @@ export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, te
   return whole && offset === text.length
 }
 
-// `write` returns false to stop the walk, and the walk then returns false.
 function writeCanonicalJson(value: JsonValue, spelling: JsonSpelling, write: (piece: string) => boolean): boolean {
   const indent = spelling === 'compact' ? '' : '  '
   const pending: Pending[] = [{ depth: 0, value }]
