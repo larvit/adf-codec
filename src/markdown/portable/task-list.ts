@@ -1,4 +1,5 @@
 import type { AdfNode } from '../../adf/document.ts'
+import type { ConvertErrorPath } from '../../result.ts'
 import { isTaskItem } from '../../adf/block-nodes.ts'
 import { nodeContent } from '../../adf/document.ts'
 
@@ -16,6 +17,21 @@ export function splitTaskList(list: AdfNode): AdfNode[] {
   }
   if (tasks.length > 0) blocks.push({ ...list, content: tasks })
   return blocks
+}
+
+// Where `node`, a child of one of the list's tasks, stands among the blocks splitTaskList returns; a lone paragraph, holding its inline node, stands as its taskItem.
+export function splitPlace(list: AdfNode, node: AdfNode & { content: [AdfNode] }): [number, ...ConvertErrorPath] | undefined {
+  const [inline] = node.content
+  const places = splitTaskList(list).flatMap((block, index): [number, ...ConvertErrorPath][] => {
+    if (block === node) return [[index]]
+    if (block.type !== 'taskList') return []
+    return nodeContent(block).flatMap((item, child): [number, ...ConvertErrorPath][] => {
+      if (item === node || nodeContent(item)[0] === inline) return [[index, 'content', child]]
+      const at = nodeContent(item).indexOf(node)
+      return at === -1 ? [] : [[index, 'content', child, 'content', at]]
+    })
+  })
+  return places[0]
 }
 
 // An item is a task and the children up to the next one.

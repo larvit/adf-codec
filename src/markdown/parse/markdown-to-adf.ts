@@ -8,7 +8,7 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { documentAttribute, documentName, documentSpelling } from '../block-directive.ts'
-import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
+import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { flavourClaims, leadingMarker, readAlertMarker, readTaskMarker } from '../portable/conventions.ts'
 import { languageSlot } from '../code-language.ts'
@@ -19,7 +19,7 @@ import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from './directive-nodes.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.ts'
 import { spellsEmpty } from '../empty-keys.ts'
-import { splitTaskList } from '../portable/task-list.ts'
+import { splitPlace, splitTaskList } from '../portable/task-list.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
 
@@ -68,7 +68,7 @@ function typeName(value: unknown): string {
 }
 
 function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
-  if (depth > largestNesting) return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
+  if (depth > largestNesting) return tooDeep(path)
   const content: AdfNode[] = []
   for (const block of blocks) {
     const nodePath = [...path, 'content', content.length]
@@ -87,6 +87,10 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
     content.push(node.value)
   }
   return success(content)
+}
+
+function tooDeep<T>(path: ConvertErrorPath): Result<T> {
+  return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
 }
 
 function documentFault(block: DirectiveBlock): ConvertFault | undefined {
@@ -186,25 +190,63 @@ function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> 
   return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
 }
 
-function bulletBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+function taskItems(items: readonly Block[][]) {
   const led = []
   for (const [first, ...others] of items) {
     const marked = markerLed(first, readTaskMarker)
-    if (marked === undefined) {
-      const list = listNode({ type: 'bulletList' }, items, reading, path, depth)
-      return list.ok ? success([list.value]) : list
-    }
+    if (marked === undefined) return undefined
     led.push({ ...marked, others })
   }
+  return led
+}
+
+function bulletBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+  const led = taskItems(items)
+  if (led === undefined) {
+    const list = listNode({ type: 'bulletList' }, items, reading, path, depth)
+    return list.ok ? success([list.value]) : list
+  }
+  if (depth + 1 > largestNesting) return tooDeep([...path, 'content', 0])
   const tasks: AdfNode[] = []
   for (const [index, { marker, others, position, text }] of led.entries()) {
     const body = text.replace(/^(?:[ \t\n]|\\\n)+/, '')
     const marked: TaskParagraph[] = body === '' ? [] : [{ kind: 'taskParagraph', position, text: body }]
-    const read = readBlocks([...marked, ...others], reading, [...path, 'content', index], depth + 1)
-    if (!read.ok) return read
-    tasks.push({ attrs: { state: marker.state }, content: read.value, type: 'blockTaskItem' })
+    const blocks = [...marked, ...others]
+    const task: AdfNode & { content: AdfNode[] } = { attrs: { state: marker.state }, content: [], type: 'blockTaskItem' }
+    for (const [at, block] of blocks.entries()) {
+      const read = readBlocks([block], reading, [...path, 'content', index], depth + 1)
+      if (!read.ok) return { error: { ...read.error, path: splitPath(read.error.path, { block, next: blocks[at + 1], path, reading, task, tasks }) }, ok: false }
+      for (const node of read.value) task.content.push(node)
+    }
+    tasks.push(task)
   }
   return success(splitTaskList({ content: tasks, type: 'taskList' }))
+}
+
+type Refusal = { block: ReadBlock; next: ReadBlock | undefined; path: ConvertErrorPath; reading: Reading; task: AdfNode; tasks: readonly AdfNode[] }
+
+// splitTaskList moves a task's children, so a refusal in `block` names where its node would stand: in place of the node, the split places a stand-in of its type.
+function splitPath(refused: ConvertErrorPath, { block, next, path, reading, task, tasks }: Refusal): ConvertErrorPath {
+  const [, offset, ...within] = refused.slice(path.length + 2)
+  const listIndex = path.at(-1)
+  if (typeof offset !== 'number' || typeof listIndex !== 'number') return refused
+  // A nested task list reads as a task list, then a block the split moves out, so a node past its first stands outside the task.
+  const before = Array.from({ length: offset }, (_, at): AdfNode => ({ type: at === 0 ? 'taskList' : 'bulletList' }))
+  const node: AdfNode & { content: [AdfNode] } = { content: [{ text: '', type: 'text' }], type: offset === 0 ? childType(block, reading) : 'bulletList' }
+  const after = next === undefined ? [] : [{ type: childType(next, reading) }]
+  const list = { content: [...tasks, { ...task, content: [...nodeContent(task), ...before, node, ...after] }], type: 'taskList' }
+  const place = splitPlace(list, node)
+  if (place === undefined) return refused
+  const [blockIndex, ...steps] = place
+  return [...path.slice(0, -1), listIndex + blockIndex, ...steps, ...within]
+}
+
+// A task keeps only paragraphs and task lists, so another block's kind stands in for its node's type.
+function childType(block: ReadBlock, reading: Reading): string {
+  if (block.kind === 'bulletList') return taskItems(block.items) === undefined ? 'bulletList' : 'taskList'
+  if (block.kind !== 'paragraph') return block.kind === 'taskParagraph' ? 'paragraph' : block.kind
+  const read = paragraphNode(block.text, reading, [])
+  return read.ok ? read.value.type : 'paragraph'
 }
 
 function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
