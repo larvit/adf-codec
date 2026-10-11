@@ -28,7 +28,7 @@
 | 83 | 0.2.0 | defect | **Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.** | 3 | 4 | 5 | 8 | 1, 9 | 22.0 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
-| 104 | 0.2.0 |  | **Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no file only the repo holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
+| 104 | 0.2.0 |  | **Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no corpus file named.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
@@ -84,27 +84,30 @@ by the README-goals audit, 2026-10-08.
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
 `slotFault` in `directive-syntax.ts` gives a newline in an `emoji`, `mention` or `status` content
-slot `unspellable-whitespace` and a null character `unsupported-node-shape`, and the README gives
-both the same remedy. A consumer switching on `code` with no `default` keeps a case for one
-character class in one slot. 0.2.0 already removes the other `unspellable-*` codes; folding this
-one later is a break. Revise §Which code a cause takes, and add the change to the changelog's
-breaking entry, `MIGRATION.md` and the README's error table. Found by the product-owner review of
+slot `unspellable-whitespace` and a null character `unsupported-node-shape`, though both take the
+same fix, writing the node as `!adf:carry`. Today a consumer that switches on `code` with no
+`default` needs a case for a code only a line ending in these three slots raises. 0.2.0 already
+removes the other `unspellable-*` codes, so folding this one in now adds no new break; later it
+would be a break of its own. Revise §Which code a cause takes, and add the change to the changelog
+entry that removes `unspellable-character`, to `MIGRATION.md`'s Error codes table and to the
+README's error table. Found by the product-owner review of
 0.2.0, 2026-10-11.
 
 ### 84. Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.
 
 Models write `|:---|` delimiter rows and tables without a leading pipe; both are
 `malformed-pipe-table` today, and `portableMarkdownToAdf` is the bot's reader. ADF holds no column
-alignment, so the portable reader drops it (Goal 7: form, never content). The lossless reader keeps
-§Tables' narrowing. §Which code a cause takes then names the alignment colon as a lossless refusal.
+alignment, so the portable reader drops it (Goal 7: form, never content). `losslessMarkdownToAdf` keeps
+both refusals. Revise §Which code a cause takes so the alignment colon is `malformed-pipe-table` in
+that reader alone, and the README's pipe-table guarantee and `malformed-pipe-table` row to match.
 
-### 104. Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no file only the repo holds.
+### 104. Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no corpus file named.
 
 - The README says `code` is stable across minors; §The code list changes codes in any 0.x minor.
 - The README lists `adfToHtml` and `htmlToAdf` in its signatures, error tables and guarantees,
   marked `0.3.0`, against §Docs describe the release being built. Item 7 writes them back.
-- The CommonMark guarantees name `corpus/commonmark-spec/exceptions.json` and its kinds, which an
-  npm reader cannot open.
+- The CommonMark guarantees name `corpus/commonmark-spec/exceptions.json` and its kinds, which tell
+  an app developer nothing about what the library does.
 
 Found by the product-owner review of 0.2.0, 2026-10-11.
 
