@@ -83,10 +83,12 @@
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
   where all three hung.
-- Fix a document whose markdown runs past the longest string the JavaScript engine holds, about 537
-  million characters on V8: `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse it as
-  `unsupported-node-shape`, where they threw. `losslessMarkdownToAdf` refuses compact JSON in an
-  `adf:` fence in time linear in it, where a megabyte of deeply nested JSON threw.
+- Fix a document whose markdown would be longer than the longest string or array the JavaScript
+  engine builds, on V8 about 537 million characters, or about 134 million in one text node:
+  `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse it as `unsupported-node-shape`, where
+  they threw.
+- Fix compact JSON in an `adf:` fence: `losslessMarkdownToAdf` refuses it as
+  `unsupported-node-shape`, where a megabyte of deeply nested JSON threw.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
   markdown GitHub, GitLab and Obsidian render: alerts, callouts, task lists, `==highlights==` and
   pipe tables. A task item keeps its paragraphs, then its nested task lists; the rest of the item,

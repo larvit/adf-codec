@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
-import { success, withinEngineLimits } from './result.ts'
+import { success, withinEngineLimits, type Result } from './result.ts'
+
+function code(result: Result<string>): string {
+  return result.ok ? `converted ${result.value}` : result.error.code
+}
 
 const sourceRoot = dirname(fileURLToPath(import.meta.url))
 const union = /export type ConvertErrorCode =\n((?:\s+\| '[a-z-]+'\n)+)/
@@ -39,7 +43,15 @@ test('refuses where SpiderMonkey runs out of string, and lets a stack overflow o
     withinEngineLimits(() => {
       throw overflow
     }),
-    { error: { code: 'unsupported-node-shape', message: 'the output runs past what this JavaScript engine holds: allocation size overflow', path: [] }, ok: false },
+    { error: { code: 'unsupported-node-shape', message: 'the output would be longer than the longest string or array this JavaScript engine builds (allocation size overflow)', path: [] }, ok: false },
+  )
+  assert.equal(
+    code(
+      withinEngineLimits(() => {
+        throw new RangeError('Invalid array length')
+      }),
+    ),
+    'unsupported-node-shape',
   )
   assert.throws(() =>
     withinEngineLimits(() => {
