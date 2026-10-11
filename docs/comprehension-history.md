@@ -467,3 +467,52 @@ Inherited architect, would restructure first:
 
 - Navigation: `src/markdown/portable/conventions.ts:23` `flavourClaims`: every flavour's switchboard sits in `portable/`
 - Locality: `src/markdown/emit/adf-to-markdown.ts:117` `readableBlock`: reader acceptance hangs on emitter verdicts
+
+## 2026-10-11T11:29:00Z, PR #32 at 27c8f9b, against c11aa91
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | same | same | worse |
+| Inherited architect | same | worse | same | same | worse |
+
+Mid A, decided by:
+
+- Locality, Overall: `src/markdown/parse/markdown-to-adf.ts:229` `splitPath`: rewrites a refused path by replaying `splitTaskList` on stand-in nodes, so a change to the split moves error paths quietly
+- Locality: `src/markdown/parse/blocks.ts:262` `endList`: `closeLeaf` writes `Walk.endedLists` and `openedList` reads it later
+
+Inherited architect, decided by:
+
+- Locality, Overall: `src/markdown/parse/markdown-to-adf.ts:229` `splitPath`: four facts held at once, the mutated `task.content`, the path slice, the stand-ins and a second parse in `childType`
+- Locality: `src/markdown/portable/task-list.ts:23` `splitPlace`: finds the refused node by object identity, right only while `taskOfParagraphs` keeps its children
+
+## 2026-10-11T11:29:02Z, PR #32 at 27c8f9b
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Mid A | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Maintainability senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Inherited architect | 6.5 | 6 | 6 | 6.5 | 6.5 |
+| Mean | 6.88 | 5.63 | 6.38 | 5.75 | 6.13 |
+
+Junior A, hardest first:
+
+- Locality: `src/markdown/parse/inline-content.ts:62` `Scan`: a mutable bag many functions change
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:189` `escapeClosedRuns`: the rule lives in `spec/flavour.md`
+
+Mid A, hardest first:
+
+- Locality: `src/markdown/parse/markdown-to-adf.ts:257` `directiveNode`: the parser asks the emitter for verdicts
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:100` `escapeClaims`: needs the spec open alongside
+
+Maintainability senior, hardest first:
+
+- Locality: `src/markdown/parse/inline-content.ts:62` `Scan`: flags that act at a distance between escaper, emitter and parser
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:189` `escapeClosedRuns`: no local statement of the escaping contract
+
+Inherited architect, would restructure first:
+
+- Navigation: `src/markdown/portable/conventions.ts:23` `flavourClaims`: the table for all three flavours sits in `portable/`
+- Shape: `src/markdown/emit/adf-to-markdown.ts:131` `spellReadableBlock`: the flavour concern spread over three directories
