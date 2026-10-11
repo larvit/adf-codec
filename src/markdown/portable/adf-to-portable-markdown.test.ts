@@ -70,6 +70,12 @@ test('refuses what the document guard refuses, and nothing else', () => {
   assert.match(portableDocument(document(paragraph(deepInline))), /^unsupported-nesting-depth at /)
 })
 
+test('refuses a document whose text merges past the engine\'s longest string', () => {
+  const long = 'a'.repeat(2 ** 28)
+  const merged = paragraph(...Array.from({ length: 9 }, () => text(long)))
+  assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /')
+})
+
 test('refuses nesting past 500 levels wherever the reduction walks', () => {
   const lowest = (bottom: AdfNode): string => {
     let deep = bottom

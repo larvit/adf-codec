@@ -25,12 +25,10 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 83 | 0.2.0 | defect | **Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.** | 3 | 4 | 5 | 8 | 1, 9 | 22.0 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
-| 105 | 0.2.1 |  | **Prove with a test that `adfToPortableMarkdown` never returns `unsupported-node-shape`, or list the code in the README's table of calls.** | 1 | 2 | 3 | 5 | 1 | 14.5 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -73,14 +71,6 @@
 
 ## Details
 
-### 83. Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.
-
-The block carry indents its JSON two spaces a level, so one unknown block holding 497 nested arrays
-around 540,000 numbers, about 1.1 MB as JSON, spells about 540 million characters, past V8's 2^29 −
-24. `serializeCanonicalJson`'s `join` throws, and `adfToLosslessMarkdown` throws with it. Any output
-past the limit does the same. Refuse it with a code from the closed list, and add a fixture. Found
-by the README-goals audit, 2026-10-08.
-
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
 `slotFault` in `directive-syntax.ts` gives a newline in an `emoji`, `mention` or `status` content
@@ -111,12 +101,6 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
-
-### 105. Prove with a test that `adfToPortableMarkdown` never returns `unsupported-node-shape`, or list the code in the README's table of calls.
-
-`spellableLine` (`src/markdown/portable/inline-reduction.ts`) can return `unsupported-node-shape`, and
-no test reaches it; the README lists three codes for the call, and an app switching on them would
-meet a fourth.
 
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 

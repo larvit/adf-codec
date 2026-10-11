@@ -448,6 +448,14 @@ test('names the canonical spelling a carried JSON reads alone', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n')), `${canonically}compact, keys sorted${literal}`)
 })
 
+test('refuses compact JSON in the carry fence without spelling it two-space past the engine\'s longest string', () => {
+  const json = `{"attrs":{"value":${'['.repeat(495)}${new Array(2_200_000).fill(0).join(',')}${']'.repeat(495)}}}`
+  assert.equal(
+    content(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`)),
+    "unsupported-node-shape: the opaque carry spells its node's JSON canonically: two-space indent, keys sorted; !adf:codeBlock {language=\"adf:unknownBlock\"} around a bare fence keeps it a code block",
+  )
+})
+
 test('names the node JSON an opaque carry restores alone', () => {
   const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; "
   assert.equal(content(losslessMarkdownToAdf('```adf:x\n[]\n```\n')), `${node}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`)

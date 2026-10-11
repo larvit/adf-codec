@@ -7,7 +7,7 @@ import { blockDirectiveForm, documentSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes, isTaskItem } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, withinEngineLimits, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
@@ -38,7 +38,7 @@ const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 const orderedDelimiters: Delimiters = ['.', ')']
 
 export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
-  return writeMarkdown(document, 'lossless')
+  return withinEngineLimits(() => writeMarkdown(document, 'lossless'))
 }
 
 export function writeMarkdown(document: AdfDocument, flavour: WrittenFlavour): Result<string> {
