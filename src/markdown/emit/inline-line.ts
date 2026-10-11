@@ -69,16 +69,15 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, f
 }
 
 // `link` wraps the image as the link's whole text: `[![alt](url)](href)`.
-export function tryImageLine(alt: string | undefined, href: string, link?: LinkDefinition): string | undefined {
+export function tryImageLine(alt: string | undefined, url: string, link?: LinkDefinition): string | undefined {
   if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
-  const destination = spellDestination(href)
+  const destination = spellDestination(url)
   if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
   if (link === undefined) return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
   const target = spellLinkTarget(link.destination, link.title)
   if (target === undefined) return undefined
-  const image = [syntax('[!['), ...description, syntax(']('), { escaping: 'bracketed-link-target', text: escapeUnbalanced(destination, '[', ']') } satisfies InlineSegment, syntax(')')]
-  return attemptLine([...image, syntax(`](${target})`)], 'paragraph', 'lossless').line
+  return attemptLine([syntax('[!['), ...description, syntax(']('), bracketedLinkTarget(destination), syntax(`)](${target})`)], 'paragraph', 'lossless').line
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
@@ -168,6 +167,10 @@ function textDirectiveSegment(text: string): InlineSegment {
 
 function syntax(text: string): InlineSegment {
   return { escaping: 'none', text }
+}
+
+function bracketedLinkTarget(target: string): InlineSegment {
+  return { escaping: 'bracketed-link-target', text: escapeUnbalanced(target, '[', ']') }
 }
 
 function refuseContentAndText(node: AdfNode, path: ConvertErrorPath): Result<null> {
@@ -344,7 +347,7 @@ function tryLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range:
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })
   if (!inner.ok) return inner
   if (inner.value.carry !== undefined) return inner
-  const target: InlineSegment = context.bracketed ? { escaping: 'bracketed-link-target', text: escapeUnbalanced(commonMark.target, '[', ']') } : syntax(commonMark.target)
+  const target = context.bracketed ? bracketedLinkTarget(commonMark.target) : syntax(commonMark.target)
   return success({ segments: [{ escaping: 'none', nodes: range, text: '[' }, ...inner.value.segments, syntax(']('), target, syntax(')')] })
 }
 
