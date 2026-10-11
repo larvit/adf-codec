@@ -28,7 +28,6 @@
 | 83 | 0.2.0 | defect | **Refuse a document whose markdown would pass the engine's string limit with a result, never a `RangeError`.** | 3 | 4 | 5 | 8 | 1, 9 | 22.0 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
-| 104 | 0.2.0 |  | **Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no corpus file named.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
@@ -100,16 +99,6 @@ Models write `|:---|` delimiter rows and tables without a leading pipe; both are
 alignment, so the portable reader drops it (Goal 7: form, never content). `losslessMarkdownToAdf` keeps
 both refusals. Revise §Which code a cause takes so the alignment colon is `malformed-pipe-table` in
 that reader alone, and the README's pipe-table guarantee and `malformed-pipe-table` row to match.
-
-### 104. Make the README describe 0.2.0 alone: `code` stable within a minor before 1.0, no HTML call before it ships, and no corpus file named.
-
-- The README says `code` is stable across minors; §The code list changes codes in any 0.x minor.
-- The README lists `adfToHtml` and `htmlToAdf` in its signatures, error tables and guarantees,
-  marked `0.3.0`, against §Docs describe the release being built. Item 7 writes them back.
-- The CommonMark guarantees name `corpus/commonmark-spec/exceptions.json` and its kinds, which tell
-  an app developer nothing about what the library does.
-
-Found by the product-owner review of 0.2.0, 2026-10-11.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 

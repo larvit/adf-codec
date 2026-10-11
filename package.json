@@ -1,9 +1,10 @@
 {
   "name": "@larvit/adf-codec",
   "version": "0.1.0",
-  "description": "Convert Atlassian Document Format (ADF) to and from markdown, with a lossless round-trip.",
+  "description": "Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, to and from markdown, with a lossless round-trip.",
   "keywords": [
     "adf",
+    "adf-to-markdown",
     "atlassian",
     "atlassian-document-format",
     "commonmark",
@@ -11,7 +12,10 @@
     "converter",
     "gfm",
     "jira",
+    "lossless",
     "markdown",
+    "markdown-to-adf",
+    "round-trip",
     "typescript"
   ],
   "license": "MIT",
