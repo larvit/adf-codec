@@ -550,3 +550,24 @@ Maintainability senior, decided by:
 Junior A, decided by:
 
 - Navigation, Overall: `README.md:193` "The calls": a table pairs each call with what it reads or writes and what it refuses, and a node-to-spelling table turns a symptom into a concept to grep for
+
+## 2026-10-11T19:02:20Z, PR #35 at 90de6cb, against 4f00e60
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | same | same | same | better |
+| Inherited architect | better | same | worse | better | better |
+
+Mid A, decided by:
+
+- Navigation, Overall: `README.md:211` "The calls": each call's row says what it reads or writes and what it refuses, and the errors split by direction, where the base spread the codes across a prose list and paragraphs
+- Navigation: `src/result.ts:49` `withinEngineLimits`: the engine-limit refusal lives in one wrapper, called once at each public writer
+
+Inherited architect, decided by:
+
+- Navigation, Self-sufficiency: `README.md:211` "The calls": one row per call gives what it reads or writes and its refusal codes, where the base split them and left out `unsupported-node-shape` for the portable writer
+- Self-sufficiency: `README.md:241` "The lossless flavour": two tables map ADF types to their spellings, so the 3am case reads without the spec open
+- Shape: `src/result.ts:55` `withinEngineLimits`: a length failure is reported under `unsupported-node-shape` at an empty path, and the README cell explaining it holds four cases
+- Shape: `src/result.ts:45` `engineLimitThrows`: matching exact engine message text rots silently when an engine rewords, and JavaScriptCore's `Out of memory` blurs a heap shortage with length
