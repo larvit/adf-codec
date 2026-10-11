@@ -133,7 +133,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
 | `decisionList` | a bullet list | — |
 | `mention`, `status`, `emoji`, `date` | their text: `@` kept, a mention with none `@` and its id, an emoji its `shortName` without, a date `2026-09-13` in UTC | — |
 | `inlineCard`, `blockCard`, `embedCard` | a link to the card's URL, else its name | — |
-| external `media` | `![alt](url)` in a block, `[![alt](url)](href)` where a link marks it, `[alt](url)` inline | — |
+| external `media` | in a block `![alt](url)`, or `[![alt](url)](href)` where a link marks it; inline `[alt](url)` | — |
 | stored `media`, `mediaInline`, `extension`, `inlineExtension` | their `alt` or `text` | — |
 | `layoutSection`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`, `extensionFrame`, `caption`, a node this version does not know | its blocks or its text | — |
 | `placeholder` | nothing | — |

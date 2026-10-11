@@ -12,7 +12,6 @@ export function tryImage(node: AdfNode): string | undefined {
   if (typeof url !== 'string' || (alt !== undefined && typeof alt !== 'string')) return undefined
   const [mark] = nodeMarks(media)
   const link = mark === undefined ? undefined : linkDefinition(nodeAttrs(mark))
-  if (mark !== undefined && link === undefined) return undefined
   const read = centeredImage([externalMedia(alt ?? '', url, link)])
   return serializeCanonicalJson(node, 'compact') === serializeCanonicalJson(read, 'compact') ? tryImageLine(alt, url, link) : undefined
 }

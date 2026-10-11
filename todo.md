@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 101`
+`Next ID = 102`
 
 | Goal | W |
 |---|---|
@@ -32,6 +32,7 @@
 | 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
 | 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
+| 101 | 0.2.1 |  | **Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.** | 2 | 2 | 4 | 4 | 6 | 9.0 |
 | 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 5 | 9 | 9 | 8.2 |
@@ -119,6 +120,12 @@ three directories.
 in a text of length n, backtick runs of lengths 1 to k with no closers cost about k·n, and `<!--`
 repeated with no `-->` is quadratic, in the reader and the emitter's escape walk alike.
 commonmark.js avoids the backtick cost by caching backtick runs by length.
+
+### 101. Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.
+
+`directiveNode` (`src/markdown/parse/markdown-to-adf.ts`) refuses `!adf:mediaSingle` holding a linked
+image with "mediaSingle takes the CommonMark spelling, not the directive form"; the README tells the
+reader to write the spelling the message names, and for `[![alt](url)](href "title")` none is named.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 

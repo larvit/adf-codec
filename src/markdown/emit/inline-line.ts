@@ -68,7 +68,6 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, f
   return emitted.value.line
 }
 
-// `link` wraps the image as the link's whole text: `[![alt](url)](href)`.
 export function tryImageLine(alt: string | undefined, url: string, link?: LinkDefinition): string | undefined {
   if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
   const destination = spellDestination(url)
