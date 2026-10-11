@@ -54,7 +54,7 @@
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
-| 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 2 | 2 | 7 | 4, 5 | 10.9 |
+| 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 2 | 7 | 4, 5 | 10.4 |
 | 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
@@ -318,7 +318,9 @@ interim sentence.
 ### 51. Match a reference label to its definition under Unicode case folding.
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
-example 540); lowercasing and then uppercasing folds it. Breaking: `MIGRATION.md`'s Readings table
+example 540). Fold with Unicode's full case folding, `CaseFolding.txt`'s C and F mappings, shipped
+as data per §Standards ship as data: lowercasing and then uppercasing would also merge `ı` with
+`I`, which folding keeps apart, so add that pair as a fixture. Breaking: `MIGRATION.md`'s Readings table
 gains its row. Its `pending` exceptions go, and the README's guarantees drop the case-folding
 exception and count one fewer.
 
