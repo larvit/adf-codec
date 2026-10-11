@@ -225,12 +225,12 @@ function bulletBlocks(items: readonly Block[][], reading: Reading, path: Convert
 
 type Refusal = { block: ReadBlock; next: ReadBlock | undefined; path: ConvertErrorPath; reading: Reading; task: AdfNode; tasks: readonly AdfNode[] }
 
-// splitTaskList moves a task's children, so a refusal in `block` names where its node would stand: in place of the node, the split places a stand-in of its type.
+// splitTaskList moves a task's children, so the path names where the refused block's node will stand: the split runs with a stand-in of that node's type.
 function splitPath(refused: ConvertErrorPath, { block, next, path, reading, task, tasks }: Refusal): ConvertErrorPath {
   const [, offset, ...within] = refused.slice(path.length + 2)
   const listIndex = path.at(-1)
   if (typeof offset !== 'number' || typeof listIndex !== 'number') return refused
-  // A nested task list reads as a task list, then a block the split moves out, so a node past its first stands outside the task.
+  // A nested task list reads as a task list, then the blocks its own split moved out; a bulletList stands in for each of those, since the split moves it out too.
   const before = Array.from({ length: offset }, (_, at): AdfNode => ({ type: at === 0 ? 'taskList' : 'bulletList' }))
   const node: AdfNode & { content: [AdfNode] } = { content: [{ text: '', type: 'text' }], type: offset === 0 ? childType(block, reading) : 'bulletList' }
   const after = next === undefined ? [] : [{ type: childType(next, reading) }]
@@ -241,7 +241,7 @@ function splitPath(refused: ConvertErrorPath, { block, next, path, reading, task
   return [...path.slice(0, -1), listIndex + blockIndex, ...steps, ...within]
 }
 
-// A task keeps only paragraphs and task lists, so another block's kind stands in for its node's type.
+// The split tells only paragraphs and task lists from other blocks, so any other block's kind serves as its type; a paragraph may read as another node.
 function childType(block: ReadBlock, reading: Reading): string {
   if (block.kind === 'bulletList') return taskItems(block.items) === undefined ? 'bulletList' : 'taskList'
   if (block.kind !== 'paragraph') return block.kind === 'taskParagraph' ? 'paragraph' : block.kind

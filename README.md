@@ -174,8 +174,7 @@ and may change in any release. A parse always names a position, so the three mar
 alone; one handler typed on `ConvertError` takes both, which is what the calls between markdown and
 HTML hand back. `path` is the node's place from the document root, alternating `'content'` and an
 index, so `path.map((step) => '/' + step).join('')` is a JSON Pointer at the node — the empty path
-being the document itself. A parse's path points into the document the call returns once the
-refusal is fixed.
+being the document itself.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns

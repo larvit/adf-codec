@@ -19,7 +19,7 @@ export function splitTaskList(list: AdfNode): AdfNode[] {
   return blocks
 }
 
-// Where `node`, a child of one of the list's tasks, stands among the blocks splitTaskList returns; a lone paragraph, holding its inline node, stands as its taskItem.
+// Where `node`, a child of one of the list's tasks, stands among the blocks splitTaskList returns; a task's lone paragraph becomes a taskItem, found by the paragraph's first inline node.
 export function splitPlace(list: AdfNode, node: AdfNode & { content: [AdfNode] }): [number, ...ConvertErrorPath] | undefined {
   const [inline] = node.content
   const places = splitTaskList(list).flatMap((block, index): [number, ...ConvertErrorPath][] => {
