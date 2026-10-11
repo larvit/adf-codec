@@ -42,15 +42,16 @@ export function success<T>(value: T): { ok: true; value: T } {
   return { ok: true, value }
 }
 
-// Measured past the longest string or array: V8 throws the first two, JavaScriptCore the third, SpiderMonkey the fourth. A stack overflow stays a throw.
-const engineLimitFaults = ['RangeError: Invalid array length', 'RangeError: Invalid string length', 'RangeError: Out of memory', 'InternalError: allocation size overflow']
+// Past the longest string or array, measured on Firefox 155, Node 24 and Bun 1.4: SpiderMonkey throws the first, V8 the next two, JavaScriptCore the last.
+const engineLimitThrows = ['InternalError: allocation size overflow', 'RangeError: Invalid array length', 'RangeError: Invalid string length', 'RangeError: Out of memory']
 
 // Any string concatenation can throw one, so this wraps a whole conversion.
 export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
   try {
     return convert()
   } catch (error) {
-    if (!(error instanceof Error) || !engineLimitFaults.includes(`${error.name}: ${error.message}`)) throw error
+    // A stack overflow is a bug (docs/decisions.md §Nothing recurses unbounded), so it stays a throw.
+    if (!(error instanceof Error) || !engineLimitThrows.includes(`${error.name}: ${error.message}`)) throw error
     return failure('unsupported-node-shape', `the output runs past what this JavaScript engine holds: ${error.message}`, [])
   }
 }

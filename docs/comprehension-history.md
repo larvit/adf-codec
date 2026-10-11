@@ -516,3 +516,37 @@ Inherited architect, would restructure first:
 
 - Navigation: `src/markdown/portable/conventions.ts:23` `flavourClaims`: the table for all three flavours sits in `portable/`
 - Shape: `src/markdown/emit/adf-to-markdown.ts:131` `spellReadableBlock`: the flavour concern spread over three directories
+
+## 2026-10-11T18:44:18Z, PR #35 at 0227c0b, against 4f00e60
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | same | same | same | better |
+| Inherited architect | same | worse | worse | same | same |
+| Maintainability senior | better | worse | same | same | same |
+| Junior A | better | same | same | same | better |
+
+Mid A, decided by:
+
+- Navigation, Overall: `README.md:211` "The calls": each public call sits in one row with the codes it refuses, where the base split that knowledge across prose bullets and the feature list
+- Navigation: `README.md:384` "The errors": parsing, emitting and either direction have their own sub-headings, and the error shape is a bulleted list
+- Navigation: `src/result.ts:49` `withinEngineLimits`: the refusal for output too long is visible at both public entry points, its message in one place
+
+Inherited architect, decided by:
+
+- Locality, Shape: `src/result.ts:49` `withinEngineLimits`: one try/catch wraps each writer's whole call and matches four exact engine messages; a concatenation deep in the emitter does not show it is caught at the top, a reworded engine message turns the refusal back into a throw, and `engineLimitFaults` borrows "fault" from `ConvertFault` while holding plain strings
+- Shape: `src/result.ts:54` `withinEngineLimits`: an engine overflow is reported as `unsupported-node-shape` at an empty path, though the node shapes are fine and the output is what is too big
+- Locality: `src/canonical-json.ts:30` `writeCanonicalJson`: one walker serves two callers through a stop-returning `write` callback, one more contract to hold when editing `schedule`
+
+Maintainability senior, decided by:
+
+- Locality: `src/result.ts:49` `withinEngineLimits`: the guard sits only at the two public writers while `writeMarkdown` stays exported and unguarded and the readers rely on another mechanism; nothing states which paths can outgrow the engine's longest string
+- Locality: `src/result.ts:46` `engineLimitFaults`: errors match exact engine strings, and why a stack overflow stays a throw is not said
+- Navigation: `README.md:211` "The calls": one table maps each call to its refusal codes, where the base spread them over prose that was wrong for `adfToPortableMarkdown`
+- Navigation: `src/markdown/opaque-carry.ts:78` `readCarriedJson`: `spellsCanonicalJson` reads as plainly at the call site, with its reason beside it
+
+Junior A, decided by:
+
+- Navigation, Overall: `README.md:193` "The calls": a table pairs each call with what it reads or writes and what it refuses, and a node-to-spelling table turns a symptom into a concept to grep for
