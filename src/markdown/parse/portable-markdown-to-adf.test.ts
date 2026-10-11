@@ -180,6 +180,25 @@ test('stands a block a task item cannot hold, and what follows it in the item, a
   ])
 })
 
+test('names the place a refused block would stand once the task list moves it', () => {
+  const refused = (markdown: string): string => {
+    const parsed = portableMarkdownToAdf(markdown)
+    return parsed.ok ? 'read' : parsed.error.path.map((step) => '/' + step).join('')
+  }
+  assert.equal(refused('- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n'), '/content/2')
+  assert.equal(refused('- [ ] a <b>x</b>\n'), '/content/0/content/0')
+  assert.equal(refused('- [ ] a <b>x</b>\n\n  more\n'), '/content/0/content/0/content/0')
+  assert.equal(refused('- [ ] a <b>x</b>\n\n  ![i](u)\n'), '/content/0/content/0')
+  assert.equal(refused('- [ ] A\n\n  b <b>x</b>\n'), '/content/0/content/0/content/1')
+  assert.equal(refused('- [ ] A\n\n  # h\n\n  b <b>x</b>\n'), '/content/2')
+  assert.equal(refused('- [ ] A\n\n  # h\n- [ ] B <b>x</b>\n'), '/content/2/content/0')
+  assert.equal(refused('- [ ] A\n- [ ] B\n\n  # h\n- [ ] C <b>x</b>\n'), '/content/2/content/0')
+  assert.equal(refused('- [ ] A\n  - [ ] C <b>x</b>\n'), '/content/0/content/1/content/0')
+  assert.equal(refused('- [ ] A\n\n  # h\n  - [ ] C <b>x</b>\n'), '/content/2/content/0')
+  assert.equal(refused('- [ ] A\n  - [ ] C\n\n    # h\n\n    <div>x</div>\n'), '/content/2')
+  assert.equal(refused('> q\n>\n> - [ ] A\n>\n>   # h\n>\n>   <div>x</div>\n'), '/content/0/content/3')
+})
+
 test('reads a task list beside a list of another bullet character as two lists', () => {
   const tasks = (state: string, value: string): AdfNode => bare('taskList', node('taskItem', { state }, text(value)))
   assert.deepEqual(read('- [x] a\n* b\n'), [tasks('DONE', 'a'), bare('bulletList', bare('listItem', bare('paragraph', text('b'))))])

@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 93 | 0.2.0 |  | **Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.** | 2 | 3 | 3 | 5 | 1 | 13.2 |
 | 86 | 0.2.0 |  | **Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.** | 4 | 4 | 5 | 6 | 4, 6 | 13.0 |
 | 85 | 0.2.0 | defect | **Write an external image a link marks as `[![alt](url)](href)` in `adfToPortableMarkdown`, keeping the link target.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
@@ -69,13 +68,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 93. Report a refusal's `path` where the node would stand after `portableMarkdownToAdf` moves it out of a task item.
-
-`bulletBlocks` fixes a block's path before `splitTaskList` moves it beside or after its task, so
-`- [x] A\n\n  ```\n  x\n  ```\n\n  <div>x</div>\n` reports `/content/0/content/0/content/2`
-for a block that would stand at `/content/2`. The README says `path` is the node's place from the
-document root.
 
 ### 86. Write an image whose `media` only a link marks, and one captioned with plain text, in the CommonMark spelling a writer panel picks, in `adfToLosslessMarkdown`.
 
