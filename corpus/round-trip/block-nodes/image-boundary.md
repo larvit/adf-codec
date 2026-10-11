@@ -13,9 +13,7 @@ Taken from Kiruna.
 !adf:media {height=480 type=external url="https://example.com/plan.png" width=640}
 !adf:/mediaSingle
 
-!adf:mediaSingle {layout=center}
-!adf:media {alt="The assembly drawing" marks="[{\"attrs\":{\"href\":\"https://example.com/assembly\"},\"type\":\"link\"}]" type=external url="https://example.com/assembly.png"}
-!adf:/mediaSingle
+[![The assembly drawing](https://example.com/assembly.png)](https://example.com/assembly)
 
 !adf:mediaSingle {layout=center}
 !adf:media {alt="" type=external url="https://example.com/moon.png"}
