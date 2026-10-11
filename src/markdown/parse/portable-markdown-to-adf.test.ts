@@ -180,7 +180,7 @@ test('stands a block a task item cannot hold, and what follows it in the item, a
   ])
 })
 
-test('names the place a refused block would stand once the task list moves it', () => {
+test('names where a refused block stands after the task list splits', () => {
   const refused = (markdown: string): string => {
     const parsed = portableMarkdownToAdf(markdown)
     return parsed.ok ? 'read' : parsed.error.path.map((step) => '/' + step).join('')
