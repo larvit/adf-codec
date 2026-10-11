@@ -36,7 +36,7 @@ test('every ConvertErrorCode is the code of a production call site, and every ca
   assert.deepEqual(calledCodes(), declaredCodes())
 })
 
-test('refuses where SpiderMonkey runs out of string, and lets a stack overflow or any other throw through', () => {
+test('refuses where the engine runs out of string or array, and lets a stack overflow or any other throw through', () => {
   const overflow = new Error('allocation size overflow')
   overflow.name = 'InternalError'
   assert.deepEqual(
