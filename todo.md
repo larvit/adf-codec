@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 102`
+`Next ID = 103`
 
 | Goal | W |
 |---|---|
@@ -36,6 +36,7 @@
 | 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 5 | 9 | 9 | 8.2 |
+| 102 | 0.2.1 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 2 | 4 | 1 | 8.0 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
@@ -155,6 +156,13 @@ and 10.7 s at 20000 (60 kB) before refusing as `unsupported-nesting-depth`. `doc
 §Cost fixes are measured, never timed says the 500-level guard bounds `continuesContainer`'s
 re-scan in depth; the guard runs only after the walk, so it bounds nothing. Correct that entry with
 the fix.
+
+### 102. Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.
+
+`splitPath` (`src/markdown/parse/markdown-to-adf.ts`) builds stand-ins and `splitPlace`
+(`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
+`taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
+the reason the project read worse.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
