@@ -644,6 +644,7 @@ test('spells a media only a link marks as the image the link wraps', () => {
   assert.ok(fallback(linked('m', link({ href: '/d' }), { attrs: { color: '#000', size: 1 }, type: 'border' })))
   assert.ok(fallback(linked('m', link({ href: 'a\\b' }))))
   assert.ok(fallback(linked('m', link({ title: 't' }))))
+  assert.ok(fallback(linked('m', link({ href: '/d', title: 4 }))))
   const captioned: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { alt: 'm', type: 'external', url }, type: 'media' }, { content: [{ text: 'c', type: 'text' }], type: 'caption' }], type: 'mediaSingle' }
   assert.ok(fallback(document(captioned)))
 })

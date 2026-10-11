@@ -8,6 +8,7 @@ import { flavourClaims, taskMarker } from './conventions.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, portableLink, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
+import { linkDefinition } from '../mark-spellings.ts'
 import { largestNesting } from '../../nesting.ts'
 import { splitTaskList } from './task-list.ts'
 import { toEditorNormal } from './editor-normal.ts'
@@ -350,8 +351,7 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
   const alt = typeof held === 'string' ? oneLine(held).trim() : ''
-  const image = externalMedia(alt, writableHref(url))
   const mark = nodeMarks(media).find((held) => held.type === 'link')
   const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
-  return success([centeredImage([link === undefined ? image : { ...image, marks: [link] }])])
+  return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkDefinition(nodeAttrs(link)))])])
 }

@@ -6,8 +6,10 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode, EmptyKey } from '../
 import type { Arbitrary } from 'fast-check'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { JsonValue } from '../json-value.ts'
+import type { LinkDefinition } from '../markdown/commonmark/link-syntax.ts'
 import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
+import { centeredImage, externalMedia } from '../markdown/external-image.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { emptyKeys, mergeAdjacentText, nodeContent } from '../adf/document.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
@@ -91,6 +93,10 @@ function occasionallyApart(arbitrary: Arbitrary<AdfNode[]>): Arbitrary<AdfNode[]
   return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes, joinsWhenRead)))
 }
 
+function externalImage({ alt, link, url }: { alt: string | undefined; link: LinkDefinition | undefined; url: string }): AdfNode {
+  return centeredImage([externalMedia(alt ?? '', url, link)])
+}
+
 function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): AdfNode {
   const rows = [header, ...body.map((cells) => header.map((_, index) => cells[index] ?? emptyCell))]
   return { content: rows.map((content): AdfNode => ({ content, type: 'tableRow' })), type: 'table' }
@@ -155,6 +161,7 @@ const positions = fc.letrec<Positions>((tie) => {
     occasionallyEmpty(fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' }))),
     paragraph,
     fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
+    fc.record({ alt: fc.option(text, { nil: undefined }), link: fc.option(fc.record({ destination: text, title: text }, { requiredKeys: ['destination'] }), { nil: undefined }), url: text }).map(externalImage),
   ]
   const task = (type: string, content: Arbitrary<AdfNode[]>) =>
     occasionallyEmpty(fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type })))

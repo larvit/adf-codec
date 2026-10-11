@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 99`
+`Next ID = 101`
 
 | Goal | W |
 |---|---|
@@ -26,6 +26,8 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
+| 99 | 0.2.1 | defect | **Keep the link target of a linked external image standing inline or in a table cell, in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
+| 100 | 0.2.1 | question | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
@@ -73,6 +75,19 @@
 `full.json` gives these five no `marks`, and `stage-0.json` gives them `annotation` alone, so a site
 may reject the document. Replace `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) with the
 mark types a node takes, and have the emitter carry a node holding another.
+
+### 99. Keep the link target of a linked external image standing inline or in a table cell, in the spelling a reader panel picks, in `adfToPortableMarkdown`.
+
+`mediaLeaves` (`src/markdown/portable/inline-reduction.ts`) writes such an image `[alt](url)`, dropping
+the link's `href`; README §Portable markdown says link targets stay (Goal 7). `[![alt](url)](href)`
+there reads back as `[alt](href)`, so it breaks the byte-for-byte rewrite: keeping one target is the
+panel's pick.
+
+### 100. Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.
+
+Every reader reads `![a](u "t")` as an image captioned `t` (`docs/decisions.md` §An image reads as an
+image only alone in its paragraph, 3 of 3 on 2026-10-09). On 2026-10-11 a writer panel of the same
+audience kept the captioned image's `!adf:caption` directive, 3 of 3, reading a title as hover text.
 
 ### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
