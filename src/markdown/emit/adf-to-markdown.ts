@@ -12,6 +12,7 @@ import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { longestOutput, tooLong } from '../../output-length.ts'
 import { spellBlockDirectiveOpener } from './block-directive-spelling.ts'
 import { spellDirectiveCloser, spellDirectiveOpener } from '../directive-syntax.ts'
 import { tryImage } from './image.ts'
@@ -29,9 +30,11 @@ type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { a
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
-export type Writing = { flavour: WrittenFlavour; memo: SpellingMemo | undefined }
+// indent: the characters the containers around a block prefix each of its lines with.
+export type Writing = { flavour: WrittenFlavour; indent: number; memo: SpellingMemo | undefined }
 
 const bulletDelimiters: Delimiters = ['-', '*']
+const bulletWidth = 2
 export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
@@ -46,7 +49,7 @@ export function writeMarkdown(document: AdfDocument, flavour: WrittenFlavour): R
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(`${documentSpelling}\n`)
-  const walk = walkBlocks(document.content, [], 0, { flavour, memo: undefined })
+  const walk = walkBlocks(document.content, [], 0, { flavour, indent: 0, memo: undefined })
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
   return success(text === '' ? '' : `${text}\n`)
@@ -56,13 +59,27 @@ function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: nu
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
+  // Each block's length once its containers prefix its lines, and the two characters parting it from the next.
+  let projected = 0
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
+    projected += prefixedLength(block.value.text, writing.indent) + 2
+    if (projected > longestOutput) return tooLong([...path, 'content', index])
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
   }
   return success({ blocks, headroom })
+}
+
+function prefixedLength(text: string, indent: number): number {
+  let lines = 1
+  for (let at = text.indexOf('\n'); at !== -1; at = text.indexOf('\n', at + 1)) lines += 1
+  return text.length + lines * indent
+}
+
+function indented(writing: Writing, width: number): Writing {
+  return { ...writing, indent: writing.indent + width }
 }
 
 function tooDeep(path: ConvertErrorPath): Result<never> {
@@ -107,25 +124,25 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing
   return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, writing))
 }
 
-export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<null> | undefined {
+export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing & { memo: SpellingMemo }): Result<null> | undefined {
   const readable = readableBlock(node, path, depth, writing)
+  if (readable === undefined) writing.memo.set(node, { block: undefined, depth })
+  else if (readable.ok) writing.memo.set(node, { block: readable.value, depth })
   if (readable === undefined) return undefined
   if (!readable.ok) return readable
   return readable.value.spelling === 'directive' ? undefined : success(null)
 }
 
 function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  const { memo } = writing
-  const kept = memo?.get(node)
+  const kept = writing.memo?.get(node)
+  // The walk reading an entry spells the node into its own text, so the entry is dropped: kept, every level of a deep subtree would hold its whole text.
+  writing.memo?.delete(node)
   if (kept !== undefined) {
     if (kept.block === undefined) return undefined
     // An entry holds the spelling at its fill depth. A read at or above it rebases headroom; a read below re-spells, because a hit skips the walk's depth guards.
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
-  const spelled = spellReadableBlock(node, path, depth, writing)
-  if (spelled === undefined) memo?.set(node, { block: undefined, depth })
-  else if (spelled.ok) memo?.set(node, { block: spelled.value, depth })
-  return spelled
+  return spellReadableBlock(node, path, depth, writing)
 }
 
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
@@ -154,11 +171,13 @@ function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
 }
 
 function quotedUnder(head: string, node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, indented(writing, quoteWidth))
   if (!inner.ok) return inner
   const body = joinBlocks(inner.value.blocks, 'document')
   return success(commonMarkText(quoted(body === '' ? head : `${head}\n\n${body}`), inner.value.headroom))
 }
+
+const quoteWidth = 2
 
 function quoted(text: string): string {
   return text
@@ -173,7 +192,8 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   // A child other than a task nests in the task before it.
   for (const [index, child] of nodeContent(node).entries()) {
     const task = isTaskItem(child)
-    const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, writing) : placedBlock(child, [...path, 'content', index], depth + 1, writing)
+    const itemWriting = indented(writing, bulletWidth)
+    const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, itemWriting) : placedBlock(child, [...path, 'content', index], depth + 1, itemWriting)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
     const previous = items.at(-1)
@@ -248,12 +268,14 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
   }
   const walk = walkBody()
   if (!walk.ok) return walk
-  return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
+  const body = joinBlocks(walk.value.blocks, 'directive')
+  if (opener.length + body.length > longestOutput) return tooLong(path)
+  return success(directivePair(node, opener, body, walk.value.headroom))
 }
 
 function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   if (!holdsOnlyAttributes(node, [])) return undefined
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, indented(writing, quoteWidth))
   if (!inner.ok) return inner
   const text = joinBlocks(inner.value.blocks, 'document')
   const alert = flavourClaims[writing.flavour].alerts && leadingMarker(text, readAlertMarker) !== undefined
@@ -313,8 +335,9 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   if (items.some((item) => item.type !== 'listItem' || !holdsOnlyAttributes(item, []))) return undefined
   const walked: WalkedItem[] = []
   let headroom = Number.POSITIVE_INFINITY
+  const itemWriting = indented(writing, ordered ? `${start + items.length - 1}. `.length : bulletWidth)
   for (const [offset, item] of items.entries()) {
-    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, writing)
+    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, itemWriting)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })

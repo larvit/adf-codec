@@ -1,7 +1,8 @@
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
-import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks, textLength } from '../../adf/document.ts'
 import { joinsWhenRead } from '../adjacent-text.ts'
+import { longestOutput } from '../../output-length.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
@@ -10,6 +11,8 @@ type NodeHolder = { content?: AdfNode[] }
 // The editor joins two text nodes where the reader would join their editor-normal forms.
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
   if (previous.type !== 'text' || node.type !== 'text') return false
+  // Text this long is refused as markdown either way; joining it first would build the string.
+  if (textLength(previous) + textLength(node) > longestOutput) return false
   return joinsWhenRead(normalNode(previous), normalNode(node))
 }
 

@@ -461,11 +461,12 @@ handles one cause alike whichever node, attribute or direction raised it.
   knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
-- A document whose markdown would be longer than the longest string or array the JavaScript engine
-  builds is `unsupported-node-shape` at the document's path, in either writer: the document does
-  not convert, and no spelling in the input causes the bound (§The code list). A carried node
-  passes it on about 1 MB of deeply nested JSON, since the block carry indents two spaces a level;
-  `todo.md` item 107 respells the carry in a length linear in its JSON (2026-10-11).
+- A document whose markdown would be longer than V8's longest string is `unsupported-node-shape`
+  at the block that passes it, in either writer, and so is a directive `losslessMarkdownToAdf`
+  reads whose CommonMark spelling would be: the document does not convert, and no spelling in the
+  input causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested
+  JSON, since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in
+  a length linear in its JSON (2026-10-11).
 - The markdown readers and `htmlToAdf` refuse a value that is not a string as `not-a-string`, at
   position `{ line: 1, offset: 0 }` with an empty path: no existing code reads true of it, and
   `not-an-adf-document` names the emitters' input (2026-10-05).
@@ -658,6 +659,19 @@ any value round-trips. What the schema holds and the tables do not spell is pinn
 attribute as a gap, a type as carried — so a re-pin adding either goes red until someone spells it
 or pins it.
 
+## Markdown past V8's longest string is refused on every engine
+
+2026-10-11, the maintainer. Goals 1 and 6. Valid while V8's longest string, 2^29 − 24 characters,
+is the shortest of the engines the library claims.
+
+Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29 − 24 characters
+(`longestOutput`) before building it, so the same document converts alike everywhere and no
+amplification — an indent on every line of a deep subtree, the carry's two-space JSON, text one
+string shared by many nodes — builds a string no engine was asked for. Each block counts its lines
+once with the indent its containers will prefix them with, so the bound trips at the block that
+passes it, before any container copies it. The engines' own throws past their longest string or
+array stay refused as `unsupported-node-shape` by `withinEngineLimits`, behind this bound.
+
 ## Nothing recurses unbounded
 
 2026-08-25, the directive form's count 2026-09-18, the maintainer. Goal 1. Valid while an engine's
@@ -722,13 +736,15 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 2026-09-19, the maintainer. Goal 9. Valid while the `commonMarkSpelling` ask spells a node once
 per level above it otherwise.
 
-The parse and the portable reduction keep each node's readable spelling in a memo, so the
-`commonMarkSpelling` ask stops spelling a node once per level above it. `text`, `alternateText` and
-`spelling` carry no depth and `headroom` is affine in it, so a read at or above the depth that
-filled the entry rebases; a read below re-spells, because a hit skips the depth guards the walk it
-replaces runs and an ordered list past the marker cap gives way, spending two emitter levels where
-the parser spent one. Only what succeeded is kept, so no path minted at another position is ever
-read.
+The parse and the portable reduction keep the readable spelling of each node they put the
+`commonMarkSpelling` ask to in a memo, so the ask stops spelling a node once per level above it. A
+walk that reads an entry drops it, and a walk fills none for the nodes below the asked one: the walk
+above spells them into its own text, and kept, every level of a deep subtree would hold its whole
+text (2026-10-11). `text`, `alternateText` and `spelling` carry no depth and `headroom` is affine in
+it, so a read at or above the depth that filled the entry rebases; a read below re-spells, because a
+hit skips the depth guards the walk it replaces runs and an ordered list past the marker cap gives
+way, spending two emitter levels where the parser spent one. Only what succeeded is kept, so no path
+minted at another position is ever read.
 
 ## Cost fixes are measured, never timed
 

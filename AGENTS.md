@@ -59,6 +59,7 @@ In `docs/decisions.md`:
 - The CommonMark suite checks three ways
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
+- Markdown past V8's longest string is refused on every engine
 - Nothing recurses unbounded
 - JSON text is read by `parseJsonText`
 - No value `JSON.parse` or `structuredClone` builds loops a call

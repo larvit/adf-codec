@@ -10,11 +10,12 @@ import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonma
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, highlightDelimiter } from '../portable/conventions.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
-import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks, textLength } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
+import { longestOutput, tooLong } from '../../output-length.ts'
 import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
@@ -80,6 +81,7 @@ export function tryImageLine(alt: string | undefined, url: string, link?: LinkDe
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
+  if (heldTextLength(nodes) > longestOutput) return tooLong(path)
   const fallbacks: LineFallbacks = { carried: new Set(), flavour, openingLinkAsDirective: false }
   // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {
@@ -97,6 +99,17 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     const taken = takeFallback(fallbacks, attempt.fallback, path)
     if (!taken.ok) return taken
   }
+}
+
+// The line spells every character of its text at least once, so this much text cannot fit.
+export function heldTextLength(nodes: readonly AdfNode[]): number {
+  let length = 0
+  const pending = [...nodes]
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    length += textLength(node)
+    for (const child of nodeContent(node)) pending.push(child)
+  }
+  return length
 }
 
 function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
@@ -172,13 +185,9 @@ function bracketedLinkTarget(target: string): InlineSegment {
   return { escaping: 'bracketed-link-target', text: escapeUnbalanced(target, '[', ']') }
 }
 
-function refuseContentAndText(node: AdfNode, path: ConvertErrorPath): Result<null> {
-  const holdsContent = nodeContent(node).length > 0
-  if (holdsContent || node.text !== undefined) {
-    const held = holdsContent ? 'content' : 'text'
-    return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text: this one holds ${held}`, path)
-  }
-  return success(null)
+function heldContentOrText(node: AdfNode): 'content' | 'text' | undefined {
+  if (nodeContent(node).length > 0) return 'content'
+  return node.text === undefined ? undefined : 'text'
 }
 
 function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, context: InlineContext): Result<Emission> {
@@ -235,40 +244,38 @@ function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): bo
   return typeof slot === 'string' && slotFault(node.type, slot) !== undefined && nodeContent(node).length === 0 && node.text === undefined
 }
 
+// Builds the node's path only to refuse it: a path copies every level above, and a line may hold a million leaves.
 function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<Emission> {
-  const path = nodePath(context, index)
   if (carries(node, context.carried, index)) {
-    const carried = carriedInline(node, path)
+    const carried = carriedInline(node, nodePath(context, index))
     if (!carried.ok) return carried
     return success({ segments: [syntax(carried.value)] })
   }
   const types = nodeMarks(node).map((mark) => mark.type)
-  if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, path)
+  if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, nodePath(context, index))
   const model = inlineNodeModel(node.type)
   if (model === undefined) return success(emitText(node, context, index))
-  if (node.type === 'hardBreak') return emitHardBreak(node, model, context, index, path)
-  return emitInlineDirective(node, model, index, path)
+  const held = heldContentOrText(node)
+  if (held !== undefined) return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text: this one holds ${held}`, nodePath(context, index))
+  if (node.type === 'hardBreak') return success(emitHardBreak(node, model, context, index))
+  return success(emitInlineDirective(node, model, index))
 }
 
-function emitHardBreak(node: AdfNode, model: InlineNodeModel, context: InlineContext, index: number, path: ConvertErrorPath): Result<Emission> {
-  const empty = refuseContentAndText(node, path)
-  if (!empty.ok) return empty
+function emitHardBreak(node: AdfNode, model: InlineNodeModel, context: InlineContext, index: number): Emission {
   const attributes = spellInlineNodeAttributes(node, model)
-  if (attributes === undefined) return success({ carry: { first: index, last: index } })
-  if (attributes === '' && context.spansLines && !context.atBlockEnd) return success({ segments: [syntax('\\\n')] })
-  return success({ segments: [syntax(spellInlineLeafDirective('hardBreak', attributes))] })
+  if (attributes === undefined) return { carry: { first: index, last: index } }
+  if (attributes === '' && context.spansLines && !context.atBlockEnd) return { segments: [syntax('\\\n')] }
+  return { segments: [syntax(spellInlineLeafDirective('hardBreak', attributes))] }
 }
 
-function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: number, path: ConvertErrorPath): Result<Emission> {
-  const empty = refuseContentAndText(node, path)
-  if (!empty.ok) return empty
+function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: number): Emission {
   const attributes = spellInlineNodeAttributes(node, model)
-  if (attributes === undefined) return success({ carry: { first: index, last: index } })
+  if (attributes === undefined) return { carry: { first: index, last: index } }
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
-  if (slot === undefined) return success({ segments: [syntax(spellInlineLeafDirective(node.type, attributes))] })
-  if (typeof slot !== 'string' || slotFault(node.type, slot) !== undefined) return success({ carry: { first: index, last: index } })
+  if (slot === undefined) return { segments: [syntax(spellInlineLeafDirective(node.type, attributes))] }
+  if (typeof slot !== 'string' || slotFault(node.type, slot) !== undefined) return { carry: { first: index, last: index } }
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
-  return success({ segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] })
+  return { segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] }
 }
 
 // CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, so neither is written raw.

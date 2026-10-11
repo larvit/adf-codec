@@ -124,7 +124,7 @@ function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Res
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const block = numberedPastMarkers(next)
     const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    if (!listed || (block === next && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', memo: reduction.memo })?.ok === true)) {
+    if (!listed || (block === next && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', indent: 0, memo: reduction.memo })?.ok === true)) {
       sequence.push(block)
       continue
     }

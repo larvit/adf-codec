@@ -44,13 +44,36 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })
 
-// About 2.2 billion characters of carry JSON, past V8's, JavaScriptCore's and SpiderMonkey's longest string.
-test('refuses a document whose markdown runs past the engine\'s longest string', () => {
-  let value: JsonValue = new Array<JsonValue>(2_200_000).fill(0)
+const tooLong = 'unsupported-node-shape: the markdown would be longer than 536870888 characters, the longest string V8 holds'
+
+// About 556 million characters of carry JSON: past V8's longest string, short of JavaScriptCore's and SpiderMonkey's.
+test('refuses a carry whose JSON would run past V8\'s longest string, on every engine', () => {
+  let value: JsonValue = new Array<JsonValue>(560_000).fill(0)
   for (let level = 0; level < 495; level += 1) value = [value]
   const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
-  assert.match(markdown(result), /^unsupported-node-shape: the output would be longer than the longest string or array this JavaScript engine builds \(/)
-  assert.deepEqual(path(result), [])
+  assert.equal(markdown(result), tooLong)
+  assert.deepEqual(path(result), ['content', 0])
+})
+
+test('refuses lines their containers would prefix past V8\'s longest string, at the block holding them', () => {
+  let quote: AdfNode = { attrs: {}, content: [{ text: 'a\n'.repeat(1_100_000), type: 'text' }], type: 'codeBlock' }
+  for (let level = 0; level < 245; level += 1) quote = { content: [quote], type: 'blockquote' }
+  const result = adfToLosslessMarkdown(document(quote))
+  assert.equal(markdown(result), tooLong)
+  assert.equal(path(result).length, 2 * 246)
+})
+
+test('refuses a directive whose opener and body together would pass V8\'s longest string', () => {
+  const long = 'a'.repeat(2 ** 28)
+  const expand: AdfNode = { attrs: { title: long }, content: [{ content: [{ text: long, type: 'text' }], type: 'codeBlock' }], type: 'expand' }
+  assert.equal(markdown(adfToLosslessMarkdown(document(expand))), tooLong)
+})
+
+test('refuses text past V8\'s longest string before spelling it', () => {
+  const long = 'a'.repeat(2 ** 28)
+  const result = adfToLosslessMarkdown(document(paragraph({ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' })))
+  assert.equal(markdown(result), tooLong)
+  assert.deepEqual(path(result), ['content', 0])
 })
 
 test('refuses a document version the markdown cannot carry', () => {

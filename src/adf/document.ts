@@ -82,6 +82,10 @@ export function identicalMarks(left: readonly AdfMark[], right: readonly AdfMark
   return marksKey(left) === marksKey(right)
 }
 
+export function textLength(node: AdfNode): number {
+  return node.text?.length ?? 0
+}
+
 export function mergeAdjacentText(nodes: readonly AdfNode[], joins: (previous: AdfNode, node: AdfNode) => boolean): AdfNode[] {
   const merged: AdfNode[] = []
   for (const node of nodes) {
