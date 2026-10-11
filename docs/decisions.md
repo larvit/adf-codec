@@ -604,7 +604,11 @@ fell below the run before it on Navigation, Locality and Shape while the overall
 2026-10-10, also shipped after three rounds: a definitions-only paragraph leaves no block, so ending
 the list it follows takes state carried across lines, and every design read worse on Locality while
 the overall held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean
-5.63. Item 56, still open, is to give that state one owner.
+5.63. Item 56, still open, is to give that state one owner. Items 85 and 86, 2026-10-11, shipped
+after three rounds under a fall the seats laid on item 93's `splitPath` and `splitPlace`, which
+place a refused block's path by replaying `splitTaskList` on stand-in nodes; both seats read the
+chunk's own image builder as a gain. The scores at be23835 were Junior 6.5, Mid 6, Senior 6 and
+Architect 6, mean 6.13. `todo.md` item 102 is to place that path without the replay.
 
 ## Properties on a fixed seed
 
