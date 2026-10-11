@@ -8,7 +8,10 @@ type Pending = string | { depth: number; value: JsonValue }
 
 export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling): string {
   const text: string[] = []
-  writeCanonicalJson(value, spelling, (piece) => text.push(piece) > 0)
+  writeCanonicalJson(value, spelling, (piece) => {
+    text.push(piece)
+    return true
+  })
   return text.join('')
 }
 

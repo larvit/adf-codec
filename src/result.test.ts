@@ -32,7 +32,7 @@ test('every ConvertErrorCode is the code of a production call site, and every ca
   assert.deepEqual(calledCodes(), declaredCodes())
 })
 
-test('refuses where SpiderMonkey runs out of string, and lets any other throw through', () => {
+test('refuses where SpiderMonkey runs out of string, and lets a stack overflow or any other throw through', () => {
   const overflow = new Error('allocation size overflow')
   overflow.name = 'InternalError'
   assert.deepEqual(
@@ -40,6 +40,11 @@ test('refuses where SpiderMonkey runs out of string, and lets any other throw th
       throw overflow
     }),
     { error: { code: 'unsupported-node-shape', message: 'the output runs past what this JavaScript engine holds: allocation size overflow', path: [] }, ok: false },
+  )
+  assert.throws(() =>
+    withinEngineLimits(() => {
+      throw new RangeError('Maximum call stack size exceeded')
+    }),
   )
   assert.throws(() =>
     withinEngineLimits(() => {

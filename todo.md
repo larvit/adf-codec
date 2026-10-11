@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 106`
+`Next ID = 108`
 
 | Goal | W |
 |---|---|
@@ -25,6 +25,7 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
+| 106 | 0.2.0 | defect | **Refuse a document or markdown whose spelling would pass a stated length before building it, so no call exhausts the heap.** | 4 | 6 | 5 | 8 | 1, 9 | 20.5 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
@@ -52,6 +53,7 @@
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
+| 107 | 0.3.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 2 | 7 | 4, 5 | 10.4 |
 | 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
@@ -70,6 +72,18 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
+
+### 106. Refuse a document or markdown whose spelling would pass a stated length before building it, so no call exhausts the heap.
+
+The writers return `unsupported-node-shape` where the engine throws past its longest string, but
+some documents exhaust the heap first, which no catch survives. `losslessMarkdownToAdf` on 2.1 MB
+of markdown, a `!adf:blockquote` holding a list nested 490 levels whose paragraph runs on in 700,000
+lazy lines `b\`, crashed Node 24 out of heap: `directiveNode` re-spells the subtree, indenting each
+line to its depth. `adfToLosslessMarkdown` on nine text nodes sharing one 2^28-character string
+got Bun OOM-killed under 8 GB: `escape` in `line-escaping.ts` pushes one array element per
+character. The length to refuse past is a number no entry states yet (AGENTS.md §Stated numbers):
+V8's 2^29 − 24 on every engine, so the same document converts alike everywhere, is the candidate.
+Found by the principles audit of item 83, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
@@ -294,6 +308,14 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 `.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
+
+### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
+
+The block carry indents two spaces a level, so a carried node's JSON about 1 MB deep in nested
+arrays spells past V8's longest string, which the writers refuse as `unsupported-node-shape`; the
+inline carry's compact JSON would fit. §The code list calls a refusal no spelling recovers from a
+gap in the flavour. A format change: §The formats are API. Found by the README-goals audit of item
+83, 2026-10-11.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 
