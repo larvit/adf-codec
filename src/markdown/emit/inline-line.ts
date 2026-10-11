@@ -1,11 +1,12 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
 import type { LineContainer } from '../line-container.ts'
+import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import type { WrittenFlavour } from '../portable/conventions.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
-import { escapeUnbalanced, spellDestination } from '../commonmark/link-syntax.ts'
+import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, highlightDelimiter } from '../portable/conventions.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
@@ -67,12 +68,17 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, f
   return emitted.value.line
 }
 
-export function tryImageLine(alt: string | undefined, href: string): string | undefined {
+// `link` wraps the image as the link's whole text: `[![alt](url)](href)`.
+export function tryImageLine(alt: string | undefined, href: string, link?: LinkDefinition): string | undefined {
   if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
   const destination = spellDestination(href)
   if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
-  return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
+  if (link === undefined) return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
+  const target = spellLinkTarget(link.destination, link.title)
+  if (target === undefined) return undefined
+  const image = [syntax('[!['), ...description, syntax(']('), { escaping: 'bracketed-link-target', text: escapeUnbalanced(destination, '[', ']') } satisfies InlineSegment, syntax(')')]
+  return attemptLine([...image, syntax(`](${target})`)], 'paragraph', 'lossless').line
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {

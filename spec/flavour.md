@@ -311,10 +311,11 @@ it contributing its own text, a node spelling its text in the content slot contr
 and a break of either kind a space. A non-empty title, `![alt](url "title")`, adds a `caption`
 holding the title as one text node, and a link whose entire text is the image,
 `[![alt](url)](href)`, marks the `media`. `adfToLosslessMarkdown` emits the image form only for the
-bare shape — those attrs and no others, no marks on either node, no caption, and a
-`media` carrying nothing beyond `alt`, `type` and `url` — and only where CommonMark spells the pair:
-a destination or a description the image form cannot hold, an empty `alt` included, takes the
-directive form instead.
+bare shape — those attrs and no others, no marks on the `mediaSingle`, no caption, and a
+`media` carrying nothing beyond `alt`, `type` and `url` and no mark but a link holding nothing
+beyond `href` and `title`, spelled `[![alt](url)](href "title")` — and only where CommonMark spells
+it: a destination, a title or a description the image form cannot hold, an empty `alt` included,
+takes the directive form instead.
 
 `mediaInline` carries a media `collection` + `id`, never a URL, so anywhere else an image reads as
 its alt text linked to its destination, the link titled by the image's title: beside other
