@@ -241,9 +241,15 @@ The same panel confirmed the other readings on 2026-10-09: a title as the captio
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
 Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
 
-Writing, a writer panel of a product manager, an engineer and a support agent on 2026-10-11, 3 of
-3: `adfToLosslessMarkdown` writes an image only a link marks as `[![alt](url)](href)`, and a
-captioned image as the `!adf:caption` directive, since a title reads as hover text, not a caption.
+## A linked image is written `[![alt](url)](href)`, a captioned image as its directive
+
+2026-10-11, a writer panel of a product manager, an engineer and a support agent, 3 of 3 on each.
+Goal 6. Valid while the audience reads a title as hover text.
+
+`adfToLosslessMarkdown` writes a `media` whose only mark is a link as `[![alt](url)](href)`, which
+each reader expected before seeing the options. A captioned image keeps the `!adf:caption`
+directive: each reader read `![alt](url "title")` as hover text, not a caption. Every reader still
+reads that title as the caption; `todo.md` item 100 puts that reading back to a reader panel.
 
 ## Ids stay site-local
 

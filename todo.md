@@ -26,8 +26,8 @@
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
-| 99 | 0.2.1 | defect | **Keep the link target of a linked external image standing inline or in a table cell, in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
-| 100 | 0.2.1 | question | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
+| 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
+| 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
@@ -77,12 +77,13 @@
 may reject the document. Replace `InlineNodeModel.takesMarks` (`src/adf/inline-nodes.ts`) with the
 mark types a node takes, and have the emitter carry a node holding another.
 
-### 99. Keep the link target of a linked external image standing inline or in a table cell, in the spelling a reader panel picks, in `adfToPortableMarkdown`.
+### 99. Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.
 
 `mediaLeaves` (`src/markdown/portable/inline-reduction.ts`) writes such an image `[alt](url)`, dropping
 the link's `href`; README §Portable markdown says link targets stay (Goal 7). `[![alt](url)](href)`
-there reads back as `[alt](href)`, so it breaks the byte-for-byte rewrite: keeping one target is the
-panel's pick.
+there reads back as `[alt](href)`, breaking the byte-for-byte rewrite, so only one of `url` and
+`href` can survive; a reader panel picks which. If it picks `url`, the README names the dropped
+`href` where it says link targets stay.
 
 ### 100. Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.
 
@@ -124,15 +125,16 @@ commonmark.js avoids the backtick cost by caching backtick runs by length.
 ### 101. Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.
 
 `directiveNode` (`src/markdown/parse/markdown-to-adf.ts`) refuses `!adf:mediaSingle` holding a linked
-image with "mediaSingle takes the CommonMark spelling, not the directive form"; the README tells the
-reader to write the spelling the message names, and for `[![alt](url)](href "title")` none is named.
+image as `unsupported-node-shape`: "mediaSingle takes the CommonMark spelling, not the directive
+form". README §The errors says to fix what the message names, and the message names no spelling,
+here `[![alt](url)](href "title")`.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
 The last five chunks' median is 168135 new input tokens before their first commit, the five before
-them 97329. Files read most over the last five chunks, counting opens and searches: `docs/decisions.md` 28, `README.md`
-27, `todo.md` 26, `CHANGELOG.md` 20, `src/markdown/parse/blocks.ts` 15,
-`src/markdown/portable/adf-to-portable-markdown.ts` 12, `spec/flavour.md` 10,
+them 97329. Files read most over the last five chunks, counting opens and searches:
+`docs/decisions.md` 28, `README.md` 27, `todo.md` 26, `CHANGELOG.md` 20,
+`src/markdown/parse/blocks.ts` 15, `src/markdown/portable/adf-to-portable-markdown.ts` 12, `spec/flavour.md` 10,
 `src/markdown/parse/portable-markdown-to-adf.test.ts` 10, `src/markdown/emit/line-escaping.ts` 9,
 `src/markdown/parse/markdown-to-adf.test.ts` 8.
 
