@@ -266,7 +266,7 @@ document normalizes to it through the round-trip.
 | `table` of one header row and plain inline cells | a pipe table, every row opening and closing with a pipe |
 | `text` marked `code`, `em`, `strike`, `strong` | `` `code` ``, `_em_` (`*em*` inside a word), `~~strike~~`, `**strong**` |
 | `text` holding a carriage return | `&#13;` |
-| `text` holding a newline, a null character, or a space or tab CommonMark strips (a line's edges, a pipe cell's edges, an emphasis spelling's inner edges) | that run as `!adf:text{text="…"}`, the rest plain: `!adf:text{text="  "}Two leading spaces` |
+| `text` holding a newline, a null character, or a space or tab CommonMark strips (a block's inline edges, either side of a hard break, a pipe cell's edges, an em, strong or strike spelling's inner edges) | that run as `!adf:text{text="…"}`, the rest plain: `!adf:text{text="  "}Two leading spaces` |
 
 Input normalizes: setext headings become ATX, indented code becomes a fence, `*em*` becomes
 `_em_` outside a word, entity references decode, a soft line break becomes a space.
