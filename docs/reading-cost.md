@@ -232,3 +232,20 @@ Read most (opens and searches):
 - `MIGRATION.md` 2
 - `AGENTS.md` 1
 - `ci.sh` 1
+
+## Reading cost, chunk 8a2f6cd68381, finished 2026-10-11T10:14:12Z
+
+96564 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 6
+- `src/markdown/parse/portable-markdown-to-adf.test.ts` 5
+- `todo.md` 4
+- `src/markdown/parse/markdown-to-adf.ts` 3
+- `CHANGELOG.md` 2
+- `src/markdown/portable/task-list.ts` 2
+- `src/result.ts` 2
+- `ci.sh` 1
+- `docker-runner.sh` 1
+- `docs/decisions.md` 1
