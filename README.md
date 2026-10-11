@@ -1,75 +1,154 @@
-# @larvit/adf-codec
+# @larvit/adf-codec — ADF to markdown, markdown to ADF
 
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-Convert Atlassian Document Format (ADF) to and from markdown, with a lossless round-trip.
+Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, to and from markdown, with a lossless round-trip.
 
 For application developers whose app shows, edits, exports or generates the rich text Atlassian
 products store as ADF.
 
-- **Lossless:** `adfToLosslessMarkdown` and `losslessMarkdownToAdf` give back the document they
-  started from — panels, mentions, statuses and node types this version does not know included.
+- **Lossless round-trip:** `adfToLosslessMarkdown` and `losslessMarkdownToAdf` give back the
+  document they started from — panels, mentions, statuses and node types this version does not know
+  included.
 - **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, including `~~` and
   pipe tables whose every row opens with a pipe. `commonMarkToAdf` reads strict CommonMark as its
-  spec says: nothing becomes a table, task or panel. Both refuse raw HTML and nesting past 500
-  levels; `portableMarkdownToAdf` also refuses a malformed pipe table ([The errors](#the-errors)).
-- **Portable markdown, lossy:** `adfToPortableMarkdown` and `portableMarkdownToAdf` convert to and
-  from the markdown that GitHub, GitLab and Obsidian render — GitHub Flavored Markdown's alerts,
-  task lists and pipe tables, Obsidian Flavored Markdown's callouts and highlights.
-  `adfToPortableMarkdown` keeps the text, images by URL and link targets and drops the rest; to
-  save edits back, use the lossless pair.
+  spec says: nothing becomes a table, task or panel.
+- **Portable markdown out, lossy:** `adfToPortableMarkdown` writes the markdown that GitHub, GitLab
+  and Obsidian render — GitHub Flavored Markdown's alerts, task lists and pipe tables, Obsidian
+  Flavored Markdown's callouts and highlights. It keeps the text, images by URL and link targets and
+  drops the rest.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
-- **HTML at `0.3.0`:** `adfToHtml`, `htmlToAdf`, and markdown to and from HTML through ADF, each
-  call named by its markdown flavour.
+  TypeScript types ship beside the JavaScript.
 
-[The shape](#the-shape) · [Goals](#goals) · [Audience](#audience) ·
-[Portable markdown](#portable-markdown) · [The errors](#the-errors) ·
-[The guarantees](#the-guarantees) · [The package](#the-package) ·
-[Grammar](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) ·
-[Changes](https://github.com/larvit/adf-codec/blob/main/CHANGELOG.md) ·
-[Upgrading from `0.1.0`](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md) ·
-[Plan](https://github.com/larvit/adf-codec/blob/main/todo.md) ·
-[Decisions](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md)
-
-## The shape
+## Install
 
 ```sh
 npm install @larvit/adf-codec
 ```
 
+ESM only, Node 18 or later ([The package](#the-package)).
+
+## Quick start
+
+### ADF to markdown
+
+Full reference: [The calls](#the-calls) and [The lossless flavour](#the-lossless-flavour).
+
+```ts
+import { adfToLosslessMarkdown, adfToPortableMarkdown, type AdfDocument } from '@larvit/adf-codec'
+
+const doc: AdfDocument = {
+  content: [
+    {
+      attrs: { panelType: 'warning' },
+      content: [{ content: [{ text: 'Check the collation before importing.', type: 'text' }], type: 'paragraph' }],
+      type: 'panel',
+    },
+  ],
+  type: 'doc',
+  version: 1,
+}
+
+const lossless = adfToLosslessMarkdown(doc)
+// lossless.value:
+// !adf:panel warning
+// Check the collation before importing.
+// !adf:/panel
+
+const portable = adfToPortableMarkdown(doc)
+// portable.value, a GitHub alert:
+// > [!WARNING]
+// >
+// > Check the collation before importing.
+```
+
+### Markdown to ADF
+
+Full reference: [The calls](#the-calls) and [Portable markdown](#portable-markdown).
+
+```ts
+import { portableMarkdownToAdf } from '@larvit/adf-codec'
+
+const result = portableMarkdownToAdf('# Release notes\n\nRead the _manual_ before **wiring**.\n')
+if (result.ok) {
+  // result.value deep-equals:
+  // {
+  //   content: [
+  //     { attrs: { level: 1 }, content: [{ text: 'Release notes', type: 'text' }], type: 'heading' },
+  //     {
+  //       content: [
+  //         { text: 'Read the ', type: 'text' },
+  //         { marks: [{ type: 'em' }], text: 'manual', type: 'text' },
+  //         { text: ' before ', type: 'text' },
+  //         { marks: [{ type: 'strong' }], text: 'wiring', type: 'text' },
+  //         { text: '.', type: 'text' },
+  //       ],
+  //       type: 'paragraph',
+  //     },
+  //   ],
+  //   type: 'doc',
+  //   version: 1,
+  // }
+}
+```
+
+`portableMarkdownToAdf` also reads `> [!NOTE]` alerts, `- [x]` tasks, `==highlights==` and pipe
+tables as nodes. For markdown that `adfToLosslessMarkdown` wrote, use `losslessMarkdownToAdf`. For
+markdown known to be strict CommonMark, use `commonMarkToAdf`.
+
+### The lossless round-trip
+
+Full reference: [The guarantees](#the-guarantees).
+
+```ts
+import { adfToLosslessMarkdown, losslessMarkdownToAdf } from '@larvit/adf-codec'
+
+const markdown = adfToLosslessMarkdown(doc)
+if (markdown.ok) {
+  const edited = await editInYourApp(markdown.value) // a human, a model, a template
+  const saved = losslessMarkdownToAdf(edited)
+  if (saved.ok) post(saved.value)
+}
+```
+
+`losslessMarkdownToAdf(adfToLosslessMarkdown(doc).value)` deep-equals `doc`, node types this version
+does not know included. Markdown the pair wrote reads back and writes again byte for byte.
+
+### Handle a result's error
+
+Full reference: [The errors](#the-errors).
+
 ```ts
 import { losslessMarkdownToAdf } from '@larvit/adf-codec'
 
-const result = losslessMarkdownToAdf('# Release notes\n\n!adf:panel info\nShipped on Tuesday.\n!adf:/panel\n')
-if (result.ok) {
-  send(result.value)
-} else {
+const result = losslessMarkdownToAdf('Part | Qty\n--- | ---\nBolt M8 | 40\n')
+if (!result.ok) {
   const { code, message, path, position } = result.error
+  // code: 'malformed-pipe-table' — the rows open with no pipe
+  // position: { line: 1, offset: 0 }
+  // path: ['content', 0]
   console.error(`${code} at line ${position.line}, ${path.map((step) => '/' + step).join('')}: ${message}`)
 }
 ```
 
-Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
-whole result; no I/O, no configuration. The `0.3.0` calls between markdown and HTML convert through
-ADF: they keep only what ADF holds, and refuse what their markdown reader or `htmlToAdf` refuses.
+Nothing throws. `code` is from a closed list, so a `switch` with no `default` covers every case;
+`message` is free text for a person fixing the input.
 
-```ts
-adfToLosslessMarkdown(doc: AdfDocument): Result<string>
-losslessMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
-isAdfDocument(v: unknown): v is AdfDocument
+## Contents
 
-commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError>
-
-adfToPortableMarkdown(doc: AdfDocument): Result<string>
-portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
-
-adfToHtml(doc: AdfDocument): Result<string>               // 0.3.0
-htmlToAdf(html: string): Result<AdfDocument, ParseError>  // 0.3.0
-```
-
-`Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }` — nothing throws.
+- [Goals](#goals)
+- [Audience](#audience)
+- [The calls](#the-calls)
+- [The lossless flavour](#the-lossless-flavour)
+- [Portable markdown](#portable-markdown)
+- [The errors](#the-errors)
+- [The guarantees](#the-guarantees)
+- [The package](#the-package)
+- [Roadmap](#roadmap)
+- [Everything exported](#everything-exported)
+- [Links](#links)
 
 ## Goals
 
@@ -106,13 +185,146 @@ Behind those apps, the people who read and write the markdown, and later the HTM
 managers, engineers and support agents working in Atlassian products through a plugin or another
 UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
 
+## The calls
+
+Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
+whole result; no I/O, no configuration.
+
+```ts
+adfToLosslessMarkdown(doc: AdfDocument): Result<string>
+losslessMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
+isAdfDocument(v: unknown): v is AdfDocument
+
+commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError>
+
+adfToPortableMarkdown(doc: AdfDocument): Result<string>
+portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
+```
+
+`Result<T>` is `{ ok: true; value: T } | { ok: false; error: ConvertError }`. Each call's name says
+which markdown it reads or writes:
+
+| Call | Markdown | Refuses with |
+| --- | --- | --- |
+| `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark, plus `!adf:` directives for everything CommonMark cannot spell | `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth` |
+| `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `not-a-string`, `unmappable-html`, `unsupported-nesting-depth` |
+| `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every parse code in [The errors](#the-errors) |
+| `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth` |
+
+`isAdfDocument` is the type guard for the boundary you receive JSON at. It checks the shape the
+converters require: `type: 'doc'`, a finite `version`, nodes holding only `attrs`, `content`,
+`marks`, `text` and `type`, attribute values that are JSON values, and no object holding itself. It
+returns `true` for a document nesting past 500 levels; the converters refuse that one with
+`unsupported-nesting-depth`.
+
+The types:
+
+```ts
+type AdfDocument = { content?: AdfNode[]; type: 'doc'; version: number }
+type AdfNode = { attrs?: AdfAttributes; content?: AdfNode[]; marks?: AdfMark[]; text?: string; type: string }
+type AdfMark = { attrs?: AdfAttributes; type: string }
+type AdfAttributes = { [key: string]: JsonValue }
+type JsonValue = JsonValue[] | boolean | null | number | string | { [key: string]: JsonValue }
+
+type Result<T, E extends ConvertError = ConvertError> = { error: E; ok: false } | { ok: true; value: T }
+type ConvertError = { code: ConvertErrorCode; message: string; path: ConvertErrorPath; position?: SourcePosition }
+type ParseError = ConvertError & { position: SourcePosition }
+type ConvertErrorPath = readonly (number | string)[]
+type SourcePosition = { line: number; offset: number }
+```
+
+## The lossless flavour
+
+Serves Goals 1, 5 and 6. The lossless flavour is CommonMark, extended under one prefix, `!adf:`,
+for everything CommonMark has no spelling for. The complete grammar, with every node's attributes:
+[`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md).
+
+### What CommonMark spells
+
+Where CommonMark holds what a node carries, the node keeps CommonMark's spelling.
+`adfToLosslessMarkdown` writes exactly one spelling of each; every CommonMark variant of the same
+document normalizes to it through the round-trip.
+
+| ADF | Markdown |
+| --- | --- |
+| `blockquote` | `> ` |
+| `bulletList`, `listItem` | `- ` items; a list right after a list of its kind takes `* ` |
+| `codeBlock` | a fenced code block, the language as info string, the fence longer than any backtick run inside; several text nodes are `!adf:codeBlock` holding one fence per node |
+| `hardBreak` | a backslash at the end of the line |
+| `heading` | `#` to `######` |
+| `link` | `[text](url "title")`; `<url>` where the text is the destination and the destination is an absolute URI |
+| `mediaSingle` holding an external `media`, centered, uncaptioned | `![alt](url)`; `[![alt](url)](href)` where a link marks the image |
+| `orderedList` | `1.` `2.` `3.`, the first number the list's `order`; a list right after a list of its kind takes `1)` |
+| `paragraph` | one line, no soft wraps |
+| `rule` | `---` |
+| `table` of one header row and plain inline cells | a pipe table, every row opening and closing with a pipe |
+| `text` marked `code`, `em`, `strike`, `strong` | `` `code` ``, `_em_`, `~~strike~~`, `**strong**` |
+
+Input normalizes: setext headings become ATX, indented code becomes a fence, `*em*` becomes
+`_em_`, entity references decode, a soft line break becomes a space.
+
+### What directives spell
+
+Three forms, one grammar. A directive's name is the ADF node or mark type:
+
+```
+!adf:name[content]{attrs}        inline, on one line
+!adf:name arg {attrs}            a block leaf
+!adf:name arg {attrs}            a block container, closed by
+!adf:/name
+```
+
+```
+!adf:panel warning
+Check the collation before importing.
+!adf:/panel
+
+!adf:expand {title="Full build log"}
+…
+!adf:/expand
+
+Ping !adf:mention[@Mikael]{id=5b10a2} — !adf:status[In review]{color=yellow} — !adf:date{timestamp=1756080000000}
+```
+
+| ADF | Directive |
+| --- | --- |
+| `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` carrying `localId`, marks or a value CommonMark cannot spell | the same node in directive form, `!adf:paragraph {localId=…}` |
+| `border`, `subsup`, `textColor`, `underline` | inline directive marks around their text, `!adf:textColor[**Overdue**]{color="#ae2e24"}` |
+| `caption`, `media`, `mediaGroup`, `mediaSingle` | the media family; an image CommonMark cannot spell, a stored file, a caption |
+| `date`, `emoji`, `inlineCard`, `mediaInline`, `mention`, `status` | inline leaves; `emoji`, `mention` and `status` spell their `text` in the `[content]` slot |
+| `decisionList`, `decisionItem` | containers |
+| `expand`, `nestedExpand` | containers, `title` an attribute |
+| `extension`, `bodiedExtension`, `multiBodiedExtension`, `extensionFrame` | a leaf, containers, `parameters` as JSON in an attribute |
+| `layoutSection`, `layoutColumn` | containers |
+| `link` with an attribute besides `href` and `title`, or a target CommonMark cannot spell | `!adf:link[text]{attrs}` |
+| `panel` | a container, the type its argument: `!adf:panel info` |
+| `syncBlock`, `bodiedSyncBlock` | a leaf and a container |
+| `table`, `tableRow`, `tableCell`, `tableHeader` richer than a pipe table | containers nesting block content |
+| `taskList`, `taskItem`, `blockTaskItem` | containers, the state an argument: `!adf:taskItem DONE` |
+| any other node type, or a node where its spelling cannot stand | the opaque carry: a code fence ```` ```adf:<type> ```` holding the node's JSON, or inline `!adf:carry{json="…"}` |
+
+- Attributes are `{key=value key2="two words"}`: keys alphabetical, a value bare where it is
+  `[A-Za-z0-9_-]+`, else double-quoted with JSON string escaping. A number or JSON value is spelled as
+  canonical JSON. An empty `attrs`, `content` or `marks` key is spelled `{attrs=empty}`,
+  `{content=empty}` or `{marks=empty}`.
+- Three reserved names build no node: `!adf:carry` is the inline opaque carry, `!adf:doc {content=none}`
+  spells a document holding no `content` key, and `!adf:textBreak{}` parts two adjacent text nodes
+  CommonMark would read back as one.
+- Input reads the canonical spelling alone: keys out of order, a value quoted where bare carries it,
+  or a longer escape than needed is an error naming the spelling to write.
+- To keep a literal `!adf:` as text, escape it: `\!adf:`, block and inline alike. A code span and a
+  code block hold `!adf:` as content.
+- A malformed directive is an error result, never silent text: an unclosed container, a closer
+  naming no open container, a leaf given a body, an unknown name.
+
 ## Portable markdown
 
 Serves Goal 7. Portable markdown is a second flavour of the same grammar. `adfToPortableMarkdown`
 writes markdown other tools render — GitHub, GitLab, Obsidian and the like — keeping the content and
 dropping the rest: attributes, colours, layout, identity. Content is what a reader of the rendered
-document sees or follows: its text, images and link targets. It refuses only `not-an-adf-document`,
-`unsupported-document-version` and `unsupported-nesting-depth`, and writes no directive.
+document sees or follows: its text, images and link targets. Its refusals are `not-an-adf-document`,
+`unsupported-document-version` and `unsupported-nesting-depth`, and it writes no directive.
 
 `portableMarkdownToAdf` reads CommonMark, pipe tables and `~~` as `losslessMarkdownToAdf` reads
 them, and the conventions below as nodes, taking other tools' spellings too; a directive and an
@@ -125,18 +337,18 @@ saving what this pair read replaces mentions, attachments and macros with text.
 
 | ADF | Written | Read back |
 | --- | --- | --- |
-| `panel` | a GitHub alert, `> [!WARNING]`: info `NOTE`, note `IMPORTANT`, tip and success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE` | `NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error, and Obsidian's: hint tip; success, check, done success; attention warning; danger, failure, fail, missing, bug, error error; any other word info — in any case; the rest of the marker's line is the first paragraph |
-| `expand`, `nestedExpand` | Obsidian's folded callout, `> [!NOTE]- Title` | `-` or `+` after any word, the rest of the marker's line the title; a link reads `text (target)`, or its text alone where the text is the target with or without `mailto:`; an expand inside an expand is a `nestedExpand` |
-| `taskList` | `- [x] Done`, `- [ ] Todo`. An item keeps its paragraphs, then its nested task lists; the rest of the item stands after the list, which resumes at the next task | a bullet list whose every item is so marked, `[X]` too. An item keeps its paragraphs, then its nested task lists; the rest of the item stands after the list, which resumes at the next task |
 | `backgroundColor` | `==text==` | `==text==` on one line, the text touching both delimiters, bounded outside by whitespace, punctuation or a line edge, or touching a Han, Hangul, Hiragana, Katakana, Thai, Lao, Khmer or Myanmar character on either side, in the editor's default highlight `#f8e6a0` |
-| `table` | a pipe table: the first row its header, a cell's blocks on one line, a span kept under its header by empty cells | — |
 | `decisionList` | a bullet list | — |
-| `mention`, `status`, `emoji`, `date` | their text: `@` kept, a mention with none `@` and its id, an emoji its `shortName` without, a date `2026-09-13` in UTC | — |
-| `inlineCard`, `blockCard`, `embedCard` | a link to the card's URL, else its name | — |
+| `expand`, `nestedExpand` | Obsidian's folded callout, `> [!NOTE]- Title` | `-` or `+` after any word, the rest of the marker's line the title; a link reads `text (target)`, or its text alone where the text is the target with or without `mailto:`; an expand inside an expand is a `nestedExpand` |
 | external `media` | in a block `![alt](url)`, or `[![alt](url)](href)` where a link marks it; inline `[alt](url)` | — |
-| stored `media`, `mediaInline`, `extension`, `inlineExtension` | their `alt` or `text` | — |
+| `inlineCard`, `blockCard`, `embedCard` | a link to the card's URL, else its name | — |
 | `layoutSection`, `bodiedExtension`, `bodiedSyncBlock`, `multiBodiedExtension`, `extensionFrame`, `caption`, a node this version does not know | its blocks or its text | — |
+| `mention`, `status`, `emoji`, `date` | their text: `@` kept, a mention with none `@` and its id, an emoji its `shortName` without, a date `2026-09-13` in UTC | — |
+| `panel` | a GitHub alert, `> [!WARNING]`: info `NOTE`, note `IMPORTANT`, tip and success `TIP`, warning `WARNING`, error `CAUTION`, custom `NOTE` | `NOTE` info, `IMPORTANT` note, `TIP` tip, `WARNING` warning, `CAUTION` error, and Obsidian's: hint tip; success, check, done success; attention warning; danger, failure, fail, missing, bug, error error; any other word info — in any case; the rest of the marker's line is the first paragraph |
 | `placeholder` | nothing | — |
+| stored `media`, `mediaInline`, `extension`, `inlineExtension` | their `alt` or `text` | — |
+| `table` | a pipe table: the first row its header, a cell's blocks on one line, a span kept under its header by empty cells | — |
+| `taskList` | `- [x] Done`, `- [ ] Todo`. An item keeps its paragraphs, then its nested task lists; the rest of the item stands after the list, which resumes at the next task | a bullet list whose every item is so marked, `[X]` too. An item keeps its paragraphs, then its nested task lists; the rest of the item stands after the list, which resumes at the next task |
 
 - Content the document only references, with no text of its own to keep, leaves an italic note
   naming it where it stood: `_(image not included)_` for stored media with no `alt`,
@@ -165,53 +377,63 @@ saving what this pair read replaces mentions, attachments and macros with text.
 ## The errors
 
 Serves Goal 1. An ADF node type this version does not know is not an error: the lossless pair
-carries it opaquely and restores it unchanged ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
+carries it opaquely and restores it unchanged
+([Unknown nodes ride the carry](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
 
-`ConvertError` is `{ code, message, path, position? }`. `code` is the exported `ConvertErrorCode`,
-stable across minors and safe to `switch` on exhaustively with no `default`; `message` is free text
-and may change in any release. A parse always names a position, so the three markdown readers return
-`ParseError`, whose `position` reads without a guard; an emit reads no source and carries `path`
-alone; one handler typed on `ConvertError` takes both, which is what the calls between markdown and
-HTML hand back. `path` is the node's place from the document root, alternating `'content'` and an
-index, so `path.map((step) => '/' + step).join('')` is a JSON Pointer at the node — the empty path
-being the document itself.
+### The error shape
+
+`ConvertError` is `{ code, message, path, position? }`.
+
+- `code` is from the exported closed list `ConvertErrorCode`, safe to `switch` on exhaustively with
+  no `default`. Before 1.0 the list changes only in a minor release; from 1.0 only in a major
+  release.
+- `message` is free text for a person fixing the input. It may change in any release.
+- `path` is the node's place from the document root, alternating `'content'` and an index, so
+  `path.map((step) => '/' + step).join('')` is a JSON Pointer at the node. The empty path is the
+  document itself.
+- `position` is `{ line, offset }` into the string passed in: `line` counted from 1, `offset` a
+  UTF-16 code unit, which is a JavaScript string index. It points at or before the refusal —
+  currently the start of the line the enclosing block begins on; a later minor may narrow that,
+  never widen it. For `not-a-string` it is `{ line: 1, offset: 0 }`.
+
+A parse always names a position, so the three markdown readers return `ParseError`, whose
+`position` reads without a guard. An emit reads no source and carries `path` alone. One handler
+typed on `ConvertError` takes both.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
 the identical error: fix the input, or set the document aside.
 
-`position` is `{ line, offset }` into the string passed in: `line` counted from 1, `offset` a
-UTF-16 code unit, a JavaScript string index rather than a codepoint or a byte offset. It points at
-or before the refusal — currently the start of the line the enclosing block begins on; a later
-minor may narrow that, never widen it. For `not-a-string` it is `{ line: 1, offset: 0 }`.
+### Parsing
 
-Parsing. Every reader also raises `unsupported-nesting-depth` from the "Either direction" table,
-and:
+Every reader also raises `unsupported-nesting-depth` from the "Either direction" table, and:
 
 - `commonMarkToAdf`: `not-a-string` and `unmappable-html`.
 - `portableMarkdownToAdf`: those and `malformed-pipe-table`.
 - `losslessMarkdownToAdf`: every row below, and `unsupported-node-shape`.
-- `htmlToAdf`, at `0.3.0`: the rows its dialect reaches.
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
-| `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text instead, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
+| `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, an alignment colon in it, or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in `spec/flavour.md`, or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the input holds an HTML construct the documented element set does not map, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown, the element set landing at `0.3.0` | remove the construct, or write what it holds as markdown |
+| `unmappable-html` | the input holds raw HTML, a comment and a processing instruction among them — at this version that is every raw HTML construct in markdown | remove the construct, or write what it holds as markdown |
 | `unspellable-whitespace` | an `emoji`, `mention` or `status` directive's content slot spells a newline or a carriage return — `&#10;`, `&#13;`, `!adf:text{text="\n"}` | replace it with a space, or write the node as `!adf:carry` — an inline directive never spans lines |
 
-Emitting — `adfToLosslessMarkdown` and `adfToPortableMarkdown`, and `adfToHtml` at `0.3.0`:
+### Emitting
+
+`adfToLosslessMarkdown` and `adfToPortableMarkdown`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | guard the boundary you receive JSON at with `isAdfDocument`; the message names the branch that refused. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
 | `unsupported-document-version` | the document's `version` is not 1 | keep the ADF and pass the document over, or show it read-only; the version is the site's, not yours to change |
 
-Either direction. The emitter's own refusals are in this group — a parse reaches them by asking it
-which CommonMark spelling a node takes — so the two rows above are not the measure of how often an
-emit refuses:
+### Either direction
+
+The emitter's own refusals are in this group — a parse reaches them by asking it which CommonMark
+spelling a node takes — so the two rows above are not the measure of how often an emit refuses:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -226,10 +448,9 @@ Serves Goals 1, 4 and 5.
   plain objects as `JSON.parse` builds them — every key and value as `doc` holds it, adjacent text
   nodes, an empty `attrs`, `content` or `marks` and `-0` included, and unknown node types carried
   opaquely
-  ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
-- Markdown this library reads, and markdown it writes, means what the CommonMark spec says; from
-  `0.3.0`, well-formed HTML means what the HTML standard says, read or written. The bullets below
-  name every exception.
+  ([Unknown nodes ride the carry](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-nodes-ride-the-carry)).
+- Markdown this library reads, and markdown it writes, means what the CommonMark spec says. The
+  bullets below name every exception.
 - CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names
   and nesting past 500 levels.
 - The other readers claim shapes CommonMark reads as text or code. `losslessMarkdownToAdf` claims
@@ -256,33 +477,77 @@ Serves Goals 1, 4 and 5.
   And these, for other reasons: a shortcut reference matching its definition only under Unicode case
   folding stays unresolved, and a link whose text holds an autolink keeps the inner link and leaves
   the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
-  one `<a>` in the other. `corpus/commonmark-spec/exceptions.json` marks each spelling ADF holds no
-  node for as `node-model` where the suite has an example of it, and the case-folded reference as
-  `pending`; the suite holds no example of a link holding an autolink.
+  one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, and the node shapes the `unsupported-node-shape` row lists. Show the refusal and keep the
   document read-only; saving markdown you could not produce is the loss the round-trip exists to
   stop.
-- The pipe table that `losslessMarkdownToAdf` and `portableMarkdownToAdf` read narrows GFM's twice: every
-  row opens with a pipe, so GFM's bare form is an error result rather than the prose it reads as,
-  and an alignment colon in the delimiter row is an error too — ADF holds no column alignment. The
-  trailing pipe is canonical output, optional in input.
+- The pipe table that `losslessMarkdownToAdf` and `portableMarkdownToAdf` read narrows GFM's twice:
+  every row opens with a pipe, so GFM's bare form is an error result, and an alignment colon in the
+  delimiter row is an error too — ADF holds no column alignment. The trailing pipe is canonical
+  output, optional in input.
 - Past that and `~~`, `losslessMarkdownToAdf` reads no GFM: an autolink literal and a `- [ ]`
   marker stay text, and a checklist is the `taskList` directive — `portableMarkdownToAdf` turns the
   marker into a `taskList`.
 - A document nested deeper than 500 levels is an error result, not a stack overflow, and no call
   loops forever on a string, or on a value `JSON.parse` or `structuredClone` builds.
 - The emitted formats are semver surface
-  ([`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#the-formats-are-api)).
-- **`0.3.0`** — `htmlToAdf(adfToHtml(doc))` deep-equals `doc`; fidelity HTML cannot express rides
-  `data-*` attributes. Foreign HTML maps a documented element set, which markdown's raw HTML reads
-  through as well, and a construct outside it is an error; well-formed HTML only — no tag-soup
-  recovery.
+  ([The formats are API](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#the-formats-are-api)).
 
 ## The package
 
-Serves Goal 8. ESM only, no runtime dependencies, public npm. Built JavaScript with `.d.ts`
-beside it. Pure ECMAScript at an ES2022 baseline, reaching for no host API; the test suite runs
-under Node, Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint.
-Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine), §Any
-ES2022 engine to §Public on npm.
+Serves Goal 8.
+
+| Aspect | Contract |
+| --- | --- |
+| Dependencies | none at runtime |
+| Engines | any ES2022 engine; `engines.node` is `>=18`. The test suite runs under Node, Deno and Bun, and a headless Firefox converts the corpus through the built entrypoint |
+| Host APIs | none: pure ECMAScript, no DOM, no `node:` import |
+| Module format | ESM only, one entrypoint |
+| Registry | public npm, `@larvit/adf-codec` |
+| Types | built JavaScript with `.d.ts` beside it |
+
+Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine),
+§Any ES2022 engine to §Public on npm.
+
+## Roadmap
+
+Planned for `0.3.0`, not in this release: `adfToHtml(doc): Result<string>` and
+`htmlToAdf(html: string): Result<AdfDocument, ParseError>`, and markdown to and from HTML through
+ADF, each call named by its markdown flavour. The markdown–HTML calls will keep only what ADF holds
+and refuse what their markdown reader or `htmlToAdf` refuses. `htmlToAdf(adfToHtml(doc))` will
+deep-equal `doc`, with fidelity HTML cannot express riding `data-*` attributes. Well-formed HTML will
+mean what the HTML standard says, read or written, with no tag-soup recovery. Foreign HTML will map
+a documented element set, which markdown's raw HTML will read through as well, and a construct
+outside it will be an error. Until then every raw HTML construct in markdown is `unmappable-html`.
+
+## Everything exported
+
+| Export | Kind | What it is |
+| --- | --- | --- |
+| `AdfAttributes` | type | `{ [key: string]: JsonValue }` |
+| `AdfDocument` | type | `{ content?: AdfNode[]; type: 'doc'; version: number }` |
+| `AdfMark` | type | `{ attrs?: AdfAttributes; type: string }` |
+| `AdfNode` | type | `{ attrs?: AdfAttributes; content?: AdfNode[]; marks?: AdfMark[]; text?: string; type: string }` |
+| `ConvertError` | type | `{ code: ConvertErrorCode; message: string; path: ConvertErrorPath; position?: SourcePosition }` |
+| `ConvertErrorCode` | type | the closed list of codes in [The errors](#the-errors) |
+| `ConvertErrorPath` | type | `readonly (number \| string)[]` |
+| `JsonValue` | type | `JsonValue[] \| boolean \| null \| number \| string \| { [key: string]: JsonValue }` |
+| `ParseError` | type | `ConvertError & { position: SourcePosition }` |
+| `Result` | type | `Result<T, E extends ConvertError = ConvertError>`: `{ error: E; ok: false } \| { ok: true; value: T }` |
+| `SourcePosition` | type | `{ line: number; offset: number }` |
+| `adfToLosslessMarkdown` | function | ADF to the lossless flavour |
+| `adfToPortableMarkdown` | function | ADF to portable markdown, lossy |
+| `commonMarkToAdf` | function | strict CommonMark to ADF |
+| `isAdfDocument` | function | type guard for `AdfDocument` |
+| `losslessMarkdownToAdf` | function | the lossless flavour to ADF |
+| `portableMarkdownToAdf` | function | portable markdown to ADF |
+
+## Links
+
+- [Changelog](https://github.com/larvit/adf-codec/blob/main/CHANGELOG.md)
+- [Upgrading from `0.1.0`](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md)
+- [The lossless flavour's grammar, `spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md)
+- [Decisions](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md)
+- [Plan](https://github.com/larvit/adf-codec/blob/main/todo.md)
+- [Issues](https://github.com/larvit/adf-codec/issues)
