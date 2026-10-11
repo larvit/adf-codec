@@ -10,7 +10,7 @@ import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { parseJsonText } from '../json-text.ts'
-import { serializeCanonicalJson } from '../canonical-json.ts'
+import { serializeCanonicalJson, spellsCanonicalJson } from '../canonical-json.ts'
 
 export const carryFencePrefix = 'adf:'
 
@@ -75,7 +75,7 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, ty
   if (overNested(held, levels)) {
     return { fault: { code: 'unsupported-nesting-depth', message: `a carried node's JSON nests deeper than the ${levels} levels its position leaves` } }
   }
-  if (serializeCanonicalJson(value, spelling) !== raw) {
+  if (!spellsCanonicalJson(value, spelling, raw)) {
     const shape = spelling === 'compact' ? 'compact, keys sorted' : 'two-space indent, keys sorted'
     return { fault: unsupportedNodeShape(`the opaque carry spells its node's JSON canonically: ${shape}; ${wayOut}`) }
   }

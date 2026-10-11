@@ -7,20 +7,37 @@ type Member = { label: string; value: JsonValue }
 type Pending = string | { depth: number; value: JsonValue }
 
 export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling): string {
-  const indent = spelling === 'compact' ? '' : '  '
   const text: string[] = []
+  writeCanonicalJson(value, spelling, (piece) => text.push(piece) > 0)
+  return text.join('')
+}
+
+// Stops at the first piece `text` does not hold: two-space indentation can spell a short compact text past the engine's longest string.
+export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string): boolean {
+  let offset = 0
+  const whole = writeCanonicalJson(value, spelling, (piece) => {
+    if (!text.startsWith(piece, offset)) return false
+    offset += piece.length
+    return true
+  })
+  return whole && offset === text.length
+}
+
+// `write` returns false to stop the walk, and the walk then returns false.
+function writeCanonicalJson(value: JsonValue, spelling: JsonSpelling, write: (piece: string) => boolean): boolean {
+  const indent = spelling === 'compact' ? '' : '  '
   const pending: Pending[] = [{ depth: 0, value }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     if (typeof next === 'string') {
-      text.push(next)
+      if (!write(next)) return false
       continue
     }
     const { depth, value: held } = next
     if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ label: '', value: item })), ']', indent, depth)
     else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held, indent), '}', indent, depth)
-    else text.push(Object.is(held, -0) ? '-0' : JSON.stringify(held))
+    else if (!write(Object.is(held, -0) ? '-0' : JSON.stringify(held))) return false
   }
-  return text.join('')
+  return true
 }
 
 function objectMembers(value: { [key: string]: JsonValue }, indent: string): Member[] {

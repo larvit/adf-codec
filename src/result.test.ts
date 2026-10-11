@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
+import { success, withinEngineLimits } from './result.ts'
+
 const sourceRoot = dirname(fileURLToPath(import.meta.url))
 const union = /export type ConvertErrorCode =\n((?:\s+\| '[a-z-]+'\n)+)/
 const declared = /'([a-z-]+)'/g
@@ -28,4 +30,24 @@ function calledCodes(): string[] {
 // Removing a code is breaking (docs/decisions.md §The code list), so a code must not outlive its cause.
 test('every ConvertErrorCode is the code of a production call site, and every call site names a declared one', () => {
   assert.deepEqual(calledCodes(), declaredCodes())
+})
+
+test('refuses where SpiderMonkey runs out of string, and lets any other throw through', () => {
+  const overflow = new Error('allocation size overflow')
+  overflow.name = 'InternalError'
+  assert.deepEqual(
+    withinEngineLimits(() => {
+      throw overflow
+    }),
+    { error: { code: 'unsupported-node-shape', message: 'the output runs past what this JavaScript engine holds: allocation size overflow', path: [] }, ok: false },
+  )
+  assert.throws(() =>
+    withinEngineLimits(() => {
+      throw new TypeError('a bug')
+    }),
+  )
+  assert.deepEqual(
+    withinEngineLimits(() => success('x')),
+    { ok: true, value: 'x' },
+  )
 })

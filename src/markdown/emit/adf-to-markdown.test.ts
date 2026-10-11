@@ -44,6 +44,15 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })
 
+// About 2.2 billion characters of carry JSON, past V8's, JavaScriptCore's and SpiderMonkey's longest string.
+test('refuses a document whose markdown runs past the engine\'s longest string', () => {
+  let value: JsonValue = new Array<JsonValue>(2_200_000).fill(0)
+  for (let level = 0; level < 495; level += 1) value = [value]
+  const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
+  assert.match(markdown(result), /^unsupported-node-shape: the output runs past what this JavaScript engine holds: /)
+  assert.deepEqual(path(result), [])
+})
+
 test('refuses a document version the markdown cannot carry', () => {
   assert.equal(code(adfToLosslessMarkdown({ type: 'doc', version: 2 })), 'unsupported-document-version')
 })

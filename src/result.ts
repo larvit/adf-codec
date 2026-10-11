@@ -41,3 +41,13 @@ export function positioned<T>(result: Result<T>, position: SourcePosition): Resu
 export function success<T>(value: T): { ok: true; value: T } {
   return { ok: true, value }
 }
+
+// Any string concatenation throws past the engine's longest string: RangeError in V8 and JavaScriptCore, InternalError in SpiderMonkey.
+export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
+  try {
+    return convert()
+  } catch (error) {
+    if (!(error instanceof RangeError || (error instanceof Error && error.name === 'InternalError'))) throw error
+    return failure('unsupported-node-shape', `the output runs past what this JavaScript engine holds: ${error.message}`, [])
+  }
+}

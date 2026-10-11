@@ -3,7 +3,7 @@ import { adfDocumentFault, nodeAttrs, nodeContent, nodeMarks } from '../../adf/d
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, withinEngineLimits, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, taskMarker } from './conventions.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, portableLink, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
@@ -46,8 +46,10 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
 }
 
 export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
-  const reduced = reduceToPortable(document)
-  return reduced.ok ? writeMarkdown(reduced.value, 'portable') : reduced
+  return withinEngineLimits(() => {
+    const reduced = reduceToPortable(document)
+    return reduced.ok ? writeMarkdown(reduced.value, 'portable') : reduced
+  })
 }
 
 export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {

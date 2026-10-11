@@ -461,6 +461,9 @@ handles one cause alike whichever node, attribute or direction raised it.
   knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
+- A document whose markdown runs past the longest string the JavaScript engine holds is
+  `unsupported-node-shape` at the document's path, in either writer: the document does not convert,
+  and the bound is the engine's own (2026-10-11).
 - The markdown readers and `htmlToAdf` refuse a value that is not a string as `not-a-string`, at
   position `{ line: 1, offset: 0 }` with an empty path: no existing code reads true of it, and
   `not-an-adf-document` names the emitters' input (2026-10-05).
