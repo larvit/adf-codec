@@ -415,3 +415,55 @@ Inherited architect, decided by:
 - Navigation: `src/markdown/parse/blocks.ts:252` `openedList`: the comment names the exception, so a reader of two lists merged or not lands on the right unit
 - Navigation: `README.md:242` the CommonMark exceptions bullet: each exception is named rather than counted by position
 - Navigation: `CHANGELOG.md:5` `## Unreleased`: breaking entries come first, other changes last
+
+## 2026-10-11T10:33:32Z, PR #32 at be23835, against c11aa91
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | same | worse | worse |
+| Inherited architect | same | worse | worse | worse | worse |
+
+Mid A, decided by:
+
+- Overall, Locality, Self-sufficiency: `src/markdown/parse/markdown-to-adf.ts:229` `splitPath`: builds stand-in nodes and replays `splitTaskList` to place a refused block's path, checkable only by knowing how the split moves blocks
+- Locality, Self-sufficiency: `src/markdown/portable/task-list.ts:23` `splitPlace`: finds the stand-in by object identity, which holds only while `taskOfParagraphs` keeps the original children, and nothing there says so
+- Locality: `src/markdown/parse/blocks.ts:262` `endList`: `closeLeaf` fills `Walk.endedLists` and `openedList` reads it, where `openedList` looked only at the previous block
+
+Inherited architect, decided by:
+
+- Locality, Self-sufficiency, Overall: `src/markdown/parse/markdown-to-adf.ts:229` `splitPath`: a fake task list replayed through `splitTaskList` and found again by identity; if `taskOfParagraphs` ever copies nodes the old wrong path returns silently
+- Shape, Locality: `src/markdown/parse/markdown-to-adf.ts:203` `bulletBlocks`: one `readBlocks` call became a per-block loop with a hand-built failure, a second depth check and a fan-out through `taskItems`, `splitPath`, `childType` and `splitPlace`; `Refusal` names a context bag
+- Locality: `src/markdown/parse/blocks.ts:78` `Walk.endedLists`: identity-keyed walk state that `closeLeaf` writes and `openedList` reads
+- Shape: `src/markdown/portable/adf-to-portable-markdown.ts:354` `reduceMedia`: the callback's `held` shadows the alt's, and the link goes mark to definition to mark
+
+## 2026-10-11T10:33:35Z, PR #32 at be23835
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 6 | 6.5 | 6 | 6.5 |
+| Mid A | 7 | 6 | 6.5 | 5.5 | 6 |
+| Maintainability senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Inherited architect | 6.5 | 5.5 | 6 | 6 | 6 |
+| Mean | 6.88 | 5.75 | 6.38 | 5.75 | 6.13 |
+
+Junior A, hardest first:
+
+- Locality: `src/markdown/parse/markdown-to-adf.ts:229` `splitPath`: replays `splitTaskList`'s internals to name a path
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:189` `escapeClosedRuns`: the escaping rule lives in `spec/flavour.md`
+
+Mid A, hardest first:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:30` `SpellingMemo`: reference-keyed memo shared by parse and emit
+- Self-sufficiency: `src/markdown/parse/inline-content.ts:62` `Scan`: rules read with `spec/flavour.md` open alongside
+
+Maintainability senior, hardest first:
+
+- Locality: `src/markdown/parse/markdown-to-adf.ts:257` `directiveNode`: the parser asks the emitter whether input was legal
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:189` `escapeClosedRuns`: needs `spec/flavour.md` Escaping open
+
+Inherited architect, would restructure first:
+
+- Navigation: `src/markdown/portable/conventions.ts:23` `flavourClaims`: every flavour's switchboard sits in `portable/`
+- Locality: `src/markdown/emit/adf-to-markdown.ts:117` `readableBlock`: reader acceptance hangs on emitter verdicts

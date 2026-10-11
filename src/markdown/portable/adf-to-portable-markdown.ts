@@ -351,7 +351,7 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   if (attrs['type'] !== 'external' || typeof url !== 'string') return paragraphOfNode(media, reduction)
   const held = attrs['alt']
   const alt = typeof held === 'string' ? oneLine(held).trim() : ''
-  const mark = nodeMarks(media).find((held) => held.type === 'link')
+  const mark = nodeMarks(media).find(({ type }) => type === 'link')
   const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
   return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkDefinition(nodeAttrs(link)))])])
 }
