@@ -15,6 +15,18 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
   return text.join('')
 }
 
+// `undefined` where the spelling runs past `longest` characters, where it stops building.
+export function serializeCanonicalJsonWithin(value: JsonValue, spelling: JsonSpelling, longest: number): string | undefined {
+  const text: string[] = []
+  let length = 0
+  const whole = writeCanonicalJson(value, spelling, (piece) => {
+    length += piece.length
+    text.push(piece)
+    return length <= longest
+  })
+  return whole ? text.join('') : undefined
+}
+
 // Stops at the first piece that does not match `text`: re-spelled with two-space indentation, a short compact text can pass the engine's longest string.
 export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string): boolean {
   let offset = 0

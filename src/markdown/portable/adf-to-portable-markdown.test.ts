@@ -70,11 +70,10 @@ test('refuses what the document guard refuses, and nothing else', () => {
   assert.match(portableDocument(document(paragraph(deepInline))), /^unsupported-nesting-depth at /)
 })
 
-// The merge throws at its concatenation, before any text is scanned, so no engine holds more than the one string.
-test('refuses a paragraph whose merged text passes the engine\'s longest string', () => {
+test('refuses a paragraph whose text would pass V8\'s longest string, joining none of it', () => {
   const long = 'a'.repeat(2 ** 28)
   const merged = paragraph(...Array.from({ length: 9 }, () => text(long)))
-  assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /')
+  assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /content/0')
 })
 
 test('refuses nesting past 500 levels wherever the reduction walks', () => {

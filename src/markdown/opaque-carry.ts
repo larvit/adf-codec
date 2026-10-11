@@ -9,8 +9,9 @@ import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { longestOutput, tooLong } from '../output-length.ts'
 import { parseJsonText } from '../json-text.ts'
-import { serializeCanonicalJson, spellsCanonicalJson } from '../canonical-json.ts'
+import { serializeCanonicalJsonWithin, spellsCanonicalJson } from '../canonical-json.ts'
 
 export const carryFencePrefix = 'adf:'
 
@@ -58,7 +59,8 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
   if (!isJsonValue(spelled) || headroom < 0) {
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
-  return success({ headroom, json: serializeCanonicalJson(spelled, spelling) })
+  const json = serializeCanonicalJsonWithin(spelled, spelling, longestOutput)
+  return json === undefined ? tooLong(path) : success({ headroom, json })
 }
 
 // `type` is the one the fence's info string names, `undefined` for the inline carry.

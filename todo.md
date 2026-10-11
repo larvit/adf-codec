@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 108`
+`Next ID = 110`
 
 | Goal | W |
 |---|---|
@@ -25,7 +25,7 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 106 | 0.2.0 | defect | **Refuse a document or markdown whose output would pass a stated length before building it, so no call exhausts the heap.** | 4 | 6 | 5 | 8 | 1, 9 | 20.5 |
+| 108 | 0.2.0 | defect | **Spell a line in memory linear in its length, so a paragraph shorter than V8's longest string converts within Node's default heap.** | 4 | 6 | 5 | 8 | 1, 9 | 20.5 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
@@ -42,6 +42,7 @@
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 5 | 9 | 9 | 8.2 |
 | 102 | 0.2.1 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 2 | 4 | 1 | 8.0 |
+| 109 | 0.2.1 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 4 | 7 | 9 | 5.3 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
@@ -73,19 +74,13 @@
 
 ## Details
 
-### 106. Refuse a document or markdown whose output would pass a stated length before building it, so no call exhausts the heap.
+### 108. Spell a line in memory linear in its length, so a paragraph shorter than V8's longest string converts within Node's default heap.
 
-The writers return `unsupported-node-shape` where the engine throws past its longest string, but
-some documents exhaust the heap first, which no catch survives. `losslessMarkdownToAdf` on 2.1 MB of
-markdown, a `!adf:blockquote` holding a list nested 490 levels whose paragraph runs on in 700,000
-lazy lines `b\`, crashed Node 24 out of heap: `directiveNode` re-spells the subtree, indenting each
-line to its depth. `adfToLosslessMarkdown` on nine text nodes sharing one 2^28-character string got
-Bun OOM-killed under 8 GB: `escape` in `line-escaping.ts` pushes one array element per character.
-Where the heap holds out, the readers' re-spelling can still throw a `RangeError`. JavaScriptCore's
-`Out of memory`, which the writers refuse, may also mean a failed allocation that a retry survives.
-The candidate length to refuse past is V8's 2^29 − 24 on every engine, so the same document converts
-alike everywhere; no entry states it yet (AGENTS.md §Stated numbers). Found by the principles audit
-of item 83, 2026-10-11.
+The line escaper keeps an array element per character twice (`escapings`, `placements` in `escape`,
+`line-escaping.ts`) and a `Set` entry per escaped character, so `adfToLosslessMarkdown` holds about
+50 bytes a character: one 20-million-character text node took 1.2 GB on Node 24, and one of 80
+million exhausted its 2.2 GB default heap. Twenty million `*` throw `RangeError: Set maximum size
+exceeded`, which `withinEngineLimits` lets through. Found while shipping item 106, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
@@ -210,6 +205,12 @@ the fix.
 (`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
 `taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
 the reason the project read worse.
+
+### 109. Spell nested lists and quotes in time linear in the markdown.
+
+Each level of a nested list or quote re-indents its whole text, so `losslessMarkdownToAdf` on 3 MB
+of lazy lines in a list nested 490 levels inside `!adf:blockquote` spends about 5 seconds
+re-spelling it, the writers the same on its document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 

@@ -83,10 +83,11 @@
 - Fix a cyclic document, in which an object holds itself: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` refuse it as `not-an-adf-document` and `isAdfDocument` returns `false`,
   where all three hung.
-- Fix a document whose markdown would be longer than the longest string or array the JavaScript
-  engine builds, on V8 about 537 million characters, or about 134 million in one text node:
-  `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse it as `unsupported-node-shape`, where
-  they threw.
+- Fix a document whose markdown would be longer than 536,870,888 characters, V8's longest string:
+  `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse it as `unsupported-node-shape` on
+  every engine, before building it, where they threw or ran out of memory.
+- Fix a directive whose CommonMark spelling would be that long: `losslessMarkdownToAdf` refuses it
+  as `unsupported-node-shape`, where a few megabytes of nested list lines ran it out of memory.
 - Fix deeply nested compact JSON in an `adf:` fence: `losslessMarkdownToAdf` refuses it as
   `unsupported-node-shape`, as it refuses any compact JSON there, where about a megabyte of it threw.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
