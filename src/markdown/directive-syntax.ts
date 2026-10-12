@@ -112,18 +112,9 @@ export function slotFault(type: string, text: string): ConvertFault | undefined 
 }
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {
-  return [...attributePieces(pairs)].join('')
-}
-
-export function* attributePieces(pairs: readonly (readonly [string, string])[]): Generator<string> {
-  if (pairs.length === 0) return
-  yield '{'
-  for (const [index, [key, value]] of [...pairs].sort(([left], [right]) => keyOrder(left, right)).entries()) {
-    if (index > 0) yield ' '
-    yield `${key}=`
-    yield value
-  }
-  yield '}'
+  if (pairs.length === 0) return ''
+  const spelled = [...pairs].sort(([left], [right]) => keyOrder(left, right)).map(([key, value]) => `${key}=${value}`)
+  return `{${spelled.join(' ')}}`
 }
 
 export function spellDirectiveCloser(name: string): string {

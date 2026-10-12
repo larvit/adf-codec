@@ -46,7 +46,7 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
 
 const tooLong = 'unsupported-node-shape: spelled as markdown, this would be longer than 536870888 characters, the longest string V8 holds'
 
-// A code block of 300 lines, two of them some 1000 characters short of V8's longest string, so only what their spelling adds passes it.
+// A code block of 300 lines; two of these together fall some 1000 characters short of V8's longest string, so only what their spelling adds passes it.
 function nearlyHalfTheBound(): AdfNode {
   return { attrs: {}, content: [{ text: `${'a'.repeat(894_782)}\n`.repeat(300), type: 'text' }], type: 'codeBlock' }
 }

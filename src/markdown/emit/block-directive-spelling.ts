@@ -1,10 +1,9 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
-import { attributePieces, isBareToken, spellDirectiveOpener, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
 import { blockArgument, markValues, marksAttribute } from '../block-directive.ts'
-import { boundedThen, joinedWithin } from '../length-bound.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { isBareToken, spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
 import { overNested } from '../../json-value.ts'
 import { spellEmptyKeys } from '../empty-keys.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
@@ -23,9 +22,7 @@ export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, 
     if (overNested(values)) return failure('unsupported-nesting-depth', attributeNestingMessage(marksAttribute, node.type), path)
     spelledPairs.push([marksAttribute, spellJsonAttribute(values)])
   }
-  const head = spellDirectiveOpener(node.type, slot.argument, '')
-  const opener = joinedWithin(spelledPairs.length === 0 ? [head] : [head, ' ', ...attributePieces(spelledPairs)])
-  return boundedThen(opener, success)
+  return success(spellDirectiveOpener(node.type, slot.argument, spellAttributes(spelledPairs)))
 }
 
 // `undefined` where the argument slot holds a value no bare token spells.
