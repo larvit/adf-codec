@@ -86,6 +86,17 @@ export function textLength(node: AdfNode): number {
   return node.text?.length ?? 0
 }
 
+// A line spells every character of its nodes' text at least once, so this much text cannot fit.
+export function heldTextLength(nodes: readonly AdfNode[]): number {
+  let length = 0
+  const pending = [...nodes]
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    length += textLength(node)
+    for (const child of nodeContent(node)) pending.push(child)
+  }
+  return length
+}
+
 export function mergeAdjacentText(nodes: readonly AdfNode[], joins: (previous: AdfNode, node: AdfNode) => boolean): AdfNode[] {
   const merged: AdfNode[] = []
   for (const node of nodes) {

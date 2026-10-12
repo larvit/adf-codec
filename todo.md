@@ -80,7 +80,8 @@ The line escaper keeps an array element per character twice (`escapings`, `place
 `line-escaping.ts`) and a `Set` entry per escaped character, so `adfToLosslessMarkdown` holds about
 50 bytes a character: one 20-million-character text node took 1.2 GB on Node 24, and one of 80
 million exhausted its 2.2 GB default heap. Twenty million `*` throw `RangeError: Set maximum size
-exceeded`, which `withinEngineLimits` lets through. Found while shipping item 106, 2026-10-11.
+exceeded`, which `withinEngineLimits` lets through. `losslessMarkdownToAdf` reaches both through a
+directive's CommonMark ask. Found while shipping item 106, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
@@ -208,9 +209,11 @@ the reason the project read worse.
 
 ### 109. Spell nested lists and quotes in time linear in the markdown.
 
-Each level of a nested list or quote re-indents its whole text, so `losslessMarkdownToAdf` on 3 MB
-of lazy lines in a list nested 490 levels inside `!adf:blockquote` spends about 5 seconds
-re-spelling it, the writers the same on its document. Found while shipping item 106, 2026-10-11.
+Each level of a nested list or quote re-indents its whole text, so the work is the depth times the
+text. `losslessMarkdownToAdf` on 3 MB of lazy lines in a list nested 490 levels inside
+`!adf:blockquote` spends about 5 seconds re-spelling it. The same 2 MB split over two items of a
+list nested 480 levels took 11 minutes to refuse on Node 24, every item fitting the length bound
+alone. The writers do the same on such a document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
@@ -272,7 +275,7 @@ document's whole tree. Give the node's path, and name its type and the attribute
 
 ### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
 
-`refuseContentAndText` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
+`emitLeaf` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
 refuse these with `unsupported-node-shape`, though `isAdfDocument` accepts them and the carry
 round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. Drop
 them from the emitting half of the README's `unsupported-node-shape` row. Found by the README-goals

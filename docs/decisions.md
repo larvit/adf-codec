@@ -667,10 +667,13 @@ is the shortest of the engines the library claims.
 Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29 − 24 characters
 (`longestOutput`) before building it, so the same document converts alike everywhere and no
 amplification — an indent on every line of a deep subtree, the carry's two-space JSON, text one
-string shared by many nodes — builds a string no engine was asked for. Each block counts its lines
-once with the indent its containers will prefix them with, so the bound trips at the block that
-passes it, before any container copies it. The engines' own throws past their longest string or
-array stay refused as `unsupported-node-shape` by `withinEngineLimits`, behind this bound.
+string shared by many nodes — builds a string no engine was asked for. Each walk of blocks projects
+their length with the indent their containers will prefix every line with, and a container joining
+several walks — a list's items, a table's rows — sums their projections before it joins them, so the
+bound trips at the block that passes it, before any container copies it. The projection never
+undercounts: a list giving way to the directive form counts its items' marker indent, so markdown a
+few characters a line under the bound may be refused. The engines' own throws past their longest
+string or array stay refused as `unsupported-node-shape` by `withinEngineLimits`, behind this bound.
 
 ## Nothing recurses unbounded
 

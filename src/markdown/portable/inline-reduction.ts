@@ -6,8 +6,8 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestOutput, tooLong } from '../../output-length.ts'
-import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { heldTextLength, portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
+import { heldTextLength, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'

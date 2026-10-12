@@ -69,6 +69,21 @@ test('refuses a directive whose opener and body together would pass V8\'s longes
   assert.equal(markdown(adfToLosslessMarkdown(document(expand))), tooLong)
 })
 
+test('refuses a list whose items together would pass V8\'s longest string, before joining them', () => {
+  const item: AdfNode = { content: [{ attrs: {}, content: [{ text: 'a'.repeat(2 ** 28), type: 'text' }], type: 'codeBlock' }], type: 'listItem' }
+  const result = adfToLosslessMarkdown(document({ content: [item, item], type: 'bulletList' }))
+  assert.equal(markdown(result), tooLong)
+  assert.deepEqual(path(result), ['content', 0, 'content', 1])
+})
+
+test('refuses a pipe table whose rows their containers would prefix past V8\'s longest string', () => {
+  const row: AdfNode = { content: [{ content: [{ type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }
+  const header: AdfNode = { content: [{ content: [{ type: 'paragraph' }], type: 'tableHeader' }], type: 'tableRow' }
+  let quote: AdfNode = { content: [header, ...Array.from({ length: 1_100_000 }, () => row)], type: 'table' }
+  for (let level = 0; level < 245; level += 1) quote = { content: [quote], type: 'blockquote' }
+  assert.equal(markdown(adfToLosslessMarkdown(document(quote))), tooLong)
+})
+
 test('refuses text past V8\'s longest string before spelling it', () => {
   const long = 'a'.repeat(2 ** 28)
   const result = adfToLosslessMarkdown(document(paragraph({ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' })))
