@@ -112,9 +112,18 @@ export function slotFault(type: string, text: string): ConvertFault | undefined 
 }
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {
-  if (pairs.length === 0) return ''
-  const spelled = [...pairs].sort(([left], [right]) => keyOrder(left, right)).map(([key, value]) => `${key}=${value}`)
-  return `{${spelled.join(' ')}}`
+  return [...attributePieces(pairs)].join('')
+}
+
+export function* attributePieces(pairs: readonly (readonly [string, string])[]): Generator<string> {
+  if (pairs.length === 0) return
+  yield '{'
+  for (const [index, [key, value]] of [...pairs].sort(([left], [right]) => keyOrder(left, right)).entries()) {
+    if (index > 0) yield ' '
+    yield `${key}=`
+    yield value
+  }
+  yield '}'
 }
 
 export function spellDirectiveCloser(name: string): string {
@@ -122,7 +131,18 @@ export function spellDirectiveCloser(name: string): string {
 }
 
 export function spellDirectiveOpener(name: string, argument: string | undefined, attributes: string): string {
-  return `${directivePrefix}${name}${argument === undefined ? '' : ` ${argument}`}${attributes === '' ? '' : ` ${attributes}`}`
+  return [...directiveOpenerPieces(name, argument, attributes === '' ? [] : [attributes])].join('')
+}
+
+export function* directiveOpenerPieces(name: string, argument: string | undefined, attributes: Iterable<string>): Generator<string> {
+  yield `${directivePrefix}${name}`
+  if (argument !== undefined) yield ` ${argument}`
+  let first = true
+  for (const piece of attributes) {
+    if (first) yield ' '
+    first = false
+    yield piece
+  }
 }
 
 export function spellJsonAttribute(value: JsonValue): string {

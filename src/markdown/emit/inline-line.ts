@@ -9,13 +9,13 @@ import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, highlightDelimiter } from '../portable/conventions.ts'
-import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { heldTextLength, identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
-import { longestOutput, tooLong } from '../../output-length.ts'
+import { longestMarkdown, tooLong } from '../length-bound.ts'
 import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive-syntax.ts'
 import { spellInlineNodeAttributes } from './inline-directive-spelling.ts'
 import { spellTextDirective } from '../text-directive.ts'
@@ -81,7 +81,7 @@ export function tryImageLine(alt: string | undefined, url: string, link?: LinkDe
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
-  if (heldTextLength(nodes) > longestOutput) return tooLong(path)
+  if (heldTextLength(nodes) > longestMarkdown) return tooLong()
   const fallbacks: LineFallbacks = { carried: new Set(), flavour, openingLinkAsDirective: false }
   // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {

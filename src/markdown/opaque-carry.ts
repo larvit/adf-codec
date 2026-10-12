@@ -4,12 +4,12 @@ import type { JsonSpelling } from '../canonical-json.ts'
 import type { JsonValue } from '../json-value.ts'
 import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
-import { fencedCodeBlock } from './commonmark/backtick-runs.ts'
+import { fencePieces } from './commonmark/backtick-runs.ts'
 import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
+import { boundedThen, joinedWithin, longestMarkdown } from './length-bound.ts'
 import { largestNesting } from '../nesting.ts'
-import { longestOutput, tooLong } from '../output-length.ts'
 import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJsonWithin, spellsCanonicalJson } from '../canonical-json.ts'
 
@@ -25,7 +25,8 @@ export function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: numbe
   const named = infoStringCarries(type)
   const json = carriedJson(node, named ? untyped : node, 'two-space', path, largestNesting - depth)
   if (!json.ok) return json
-  return success({ headroom: json.value.headroom, text: fencedCodeBlock(`${carryFencePrefix}${named ? type : ''}`, json.value.json) })
+  const text = joinedWithin(fencePieces(`${carryFencePrefix}${named ? type : ''}`, json.value.json))
+  return boundedThen(text, (fence) => success({ headroom: json.value.headroom, text: fence }))
 }
 
 export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<string> {
@@ -59,8 +60,8 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
   if (!isJsonValue(spelled) || headroom < 0) {
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
-  const json = serializeCanonicalJsonWithin(spelled, spelling, longestOutput)
-  return json === undefined ? tooLong(path) : success({ headroom, json })
+  const json = serializeCanonicalJsonWithin(spelled, spelling, longestMarkdown)
+  return boundedThen(json, (spelled) => success({ headroom, json: spelled }))
 }
 
 // `type` is the one the fence's info string names, `undefined` for the inline carry.

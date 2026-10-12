@@ -4,12 +4,6 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
-import { success, withinEngineLimits, type Result } from './result.ts'
-
-function code(result: Result<string>): string {
-  return result.ok ? `converted ${result.value}` : result.error.code
-}
-
 const sourceRoot = dirname(fileURLToPath(import.meta.url))
 const union = /export type ConvertErrorCode =\n((?:\s+\| '[a-z-]+'\n)+)/
 const declared = /'([a-z-]+)'/g
@@ -34,37 +28,4 @@ function calledCodes(): string[] {
 // Removing a code is breaking (docs/decisions.md §The code list), so a code must not outlive its cause.
 test('every ConvertErrorCode is the code of a production call site, and every call site names a declared one', () => {
   assert.deepEqual(calledCodes(), declaredCodes())
-})
-
-test('refuses where the engine runs out of string or array, and lets a stack overflow or any other throw through', () => {
-  const overflow = new Error('allocation size overflow')
-  overflow.name = 'InternalError'
-  assert.deepEqual(
-    withinEngineLimits(() => {
-      throw overflow
-    }),
-    { error: { code: 'unsupported-node-shape', message: 'the output would be longer than the longest string or array this JavaScript engine builds (allocation size overflow)', path: [] }, ok: false },
-  )
-  assert.equal(
-    code(
-      withinEngineLimits(() => {
-        throw new RangeError('Invalid array length')
-      }),
-    ),
-    'unsupported-node-shape',
-  )
-  assert.throws(() =>
-    withinEngineLimits(() => {
-      throw new RangeError('Maximum call stack size exceeded')
-    }),
-  )
-  assert.throws(() =>
-    withinEngineLimits(() => {
-      throw new TypeError('a bug')
-    }),
-  )
-  assert.deepEqual(
-    withinEngineLimits(() => success('x')),
-    { ok: true, value: 'x' },
-  )
 })

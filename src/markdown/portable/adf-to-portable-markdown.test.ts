@@ -73,13 +73,13 @@ test('refuses what the document guard refuses, and nothing else', () => {
 test('refuses a paragraph whose text would pass V8\'s longest string, joining none of it', () => {
   const long = 'a'.repeat(2 ** 28)
   const merged = paragraph(...Array.from({ length: 9 }, () => text(long)))
-  assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /content/0')
+  assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /')
 })
 
 test('refuses an expand whose title and body together would pass V8\'s longest string', () => {
   let quote: AdfNode = node('expand', { title: 'a'.repeat(1_000_000) }, { attrs: {}, content: [text('a\n'.repeat(1_108_000))], type: 'codeBlock' })
   for (let level = 0; level < 240; level += 1) quote = { content: [quote], type: 'blockquote' }
-  assert.equal(portableDocument(document(quote)), `unsupported-node-shape at /${Array.from({ length: 241 }, () => 'content/0').join('/')}`)
+  assert.equal(portableDocument(document(quote)), 'unsupported-node-shape at /')
 })
 
 test('refuses nesting past 500 levels wherever the reduction walks', () => {
@@ -104,6 +104,12 @@ test('refuses nesting past 500 levels wherever the reduction walks', () => {
     paragraph(wrapped),
   ]
   for (const bottom of bottoms) assert.equal(lowest(bottom), 'unsupported-nesting-depth', bottom.type)
+})
+
+test('names a list nested too deep for its spelling at its place in the caller\'s document', () => {
+  let deep: AdfNode = bulletList(item(said('x')))
+  for (let level = 0; level < largestNesting; level += 1) deep = bulletList(item(deep))
+  assert.match(portableDocument(document(said('a'), deep)), /^unsupported-nesting-depth at \/content\/1\/content\/0\/content\/0\//)
 })
 
 test('spells a panel as an alert in the GitHub word for its colour', () => {

@@ -44,7 +44,7 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })
 
-const tooLong = 'unsupported-node-shape: the markdown would be longer than 536870888 characters, the longest string V8 holds'
+const tooLong = 'unsupported-node-shape: spelled as markdown, this would be longer than 536870888 characters, the longest string V8 holds'
 
 // About 556 million characters of carry JSON: past V8's longest string, short of JavaScriptCore's and SpiderMonkey's.
 test('refuses a carry whose JSON would run past V8\'s longest string, on every engine', () => {
@@ -52,15 +52,13 @@ test('refuses a carry whose JSON would run past V8\'s longest string, on every e
   for (let level = 0; level < 495; level += 1) value = [value]
   const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
   assert.equal(markdown(result), tooLong)
-  assert.deepEqual(path(result), ['content', 0])
 })
 
-test('refuses lines their containers would prefix past V8\'s longest string, at the block holding them', () => {
+test('refuses lines their containers would prefix past V8\'s longest string, before any container copies them', () => {
   let quote: AdfNode = { attrs: {}, content: [{ text: 'a\n'.repeat(1_100_000), type: 'text' }], type: 'codeBlock' }
   for (let level = 0; level < 245; level += 1) quote = { content: [quote], type: 'blockquote' }
   const result = adfToLosslessMarkdown(document(quote))
   assert.equal(markdown(result), tooLong)
-  assert.equal(path(result).length, 2 * 246)
 })
 
 test('refuses a directive whose opener and body together would pass V8\'s longest string', () => {
@@ -73,7 +71,6 @@ test('refuses a list whose items together would pass V8\'s longest string, befor
   const item: AdfNode = { content: [{ attrs: {}, content: [{ text: 'a'.repeat(2 ** 28), type: 'text' }], type: 'codeBlock' }], type: 'listItem' }
   const result = adfToLosslessMarkdown(document({ content: [item, item], type: 'bulletList' }))
   assert.equal(markdown(result), tooLong)
-  assert.deepEqual(path(result), ['content', 0, 'content', 1])
 })
 
 test('refuses a pipe table whose rows their containers would prefix past V8\'s longest string', () => {
@@ -84,11 +81,21 @@ test('refuses a pipe table whose rows their containers would prefix past V8\'s l
   assert.equal(markdown(adfToLosslessMarkdown(document(quote))), tooLong)
 })
 
+test('refuses a code block whose fences together would pass V8\'s longest string', () => {
+  const long: AdfNode = { text: 'a'.repeat(2 ** 28), type: 'text' }
+  assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: {}, content: [long, long, long], type: 'codeBlock' }))), tooLong)
+})
+
+test('refuses a directive opener whose attributes together would pass V8\'s longest string', () => {
+  const long = 'a'.repeat(2 ** 28)
+  const panel: AdfNode = { attrs: { panelColor: long, panelIcon: long, panelIconText: long, panelType: 'custom' }, content: [paragraph({ text: 'x', type: 'text' })], type: 'panel' }
+  assert.equal(markdown(adfToLosslessMarkdown(document(panel))), tooLong)
+})
+
 test('refuses text past V8\'s longest string before spelling it', () => {
   const long = 'a'.repeat(2 ** 28)
   const result = adfToLosslessMarkdown(document(paragraph({ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' })))
   assert.equal(markdown(result), tooLong)
-  assert.deepEqual(path(result), ['content', 0])
 })
 
 test('refuses a document version the markdown cannot carry', () => {

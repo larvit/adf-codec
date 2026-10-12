@@ -3,7 +3,7 @@ import { adfDocumentFault, nodeAttrs, nodeContent, nodeMarks } from '../../adf/d
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
-import { failure, faulted, success, withinEngineLimits, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, taskMarker } from './conventions.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, portableLink, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
@@ -12,6 +12,7 @@ import { largestNesting } from '../../nesting.ts'
 import { linkDefinition } from '../mark-spellings.ts'
 import { splitTaskList } from './task-list.ts'
 import { toEditorNormal } from './editor-normal.ts'
+import { withinEngineLimits } from '../length-bound.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
@@ -21,6 +22,9 @@ type BlockReducer = (node: AdfNode, reduction: Reduction) => Result<AdfNode[]>
 type PlacedCell = { colspan: number; paragraph: AdfNode; rowspan: number }
 
 type Placed = { index: number; loose: AdfNode[] } | { index: number; loose?: undefined; node: AdfNode }
+
+// path: the caller's node the block was reduced from.
+type Sourced = { block: AdfNode; path: ConvertErrorPath }
 
 const blockReducers: Readonly<Record<string, BlockReducer>> = {
   blockCard: paragraphOfNode,
@@ -74,13 +78,14 @@ function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<A
     else if (previous?.loose !== undefined) previous.loose.push(node)
     else placed.push({ index, loose: [node] })
   }
-  const blocks = concatenated(
-    placed.map((entry) => {
-      const at = { ...reduction, path: [...reduction.path, 'content', entry.index] }
-      return entry.loose === undefined ? reduceNode(entry.node, at) : paragraphOf(entry.loose, reduction)
-    }),
-  )
-  return blocks.ok ? portableSequence(blocks.value, reduction) : blocks
+  const sourced: Sourced[] = []
+  for (const entry of placed) {
+    const at = { ...reduction, path: [...reduction.path, 'content', entry.index] }
+    const blocks = entry.loose === undefined ? reduceNode(entry.node, at) : paragraphOf(entry.loose, reduction)
+    if (!blocks.ok) return blocks
+    for (const block of blocks.value) sourced.push({ block, path: at.path })
+  }
+  return portableSequence(sourced, reduction)
 }
 
 function reduceNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
@@ -91,7 +96,7 @@ function reduceNode(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 
 function reduceStanding(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const blocks = standsInline(node) ? paragraphOf([node], reduction) : reduceNode(node, reduction)
-  return blocks.ok ? portableSequence(blocks.value, reduction) : blocks
+  return blocks.ok ? portableSequence(blocks.value.map((block) => ({ block, path: reduction.path })), reduction) : blocks
 }
 
 function standsInline(node: AdfNode): boolean {
@@ -117,21 +122,22 @@ function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> 
   return success(blocks)
 }
 
-// A list still taking the directive form gives way to its items' blocks; one whose spelling is refused, too deep or too long, refuses the reduction (the maintainer, 2026-10-12).
-function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
-  const pending = blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0).reverse()
+// A list still taking the directive form gives way to its items' blocks; one whose spelling is refused, too deep or too long, refuses the reduction.
+function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Result<AdfNode[]> {
+  const pending = blocks.filter(({ block }) => block.type !== 'paragraph' || nodeContent(block).length > 0).reverse()
   const sequence: AdfNode[] = []
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
-    const block = numberedPastMarkers(next)
+    const block = numberedPastMarkers(next.block)
     const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    const spelled = listed && block === next ? commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', indent: 0, memo: reduction.memo }) : undefined
+    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { flavour: 'portable', indent: 0, memo: reduction.memo }) : undefined
     if (spelled !== undefined && !spelled.ok) return spelled
     if (!listed || spelled !== undefined) {
       sequence.push(block)
       continue
     }
     // Back on `pending`: a replacement may take the directive form itself.
-    const replacement = block === next ? nodeContent(block).flatMap(nodeContent) : [block]
+    const { path } = next
+    const replacement = block === next.block ? nodeContent(block).flatMap((item, index) => nodeContent(item).map((node, offset) => ({ block: node, path: [...path, 'content', index, 'content', offset] }))) : [{ block, path }]
     for (const node of replacement.reverse()) pending.push(node)
   }
   return success(sequence)

@@ -462,11 +462,11 @@ handles one cause alike whichever node, attribute or direction raised it.
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
 - A document whose markdown would be longer than V8's longest string is `unsupported-node-shape`
-  at the block that passes it, in either writer, and so is a directive `losslessMarkdownToAdf`
-  reads whose CommonMark spelling would be: the document does not convert, and no spelling in the
-  input causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested
-  JSON, since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in
-  a length linear in its JSON (2026-10-11).
+  at the document's path, in either writer, and so is a directive `losslessMarkdownToAdf` reads
+  whose CommonMark spelling would be: the document does not convert, and no spelling in the input
+  causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested JSON,
+  since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in a
+  length linear in its JSON (2026-10-11).
 - The markdown readers and `htmlToAdf` refuse a value that is not a string as `not-a-string`, at
   position `{ line: 1, offset: 0 }` with an empty path: no existing code reads true of it, and
   `not-an-adf-document` names the emitters' input (2026-10-05).
@@ -665,15 +665,18 @@ or pins it.
 is the shortest of the engines the library claims.
 
 Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29 − 24 characters
-(`longestOutput`) before building it, so the same document converts alike everywhere and no
-amplification — an indent on every line of a deep subtree, the carry's two-space JSON, text one
-string shared by many nodes — builds a string no engine was asked for. Each walk of blocks projects
-their length with the indent their containers will prefix every line with, and a container joining
-several walks — a list's items, a table's rows — sums their projections before it joins them, so the
-bound trips at the block that passes it, before any container copies it. The projection never
-undercounts: a list giving way to the directive form counts its items' marker indent, so markdown a
-few characters a line under the bound may be refused. The engines' own throws past their longest
-string or array stay refused as `unsupported-node-shape` by `withinEngineLimits`, behind this bound.
+(`longestMarkdown`) as `unsupported-node-shape` at the document's path, so the same document
+converts alike everywhere. Each builder that joins pieces — blocks, quoted and list lines, directive
+pairs and openers, fences, pipe rows, the carry's JSON — joins them through `joinedWithin`, which
+stops once they pass the bound, so none builds a string no engine was asked for. A walk of blocks
+also forecasts each block's length with the indent its containers will prefix every line with, so a
+deep subtree refuses before any container copies it.
+
+A line is held to its text's length alone; what its spelling adds — escapes, link targets,
+attributes — passes V8's longest string only by throwing, and `withinEngineLimits` refuses that
+throw, and SpiderMonkey's, as the same refusal: both mean a string past the bound. `todo.md` item
+108 bounds the line itself. The engines' throws past their own longest array, and JavaScriptCore's
+`Out of memory`, which also reports a heap running short, stay refused with the engine's message.
 
 ## Nothing recurses unbounded
 

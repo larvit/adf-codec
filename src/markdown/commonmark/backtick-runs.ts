@@ -16,16 +16,21 @@ export function closingBacktickRun(text: string, from: number, opener: number): 
 }
 
 export function fencedCodeBlock(info: string, body: string): string {
+  return fencePieces(info, body).join('')
+}
+
+export function fencePieces(info: string, body: string): string[] {
   const fence = '`'.repeat(Math.max(3, longestBacktickRun(body) + 1))
-  return body === '' ? `${fence}${info}\n${fence}` : `${fence}${info}\n${body}\n${fence}`
+  return body === '' ? [fence, info, '\n', fence] : [fence, info, '\n', body, '\n', fence]
 }
 
 export function longestBacktickRun(text: string): number {
   let longest = 0
-  let current = 0
-  for (const character of text) {
-    current = character === '`' ? current + 1 : 0
-    longest = Math.max(longest, current)
+  for (let start = text.indexOf('`'); start !== -1; ) {
+    let end = start + 1
+    while (text.charAt(end) === '`') end += 1
+    longest = Math.max(longest, end - start)
+    start = text.indexOf('`', end)
   }
   return longest
 }

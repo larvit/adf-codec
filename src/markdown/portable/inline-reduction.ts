@@ -3,10 +3,10 @@ import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { heldTextLength, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
-import { longestOutput, tooLong } from '../../output-length.ts'
-import { heldTextLength, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { longestMarkdown, tooLong } from '../length-bound.ts'
 import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 
@@ -18,7 +18,7 @@ const keptMarks: readonly string[] = [...edgeStrippingMarks, 'code', 'link']
 export function reduceInline(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodes, container, path, depth)
   if (!leaves.ok) return leaves
-  if (heldTextLength(leaves.value) > longestOutput) return tooLong(path)
+  if (heldTextLength(leaves.value) > longestMarkdown) return tooLong()
   return spellableLine(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))), container, path)
 }
 

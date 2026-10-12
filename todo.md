@@ -81,7 +81,9 @@ The line escaper keeps an array element per character twice (`escapings`, `place
 50 bytes a character: one 20-million-character text node took 1.2 GB on Node 24, and one of 80
 million exhausted its 2.2 GB default heap. Twenty million `*` throw `RangeError: Set maximum size
 exceeded`, which `withinEngineLimits` lets through. `losslessMarkdownToAdf` reaches both through a
-directive's CommonMark ask. Found while shipping item 106, 2026-10-11.
+directive's CommonMark ask. Bound the line as the blocks are (`joinedWithin`): its segments and its
+escaped output, which today pass V8's longest string only by throwing. Found while shipping item
+106, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
