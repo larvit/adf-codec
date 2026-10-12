@@ -54,7 +54,7 @@ test('refuses a carry whose JSON would run past V8\'s longest string, on every e
   assert.equal(markdown(result), tooLong)
 })
 
-test('refuses lines their containers would prefix past V8\'s longest string, before any container copies them', () => {
+test('refuses lines their quotes would prefix past V8\'s longest string', () => {
   let quote: AdfNode = { attrs: {}, content: [{ text: 'a\n'.repeat(1_100_000), type: 'text' }], type: 'codeBlock' }
   for (let level = 0; level < 245; level += 1) quote = { content: [quote], type: 'blockquote' }
   const result = adfToLosslessMarkdown(document(quote))
@@ -67,7 +67,7 @@ test('refuses a directive whose opener and body together would pass V8\'s longes
   assert.equal(markdown(adfToLosslessMarkdown(document(expand))), tooLong)
 })
 
-test('refuses a list whose items together would pass V8\'s longest string, before joining them', () => {
+test('refuses a list whose items together would pass V8\'s longest string', () => {
   const item: AdfNode = { content: [{ attrs: {}, content: [{ text: 'a'.repeat(2 ** 28), type: 'text' }], type: 'codeBlock' }], type: 'listItem' }
   const result = adfToLosslessMarkdown(document({ content: [item, item], type: 'bulletList' }))
   assert.equal(markdown(result), tooLong)
@@ -92,7 +92,7 @@ test('refuses a directive opener whose attributes together would pass V8\'s long
   assert.equal(markdown(adfToLosslessMarkdown(document(panel))), tooLong)
 })
 
-test('refuses text past V8\'s longest string before spelling it', () => {
+test('refuses text past V8\'s longest string', () => {
   const long = 'a'.repeat(2 ** 28)
   const result = adfToLosslessMarkdown(document(paragraph({ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' })))
   assert.equal(markdown(result), tooLong)

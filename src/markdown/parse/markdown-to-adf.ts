@@ -51,8 +51,9 @@ function readDocument(markdown: string, claims: Claims): Result<AdfDocument, Par
   )
 }
 
-function readMarkdown(markdown: string, claims: Claims): Result<AdfDocument, ParseError> {
-  if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, []), { line: 1, offset: 0 })
+// A failure naming no position stands at the start of the input, which readDocument gives it.
+function readMarkdown(markdown: string, claims: Claims): Result<AdfDocument> {
+  if (typeof markdown !== 'string') return failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, [])
   const parsed = parseBlocks(markdown, claims)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
@@ -60,7 +61,7 @@ function readMarkdown(markdown: string, claims: Claims): Result<AdfDocument, Par
     return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
   }
   const reading: Reading = { claims, definitions: parsed.definitions, inExpand: false, memo: new Map() }
-  const content = positioned(readBlocks(parsed.blocks, reading, [], 0), { line: 1, offset: 0 })
+  const content = readBlocks(parsed.blocks, reading, [], 0)
   if (!content.ok) return content
   const document: AdfDocument = { content: content.value, type: 'doc', version: 1 }
   if (claims.taskMarkers) mintTaskIds(document, markdown)

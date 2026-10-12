@@ -1,6 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
+import { boundedThen, joinedWithin, withinEngineLimits } from '../length-bound.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -12,7 +13,6 @@ import { largestNesting } from '../../nesting.ts'
 import { linkDefinition } from '../mark-spellings.ts'
 import { splitTaskList } from './task-list.ts'
 import { toEditorNormal } from './editor-normal.ts'
-import { withinEngineLimits } from '../length-bound.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
@@ -135,7 +135,7 @@ function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Res
       sequence.push(block)
       continue
     }
-    // Back on `pending`: a replacement may take the directive form itself.
+    // Back on `pending`: a replacement may take the directive form itself. Its offsets are the reduced item's, the caller's while the item's blocks reduce one to one.
     const { path } = next
     const replacement = block === next.block ? nodeContent(block).flatMap((item, index) => nodeContent(item).map((node, offset) => ({ block: node, path: [...path, 'content', index, 'content', offset] }))) : [{ block, path }]
     for (const node of replacement.reverse()) pending.push(node)
@@ -221,10 +221,11 @@ function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 function reduceCodeBlock(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction.path, reduction.depth)
   if (!leaves.ok) return leaves
-  const code = leaves.value.map((leaf) => leaf.text ?? '\n').join('')
   const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims.portable)
-  const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
-  return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
+  return boundedThen(joinedWithin(leaves.value.map((leaf) => leaf.text ?? '\n')), (code) => {
+    const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
+    return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
+  })
 }
 
 function reduceList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {

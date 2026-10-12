@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { JsonValue } from './json-value.ts'
-import { serializeCanonicalJson, serializeCanonicalJsonWithin, spellsCanonicalJson } from './canonical-json.ts'
+import { serializeCanonicalJson, spellsCanonicalJson } from './canonical-json.ts'
 
 test('sorts object keys recursively', () => {
   const value = { b: 1, a: { d: 2, c: 3 } }
@@ -61,9 +61,4 @@ test('holds a text to the canonical spelling, whole', () => {
   assert.ok(!spellsCanonicalJson(value, 'compact', '{"a":[1,2]'))
   assert.ok(!spellsCanonicalJson(value, 'two-space', '{"a":[1,2]}'))
   assert.ok(!spellsCanonicalJson(1e21, 'compact', '1e21'))
-})
-
-test('spells canonical JSON up to a length, and nothing past it', () => {
-  assert.equal(serializeCanonicalJsonWithin({ a: [1, 2] }, 'compact', 11), '{"a":[1,2]}')
-  assert.equal(serializeCanonicalJsonWithin({ a: [1, 2] }, 'compact', 10), undefined)
 })

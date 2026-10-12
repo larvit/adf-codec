@@ -25,7 +25,7 @@ import {
   spellStringAttribute,
   spellVocabulary,
 } from '../markdown/directive-syntax.ts'
-import { fencedCodeBlock } from '../markdown/commonmark/backtick-runs.ts'
+import { fencePieces } from '../markdown/commonmark/backtick-runs.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
 import { markSpelling } from '../markdown/mark-spellings.ts'
@@ -174,8 +174,8 @@ const carriedNode = fc.oneof(
 const spellCarry = (json: string) => spellInlineLeafDirective(carryName, `{json=${spellStringAttribute(json)}}`)
 const inlineCarry = carriedNode.map((node) => spellCarry(serializeCanonicalJson(node, 'compact')))
 const hostileInlineCarry = fc.oneof(carriedNode, jsonValue).map((node) => spellCarry(JSON.stringify(node, null, 1)))
-const blockCarry = carriedNode.map((node) => fencedCodeBlock(carryName, serializeCanonicalJson(node, 'two-space')))
-const hostileBlockCarry = fc.oneof(carriedNode, jsonValue).map((node) => fencedCodeBlock(carryName, JSON.stringify(node)))
+const blockCarry = carriedNode.map((node) => fencePieces(carryName, serializeCanonicalJson(node, 'two-space')).join(''))
+const hostileBlockCarry = fc.oneof(carriedNode, jsonValue).map((node) => fencePieces(carryName, JSON.stringify(node)).join(''))
 
 function prefixLines(body: string, first: string, rest: (index: number) => string): string {
   return body
