@@ -627,3 +627,56 @@ Inherited architect, decided by:
 - Locality, Shape: `src/markdown/emit/block-directive-spelling.ts:27` `spellBlockDirectiveOpener`: the opener's layout is known here and in `spellDirectiveOpener`
 - Shape: `src/markdown/portable/adf-to-portable-markdown.ts:231` `reduceCodeBlock`: an ADF-to-ADF reducer carries a markdown length bound through a callback
 - Navigation: `src/markdown/length-bound.ts:41` `withinEngineLimits`: a too-long refusal leads straight to one small, well-named module
+
+## 2026-10-12T19:45:45Z, PR #36 at 1f4551a, against 7a27f6b
+
+Ruling: worse
+
+Fell: Locality. Under the floor of 7.0: Locality 5.13, so the same ruling counts as worse.
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | worse | better | same | same |
+| Inherited architect | better | worse | better | same | same |
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 6.5 | 5 | 6 | 5.5 | 5.5 |
+| Mid A | 7 | 5 | 6 | 5 | 5.5 |
+| Maintainability senior | 7 | 5.5 | 6.5 | 6 | 6 |
+| Inherited architect | 6.5 | 5 | 5.5 | 6.5 | 5.5 |
+| Mean | 6.75 | 5.13 | 6.00 | 5.75 | 5.63 |
+
+Mid A, decided by:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:114` `commonMarkSpelling`: the memo is filled here and read-and-deleted in `readableBlock`, a write-once, read-once protocol whose order is set in another module
+- Locality: `src/markdown/emit/adf-to-markdown.ts:52` `writeMarkdown`: one rule, output past `longestMarkdown` is refused, is checked in six places with different triggers
+- Navigation, Shape: `src/markdown/length-bound.ts:1` `tooLong`: a too-long refusal leads to one small module holding the bound, its message and the engine guard
+- Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator replaces a boolean-returning callback, and both readers become plain loops
+- Shape, Locality: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: a refused spelling is returned where it is produced, and each block carries its own path
+- Shape: `src/markdown/emit/inline-line.ts:235` `emitLeaf`: one content-or-text check, and the path is built only to refuse
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:114` `commonMarkSpelling`: filling and consuming the memo split across an exported predicate and a private reader, a consume-once protocol among three callers
+- Locality: `src/markdown/emit/adf-to-markdown.ts:52` `writeMarkdown`: one bound enforced at five sites in four files, and a new builder has nothing nearby saying whether it needs a check
+- Navigation, Shape: `src/markdown/length-bound.ts:1` `withinEngineLimits`: an output-too-long symptom leads straight to a module named for it
+- Navigation: `src/markdown/parse/markdown-to-adf.ts:47` `readDocument`: the parse takes the same guard as both writers
+- Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: plain loops replace a boolean-returning callback
+- Shape: `src/markdown/emit/inline-line.ts:235` `emitLeaf`: both leaf emitters return a plain emission, the path built only on refusal
+
+Junior A, hardest first:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:114` `commonMarkSpelling`: a mutable memo shared by three walks, deleted on read and rebased by depth
+
+Mid A, hardest first:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:125` `readableBlock`: shared mutable state with no single owner, parse and emit coupled both ways
+
+Maintainability senior, hardest first:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:114` `commonMarkSpelling`: the parser and the portable reducer call into the emitter and share a reference-keyed, delete-on-read memo
+
+Inherited architect, would restructure first:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:126` `readableBlock`: the memo is mutated and deleted across parse, emit and portable, and the length bound is applied at five sites

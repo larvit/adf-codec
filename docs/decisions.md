@@ -604,17 +604,22 @@ A four-seat comprehension panel scored the project under the floor of 7. Its sco
 | Mean | 6.88 | 5.63 | 6.25 | 5.63 | 6.00 |
 
 Panels on near-identical code scored overall means of 5.75 to 6.00, and a seat moves ±0.5 between
-runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub,
-2026-10-04, whose chunk changed only comments in `src/`; and item 78, 2026-10-07, whose three runs
-fell below the run before it on Navigation, Locality and Shape while the overall held. Item 94,
-2026-10-10, also shipped after three rounds: a definitions-only paragraph leaves no block, so ending
-the list it follows takes state carried across lines, and every design read worse on Locality while
-the overall held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean
-5.63. Item 56, still open, is to give that state one owner. Items 85 and 86, 2026-10-11, shipped
-after three rounds under a fall the seats laid on item 93's `splitPath` and `splitPlace`, which
-place a refused block's path by replaying `splitTaskList` on stand-in nodes; both seats read the
-chunk's own image builder as a gain. The scores at be23835 were Junior 6.5, Mid 6, Senior 6 and
-Architect 6, mean 6.13. `todo.md` item 102 is to place that path without the replay.
+runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub, 2026-10-04,
+whose chunk changed only comments in `src/`; and item 78, 2026-10-07, whose three runs fell below
+the run before it on Navigation, Locality and Shape while the overall held. Item 94, 2026-10-10,
+also shipped after three rounds: a definitions-only paragraph leaves no block, so ending the list it
+follows takes state carried across lines, and every design read worse on Locality while the overall
+held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean 5.63. Item
+56, still open, is to give that state one owner. Items 85 and 86, 2026-10-11, shipped after three
+rounds under a fall the seats laid on item 93's `splitPath` and `splitPlace`, which place a refused
+block's path by replaying `splitTaskList` on stand-in nodes; both seats read the chunk's own image
+builder as a gain. The scores at be23835 were Junior 6.5, Mid 6, Senior 6 and Architect 6, mean
+6.13. `todo.md` item 102 is to place that path without the replay. Item 106, 2026-10-13, shipped
+after three rounds under a worse ruling, the maintainer's call: both paired seats read the overall
+as the same, but Locality fell to a mean of 5.13, laid on the spelling memo the chunk splits between
+the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The scores
+at 1f4551a were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5. `todo.md` item 110 is to fill and
+read the memo in one place.
 
 ## Properties on a fixed seed
 
@@ -669,17 +674,17 @@ Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29
 converts alike everywhere. A writer first refuses a document whose text alone passes the bound: the
 lossless writer spells every character of it, and the portable reduction refuses on the caller's
 text, edge whitespace and all, since merging that text first could build past the bound. The
-builders join as they always did, and the writer's result and the CommonMark ask's spelling are held
-to the bound once built. V8 stops at the bound itself and SpiderMonkey at its own longest string,
-and `withinEngineLimits` refuses both throws as the same `tooLong`, so every engine answers alike.
-The carry's two-space JSON, which indents every value its depth over, stops at the bound unbuilt
-(`joinedWithin`). A deep list or quote re-indents its whole text at each level before the bound
-refuses it (`todo.md` item 109).
+builders join plain strings, and each block, the writer's result and the CommonMark ask's spelling
+are held to the bound as they are built. V8 throws building the same string past the bound,
+SpiderMonkey past its own longest string, and `withinEngineLimits` refuses both throws as the same
+`tooLong`, so every engine stops at the same block with the same answer. The carry's two-space JSON,
+which indents every value its depth over, stops at the bound unbuilt (`joinedWithin`). A deep list
+or quote re-indents its whole text at each level before the bound refuses it (`todo.md` item 109).
 
-JavaScriptCore builds up to its own longest string, 2^31 − 1, before the check. A throw past that,
-past any engine's longest array, or JavaScriptCore's `Out of memory`, which also reports a heap
-running short, is refused with the engine's message. `todo.md` item 108 bounds the line's own
-memory.
+JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. A
+throw past that, past any engine's longest array, or JavaScriptCore's `Out of memory`, which also
+reports a heap running short, is refused with the engine's message. `todo.md` item 108 bounds the
+line's own memory.
 
 ## Nothing recurses unbounded
 
