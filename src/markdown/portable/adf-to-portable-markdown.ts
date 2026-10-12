@@ -60,7 +60,7 @@ export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // Refused on the caller's text, edge whitespace and all: merging it first would build past the bound.
+  // Measured on the caller's text, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
   if (heldTextLength(nodeContent(document)) > longestMarkdown) return tooLong()
   // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })

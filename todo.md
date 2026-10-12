@@ -143,9 +143,10 @@ audience kept the captioned image's `!adf:caption` directive, 3 of 3, reading a 
 Item 106 made the CommonMark ask fill the memo and the walk above drop each entry as it reads it, so
 a deep subtree holds no level's text twice. Every comprehension seat read that split, across
 `commonMarkSpelling`, `readableBlock` and their three callers, as order-dependent state, and the
-chunk shipped under a worse ruling on Locality. Keep main's single reader and writer instead: when
-`readableBlock` keeps a node's spelling, it drops its children's and grandchildren's entries, whose
-text the node's now holds. Found by the comprehension check of item 106, 2026-10-13.
+chunk shipped under a worse ruling on Locality. Give the memo one reader and writer again: when
+`readableBlock` keeps a node's spelling, it drops the entries of the node's children and
+grandchildren, since the node's own spelling now holds their text. Found by the comprehension check
+of item 106, 2026-10-13.
 
 ### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
@@ -223,10 +224,10 @@ the reason the project read worse.
 
 Each level of a nested list or quote re-indents its whole text, so the work is the depth times the
 text. `losslessMarkdownToAdf` on 3 MB of lazy lines in a list nested 490 levels inside
-`!adf:blockquote` spends about 5 seconds re-spelling it. The same 2 MB split over two items of a
-list nested 480 levels took 11 minutes to refuse on Node 24: a deep subtree past the length bound
-refuses only once every level below has re-indented its text. The writers do the same on such a
-document. Found while shipping item 106, 2026-10-11.
+`!adf:blockquote` spends about 5 seconds re-spelling it. 2 MB of the same lines, split over two
+items of a list nested 480 levels, took 11 minutes to refuse on Node 24: a deep subtree past the
+length bound refuses only once every level below has re-indented its text. The writers do the same
+on such a document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 

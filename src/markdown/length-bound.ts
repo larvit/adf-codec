@@ -1,14 +1,14 @@
 import { failure, success, type Result } from '../result.ts'
 
-// V8's longest string, held on every engine so a document converts alike everywhere (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
+// V8's longest string (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
 export const longestMarkdown = 2 ** 29 - 24
 
-// Measured on Firefox 155, Node 24 and Bun 1.4. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the other two name the engine's own limit.
+// Measured on Firefox 155, Node 24 and Bun 1.4. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the other two name an engine's own limit, and JavaScriptCore's also a heap running short.
 const pastLongestString = ['InternalError: allocation size overflow', 'RangeError: Invalid string length']
 const pastEngineLimit = ['RangeError: Invalid array length', 'RangeError: Out of memory']
 
 export function tooLong<T>(): Result<T> {
-  return failure('unsupported-node-shape', `spelled as markdown, this would be longer than ${longestMarkdown} characters, the longest markdown this library writes`, [])
+  return failure('unsupported-node-shape', `the markdown for this document, or for a directive's plain CommonMark, would be longer than ${longestMarkdown} characters, the longest this library writes`, [])
 }
 
 export function withinLongest(text: string): Result<string> {
@@ -31,11 +31,11 @@ export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
   try {
     return convert()
   } catch (error) {
-    // A stack overflow is a bug (docs/decisions.md §Nothing recurses unbounded), so it stays a throw.
     if (!(error instanceof Error)) throw error
     const thrown = `${error.name}: ${error.message}`
     if (pastLongestString.includes(thrown)) return tooLong()
+    // A stack overflow is a bug (docs/decisions.md §Nothing recurses unbounded), so it stays a throw.
     if (!pastEngineLimit.includes(thrown)) throw error
-    return failure('unsupported-node-shape', `the output would be longer than the longest string or array this JavaScript engine builds (${error.message})`, [])
+    return failure('unsupported-node-shape', `the conversion passed this JavaScript engine's longest string or array, or its heap (${error.message})`, [])
   }
 }
