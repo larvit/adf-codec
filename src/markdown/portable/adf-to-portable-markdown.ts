@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { adfDocumentFault, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { adfDocumentFault, heldTextLength, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
-import { boundedThen, joinedWithin, withinEngineLimits } from '../length-bound.ts'
+import { boundedThen, joinedWithin, longestMarkdown, tooLong, withinEngineLimits } from '../length-bound.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -60,6 +60,8 @@ export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
+  // The reduction drops form, never text, so this much text cannot fit, and none of it is joined.
+  if (heldTextLength(nodeContent(document)) > longestMarkdown) return tooLong()
   // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
   if (!blocks.ok) {
@@ -129,18 +131,26 @@ function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Res
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const block = numberedPastMarkers(next.block)
     const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { flavour: 'portable', indent: 0, memo: reduction.memo }) : undefined
+    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { flavour: 'portable', memo: reduction.memo }) : undefined
     if (spelled !== undefined && !spelled.ok) return spelled
     if (!listed || spelled !== undefined) {
       sequence.push(block)
       continue
     }
-    // Back on `pending`: a replacement may take the directive form itself. Its offsets are the reduced item's, the caller's while the item's blocks reduce one to one.
-    const { path } = next
-    const replacement = block === next.block ? nodeContent(block).flatMap((item, index) => nodeContent(item).map((node, offset) => ({ block: node, path: [...path, 'content', index, 'content', offset] }))) : [{ block, path }]
+    // Back on `pending`: a replacement may take the directive form itself.
+    const replacement = block === next.block ? itemBlocks(block, next.path) : [{ block, path: next.path }]
     for (const node of replacement.reverse()) pending.push(node)
   }
   return success(sequence)
+}
+
+// Offsets are the reduced item's, which are the caller's while the item's blocks reduce one to one.
+function itemBlocks(list: AdfNode, path: ConvertErrorPath): Sourced[] {
+  const blocks: Sourced[] = []
+  for (const [index, item] of nodeContent(list).entries()) {
+    for (const [offset, block] of nodeContent(item).entries()) blocks.push({ block, path: [...path, 'content', index, 'content', offset] })
+  }
+  return blocks
 }
 
 // A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.

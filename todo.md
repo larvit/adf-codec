@@ -214,8 +214,9 @@ the reason the project read worse.
 Each level of a nested list or quote re-indents its whole text, so the work is the depth times the
 text. `losslessMarkdownToAdf` on 3 MB of lazy lines in a list nested 490 levels inside
 `!adf:blockquote` spends about 5 seconds re-spelling it. The same 2 MB split over two items of a
-list nested 480 levels took 11 minutes to refuse on Node 24, every item fitting the length bound
-alone. The writers do the same on such a document. Found while shipping item 106, 2026-10-11.
+list nested 480 levels took 11 minutes to refuse on Node 24. A deep subtree past the length bound
+refuses only at the level that passes it, after every level below re-indented its text. The writers
+do the same on such a document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 

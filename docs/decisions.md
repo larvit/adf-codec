@@ -666,15 +666,12 @@ is the shortest of the engines the library claims.
 
 Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29 − 24 characters
 (`longestMarkdown`) as `unsupported-node-shape` at the document's path, so the same document
-converts alike everywhere. Each builder that joins pieces — blocks, quoted and list lines, directive
-pairs and openers, fences, pipe rows, the carry's JSON — joins them through `joinedWithin`, which
-stops once they pass the bound, so none builds a string no engine was asked for. A walk of blocks
-also forecasts each block's length with the indent its containers surely prefix every line that is
-not blank with, so a subtree deep in quotes or task lists refuses before any container copies it.
-The forecast never overcounts, so it refuses only markdown past the bound: a plain list's marker
-indent is left out, since the list may give way to the directive form, which prefixes nothing. A
-deep list refuses once a level's text passes the bound, after the levels below it re-indented theirs
-(`todo.md` item 109).
+converts alike everywhere. Each builder joins its pieces — blocks, quoted and list lines, directive
+pairs and openers, fences, pipe rows, the carry's JSON — through `joinedWithin`, which stops once
+they pass the bound, so none builds a string no engine was asked for. A writer first refuses a
+document whose text alone passes the bound, since every character of it is spelled at least once. A
+deep list or quote re-indents its whole text at each level until the level that passes the bound
+refuses (`todo.md` item 109).
 
 A line is held to its text's length alone; what its spelling adds — escapes, link targets,
 attributes — passes V8's longest string only by throwing, and `withinEngineLimits` refuses that

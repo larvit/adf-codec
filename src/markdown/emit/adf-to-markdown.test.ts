@@ -46,6 +46,11 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
 
 const tooLong = 'unsupported-node-shape: spelled as markdown, this would be longer than 536870888 characters, the longest string V8 holds'
 
+// A code block of 300 lines, two of them some 1000 characters short of V8's longest string, so only what their spelling adds passes it.
+function nearlyHalfTheBound(): AdfNode {
+  return { attrs: {}, content: [{ text: `${'a'.repeat(894_782)}\n`.repeat(300), type: 'text' }], type: 'codeBlock' }
+}
+
 // About 556 million characters of carry JSON: past V8's longest string, short of JavaScriptCore's and SpiderMonkey's.
 test('refuses a carry whose JSON would run past V8\'s longest string, on every engine', () => {
   let value: JsonValue = new Array<JsonValue>(560_000).fill(0)
@@ -55,10 +60,8 @@ test('refuses a carry whose JSON would run past V8\'s longest string, on every e
 })
 
 test('refuses lines their quotes would prefix past V8\'s longest string', () => {
-  let quote: AdfNode = { attrs: {}, content: [{ text: 'a\n'.repeat(1_100_000), type: 'text' }], type: 'codeBlock' }
-  for (let level = 0; level < 245; level += 1) quote = { content: [quote], type: 'blockquote' }
-  const result = adfToLosslessMarkdown(document(quote))
-  assert.equal(markdown(result), tooLong)
+  const code = nearlyHalfTheBound()
+  assert.equal(markdown(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), tooLong)
 })
 
 test('refuses a directive whose opener and body together would pass V8\'s longest string', () => {
@@ -67,23 +70,9 @@ test('refuses a directive whose opener and body together would pass V8\'s longes
   assert.equal(markdown(adfToLosslessMarkdown(document(expand))), tooLong)
 })
 
-test('refuses a list whose items together would pass V8\'s longest string', () => {
-  const item: AdfNode = { content: [{ attrs: {}, content: [{ text: 'a'.repeat(2 ** 28), type: 'text' }], type: 'codeBlock' }], type: 'listItem' }
-  const result = adfToLosslessMarkdown(document({ content: [item, item], type: 'bulletList' }))
-  assert.equal(markdown(result), tooLong)
-})
-
-test('refuses a pipe table whose rows their containers would prefix past V8\'s longest string', () => {
-  const row: AdfNode = { content: [{ content: [{ type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }
-  const header: AdfNode = { content: [{ content: [{ type: 'paragraph' }], type: 'tableHeader' }], type: 'tableRow' }
-  let quote: AdfNode = { content: [header, ...Array.from({ length: 1_100_000 }, () => row)], type: 'table' }
-  for (let level = 0; level < 245; level += 1) quote = { content: [quote], type: 'blockquote' }
-  assert.equal(markdown(adfToLosslessMarkdown(document(quote))), tooLong)
-})
-
-test('refuses a code block whose fences together would pass V8\'s longest string', () => {
-  const long: AdfNode = { text: 'a'.repeat(2 ** 28), type: 'text' }
-  assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: {}, content: [long, long, long], type: 'codeBlock' }))), tooLong)
+test('refuses a list whose item markers would carry its lines past V8\'s longest string', () => {
+  const item: AdfNode = { content: [nearlyHalfTheBound()], type: 'listItem' }
+  assert.equal(markdown(adfToLosslessMarkdown(document({ content: [item, item], type: 'bulletList' }))), tooLong)
 })
 
 test('refuses a directive opener whose attributes together would pass V8\'s longest string', () => {

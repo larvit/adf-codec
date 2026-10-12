@@ -571,3 +571,34 @@ Inherited architect, decided by:
 - Self-sufficiency: `README.md:241` "The lossless flavour": two tables map ADF types to their spellings, so the 3am case reads without the spec open
 - Shape: `src/result.ts:55` `withinEngineLimits`: a length failure is reported under `unsupported-node-shape` at an empty path, and the README cell explaining it holds four cases
 - Shape: `src/result.ts:45` `engineLimitThrows`: matching exact engine message text rots silently when an engine rewords, and JavaScriptCore's `Out of memory` blurs a heap shortage with length
+
+## 2026-10-12T15:56:53Z, PR #36 at 584b214, against 7a27f6b
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | worse | worse | same | worse |
+| Inherited architect | better | worse | worse | same | worse |
+
+Mid A, decided by:
+
+- Locality, Shape, Overall: `src/markdown/emit/adf-to-markdown.ts:61` `walkBlocks`: a running forecast depends on `Writing.indent`, which each container must pass correctly, `tryList` deliberately not indenting
+- Shape, Locality: `src/markdown/emit/adf-to-markdown.ts:398` `spelledList`: template strings became `joinedWithin` piped through nested `boundedThen` callbacks, and `joinedItems` repeats the counting loop
+- Locality: `src/markdown/emit/adf-to-markdown.ts:147` `readableBlock`: the memo is filled in `commonMarkSpelling` and emptied on read, so when an entry is present depends on call order across two functions
+- Shape: `src/markdown/directive-syntax.ts:114` `spellAttributes`: each spelling exists twice, as a string and as a generator of pieces
+- Locality: `src/markdown/portable/editor-normal.ts:26` `toEditorNormal`: editor normalization imports the markdown length bound
+- Locality: `src/markdown/portable/adf-to-portable-markdown.ts:126` `portableSequence`: each block carries its source path, rebuilt by hand for a replacement
+- Navigation: `src/markdown/length-bound.ts:1` `withinEngineLimits`: the bound, its refusal and the catch share one module named for them
+
+Inherited architect, decided by:
+
+- Locality, Shape: `src/markdown/emit/adf-to-markdown.ts:61` `walkBlocks`: the forecast is a second length bound beside `joinedWithin`, whose never-overcount rule fixes how every container walks
+- Locality: `src/markdown/emit/adf-to-markdown.ts:377` `tryList`: whether items walk indented depends on what `spelledOrDirectiveList` may decide later
+- Locality: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: the emitter's `indent` leaks into the parser and the portable reduction
+- Locality: `src/markdown/emit/adf-to-markdown.ts:147` `readableBlock`: filling and emptying the memo split across two functions
+- Shape: `src/markdown/emit/adf-to-markdown.ts:194` `quotedBlock`: nested `boundedThen` reads as continuation passing where a template stood
+- Shape, Locality: `src/markdown/emit/pipe-table.ts:9` `tryPipeTable`: the sum-then-check rule appears in seven shapes, and a reader cannot tell which is the real bound
+- Navigation, Shape: `src/markdown/length-bound.ts:41` `withinEngineLimits`: a too-long symptom leads straight to the module named for it
+- Shape: `src/markdown/directive-syntax.ts:133` `spellDirectiveOpener`: each spelling is a string function and a pieces generator
+- Shape: `src/markdown/opaque-carry.ts:64` `carriedJson`: the lambda parameter `spelled` shadows the function's own

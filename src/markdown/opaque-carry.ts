@@ -3,6 +3,7 @@ import type { DirectiveSpan, Read } from './directive-syntax.ts'
 import type { JsonSpelling } from '../canonical-json.ts'
 import type { JsonValue } from '../json-value.ts'
 import { boundedThen, joinedWithin } from './length-bound.ts'
+import { canonicalJsonPieces, spellsCanonicalJson } from '../canonical-json.ts'
 import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
 import { fencePieces } from './commonmark/backtick-runs.ts'
@@ -11,7 +12,6 @@ import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { parseJsonText } from '../json-text.ts'
-import { canonicalJsonPieces, spellsCanonicalJson } from '../canonical-json.ts'
 
 export const carryFencePrefix = 'adf:'
 
@@ -61,7 +61,7 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
   const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
-  return boundedThen(json, (spelled) => success({ headroom, json: spelled }))
+  return boundedThen(json, (text) => success({ headroom, json: text }))
 }
 
 // `type` is the one the fence's info string names, `undefined` for the inline carry.
