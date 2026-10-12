@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 110`
+`Next ID = 111`
 
 | Goal | W |
 |---|---|
@@ -33,6 +33,7 @@
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
+| 110 | 0.2.1 | decision | **Fill and read the spelling memo in `readableBlock` alone, dropping a spelled node's children's entries so memory stays linear.** | 3 | 3 | 2 | 6 | 2 | 10.9 |
 | 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
@@ -81,7 +82,9 @@ The line escaper keeps an array element per character twice (`escapings`, `place
 50 bytes a character: one 20-million-character text node took 1.2 GB on Node 24, and one of 80
 million exhausted its 2.2 GB default heap. Twenty million `*` throw `RangeError: Set maximum size
 exceeded`, which `withinEngineLimits` lets through. `losslessMarkdownToAdf` reaches both through a
-directive's CommonMark ask. Found while shipping item 106, 2026-10-11.
+directive's CommonMark ask, and reading 537 MB of markdown, a `!adf:bulletList` of two code blocks
+just under the length bound, took 3.4 GB on Bun, too much for the gate to test its length refusal:
+add that test with this fix. Found while shipping item 106, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
@@ -134,6 +137,15 @@ there reads back as `[alt](href)`, breaking the byte-for-byte rewrite, so only o
 Every reader reads `![a](u "t")` as an image captioned `t` (`docs/decisions.md` §An image reads as an
 image only alone in its paragraph, 3 of 3 on 2026-10-09). On 2026-10-11 a writer panel of the same
 audience kept the captioned image's `!adf:caption` directive, 3 of 3, reading a title as hover text.
+
+### 110. Fill and read the spelling memo in `readableBlock` alone, dropping a spelled node's children's entries so memory stays linear.
+
+Item 106 made the CommonMark ask fill the memo and the walk above drop each entry as it reads it, so
+a deep subtree holds no level's text twice. Every comprehension seat read that split, across
+`commonMarkSpelling`, `readableBlock` and their three callers, as order-dependent state, and the
+chunk shipped under a worse ruling on Locality. Keep main's single reader and writer instead: when
+`readableBlock` keeps a node's spelling, it drops its children's and grandchildren's entries, whose
+text the node's now holds. Found by the comprehension check of item 106, 2026-10-13.
 
 ### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
@@ -212,10 +224,9 @@ the reason the project read worse.
 Each level of a nested list or quote re-indents its whole text, so the work is the depth times the
 text. `losslessMarkdownToAdf` on 3 MB of lazy lines in a list nested 490 levels inside
 `!adf:blockquote` spends about 5 seconds re-spelling it. The same 2 MB split over two items of a
-list nested 480 levels took 11 minutes to refuse on Node 24. A deep subtree past the length bound
-refuses only once every level below has re-indented its text, so no test reaches
-`losslessMarkdownToAdf`'s length refusal in seconds: add one with this fix. The writers do the same
-on such a document. Found while shipping item 106, 2026-10-11.
+list nested 480 levels took 11 minutes to refuse on Node 24: a deep subtree past the length bound
+refuses only once every level below has re-indented its text. The writers do the same on such a
+document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 

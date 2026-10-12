@@ -28,7 +28,6 @@ type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
 type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
-// Holds the spelling of each node the CommonMark ask was put to, until the walk above reads it.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
 export type Writing = { flavour: WrittenFlavour; memo: SpellingMemo | undefined }
@@ -63,6 +62,9 @@ function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: nu
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
+    // V8 throws building a block past the bound; an engine holding longer strings stops at the same block.
+    const fits = withinLongest(block.value.text)
+    if (!fits.ok) return fits
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
   }
@@ -113,25 +115,32 @@ function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing
 
 export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing & { memo: SpellingMemo }): Result<null> | undefined {
   const readable = readableBlock(node, path, depth, writing)
-  if (readable === undefined) writing.memo.set(node, { block: undefined, depth })
-  else if (readable.ok) writing.memo.set(node, { block: readable.value, depth })
-  if (readable === undefined) return undefined
+  if (readable === undefined) {
+    writing.memo.set(node, { block: undefined, depth })
+    return undefined
+  }
   if (!readable.ok) return readable
-  // V8 throws past the bound while building the spelling; an engine holding longer strings refuses here alike.
-  if (readable.value.text.length > longestMarkdown) return tooLong()
+  const fits = withinLongest(readable.value.text)
+  if (!fits.ok) return fits
+  writing.memo.set(node, { block: readable.value, depth })
   return readable.value.spelling === 'directive' ? undefined : success(null)
 }
 
 function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  const kept = writing.memo?.get(node)
-  // The walk reading an entry spells the node into its own text, so the entry is dropped: kept, every level of a deep subtree would hold its whole text.
-  writing.memo?.delete(node)
+  const kept = takeKeptSpelling(writing.memo, node)
   if (kept !== undefined) {
     if (kept.block === undefined) return undefined
     // An entry holds the spelling at its fill depth. A read at or above it rebases headroom; a read below re-spells, because a hit skips the walk's depth guards.
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
   return spellReadableBlock(node, path, depth, writing)
+}
+
+// The CommonMark ask fills an entry; the walk above reads it once and spells it into its own text, so kept, every level of a deep subtree would hold its whole text.
+function takeKeptSpelling(memo: SpellingMemo | undefined, node: AdfNode): KeptSpelling | undefined {
+  const kept = memo?.get(node)
+  memo?.delete(node)
+  return kept
 }
 
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {

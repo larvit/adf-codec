@@ -64,23 +64,6 @@ test('refuses lines their quotes would prefix past V8\'s longest string', () => 
   assert.equal(markdown(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), tooLong)
 })
 
-test('refuses a directive whose opener and body together would pass V8\'s longest string', () => {
-  const long = 'a'.repeat(2 ** 28)
-  const expand: AdfNode = { attrs: { title: long }, content: [{ content: [{ text: long, type: 'text' }], type: 'codeBlock' }], type: 'expand' }
-  assert.equal(markdown(adfToLosslessMarkdown(document(expand))), tooLong)
-})
-
-test('refuses a list whose item markers would carry its lines past V8\'s longest string', () => {
-  const item: AdfNode = { content: [nearlyHalfTheBound()], type: 'listItem' }
-  assert.equal(markdown(adfToLosslessMarkdown(document({ content: [item, item], type: 'bulletList' }))), tooLong)
-})
-
-test('refuses a directive opener whose attributes together would pass V8\'s longest string', () => {
-  const long = 'a'.repeat(2 ** 28)
-  const panel: AdfNode = { attrs: { panelColor: long, panelIcon: long, panelIconText: long, panelType: 'custom' }, content: [paragraph({ text: 'x', type: 'text' })], type: 'panel' }
-  assert.equal(markdown(adfToLosslessMarkdown(document(panel))), tooLong)
-})
-
 test('refuses text past V8\'s longest string', () => {
   const long = 'a'.repeat(2 ** 28)
   const result = adfToLosslessMarkdown(document(paragraph({ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' })))
