@@ -51,7 +51,6 @@ function readDocument(markdown: string, claims: Claims): Result<AdfDocument, Par
   )
 }
 
-// A failure naming no position stands at the start of the input, which readDocument gives it.
 function readMarkdown(markdown: string, claims: Claims): Result<AdfDocument> {
   if (typeof markdown !== 'string') return failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, [])
   const parsed = parseBlocks(markdown, claims)
@@ -263,7 +262,7 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
   if (!read.ok) return read
   const built = directiveBody(read.value, block.blocks, reading, path, depth)
   if (!built.ok) return built
-  const readable = commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', indent: 0, memo: reading.memo })
+  const readable = commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo })
   if (readable === undefined) return built
   if (!readable.ok) return readable
   return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)

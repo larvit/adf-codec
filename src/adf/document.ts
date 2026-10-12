@@ -82,16 +82,12 @@ export function identicalMarks(left: readonly AdfMark[], right: readonly AdfMark
   return marksKey(left) === marksKey(right)
 }
 
-export function textLength(node: AdfNode): number {
-  return node.text?.length ?? 0
-}
-
 // The length of the text the nodes hold, the nodes below them included.
 export function heldTextLength(nodes: readonly AdfNode[]): number {
   let length = 0
   const pending = [...nodes]
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    length += textLength(node)
+    length += node.text?.length ?? 0
     for (const child of nodeContent(node)) pending.push(child)
   }
   return length

@@ -1,6 +1,6 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { WrittenFlavour } from '../portable/conventions.ts'
-import { boundedThen, joinedWithin, longestMarkdown, separatedBy, tooLong } from '../length-bound.ts'
+import { boundedThen, joinedWithin, separatedBy } from '../length-bound.ts'
 import { delimiterCells, pipeRowPieces } from '../pipe-table-syntax.ts'
 import { holdsOnlyAttributes, nodeContent } from '../../adf/document.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -10,16 +10,12 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: Wri
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
   const spelled: string[][] = []
-  // Every cell is spelled before the rows join, so the cells together are held to the bound as they come.
-  let length = 0
   for (const [rowIndex, row] of rows.entries()) {
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
       const content = nodeContent(paragraph)
       const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0], flavour)
       if (line === undefined) return undefined
-      length += line.length
-      if (length > longestMarkdown) return tooLong()
       cells.push(line)
     }
     spelled.push(cells)

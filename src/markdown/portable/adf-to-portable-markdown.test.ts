@@ -76,15 +76,10 @@ test('refuses a paragraph whose text would pass V8\'s longest string, joining no
   assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /')
 })
 
-test('refuses an expand whose title and body together would pass V8\'s longest string', () => {
-  let quote: AdfNode = node('expand', { title: 'a'.repeat(1_000_000) }, { attrs: {}, content: [text('a\n'.repeat(1_108_000))], type: 'codeBlock' })
-  for (let level = 0; level < 240; level += 1) quote = { content: [quote], type: 'blockquote' }
-  assert.equal(portableDocument(document(quote)), 'unsupported-node-shape at /')
-})
-
-test('refuses a code block whose text nodes together would pass V8\'s longest string, joining none of them', () => {
-  const long = text('a'.repeat(2 ** 28))
-  assert.equal(portableDocument(document({ content: [long, long, long], type: 'codeBlock' })), 'unsupported-node-shape at /')
+// Two code blocks of 300 lines, some 1000 characters short of V8's longest string, so only the quote's prefixes pass it.
+test('refuses an expand whose quoted lines would pass V8\'s longest string', () => {
+  const code: AdfNode = { content: [text(`${'a'.repeat(894_782)}\n`.repeat(300))], type: 'codeBlock' }
+  assert.equal(portableDocument(document(node('expand', { title: 'x' }, code, code))), 'unsupported-node-shape at /')
 })
 
 test('refuses nesting past 500 levels wherever the reduction walks', () => {

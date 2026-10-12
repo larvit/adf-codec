@@ -131,18 +131,7 @@ export function spellDirectiveCloser(name: string): string {
 }
 
 export function spellDirectiveOpener(name: string, argument: string | undefined, attributes: string): string {
-  return [...directiveOpenerPieces(name, argument, attributes === '' ? [] : [attributes])].join('')
-}
-
-export function* directiveOpenerPieces(name: string, argument: string | undefined, attributes: Iterable<string>): Generator<string> {
-  yield `${directivePrefix}${name}`
-  if (argument !== undefined) yield ` ${argument}`
-  let first = true
-  for (const piece of attributes) {
-    if (first) yield ' '
-    first = false
-    yield piece
-  }
+  return `${directivePrefix}${name}${argument === undefined ? '' : ` ${argument}`}${attributes === '' ? '' : ` ${attributes}`}`
 }
 
 export function spellJsonAttribute(value: JsonValue): string {

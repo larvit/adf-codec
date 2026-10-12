@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { WrittenFlavour } from '../portable/conventions.ts'
-import { adfDocumentFault, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { adfDocumentFault, heldTextLength, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { alertMarker, flavourClaims, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from '../portable/conventions.ts'
 import { blockDirectiveForm, documentSpelling } from '../block-directive.ts'
 import { blockNodeModel, blockNodes, isTaskItem } from '../../adf/block-nodes.ts'
@@ -27,21 +27,17 @@ type PlacedBlock = SpelledBlock & { node: AdfNode }
 type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
 type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
-// joined: each item's text; start: the first item's number.
-type SpelledItems = { joined: readonly string[]; start: number; walked: readonly WalkedItem[] }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
-type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
-// indent: the characters the containers around a block surely prefix each of its lines with.
-export type Writing = { flavour: WrittenFlavour; indent: number; memo: SpellingMemo | undefined }
+// inner: the item's blocks joined, for the list form; walk: the blocks themselves, for the directive form.
+type WalkedItem = { inner: string; node: AdfNode; walk: PlacedBlocks }
+export type Writing = { flavour: WrittenFlavour; memo: SpellingMemo | undefined }
 
 const bulletDelimiters: Delimiters = ['-', '*']
-const bulletWidth = '- '.length
 export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 const orderedDelimiters: Delimiters = ['.', ')']
-const quoteWidth = '> '.length
 
 export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => writeMarkdown(document, 'lossless'))
@@ -52,7 +48,9 @@ export function writeMarkdown(document: AdfDocument, flavour: WrittenFlavour): R
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(`${documentSpelling}\n`)
-  const walk = walkBlocks(document.content, [], 0, { flavour, indent: 0, memo: undefined })
+  // Every character of text is spelled at least once, so this much text cannot fit, and none of it is spelled.
+  if (heldTextLength(document.content) > longestMarkdown) return tooLong()
+  const walk = walkBlocks(document.content, [], 0, { flavour, memo: undefined })
   if (!walk.ok) return walk
   const text = joinedWithin(walk.value.blocks.length === 0 ? [] : [...blockPieces(walk.value.blocks, 'document'), '\n'])
   return boundedThen(text, success)
@@ -62,33 +60,13 @@ function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: nu
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
-  // A forecast that never overcounts, so a deep subtree refuses where its containers would prefix its lines past the bound, before any of them copies those lines.
-  let forecast = 0
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
-    forecast += prefixedLength(block.value.text, writing.indent)
-    if (forecast > longestMarkdown) return tooLong()
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
   }
   return success({ blocks, headroom })
-}
-
-// A blank line takes no indent in a list item and one `>` in a quote, so only the others are charged it.
-function prefixedLength(text: string, indent: number): number {
-  let length = text.length
-  for (let start = 0; start <= text.length; ) {
-    const end = text.indexOf('\n', start)
-    const stop = end === -1 ? text.length : end
-    if (stop > start) length += indent
-    start = stop + 1
-  }
-  return length
-}
-
-function indented(writing: Writing, width: number): Writing {
-  return { ...writing, indent: writing.indent + width }
 }
 
 function tooDeep(path: ConvertErrorPath): Result<never> {
@@ -185,17 +163,16 @@ function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
 }
 
 function quotedUnder(head: string, node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, indented(writing, quoteWidth))
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
   const text = joinedWithin(inner.value.blocks.length === 0 ? [head] : [head, '\n\n', ...blockPieces(inner.value.blocks, 'document')])
   return quotedBlock(text, inner.value.headroom)
 }
 
 function quotedBlock(text: string | undefined, headroom: number): Result<EmittedBlock> {
-  const quoted = (whole: string): Result<EmittedBlock> => boundedThen(joinedWithin(quotedPieces(whole)), (quotedText) => success(commonMarkText(quotedText, headroom)))
-  return boundedThen(text, quoted)
+  const quoted = text === undefined ? undefined : joinedWithin(quotedPieces(text))
+  return boundedThen(quoted, (spelled) => success(commonMarkText(spelled, headroom)))
 }
-
 
 function* quotedPieces(text: string): Generator<string> {
   for (let start = 0; ; ) {
@@ -215,8 +192,7 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   // A child other than a task nests in the task before it.
   for (const [index, child] of nodeContent(node).entries()) {
     const task = isTaskItem(child)
-    const itemWriting = indented(writing, bulletWidth)
-    const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, itemWriting) : placedBlock(child, [...path, 'content', index], depth + 1, itemWriting)
+    const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, writing) : placedBlock(child, [...path, 'content', index], depth + 1, writing)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
     const previous = items.at(-1)
@@ -229,15 +205,12 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   return boundedThen(inners, (spelled) => spelledList(spelled, () => '', bulletDelimiters, headroom) ?? unspellable)
 }
 
-// Each item's text, or `undefined` where one, or all of them together, would pass the bound: every item is joined before the list is.
+// Each item's text, or `undefined` where one would pass the bound.
 function joinedItems(items: readonly Iterable<string>[]): string[] | undefined {
   const inners: string[] = []
-  let length = 0
   for (const pieces of items) {
     const inner = joinedWithin(pieces)
     if (inner === undefined) return undefined
-    length += inner.length
-    if (length > longestMarkdown) return undefined
     inners.push(inner)
   }
   return inners
@@ -311,7 +284,7 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
 
 function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   if (!holdsOnlyAttributes(node, [])) return undefined
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, indented(writing, quoteWidth))
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
   const text = joinBlocks(inner.value.blocks, 'document')
   const alert = text !== undefined && flavourClaims[writing.flavour].alerts && leadingMarker(text, readAlertMarker) !== undefined
@@ -374,33 +347,36 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   const walked: WalkedItem[] = []
   let headroom = Number.POSITIVE_INFINITY
   for (const [offset, item] of items.entries()) {
-    // Unindented: the list may give way to the directive form, which prefixes nothing, and the forecast must not overcount.
     const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, writing)
     if (!walk.ok) return walk
+    const inner = joinBlocks(walk.value.blocks, 'list-item')
+    if (inner === undefined) return tooLong()
     headroom = Math.min(headroom, walk.value.headroom)
-    walked.push({ node: item, walk: walk.value })
+    walked.push({ inner, node: item, walk: walk.value })
   }
-  return boundedThen(joinedItems(walked.map((item) => blockPieces(item.walk.blocks, 'list-item'))), (joined) => spelledOrDirectiveList(node, { joined, start, walked }, path, depth, headroom, writing))
+  const number = ordered ? (offset: number): string => `${start + offset}` : (): string => ''
+  return spelledOrDirectiveList(node, walked, number, { depth, headroom, path, writing })
 }
 
 // The list spelling where every item holds lines a list item spells, else the directive form.
-function spelledOrDirectiveList(node: AdfNode, { joined, start, walked }: SpelledItems, path: ConvertErrorPath, depth: number, headroom: number, writing: Writing): Result<EmittedBlock> {
+function spelledOrDirectiveList(node: AdfNode, walked: readonly WalkedItem[], number: (offset: number) => string, at: { depth: number; headroom: number; path: ConvertErrorPath; writing: Writing }): Result<EmittedBlock> {
   const ordered = node.type === 'orderedList'
   // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
-  const inners = joined.map((inner) => (flavourClaims[writing.flavour].taskMarkers && leadingMarker(inner, readTaskMarker) !== undefined ? `\\${inner}` : inner))
-  const list = ordered ? spelledList(inners, (offset) => `${start + offset}`, orderedDelimiters, headroom) : spelledList(inners, () => '', bulletDelimiters, headroom)
+  const escapesMarker = (inner: string): boolean => flavourClaims[at.writing.flavour].taskMarkers && leadingMarker(inner, readTaskMarker) !== undefined
+  const inners = walked.map(({ inner }) => (escapesMarker(inner) ? `\\${inner}` : inner))
+  const list = spelledList(inners, number, ordered ? orderedDelimiters : bulletDelimiters, at.headroom)
   if (list !== undefined) return list
   // The directive form spends a level the walk did not count.
-  if (headroom < 1) return tooDeep(path)
-  return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => directiveItems(walked, headroom - 1))
+  if (at.headroom < 1) return tooDeep(at.path)
+  return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, at.path, at.depth, () => directiveItems(walked, at.headroom - 1))
 }
 
 function spelledList(inners: readonly string[], number: (offset: number) => string, [usual, alternate]: Delimiters, headroom: number): Result<EmittedBlock> | undefined {
   const pieces = listLines(inners, number, usual)
   const alternatePieces = listLines(inners, number, alternate)
   if (pieces === undefined || alternatePieces === undefined) return undefined
-  const spelled = (text: string, alternateText: string): Result<EmittedBlock> => success({ alternateText, headroom, spelling: 'list', text })
-  return boundedThen(joinedWithin(pieces), (text) => boundedThen(joinedWithin(alternatePieces), (alternateText) => spelled(text, alternateText)))
+  const withAlternate = (text: string): Result<EmittedBlock> => boundedThen(joinedWithin(alternatePieces), (alternateText) => success({ alternateText, headroom, spelling: 'list', text }))
+  return boundedThen(joinedWithin(pieces), withAlternate)
 }
 
 // `undefined` where an item holds a line no list item spells.

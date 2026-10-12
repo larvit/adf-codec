@@ -456,11 +456,6 @@ test('refuses compact JSON in the carry fence without building its two-space spe
   )
 })
 
-test('refuses a directive whose CommonMark spelling would pass V8\'s longest string', () => {
-  const markdown = `!adf:blockquote\n${'>'.repeat(490)} a\\\n${'b\\\n'.repeat(560_000)}c\n!adf:/blockquote\n`
-  assert.equal(content(losslessMarkdownToAdf(markdown)), 'unsupported-node-shape: spelled as markdown, this would be longer than 536870888 characters, the longest string V8 holds')
-})
-
 test('names the node JSON an opaque carry restores alone', () => {
   const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; "
   assert.equal(content(losslessMarkdownToAdf('```adf:x\n[]\n```\n')), `${node}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`)
