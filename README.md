@@ -396,8 +396,9 @@ carry](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#unknown-n
   release.
 - `message` is free text for a person fixing the input. It may change in any release.
 - `path` is the node's place from the document root, alternating `'content'` and an index, so
-  `path.map((step) => '/' + step).join('')` is a JSON Pointer at the node. The empty path is the
-  document itself.
+  `path.map((step) => '/' + step).join('')` is a JSON Pointer at the node, or at the list holding it
+  where `adfToPortableMarkdown` unwraps a list into its items. The empty path is the document
+  itself.
 - `position` is `{ line, offset }` into the string passed in: `line` counted from 1, `offset` a
   UTF-16 code unit, which is a JavaScript string index. It points at or before the refusal —
   currently the start of the line the enclosing block begins on; a later minor may narrow that,
@@ -408,11 +409,10 @@ A parse always names a position, so the three markdown readers return `ParseErro
 typed on `ConvertError` takes both.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
-them one per call. Every refusal is deterministic on one engine — there is no I/O anywhere — so a
-retry returns the identical error: fix the input, or set the document aside. Only a refusal past
-the engine's own limits differs between engines: on JavaScriptCore (Bun, Safari), retry once a
-writer's `unsupported-node-shape` at the empty path, since that engine reports a heap running short
-the same way.
+them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
+the identical error: fix the input, or set the document aside. The one exception is JavaScriptCore
+(Bun, Safari), which reports a heap running short as it reports a string past its longest: there,
+retry once a call's `unsupported-node-shape` at the empty path.
 
 ### Parsing
 
