@@ -3,7 +3,8 @@ import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { blockArgument, markValues, marksAttribute } from '../block-directive.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { isBareToken, spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
+import { joinedWithin, tooLong } from '../length-bound.ts'
+import { attributePieces, directiveOpenerPieces, isBareToken, spellJsonAttribute, spellVocabulary } from '../directive-syntax.ts'
 import { overNested } from '../../json-value.ts'
 import { spellEmptyKeys } from '../empty-keys.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
@@ -22,7 +23,8 @@ export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, 
     if (overNested(values)) return failure('unsupported-nesting-depth', attributeNestingMessage(marksAttribute, node.type), path)
     spelledPairs.push([marksAttribute, spellJsonAttribute(values)])
   }
-  return success(spellDirectiveOpener(node.type, slot.argument, spellAttributes(spelledPairs)))
+  const opener = joinedWithin(directiveOpenerPieces(node.type, slot.argument, attributePieces(spelledPairs)))
+  return opener === undefined ? tooLong() : success(opener)
 }
 
 // `undefined` where the argument slot holds a value no bare token spells.

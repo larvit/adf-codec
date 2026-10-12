@@ -86,7 +86,7 @@ export function textLength(node: AdfNode): number {
   return node.text?.length ?? 0
 }
 
-// A line spells every character of its nodes' text at least once, so this much text cannot fit.
+// The length of the text the nodes hold, the nodes below them included.
 export function heldTextLength(nodes: readonly AdfNode[]): number {
   let length = 0
   const pending = [...nodes]

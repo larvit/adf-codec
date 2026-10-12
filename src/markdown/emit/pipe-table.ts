@@ -1,33 +1,38 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { WrittenFlavour } from '../portable/conventions.ts'
+import { delimiterCells, pipeRowPieces } from '../pipe-table-syntax.ts'
 import { holdsOnlyAttributes, nodeContent } from '../../adf/document.ts'
-import { longestOutput, tooLong } from '../../output-length.ts'
-import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
+import { boundedThen, joinedWithin, longestMarkdown, separatedBy, tooLong } from '../length-bound.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { tryPipeCell } from './inline-line.ts'
 
-// indent: the characters the containers around the table prefix each of its lines with.
-export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, { flavour, indent }: { flavour: WrittenFlavour; indent: number }): Result<string> | undefined {
+export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<string> | undefined {
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
-  const lines: string[] = []
-  // A row spells ` | ` beside each cell, and a newline and the indent after it.
-  let projected = 0
+  const spelled: string[][] = []
+  // The cells alone must fit before the rows around them are built.
+  let length = 0
   for (const [rowIndex, row] of rows.entries()) {
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
       const content = nodeContent(paragraph)
       const line = content.length === 0 ? '' : tryPipeCell(content, [...path, 'content', rowIndex, 'content', cellIndex, 'content', 0], flavour)
       if (line === undefined) return undefined
+      length += line.length
+      if (length > longestMarkdown) return tooLong()
       cells.push(line)
-      projected += line.length + 3
     }
-    projected += 2 + indent + (rowIndex === 0 ? spellPipeDelimiter(cells.length).length + 1 + indent : 0)
-    if (projected > longestOutput) return tooLong([...path, 'content', rowIndex])
-    lines.push(spellPipeRow(cells))
-    if (rowIndex === 0) lines.push(spellPipeDelimiter(cells.length))
+    spelled.push(cells)
   }
-  return success(lines.join('\n'))
+  const text = joinedWithin(separatedBy('\n', tableRows(spelled)))
+  return boundedThen(text, success)
+}
+
+function* tableRows(rows: readonly string[][]): Generator<Iterable<string>> {
+  for (const [index, cells] of rows.entries()) {
+    yield pipeRowPieces(cells)
+    if (index === 0) yield pipeRowPieces(delimiterCells(cells.length))
+  }
 }
 
 function pipeRows(node: AdfNode): AdfNode[][] | undefined {

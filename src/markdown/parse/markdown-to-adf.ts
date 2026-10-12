@@ -20,6 +20,7 @@ import { readBlockDirectiveNode } from './directive-nodes.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.ts'
 import { spellsEmpty } from '../empty-keys.ts'
 import { splitPlace, splitTaskList } from '../portable/task-list.ts'
+import { withinEngineLimits } from '../length-bound.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
 
@@ -44,6 +45,13 @@ export function portableMarkdownToAdf(markdown: string): Result<AdfDocument, Par
 }
 
 function readDocument(markdown: string, claims: Claims): Result<AdfDocument, ParseError> {
+  return positioned(
+    withinEngineLimits(() => readMarkdown(markdown, claims)),
+    { line: 1, offset: 0 },
+  )
+}
+
+function readMarkdown(markdown: string, claims: Claims): Result<AdfDocument, ParseError> {
   if (typeof markdown !== 'string') return positioned(failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, []), { line: 1, offset: 0 })
   const parsed = parseBlocks(markdown, claims)
   const [only] = parsed.blocks

@@ -2,7 +2,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/doc
 import type { JsonValue } from '../../json-value.ts'
 import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks, textLength } from '../../adf/document.ts'
 import { joinsWhenRead } from '../adjacent-text.ts'
-import { longestOutput } from '../../output-length.ts'
+import { longestMarkdown } from '../length-bound.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
@@ -11,8 +11,6 @@ type NodeHolder = { content?: AdfNode[] }
 // The editor joins two text nodes where the reader would join their editor-normal forms.
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
   if (previous.type !== 'text' || node.type !== 'text') return false
-  // Text this long is refused as markdown either way; joining it first would build the string.
-  if (textLength(previous) + textLength(node) > longestOutput) return false
   return joinsWhenRead(normalNode(previous), normalNode(node))
 }
 
@@ -24,7 +22,8 @@ export function toEditorNormal(document: AdfDocument): AdfDocument {
   const normal: AdfDocument = { type: document.type, version: Object.is(document.version, -0) ? 0 : document.version }
   const pending: { holder: NodeHolder; source: NodeHolder }[] = [{ holder: normal, source: document }]
   for (let entry = pending.pop(); entry !== undefined; entry = pending.pop()) {
-    const content = mergeAdjacentText(nodeContent(entry.source), joinsWhenEditorNormal)
+    // Text past the bound is refused as markdown either way; joining it first would build the string.
+    const content = mergeAdjacentText(nodeContent(entry.source), (previous, node) => joinsWhenEditorNormal(previous, node) && textLength(previous) + textLength(node) <= longestMarkdown)
     if (content.length === 0) continue
     entry.holder.content = content.map((source) => {
       const holder = normalNode(source)

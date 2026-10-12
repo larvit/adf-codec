@@ -36,12 +36,17 @@ export function pipeCells(line: string): string[] | undefined {
   return claimsPipeLine(line) ? splitPipeCells(line, 1) : undefined
 }
 
-export function spellPipeDelimiter(columns: number): string {
-  return spellPipeRow(Array.from({ length: columns }, () => '---'))
+export function delimiterCells(columns: number): string[] {
+  return Array.from({ length: columns }, () => '---')
 }
 
-export function spellPipeRow(cells: readonly string[]): string {
-  return `| ${cells.join(' | ')} |`
+export function* pipeRowPieces(cells: readonly string[]): Generator<string> {
+  yield '|'
+  for (const cell of cells) {
+    yield ' '
+    yield cell
+    yield ' |'
+  }
 }
 
 function splitPipeCells(line: string, start: number): string[] {
