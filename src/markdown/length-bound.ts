@@ -8,14 +8,13 @@ const pastLongestString = ['InternalError: allocation size overflow', 'RangeErro
 const pastEngineLimit = ['RangeError: Invalid array length', 'RangeError: Out of memory']
 
 export function tooLong<T>(): Result<T> {
-  return failure('unsupported-node-shape', `spelled as markdown, this would be longer than ${longestMarkdown} characters, the longest string V8 holds`, [])
+  return failure('unsupported-node-shape', `spelled as markdown, this would be longer than ${longestMarkdown} characters, the longest markdown this library writes`, [])
 }
 
 export function withinLongest(text: string): Result<string> {
   return text.length > longestMarkdown ? tooLong() : success(text)
 }
 
-// Joins the pieces as they come, so a spelling that grows far past its input stops at the bound unbuilt.
 export function joinedWithin(pieces: Iterable<string>): Result<string> {
   const kept: string[] = []
   let length = 0
@@ -27,7 +26,7 @@ export function joinedWithin(pieces: Iterable<string>): Result<string> {
   return success(kept.join(''))
 }
 
-// Any concatenation can pass an engine's longest string or array, so this wraps a whole conversion.
+// Any concatenation can pass an engine's longest string or array; wrap every call that builds one.
 export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
   try {
     return convert()

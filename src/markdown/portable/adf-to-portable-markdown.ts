@@ -138,19 +138,11 @@ function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Res
       continue
     }
     // Back on `pending`: a replacement may take the directive form itself.
-    const replacement = block === next.block ? listItemBlocks(block, next.path) : [{ block, path: next.path }]
+    const { path } = next
+    const replacement = (block === next.block ? nodeContent(block).flatMap(nodeContent) : [block]).map((node) => ({ block: node, path }))
     for (const node of replacement.reverse()) pending.push(node)
   }
   return success(sequence)
-}
-
-// Offsets are the reduced item's, which are the caller's while the item's blocks reduce one to one.
-function listItemBlocks(list: AdfNode, path: ConvertErrorPath): Sourced[] {
-  const blocks: Sourced[] = []
-  for (const [index, item] of nodeContent(list).entries()) {
-    for (const [offset, block] of nodeContent(item).entries()) blocks.push({ block, path: [...path, 'content', index, 'content', offset] })
-  }
-  return blocks
 }
 
 // A numbered list whose markers run past CommonMark's keeps its numbers as text in a bullet list.
