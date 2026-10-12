@@ -86,10 +86,10 @@
 - Fix a document whose markdown would be longer than 536,870,888 characters, V8's longest string:
   `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse it as `unsupported-node-shape` on
   every engine, where they threw or ran out of memory.
-- Fix a directive whose CommonMark spelling would be that long: `losslessMarkdownToAdf` refuses it
-  as `unsupported-node-shape`, where a few megabytes of nested list lines ran it out of memory. The
-  markdown readers return `unsupported-node-shape` where they threw past the longest string or
-  array the JavaScript engine builds.
+- Fix a directive that, written out as plain CommonMark, would be that long: `losslessMarkdownToAdf`
+  refuses it as `unsupported-node-shape`, where a few megabytes of nested list lines ran it out of
+  memory. The markdown readers return `unsupported-node-shape` where they threw past the longest
+  string or array the JavaScript engine builds.
 - Fix deeply nested compact JSON in an `adf:` fence: `losslessMarkdownToAdf` refuses it as
   `unsupported-node-shape`, as it refuses any compact JSON there, where about a megabyte of it threw.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
