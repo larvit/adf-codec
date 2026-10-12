@@ -669,8 +669,12 @@ Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29
 converts alike everywhere. Each builder that joins pieces — blocks, quoted and list lines, directive
 pairs and openers, fences, pipe rows, the carry's JSON — joins them through `joinedWithin`, which
 stops once they pass the bound, so none builds a string no engine was asked for. A walk of blocks
-also forecasts each block's length with the indent its containers will prefix every line with, so a
-deep subtree refuses before any container copies it.
+also forecasts each block's length with the indent its containers surely prefix every line that is
+not blank with, so a subtree deep in quotes or task lists refuses before any container copies it.
+The forecast never overcounts, so it refuses only markdown past the bound: a plain list's marker
+indent is left out, since the list may give way to the directive form, which prefixes nothing. A
+deep list refuses once a level's text passes the bound, after the levels below it re-indented theirs
+(`todo.md` item 109).
 
 A line is held to its text's length alone; what its spelling adds — escapes, link targets,
 attributes — passes V8's longest string only by throwing, and `withinEngineLimits` refuses that

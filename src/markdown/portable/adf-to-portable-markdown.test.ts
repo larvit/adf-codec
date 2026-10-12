@@ -82,6 +82,11 @@ test('refuses an expand whose title and body together would pass V8\'s longest s
   assert.equal(portableDocument(document(quote)), 'unsupported-node-shape at /')
 })
 
+test('refuses a code block whose text nodes together would pass V8\'s longest string, joining none of them', () => {
+  const long = text('a'.repeat(2 ** 28))
+  assert.equal(portableDocument(document({ content: [long, long, long], type: 'codeBlock' })), 'unsupported-node-shape at /')
+})
+
 test('refuses nesting past 500 levels wherever the reduction walks', () => {
   const lowest = (bottom: AdfNode): string => {
     let deep = bottom

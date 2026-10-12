@@ -15,10 +15,6 @@ export function closingBacktickRun(text: string, from: number, opener: number): 
   return undefined
 }
 
-export function fencedCodeBlock(info: string, body: string): string {
-  return fencePieces(info, body).join('')
-}
-
 export function fencePieces(info: string, body: string): string[] {
   const fence = '`'.repeat(Math.max(3, longestBacktickRun(body) + 1))
   return body === '' ? [fence, info, '\n', fence] : [fence, info, '\n', body, '\n', fence]
