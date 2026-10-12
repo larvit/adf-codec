@@ -24,7 +24,8 @@ type Delimiters = readonly [string, string]
 type EmittedBlock = SpelledBlock & { headroom: number }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 type PlacedBlock = SpelledBlock & { node: AdfNode }
-type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
+// projected: the blocks' length once joined and their containers prefix their lines; it never undercounts.
+type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number; projected: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
 type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
@@ -38,6 +39,7 @@ const bulletWidth = 2
 export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
+const listItemCloser = spellDirectiveCloser('listItem')
 const orderedDelimiters: Delimiters = ['.', ')']
 
 export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
@@ -59,17 +61,21 @@ function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: nu
   let headroom = largestNesting - depth
   if (headroom < 0) return tooDeep(path)
   const blocks: PlacedBlock[] = []
-  // Each block's length once its containers prefix its lines, and the two characters parting it from the next.
   let projected = 0
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
-    projected += prefixedLength(block.value.text, writing.indent) + 2
+    projected += (index === 0 ? 0 : separatorLength(writing)) + prefixedLength(block.value.text, writing.indent) + 1
     if (projected > longestOutput) return tooLong([...path, 'content', index])
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
   }
-  return success({ blocks, headroom })
+  return success({ blocks, headroom, projected })
+}
+
+// A block counts the newline ending it; a blank line between two is prefixed as their lines are.
+function separatorLength(writing: Writing): number {
+  return 1 + writing.indent
 }
 
 function prefixedLength(text: string, indent: number): number {
@@ -155,7 +161,10 @@ function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   if (node.type === 'mediaSingle') return readableText(tryImage(node))
   if (node.type === 'paragraph') return tryParagraph(node, path, writing.flavour)
   if (node.type === 'rule') return readableText(tryRule(node))
-  if (node.type === 'table') return readableText(tryPipeTable(node, path, writing.flavour))
+  if (node.type === 'table') {
+    const table = tryPipeTable(node, path, writing)
+    return table === undefined || !table.ok ? table : success(commonMarkText(table.value))
+  }
   return undefined
 }
 
@@ -171,8 +180,10 @@ function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
 }
 
 function quotedUnder(head: string, node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, indented(writing, quoteWidth))
+  const quotedWriting = indented(writing, quoteWidth)
+  const inner = walkBlocks(nodeContent(node), path, depth + 1, quotedWriting)
   if (!inner.ok) return inner
+  if (prefixedLength(head, quotedWriting.indent) + 1 + separatorLength(quotedWriting) + inner.value.projected > longestOutput) return tooLong(path)
   const body = joinBlocks(inner.value.blocks, 'document')
   return success(commonMarkText(quoted(body === '' ? head : `${head}\n\n${body}`), inner.value.headroom))
 }
@@ -188,6 +199,8 @@ function quoted(text: string): string {
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const items: PlacedBlock[][] = []
+  // Each walk alone stayed within the bound, so the join is checked before it builds.
+  let projected = 0
   let headroom = largestNesting - depth - 1
   // A child other than a task nests in the task before it.
   for (const [index, child] of nodeContent(node).entries()) {
@@ -195,6 +208,8 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
     const itemWriting = indented(writing, bulletWidth)
     const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, itemWriting) : placedBlock(child, [...path, 'content', index], depth + 1, itemWriting)
     if (!walk.ok) return walk
+    projected += (index === 0 ? 0 : separatorLength(writing)) + walk.value.projected
+    if (projected > longestOutput) return tooLong([...path, 'content', index])
     headroom = Math.min(headroom, walk.value.headroom)
     const previous = items.at(-1)
     if (task || previous === undefined) items.push([...walk.value.blocks])
@@ -212,7 +227,7 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
 
 function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   const block = emitBlock(node, path, depth, writing)
-  return block.ok ? success({ blocks: [{ ...block.value, node }], headroom: block.value.headroom }) : block
+  return block.ok ? success({ blocks: [{ ...block.value, node }], headroom: block.value.headroom, projected: prefixedLength(block.value.text, writing.indent) + 1 }) : block
 }
 
 // The marker leads the first paragraph, or stands as one where the blocks open with another.
@@ -223,13 +238,15 @@ function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writin
     const content = nodeContent(task)
     const line = content.length === 0 ? success('') : emitInlineLine(content, 'paragraph', path, writing.flavour)
     if (!line.ok) return line
-    return success({ blocks: [{ ...markerBlock, text: line.value === '' ? marker : `${marker} ${line.value}` }], headroom: Number.POSITIVE_INFINITY })
+    const text = line.value === '' ? marker : `${marker} ${line.value}`
+    return success({ blocks: [{ ...markerBlock, text }], headroom: Number.POSITIVE_INFINITY, projected: prefixedLength(text, writing.indent) + 1 })
   }
   const walk = walkBlocks(nodeContent(task), path, depth, writing)
   if (!walk.ok) return walk
   const [first, ...rest] = walk.value.blocks
   const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
-  return success({ blocks, headroom: walk.value.headroom })
+  // The marker either leads the first line or stands as a block of its own.
+  return success({ blocks, headroom: walk.value.headroom, projected: walk.value.projected + marker.length + separatorLength(writing) + writing.indent + 1 })
 }
 
 function readableText(text: string | undefined): Result<EmittedBlock> | undefined {
@@ -268,9 +285,8 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
   }
   const walk = walkBody()
   if (!walk.ok) return walk
-  const body = joinBlocks(walk.value.blocks, 'directive')
-  if (opener.length + body.length > longestOutput) return tooLong(path)
-  return success(directivePair(node, opener, body, walk.value.headroom))
+  if (opener.length + walk.value.projected > longestOutput) return tooLong(path)
+  return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
 function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
@@ -334,6 +350,8 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   if (start === undefined || items.length === 0) return undefined
   if (items.some((item) => item.type !== 'listItem' || !holdsOnlyAttributes(item, []))) return undefined
   const walked: WalkedItem[] = []
+  // Each walk alone stayed within the bound, so the join is checked before it builds; the directive form adds an opener and a closer line to each item.
+  let projected = 0
   let headroom = Number.POSITIVE_INFINITY
   const itemWriting = indented(writing, ordered ? `${start + items.length - 1}. `.length : bulletWidth)
   for (const [offset, item] of items.entries()) {
@@ -341,6 +359,8 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
     walked.push({ node: item, walk: walk.value })
+    projected += (offset === 0 ? 0 : separatorLength(writing)) + walk.value.projected + directiveItemLength(writing)
+    if (projected > longestOutput) return tooLong([...path, 'content', offset])
   }
   const inners = walked.map((item) => {
     const inner = joinBlocks(item.walk.blocks, 'list-item')
@@ -351,7 +371,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   if (list !== undefined) return success(list)
   // The directive form spends a level the walk did not count.
   if (headroom < 1) return tooDeep(path)
-  return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
+  return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1, projected }))
 }
 
 function spelledList(inners: readonly string[], number: (offset: number) => string, [usual, alternate]: Delimiters, headroom: number): EmittedBlock | undefined {
@@ -368,6 +388,10 @@ function listLines(inners: readonly string[], number: (offset: number) => string
     lines.push(line)
   }
   return lines.join('\n')
+}
+
+function directiveItemLength(writing: Writing): number {
+  return listItemOpener.length + listItemCloser.length + 2 * (1 + writing.indent)
 }
 
 function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {

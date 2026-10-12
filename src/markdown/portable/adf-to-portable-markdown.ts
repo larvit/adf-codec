@@ -117,14 +117,16 @@ function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> 
   return success(blocks)
 }
 
-// A list still taking the directive form gives way to its items' blocks.
+// A list still taking the directive form gives way to its items' blocks; one whose spelling is refused, too deep or too long, refuses the reduction (the maintainer, 2026-10-12).
 function portableSequence(blocks: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
   const pending = blocks.filter((block) => block.type !== 'paragraph' || nodeContent(block).length > 0).reverse()
   const sequence: AdfNode[] = []
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const block = numberedPastMarkers(next)
     const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    if (!listed || (block === next && commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', indent: 0, memo: reduction.memo })?.ok === true)) {
+    const spelled = listed && block === next ? commonMarkSpelling(block, reduction.path, reduction.depth, { flavour: 'portable', indent: 0, memo: reduction.memo }) : undefined
+    if (spelled !== undefined && !spelled.ok) return spelled
+    if (!listed || spelled !== undefined) {
       sequence.push(block)
       continue
     }

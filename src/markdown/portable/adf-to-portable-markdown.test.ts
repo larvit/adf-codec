@@ -76,6 +76,12 @@ test('refuses a paragraph whose text would pass V8\'s longest string, joining no
   assert.equal(portableDocument(document(merged)), 'unsupported-node-shape at /content/0')
 })
 
+test('refuses an expand whose title and body together would pass V8\'s longest string', () => {
+  let quote: AdfNode = node('expand', { title: 'a'.repeat(1_000_000) }, { attrs: {}, content: [text('a\n'.repeat(1_108_000))], type: 'codeBlock' })
+  for (let level = 0; level < 240; level += 1) quote = { content: [quote], type: 'blockquote' }
+  assert.equal(portableDocument(document(quote)), `unsupported-node-shape at /${Array.from({ length: 241 }, () => 'content/0').join('/')}`)
+})
+
 test('refuses nesting past 500 levels wherever the reduction walks', () => {
   const lowest = (bottom: AdfNode): string => {
     let deep = bottom

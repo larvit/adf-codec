@@ -10,7 +10,7 @@ import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonma
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims, highlightDelimiter } from '../portable/conventions.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
-import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks, textLength } from '../../adf/document.ts'
+import { heldTextLength, identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -99,17 +99,6 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     const taken = takeFallback(fallbacks, attempt.fallback, path)
     if (!taken.ok) return taken
   }
-}
-
-// The line spells every character of its text at least once, so this much text cannot fit.
-export function heldTextLength(nodes: readonly AdfNode[]): number {
-  let length = 0
-  const pending = [...nodes]
-  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    length += textLength(node)
-    for (const child of nodeContent(node)) pending.push(child)
-  }
-  return length
 }
 
 function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
