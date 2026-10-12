@@ -1,15 +1,14 @@
 import type { AdfNode } from '../../adf/document.ts'
+import type { ConvertErrorPath } from '../../result.ts'
 import type { WrittenFlavour } from '../portable/conventions.ts'
-import { boundedThen, joinedWithin, separatedBy } from '../length-bound.ts'
-import { delimiterCells, pipeRowPieces } from '../pipe-table-syntax.ts'
 import { holdsOnlyAttributes, nodeContent } from '../../adf/document.ts'
-import { success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'
 
-export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<string> | undefined {
+export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): string | undefined {
   const rows = pipeRows(node)
   if (rows === undefined) return undefined
-  const spelled: string[][] = []
+  const lines: string[] = []
   for (const [rowIndex, row] of rows.entries()) {
     const cells: string[] = []
     for (const [cellIndex, paragraph] of row.entries()) {
@@ -18,17 +17,10 @@ export function tryPipeTable(node: AdfNode, path: ConvertErrorPath, flavour: Wri
       if (line === undefined) return undefined
       cells.push(line)
     }
-    spelled.push(cells)
+    lines.push(spellPipeRow(cells))
+    if (rowIndex === 0) lines.push(spellPipeDelimiter(cells.length))
   }
-  const text = joinedWithin(separatedBy('\n', tableRows(spelled)))
-  return boundedThen(text, success)
-}
-
-function* tableRows(rows: readonly string[][]): Generator<Iterable<string>> {
-  for (const [index, cells] of rows.entries()) {
-    yield pipeRowPieces(cells)
-    if (index === 0) yield pipeRowPieces(delimiterCells(cells.length))
-  }
+  return lines.join('\n')
 }
 
 function pipeRows(node: AdfNode): AdfNode[][] | undefined {

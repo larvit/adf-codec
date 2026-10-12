@@ -2,11 +2,11 @@ import type { AdfNode } from '../adf/document.ts'
 import type { DirectiveSpan, Read } from './directive-syntax.ts'
 import type { JsonSpelling } from '../canonical-json.ts'
 import type { JsonValue } from '../json-value.ts'
-import { boundedThen, joinedWithin } from './length-bound.ts'
+import { joinedWithin } from './length-bound.ts'
 import { canonicalJsonPieces, spellsCanonicalJson } from '../canonical-json.ts'
 import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../result.ts'
-import { fencePieces } from './commonmark/backtick-runs.ts'
+import { fencedCodeBlock } from './commonmark/backtick-runs.ts'
 import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
@@ -25,8 +25,7 @@ export function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: numbe
   const named = infoStringCarries(type)
   const json = carriedJson(node, named ? untyped : node, 'two-space', path, largestNesting - depth)
   if (!json.ok) return json
-  const text = joinedWithin(fencePieces(`${carryFencePrefix}${named ? type : ''}`, json.value.json))
-  return boundedThen(text, (fence) => success({ headroom: json.value.headroom, text: fence }))
+  return success({ headroom: json.value.headroom, text: fencedCodeBlock(`${carryFencePrefix}${named ? type : ''}`, json.value.json) })
 }
 
 export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<string> {
@@ -60,8 +59,9 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
   if (!isJsonValue(spelled) || headroom < 0) {
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
+  // Two-space JSON indents every value its depth over, so it stops at the bound unbuilt.
   const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
-  return boundedThen(json, (text) => success({ headroom, json: text }))
+  return json.ok ? success({ headroom, json: json.value }) : json
 }
 
 // `type` is the one the fence's info string names, `undefined` for the inline carry.

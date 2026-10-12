@@ -602,3 +602,28 @@ Inherited architect, decided by:
 - Navigation, Shape: `src/markdown/length-bound.ts:41` `withinEngineLimits`: a too-long symptom leads straight to the module named for it
 - Shape: `src/markdown/directive-syntax.ts:133` `spellDirectiveOpener`: each spelling is a string function and a pieces generator
 - Shape: `src/markdown/opaque-carry.ts:64` `carriedJson`: the lambda parameter `spelled` shadows the function's own
+
+## 2026-10-12T16:40:52Z, PR #36 at acd22aa, against 7a27f6b
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | worse | worse | same | worse |
+| Inherited architect | better | worse | worse | same | worse |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/markdown/emit/adf-to-markdown.ts:374` `spelledList`: a builder's `undefined` now means either no list spelling or past the length bound, and every caller of `joinBlocks` must remember which it holds
+- Shape: `src/markdown/emit/adf-to-markdown.ts:383` `listLines`: split, map and join became generators yielding pieces into `separatedBy` and `joinedWithin`, so a reader rebuilds the string in their head
+- Locality: `src/markdown/emit/adf-to-markdown.ts:125` `readableBlock`: the memo is filled in `commonMarkSpelling` and deleted on read, a one-shot cache whose hits depend on which walk came first
+- Navigation: `src/markdown/length-bound.ts:41` `withinEngineLimits`: a too-long refusal leads to a module named for it
+
+Inherited architect, decided by:
+
+- Locality, Shape: `src/markdown/emit/adf-to-markdown.ts:374` `spelledList`: `undefined` means two things a few lines apart, told apart only by the side of a nested `boundedThen` callback
+- Locality: `src/markdown/emit/adf-to-markdown.ts:125` `readableBlock`: reading the memo is a mutation, and a second read spells again
+- Shape: `src/markdown/pipe-table-syntax.ts:43` `pipeRowPieces`: one-line templates became generators whose output cannot be read off one line
+- Locality, Shape: `src/markdown/emit/block-directive-spelling.ts:27` `spellBlockDirectiveOpener`: the opener's layout is known here and in `spellDirectiveOpener`
+- Shape: `src/markdown/portable/adf-to-portable-markdown.ts:231` `reduceCodeBlock`: an ADF-to-ADF reducer carries a markdown length bound through a callback
+- Navigation: `src/markdown/length-bound.ts:41` `withinEngineLimits`: a too-long refusal leads straight to one small, well-named module

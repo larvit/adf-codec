@@ -81,9 +81,7 @@ The line escaper keeps an array element per character twice (`escapings`, `place
 50 bytes a character: one 20-million-character text node took 1.2 GB on Node 24, and one of 80
 million exhausted its 2.2 GB default heap. Twenty million `*` throw `RangeError: Set maximum size
 exceeded`, which `withinEngineLimits` lets through. `losslessMarkdownToAdf` reaches both through a
-directive's CommonMark ask. Bound the line as the blocks are (`joinedWithin`): its segments and its
-escaped output, which today pass V8's longest string only by throwing. Found while shipping item
-106, 2026-10-11.
+directive's CommonMark ask. Found while shipping item 106, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
@@ -215,8 +213,9 @@ Each level of a nested list or quote re-indents its whole text, so the work is t
 text. `losslessMarkdownToAdf` on 3 MB of lazy lines in a list nested 490 levels inside
 `!adf:blockquote` spends about 5 seconds re-spelling it. The same 2 MB split over two items of a
 list nested 480 levels took 11 minutes to refuse on Node 24. A deep subtree past the length bound
-refuses only at the level that passes it, after every level below re-indented its text. The writers
-do the same on such a document. Found while shipping item 106, 2026-10-11.
+refuses only once every level below has re-indented its text, so no test reaches
+`losslessMarkdownToAdf`'s length refusal in seconds: add one with this fix. The writers do the same
+on such a document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 

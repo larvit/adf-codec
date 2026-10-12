@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { Result } from '../result.ts'
-import { boundedThen, joinedWithin, separatedBy, tooLong, withinEngineLimits } from './length-bound.ts'
+import { joinedWithin, tooLong, withinEngineLimits, withinLongest } from './length-bound.ts'
 import { success } from '../result.ts'
 
 function thrown(name: string, message: string): () => Result<string> {
@@ -14,14 +14,13 @@ function thrown(name: string, message: string): () => Result<string> {
 }
 
 test('joins pieces up to the bound, and builds nothing past it', () => {
-  assert.equal(joinedWithin(separatedBy(', ', [['a', 'b'], ['c']])), 'ab, c')
+  assert.deepEqual(joinedWithin(['a', 'b']), success('ab'))
   const half = 'a'.repeat(2 ** 28)
-  assert.equal(joinedWithin([half, half]), undefined)
+  assert.deepEqual(joinedWithin([half, half]), tooLong())
 })
 
-test('refuses where a bounded builder stopped, and goes on with what it built', () => {
-  assert.deepEqual(boundedThen(undefined, success), tooLong())
-  assert.deepEqual(boundedThen('x', (text) => success(`${text}!`)), success('x!'))
+test('passes a text within the bound', () => {
+  assert.deepEqual(withinLongest('x'), success('x'))
 })
 
 test('refuses a string past the bound as too long on every engine, and names any other engine limit', () => {

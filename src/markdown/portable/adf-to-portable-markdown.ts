@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { adfDocumentFault, heldTextLength, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
-import { boundedThen, joinedWithin, longestMarkdown, tooLong, withinEngineLimits } from '../length-bound.ts'
+import { longestMarkdown, tooLong, withinEngineLimits } from '../length-bound.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -60,7 +60,7 @@ export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
   const fault = adfDocumentFault(document)
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  // The reduction drops form, never text, so this much text cannot fit, and none of it is joined.
+  // Refused on the caller's text, edge whitespace and all: merging it first would build past the bound.
   if (heldTextLength(nodeContent(document)) > longestMarkdown) return tooLong()
   // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
@@ -138,14 +138,14 @@ function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Res
       continue
     }
     // Back on `pending`: a replacement may take the directive form itself.
-    const replacement = block === next.block ? itemBlocks(block, next.path) : [{ block, path: next.path }]
+    const replacement = block === next.block ? listItemBlocks(block, next.path) : [{ block, path: next.path }]
     for (const node of replacement.reverse()) pending.push(node)
   }
   return success(sequence)
 }
 
 // Offsets are the reduced item's, which are the caller's while the item's blocks reduce one to one.
-function itemBlocks(list: AdfNode, path: ConvertErrorPath): Sourced[] {
+function listItemBlocks(list: AdfNode, path: ConvertErrorPath): Sourced[] {
   const blocks: Sourced[] = []
   for (const [index, item] of nodeContent(list).entries()) {
     for (const [offset, block] of nodeContent(item).entries()) blocks.push({ block, path: [...path, 'content', index, 'content', offset] })
@@ -231,11 +231,10 @@ function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 function reduceCodeBlock(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction.path, reduction.depth)
   if (!leaves.ok) return leaves
+  const code = leaves.value.map((leaf) => leaf.text ?? '\n').join('')
   const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims.portable)
-  return boundedThen(joinedWithin(leaves.value.map((leaf) => leaf.text ?? '\n')), (code) => {
-    const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
-    return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
-  })
+  const block: AdfNode = { content: code === '' ? [] : [text(code)], type: 'codeBlock' }
+  return success([slot.kind === 'fence' ? { ...block, attrs: { language: slot.info } } : block])
 }
 
 function reduceList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {

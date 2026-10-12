@@ -666,18 +666,20 @@ is the shortest of the engines the library claims.
 
 Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29 − 24 characters
 (`longestMarkdown`) as `unsupported-node-shape` at the document's path, so the same document
-converts alike everywhere. Each builder joins its pieces — blocks, quoted and list lines, directive
-pairs and openers, fences, pipe rows, the carry's JSON — through `joinedWithin`, which stops once
-they pass the bound, so none builds a string no engine was asked for. A writer first refuses a
-document whose text alone passes the bound, since every character of it is spelled at least once. A
-deep list or quote re-indents its whole text at each level until the level that passes the bound
-refuses (`todo.md` item 109).
+converts alike everywhere. A writer first refuses a document whose text alone passes the bound: the
+lossless writer spells every character of it, and the portable reduction refuses on the caller's
+text, edge whitespace and all, since merging that text first could build past the bound. The
+builders join as they always did, and the writer's result and the CommonMark ask's spelling are held
+to the bound once built. V8 stops at the bound itself and SpiderMonkey at its own longest string,
+and `withinEngineLimits` refuses both throws as the same `tooLong`, so every engine answers alike.
+The carry's two-space JSON, which indents every value its depth over, stops at the bound unbuilt
+(`joinedWithin`). A deep list or quote re-indents its whole text at each level before the bound
+refuses it (`todo.md` item 109).
 
-A line is held to its text's length alone; what its spelling adds — escapes, link targets,
-attributes — passes V8's longest string only by throwing, and `withinEngineLimits` refuses that
-throw, and SpiderMonkey's, as the same refusal: both mean a string past the bound. `todo.md` item
-108 bounds the line itself. The engines' throws past their own longest array, and JavaScriptCore's
-`Out of memory`, which also reports a heap running short, stay refused with the engine's message.
+JavaScriptCore builds up to its own longest string, 2^31 − 1, before the check. A throw past that,
+past any engine's longest array, or JavaScriptCore's `Out of memory`, which also reports a heap
+running short, is refused with the engine's message. `todo.md` item 108 bounds the line's own
+memory.
 
 ## Nothing recurses unbounded
 
