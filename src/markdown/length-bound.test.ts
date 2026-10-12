@@ -27,7 +27,7 @@ test('refuses a string past the bound as too long on every engine, and names any
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Invalid string length')), tooLong())
   assert.deepEqual(withinEngineLimits(thrown('InternalError', 'allocation size overflow')), tooLong())
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Out of memory')), {
-    error: { code: 'unsupported-node-shape', message: 'the output would be longer than the longest string or array this JavaScript engine builds (Out of memory)', path: [] },
+    error: { code: 'unsupported-node-shape', message: 'the conversion passed this JavaScript engine\'s longest string or array, or its heap (Out of memory)', path: [] },
     ok: false,
   })
   assert.equal(withinEngineLimits(thrown('RangeError', 'Invalid array length')).ok, false)

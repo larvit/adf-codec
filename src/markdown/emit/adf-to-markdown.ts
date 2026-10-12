@@ -62,7 +62,7 @@ function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: nu
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
-    // V8 throws building a block past the bound; an engine holding longer strings stops at the same block.
+    // Refused here, so an engine holding longer strings stops at the block where V8 throws.
     const fits = withinLongest(block.value.text)
     if (!fits.ok) return fits
     headroom = Math.min(headroom, block.value.headroom)
@@ -136,7 +136,7 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, wri
   return spellReadableBlock(node, path, depth, writing)
 }
 
-// The CommonMark ask fills an entry; the walk above reads it once and spells it into its own text, so kept, every level of a deep subtree would hold its whole text.
+// docs/decisions.md §The spelling memo
 function takeKeptSpelling(memo: SpellingMemo | undefined, node: AdfNode): KeptSpelling | undefined {
   const kept = memo?.get(node)
   memo?.delete(node)

@@ -59,7 +59,7 @@ function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, pat
   if (!isJsonValue(spelled) || headroom < 0) {
     return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
   }
-  // Two-space JSON indents every value its depth over, so it stops at the bound unbuilt.
+  // Two-space JSON indents each value by its depth, so a short compact value can spell past the bound: join only up to it.
   const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
   return json.ok ? success({ headroom, json: json.value }) : json
 }

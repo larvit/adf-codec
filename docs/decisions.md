@@ -617,9 +617,9 @@ builder as a gain. The scores at be23835 were Junior 6.5, Mid 6, Senior 6 and Ar
 6.13. `todo.md` item 102 is to place that path without the replay. Item 106, 2026-10-13, shipped
 after three rounds under a worse ruling, the maintainer's call: both paired seats read the overall
 as the same, but Locality fell to a mean of 5.13, laid on the spelling memo the chunk splits between
-the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The scores
-at 1f4551a were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5. `todo.md` item 110 is to fill and
-read the memo in one place.
+the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The overall
+scores at 1f4551a were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean 5.63.
+`todo.md` item 110 is to fill and read the memo in one place.
 
 ## Properties on a fixed seed
 
@@ -669,22 +669,20 @@ or pins it.
 2026-10-11, the maintainer. Goals 1 and 6. Valid while V8's longest string, 2^29 − 24 characters,
 is the shortest of the engines the library claims.
 
-Every writer, and the reader's CommonMark ask, refuses markdown longer than 2^29 − 24 characters
-(`longestMarkdown`) as `unsupported-node-shape` at the document's path, so the same document
-converts alike everywhere. A writer first refuses a document whose text alone passes the bound: the
-lossless writer spells every character of it, and the portable reduction refuses on the caller's
-text, edge whitespace and all, since merging that text first could build past the bound. The
-builders join plain strings, and each block, the writer's result and the CommonMark ask's spelling
-are held to the bound as they are built. V8 throws building the same string past the bound,
-SpiderMonkey past its own longest string, and `withinEngineLimits` refuses both throws as the same
-`tooLong`, so every engine stops at the same block with the same answer. The carry's two-space JSON,
-which indents every value its depth over, stops at the bound unbuilt (`joinedWithin`). A deep list
-or quote re-indents its whole text at each level before the bound refuses it (`todo.md` item 109).
+Every writer, and `losslessMarkdownToAdf`'s `commonMarkSpelling` ask, refuses markdown longer than
+2^29 − 24 characters (`longestMarkdown`), so the same document converts alike everywhere. A writer
+first refuses a document whose text alone passes the bound: the lossless writer spells every
+character of it, and the portable reduction refuses on the caller's text, edge whitespace and all,
+since merging that text first could build past the bound. Each block, the writer's result and the
+CommonMark ask's spelling are held to the bound as they are built. V8 throws building the same
+string past the bound, SpiderMonkey past its own longest string, and `withinEngineLimits` refuses
+both throws as the same `tooLong`, so every engine stops at the same block with the same answer. The
+carry's two-space JSON, which indents every value its depth over, stops at the bound unbuilt
+(`joinedWithin`).
 
-JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. A
-throw past that, past any engine's longest array, or JavaScriptCore's `Out of memory`, which also
-reports a heap running short, is refused with the engine's message. `todo.md` item 108 bounds the
-line's own memory.
+JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
+that, JavaScriptCore throws `Out of memory`, as it does when its heap runs short. That throw, and
+any engine's throw past its longest array, is refused with the engine's message.
 
 ## Nothing recurses unbounded
 
@@ -750,15 +748,15 @@ two cannot disagree — which is what makes the kept value a memo rather than a 
 2026-09-19, the maintainer. Goal 9. Valid while the `commonMarkSpelling` ask spells a node once
 per level above it otherwise.
 
-The parse and the portable reduction keep the readable spelling of each node they put the
-`commonMarkSpelling` ask to in a memo, so the ask stops spelling a node once per level above it. A
-walk that reads an entry drops it, and a walk fills none for the nodes below the asked one: the walk
-above spells them into its own text, and kept, every level of a deep subtree would hold its whole
-text (2026-10-11). `text`, `alternateText` and `spelling` carry no depth and `headroom` is affine in
-it, so a read at or above the depth that filled the entry rebases; a read below re-spells, because a
-hit skips the depth guards the walk it replaces runs and an ordered list past the marker cap gives
-way, spending two emitter levels where the parser spent one. Only what succeeded is kept, so no path
-minted at another position is ever read.
+When the parse or the portable reduction asks `commonMarkSpelling` about a node, the node's readable
+spelling goes into a memo, so the ask stops spelling a node once per level above it. Reading an
+entry drops it, and no entry is kept for the nodes below the asked one: the walk above spells those
+nodes into its own text, so keeping them would make every level of a deep subtree hold the subtree's
+whole text (2026-10-11). `text`, `alternateText` and `spelling` carry no depth and `headroom` is
+affine in it, so a read at or above the depth that filled the entry rebases; a read below re-spells,
+because a hit skips the depth guards the walk it replaces runs and an ordered list past the marker
+cap gives way, spending two emitter levels where the parser spent one. Only what succeeded is kept,
+so no path minted at another position is ever read.
 
 ## Cost fixes are measured, never timed
 
