@@ -412,10 +412,10 @@ typed on `ConvertError` takes both.
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal but `engine-limit` is deterministic — there is no I/O anywhere —
 so a retry returns the identical error: fix the input, or set the document aside. `engine-limit`
-can mean memory ran short: retry it once, and treat a repeat as lasting. On V8 (Node, Deno,
-Chrome), running out of JavaScript heap ends the process. In Node, convert input of unbounded size
-in a `worker_threads` worker given `resourceLimits`: running out of heap there ends only that
-worker.
+can mean memory ran short: retry it once, and treat a repeat as lasting. Only an out-of-memory
+throw the call can catch becomes `engine-limit`: on V8 (Node, Deno, Chrome), running out of
+JavaScript heap ends the process. Convert input of unbounded size in a separate process with its
+own memory limit where that must not take yours down.
 
 ### Parsing
 
