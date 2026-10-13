@@ -378,7 +378,7 @@ function readBlockLine(walk: Walk, line: Line): void {
     return
   }
   if (leaf?.kind === 'pipe-table') {
-    const cells = pipeTableRow(walk.claims, removeColumns(line, largestOpenerIndentation).text)
+    const cells = leadingColumns(line) < indentedCodeColumns ? pipeTableRow(walk.claims, removeColumns(line, largestOpenerIndentation).text) : undefined
     if (cells !== undefined) {
       leaf.rows.push(cells)
       return
@@ -421,7 +421,7 @@ function openLeaf(walk: Walk, line: Line): void {
     else pushFault(walk, directive.fault)
     return
   }
-  if (openGfmTable(walk, opener)) return
+  if (leadingColumns(line) < indentedCodeColumns && openGfmTable(walk, opener)) return
   const cells = walk.claims.pipeTables === false ? undefined : pipeCells(opener)
   if (cells !== undefined) {
     closeLeaf(walk)
