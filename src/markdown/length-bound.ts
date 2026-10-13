@@ -3,9 +3,16 @@ import { failure, success, type Result } from '../result.ts'
 // V8's longest string (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
 export const longestMarkdown = 2 ** 29 - 24
 
-// Measured on Firefox 155, Node 24 and Bun 1.4. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the others name an engine's own limit or its memory running short.
+// Measured on Firefox 155, Node 24 and Bun 1.4, and SpiderMonkey's array length from its js.msg. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the others name an engine's own limit or its memory running short.
 const pastLongestString = ['InternalError: allocation size overflow', 'RangeError: Invalid string length']
-const pastEngineLimit = ['RangeError: Array buffer allocation failed', 'RangeError: Invalid array length', 'RangeError: Out of memory']
+const pastEngineLimit = [
+  'RangeError: Array buffer allocation failed',
+  'RangeError: Invalid array length',
+  'RangeError: Map maximum size exceeded',
+  'RangeError: Out of memory',
+  'RangeError: Set maximum size exceeded',
+  'RangeError: invalid array length',
+]
 
 export function tooLong<T>(): Result<T> {
   return failure('unsupported-node-shape', `the markdown for this document, or for a directive's plain CommonMark, would be longer than ${longestMarkdown} characters, the longest this library writes`, [])

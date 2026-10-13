@@ -680,3 +680,34 @@ Maintainability senior, hardest first:
 Inherited architect, would restructure first:
 
 - Locality: `src/markdown/emit/adf-to-markdown.ts:126` `readableBlock`: the memo is mutated and deleted across parse, emit and portable, and the length bound is applied at five sites
+
+## 2026-10-13T14:48:38Z, PR #37 at ecd695a, against 7a27f6b
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | worse | better | worse | worse |
+| Inherited architect | better | worse | same | worse | worse |
+
+Mid A, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:116` `commonMarkSpelling` / `readableBlock` / `takeKeptSpelling`: only commonMarkSpelling fills the memo and a read empties it, so whether an entry exists depends on which caller ran first; the reason lives only behind a pointer to docs/decisions.md
+- Locality: `src/markdown/emit/line-escaping.ts:229` `escapeClosedRuns`: both steps write one shared Uint8Array, and correctness rests on the scan order a second comment line must defend
+- Navigation, Shape: `src/markdown/length-bound.ts:30` `withinEngineLimits`: the engine-limit catch moves out of result.ts into one well-named file, with string-length and engine limits apart and `engine-limit` a code of its own
+- Locality: `src/markdown/emit/adf-to-markdown.ts:51` `writeMarkdown` / `walkBlocks` / `commonMarkSpelling`: the length bound is enforced in layers a reader changing it must hold together
+- Shape: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: undefined is wrapped into a Result to pass the engine guard, then unpicked
+- Shape: `src/markdown/emit/line-escaping.ts:35` `Escapings`: the type is a lookup function, its comment describes the Uint8Array behind it; `backslashed` adds 4096-piece chunking
+- Shape, Locality: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator replaces a boolean-continue callback
+- Shape: `src/markdown/emit/inline-line.ts:235` `emitLeaf`: the content-or-text refusal moves into one place
+- Locality: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: a spelling refusal propagates where it was swallowed, at the cost of Sourced path plumbing
+
+Inherited architect, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:139` `takeKeptSpelling`: reading deletes the entry and only commonMarkSpelling fills it, so readableBlock is right only if another file's caller asked first, once per node; explained only by a pointer to docs/decisions.md
+- Locality, Shape: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: a second withinEngineLimits inside readDocument's, fed `?? success(undefined)`, so null and undefined carry meaning the reader must remember
+- Locality: `src/markdown/emit/adf-to-markdown.ts:58` `walkBlocks`: the length bound is enforced at about six sites across three files
+- Navigation: `src/markdown/length-bound.ts:30` `withinEngineLimits`: engine-limit handling sits in a file named for it, and the engine-limit code parts memory from the length bound
+- Shape, Locality: `src/markdown/emit/line-escaping.ts:229` `escapeClosedRuns`: mutates its input in place and needs a two-line comment arguing it is safe; output joined in batches of 4096
+- Locality, Shape: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: a refusal propagates with its source path, where it was swallowed
+- Shape: `src/markdown/emit/inline-line.ts:235` `emitLeaf`: one place refuses content and text, and a generator replaces the boolean-callback JSON writer
