@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 5 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 4 | 5 | 6 | 6 | 10.0 |
@@ -73,18 +72,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
-
-`slotFault` in `directive-syntax.ts` gives a newline in an `emoji`, `mention` or `status` content
-slot `unspellable-whitespace` and a null character `unsupported-node-shape`, though both take the
-same fix, writing the node as `!adf:carry`. Today a consumer that switches on `code` with no
-`default` needs a case for a code only a line ending in these three slots raises. 0.2.0 already
-removes the other `unspellable-*` codes, so folding this one in now adds no new break; later it
-would be a break of its own. Revise §Which code a cause takes, and add the change to the changelog
-entry that removes `unspellable-character`, to `MIGRATION.md`'s Error codes table and to the
-README's error table. Found by the product-owner review of
-0.2.0, 2026-10-11.
 
 ### 84. Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.
 

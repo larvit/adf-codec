@@ -27,8 +27,9 @@
 - **Breaking:** the markdown readers read markdown holding no block as a document whose `content` is
   empty, as Atlassian's schema requires; `!adf:doc {content=none}` spells a document holding no
   `content` key.
-- **Breaking:** `unspellable-character` and `unspellable-line-start` leave `ConvertErrorCode`, and
-  `adfToLosslessMarkdown` no longer returns `unspellable-whitespace`. A carriage return in text is
+- **Breaking:** `unspellable-character`, `unspellable-line-start` and `unspellable-whitespace` leave
+  `ConvertErrorCode`. A line ending in an `emoji`, `mention` or `status` directive's content slot is
+  `unsupported-node-shape`, as a null character there already was. A carriage return in text is
   spelled `&#13;` and a null character `!adf:text{text="\u0000"}`; a paragraph line opening with a
   code span is spelled as that code span, its backticks opening no fence; a code block holding
   either character, a code span holding a null character, a text node holding no text or holding
