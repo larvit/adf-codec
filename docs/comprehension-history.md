@@ -825,3 +825,33 @@ Inherited architect, decided by:
 - Locality: `src/markdown/emit/line-escaping.ts:38` `PlacedSegment`: each segment arrives with its start, so two functions no longer walk in step; backslashed itself reads costlier
 - Shape: `src/markdown/emit/line-escaping.ts:41` `RunEscapes`: its field collides with isEscapable and the call site handles false first, the slowest spot to read
 - Self-sufficiency: `src/markdown/length-bound.ts:43` `withinEngineLimits`: the stack-overflow comment sits on its line, the carry comment says why the join is bounded
+
+## 2026-10-13T22:23:11Z, PR #40 at 8d14bbf, against 341280d
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | better | same | same |
+| Inherited architect | same | better | better | same | better |
+| Maintainability senior | worse | same | better | same | same |
+| Junior A | same | same | better | better | better |
+
+Mid A, decided by:
+
+- Shape: `src/markdown/directive-syntax.ts:109` `slotFault`: both branches return unsupported-node-shape through its constructor, where one small function returned two codes and the old name sounded like a writer's failure
+
+Inherited architect, decided by:
+
+- Shape, Locality: `src/markdown/directive-syntax.ts:109` `slotFault`: one rule with one code, where two branches gave the same kind of problem different codes and the reason lay outside the function
+- Shape: `src/result.ts:1` `ConvertErrorCode`: the list loses a code named for writing that only the parser raised, so every name matches its producer
+
+Maintainability senior, decided by:
+
+- Shape: `src/markdown/directive-syntax.ts:109` `slotFault`: the two checks raise one code, where sibling refusals of one slot took different codes under a name untrue twice over
+- Navigation: `README.md:451` `unsupported-node-shape`: a symptom arrives as a code many sites raise, and its longest cell grows, so a reader searches on the message text where one row and one producer led straight there
+
+Junior A, decided by:
+
+- Shape: `src/result.ts:1` `ConvertErrorCode`: the list loses a writer-named code only the parser raised
+- Shape, Self-sufficiency: `src/markdown/directive-syntax.ts:109` `slotFault`: one code for both branches, and the message states the rule and the fix that lived only in the README
