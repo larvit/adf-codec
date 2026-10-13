@@ -855,3 +855,38 @@ Junior A, decided by:
 
 - Shape: `src/result.ts:1` `ConvertErrorCode`: the list loses a writer-named code only the parser raised
 - Shape, Self-sufficiency: `src/markdown/directive-syntax.ts:109` `slotFault`: one code for both branches, and the message states the rule and the fix that lived only in the README
+
+## 2026-10-13T23:14:24Z, PR #41 at d1dc155, against e0ead52
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | better | same |
+| Inherited architect | same | worse | worse | better | worse |
+| Maintainability senior | same | same | worse | same | same |
+| Junior A | same | same | same | better | same |
+
+Mid A, decided by:
+
+- Self-sufficiency: `src/markdown/directive-syntax.ts:108` `slotFault`: the comment now names the node the emitter carries, where "such" pointed at nothing in view
+- Self-sufficiency: `src/markdown/portable/conventions.ts:13` `Claims.pipeTables`: the three-valued claim's comment says what each value accepts, so every check in blocks.ts reads without the spec
+
+Inherited architect, decided by:
+
+- Locality, Overall: `src/markdown/parse/blocks.ts:381` `readBlockLine` / `openLeaf` / `openGfmTable` / `pipeTableRow` / `pipeTableBlock` / `bareTableFault`: a three-valued claim tested in six places with four comparisons, and no single place states what each mode does to a table
+- Locality: `src/markdown/parse/blocks.ts:497` `openGfmTable`: cuts the open paragraph through walk.leaf, closes it, then sets walk.leaf again, an order on shared state; its call must precede the pipeCells branch and nothing says so
+- Shape: `src/markdown/portable/conventions.ts:14` `Claims.pipeTables`: `'flavour'` names the lossless rule though every reader is a flavour, so `=== 'flavour'` needs the field's comment to decode
+- Shape: `src/markdown/parse/blocks.ts:514` `pipeTableRow`: one `if` merges three reasons into "return cells", two of which mean "end the table"; the indentation guard is duplicated at two call sites
+- Self-sufficiency: `src/markdown/parse/blocks.ts:496` `openGfmTable`, `pipeTableRow`: each opens with a "GFM, Tables:" line stating the rule it enforces
+
+Maintainability senior, decided by:
+
+- Shape: `src/markdown/portable/conventions.ts:14` `Claims.pipeTables`: `'flavour'` names only the lossless reader's strict rule though portable is a flavour too, and blocks.ts tests the three states three ways
+- Locality: `src/markdown/parse/blocks.ts:497` `openGfmTable`: rewrites walk.leaf, closes it, then installs the table, and its call must precede the pipeCells claim and the setext check with no comment saying so
+- Locality: `src/markdown/parse/blocks.ts:63` `ParagraphLine`: each line keeps its position, where two parallel arrays had to stay the same length
+
+Junior A, decided by:
+
+- Self-sufficiency: `src/markdown/directive-syntax.ts:108` `slotFault`: the comment says on its own which node the emitter carries
+- Self-sufficiency: `src/markdown/portable/conventions.ts:13` `Claims.pipeTables`: the comment says what each mode reads, so the branches in blocks.ts read without the spec
