@@ -29,7 +29,7 @@
   `content` key.
 - **Breaking:** `unspellable-character`, `unspellable-line-start` and `unspellable-whitespace` leave
   `ConvertErrorCode`. A line ending in an `emoji`, `mention` or `status` directive's content slot is
-  `unsupported-node-shape`, as a null character there already was. A carriage return in text is
+  refused as `unsupported-node-shape`. A carriage return in text is
   spelled `&#13;` and a null character `!adf:text{text="\u0000"}`; a paragraph line opening with a
   code span is spelled as that code span, its backticks opening no fence; a code block holding
   either character, a code span holding a null character, a text node holding no text or holding
