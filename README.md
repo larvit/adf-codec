@@ -12,8 +12,9 @@ products store as ADF.
   document they started from — panels, mentions, statuses and node types this version does not know
   included.
 - **Markdown in:** `portableMarkdownToAdf` reads a bot's or a model's markdown, including `~~` and
-  GFM's pipe tables, their column alignment dropped. `commonMarkToAdf` reads strict CommonMark as
-  its spec says: nothing becomes a table, task or panel.
+  GFM's pipe tables whose rows are as wide as their header, their column alignment dropped.
+  `commonMarkToAdf` reads strict CommonMark as its spec says: nothing becomes a table, task or
+  panel.
 - **Portable markdown out, lossy:** `adfToPortableMarkdown` writes the markdown that GitHub, GitLab
   and Obsidian render — GitHub Flavored Markdown's alerts, task lists and pipe tables, Obsidian
   Flavored Markdown's callouts and highlights. It keeps the text, images by URL and link targets and
@@ -424,7 +425,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
-| `malformed-pipe-table` | a pipe row that is no pipe table — a missing or ragged `---` delimiter row, or, in `losslessMarkdownToAdf`, an alignment colon in it or a row not opening with a pipe | open every row with a pipe and give the delimiter row the header's cell count; to keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way |
+| `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, or a delimiter or body row whose cell count differs from the header's; in `losslessMarkdownToAdf` also an alignment colon or a row not opening with a pipe | add a `---` row under the header and give every row the header's cell count; for `losslessMarkdownToAdf`, also open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, a `\|` in its delimiter row |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds raw HTML, a comment and a processing instruction among them | remove the construct, or write what it holds as markdown |
@@ -492,12 +493,12 @@ Serves [Goals](#goals) 1, 4 and 5.
   levels, the node shapes the `unsupported-node-shape` row lists, and a conversion `engine-limit`
   stops. Show the refusal and keep the document read-only; saving markdown you could not produce is the loss the round-trip exists to
   stop.
-- The pipe table that `losslessMarkdownToAdf` reads narrows GFM's twice: every row opens with a
-  pipe, so GFM's bare form is an error result, and an alignment colon in the delimiter row is an
-  error too — ADF holds no column alignment. `portableMarkdownToAdf` reads both and drops the
-  alignment, but narrows GFM's table too: a row whose cell count differs from the header's is an
+- Both readers narrow GFM's pipe table: a row whose cell count differs from the header's is an
   error result where GFM pads or cuts it, and a line holding no `|` ends the table where GFM reads
-  it as a row. The trailing pipe is canonical output, optional in input.
+  it as a row. `losslessMarkdownToAdf` narrows it twice more: every row opens with a pipe, so GFM's
+  bare form is an error result, and an alignment colon in the delimiter row is an error too — ADF
+  holds no column alignment. `portableMarkdownToAdf` reads both and drops the alignment. The
+  trailing pipe is canonical output, optional in input.
 - Past that and `~~`, `losslessMarkdownToAdf` reads no GFM: an autolink literal and a `- [ ]`
   marker stay text, and a checklist is the `taskList` directive — `portableMarkdownToAdf` turns the
   marker into a `taskList`.
