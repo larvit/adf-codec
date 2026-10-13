@@ -438,12 +438,12 @@ handles one cause alike whichever node, attribute or direction raised it.
   or across directions, one code covers them all and `path` and `message` say which —
   `unsupported-nesting-depth` is the 500-level guard whichever direction hits it.
 - A claim code names the spelling claimed, never the node that spelling would have built: a
-  malformed `!adf:table` is a `malformed-directive`, and an alignment colon in
-  `losslessMarkdownToAdf` a `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so
-  the grammar refuses the colon rather than ADF's missing column model doing it;
-  `portableMarkdownToAdf` reads GFM's colon and drops the alignment (2026-10-14). What the grammar itself refuses stays a
-  claim code, key order among it, and a leaf given a body is refused at its opener, as a container
-  missing its closer is (2026-09-16).
+  malformed `!adf:table` is a `malformed-directive`. An alignment colon in `losslessMarkdownToAdf`
+  is a `malformed-pipe-table`: the flavour's own delimiter row is `-` runs, so the grammar refuses
+  the colon rather than ADF's missing column model doing it. `portableMarkdownToAdf` reads GFM's
+  colon and drops the alignment (2026-10-14). What the grammar itself refuses stays a claim code,
+  key order among it, and a leaf given a body is refused at its opener, as a container missing its
+  closer is (2026-09-16).
 - A directive whose name reads back to no node is `unknown-directive-name` rather than a claim code
   — the spelling is well formed, and telling that apart from a typo is what a consumer switches on
   when a later MINOR gives the name meaning. A reserved name is a known name, so never that code,

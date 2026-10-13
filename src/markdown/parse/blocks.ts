@@ -360,7 +360,7 @@ function continuesLazily(walk: Walk, line: Line): boolean {
   return !opensBlock(walk.claims, opener)
 }
 
-// Every leaf a line can open but a paragraph, a setext underline and indented code.
+// Whether the line opens a block other than a paragraph, a setext underline or indented code.
 function opensBlock(claims: Claims, opener: string): boolean {
   if ((claims.directives && readDirectiveLine(opener) !== undefined) || (claims.pipeTables !== false && claimsPipeLine(opener)) || isThematicBreak(opener)) return true
   return atxHeading(opener) !== undefined || openingCodeFence(opener) !== undefined || openingHtmlBlock(opener, true) !== undefined
