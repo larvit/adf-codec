@@ -1103,7 +1103,7 @@ test('names the content slot no lone plain text node reads back from', () => {
   assert.equal(code(losslessMarkdownToAdf('!adf:status[<div>]{color=yellow}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:date[<div>]{timestamp=1}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:widget[<div>]\n')), 'unmappable-html')
-  const spans = 'unsupported-node-shape: the status content slot holds a line ending, which no inline directive spans: write the node as !adf:carry'
+  const spans = 'unsupported-node-shape: the status content slot holds a line ending, which no inline directive spans: replace it with a space, or write the node as !adf:carry'
   assert.equal(content(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\n"}]{color=yellow}\n')), spans)
   assert.equal(content(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n')), spans)
   assert.equal(content(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n')), spans)
