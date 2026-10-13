@@ -624,7 +624,7 @@ after three rounds under a worse ruling, the maintainer's call: both paired seat
 as the same, but Locality fell to a mean of 5.13, laid on the spelling memo the chunk splits between
 the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The overall
 scores at 1f4551a were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean 5.63.
-`todo.md` item 110 is to fill and read the memo in one place.
+Item 108's chunk, 2026-10-13, fills and reads the memo in `readableBlock` alone.
 
 ## Properties on a fixed seed
 

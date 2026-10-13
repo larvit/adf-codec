@@ -108,22 +108,23 @@ function interruptsParagraph(node: AdfNode): boolean {
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const model = blockNodeModel(node.type)
   if (model === undefined) return carriedFence(carriedBlock(node, path, depth))
-  const readable = readableBlock(node, path, depth, writing, false)
+  const readable = readableBlock(node, path, depth, writing, 'walked')
   if (readable !== undefined) return readable
   return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, writing))
 }
 
-export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing & { memo: SpellingMemo }): Result<null> | undefined {
-  const readable = readableBlock(node, path, depth, writing, true)
-  if (readable === undefined) return undefined
+// Whether the node takes a CommonMark spelling, rather than its directive.
+export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing & { memo: SpellingMemo }): Result<boolean> {
+  const readable = readableBlock(node, path, depth, writing, 'asked')
+  if (readable === undefined) return success(false)
   if (!readable.ok) return readable
   const fits = withinLongest(readable.value.text)
   if (!fits.ok) return fits
-  return readable.value.spelling === 'directive' ? undefined : success(null)
+  return success(readable.value.spelling !== 'directive')
 }
 
 // Only an asked node's spelling is kept, and reading it drops it: the walk above spells the node into its own text, so no level of a subtree holds that text twice.
-function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, asked: boolean): Result<EmittedBlock> | undefined {
+function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, caller: 'asked' | 'walked'): Result<EmittedBlock> | undefined {
   const { memo } = writing
   const kept = memo?.get(node)
   memo?.delete(node)
@@ -133,8 +134,8 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, wri
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
   const spelled = spellReadableBlock(node, path, depth, writing)
-  if (asked && spelled === undefined) memo?.set(node, { block: undefined, depth })
-  if (asked && spelled?.ok === true) memo?.set(node, { block: spelled.value, depth })
+  if (caller === 'asked' && spelled === undefined) memo?.set(node, { block: undefined, depth })
+  if (caller === 'asked' && spelled?.ok === true) memo?.set(node, { block: spelled.value, depth })
   return spelled
 }
 
