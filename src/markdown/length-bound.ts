@@ -36,6 +36,6 @@ export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
     if (pastLongestString.includes(thrown)) return tooLong()
     // A stack overflow is a bug (docs/decisions.md §Nothing recurses unbounded), so it stays a throw.
     if (!pastEngineLimit.includes(thrown)) throw error
-    return failure('unsupported-node-shape', `the conversion passed this JavaScript engine's longest string or array, or its heap (${error.message})`, [])
+    return failure('unsupported-node-shape', `the conversion passed this JavaScript engine's longest string or array, or ran it out of memory (${error.message})`, [])
   }
 }
