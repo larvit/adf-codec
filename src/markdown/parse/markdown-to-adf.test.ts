@@ -341,8 +341,8 @@ test('refuses the directive form of a blockquote opening with a code span', () =
   assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')), 'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form')
 })
 
-// Some 1000 characters short of V8's longest string, which the quote's `> ` on each of its 600 lines passes.
-test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s longest string', () => {
+// Some 1000 characters short of V8's longest string, which the quote's `> ` on each of its 600 lines passes; reading that much outlasts Bun's 5 s default timeout.
+test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s longest string', { timeout: 120_000 }, () => {
   const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
   assert.equal(
     content(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`)),
