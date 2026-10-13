@@ -237,6 +237,7 @@ test('claims the line a pipe opens and gives the rest back to the block walk', (
   assert.deepEqual(content(losslessMarkdownToAdf('> | a |\n> | --- |\n')), [quote(header)])
   assert.deepEqual(content(losslessMarkdownToAdf('- | a |\n  | --- |\n')), [bulletList(item(header))])
   assert.deepEqual(content(losslessMarkdownToAdf('| a |\n| --- |\n    x\n')), [header, { content: [text('x')], type: 'codeBlock' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc | d\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c | d')])
   assert.deepEqual(content(losslessMarkdownToAdf('\\| a |\n')), [paragraph('| a |')])
 })
 
