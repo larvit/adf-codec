@@ -107,7 +107,7 @@ export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<
 
 // An inline directive never spans lines, and no content slot holds a null character; the emitter carries such a node.
 export function slotFault(type: string, text: string): ConvertFault | undefined {
-  if (/[\n\r]/.test(text)) return { code: 'unspellable-whitespace', message: `the ${type} content slot holds a newline no inline directive spans` }
+  if (/[\n\r]/.test(text)) return unsupportedNodeShape(`the ${type} content slot holds a line ending, which no inline directive spans: write the node as !adf:carry`)
   return holdsNullCharacter(text) ? unsupportedNodeShape(`the ${type} content slot holds a null character: write the node as !adf:carry`) : undefined
 }
 

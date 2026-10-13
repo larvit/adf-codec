@@ -6,7 +6,6 @@ export type ConvertErrorCode =
   | 'not-an-adf-document'
   | 'unknown-directive-name'
   | 'unmappable-html'
-  | 'unspellable-whitespace'
   | 'unsupported-document-version'
   | 'unsupported-nesting-depth'
   | 'unsupported-node-shape'

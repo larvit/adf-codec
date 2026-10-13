@@ -437,9 +437,9 @@ handles one cause alike whichever node, attribute or direction raised it.
 - A code names the cause; where one cause recurs across node types, across one mark's attributes
   or across directions, one code covers them all and `path` and `message` say which —
   `unsupported-nesting-depth` is the 500-level guard whichever direction hits it.
-  `unspellable-whitespace` is the newline an inline directive's content slot spells in input; the
-  emitter carries such a node. A null character in that slot is `unsupported-node-shape`, since
-  `unspellable-whitespace` does not read true of it (2026-10-04).
+  A line ending or a null character an inline directive's content slot spells in input is
+  `unsupported-node-shape`, as both take one fix, the carry; the emitter carries such a node
+  (2026-10-14).
 - A claim code names the spelling claimed, never the node that spelling would have built: a
   malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
   `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
