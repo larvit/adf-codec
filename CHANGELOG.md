@@ -106,7 +106,7 @@
   markdown GitHub, GitLab and Obsidian render: alerts, callouts, task lists, `==highlights==` and
   pipe tables. A task item keeps its paragraphs, then its nested task lists; the rest of the item,
   such as an image or a code block, stands after the task list. `portableMarkdownToAdf` reads GFM's
-  pipe table without its leading pipes and with alignment colons, dropping the alignment.
+  pipe table with or without leading pipes, and with alignment colons, dropping the alignment.
 - Spell `rule`'s `color`, `style` and `weight`, `layoutSection`'s `columnRuleStyle` and a link's
   `collection`, `id` and `occurrenceKey` directly where they rode the opaque carry.
 - The README opens with what the package does and for whom, and `package.json` carries search

@@ -10,7 +10,7 @@ export type Claims = {
   carryFence: boolean
   directives: boolean
   highlights: boolean
-  // `gfm` reads rows with or without the leading `|`, alignment colons dropped; `flavour` only rows opening with `|` over `-` runs.
+  // `gfm`: a row may drop its leading `|`, and an alignment colon is read and dropped; `flavour`: every row opens with `|`, the delimiter row `-` runs only.
   pipeTables: 'flavour' | 'gfm' | false
   strikethrough: boolean
   taskMarkers: boolean
