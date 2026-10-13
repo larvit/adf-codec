@@ -10,20 +10,21 @@ export type Claims = {
   carryFence: boolean
   directives: boolean
   highlights: boolean
-  pipeTables: boolean
+  // `gfm` reads GFM's whole pipe table, its alignment dropped; `flavour` reads rows opening with `|` over a `-` delimiter row.
+  pipeTables: 'flavour' | 'gfm' | false
   strikethrough: boolean
   taskMarkers: boolean
 }
 
-type WrittenClaims = Claims & { pipeTables: true; strikethrough: true }
+type WrittenClaims = Claims & { pipeTables: 'flavour' | 'gfm'; strikethrough: true }
 
 // Directives exclude alerts and highlights: an expand directive leaves `inExpand` unset and a directive's slot reads `==`.
 type ReadClaims = Claims & ({ directives: false } | { alerts: false; directives: true; highlights: false })
 
 export const flavourClaims: Readonly<{ commonmark: ReadClaims } & Record<WrittenFlavour, ReadClaims & WrittenClaims>> = {
   commonmark: { alerts: false, carryFence: false, directives: false, highlights: false, pipeTables: false, strikethrough: false, taskMarkers: false },
-  lossless: { alerts: false, carryFence: true, directives: true, highlights: false, pipeTables: true, strikethrough: true, taskMarkers: false },
-  portable: { alerts: true, carryFence: false, directives: false, highlights: true, pipeTables: true, strikethrough: true, taskMarkers: true },
+  lossless: { alerts: false, carryFence: true, directives: true, highlights: false, pipeTables: 'flavour', strikethrough: true, taskMarkers: false },
+  portable: { alerts: true, carryFence: false, directives: false, highlights: true, pipeTables: 'gfm', strikethrough: true, taskMarkers: true },
 }
 
 type AlertMarker = { folded: boolean; length: number; panelType: string }

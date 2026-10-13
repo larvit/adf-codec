@@ -23,7 +23,7 @@ export function isPipeAlignment(cell: string): boolean {
   return alignmentCell.test(cell)
 }
 
-export function isPipeDelimiter(cell: string): boolean {
+function isPipeDelimiter(cell: string): boolean {
   return delimiterCell.test(cell)
 }
 

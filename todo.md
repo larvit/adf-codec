@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 5 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 4 | 5 | 6 | 6 | 10.0 |
 | 111 | 0.2.1 |  | **Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.** | 2 | 2 | 1 | 5 | 5 | 3 | 15.3 |
@@ -72,14 +71,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 84. Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.
-
-Models write `|:---|` delimiter rows and tables without a leading pipe; both are
-`malformed-pipe-table` today, and `portableMarkdownToAdf` is the bot's reader. ADF holds no column
-alignment, so the portable reader drops it (Goal 7: form, never content). `losslessMarkdownToAdf` keeps
-both refusals. Revise §Which code a cause takes so the alignment colon is `malformed-pipe-table` in
-that reader alone, and the README's pipe-table guarantee and `malformed-pipe-table` row to match.
 
 ### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
 

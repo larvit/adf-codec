@@ -19,7 +19,7 @@ import {
   thematicBreakTail,
   type ThematicBreakTail,
 } from '../commonmark/grammar.ts'
-import { barePipeCells, isDelimiterRow, isPipeAlignment, isPipeDelimiter, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
+import { barePipeCells, isDelimiterRow, isPipeAlignment, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { blockDirectiveForm } from '../block-directive.ts'
 import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
 import { readLinkDefinitions } from '../commonmark/link-reference-definitions.ts'
@@ -355,8 +355,13 @@ function continuesLazily(walk: Walk, line: Line): boolean {
   if (walk.leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = removeColumns(line, largestOpenerIndentation).text
-  if ((walk.claims.directives && readDirectiveLine(opener) !== undefined) || (walk.claims.pipeTables && claimsPipeLine(opener)) || isThematicBreak(opener)) return false
-  return atxHeading(opener) === undefined && openingCodeFence(opener) === undefined && openingHtmlBlock(opener, true) === undefined
+  return !opensBlock(walk.claims, opener)
+}
+
+// Every leaf a line can open but a paragraph, a setext underline and indented code.
+function opensBlock(claims: Claims, opener: string): boolean {
+  if ((claims.directives && readDirectiveLine(opener) !== undefined) || (claims.pipeTables !== false && claimsPipeLine(opener)) || isThematicBreak(opener)) return true
+  return atxHeading(opener) !== undefined || openingCodeFence(opener) !== undefined || openingHtmlBlock(opener, true) !== undefined
 }
 
 function readBlockLine(walk: Walk, line: Line): void {
@@ -371,7 +376,7 @@ function readBlockLine(walk: Walk, line: Line): void {
     return
   }
   if (leaf?.kind === 'pipe-table') {
-    const cells = pipeCells(removeColumns(line, largestOpenerIndentation).text)
+    const cells = pipeTableRow(walk.claims, removeColumns(line, largestOpenerIndentation).text)
     if (cells !== undefined) {
       leaf.rows.push(cells)
       return
@@ -414,7 +419,8 @@ function openLeaf(walk: Walk, line: Line): void {
     else pushFault(walk, directive.fault)
     return
   }
-  const cells = walk.claims.pipeTables ? pipeCells(opener) : undefined
+  if (openGfmTable(walk, opener)) return
+  const cells = walk.claims.pipeTables === false ? undefined : pipeCells(opener)
   if (cells !== undefined) {
     closeLeaf(walk)
     walk.leaf = { kind: 'pipe-table', position: walk.position, rows: [cells] }
@@ -482,16 +488,38 @@ function closeLeaf(walk: Walk): void {
   walk.leaf = undefined
   const { position } = leaf
   if (leaf.kind === 'html') currentBlocks(walk).push({ construct: leaf.construct, kind: 'html', position })
-  else if (leaf.kind === 'pipe-table') currentBlocks(walk).push(pipeTableBlock(leaf.rows, position))
+  else if (leaf.kind === 'pipe-table') currentBlocks(walk).push(pipeTableBlock(leaf.rows, position, walk.claims))
   else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', position, text: leaf.lines.join('\n') })
 }
 
-function pipeTableBlock(rows: readonly [string[], ...string[][]], position: SourcePosition): Block {
+// GFM, Tables: a paragraph's last line heads a table where a delimiter row of its cell count follows.
+function openGfmTable(walk: Walk, opener: string): boolean {
+  const paragraph = walk.leaf
+  if (walk.claims.pipeTables !== 'gfm' || paragraph?.kind !== 'paragraph') return false
+  const delimiter = pipeCells(opener) ?? barePipeCells(opener)
+  const header = barePipeCells(paragraph.lines.at(-1) ?? '')
+  if (delimiter === undefined || header?.length !== delimiter.length || !isDelimiterRow(delimiter)) return false
+  paragraph.lines.pop()
+  const position = paragraph.positions.pop() ?? walk.position
+  if (paragraph.lines.length === 0) walk.leaf = undefined
+  else closeLeaf(walk)
+  walk.leaf = { kind: 'pipe-table', position, rows: [header, delimiter] }
+  return true
+}
+
+// GFM, Tables: a row without its leading pipe goes on until a line opens another block.
+function pipeTableRow(claims: Claims, line: string): string[] | undefined {
+  const cells = pipeCells(line)
+  if (cells !== undefined || claims.pipeTables !== 'gfm' || opensBlock(claims, line)) return cells
+  return barePipeCells(line)
+}
+
+function pipeTableBlock(rows: readonly [string[], ...string[][]], position: SourcePosition, claims: Claims): Block {
   const [header, delimiter, ...body] = rows
-  if (delimiter !== undefined && delimiter.some(isPipeAlignment)) {
+  if (claims.pipeTables !== 'gfm' && delimiter !== undefined && delimiter.some(isPipeAlignment)) {
     return faultedBlock('a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon', position)
   }
-  if (delimiter === undefined || !delimiter.every(isPipeDelimiter)) {
+  if (delimiter === undefined || !isDelimiterRow(delimiter)) {
     return faultedBlock('a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text', position)
   }
   const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
@@ -501,7 +529,7 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
 
 // spec/flavour.md, Tables: GFM's table without the leading pipes, which no line of it claims.
 function bareTableFault(paragraph: Extract<Block, { kind: 'paragraph' }>, claims: Claims): Block | undefined {
-  if (!claims.pipeTables) return undefined
+  if (claims.pipeTables !== 'flavour') return undefined
   let header: string[] | undefined
   for (const line of paragraph.text.split('\n')) {
     const cells = barePipeCells(line)

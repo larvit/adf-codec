@@ -278,6 +278,23 @@ test('reads text the writer kept from reading as a marker back as text', () => {
   assert.deepEqual(roundTripped(bare('taskList', task('DONE', text('[x] ==a==')))), [bare('taskList', task('DONE', text('[x] ==a==')))])
 })
 
+test('reads GFM\'s pipe table without its leading pipes or with alignment colons, dropping the alignment', () => {
+  const cell = (type: string, value: string): AdfNode => bare(type, said(value))
+  const table = bare('table', bare('tableRow', cell('tableHeader', 'a'), cell('tableHeader', 'b')), bare('tableRow', cell('tableCell', 'c'), cell('tableCell', 'd')))
+  assert.deepEqual(read('a | b\n--- | ---\nc | d\n'), [table])
+  assert.deepEqual(read('| a | b |\n| :--- | ---: |\n| c | d |\n'), [table])
+  assert.deepEqual(read('a | b\n:---: | ---:\n| c | d |\n'), [table])
+  assert.deepEqual(read('| a | b |\n--- | ---\nc | d |\n'), [table])
+  assert.deepEqual(read('a | b\n| --- | --- |\nc | d\n'), [table])
+  assert.deepEqual(read('Intro.\na | b\n--- | ---\nc | d\n\nAfter.\n'), [said('Intro.'), table, said('After.')])
+  assert.deepEqual(read('> a | b\n> --- | ---\n> c | d\n'), [bare('blockquote', table)])
+  assert.deepEqual(read('a | b\n--- | ---\nc | d\nAfter.\n'), [table, said('After.')])
+  assert.deepEqual(read('a | b\n--- | ---\nc | d\n# h | i\n'), [table, { attrs: { level: 1 }, content: [text('h | i')], type: 'heading' }])
+  assert.deepEqual(read('a | b\n--- | --- | ---\n'), [said('a | b --- | --- | ---')])
+  assert.deepEqual(read('- a | b\n--- | ---\n'), [bare('bulletList', bare('listItem', said('a | b --- | ---')))])
+  assert.deepEqual(read('a | b\n--- | ---\nc\n'), [bare('table', table.content?.[0] ?? said('')), said('c')])
+})
+
 test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, an image sharing its paragraph with a marker among it', () => {
   assert.deepEqual(read('!adf:panel\n'), [said('!adf:panel')])
   assert.deepEqual(read('a !adf:carry{json="{}"} \\!adf:x\n'), [said('a !adf:carry{json="{}"} !adf:x')])
