@@ -347,16 +347,17 @@ claimed and must parse as part of a pipe table, else it is a named error — esc
 (`\|`) to keep it literal text. The shape a missing leading pipe leaves is claimed too: a line
 holding an unescaped `|`, followed inside one paragraph by a line whose cells are all `-` runs,
 an alignment colon among them, and match it in count — GFM's table without the outer pipes — is
-a named error rather than the prose it reads as; `portableMarkdownToAdf` reads it, and an
-alignment colon, as GFM does, dropping the alignment. A pipe table is a header row, a delimiter row whose cells are
-runs of one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
+a named error rather than the prose it reads as. `portableMarkdownToAdf` reads that shape as a
+table, its body rows with or without the leading `|` until a line holding none, and drops an
+alignment colon's alignment. A pipe table is a header row, a delimiter row whose cells are runs of
+one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
 Cells split on unescaped `|` before inline parsing — `\|` stays in the cell text, and the
 inline layer's ordinary CommonMark escaping yields the pipe; each cell is the inline content of
 one paragraph, trimmed; canonical form pads cells with single spaces and ends rows with `|`
 (optional in input). Named errors: a delimiter or body row whose cell count differs from the
-header's, and an alignment colon in the delimiter row — ADF holds no column alignment. In a
-pipe cell a hard break is `!adf:hardBreak{}` and a literal `|` is `\|`; a `|` inside a quoted
-attribute value is already `\u007c`, so the split never reaches it.
+header's, and, outside `portableMarkdownToAdf`, an alignment colon in the delimiter row — ADF holds
+no column alignment. In a pipe cell a hard break is `!adf:hardBreak{}` and a literal `|` is `\|`;
+a `|` inside a quoted attribute value is already `\u007c`, so the split never reaches it.
 
 The directive form nests cells as containers of block content inside `tableRow` containers:
 

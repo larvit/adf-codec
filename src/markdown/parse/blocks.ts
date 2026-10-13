@@ -54,11 +54,13 @@ type OpenLeaf = { position: SourcePosition } & (
   | { closer: RegExp | undefined; construct: string; kind: 'html' }
   | { held: string[]; kind: 'indented-code'; lines: string[] }
   | { indentation: number; info: string; kind: 'fenced-code'; lines: string[]; marker: string }
-  | { kind: 'paragraph'; lines: string[]; positions: SourcePosition[] }
+  | { kind: 'paragraph'; lines: [ParagraphLine, ...ParagraphLine[]] }
   | { kind: 'pipe-table'; rows: [string[], ...string[][]] }
 )
 
 type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; indentation: number; kind: 'item'; list: ListBlock; rest: Line }
+
+type ParagraphLine = { position: SourcePosition; text: string }
 
 // The line from an absolute column on: a tab a cut splits keeps the stop it is measured against.
 type Line = { column: number; text: string }
@@ -469,11 +471,10 @@ function appendParagraph(walk: Walk, line: string): void {
   const leaf = walk.leaf
   const text = line.replace(/^[ \t]+/, '')
   if (leaf?.kind !== 'paragraph') {
-    walk.leaf = { kind: 'paragraph', lines: [text], position: walk.position, positions: [walk.position] }
+    walk.leaf = { kind: 'paragraph', lines: [{ position: walk.position, text }], position: walk.position }
     return
   }
-  leaf.lines.push(text)
-  leaf.positions.push(walk.position)
+  leaf.lines.push({ position: walk.position, text })
 }
 
 function closeLeaf(walk: Walk): void {
@@ -497,17 +498,17 @@ function openGfmTable(walk: Walk, opener: string): boolean {
   const paragraph = walk.leaf
   if (walk.claims.pipeTables !== 'gfm' || paragraph?.kind !== 'paragraph') return false
   const delimiter = pipeCells(opener) ?? barePipeCells(opener)
-  const header = barePipeCells(paragraph.lines.at(-1) ?? '')
-  if (delimiter === undefined || header?.length !== delimiter.length || !isDelimiterRow(delimiter)) return false
-  paragraph.lines.pop()
-  const position = paragraph.positions.pop() ?? walk.position
-  if (paragraph.lines.length === 0) walk.leaf = undefined
-  else closeLeaf(walk)
-  walk.leaf = { kind: 'pipe-table', position, rows: [header, delimiter] }
+  const last = paragraph.lines.at(-1)
+  const header = last === undefined ? undefined : barePipeCells(last.text)
+  if (last === undefined || delimiter === undefined || header?.length !== delimiter.length || !isDelimiterRow(delimiter)) return false
+  const [first, ...earlier] = paragraph.lines.slice(0, -1)
+  walk.leaf = first === undefined ? undefined : { ...paragraph, lines: [first, ...earlier] }
+  closeLeaf(walk)
+  walk.leaf = { kind: 'pipe-table', position: last.position, rows: [header, delimiter] }
   return true
 }
 
-// GFM, Tables: a row without its leading pipe goes on until a line opens another block.
+// GFM, Tables: a row without its leading `|` continues the table while it holds a `|` and opens no other block.
 function pipeTableRow(claims: Claims, line: string): string[] | undefined {
   const cells = pipeCells(line)
   if (cells !== undefined || claims.pipeTables !== 'gfm' || opensBlock(claims, line)) return cells
@@ -516,7 +517,7 @@ function pipeTableRow(claims: Claims, line: string): string[] | undefined {
 
 function pipeTableBlock(rows: readonly [string[], ...string[][]], position: SourcePosition, claims: Claims): Block {
   const [header, delimiter, ...body] = rows
-  if (claims.pipeTables !== 'gfm' && delimiter !== undefined && delimiter.some(isPipeAlignment)) {
+  if (claims.pipeTables === 'flavour' && delimiter !== undefined && delimiter.some(isPipeAlignment)) {
     return faultedBlock('a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon', position)
   }
   if (delimiter === undefined || !isDelimiterRow(delimiter)) {
@@ -554,10 +555,10 @@ function takeParagraph(walk: Walk): Extract<Block, { kind: 'paragraph' }> | unde
   const leaf = walk.leaf
   if (leaf?.kind !== 'paragraph') return undefined
   walk.leaf = undefined
-  const text = readLinkDefinitions(walk.definitions, leaf.lines.join('\n'))
+  const text = readLinkDefinitions(walk.definitions, leaf.lines.map((line) => line.text).join('\n'))
   if (text === '') return undefined
-  const kept = leaf.positions[leaf.lines.length - text.split('\n').length]
-  return { kind: 'paragraph', position: kept ?? leaf.position, text }
+  const kept = leaf.lines[leaf.lines.length - text.split('\n').length]
+  return { kind: 'paragraph', position: kept?.position ?? leaf.position, text }
 }
 
 function currentBlocks(walk: Walk): Block[] {
