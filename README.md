@@ -410,9 +410,9 @@ typed on `ConvertError` takes both.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
-the identical error: fix the input, or set the document aside. On JavaScriptCore (Bun, Safari),
-retry once any call that returns `unsupported-node-shape` at the empty path: that engine reports a
-heap running short the same way as a string too long to build.
+the identical error: fix the input, or set the document aside. The exception is memory running
+short, which an engine may report as `unsupported-node-shape` at the empty path, and JavaScriptCore
+(Bun, Safari) reports the same way as a string too long to build: retry such a call once.
 
 ### Parsing
 

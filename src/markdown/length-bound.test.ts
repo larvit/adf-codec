@@ -31,6 +31,7 @@ test('refuses a string past the bound as too long on every engine, and names any
     ok: false,
   })
   assert.equal(withinEngineLimits(thrown('RangeError', 'Invalid array length')).ok, false)
+  assert.equal(withinEngineLimits(thrown('RangeError', 'Array buffer allocation failed')).ok, false)
   assert.deepEqual(
     withinEngineLimits(() => success('x')),
     { ok: true, value: 'x' },
