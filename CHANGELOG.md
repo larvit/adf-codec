@@ -91,6 +91,10 @@
   list lines ran the call out of memory.
 - Fix the markdown readers past the longest string or array the JavaScript engine builds: they
   return `unsupported-node-shape` where they threw.
+- Fix a paragraph of tens of millions of characters: `adfToLosslessMarkdown` and
+  `adfToPortableMarkdown` write one up to 536870888 characters within Node's default heap, where 80
+  million characters ran out of memory and 20 million `*` threw `RangeError`. `losslessMarkdownToAdf`
+  no longer throws on such a paragraph inside a directive.
 - Fix deeply nested compact JSON in an `adf:` fence: `losslessMarkdownToAdf` refuses it as
   `unsupported-node-shape`, as it refuses any compact JSON there, where about a megabyte of it threw.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from
