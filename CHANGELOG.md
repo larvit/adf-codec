@@ -10,8 +10,8 @@
 - **Breaking:** the markdown readers refuse a value that is not a string with the new code
   `not-a-string`; `MIGRATION.md` lists what each value did before.
 - **Breaking:** every call returns the new code `engine-limit` where a conversion passes the
-  JavaScript engine's longest array, `Map` or `Set`, or runs it out of memory, and, on
-  JavaScriptCore, its longest string. A retry may succeed. Every other refusal stays deterministic.
+  JavaScript engine's longest array, `Map` or `Set`, or meets an out-of-memory throw the call can
+  catch, and, on JavaScriptCore, its longest string. A retry may succeed. Every other refusal stays deterministic.
 - **Breaking:** an attribute value that is not a plain object, array or JSON primitive, such as a
   `Date`, `Map`, typed array or class instance, makes `isAdfDocument` return `false` and the
   converters refuse it as `not-an-adf-document`. Before, the converters wrote it as `{}` or its own

@@ -114,4 +114,4 @@ the parser refused with one of the four now reads, or refuses with the code the 
 | `null`, `undefined` or a non-empty array, on parse | throws a `TypeError` | `not-a-string` |
 | a `String` object, on parse | the document its text spells | `not-a-string`; pass `String(value)` |
 | any other value that is not a string, such as a number or `{}`, on parse | an empty document | `not-a-string` |
-| a conversion past the JavaScript engine's longest array, `Map` or `Set`, or that the engine reports as out of memory, and on JavaScriptCore one past its longest string | throws | `engine-limit`; retry it once |
+| a conversion past the JavaScript engine's longest array, `Map` or `Set`, or meeting an out-of-memory throw the call can catch, and on JavaScriptCore one past its longest string | throws | `engine-limit`; retry it once |
