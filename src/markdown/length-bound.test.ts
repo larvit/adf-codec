@@ -23,15 +23,19 @@ test('passes a text within the bound', () => {
   assert.deepEqual(withinLongest('x'), success('x'))
 })
 
-test('refuses a string past the bound as too long on every engine, and names any other engine limit', () => {
+test('refuses a string past the bound as too long on every engine, and any other engine limit as engine-limit', () => {
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Invalid string length')), tooLong())
   assert.deepEqual(withinEngineLimits(thrown('InternalError', 'allocation size overflow')), tooLong())
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Out of memory')), {
-    error: { code: 'unsupported-node-shape', message: 'the conversion passed this JavaScript engine\'s longest string or array, or ran it out of memory (Out of memory)', path: [] },
+    error: { code: 'engine-limit', message: 'the conversion passed this JavaScript engine\'s longest string or array, or ran it out of memory (Out of memory)', path: [] },
     ok: false,
   })
-  assert.equal(withinEngineLimits(thrown('RangeError', 'Invalid array length')).ok, false)
-  assert.equal(withinEngineLimits(thrown('RangeError', 'Array buffer allocation failed')).ok, false)
+  const code = (message: string): string | undefined => {
+    const refused = withinEngineLimits(thrown('RangeError', message))
+    return refused.ok ? undefined : refused.error.code
+  }
+  assert.equal(code('Invalid array length'), 'engine-limit')
+  assert.equal(code('Array buffer allocation failed'), 'engine-limit')
   assert.deepEqual(
     withinEngineLimits(() => success('x')),
     { ok: true, value: 'x' },

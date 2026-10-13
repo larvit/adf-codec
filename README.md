@@ -210,11 +210,11 @@ Each call's name says which markdown it reads or writes:
 
 | Call | Markdown | Refuses with |
 | --- | --- | --- |
-| `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
-| `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 
 `isAdfDocument` is the type guard for the boundary you receive JSON at. It checks the shape the
 converters require: `type: 'doc'`, a finite `version` (the converters take only 1), nodes holding
@@ -410,9 +410,8 @@ typed on `ConvertError` takes both.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
 them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
-the identical error: fix the input, or set the document aside. The exception is memory running
-short, which returns `unsupported-node-shape` at the empty path, the code and path of markdown past
-the length bound. Retry once any call that returns that; a repeat is a lasting refusal.
+the identical error: fix the input, or set the document aside. The exception is `engine-limit`,
+whose causes include memory running short: retry it once, and treat a repeat as lasting.
 
 ### Parsing
 
@@ -444,8 +443,9 @@ The emitter raises these, and so does a parse, which asks the emitter how to spe
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
+| `engine-limit` | in every call: a conversion that passes the longest array the JavaScript engine builds or runs it short of memory, and on JavaScriptCore (Bun, Safari) one that passes its longest string, 2^31 − 1 characters | retry once; if it repeats, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the markdown, or nest its lists and quotes less deeply |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, wraps a directive mark around nothing or only hard breaks, writes as a directive a node or mark the lossless flavour spells as CommonMark, or one that, written out as plain CommonMark, would be longer than 536870888 characters, or puts a reserved directive out of place: `!adf:textBreak{}` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting, in `adfToLosslessMarkdown`: a node not riding the carry that carries one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content`. Emitting, in `adfToPortableMarkdown`: a line or task list the portable writer cannot spell, a bug in this library. Emitting, in both writers: a document whose markdown would be longer than 536870888 characters, V8's longest string, on every engine; in `adfToPortableMarkdown`, also a document whose text alone is that long, edge whitespace included. In every call: a conversion that passes the longest string or array the JavaScript engine builds, or runs it short of memory | fix what the message names; [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) lists every type's attributes and body. For a portable line or task list, report it as a bug. Past 536870888 characters or the engine's limit, retry once; if it repeats, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the markdown, or nest its lists and quotes less deeply |
+| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, wraps a directive mark around nothing or only hard breaks, writes as a directive a node or mark the lossless flavour spells as CommonMark, or one that, written out as plain CommonMark, would be longer than 536870888 characters, or puts a reserved directive out of place: `!adf:textBreak{}` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting, in `adfToLosslessMarkdown`: a node not riding the carry that carries one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content`. Emitting, in `adfToPortableMarkdown`: a line or task list the portable writer cannot spell, a bug in this library. Emitting, in both writers: a document whose markdown would be longer than 536870888 characters, V8's longest string, on every engine; in `adfToPortableMarkdown`, also a document whose text alone is that long, edge whitespace included. In every call: a conversion that passes the longest string the JavaScript engine builds | fix what the message names; [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) lists every type's attributes and body. For a portable line or task list, report it as a bug. Past 536870888 characters or the engine's longest string, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the markdown, or nest its lists and quotes less deeply |
 
 ## The guarantees
 
