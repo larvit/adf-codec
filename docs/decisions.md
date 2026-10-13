@@ -761,7 +761,7 @@ nodes into its own text, so keeping them would make every level of a deep subtre
 whole text (2026-10-11). `text`, `alternateText` and `spelling` carry no depth and `headroom` is
 affine in it, so a read at or above the depth that filled the entry rebases; a read below re-spells,
 because a hit skips the depth guards the walk it replaces runs and an ordered list past the marker
-cap gives way, spending two emitter levels where the parser spent one. Only what succeeded is kept,
+cap gives way, spending two emitter levels where the parser spent one. A refusal is never kept,
 so no path minted at another position is ever read.
 
 ## Cost fixes are measured, never timed
