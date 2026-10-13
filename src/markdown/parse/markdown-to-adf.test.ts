@@ -341,6 +341,15 @@ test('refuses the directive form of a blockquote opening with a code span', () =
   assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')), 'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form')
 })
 
+// Some 1000 characters short of V8's longest string, which the quote's `> ` on each of its 600 lines passes.
+test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s longest string', () => {
+  const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
+  assert.equal(
+    content(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`)),
+    'unsupported-node-shape: the markdown for this document, or for a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes',
+  )
+})
+
 test('names the directive name no node reads back to', () => {
   assert.equal(code(losslessMarkdownToAdf('!adf:widget info\nx\n!adf:/widget\n')), 'unknown-directive-name')
   assert.equal(content(losslessMarkdownToAdf('!adf:widget\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\!adf: keeps the prefix literal')

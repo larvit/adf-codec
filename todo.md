@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| 108 | 0.2.0 | defect | **Spell a line in memory linear in its length, so a paragraph shorter than V8's longest string converts within Node's default heap.** | 4 | 6 | 5 | 8 | 1, 9 | 20.5 |
 | 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
@@ -74,17 +73,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 108. Spell a line in memory linear in its length, so a paragraph shorter than V8's longest string converts within Node's default heap.
-
-The line escaper keeps an array element per character twice (`escapings`, `placements` in `escape`,
-`line-escaping.ts`) and a `Set` entry per escaped character, so `adfToLosslessMarkdown` holds about
-50 bytes a character: one 20-million-character text node took 1.2 GB on Node 24, and one of 80
-million exhausted its 2.2 GB default heap. Twenty million `*` throw `RangeError: Set maximum size
-exceeded`, which `withinEngineLimits` lets through. `losslessMarkdownToAdf` reaches both through a
-directive's CommonMark ask, and reading 537 MB of markdown, a `!adf:bulletList` of two code blocks
-just under the length bound, took 3.4 GB on Bun, too much for the gate to test its length refusal:
-add that test with this fix. Found while shipping item 106, 2026-10-11.
 
 ### 103. Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.
 
