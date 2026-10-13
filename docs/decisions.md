@@ -467,6 +467,11 @@ handles one cause alike whichever node, attribute or direction raised it.
   causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested JSON,
   since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in a
   length linear in its JSON (2026-10-11).
+- A conversion the engine stops, by running short of memory or passing its longest array, is
+  `engine-limit`, at the empty path. A retry may pass it, so `unsupported-node-shape`, which never
+  does, cannot hold it. JavaScriptCore throws the same `Out of memory` past its longest string,
+  which takes `engine-limit` too: telling the two apart would mean reading the engine's message
+  (2026-10-13, the maintainer).
 - The markdown readers and `htmlToAdf` refuse a value that is not a string as `not-a-string`, at
   position `{ line: 1, offset: 0 }` with an empty path: no existing code reads true of it, and
   `not-an-adf-document` names the emitters' input (2026-10-05).
@@ -682,7 +687,8 @@ carry's two-space JSON, which indents every value its depth over, stops at the b
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, as it does when its heap runs short. That throw, and
-any engine's throw past its longest array, is refused with the engine's message.
+any engine's throw past its longest array or out of memory, is `engine-limit` (§Which code a cause
+takes).
 
 ## Nothing recurses unbounded
 

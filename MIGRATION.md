@@ -88,8 +88,8 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 ### Error codes
 
 `unmappable-image`, `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave
-`ConvertErrorCode` and `not-a-string` joins it: a `switch` naming one of the four stops compiling,
-and one naming every code needs the new case. A document `adfToMarkdown` refused with one of the
+`ConvertErrorCode` and `engine-limit` and `not-a-string` join it: a `switch` naming one of the four
+stops compiling, and one naming every code needs the new cases. A document `adfToMarkdown` refused with one of the
 three `unspellable-` codes now converts in `adfToLosslessMarkdown`; markdown the parser refused
 with one of the four now reads, or refuses with the code the table gives.
 
@@ -114,3 +114,4 @@ with one of the four now reads, or refuses with the code the table gives.
 | `null`, `undefined` or a non-empty array, on parse | throws a `TypeError` | `not-a-string` |
 | a `String` object, on parse | the document its text spells | `not-a-string`; pass `String(value)` |
 | any other value that is not a string, such as a number or `{}`, on parse | an empty document | `not-a-string` |
+| a conversion that runs the JavaScript engine short of memory or past its longest array | throws a `RangeError`, or the engine ends the process | `engine-limit`; retry it once |

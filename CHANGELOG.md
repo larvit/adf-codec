@@ -9,6 +9,9 @@
   code. `MIGRATION.md` says which call to take.
 - **Breaking:** the markdown readers refuse a value that is not a string with the new code
   `not-a-string`; `MIGRATION.md` lists what each value did before.
+- **Breaking:** every call returns the new code `engine-limit` where the JavaScript engine runs
+  short of memory or passes its longest array, and, on JavaScriptCore, its longest string. A retry
+  may succeed. Every other refusal stays deterministic.
 - **Breaking:** an attribute value that is not a plain object, array or JSON primitive, such as a
   `Date`, `Map`, typed array or class instance, makes `isAdfDocument` return `false` and the
   converters refuse it as `not-an-adf-document`. Before, the converters wrote it as `{}` or its own
@@ -90,7 +93,8 @@
   `losslessMarkdownToAdf` refuses it as `unsupported-node-shape`, where a few megabytes of nested
   list lines ran the call out of memory.
 - Fix the markdown readers past the longest string or array the JavaScript engine builds: they
-  return `unsupported-node-shape` where they threw.
+  return `unsupported-node-shape` past V8's or SpiderMonkey's longest string, and `engine-limit`
+  past the rest, where they threw.
 - Fix a paragraph of tens of millions of characters: `adfToLosslessMarkdown` and
   `adfToPortableMarkdown` write it in a few bytes of memory a character beyond the document and its
   markdown, where they took about 50, so 80 million characters ran Node's default heap out of memory

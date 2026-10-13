@@ -1,4 +1,5 @@
 export type ConvertErrorCode =
+  | 'engine-limit'
   | 'malformed-directive'
   | 'malformed-pipe-table'
   | 'not-a-string'
