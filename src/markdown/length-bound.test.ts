@@ -36,6 +36,9 @@ test('refuses a string past the bound as too long on every engine, and any other
   }
   assert.equal(code('Invalid array length'), 'engine-limit')
   assert.equal(code('Array buffer allocation failed'), 'engine-limit')
+  assert.equal(code('Map maximum size exceeded'), 'engine-limit')
+  assert.equal(code('Set maximum size exceeded'), 'engine-limit')
+  assert.equal(code('invalid array length'), 'engine-limit')
   assert.deepEqual(
     withinEngineLimits(() => success('x')),
     { ok: true, value: 'x' },

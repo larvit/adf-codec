@@ -108,39 +108,34 @@ function interruptsParagraph(node: AdfNode): boolean {
 function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const model = blockNodeModel(node.type)
   if (model === undefined) return carriedFence(carriedBlock(node, path, depth))
-  const readable = readableBlock(node, path, depth, writing)
+  const readable = readableBlock(node, path, depth, writing, false)
   if (readable !== undefined) return readable
   return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, writing))
 }
 
 export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing & { memo: SpellingMemo }): Result<null> | undefined {
-  const readable = readableBlock(node, path, depth, writing)
-  if (readable === undefined) {
-    writing.memo.set(node, { block: undefined, depth })
-    return undefined
-  }
+  const readable = readableBlock(node, path, depth, writing, true)
+  if (readable === undefined) return undefined
   if (!readable.ok) return readable
   const fits = withinLongest(readable.value.text)
   if (!fits.ok) return fits
-  writing.memo.set(node, { block: readable.value, depth })
   return readable.value.spelling === 'directive' ? undefined : success(null)
 }
 
-function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  const kept = takeKeptSpelling(writing.memo, node)
+// Only an asked node's spelling is kept, and reading it drops it: the walk above spells the node into its own text, so no level of a subtree holds that text twice.
+function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, asked: boolean): Result<EmittedBlock> | undefined {
+  const { memo } = writing
+  const kept = memo?.get(node)
+  memo?.delete(node)
   if (kept !== undefined) {
     if (kept.block === undefined) return undefined
     // An entry holds the spelling at its fill depth. A read at or above it rebases headroom; a read below re-spells, because a hit skips the walk's depth guards.
     if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
   }
-  return spellReadableBlock(node, path, depth, writing)
-}
-
-// docs/decisions.md §The spelling memo
-function takeKeptSpelling(memo: SpellingMemo | undefined, node: AdfNode): KeptSpelling | undefined {
-  const kept = memo?.get(node)
-  memo?.delete(node)
-  return kept
+  const spelled = spellReadableBlock(node, path, depth, writing)
+  if (asked && spelled === undefined) memo?.set(node, { block: undefined, depth })
+  if (asked && spelled?.ok === true) memo?.set(node, { block: spelled.value, depth })
+  return spelled
 }
 
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
