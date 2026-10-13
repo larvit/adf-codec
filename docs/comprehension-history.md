@@ -742,3 +742,57 @@ Inherited architect, decided by:
 - Navigation: `src/markdown/length-bound.ts:37` `withinEngineLimits`: the engine guard moves out of the Result module, and engine-limit leads from the symptom to it
 - Shape, Locality: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: a refusal propagates with its block's path, where it was silently swallowed
 - Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator, emitLeaf's one refusal and PlacedSegment each read simpler than before
+
+## 2026-10-13T15:41:57Z, PR #37 at f1ea9fd, against 7a27f6b
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | worse | better | same | same |
+| Inherited architect | better | worse | same | same | worse |
+| Maintainability senior | better | worse | better | same | same |
+| Junior A | better | worse | better | same | same |
+
+Mid A, decided by:
+
+- Locality: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: a second engine guard inside the parse's own, explained by how each engine overflows
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: a caller flag decides the fill and every read deletes, so what a later call sees depends on who called first
+- Locality: `src/markdown/emit/adf-to-markdown.ts:66` `walkBlocks`: the length bound is checked at four points, each relying on the others to cover what it skips
+- Navigation, Shape: `src/markdown/length-bound.ts:37` `withinEngineLimits`: engine and length refusals have their own file and code, and result.ts is back to types
+- Shape: `src/markdown/length-bound.ts:17` `tooLong`: a string overflow keeps unsupported-node-shape while array and memory take engine-limit, explained only by a comment
+- Shape, Locality: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: a failed spelling returns early with each block's own path, where it was swallowed
+- Shape: `src/markdown/emit/adf-to-markdown.ts:117` `commonMarkSpelling`: returns Result<boolean>, which says what it means, where undefined and success(null) encoded the answer
+- Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator replaces a boolean early-stop callback
+- Shape: `src/markdown/emit/line-escaping.ts:113` `backslashed`: PlacedSegment drops repeated cursor arithmetic, at the cost of byte codes, chunked joins and RunEscapes
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/emit/adf-to-markdown.ts:126` `readableBlock`: a read deletes and only an asked caller fills, so whether a node is spelled again depends on call order; the first place to rot
+- Locality, Navigation: `src/markdown/length-bound.ts:36` `withinEngineLimits`: wrap-every-builder is a project-wide duty, and six sites refuse with one message and path [], so a report cannot say which fired
+- Navigation: `src/markdown/length-bound.ts:1` `withinEngineLimits`: the size concern has a file named for it and engine refusals their own code
+- Locality: `src/markdown/parse/markdown-to-adf.ts:265` `directiveNode`: a nested engine guard mid-walk, there only to place V8's throw at this directive
+- Shape: `src/markdown/emit/adf-to-markdown.ts:117` `commonMarkSpelling`: Result<boolean> tells the truth and a refusal now propagates with its path; line 134's conditional is dense
+- Shape: `src/markdown/emit/line-escaping.ts:40` `RunEscapes`: byte flags, codes and batched joins read less directly, and `escapable` reads close to backwards; PlacedSegment is a real gain
+
+Maintainability senior, decided by:
+
+- Navigation, Shape: `src/markdown/length-bound.ts:37` `withinEngineLimits`: guard, bound and refusals share one file, and result.ts is back to describing results
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: deletes on every read and writes only when asked, so a hit depends on call order across the parser, the portable reduction and the walk
+- Locality, Self-sufficiency: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: a check's place is justified by where V8 would throw, with a nested engine guard, so moving one needs V8's behaviour reconstructed
+- Locality: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: a refused spelling comes back as a value with its block's path, where it was swallowed
+- Shape: `src/markdown/emit/adf-to-markdown.ts:117` `commonMarkSpelling`: Result<boolean> where absence coded both answers
+- Shape: `src/markdown/length-bound.ts:17` `tooLong`: a length refusal under unsupported-node-shape with path [], and the README row grown into a catch-all
+- Shape: `src/markdown/emit/line-escaping.ts:113` `backslashed`: byte codes and chunked joins against PlacedSegment removing duplicated cursor arithmetic, about even
+- Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator replaces a boolean-returning callback
+- Locality: `src/markdown/emit/inline-line.ts:235` `emitLeaf`: the content-or-text refusal is hoisted once, a small gain
+
+Junior A, decided by:
+
+- Navigation, Shape: `src/markdown/length-bound.ts:37` `withinEngineLimits`: the engine-overflow catch moves out of result.ts into a file named for the job, with the two message lists saying which throw means what
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: a read deletes and a caller flag decides the store, an order dependence across three files
+- Locality: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: a nested engine guard to pin V8's throw, and the bound checked in five places
+- Shape, Locality: `src/markdown/emit/adf-to-markdown.ts:117` `commonMarkSpelling`: Result<boolean> matches its name, and portableSequence propagates a refusal with each block's path
+- Shape: `src/markdown/emit/line-escaping.ts:38` `PlacedSegment`: replaces a parallel placements array and hand-advanced cursor, against byte codes and chunked joins
+- Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator replaces a write callback threading a keep-going flag
+- Shape: `src/markdown/emit/inline-line.ts:175` `heldContentOrText`: the content-or-text refusal checked once in emitLeaf
