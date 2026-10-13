@@ -89,9 +89,9 @@ Markdown the spelling table leaves alone, which `0.2.0` reads as a different doc
 
 `unmappable-image`, `unspellable-character`, `unspellable-line-start` and `unspellable-link` leave
 `ConvertErrorCode`, and `engine-limit` and `not-a-string` join it. A `switch` naming one of the four
-stops compiling, and one naming every code needs the two new cases. A document `adfToMarkdown` refused with one of the
-three `unspellable-` codes now converts in `adfToLosslessMarkdown`; markdown the parser refused
-with one of the four now reads, or refuses with the code the table gives.
+stops compiling, and one naming every code needs the two new cases. A document `adfToMarkdown`
+refused with one of the three `unspellable-` codes now converts in `adfToLosslessMarkdown`; markdown
+the parser refused with one of the four now reads, or refuses with the code the table gives.
 
 | Input | `0.1.0` | `0.2.0` |
 | --- | --- | --- |

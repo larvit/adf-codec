@@ -3,7 +3,7 @@ import { failure, success, type Result } from '../result.ts'
 // V8's longest string, refused on every engine so a document converts alike everywhere (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
 export const longestMarkdown = 2 ** 29 - 24
 
-// Measured on Firefox 155, Node 24 and Bun 1.4, and SpiderMonkey's array length from its js.msg. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the others name an engine's own limit or its memory running short.
+// Measured on Firefox 155, Node 24 and Bun 1.4; SpiderMonkey's `invalid array length` is taken from its js.msg. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the others name an engine's own limit or its memory running short.
 const pastLongestString = ['InternalError: allocation size overflow', 'RangeError: Invalid string length']
 const pastEngineLimit = [
   'RangeError: Array buffer allocation failed',
@@ -50,5 +50,5 @@ export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
 }
 
 function engineLimit<T>(thrown: string): Result<T> {
-  return failure('engine-limit', `the conversion passed this JavaScript engine's longest string or array, or ran it out of memory (${thrown})`, [])
+  return failure('engine-limit', `the conversion passed a limit of this JavaScript engine on a string, array, Map or Set, or ran it out of memory (${thrown})`, [])
 }

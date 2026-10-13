@@ -123,7 +123,7 @@ export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth:
   return success(readable.value.spelling !== 'directive')
 }
 
-// Only an asked node's spelling is kept, and reading it drops it: the walk above spells the node into its own text, so no level of a subtree holds that text twice.
+// Only an `asked` call keeps a spelling, and any read drops it: the ancestor that reads it spells it into its own text, so no two levels hold that text.
 function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, caller: 'asked' | 'walked'): Result<EmittedBlock> | undefined {
   const { memo } = writing
   const kept = memo?.get(node)

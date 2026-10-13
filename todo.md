@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 111`
+`Next ID = 112`
 
 | Goal | W |
 |---|---|
@@ -29,6 +29,7 @@
 | 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
 | 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
 | 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
+| 111 | 0.2.1 |  | **Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.** | 2 | 2 | 5 | 5 | 3 | 15.3 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -103,6 +104,13 @@ A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]
 Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
 escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
 gains its row.
+
+### 111. Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.
+
+The row's "Fires when" cell holds about a dozen causes in four groups (parsing, each writer, both
+writers, every call) and its "What you can do" cell mixes three remedies, so a reader searches it.
+List the groups under the table, each with its remedy. Found by the prose review of item 108,
+2026-10-13.
 
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 

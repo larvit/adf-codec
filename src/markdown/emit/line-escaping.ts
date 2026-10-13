@@ -37,7 +37,7 @@ type Escapings = (index: number) => InlineEscaping | undefined
 // Where a segment's first character landed in the output.
 type PlacedSegment = { segment: InlineSegment; start: number }
 
-// The run's escapable characters, or its characters before `end`.
+// Which of a run's characters escape: every escapable one, or every one before `end`.
 type RunEscapes = { end: number; escapable: false } | { escapable: true }
 
 type EscapeWalk = {
@@ -111,7 +111,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, cl
 }
 
 function backslashed(segments: readonly InlineSegment[], scan: string, escaped: Uint8Array): { output: string; placed: PlacedSegment[] } {
-  // Joined a few thousand pieces at a time: an array element per escape would cost more than the character it escapes.
+  // The output joins 4096 pieces at a time: an array element per escape would cost more than the character it escapes.
   const chunks: string[] = []
   let pieces: string[] = []
   let from = 0
