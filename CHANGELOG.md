@@ -9,9 +9,9 @@
   code. `MIGRATION.md` says which call to take.
 - **Breaking:** the markdown readers refuse a value that is not a string with the new code
   `not-a-string`; `MIGRATION.md` lists what each value did before.
-- **Breaking:** every call returns the new code `engine-limit` where the JavaScript engine passes
-  its longest array, `Map` or `Set`, or reports itself out of memory, and, on JavaScriptCore, where
-  a string passes its longest. A retry may succeed. Every other refusal stays deterministic.
+- **Breaking:** every call returns the new code `engine-limit` where a conversion passes the
+  JavaScript engine's longest array, `Map` or `Set`, or runs it out of memory, and, on
+  JavaScriptCore, its longest string. A retry may succeed. Every other refusal stays deterministic.
 - **Breaking:** an attribute value that is not a plain object, array or JSON primitive, such as a
   `Date`, `Map`, typed array or class instance, makes `isAdfDocument` return `false` and the
   converters refuse it as `not-an-adf-document`. Before, the converters wrote it as `{}` or its own
@@ -92,14 +92,13 @@
 - Fix a directive that, written out as plain CommonMark, would be longer than 536870888 characters:
   `losslessMarkdownToAdf` refuses it as `unsupported-node-shape`, where a few megabytes of nested
   list lines ran the call out of memory.
-- Fix the markdown readers past the longest string or array the JavaScript engine builds: they
-  return `unsupported-node-shape` past V8's or SpiderMonkey's longest string, and `engine-limit`
-  past the rest, where they threw.
+- Fix the markdown readers past V8's or SpiderMonkey's longest string: they return
+  `unsupported-node-shape`, where they threw.
 - Fix a paragraph of tens of millions of characters: `adfToLosslessMarkdown` and
-  `adfToPortableMarkdown` write it in a few bytes of memory a character beyond the document and its
-  markdown, where they took about 50, so 80 million characters ran Node's default heap out of memory
-  and 20 million `*` threw `RangeError`. `losslessMarkdownToAdf` returns a result for such a
-  paragraph inside a directive, where it threw `RangeError`.
+  `adfToPortableMarkdown` need a few bytes a character on top of the document and its markdown,
+  where they needed about 50. Before, 80 million characters ran Node's default heap out of memory
+  and 20 million `*` threw `RangeError`. `losslessMarkdownToAdf` no longer throws `RangeError` on
+  such a paragraph inside a directive.
 - Fix deeply nested compact JSON in an `adf:` fence: `losslessMarkdownToAdf` refuses it as
   `unsupported-node-shape`, as it refuses any compact JSON there, where about a megabyte of it threw.
 - Add `adfToPortableMarkdown` and `portableMarkdownToAdf`, a lossy pair converting ADF to and from

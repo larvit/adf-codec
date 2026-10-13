@@ -70,8 +70,7 @@ test('refuses text past V8\'s longest string', () => {
   assert.equal(markdown(result), tooLong)
 })
 
-// One escape past the most entries V8's Set holds.
-test('escapes more characters in a line than a Set holds', () => {
+test('escapes more characters in a line than V8\'s Set holds', () => {
   const stars = '*'.repeat(2 ** 24 + 1)
   assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text: stars, type: 'text' })))), `${'\\*'.repeat(2 ** 24 + 1)}\n`)
 })

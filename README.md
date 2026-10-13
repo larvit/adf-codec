@@ -182,7 +182,8 @@ which is free text.
 - **Bot posting content** — turns generated markdown into ADF. Relies on CommonMark being valid
   input, so nothing upstream has to learn a flavour.
 - **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
-  and on every refusal being deterministic, so a document that fails fails the same way next run.
+  and on every refusal but `engine-limit` being deterministic, so a document that fails fails the
+  same way next run.
 - **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
   Relies on the round-trip and on markdown a reader half-knowing the lossless flavour can still edit.
 
@@ -409,11 +410,12 @@ A parse always names a position, so the three markdown readers return `ParseErro
 typed on `ConvertError` takes both.
 
 A call reports the first refusal in document order and stops, so a document with several surfaces
-them one per call. Every refusal is deterministic — there is no I/O anywhere — so a retry returns
-the identical error: fix the input, or set the document aside. The exception is `engine-limit`,
-whose causes include memory running short: retry it once, and treat a repeat as lasting. On V8
-(Node, Deno, Chrome) a heap that runs out ends the process instead. In Node, a `worker_threads`
-worker given `resourceLimits` ends alone, so convert input of unbounded size in one.
+them one per call. Every refusal but `engine-limit` is deterministic — there is no I/O anywhere —
+so a retry returns the identical error: fix the input, or set the document aside. `engine-limit`
+can mean memory ran short: retry it once, and treat a repeat as lasting. On V8 (Node, Deno,
+Chrome), running out of JavaScript heap ends the process. In Node, convert input of unbounded size
+in a `worker_threads` worker given `resourceLimits`: running out of heap there ends only that
+worker.
 
 ### Parsing
 
@@ -441,7 +443,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 
 ### Either direction
 
-The emitter raises these, and so does a parse, which asks the emitter how to spell each node:
+Every call can raise these:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -461,7 +463,8 @@ Serves [Goals](#goals) 1, 4 and 5.
 - Markdown this library reads, and markdown it writes, means what the CommonMark spec says. The
   bullets below name every exception.
 - CommonMark is valid input to `commonMarkToAdf`, apart from the raw HTML `unmappable-html` names,
-  nesting past 500 levels, and input whose conversion `engine-limit` or the length bound refuses.
+  nesting past 500 levels, and input whose conversion passes the engine's longest string, refused
+  as `unsupported-node-shape`, or another engine limit, refused as `engine-limit`.
 - The other readers claim shapes CommonMark reads as text or code. `losslessMarkdownToAdf` claims
   four: literal text matching directive, pipe-table or strikethrough syntax, and a code fence whose
   info string opens `adf:`. `portableMarkdownToAdf` claims what [Portable
@@ -488,8 +491,8 @@ Serves [Goals](#goals) 1, 4 and 5.
   the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
   one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
-  levels, the node shapes the `unsupported-node-shape` row lists, and what `engine-limit` names. Show the refusal and keep the
-  document read-only; saving markdown you could not produce is the loss the round-trip exists to
+  levels, the node shapes the `unsupported-node-shape` row lists, and a conversion `engine-limit`
+  stops. Show the refusal and keep the document read-only; saving markdown you could not produce is the loss the round-trip exists to
   stop.
 - The pipe table that `losslessMarkdownToAdf` and `portableMarkdownToAdf` read narrows GFM's twice:
   every row opens with a pipe, so GFM's bare form is an error result, and an alignment colon in the

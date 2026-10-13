@@ -470,8 +470,8 @@ handles one cause alike whichever node, attribute or direction raised it.
 - A conversion the engine stops with a throw of its own, past its longest array, `Map` or `Set`
   or short of memory, is `engine-limit`, at the empty path. A retry may pass the memory case, so
   `unsupported-node-shape`, which no retry passes, cannot hold the class. JavaScriptCore throws the
-  same `Out of memory` past its longest string, which takes `engine-limit` too, since only the
-  message would tell the two apart (2026-10-13, the maintainer).
+  same `Out of memory` past its longest string as when its heap runs short. Nothing tells the two
+  apart, so both are `engine-limit` (2026-10-13, the maintainer).
 - The markdown readers and `htmlToAdf` refuse a value that is not a string as `not-a-string`, at
   position `{ line: 1, offset: 0 }` with an empty path: no existing code reads true of it, and
   `not-an-adf-document` names the emitters' input (2026-10-05).
@@ -624,7 +624,6 @@ after three rounds under a worse ruling, the maintainer's call: both paired seat
 as the same, but Locality fell to a mean of 5.13, laid on the spelling memo the chunk splits between
 the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The overall
 scores at 1f4551a were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean 5.63.
-Item 108's chunk, 2026-10-13, fills and reads the memo in `readableBlock` alone.
 
 ## Properties on a fixed seed
 
@@ -686,9 +685,7 @@ carry's two-space JSON, which indents every value its depth over, stops at the b
 (`joinedWithin`).
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
-that, JavaScriptCore throws `Out of memory`, as it does when its heap runs short. That throw, and
-any engine's throw past its longest array or out of memory, is `engine-limit` (§Which code a cause
-takes).
+that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
 
 ## Nothing recurses unbounded
 

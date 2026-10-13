@@ -27,7 +27,7 @@ test('refuses a string past the bound as too long on every engine, and any other
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Invalid string length')), tooLong())
   assert.deepEqual(withinEngineLimits(thrown('InternalError', 'allocation size overflow')), tooLong())
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Out of memory')), {
-    error: { code: 'engine-limit', message: 'the conversion passed this JavaScript engine\'s longest string or array, or ran it out of memory (Out of memory)', path: [] },
+    error: { code: 'engine-limit', message: 'the conversion passed a limit of this JavaScript engine on a string, array, Map or Set, or ran it out of memory (Out of memory)', path: [] },
     ok: false,
   })
   const code = (message: string): string | undefined => {
@@ -43,7 +43,7 @@ test('refuses a string past the bound as too long on every engine, and any other
     withinEngineLimits(() => {
       throw 'out of memory'
     }),
-    { error: { code: 'engine-limit', message: 'the conversion passed this JavaScript engine\'s longest string or array, or ran it out of memory (out of memory)', path: [] }, ok: false },
+    { error: { code: 'engine-limit', message: 'the conversion passed a limit of this JavaScript engine on a string, array, Map or Set, or ran it out of memory (out of memory)', path: [] }, ok: false },
   )
   assert.deepEqual(
     withinEngineLimits(() => success('x')),
