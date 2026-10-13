@@ -796,3 +796,32 @@ Junior A, decided by:
 - Shape: `src/markdown/emit/line-escaping.ts:38` `PlacedSegment`: replaces a parallel placements array and hand-advanced cursor, against byte codes and chunked joins
 - Shape: `src/canonical-json.ts:23` `canonicalJsonPieces`: a generator replaces a write callback threading a keep-going flag
 - Shape: `src/markdown/emit/inline-line.ts:175` `heldContentOrText`: the content-or-text refusal checked once in emitLeaf
+
+## 2026-10-13T18:05:39Z, PR #37 at 3ba3a82, against 7caa823
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | same | better |
+| Inherited architect | better | better | better | better | better |
+
+Mid A, decided by:
+
+- Shape: `src/markdown/emit/adf-to-markdown.ts:117` `commonMarkSpelling`: returns Result<boolean>, where undefined and success(null) had to be decoded from the callers
+- Shape, Locality: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: one boolean test where a typed guard, a fallback and an undefined check decoded the tri-state again
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: every memo read, delete and write sits in one function, where three held its life cycle
+- Navigation: `src/markdown/length-bound.ts:52` `engineLimit`: an engine-limit refusal has its own code and constructor, where it shared unsupported-node-shape with shape refusals
+- Shape, Locality: `src/markdown/portable/adf-to-portable-markdown.ts:128` `portableSequence`: one check on spelled.value, and a flatMap replaces listItemBlocks
+- Locality: `src/markdown/emit/line-escaping.ts:38` `PlacedSegment`: computed once and passed on, where three functions each re-derived starts with their own cursor
+- Shape: `src/markdown/emit/line-escaping.ts:52` `escapingCodes`: byte codes, flags and a 4096-piece join, and the RunEscapes union, read harder than a plain list
+
+Inherited architect, decided by:
+
+- Navigation, Self-sufficiency: `src/result.ts:2` `ConvertErrorCode`: engine-limit names its cause and points at one function, where the most overloaded code hid whether the document or the runtime failed
+- Shape, Locality: `src/markdown/emit/adf-to-markdown.ts:117` `commonMarkSpelling`: Result<boolean>, so directiveNode tests one boolean where it decoded a tri-state
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: the memo's read, delete and write sit in one function under one comment, at the cost of a caller flag
+- Shape, Self-sufficiency: `src/markdown/portable/adf-to-portable-markdown.ts:134` `portableSequence`: one boolean test, though the list's own path for its items is now stated only in the README
+- Locality: `src/markdown/emit/line-escaping.ts:38` `PlacedSegment`: each segment arrives with its start, so two functions no longer walk in step; backslashed itself reads costlier
+- Shape: `src/markdown/emit/line-escaping.ts:41` `RunEscapes`: its field collides with isEscapable and the call site handles false first, the slowest spot to read
+- Self-sufficiency: `src/markdown/length-bound.ts:43` `withinEngineLimits`: the stack-overflow comment sits on its line, the carry comment says why the join is bounded
