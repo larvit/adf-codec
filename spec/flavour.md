@@ -347,7 +347,8 @@ claimed and must parse as part of a pipe table, else it is a named error — esc
 (`\|`) to keep it literal text. The shape a missing leading pipe leaves is claimed too: a line
 holding an unescaped `|`, followed inside one paragraph by a line whose cells are all `-` runs,
 an alignment colon among them, and match it in count — GFM's table without the outer pipes — is
-a named error rather than the prose it reads as. A pipe table is a header row, a delimiter row whose cells are
+a named error rather than the prose it reads as; `portableMarkdownToAdf` reads it, and an
+alignment colon, as GFM does, dropping the alignment. A pipe table is a header row, a delimiter row whose cells are
 runs of one or more `-` (canonical `---`), and body rows; rows follow code-fence indentation.
 Cells split on unescaped `|` before inline parsing — `\|` stays in the cell text, and the
 inline layer's ordinary CommonMark escaping yields the pipe; each cell is the inline content of
