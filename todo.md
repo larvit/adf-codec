@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 112`
+`Next ID = 113`
 
 | Goal | W |
 |---|---|
@@ -50,6 +50,7 @@
 | 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 4 | 3 | 7 | 1 | 17.5 |
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 2 | 5 | 5 | 3 | 16.3 |
+| 112 | 0.3.0 | question | **Read a GFM pipe table's ragged and pipe-less body rows, and a one-column table without leading pipes, in `portableMarkdownToAdf` as GFM does, keeping every cell.** | 3 | 3 | 5 | 6 | 6 | 4, 7 | 16.3 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
 | 107 | 0.3.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
@@ -271,6 +272,16 @@ and hostile. Found by the technical-principles audit, 2026-10-04.
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
+
+### 112. Read a GFM pipe table's ragged and pipe-less body rows, and a one-column table without leading pipes, in `portableMarkdownToAdf` as GFM does, keeping every cell.
+
+GFM pads a short row with empty cells, cuts a long one to the header's count, reads a line holding
+no `|` after a table as a row, and reads `a |` over `--- |` as a one-column table.
+`portableMarkdownToAdf` refuses a ragged row as `malformed-pipe-table`, ends the table at a line
+holding no `|`, and reads the one-column shape as a paragraph; the README's pipe-table guarantee
+names the first two. Cutting a long row drops content (Goal 7) where Goal 4 asks for GFM's reading:
+which wins is the maintainer's. The one-column shape needs `isBareDelimiterRow` in the writer's
+escaping to cover it too.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 

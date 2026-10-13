@@ -10,7 +10,7 @@ export type Claims = {
   carryFence: boolean
   directives: boolean
   highlights: boolean
-  // `gfm` reads GFM's whole pipe table, its alignment dropped; `flavour` reads rows opening with `|` over a `-` delimiter row.
+  // `gfm` reads rows with or without the leading `|`, alignment colons dropped; `flavour` only rows opening with `|` over `-` runs.
   pipeTables: 'flavour' | 'gfm' | false
   strikethrough: boolean
   taskMarkers: boolean

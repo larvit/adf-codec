@@ -293,6 +293,8 @@ test('reads GFM\'s pipe table without its leading pipes or with alignment colons
   assert.deepEqual(read('a | b\n--- | --- | ---\n'), [said('a | b --- | --- | ---')])
   assert.deepEqual(read('- a | b\n--- | ---\n'), [bare('bulletList', bare('listItem', said('a | b --- | ---')))])
   assert.deepEqual(read('a | b\n--- | ---\nc\n'), [bare('table', table.content?.[0] ?? said('')), said('c')])
+  const ragged = portableMarkdownToAdf('Intro.\na | b\n--- | ---\nc | d | e\n')
+  assert.deepEqual(ragged.ok ? undefined : [ragged.error.code, ragged.error.position], ['malformed-pipe-table', { line: 2, offset: 7 }])
 })
 
 test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, an image sharing its paragraph with a marker among it', () => {

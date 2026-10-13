@@ -495,7 +495,9 @@ Serves [Goals](#goals) 1, 4 and 5.
 - The pipe table that `losslessMarkdownToAdf` reads narrows GFM's twice: every row opens with a
   pipe, so GFM's bare form is an error result, and an alignment colon in the delimiter row is an
   error too — ADF holds no column alignment. `portableMarkdownToAdf` reads both and drops the
-  alignment. The trailing pipe is canonical output, optional in input.
+  alignment, but narrows GFM's table too: a row whose cell count differs from the header's is an
+  error result where GFM pads or cuts it, and a line holding no `|` ends the table where GFM reads
+  it as a row. The trailing pipe is canonical output, optional in input.
 - Past that and `~~`, `losslessMarkdownToAdf` reads no GFM: an autolink literal and a `- [ ]`
   marker stay text, and a checklist is the `taskList` directive — `portableMarkdownToAdf` turns the
   marker into a `taskList`.
