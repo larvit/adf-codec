@@ -425,7 +425,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
-| `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, or a delimiter or body row whose cell count differs from the header's; in `losslessMarkdownToAdf` also an alignment colon or a row not opening with a pipe | add a `---` row under the header and give every row the header's cell count; for `losslessMarkdownToAdf`, also open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, a `\|` in its delimiter row |
+| `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, or a delimiter or body row whose cell count differs from the header's; in `losslessMarkdownToAdf` also an alignment colon or a header or delimiter row not opening with a pipe | add a `---` row under the header and give every row the header's cell count; for `losslessMarkdownToAdf`, also open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, a `\|` in its delimiter row |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the input holds raw HTML, a comment and a processing instruction among them | remove the construct, or write what it holds as markdown |
@@ -495,9 +495,9 @@ Serves [Goals](#goals) 1, 4 and 5.
   stop.
 - Both readers narrow GFM's pipe table: a row whose cell count differs from the header's is an
   error result where GFM pads or cuts it, and a line holding no `|` ends the table where GFM reads
-  it as a row. `losslessMarkdownToAdf` narrows it twice more: every row opens with a pipe, so GFM's
-  bare form is an error result, and an alignment colon in the delimiter row is an error too — ADF
-  holds no column alignment. `portableMarkdownToAdf` reads both and drops the alignment. The
+  it as a row. `losslessMarkdownToAdf` narrows it twice more: a header or delimiter row not opening
+  with a pipe is an error result, and any line not opening with one ends the table; an alignment
+  colon in the delimiter row is an error too — ADF holds no column alignment. `portableMarkdownToAdf` reads both and drops the alignment. The
   trailing pipe is canonical output, optional in input.
 - Past that and `~~`, `losslessMarkdownToAdf` reads no GFM: an autolink literal and a `- [ ]`
   marker stay text, and a checklist is the `taskList` directive — `portableMarkdownToAdf` turns the
