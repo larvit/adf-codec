@@ -131,9 +131,9 @@ function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Res
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const block = numberedPastMarkers(next.block)
     const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { flavour: 'portable', memo: reduction.memo }) : undefined
-    if (spelled !== undefined && !spelled.ok) return spelled
-    if (!listed || spelled !== undefined) {
+    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { flavour: 'portable', memo: reduction.memo }) : success(!listed)
+    if (!spelled.ok) return spelled
+    if (spelled.value) {
       sequence.push(block)
       continue
     }

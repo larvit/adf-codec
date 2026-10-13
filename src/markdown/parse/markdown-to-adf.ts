@@ -263,9 +263,9 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
   const built = directiveBody(read.value, block.blocks, reading, path, depth)
   if (!built.ok) return built
   // Refused here so V8's throw past the bound is placed at this directive, like the bound check on other engines.
-  const readable = withinEngineLimits<null | undefined>(() => commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo }) ?? success(undefined))
+  const readable = withinEngineLimits(() => commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo }))
   if (!readable.ok) return readable
-  if (readable.value === undefined) return built
+  if (!readable.value) return built
   return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)
 }
 

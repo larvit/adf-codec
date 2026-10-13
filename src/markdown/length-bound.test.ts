@@ -40,6 +40,12 @@ test('refuses a string past the bound as too long on every engine, and any other
   assert.equal(code('Set maximum size exceeded'), 'engine-limit')
   assert.equal(code('invalid array length'), 'engine-limit')
   assert.deepEqual(
+    withinEngineLimits(() => {
+      throw 'out of memory'
+    }),
+    { error: { code: 'engine-limit', message: 'the conversion passed this JavaScript engine\'s longest string or array, or ran it out of memory (out of memory)', path: [] }, ok: false },
+  )
+  assert.deepEqual(
     withinEngineLimits(() => success('x')),
     { ok: true, value: 'x' },
   )

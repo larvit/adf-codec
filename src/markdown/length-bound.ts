@@ -1,6 +1,6 @@
 import { failure, success, type Result } from '../result.ts'
 
-// V8's longest string (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
+// V8's longest string, refused on every engine so a document converts alike everywhere (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
 export const longestMarkdown = 2 ** 29 - 24
 
 // Measured on Firefox 155, Node 24 and Bun 1.4, and SpiderMonkey's array length from its js.msg. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the others name an engine's own limit or its memory running short.
@@ -38,11 +38,17 @@ export function withinEngineLimits<T>(convert: () => Result<T>): Result<T> {
   try {
     return convert()
   } catch (error) {
+    // SpiderMonkey throws a bare string where it finds no memory for a buffer (measured on Firefox 155).
+    if (error === 'out of memory') return engineLimit(error)
     if (!(error instanceof Error)) throw error
     const thrown = `${error.name}: ${error.message}`
     if (pastLongestString.includes(thrown)) return tooLong()
     // A stack overflow is a bug (docs/decisions.md §Nothing recurses unbounded), so it stays a throw.
     if (!pastEngineLimit.includes(thrown)) throw error
-    return failure('engine-limit', `the conversion passed this JavaScript engine's longest string or array, or ran it out of memory (${error.message})`, [])
+    return engineLimit(error.message)
   }
+}
+
+function engineLimit<T>(thrown: string): Result<T> {
+  return failure('engine-limit', `the conversion passed this JavaScript engine's longest string or array, or ran it out of memory (${thrown})`, [])
 }
