@@ -27,14 +27,14 @@
 - **Breaking:** the markdown readers read markdown holding no block as a document whose `content` is
   empty, as Atlassian's schema requires; `!adf:doc {content=none}` spells a document holding no
   `content` key.
-- **Breaking:** `unspellable-character`, `unspellable-line-start` and `unspellable-whitespace` leave
-  `ConvertErrorCode`. A line ending in an `emoji`, `mention` or `status` directive's content slot is
-  refused as `unsupported-node-shape`. A carriage return in text is
-  spelled `&#13;` and a null character `!adf:text{text="\u0000"}`; a paragraph line opening with a
-  code span is spelled as that code span, its backticks opening no fence; a code block holding
-  either character, a code span holding a null character, a text node holding no text or holding
-  `content`, and an `emoji`, `mention` or `status` whose `text` holds a line ending or a null
-  character ride the carry. See `MIGRATION.md`.
+- **Breaking:** `unspellable-character`, `unspellable-line-start` and `unspellable-whitespace`
+  leave `ConvertErrorCode`. A line ending in an `emoji`, `mention` or `status` directive's content
+  slot is refused as `unsupported-node-shape`. A carriage return in text is spelled `&#13;` and a
+  null character `!adf:text{text="\u0000"}`; a paragraph line opening with a code span is spelled
+  as that code span, its backticks opening no fence; a code block holding either character, a code
+  span holding a null character, a text node holding no text or holding `content`, and an `emoji`,
+  `mention` or `status` whose `text` holds a line ending or a null character ride the carry. See
+  `MIGRATION.md`.
 - **Breaking:** `unspellable-link` leaves `ConvertErrorCode`; a link whose `href` or `title` no
   CommonMark escape spells is written as `!adf:link[text]{attrs}`.
 - **Breaking:** some directive refusals carry `malformed-directive` where they carried
