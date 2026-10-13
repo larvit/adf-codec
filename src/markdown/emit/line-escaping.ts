@@ -95,8 +95,7 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, cl
     const code = codes[index]
     return code === undefined ? undefined : escapingCodes[code]
   }
-  const escaped = escapeClaims(scan, escapings, container, claims)
-  escapeClosedRuns(scan, escapings, escaped)
+  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container, claims))
   const { output, placements } = backslashed(segments, scan, escaped)
   if (container === 'paragraph' && opensLinkDefinition(output)) {
     if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRuns: [] }
@@ -227,7 +226,7 @@ function claimsCharacter({ container, escapings, headingCloser, linkClose, scan 
 
 // CommonMark reads no escape inside a code span, so a backtick string left beside an escape still closes a span that an earlier bare run of its length opens.
 // The walk runs backwards and escapes only the run it just read, so every index it reads still holds the claims alone.
-function escapeClosedRuns(scan: string, escapings: Escapings, escaped: Uint8Array): void {
+function escapeClosedRuns(scan: string, escapings: Escapings, escaped: Uint8Array): Uint8Array {
   // The lengths of the backtick strings escapes leave: a bare run of one of these lengths would open a span one of them closes, so it is escaped too.
   const formed = new Set<number>()
   let end = scan.length - 1
@@ -252,6 +251,7 @@ function escapeClosedRuns(scan: string, escapings: Escapings, escaped: Uint8Arra
     }
     end = start - 1
   }
+  return escaped
 }
 
 // One emphasis run, the innermost, or every highlight run the line cannot spell.
