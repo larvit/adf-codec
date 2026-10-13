@@ -23,54 +23,54 @@
 
 ## Items
 
-| ID | Release | Exempt | Item | R | S | A | G | Goals | Score |
-|---|---|---|---|---|---|---|---|---|---|
-| 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 5 | 6 | 1 | 19.5 |
-| 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 7 | 7 | 4, 7 | 19.4 |
-| 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 5 | 6 | 6 | 11.5 |
-| 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 5 | 6 | 6 | 10.0 |
-| 111 | 0.2.1 |  | **Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.** | 2 | 2 | 5 | 5 | 3 | 15.3 |
-| 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 5 | 6 | 4 | 13.0 |
-| 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 6 | 7 | 7 | 12.9 |
-| 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
-| 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 2 | 6 | 2 | 10.7 |
-| 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 2 | 6 | 2 | 10.4 |
-| 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 2 | 6 | 2 | 9.4 |
-| 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 5 | 9 | 9 | 9.2 |
-| 101 | 0.2.1 |  | **Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.** | 2 | 2 | 4 | 4 | 6 | 9.0 |
-| 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 2 | 4 | 1 | 9.0 |
-| 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 6 | 9 | 9 | 8.7 |
-| 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 5 | 9 | 9 | 8.2 |
-| 102 | 0.2.1 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 2 | 4 | 1 | 8.0 |
-| 109 | 0.2.1 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 4 | 7 | 9 | 5.3 |
-| 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 2, 4 | 25.8 |
-| 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 6 | 8 | 1 | 25.2 |
-| 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 8 | 2, 4 | 24.7 |
-| 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 5 | 9 | 1 | 23.0 |
-| 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 6 | 7 | 3 | 21.2 |
-| 80 | 0.3.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 5 | 6 | 1 | 19.2 |
-| 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 7 | 1 | 18.2 |
-| 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 3 | 7 | 1 | 17.5 |
-| 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 5 | 5 | 3 | 16.3 |
-| 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 5 | 5 | 3, 8 | 14.8 |
-| 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 3 | 6 | 3 | 13.1 |
-| 107 | 0.3.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 3 | 5 | 1 | 10.8 |
-| 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 2 | 7 | 4, 5 | 10.4 |
-| 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 2 | 6 | 1 | 9.5 |
-| 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 5 | 6 | 6 | 9.0 |
-| 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 6 | 8 | 3 | 23.0 |
-| 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 6 | 8 | 3 | 21.0 |
-| 38 | 0.4.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 4 | 7 | 1 | 19.5 |
-| 74 | 0.4.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 8 | 3 | 3 | 15.7 |
-| 34 | 0.4.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 3 | 6 | 4, 5 | 11.3 |
-| 31 | 0.4.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 3 | 4 | 1 | 11.2 |
-| 42 | 0.4.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 5 | 9 | 9 | 10.5 |
-| 56 | 0.4.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 2 | 4 | 1 | 6.8 |
-| 76 | 0.4.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 1 | 3 | 1 | 5.5 |
-| 82 | 0.4.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 2 | 1 | 4.2 |
-| 57 | 0.4.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 1 | 3 | 8 | 0.6 |
-| 58 | 0.4.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 1 | 2 | 8 | -2.6 |
-| 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 7 | 6 | 3 | 18.6 |
+| ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 103 | 0.2.0 |  | **Fold `unspellable-whitespace` into `unsupported-node-shape`, so a line ending and a null character in a content slot take one code.** | 2 | 2 | 2 | 5 | 6 | 1 | 19.5 |
+| 84 | 0.2.0 |  | **Read GFM's pipe table without leading pipes, and with alignment colons, in `portableMarkdownToAdf`, dropping the alignment.** | 3 | 4 | 5 | 7 | 7 | 4, 7 | 19.4 |
+| 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 3 | 5 | 6 | 6 | 11.5 |
+| 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 4 | 5 | 6 | 6 | 10.0 |
+| 111 | 0.2.1 |  | **Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.** | 2 | 2 | 1 | 5 | 5 | 3 | 15.3 |
+| 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 4 | 5 | 6 | 4 | 13.0 |
+| 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
+| 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
+| 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
+| 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 3 | 2 | 6 | 2 | 10.4 |
+| 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 5 | 2 | 6 | 2 | 9.4 |
+| 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 7 | 5 | 9 | 9 | 9.2 |
+| 101 | 0.2.1 |  | **Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.** | 2 | 2 | 4 | 4 | 4 | 6 | 9.0 |
+| 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 5 | 2 | 4 | 1 | 9.0 |
+| 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 8 | 6 | 9 | 9 | 8.7 |
+| 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 7 | 5 | 9 | 9 | 8.2 |
+| 102 | 0.2.1 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 7 | 2 | 4 | 1 | 8.0 |
+| 109 | 0.2.1 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 8 | 4 | 7 | 9 | 5.3 |
+| 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 9 | 2, 4 | 25.8 |
+| 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 4 | 6 | 8 | 1 | 25.2 |
+| 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 7 | 8 | 2, 4 | 24.7 |
+| 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 6 | 5 | 9 | 1 | 23.0 |
+| 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 2 | 6 | 7 | 3 | 21.2 |
+| 80 | 0.3.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 3 | 5 | 6 | 1 | 19.2 |
+| 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 4 | 7 | 1 | 18.2 |
+| 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 4 | 3 | 7 | 1 | 17.5 |
+| 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 2 | 5 | 5 | 3 | 16.3 |
+| 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
+| 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
+| 107 | 0.3.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
+| 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
+| 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
+| 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 8 | 5 | 6 | 6 | 9.0 |
+| 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
+| 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 4 | 6 | 8 | 3 | 21.0 |
+| 38 | 0.4.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 5 | 4 | 7 | 1 | 19.5 |
+| 74 | 0.4.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 4 | 8 | 3 | 3 | 15.7 |
+| 34 | 0.4.0 |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 3 | 4 | 3 | 6 | 4, 5 | 11.3 |
+| 31 | 0.4.0 |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 3 | 5 | 3 | 4 | 1 | 11.2 |
+| 42 | 0.4.0 | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 2 | 3 | 5 | 9 | 9 | 10.5 |
+| 56 | 0.4.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 8 | 2 | 4 | 1 | 6.8 |
+| 76 | 0.4.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 3 | 1 | 3 | 1 | 5.5 |
+| 82 | 0.4.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 1 | 2 | 1 | 4.2 |
+| 57 | 0.4.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 3 | 1 | 3 | 8 | 0.6 |
+| 58 | 0.4.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 4 | 1 | 2 | 8 | -2.6 |
+| 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
 
