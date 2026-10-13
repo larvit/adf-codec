@@ -106,7 +106,7 @@ the code the table gives.
 | a paragraph line opening with a code span of three or more backticks, on emit | `unspellable-line-start` | spells the code span |
 | a block directive whose CommonMark spelling holds a carriage return, a null character or a code span opening a line, on parse | `unspellable-character`, `unspellable-line-start` | `unsupported-node-shape`; write the CommonMark spelling |
 | an `emoji`, `mention` or `status` whose `text` holds a line ending or a null character, on emit | `unspellable-whitespace`, `unspellable-character` | rides the inline carry |
-| an `emoji`, `mention` or `status` directive whose content slot spells a line ending (`&#10;`, `&#13;`, `!adf:text{text="\n"}`), on parse | `unspellable-whitespace` | `unsupported-node-shape`; write the node as `!adf:carry` |
+| an `emoji`, `mention` or `status` directive whose content slot spells a line ending (`&#10;`, `&#13;`, `!adf:text{text="\n"}`), on parse | `unspellable-whitespace` | `unsupported-node-shape`; replace it with a space, or write the node as `!adf:carry` |
 | a text node holding no text, or holding `content`, on emit | `unsupported-node-shape` | rides the carry |
 | a `codeBlock` holding other than plain text nodes, on emit | `unsupported-node-shape` | rides the block carry |
 | a leaf node given a body (`media`) | `unsupported-node-shape` | `malformed-directive` |

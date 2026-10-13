@@ -437,9 +437,6 @@ handles one cause alike whichever node, attribute or direction raised it.
 - A code names the cause; where one cause recurs across node types, across one mark's attributes
   or across directions, one code covers them all and `path` and `message` say which —
   `unsupported-nesting-depth` is the 500-level guard whichever direction hits it.
-  A line ending or a null character in an inline directive's content slot is a value the slot does
-  not take, so `unsupported-node-shape` as below, `message` naming the character; the emitter
-  carries such a node (2026-10-14).
 - A claim code names the spelling claimed, never the node that spelling would have built: a
   malformed `!adf:table` is a `malformed-directive`, and an alignment colon a
   `malformed-pipe-table` — the flavour's own delimiter row is `-` runs, so the grammar refuses the
@@ -458,7 +455,9 @@ handles one cause alike whichever node, attribute or direction raised it.
   elsewhere, a value outside its kind or its canonical spelling, an argument, or a body of a shape
   its content model does not take — is `unsupported-node-shape`, the emitter's code for the same
   mismatch read the other way: one code across both directions for good, since the call site
-  knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23).
+  knows which direction it called and parting them after `0.1.0` is MAJOR (2026-09-23). A line
+  ending or a null character in an `emoji`, `mention` or `status` content slot is such a value; the
+  emitter carries such a node (2026-10-14).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
 - A document whose markdown would be longer than V8's longest string is `unsupported-node-shape`
