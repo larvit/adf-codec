@@ -159,8 +159,7 @@ Per chunk:
    gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
    result exists for the commit under review, or when the diff since that result cannot affect
    it (docs-only) — re-run only what its own findings or fixes invalidate.
-3. Merge the PR (standing authorization, this repo only, granted by the maintainer through the
-   `0.2.0` release), report, stop.
+3. Merge the PR (standing authorization, this repo only, granted by the maintainer), report, stop.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
