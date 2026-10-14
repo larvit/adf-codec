@@ -247,6 +247,8 @@ test('keeps both targets of a linked external image standing inline, the image l
   assert.equal(inCell, '| h |\n| --- |\n| [Moon](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
   const read = portableMarkdownToAdf(inCell)
   assert.equal(read.ok && portableDocument(read.value), inCell)
+  const bordered: AdfNode = { attrs: { alt: 'Moon', type: 'external', url: 'https://example.com/moon.png' }, marks: [{ attrs: { color: '#000', size: 1 }, type: 'border' }, { attrs: { href: 'https://example.com/docs' }, type: 'link' }], type: 'media' }
+  assert.equal(portable(table(node('mediaSingle', {}, bordered))), '| h |\n| --- |\n| [Moon](https://example.com/docs) ([image](https://example.com/moon.png)) |\n')
   assert.equal(portable(table(said('See'), node('mediaSingle', {}, linked('https://example.com/docs')))), '| h |\n| --- |\n| See [https://example.com/docs](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
   assert.equal(portable(paragraph(text('See '), linked('https://example.com/moon.png', 'Moon'))), 'See [Moon](https://example.com/moon.png "Docs")\n')
   assert.equal(portable(paragraph(text('See '), linked('https://example.com/moon.png'))), 'See [https://example.com/moon.png](https://example.com/moon.png "Docs")\n')
