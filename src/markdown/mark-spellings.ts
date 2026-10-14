@@ -74,7 +74,7 @@ export function spellMarkAttributes(mark: AdfMark, spelling: MarkSpelling): stri
   return emptyKeys(mark).length > 0 && spelling.kind !== 'directive' ? undefined : spellMarkVocabulary(mark, spelling.attributes)
 }
 
-// `undefined` where an attribute is one the vocabulary does not type.
+// `undefined` where the vocabulary lacks an attribute or types its value otherwise.
 export function spellMarkVocabulary(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {
   const pairs = vocabularyPairs(nodeAttrs(mark), vocabulary, [])
   return pairs === undefined ? undefined : spellAttributes([...spellVocabulary(pairs), ...spellEmptyKeys(mark)])

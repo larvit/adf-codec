@@ -1,6 +1,5 @@
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
-// Marks only a block's marks key holds, so no inline spelling names them.
 export const blockMarkAttributes = {
   alignment: { align: 'string' },
   breakout: { mode: 'string', width: 'number' },

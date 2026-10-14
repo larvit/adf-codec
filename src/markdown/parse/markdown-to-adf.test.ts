@@ -550,7 +550,7 @@ test('reads the reserved marks key as a JSON array where a mark is one the table
 
 test('names the marks key no marks read back from', () => {
   const array = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON: this one is not'
-  const named = 'unsupported-node-shape: the marks attribute of rule names each mark with its {attrs}, one space apart: this one does not'
+  const named = 'unsupported-node-shape: the marks attribute of rule names its marks one space apart, each as its type and any {attrs}: this one does not'
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n')), array)
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n')), array)
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="{}"}\n')), named)
@@ -562,7 +562,7 @@ test('names the marks key no marks read back from', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide"}\n')), inBreakout('the {attrs} closing brace is missing'))
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}strong"}\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n')), 'unsupported-node-shape: the reserved key attrs takes only the value empty: this one spells attrs=x')
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks=x}\n')), 'unsupported-node-shape: the marks attribute of rule names x, no mark the flavour lists: spell an unlisted mark in the JSON array')
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks=x}\n')), 'unsupported-node-shape: the marks attribute of rule names x, no mark the flavour lists: write the marks as their JSON array, marks="[{\\"type\\":\\"x\\"}]"')
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=wide}"}\n')), 'unsupported-node-shape: the width attribute of breakout is no number')
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{bogus=1}"}\n')), 'unsupported-node-shape: breakout holds no bogus attribute: this one spells it')
 })

@@ -204,20 +204,22 @@ node the emitter would have written as CommonMark is a named error.
 
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
-type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
-(`width="33.33"`) — `numbers`, a list of one number or more, as those spellings joined by commas
-(`colwidth="340,420"`), and `json` values as the inline carry's serialization (compact, keys
-sorted), quoted, `-0` spelled `-0`. `losslessMarkdownToAdf` builds an `attrs`, `content` or `marks` key only
-where the markdown spells one, an empty one through its reserved key (Attributes), so a document
+type: strings verbatim; numbers and booleans in canonical JSON spelling, quoted where not bare
+(`width="33.33"`); `numbers`, a list of one number or more, as those spellings joined by commas
+(`colwidth="340,420"`); and `json` values as the inline carry's serialization (compact, keys
+sorted), quoted. `-0` is spelled `-0`. `losslessMarkdownToAdf` builds an `attrs`, `content` or
+`marks` key only where the markdown spells one, an empty one through its reserved key (Attributes), so a document
 reads back deep-equal (`docs/decisions.md` §Equality is deep). A node CommonMark spells takes the
 directive form to hold an empty key.
 
-Marks on a block node ride the reserved attribute key `marks`: each mark's type followed by its
-`{attrs}` spelled as a directive's, one space apart in the array's order, and `marks=empty` where
-the array is empty: `!adf:layoutSection {marks="breakout{mode=wide}"}`,
-`!adf:paragraph {marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"}`. Where §Marks
-does not list a mark's type, one of its attributes, or the type of one's value, the whole array is
-a `json` value instead: `marks="[{\"attrs\":{\"color\":\"#fff\"},\"type\":\"backgroundColor\"}]"`.
+Marks on a block node ride the reserved attribute key `marks`. It holds the marks in the array's
+order, one space apart, each as its type followed by its `{attrs}` as a directive spells them:
+`!adf:layoutSection {marks="breakout{mode=wide}"}`,
+`!adf:paragraph {marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"}`. Where
+§Marks does not list a mark's type or one of its attributes, or a value holds another type than
+§Marks gives it, the whole array is a `json` value instead:
+`marks="[{\"attrs\":{\"color\":\"#fff\"},\"type\":\"backgroundColor\"}]"`. An empty array is
+`marks=empty`.
 A section saying its body is inline takes at most one paragraph, whose inline content becomes
 the node's `content`; any other body is a named error, and an empty pair is a node holding none.
 
@@ -555,9 +557,9 @@ carrying an identical mark, attributes included, at that depth: `attrs: {}` diff
 and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
 emitted carry sits inside a mark spelling.
 
-An inline node whose marks no nesting spells — a hard break holding any mark, a mark type the inline
-list above does not hold, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
-the spelling needs and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order
+An inline node whose marks no nesting spells — a hard break holding any mark, a mark type the first
+list above does not hold, an attrs key its spelling does not list, a value that is not the
+spelling's type, an attribute the spelling needs and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order
 putting a code span outside another mark, `code` over anything but a text node holding text, or over
 text holding a line ending or a null character, or a spelling CommonMark's flanking rules cannot
 open or close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere

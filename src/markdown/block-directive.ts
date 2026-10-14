@@ -41,7 +41,7 @@ export function markValues(marks: readonly AdfMark[]): JsonValue {
   return marks.map((mark) => (mark.attrs === undefined ? { type: mark.type } : { attrs: mark.attrs, type: mark.type }))
 }
 
-// spec/flavour.md, Block nodes: each mark by name, else the whole array as JSON, `undefined` where that array nests past largestNesting.
+// `undefined` where the JSON array nests past largestNesting.
 export function spellBlockMarks(marks: readonly AdfMark[]): string | undefined {
   const named: string[] = []
   for (const mark of marks) {
