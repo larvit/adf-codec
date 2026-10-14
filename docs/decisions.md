@@ -354,7 +354,8 @@ past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates int
 ## The portable reader refuses what GFM's reading would drop
 
 2026-10-14, the maintainer. Goals 4 and 7. Valid while a refusal is a result and the caller can
-fix the markdown it sent.
+fix the markdown it sent, and until `todo.md` item 117 settles whether Goal 4, which ranks above
+Goal 7, reads such a row instead.
 
 Where GFM's reading of a shape drops content, `portableMarkdownToAdf` refuses the shape. A pipe
 table row holding more cells than its header is `malformed-pipe-table`, where GFM cuts the extra
