@@ -16,6 +16,7 @@ In `docs/decisions.md`:
 - A list right after one of its kind takes the other marker
 - An empty key spells `empty`
 - `-0` is spelled `-0`
+- A block's marks are named, and `colwidth` is a comma list
 - Empty markdown is a document of no blocks
 - Unknown nodes ride the carry
 - The carry fence names the node type

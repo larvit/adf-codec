@@ -25,8 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 52 | 0.2.0 |  | **Spell `colwidth` as a comma list, `colwidth="340,420"`.** | 3 | 3 | 3 | 5 | 6 | 6 | 11.5 |
-| 53 | 0.2.0 |  | **Put a block's `marks` spelling to the writer panel and adopt its pick.** | 4 | 5 | 4 | 5 | 6 | 6 | 10.0 |
 | 111 | 0.2.1 |  | **Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.** | 2 | 2 | 1 | 5 | 5 | 3 | 15.3 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
@@ -72,17 +70,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 52. Spell `colwidth` as a comma list, `colwidth="340,420"`.
-
-A writer panel chose it on 2026-10-03, 5 of 7, over today's `colwidth="[340,420]"`. Breaking:
-`MIGRATION.md`'s Spellings table gains its row.
-
-### 53. Put a block's `marks` spelling to the writer panel and adopt its pick.
-
-Today `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"`, the marks array as
-escaped JSON. Breaking where the panel picks another spelling: `MIGRATION.md`'s Spellings table
-gains its row.
 
 ### 111. Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.
 
