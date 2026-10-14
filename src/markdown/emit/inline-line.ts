@@ -11,7 +11,7 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { flavourClaims, highlightDelimiter } from '../portable/conventions.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
+import { inlineNodeModel, takenMarkTypes } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
@@ -223,7 +223,8 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
 
 // Decides the text-node, withheld-mark and slot-fault carries up front, so a line holding many of them is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
-  if (carried.has(index) || nodeMarks(node).some((mark) => !takesMark(node, mark.type))) return true
+  const taken = takenMarkTypes(node)
+  if (carried.has(index) || (taken !== undefined && nodeMarks(node).some((mark) => !taken.includes(mark.type)))) return true
   if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
   const model = inlineNodeModel(node.type)
   if (model === undefined) return true
