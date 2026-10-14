@@ -11,7 +11,7 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { flavourClaims, highlightDelimiter } from '../portable/conventions.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { inlineNodeModel } from '../../adf/inline-nodes.ts'
+import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
@@ -226,7 +226,7 @@ function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): bo
   if (carried.has(index)) return true
   if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
   const model = inlineNodeModel(node.type)
-  if (model === undefined || nodeMarks(node).some((mark) => !model.marks.includes(mark.type))) return true
+  if (model === undefined || nodeMarks(node).some((mark) => !takesMark(node.type, mark.type))) return true
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
   return typeof slot === 'string' && slotFault(node.type, slot) !== undefined && nodeContent(node).length === 0 && node.text === undefined
 }

@@ -1,5 +1,18 @@
 # Migrating
 
+## From `0.2.0` to `0.3.0`
+
+A mark spelling skips a node Atlassian's schema withholds the mark from:
+
+| Input | `0.2.0` | `0.3.0` |
+| --- | --- | --- |
+| a `date`, `emoji`, `inlineCard`, `mention`, `status` or `mediaInline` inside a mark's spelling (`**!adf:mention[@A]{id=x}**`) | the node holds the mark | the node holds only marks its type takes; text beside it keeps the mark |
+| a link or directive mark around such nodes alone (`[!adf:status[Done]{color=green}](/u)`) | the nodes hold the mark | `unsupported-node-shape`; write the mark around text beside them |
+
+`0.2.0` wrote the first row's spelling for a node holding such a mark, which `0.3.0` writes as
+`!adf:carry{json="…"}`. Markdown stored from such a document reads back without the mark: to keep
+it, read the markdown with `0.2.0` and write it with `0.3.0`, installed side by side.
+
 ## From `0.1.0` to `0.2.0`
 
 Each call names the markdown it reads or writes:
