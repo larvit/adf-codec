@@ -2,7 +2,7 @@
 
 ## From `0.2.0` to `0.3.0`
 
-A mark spelling skips a node Atlassian's schema withholds the mark from:
+In `losslessMarkdownToAdf`, a mark spelling skips a node Atlassian's schema withholds the mark from:
 
 | Input | `0.2.0` | `0.3.0` |
 | --- | --- | --- |
