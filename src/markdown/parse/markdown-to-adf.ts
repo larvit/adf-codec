@@ -266,8 +266,22 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
   const readable = withinEngineLimits(() => commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo }))
   if (!readable.ok) return readable
   if (!readable.value) return built
-  return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form`, path)
+  const spelling = commonMarkSpellings.get(built.value.type)
+  return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form${spelling === undefined ? '' : `: write ${spelling}`}`, path)
 }
+
+// The nodes `commonMarkSpelling` spells in the lossless flavour.
+const commonMarkSpellings: ReadonlyMap<string, string> = new Map([
+  ['blockquote', 'each line behind `> `'],
+  ['bulletList', 'each item behind `- `'],
+  ['codeBlock', 'its text in a ``` fence'],
+  ['heading', 'one `#` per level before its text, `## Title` at level 2'],
+  ['mediaSingle', '`![alt](url)`, or `[![alt](url)](href "title")` when linked'],
+  ['orderedList', 'each item behind `1. `'],
+  ['paragraph', 'its text alone'],
+  ['rule', '`---`'],
+  ['table', 'a pipe table'],
+])
 
 function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const { contentModel, node } = read

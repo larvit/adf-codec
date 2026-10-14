@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
+  node CommonMark spells, such as `[![alt](url)](href "title")` for a linked `!adf:mediaSingle`.
+
 ## 0.2.0
 
 - **Breaking:** each call names the markdown it reads or writes. `adfToMarkdown` and `markdownToAdf`

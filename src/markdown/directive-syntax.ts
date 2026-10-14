@@ -54,13 +54,15 @@ const noAttributes: DirectiveAttributes = new Map()
 
 export const noSpans: NestedSpans = new Map()
 
+export const attributePairCause = 'an attribute reads key=value, the value bare or double-quoted: this one does not'
+
 export const directiveEscape = `\\${directivePrefix} keeps the prefix literal`
 
 const closerFault = `a closer carries nothing after its name: this one does; ${directiveEscape}`
 const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
 const openerFault = `a directive opener reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveEscape}`
 const orderFault = 'the {attrs} keys read in alphabetical order'
-const pairFault = `an attribute reads key=value, the value bare or double-quoted: this one does not; ${directiveEscape}`
+const pairFault = `${attributePairCause}; ${directiveEscape}`
 const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${directiveEscape}`
 
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
@@ -251,7 +253,7 @@ function readContentSlot(text: string, index: number, depth: number): Read<Conte
 
 function readAttributesAt(text: string, index: number, braceClaims: boolean): Read<Attributes> {
   if (text.charAt(index) !== '{') return { value: { attributes: noAttributes, end: index } }
-  const read = readAttributes(text, index)
+  const read = readAttributes(text, index, pairFault)
   if (read.fault !== undefined || braceClaims || read.value.attributes.size > 0) return read
   return { fault: malformedDirective(emptyFault) }
 }
@@ -296,16 +298,16 @@ function readCodeSpanEnd(text: string, index: number): number | undefined {
   return text.slice(index, closer + opener).includes('\n') ? undefined : closer + opener
 }
 
-export function readAttributes(text: string, index: number): Read<Attributes> {
+export function readAttributes(text: string, index: number, pairMessage: string): Read<Attributes> {
   const attributes = new Map<string, DirectiveValue>()
   let cursor = index + 1
   let previous = ''
   while (cursor < text.length && text.charAt(cursor) !== '}') {
     if (attributes.size > 0) {
-      if (text.charAt(cursor) !== ' ') return { fault: malformedDirective(pairFault) }
+      if (text.charAt(cursor) !== ' ') return { fault: malformedDirective(pairMessage) }
       cursor += 1
     }
-    const pair = readAttributePair(text, cursor)
+    const pair = readAttributePair(text, cursor, pairMessage)
     if (pair.fault !== undefined) return { fault: pair.fault }
     const key = pair.value.key
     if (attributes.has(key)) return { fault: malformedDirective(`the attribute key ${key} is spelled twice`) }
@@ -318,10 +320,10 @@ export function readAttributes(text: string, index: number): Read<Attributes> {
   return { value: { attributes, end: cursor + 1 } }
 }
 
-function readAttributePair(text: string, index: number): Read<AttributePair> {
+function readAttributePair(text: string, index: number, pairMessage: string): Read<AttributePair> {
   bareRun.lastIndex = index
   const key = bareRun.exec(text)?.[0]
-  if (key === undefined || text.charAt(index + key.length) !== '=') return { fault: malformedDirective(pairFault) }
+  if (key === undefined || text.charAt(index + key.length) !== '=') return { fault: malformedDirective(pairMessage) }
   const start = index + key.length + 1
   if (text.charAt(start) === '"') {
     const quoted = readQuotedValue(text, start)
@@ -330,7 +332,7 @@ function readAttributePair(text: string, index: number): Read<AttributePair> {
   }
   bareRun.lastIndex = start
   const bare = bareRun.exec(text)?.[0]
-  if (bare === undefined) return { fault: malformedDirective(pairFault) }
+  if (bare === undefined) return { fault: malformedDirective(pairMessage) }
   return { value: { end: start + bare.length, key, value: { decoded: bare, spelling: bare } } }
 }
 

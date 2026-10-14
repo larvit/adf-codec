@@ -452,7 +452,31 @@ Every call can raise these:
 | --- | --- | --- |
 | `engine-limit` | in every call: a conversion that passes the longest array, `Map` or `Set` the JavaScript engine builds, or that the engine reports as out of memory; on JavaScriptCore (Bun, Safari), also one that passes its longest string, 2^31 − 1 characters | retry once; if it repeats, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the markdown, or nest its lists and quotes less deeply |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
-| `unsupported-node-shape` | parsing, in `losslessMarkdownToAdf`: markdown spells a node with an attribute, value, argument or body its type does not take, or without one it needs, puts a line ending or a null character in an `emoji`, `mention` or `status` content slot, wraps a directive mark around nothing or only hard breaks, writes as a directive a node or mark the lossless flavour spells as CommonMark, or one that, written out as plain CommonMark, would be longer than 536870888 characters, or puts a reserved directive out of place: `!adf:textBreak{}` parting nothing, `!adf:doc` anywhere but as the whole document. Emitting, in `adfToLosslessMarkdown`: a node not riding the carry that carries one mark type twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding `content`. Emitting, in `adfToPortableMarkdown`: a line or task list the portable writer cannot spell, a bug in this library. Emitting, in both writers: a document whose markdown would be longer than 536870888 characters, V8's longest string, on every engine; in `adfToPortableMarkdown`, also a document whose text alone is that long, edge whitespace included. In every call: a conversion that passes V8's or SpiderMonkey's longest string | fix what the message names; [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) lists every type's attributes and body. For a line ending in a content slot, replace it with a space or write the node as `!adf:carry`; for a null character there, write the node as `!adf:carry`. For a portable line or task list, report it as a bug. Past 536870888 characters or the engine's longest string, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the markdown, or nest its lists and quotes less deeply |
+| `unsupported-node-shape` | a node the call cannot read or write in its shape; the list below names each cause | the list below names each cause's remedy |
+
+`unsupported-node-shape` fires on these causes:
+
+- **Reading, in `losslessMarkdownToAdf`**: markdown spells a node with an attribute, value,
+  argument or body its type does not take, or without one it needs, puts a line ending or a null
+  character in an `emoji`, `mention` or `status` content slot, wraps a directive mark around nothing
+  or only hard breaks, writes as a directive a node or mark the lossless flavour spells as
+  CommonMark, or puts a reserved directive out of place: `!adf:textBreak{}` parting nothing,
+  `!adf:doc` anywhere but as the whole document. Fix what the message names;
+  [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md) lists every
+  type's attributes and body. For a line ending in a content slot, replace it with a space or write
+  the node as `!adf:carry`; for a null character there, write the node as `!adf:carry`.
+- **Writing, in `adfToLosslessMarkdown`**: a node not riding the carry that carries one mark type
+  twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node
+  holding `content`. Fix what the message names in the ADF.
+- **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
+  This is a bug in this library: report it.
+- **Past the longest string**: in both writers, a document whose markdown would be longer than
+  536870888 characters, V8's longest string, on every engine, and in `adfToPortableMarkdown` also a
+  document whose text alone is that long, edge whitespace included; in `losslessMarkdownToAdf`, a
+  directive whose plain CommonMark would be that long; in every call, a conversion that passes V8's
+  or SpiderMonkey's longest string. Writing, set the document aside, keeping the ADF and passing it
+  over or showing it read-only; reading, shorten the markdown, or nest its lists and quotes less
+  deeply.
 
 ## The guarantees
 
@@ -494,7 +518,7 @@ Serves [Goals](#goals) 1, 4 and 5.
   the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
   one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
-  levels, the node shapes the `unsupported-node-shape` row lists, and a conversion `engine-limit`
+  levels, the causes `unsupported-node-shape` lists, and a conversion `engine-limit`
   stops. Show the refusal and keep the document read-only; saving markdown you could not produce is the loss the round-trip exists to
   stop.
 - Both readers narrow GFM's pipe table. A body row whose cell count differs from the header's is
