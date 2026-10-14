@@ -4,7 +4,7 @@ import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
 import type { Elsewhere } from './directive-attributes.ts'
 import { attributeNestingMessage, isUnmarkedSpellableText } from '../../adf/document.ts'
-import { attributeValue, directiveEscape, directivePrefix, readAttributes, readDirectiveName, unknownDirectiveFault } from '../directive-syntax.ts'
+import { attributePairCause, attributeValue, directivePrefix, readAttributes, readDirectiveName, unknownDirectiveFault } from '../directive-syntax.ts'
 import { blockArgument, blockDirectiveForm, marksAttribute, readMarkValues, spellBlockMarks } from '../block-directive.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { carryFencePrefix, carryName } from '../opaque-carry.ts'
@@ -134,11 +134,10 @@ function readNamedMark(type: string, text: string, index: number, path: ConvertE
   const vocabulary = markVocabularies.get(name)
   if (vocabulary === undefined) return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} names ${name}, no mark the flavour lists: write the marks as their JSON array, marks="[{\\"type\\":\\"${name}\\"}]"`, path)
   const start = index + name.length
-  const attributes = text.charAt(start) === '{' ? readAttributes(text, start) : { value: { attributes: new Map<string, DirectiveValue>(), end: start } }
+  // A quoted value holds no directive, so a malformed pair takes no escape hint.
+  const attributes = text.charAt(start) === '{' ? readAttributes(text, start, attributePairCause) : { value: { attributes: new Map<string, DirectiveValue>(), end: start } }
   if (attributes.fault !== undefined) {
-    // A quoted value holds no directive, so the fault's escape hint does not apply.
-    const cause = attributes.fault.message.replace(`; ${directiveEscape}`, '')
-    return failure('unsupported-node-shape', `the ${name} mark in the ${marksAttribute} attribute of ${type}: ${cause}`, path)
+    return failure('unsupported-node-shape', `the ${name} mark in the ${marksAttribute} attribute of ${type}: ${attributes.fault.message}`, path)
   }
   const mark = readMarkAttributes(name, attributes.value.attributes, vocabulary, path)
   return mark.ok ? success({ end: attributes.value.end, mark: mark.value }) : mark

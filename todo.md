@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 111 | 0.2.1 |  | **Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.** | 2 | 2 | 1 | 5 | 5 | 3 | 15.3 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -33,12 +32,10 @@
 | 59 | 0.2.1 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 3 | 2 | 6 | 2 | 10.4 |
 | 62 | 0.2.1 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 5 | 2 | 6 | 2 | 9.4 |
 | 96 | 0.2.1 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 7 | 5 | 9 | 9 | 9.2 |
-| 101 | 0.2.1 |  | **Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.** | 2 | 2 | 4 | 4 | 4 | 6 | 9.0 |
 | 92 | 0.2.1 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 5 | 2 | 4 | 1 | 9.0 |
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 8 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 7 | 5 | 9 | 9 | 8.2 |
 | 102 | 0.2.1 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 7 | 2 | 4 | 1 | 8.0 |
-| 113 | 0.2.1 | principle | **Name a malformed block mark's `{attrs}` cause in `readNamedMark` without editing another module's message text.** | 2 | 2 | 3 | 2 | 3 | 1 | 7.5 |
 | 109 | 0.2.1 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 8 | 4 | 7 | 9 | 5.3 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 4 | 6 | 8 | 1 | 25.2 |
@@ -71,13 +68,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 111. Split README's `unsupported-node-shape` error-table row into one bullet per cause group, each carrying its remedy.
-
-The row's "Fires when" cell holds about a dozen causes in four groups (parsing, each writer, both
-writers, every call) and its "What you can do" cell mixes three remedies, so a reader searches it.
-List the groups under the table, each with its remedy. Found by the prose review of item 108,
-2026-10-13.
 
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 
@@ -131,13 +121,6 @@ in a text of length n, backtick runs of lengths 1 to k with no closers cost abou
 repeated with no `-->` is quadratic, in the reader and the emitter's escape walk alike.
 commonmark.js avoids the backtick cost by caching backtick runs by length.
 
-### 101. Name the CommonMark spelling to write in the refusal of a directive whose node CommonMark spells.
-
-`directiveNode` (`src/markdown/parse/markdown-to-adf.ts`) refuses `!adf:mediaSingle` holding a linked
-image as `unsupported-node-shape`: "mediaSingle takes the CommonMark spelling, not the directive
-form". README §The errors says to fix what the message names, and the message names no spelling,
-here `[![alt](url)](href "title")`.
-
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
 The last five chunks' median is 168135 new input tokens before their first commit, the five before
@@ -171,13 +154,6 @@ the fix.
 (`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
 `taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
 the reason the project read worse.
-
-### 113. Name a malformed block mark's `{attrs}` cause in `readNamedMark` without editing another module's message text.
-
-Today `readNamedMark` in `src/markdown/parse/directive-nodes.ts` deletes `; ${directiveEscape}` from
-the fault `readAttributes` returns, so rewording a fault in `directive-syntax.ts` silently changes the
-block marks error. Both paired seats of PR #43's comprehension ruling named it the place that read
-worse. Principle: compose, do not entangle (`~/.claude/principles/technical-principles.md`).
 
 ### 109. Spell nested lists and quotes in time linear in the markdown.
 

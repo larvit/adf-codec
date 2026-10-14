@@ -327,19 +327,35 @@ test('reads the three directive forms into the nodes the tables name', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('Part!adf:hardBreak{}.\n')), [{ content: [text('Part'), hardBreak(), text('.')], type: 'paragraph' }])
 })
 
-test('names the directive form a node CommonMark spells refuses', () => {
-  const named = (type: string): string => `unsupported-node-shape: ${type} takes the CommonMark spelling, not the directive form`
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule\n')), named('rule'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n')), named('blockquote'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n')), named('heading'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n')), named('paragraph'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList'))
+test('names the CommonMark spelling to write for the directive form a node CommonMark spells', () => {
+  const named = (type: string, spelling: string): string => `unsupported-node-shape: ${type} takes the CommonMark spelling, not the directive form: write ${spelling}`
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule\n')), named('rule', '`---`'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n')), named('blockquote', 'each line behind `> `'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n')), named('heading', 'one `#` per level before its text, `## Title` at level 2'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n')), named('paragraph', 'its text alone'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList', 'each item behind `- `'))
+  assert.equal(
+    content(losslessMarkdownToAdf('!adf:orderedList {order=1}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n')),
+    named('orderedList', 'each item behind `1. `'),
+  )
+  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n')), named('codeBlock', 'its text in a ``` fence'))
+  assert.equal(
+    content(losslessMarkdownToAdf('!adf:mediaSingle {layout=center}\n!adf:media {alt=a type=external url=u}\n!adf:/mediaSingle\n')),
+    named('mediaSingle', '`![alt](url)`, or `[![alt](url)](href "title")` when linked'),
+  )
+  assert.equal(
+    content(losslessMarkdownToAdf('!adf:table\n!adf:tableRow\n!adf:tableHeader\nPart.\n!adf:/tableHeader\n!adf:/tableRow\n!adf:/table\n')),
+    named('table', 'a pipe table'),
+  )
   // The item whose first line reads back as a thematic break keeps the directive form the emitter falls back to.
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')), [bulletList(item({ type: 'rule' }))])
 })
 
 test('refuses the directive form of a blockquote opening with a code span', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')), 'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form')
+  assert.equal(
+    content(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')),
+    'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form: write each line behind `> `',
+  )
 })
 
 // The input is some 1000 characters short of V8's longest string; the `> ` the quote adds to each of its 600 lines passes it. Reading this much outlasts Bun's 5 s default timeout.
