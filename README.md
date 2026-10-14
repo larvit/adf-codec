@@ -391,7 +391,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
   `_(synced block not included)_` for a `syncBlock`.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
   keeping its text, and so does a mark the flavour cannot spell where it stands. Code text keeps
-  only `link`.
+  no mark but `code` and `link`.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.
@@ -536,8 +536,8 @@ Serves [Goals](#goals) 1, 4 and 5.
     alt text linked to its URL: `See ![the moon](moon.png).` reads as
     `See [the moon](moon.png).`. To keep an image an image, give it a paragraph of its own: a
     blank line between it and any other line.
-  - A code span inside emphasis reads as code alone, since ADF gives code text no mark but a link
-    or an annotation: ``**`npm ci`**`` reads as `` `npm ci` ``.
+  - A code span inside emphasis reads as code without the emphasis, since ADF gives code text no
+    mark but a link or an annotation: ``**`npm ci`**`` reads as `` `npm ci` ``.
   - Inside a link, an image reads as plain text the link marks. A link alone in its paragraph
     whose whole text is one image reads as that image, with the link marking it.
   - An image's title becomes its caption when the image stays an image, and its link's title when

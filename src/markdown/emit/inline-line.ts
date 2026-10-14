@@ -99,7 +99,7 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
   }
 }
 
-// Seeds the withheld-mark carries once per line, so no run at any depth reads a node's marks whole.
+// Seeds the withheld-mark carries once per line, so the run at each mark depth does not rescan every node's marks.
 function freshFallbacks(nodes: readonly AdfNode[], flavour: WrittenFlavour): LineFallbacks {
   const carried = new Set<number>()
   for (const [index, node] of nodes.entries()) {
