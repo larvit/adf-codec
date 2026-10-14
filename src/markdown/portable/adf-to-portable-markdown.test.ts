@@ -307,10 +307,11 @@ test('keeps a table as a pipe table headed by its first row, one line per cell',
   assert.equal(portable(node('table', {}, row())), '')
 })
 
-test('keeps code, em, link, strike and strong and drops every other mark, keeping its text', () => {
+test('keeps code, em, link, strike and strong and drops every other mark, and code text every mark but link, keeping its text', () => {
   const marks: AdfMark[] = [{ type: 'strike' }, { attrs: { type: 'sub' }, type: 'subsup' }, { type: 'underline' }, { attrs: { color: '#f00' }, type: 'textColor' }]
   assert.equal(portable(paragraph(text('H'), text('2', ...marks), text('O', em, strong), text('!', { attrs: { size: 1 }, type: 'border' }))), 'H~~2~~_**O**_!\n')
-  assert.equal(portable(paragraph(text('x', code, strong), text(' '), text('y', { attrs: { x: 1 }, type: 'strong' }), text('z', em, em))), '**`x`** **y**_z_\n')
+  assert.equal(portable(paragraph(text('x', code, strong), text(' '), text('y', { attrs: { x: 1 }, type: 'strong' }), text('z', em, em))), '`x` **y**_z_\n')
+  assert.equal(portable(paragraph(text('x', strong, link('/u'), code))), '[`x`](/u)\n')
   assert.equal(portable(paragraph(text('site', { attrs: { collection: 'c', href: 'https://e.com', id: 'i' }, type: 'link' }))), '[site](https://e.com)\n')
 })
 

@@ -549,9 +549,10 @@ A block's `marks` key also holds these, which no inline spelling wraps:
 - `fragment` — Attributes: `localId` (string), `name` (string).
 - `indentation` — Attributes: `level` (number, 1–6).
 
-A spelling adds its mark to every text node it wraps, and to every other inline node Atlassian's
-schema gives that mark. Of the marks a spelling makes, `date`, `emoji`, `hardBreak`, `inlineCard`,
-`mention` and `status` take none, and `mediaInline` takes only `border` and `link`. Nesting is the
+A spelling adds its mark to every text node it wraps but one marked `code`, which takes only
+`link`, and to every other inline node Atlassian's schema gives that mark: ``**`npm ci`**`` reads
+as plain code. Of the marks a spelling makes, `date`, `emoji`, `hardBreak`, `inlineCard`, `mention`
+and `status` take none, and `mediaInline` takes only `border` and `link`. Nesting is the
 marks array in order, outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`,
 `!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
 the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes

@@ -931,6 +931,18 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark: write the link mark around text beside them')
 })
 
+test('gives code text no mark but code, link and annotation', () => {
+  const code: AdfMark = { type: 'code' }
+  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read('**`npm ci`**\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
+    assert.deepEqual(content(read('*run `npm ci`*\n')), [{ content: [marked('run ', em), marked('npm ci', code)], type: 'paragraph' }])
+    assert.deepEqual(content(read('**[`npm ci`](/u)**\n')), [{ content: [marked('npm ci', link('/u'), code)], type: 'paragraph' }])
+  }
+  assert.deepEqual(content(portableMarkdownToAdf('~~`npm ci`~~\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[run `npm ci`]\n')), [{ content: [marked('run ', underline), marked('npm ci', code)], type: 'paragraph' }])
+  assert.equal(content(losslessMarkdownToAdf('!adf:underline[`npm ci`]\n')), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
+})
+
 test('decodes the fenced info string the block walk leaves raw', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('```java&#8203;script\nx\n```\n')), [
     { attrs: { language: 'java\u200bscript' }, content: [text('x')], type: 'codeBlock' },

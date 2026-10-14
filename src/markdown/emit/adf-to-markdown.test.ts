@@ -289,6 +289,8 @@ test('carries an inline node holding a mark Atlassian\'s schema withholds from i
   assert.equal(carried({ attrs: { id: 'b1c2', text: '@A' }, marks: [{ type: 'strong' }], type: 'mention' }), '!adf:carry{json="{\\"attrs\\":{\\"id\\":\\"b1c2\\",\\"text\\":\\"@A\\"},\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"type\\":\\"mention\\"}"}\n')
   assert.equal(carried({ attrs: { id: 'm1' }, marks: [{ type: 'em' }], type: 'mediaInline' }), '!adf:carry{json="{\\"attrs\\":{\\"id\\":\\"m1\\"},\\"marks\\":[{\\"type\\":\\"em\\"}],\\"type\\":\\"mediaInline\\"}"}\n')
   assert.equal(carried({ attrs: { id: 'm1' }, marks: [{ attrs: { href: '/u' }, type: 'link' }], type: 'mediaInline' }), '[!adf:mediaInline{id=m1}](/u)\n')
+  assert.equal(carried({ marks: [{ type: 'strong' }, { type: 'code' }], text: 'x', type: 'text' }), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strong\\"},{\\"type\\":\\"code\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n')
+  assert.equal(carried({ marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: 'x', type: 'text' }), '[`x`](/u)\n')
 })
 
 test('spells a heading level no ATX heading fits as a directive', () => {

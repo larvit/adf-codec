@@ -223,10 +223,10 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
 
 // Decides the text-node, withheld-mark and slot-fault carries up front, so a line holding many of them is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
-  if (carried.has(index)) return true
+  if (carried.has(index) || nodeMarks(node).some((mark) => !takesMark(node, mark.type))) return true
   if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
   const model = inlineNodeModel(node.type)
-  if (model === undefined || nodeMarks(node).some((mark) => !takesMark(node.type, mark.type))) return true
+  if (model === undefined) return true
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
   return typeof slot === 'string' && slotFault(node.type, slot) !== undefined && nodeContent(node).length === 0 && node.text === undefined
 }

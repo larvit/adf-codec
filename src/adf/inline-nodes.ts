@@ -1,4 +1,8 @@
+import type { AdfNode } from './document.ts'
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
+import { nodeMarks } from './document.ts'
+
+export const codeTextMarkTypes: readonly string[] = ['annotation', 'code', 'link']
 
 export type InlineNodeModel = {
   attributes: AttributeVocabulary
@@ -33,7 +37,8 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
   return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }
 
-// The table withholds nothing from a type it does not list, such as text.
-export function takesMark(type: string, markType: string): boolean {
-  return inlineNodeModel(type)?.markTypes.includes(markType) ?? true
+// The table withholds nothing from a type it does not list, such as text; Atlassian's schema withholds from code text all but `codeTextMarkTypes`.
+export function takesMark(node: AdfNode, markType: string): boolean {
+  if (node.type === 'text' && nodeMarks(node).some((mark) => mark.type === 'code')) return codeTextMarkTypes.includes(markType)
+  return inlineNodeModel(node.type)?.markTypes.includes(markType) ?? true
 }
