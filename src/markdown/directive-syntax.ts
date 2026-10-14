@@ -11,9 +11,9 @@ import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
 
-// Proof that `!adf:` stands at `index`; only `claimDirectivePrefix` builds one.
 export type Attributes = { attributes: DirectiveAttributes; end: number }
 
+// Proof that `!adf:` stands at `index`; only `claimDirectivePrefix` builds one.
 export type ClaimedPrefix = { readonly [claimedPrefix]: true; readonly index: number }
 
 export type DirectiveValue = { decoded: string; spelling: string }
