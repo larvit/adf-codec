@@ -178,7 +178,7 @@ silent drop of content:
 
 `<details><summary>Title</summary>…</details>` is an `expand` titled by its summary, a
 `nestedExpand` inside another; an empty one is refused, since `expand` requires content. A `style`
-attribute is not read at `0.3.0`: the `textColor` and `backgroundColor` it could reach cost more
+attribute is not read at `0.4.0`: the `textColor` and `backgroundColor` it could reach cost more
 than they buy.
 The three markdown readers share one parser, so they take the same set.
 
