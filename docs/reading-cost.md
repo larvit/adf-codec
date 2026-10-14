@@ -317,3 +317,20 @@ Read most (opens and searches):
 - `ci.sh` 2
 - `package.json` 2
 - `AGENTS.md` 1
+
+## Reading cost, chunk dcebf9f4bfdb, finished 2026-10-14T10:46:44Z
+
+226754 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/flavour.md` 10
+- `src/conformance/property-harness.ts` 6
+- `src/markdown/emit/adf-to-markdown.test.ts` 6
+- `todo.md` 6
+- `docs/decisions.md` 5
+- `src/conformance/adf-schema.test.ts` 5
+- `src/conformance/markdown-property.test.ts` 5
+- `src/markdown/directive-syntax.ts` 5
+- `README.md` 4
+- `src/conformance/flavour.test.ts` 4
