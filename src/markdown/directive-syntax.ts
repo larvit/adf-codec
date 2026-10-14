@@ -3,16 +3,17 @@ import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
 import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
 import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
+import { isNumberList } from '../adf/attribute-vocabulary.ts'
 import { overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
-export type Attributes = { attributes: DirectiveAttributes; end: number }
-
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
 
 // Proof that `!adf:` stands at `index`; only `claimDirectivePrefix` builds one.
+export type Attributes = { attributes: DirectiveAttributes; end: number }
+
 export type ClaimedPrefix = { readonly [claimedPrefix]: true; readonly index: number }
 
 export type DirectiveValue = { decoded: string; spelling: string }
@@ -65,9 +66,10 @@ const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${d
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
   if (kind === 'string') return { value: { kind, value: text } }
   if (kind === 'boolean') return text === 'true' || text === 'false' ? { value: { kind, value: text === 'true' } } : { refusal: 'kind' }
+  // A JSON array reads only so the respelling check names the comma list to write.
   if (kind === 'numbers') {
-    const values = text.split(',').map((part) => parseJsonText(part).value)
-    return values.every((value) => typeof value === 'number') ? { value: { kind, value: values } } : { refusal: 'kind' }
+    const values = text.startsWith('[') ? parseJsonText(text).value : text.split(',').map((part) => parseJsonText(part).value)
+    return isNumberList(values) ? { value: { kind, value: values } } : { refusal: 'kind' }
   }
   const parsed = parseJsonText(text).value
   if (parsed === undefined) return { refusal: 'kind' }

@@ -1,5 +1,4 @@
 import type { AdfAttributes, AdfMark, AdfNode, EmptyKey } from '../../adf/document.ts'
-import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveValue } from '../directive-syntax.ts'
@@ -10,9 +9,9 @@ import { blockArgument, blockDirectiveForm, marksAttribute, readMarkValues, spel
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { carryFencePrefix, carryName } from '../opaque-carry.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { inlineMarkSpellingFault } from './directive-marks.ts'
+import { inlineMarkSpellingFault, readMarkAttributes } from './directive-marks.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
-import { markVocabulary } from '../../adf/mark-attributes.ts'
+import { markVocabularies } from '../../adf/mark-attributes.ts'
 import { readEmptyKeys, spellsEmpty } from '../empty-keys.ts'
 import { readVocabulary } from './directive-attributes.ts'
 import { slotFault } from '../directive-syntax.ts'
@@ -119,33 +118,30 @@ function readNamedMarks(type: string, text: string, path: ConvertErrorPath): Res
   const marks: AdfMark[] = []
   let cursor = 0
   for (;;) {
-    const name = readDirectiveName(text, cursor)
-    if (name === undefined) return failure('unsupported-node-shape', unnamedMarks(type), path)
-    const vocabulary = markVocabulary(name)
-    if (vocabulary === undefined) return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} names ${name}, a mark it spells only in its JSON array`, path)
-    cursor += name.length
-    const attributes = text.charAt(cursor) === '{' ? readAttributes(text, cursor) : { value: { attributes: new Map<string, DirectiveValue>(), end: cursor } }
-    if (attributes.fault !== undefined) return faulted(attributes.fault, path)
-    const mark = readNamedMark(name, attributes.value.attributes, vocabulary, path)
+    const mark = readNamedMark(type, text, cursor, path)
     if (!mark.ok) return mark
-    marks.push(mark.value)
-    cursor = attributes.value.end
+    marks.push(mark.value.mark)
+    cursor = mark.value.end
     if (cursor === text.length) return success(marks)
     if (text.charAt(cursor) !== ' ') return failure('unsupported-node-shape', unnamedMarks(type), path)
     cursor += 1
   }
 }
 
-function unnamedMarks(type: string): string {
-  return `the ${marksAttribute} attribute of ${type} names each mark with its {attrs}, one space apart: this one does not`
+function readNamedMark(type: string, text: string, index: number, path: ConvertErrorPath): Result<{ end: number; mark: AdfMark }> {
+  const name = readDirectiveName(text, index)
+  if (name === undefined) return failure('unsupported-node-shape', unnamedMarks(type), path)
+  const vocabulary = markVocabularies.get(name)
+  if (vocabulary === undefined) return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} names ${name}, a mark it spells only in its JSON array`, path)
+  const start = index + name.length
+  const attributes = text.charAt(start) === '{' ? readAttributes(text, start) : { value: { attributes: new Map<string, DirectiveValue>(), end: start } }
+  if (attributes.fault !== undefined) return failure('unsupported-node-shape', unnamedMarks(type), path)
+  const mark = readMarkAttributes(name, attributes.value.attributes, vocabulary, path)
+  return mark.ok ? success({ end: attributes.value.end, mark: mark.value }) : mark
 }
 
-function readNamedMark(type: string, attributes: DirectiveAttributes, vocabulary: AttributeVocabulary, path: ConvertErrorPath): Result<AdfMark> {
-  const empty = readEmptyKeys(type, attributes, ['attrs'], false)
-  if (empty.fault !== undefined) return faulted(empty.fault, path)
-  const attrs = readVocabulary(type, empty.value.rest, vocabulary, undefined, path)
-  if (!attrs.ok) return attrs
-  return success(Object.keys(attrs.value).length > 0 || empty.value.empty.has('attrs') ? { attrs: attrs.value, type } : { type })
+function unnamedMarks(type: string): string {
+  return `the ${marksAttribute} attribute of ${type} names each mark with its {attrs}, one space apart: this one does not`
 }
 
 function namedNode(type: string, attrs: AdfAttributes, marks: readonly AdfMark[] | undefined, empty: ReadonlySet<EmptyKey>): AdfNode {

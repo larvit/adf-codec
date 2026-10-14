@@ -24,7 +24,7 @@ export function readVocabulary(
     if (kind === undefined) return failure('unsupported-node-shape', `${type} holds no ${key} attribute: this one spells it`, path)
     const read = attributeValue(spelled.decoded, kind)
     if (read.refusal === 'nesting') return failure('unsupported-nesting-depth', attributeNestingMessage(key, type), path)
-    if (read.value === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind}`, path)
+    if (read.value === undefined) return failure('unsupported-node-shape', `the ${key} attribute of ${type} is no ${kind === 'numbers' ? 'comma list of numbers' : kind}`, path)
     const spelling = spellAttributeValue(read.value)
     if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${key} attribute as ${key}=${spelling}`, path)
     attrs[key] = read.value.value

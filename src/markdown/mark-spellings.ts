@@ -2,12 +2,12 @@ import type { AdfAttributes, AdfMark, AdfNode } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { LinkDefinition } from './commonmark/link-syntax.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
+import { emptyKeys, nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { escapeUnbalanced, spellLinkTarget } from './commonmark/link-syntax.ts'
 import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './directive-syntax.ts'
 import { holdsEntityReference } from './commonmark/entity-references.ts'
 import { isAutolink } from './commonmark/grammar.ts'
 import { isMarkType, markAttributes } from '../adf/mark-attributes.ts'
-import { nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { spellEmptyKeys } from './empty-keys.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
@@ -71,8 +71,11 @@ function isBareLink(nodes: readonly AdfNode[], href: string, marksInside: number
 
 // `undefined` where the spelling holds no such attrs: only a directive spells attrs=empty.
 export function spellMarkAttributes(mark: AdfMark, spelling: MarkSpelling): string | undefined {
-  const pairs = vocabularyPairs(nodeAttrs(mark), spelling.attributes, [])
-  const empty = spellEmptyKeys(mark)
-  if (pairs === undefined || (empty.length > 0 && spelling.kind !== 'directive')) return undefined
-  return spellAttributes([...spellVocabulary(pairs), ...empty])
+  return emptyKeys(mark).length > 0 && spelling.kind !== 'directive' ? undefined : spellMarkVocabulary(mark, spelling.attributes)
+}
+
+// `undefined` where an attribute is one the vocabulary does not type.
+export function spellMarkVocabulary(mark: AdfMark, vocabulary: AttributeVocabulary): string | undefined {
+  const pairs = vocabularyPairs(nodeAttrs(mark), vocabulary, [])
+  return pairs === undefined ? undefined : spellAttributes([...spellVocabulary(pairs), ...spellEmptyKeys(mark)])
 }
