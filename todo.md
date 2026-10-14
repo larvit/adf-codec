@@ -31,6 +31,7 @@
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.3.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 3 | 2 | 6 | 2 | 10.4 |
+| 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
 | 62 | 0.3.0 | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 4 | 5 | 5 | 2 | 6 | 2 | 9.4 |
 | 96 | 0.3.0 | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 3 | 7 | 5 | 9 | 9 | 9.2 |
 | 92 | 0.3.0 |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 4 | 5 | 2 | 4 | 1 | 9.0 |
@@ -53,7 +54,6 @@
 | 91 | 0.4.0 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
 | 107 | 0.4.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.4.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
-| 95 | 0.4.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
 | 9 | 0.5.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 4 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.5.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 5 | 4 | 7 | 1 | 19.5 |
 | 74 | 0.5.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 4 | 8 | 3 | 3 | 15.7 |
@@ -113,6 +113,14 @@ needs `Read<T>` and `Flavour` out of the portable flavour and `markdown/`; it ne
 the mark spellings too, which item 7 moves where it learns what HTML shares.
 Once moved, a reader takes a `Flavour` and looks up its claims, as a writer does, so no reader is
 handed a set of claims no flavour holds.
+
+### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
+
+`escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
+reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text `[` opens link
+text. Only the property tests catch drift between these and the reader, and it holds the project
+under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
+run it carries may differ from today's, which changes lossless output (§The formats are API).
 
 ### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
 
@@ -307,14 +315,6 @@ as data per §Standards ship as data: lowercasing and then uppercasing would als
 `I`, which folding keeps apart, so add that pair as a fixture. Breaking: `MIGRATION.md`'s Readings table
 gains its row. Its `pending` exceptions go, and the README's guarantees drop the case-folding
 exception and count one fewer.
-
-### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
-
-`escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
-reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text `[` opens link
-text. Only the property tests catch drift between these and the reader, and it holds the project
-under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
-run it carries may differ from today's, which changes lossless output (§The formats are API).
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
