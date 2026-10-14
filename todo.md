@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 117`
+`Next ID = 119`
 
 | Goal | W |
 |---|---|
@@ -49,6 +49,7 @@
 | 81 | 0.4.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 2 | 5 | 5 | 3 | 16.3 |
 | 112 | 0.4.0 |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 3 | 3 | 5 | 6 | 6 | 4 | 16.3 |
 | 46 | 0.4.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
+| 117 | 0.4.0 | defect | **Read a GFM pipe-table row holding more cells than its header as GFM does, or name the goal that outranks Goal 4 in refusing it.** | 2 | 2 | 3 | 4 | 6 | 4 | 13.5 |
 | 72 | 0.4.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
 | 107 | 0.4.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.4.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
@@ -61,6 +62,7 @@
 | 56 | 0.5.0 | principle | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 4 | 5 | 8 | 2 | 4 | 1 | 6.8 |
 | 76 | 0.5.0 | principle | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 2 | 2 | 3 | 1 | 3 | 1 | 5.5 |
 | 82 | 0.5.0 | principle | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 1 | 3 | 1 | 1 | 2 | 1 | 4.2 |
+| 118 | 0.5.0 | principle | **Spell a portable link's title through `oneLine`, as the text beside it is.** | 1 | 1 | 1 | 1 | 2 | 6 | 2.5 |
 | 57 | 0.5.0 | principle | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 3 | 3 | 1 | 3 | 8 | 0.6 |
 | 58 | 0.5.0 | principle | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 4 | 6 | 4 | 1 | 2 | 8 | -2.6 |
 | 8 | 0.6.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
@@ -271,6 +273,14 @@ or report the unminified gzip). The figure lands in README §The package beside 
 dependencies" claim, and in a size column of the comparison table. Measured today,
 unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
 
+### 117. Read a GFM pipe-table row holding more cells than its header as GFM does, or name the goal that outranks Goal 4 in refusing it.
+
+`docs/decisions.md` §The portable reader refuses what GFM's reading would drop refuses such a row as
+`malformed-pipe-table` by Goal 7, which ranks below Goal 4: a bot whose model writes an over-wide row
+gets an error where GitHub renders a table. The maintainer either reads the row as GFM does, cutting
+the cells, or states the goal that outranks Goal 4 here and cites it in the entry. Found by the
+principles audit of item 99, 2026-10-14.
+
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
 Lands after every other `0.4.0` item (the maintainer, 2026-10-05). The maintainer does this. Gitea
@@ -368,6 +378,12 @@ agree. Found by the technical-principles audit, 2026-10-04.
 
 Technical principle: tests use random UUID v7 ids; `portable-markdown-to-adf.test.ts` already does.
 Found by the technical-principles audit of item 78, 2026-10-05.
+
+### 118. Spell a portable link's title through `oneLine`, as the text beside it is.
+
+`portableLink` (`src/markdown/portable/inline-reduction.ts`) repeats `oneLine`'s replacements by
+hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
+Found by the principles audit of item 99, 2026-10-14.
 
 ### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
 

@@ -80,15 +80,18 @@ function idMention(id: unknown): string | undefined {
   return typeof id === 'string' && id !== '' ? `@${id}` : undefined
 }
 
-// An image standing inline is a link to it: CommonMark's inline image reads back as no node.
+// An image standing inline is a link to it: CommonMark's inline image reads back as no node, and one inside a link as the link's text.
 function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   const alt = nonEmpty(attrs['alt'])
   const url = nonEmpty(attrs['url'])
   if (attrs['type'] !== 'external' || url === undefined) return textLeaves(alt, marks, container, 'image')
-  const href = nodeAttrs(marks.find((mark) => mark.type === 'link') ?? {})['href']
-  if (href === url) return textLeaves(alt ?? url, marks, container)
+  const link = marks.find((mark) => mark.type === 'link')
+  const href = link === undefined ? undefined : nodeAttrs(link)['href']
   if (typeof href !== 'string') return linkedLeaves(alt ?? url, url, marks, container)
-  return [...textLeaves(alt ?? url, marks, container), textLeaf(' (', []), ...linkedLeaves('image', url, marks, container), textLeaf(')', [])]
+  if (href === url) return textLeaves(alt ?? url, marks, container)
+  const linkedAlt = textLeaves(alt ?? nonEmpty(href) ?? url, marks, container)
+  const image = linkedLeaves('image', url, marks, container)
+  return [...linkedAlt, textLeaf(' (', []), ...image, textLeaf(')', [])]
 }
 
 function noteLeaves(name: string): AdfNode[] {
