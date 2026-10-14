@@ -227,7 +227,7 @@ document's whole tree. Give the node's path, and name its type and the attribute
 `emitLeaf` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
 refuse these with `unsupported-node-shape`, though `isAdfDocument` accepts them and the carry
 round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. Drop
-them from the emitting half of the README's `unsupported-node-shape` row. Found by the README-goals
+them from the README's `unsupported-node-shape` cause "Writing, in `adfToLosslessMarkdown`". Found by the README-goals
 audit, 2026-10-04.
 
 ### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.

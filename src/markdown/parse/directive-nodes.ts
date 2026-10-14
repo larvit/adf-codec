@@ -134,7 +134,7 @@ function readNamedMark(type: string, text: string, index: number, path: ConvertE
   const vocabulary = markVocabularies.get(name)
   if (vocabulary === undefined) return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} names ${name}, no mark the flavour lists: write the marks as their JSON array, marks="[{\\"type\\":\\"${name}\\"}]"`, path)
   const start = index + name.length
-  // A quoted value holds no directive, so a malformed pair takes no escape hint.
+  // These {attrs} sit inside the quoted marks value, where no directive opens, so a malformed pair takes no escape hint.
   const attributes = text.charAt(start) === '{' ? readAttributes(text, start, attributePairCause) : { value: { attributes: new Map<string, DirectiveValue>(), end: start } }
   if (attributes.fault !== undefined) {
     return failure('unsupported-node-shape', `the ${name} mark in the ${marksAttribute} attribute of ${type}: ${attributes.fault.message}`, path)
