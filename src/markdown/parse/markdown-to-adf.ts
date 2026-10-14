@@ -273,13 +273,13 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
 function spellingToWrite(node: AdfNode): string | undefined {
   if (node.type !== 'orderedList') return commonMarkSpellings.get(node.type)
   const order = String(nodeAttrs(node)['order'])
-  return `each item behind its number, counting up from \`${order}. \`, or from \`${order}) \` right after another ordered list`
+  return `each item behind its number, counting up from \`${order}. \`, or from \`${order}) \` where the list right before it takes \`.\``
 }
 
 // One entry per node `commonMarkSpelling` spells in the lossless flavour, kept here because this refusal is its only reader; a node missing here is refused naming no spelling.
 const commonMarkSpellings: ReadonlyMap<string, string> = new Map([
   ['blockquote', 'each line behind `> `'],
-  ['bulletList', 'each item behind `- `, or behind `* ` right after another bullet list'],
+  ['bulletList', 'each item behind `- `, or behind `* ` where the list right before it takes `- `'],
   ['codeBlock', 'its text in a fence of more backticks than any run it holds, its language after the opening fence'],
   ['heading', 'one `#` per level before its text, `## Title` at level 2'],
   ['mediaSingle', '`![alt](url)`, or `[![alt](url)](href)` when linked'],

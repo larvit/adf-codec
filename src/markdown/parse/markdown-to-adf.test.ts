@@ -333,10 +333,10 @@ test('names the CommonMark spelling to write for the directive form a node Commo
   assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n')), named('blockquote', 'each line behind `> `'))
   assert.equal(content(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n')), named('heading', 'one `#` per level before its text, `## Title` at level 2'))
   assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n')), named('paragraph', 'its text alone'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList', 'each item behind `- `, or behind `* ` right after another bullet list'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList', 'each item behind `- `, or behind `* ` where the list right before it takes `- `'))
   assert.equal(
     content(losslessMarkdownToAdf('!adf:orderedList {order=5}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n')),
-    named('orderedList', 'each item behind its number, counting up from `5. `, or from `5) ` right after another ordered list'),
+    named('orderedList', 'each item behind its number, counting up from `5. `, or from `5) ` where the list right before it takes `.`'),
   )
   assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n')), named('codeBlock', 'its text in a fence of more backticks than any run it holds, its language after the opening fence'))
   assert.equal(
