@@ -66,10 +66,10 @@
 - **Breaking:** `adfToLosslessMarkdown` writes a centered, uncaptioned external image whose one
   mark is a link holding only `href` and `title` as `[![alt](url)](href "title")`, where it wrote the
   `mediaSingle` directive. Convert stored markdown per `MIGRATION.md`.
-- **Breaking:** `colwidth` is spelled as its widths joined by commas, `colwidth="340,420"`, where it
-  was a JSON array, and a block's `marks` names each mark with its attributes,
-  `marks="breakout{mode=wide}"`, where it was a JSON array. The JSON array stays only where the
-  flavour does not list a mark's type, one of its attributes, or the type of one's value. Convert stored markdown per `MIGRATION.md`.
+- **Breaking:** `adfToLosslessMarkdown` writes `colwidth` as its widths joined by commas,
+  `colwidth="340,420"`, and a block's `marks` as each mark's type and attributes,
+  `marks="breakout{mode=wide}"`, where it wrote both as JSON arrays, and `losslessMarkdownToAdf`
+  refuses the arrays. Convert stored markdown per `MIGRATION.md`.
 - Fix the time `adfToLosslessMarkdown` and `adfToPortableMarkdown` take on text holding a long run of
   `*`, `_`, `~` or backticks, or a heading ending in a long run of `#`: the time is linear in the
   run, and a run of 20000 `*` takes milliseconds where it took seconds.

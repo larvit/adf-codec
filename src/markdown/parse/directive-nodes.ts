@@ -132,7 +132,7 @@ function readNamedMark(type: string, text: string, index: number, path: ConvertE
   const name = readDirectiveName(text, index)
   if (name === undefined) return failure('unsupported-node-shape', unnamedMarks(type), path)
   const vocabulary = markVocabularies.get(name)
-  if (vocabulary === undefined) return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} names ${name}, no mark the flavour lists: spell an unlisted mark in the JSON array`, path)
+  if (vocabulary === undefined) return failure('unsupported-node-shape', `the ${marksAttribute} attribute of ${type} names ${name}, no mark the flavour lists: write the marks as their JSON array, marks="[{\\"type\\":\\"${name}\\"}]"`, path)
   const start = index + name.length
   const attributes = text.charAt(start) === '{' ? readAttributes(text, start) : { value: { attributes: new Map<string, DirectiveValue>(), end: start } }
   if (attributes.fault !== undefined) {
@@ -145,7 +145,7 @@ function readNamedMark(type: string, text: string, index: number, path: ConvertE
 }
 
 function unnamedMarks(type: string): string {
-  return `the ${marksAttribute} attribute of ${type} names each mark with its {attrs}, one space apart: this one does not`
+  return `the ${marksAttribute} attribute of ${type} names its marks one space apart, each as its type and any {attrs}: this one does not`
 }
 
 function namedNode(type: string, attrs: AdfAttributes, marks: readonly AdfMark[] | undefined, empty: ReadonlySet<EmptyKey>): AdfNode {

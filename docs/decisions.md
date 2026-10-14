@@ -109,9 +109,10 @@ managers, engineers and support agents. Goal 6. Valid while ADF types these attr
 `colwidth` is its widths joined by commas, `colwidth="340,420"`, where it was a JSON array. A
 block's `marks` names each mark with its `{attrs}`, in order,
 `marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"`, chosen over the escaped
-JSON array and an unquoted one. All three writers first sketched a key per mark, `{align=center}`,
-which loses the marks' order and can clash with the node's own attributes. A mark `src/adf/` does not
-type keeps the whole array as JSON, the general form (§Readable spellings take the `try` prefix).
+JSON array and the JSON array unquoted. All three writers first sketched a key per mark,
+`{align=center}`, which loses the marks' order and can clash with the node's own attributes. Where
+`src/adf/` does not type a mark or one of its attributes, or a value holds another type, the whole
+array stays JSON, the general form (§Readable spellings take the `try` prefix).
 The grammar: `spec/flavour.md` §Block nodes.
 
 ## Empty markdown is a document of no blocks
