@@ -25,7 +25,6 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 114 | 0.2.1 | defect | **Build text marked `code` holding no mark but `link` and `annotation`, in every reader, and carry any other in `adfToLosslessMarkdown`.** | 3 | 4 | 5 | 5 | 7 | 4 | 15.4 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.2.1 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
@@ -47,6 +46,7 @@
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 4 | 3 | 7 | 1 | 17.5 |
 | 81 | 0.3.0 |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 2 | 2 | 5 | 5 | 3 | 16.3 |
 | 112 | 0.3.0 |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 3 | 3 | 5 | 6 | 6 | 4 | 16.3 |
+| 114 | 0.3.0 | defect | **Build text marked `code` holding no mark but `link` and `annotation`, in every reader, and carry any other in `adfToLosslessMarkdown`.** | 3 | 4 | 5 | 5 | 7 | 4 | 15.4 |
 | 46 | 0.3.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.3.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
 | 107 | 0.3.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
@@ -68,13 +68,6 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
-
-### 114. Build text marked `code` holding no mark but `link` and `annotation`, in every reader, and carry any other in `adfToLosslessMarkdown`.
-
-`**`npm ci`**` builds text holding `[strong, code]`; `code_inline_node` (`spec/adf-schema/full.json`)
-gives code text `code`, `link` and `annotation` alone, so a site may reject the document. The `==`
-highlight already skips code (`highlighted`, `src/markdown/parse/inline-content.ts`). Moves the
-reading of stored markdown, so it ships where semver allows a breaking change.
 
 ### 99. Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.
 
@@ -252,6 +245,13 @@ reads `a |` over `--- |` as a one-column table. `portableMarkdownToAdf` refuses 
 paragraph. A long row stays refused (`docs/decisions.md` §The portable reader refuses what GFM's
 reading would drop), so the README's pipe-table guarantee keeps the long row for both readers, and
 the short row and the line holding no `|` for `losslessMarkdownToAdf` alone. The one-column shape needs `isBareDelimiterRow` in the writer's escaping to cover it too.
+
+### 114. Build text marked `code` holding no mark but `link` and `annotation`, in every reader, and carry any other in `adfToLosslessMarkdown`.
+
+`**`npm ci`**` builds text holding `[strong, code]`; `code_inline_node` (`spec/adf-schema/full.json`)
+gives code text `code`, `link` and `annotation` alone, so a site may reject the document. The `==`
+highlight already skips code (`highlighted`, `src/markdown/parse/inline-content.ts`). Moves the
+reading of stored markdown, so it ships where semver allows a breaking change.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
