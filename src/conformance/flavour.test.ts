@@ -7,7 +7,7 @@ import test from 'node:test'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
+import { blockMarkAttributes, markAttributes, markVocabularies } from '../adf/mark-attributes.ts'
 import { textDirectiveName } from '../markdown/text-directive.ts'
 
 type Declared = { attributes: AttributeVocabulary }
@@ -104,5 +104,9 @@ test('no name is spelled in more than one position', () => {
 })
 
 test('the mark table holds the attributes spec/flavour.md gives each mark', () => {
-  assert.deepEqual(declarations('Marks'), vocabularies(Object.fromEntries(Object.entries({ ...blockMarkAttributes, ...markAttributes }).map(([type, attributes]) => [type, { attributes }]))))
+  assert.deepEqual(declarations('Marks'), vocabularies(Object.fromEntries([...markVocabularies].map(([type, attributes]) => [type, { attributes }]))))
+})
+
+test('no mark is named in both mark tables', () => {
+  assert.equal(markVocabularies.size, Object.keys(blockMarkAttributes).length + Object.keys(markAttributes).length)
 })

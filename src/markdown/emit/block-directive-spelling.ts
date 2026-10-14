@@ -1,10 +1,9 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/document.ts'
-import { blockArgument, markValues, marksAttribute, spellBlockMarks } from '../block-directive.ts'
+import { blockArgument, marksAttribute, spellBlockMarks } from '../block-directive.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { isBareToken, spellAttributes, spellDirectiveOpener, spellVocabulary } from '../directive-syntax.ts'
-import { overNested } from '../../json-value.ts'
 import { spellEmptyKeys } from '../empty-keys.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
@@ -18,8 +17,9 @@ export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, 
   const spelledPairs = [...spellVocabulary(pairs), ...spellEmptyKeys(node)]
   const marks = nodeMarks(node)
   if (marks.length > 0) {
-    if (overNested(markValues(marks))) return failure('unsupported-nesting-depth', attributeNestingMessage(marksAttribute, node.type), path)
-    spelledPairs.push([marksAttribute, spellBlockMarks(marks)])
+    const spelling = spellBlockMarks(marks)
+    if (spelling === undefined) return failure('unsupported-nesting-depth', attributeNestingMessage(marksAttribute, node.type), path)
+    spelledPairs.push([marksAttribute, spelling])
   }
   return success(spellDirectiveOpener(node.type, slot.argument, spellAttributes(spelledPairs)))
 }

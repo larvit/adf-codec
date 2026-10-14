@@ -21,14 +21,10 @@ export const markAttributes = {
   underline: {},
 } satisfies Readonly<Record<string, AttributeVocabulary>>
 
-const blockMarkVocabularies: ReadonlyMap<string, AttributeVocabulary> = new Map(Object.entries(blockMarkAttributes))
+export const markVocabularies: ReadonlyMap<string, AttributeVocabulary> = new Map([...Object.entries(blockMarkAttributes), ...Object.entries(markAttributes)])
 
 export type MarkType = keyof typeof markAttributes
 
 export function isMarkType(type: string): type is MarkType {
   return Object.hasOwn(markAttributes, type)
-}
-
-export function markVocabulary(type: string): AttributeVocabulary | undefined {
-  return isMarkType(type) ? markAttributes[type] : blockMarkVocabularies.get(type)
 }

@@ -2,12 +2,12 @@ import type { AdfMark } from '../adf/document.ts'
 import type { BlockType } from '../adf/block-nodes.ts'
 import type { JsonValue } from '../json-value.ts'
 import { blockNodeModel } from '../adf/block-nodes.ts'
-import { isAdfMark, nodeAttrs } from '../adf/document.ts'
-import { markVocabulary } from '../adf/mark-attributes.ts'
+import { isAdfMark } from '../adf/document.ts'
+import { markVocabularies } from '../adf/mark-attributes.ts'
+import { overNested } from '../json-value.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
-import { spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellStringAttribute, spellVocabulary } from './directive-syntax.ts'
-import { spellEmptyKeys } from './empty-keys.ts'
-import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
+import { spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellStringAttribute } from './directive-syntax.ts'
+import { spellMarkVocabulary } from './mark-spellings.ts'
 
 const argumentByType = new Map(
   Object.entries({
@@ -41,14 +41,14 @@ export function markValues(marks: readonly AdfMark[]): JsonValue {
   return marks.map((mark) => (mark.attrs === undefined ? { type: mark.type } : { attrs: mark.attrs, type: mark.type }))
 }
 
-// spec/flavour.md, Block nodes: each mark by name, else the whole array as JSON where one mark's type or attrs no table types.
-export function spellBlockMarks(marks: readonly AdfMark[]): string {
+// spec/flavour.md, Block nodes: each mark by name, else the whole array as JSON, `undefined` where that array nests past largestNesting.
+export function spellBlockMarks(marks: readonly AdfMark[]): string | undefined {
   const named: string[] = []
   for (const mark of marks) {
-    const vocabulary = markVocabulary(mark.type)
-    const pairs = vocabulary === undefined ? undefined : vocabularyPairs(nodeAttrs(mark), vocabulary, [])
-    if (pairs === undefined) return spellJsonAttribute(markValues(marks))
-    named.push(`${mark.type}${spellAttributes([...spellVocabulary(pairs), ...spellEmptyKeys(mark)])}`)
+    const vocabulary = markVocabularies.get(mark.type)
+    const attributes = vocabulary === undefined ? undefined : spellMarkVocabulary(mark, vocabulary)
+    if (attributes === undefined) return overNested(markValues(marks)) ? undefined : spellJsonAttribute(markValues(marks))
+    named.push(`${mark.type}${attributes}`)
   }
   return spellStringAttribute(named.join(' '))
 }

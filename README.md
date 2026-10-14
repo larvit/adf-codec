@@ -316,7 +316,8 @@ Ping !adf:mention[@Mikael]{id=5b10a2} â€” !adf:status[In review]{color=yellow} â
 
 - Attributes are `{key=value key2="two words"}`: keys alphabetical, a value bare where it is
   `[A-Za-z0-9_-]+`, else double-quoted with JSON string escaping. A number or JSON value is spelled as
-  canonical JSON. An empty `attrs`, `content` or `marks` key is spelled `{attrs=empty}`,
+  canonical JSON, but `colwidth` is its widths joined by commas, `colwidth="340,420"`, and a block's
+  `marks` names each mark with its attributes, `marks="breakout{mode=wide}"`. An empty `attrs`, `content` or `marks` key is spelled `{attrs=empty}`,
   `{content=empty}` or `{marks=empty}`.
 - Three reserved names build no node: `!adf:carry` is the inline opaque carry, `!adf:doc {content=none}`
   spells a document holding no `content` key, and `!adf:textBreak{}` parts two adjacent text nodes

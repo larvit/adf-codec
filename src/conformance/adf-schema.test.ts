@@ -9,7 +9,7 @@ import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabu
 import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
+import { markVocabularies } from '../adf/mark-attributes.ts'
 
 type Held = Map<string, Set<AttributeKind>>
 type Properties = Map<string, SchemaObject[]>
@@ -85,7 +85,7 @@ function spelled(): Spelled[] {
   return [
     ...Object.entries(blockNodes).map(([type, model]) => spelledType(type, model.attributes, blockArgument(type))),
     ...Object.entries(inlineNodes).map(([type, model]) => spelledType(type, model.attributes)),
-    ...Object.entries({ ...blockMarkAttributes, ...markAttributes }).map(([type, attributes]) => spelledType(type, attributes)),
+    ...[...markVocabularies].map(([type, attributes]) => spelledType(type, attributes)),
   ]
 }
 

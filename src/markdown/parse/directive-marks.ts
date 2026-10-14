@@ -1,4 +1,5 @@
 import type { AdfMark } from '../../adf/document.ts'
+import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { ConvertFault } from '../../result.ts'
 import type { DirectiveAttributes } from '../directive-syntax.ts'
 import type { MarkSpelling } from '../mark-spellings.ts'
@@ -13,12 +14,16 @@ export function readDirectiveMark(name: string, attributes: DirectiveAttributes,
   if (spelling === undefined) return undefined
   const markdown = markdownForm(spelling)
   if (markdown !== undefined) return failure('unsupported-node-shape', `${name} is spelled ${markdown}, never as a directive`, path)
-  const empty = readEmptyKeys(name, attributes, ['attrs'], false)
+  return readMarkAttributes(name, attributes, spelling.attributes, path)
+}
+
+export function readMarkAttributes(type: string, attributes: DirectiveAttributes, vocabulary: AttributeVocabulary, path: ConvertErrorPath): Result<AdfMark> {
+  const empty = readEmptyKeys(type, attributes, ['attrs'], false)
   if (empty.fault !== undefined) return faulted(empty.fault, path)
-  const attrs = readVocabulary(name, empty.value.rest, spelling.attributes, undefined, path)
+  const attrs = readVocabulary(type, empty.value.rest, vocabulary, undefined, path)
   if (!attrs.ok) return attrs
-  if (empty.value.empty.has('attrs')) return success({ attrs: {}, type: name })
-  return success(Object.keys(attrs.value).length === 0 ? { type: name } : { attrs: attrs.value, type: name })
+  if (empty.value.empty.has('attrs')) return success({ attrs: {}, type })
+  return success(Object.keys(attrs.value).length === 0 ? { type } : { attrs: attrs.value, type })
 }
 
 export function inlineMarkSpellingFault(name: string): ConvertFault | undefined {
