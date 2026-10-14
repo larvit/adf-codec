@@ -39,7 +39,6 @@
 | 33 | 0.3.0 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 8 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.3.0 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 7 | 5 | 9 | 9 | 8.2 |
 | 102 | 0.3.0 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 7 | 2 | 4 | 1 | 8.0 |
-| 116 | 0.3.0 | question | **Retitle `docs/decisions.md` §A mark skips a node that cannot hold it to say only a link or directive mark wrapping only such nodes is refused.** | 1 | 1 | 1 | 2 | 3 | 6 | 5.4 |
 | 109 | 0.3.0 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 8 | 4 | 7 | 9 | 5.3 |
 | 7 | 0.4.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.4.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 4 | 6 | 8 | 1 | 25.2 |
@@ -71,12 +70,12 @@
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Each post links the GitHub repository, the README's comparison table and a README that opens with
-what the package is. Before posting, set `converter-comparison/run.sh`'s pins to each package's
-latest version, `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the
-README table, its versions and its date in step with the output. We draft each post for the place it
-goes; the maintainer posts them once `0.3.0` is published. Found while planning discoverability,
-2026-10-04.
+Lands after every other `0.3.0` item (the maintainer, 2026-10-14). Each post links the GitHub
+repository, the README's comparison table and a README that opens with what the package is. Before
+posting, set `converter-comparison/run.sh`'s pins to each package's latest version,
+`@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
+its versions and its date in step with the output. We draft each post for the place it goes; the
+maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
 
 ### 99. Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.
 
@@ -183,14 +182,6 @@ the fix.
 (`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
 `taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
 the reason the project read worse.
-
-### 116. Retitle `docs/decisions.md` §A mark skips a node that cannot hold it to say only a link or directive mark wrapping only such nodes is refused.
-
-The title says "a mark wrapping only such nodes is refused", but emphasis wrapping only a mention or
-a code span reads as the plain node, as the entry's body says. Proposed title: "A mark skips a node
-that cannot hold it, and a link or directive mark wrapping only such nodes is refused, but for a link
-around hard breaks alone", with `AGENTS.md`'s index line. Found by the prose review of item 114,
-2026-10-14.
 
 ### 109. Spell nested lists and quotes in time linear in the markdown.
 
