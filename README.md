@@ -318,8 +318,9 @@ Ping !adf:mention[@Mikael]{id=5b10a2} â€” !adf:status[In review]{color=yellow} â
   `[A-Za-z0-9_-]+`, else double-quoted with JSON string escaping. A number or JSON value is spelled as
   canonical JSON, but `colwidth` is its widths joined by commas, `colwidth="340,420"`, and a block's
   `marks` names each mark with its attributes, `marks="breakout{mode=wide}"`, keeping the JSON array
-  where a mark's type or attributes are ones the flavour does not list. An empty `attrs`, `content`
-  or `marks` key is spelled `{attrs=empty}`, `{content=empty}` or `{marks=empty}`.
+  where the flavour does not list a mark's type, one of its attributes, or the type of one's value.
+  An empty `attrs`, `content` or `marks` key is spelled `{attrs=empty}`, `{content=empty}` or
+  `{marks=empty}`.
 - Three reserved names build no node: `!adf:carry` is the inline opaque carry, `!adf:doc {content=none}`
   spells a document holding no `content` key, and `!adf:textBreak{}` parts two adjacent text nodes
   CommonMark would read back as one.

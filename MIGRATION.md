@@ -68,7 +68,7 @@ function migrateMarkdown(stored: string) {
 | `:adf{json="…"}` carrying a link for its `collection`, `id` or `occurrenceKey` | `!adf:link[text]{attrs}` |
 | `::listBreak` between two lists of a kind | no separator: adjacent lists of a kind alternate `- ` and `* `, or `1.` and `1)` |
 | `colwidth="[340,420]"` | `colwidth="340,420"` |
-| `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"` on a block | `marks="breakout{mode=wide}"`; the JSON array stays where a mark's type or attributes are ones the flavour does not list |
+| `marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"` on a block | `marks="breakout{mode=wide}"`; the JSON array stays where the flavour does not list a mark's type, one of its attributes, or the type of one's value |
 
 A colon run and `:name[` are plain text now, and `adf` an ordinary code block language; text
 holding an unescaped `!adf:` and a code fence whose info string opens `adf:` are claimed instead.

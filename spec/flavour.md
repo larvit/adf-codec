@@ -215,9 +215,9 @@ directive form to hold an empty key.
 Marks on a block node ride the reserved attribute key `marks`: each mark's type followed by its
 `{attrs}` spelled as a directive's, one space apart in the array's order, and `marks=empty` where
 the array is empty: `!adf:layoutSection {marks="breakout{mode=wide}"}`,
-`!adf:paragraph {marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"}`. Where a
-mark's type is not one §Marks lists, or its attributes are not the ones listed there, the whole
-array is a `json` value instead: `marks="[{\"attrs\":{\"color\":\"#fff\"},\"type\":\"backgroundColor\"}]"`.
+`!adf:paragraph {marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"}`. Where §Marks
+does not list a mark's type, one of its attributes, or the type of one's value, the whole array is
+a `json` value instead: `marks="[{\"attrs\":{\"color\":\"#fff\"},\"type\":\"backgroundColor\"}]"`.
 A section saying its body is inline takes at most one paragraph, whose inline content becomes
 the node's `content`; any other body is a named error, and an empty pair is a node holding none.
 
@@ -543,7 +543,6 @@ A block's `marks` key also holds these, which no inline spelling wraps:
 
 - `alignment` — Attributes: `align` (`center` `end`).
 - `breakout` — Attributes: `mode` (`full-width` `wide`), `width` (number).
-- `dataConsumer` — Attributes: `sources` (json).
 - `fragment` — Attributes: `localId` (string), `name` (string).
 - `indentation` — Attributes: `level` (number, 1–6).
 
@@ -556,8 +555,8 @@ carrying an identical mark, attributes included, at that depth: `attrs: {}` diff
 and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
 emitted carry sits inside a mark spelling.
 
-An inline node whose marks no nesting spells — a hard break holding any mark, a mark type the first
-list does not hold, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
+An inline node whose marks no nesting spells — a hard break holding any mark, a mark type the inline
+list above does not hold, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
 the spelling needs and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order
 putting a code span outside another mark, `code` over anything but a text node holding text, or over
 text holding a line ending or a null character, or a spelling CommonMark's flanking rules cannot
