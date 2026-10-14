@@ -75,7 +75,7 @@ const show = (label, call) => {
 for (const [name, { toAdf, toMarkdown }] of Object.entries(converters)) {
   const manifest = JSON.parse(readFileSync(`node_modules/${name}/package.json`, "utf8"));
   console.log(`\n## ${name} ${manifest.version}`);
-  console.log("runtime dependencies:", Object.keys(manifest.dependencies ?? {}).length);
+  console.log("direct runtime dependencies:", Object.keys(manifest.dependencies ?? {}).length);
   const written = toMarkdown && show("ADF to markdown", () => toMarkdown(roundTripDoc));
   if (written !== undefined) {
     const readBack = toAdf && show("read back", () => toAdf(written));
