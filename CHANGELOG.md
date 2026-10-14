@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - **Breaking:** each call names the markdown it reads or writes. `adfToMarkdown` and `markdownToAdf`
   are now `adfToLosslessMarkdown` and `losslessMarkdownToAdf`. A bot's or a model's markdown reads
