@@ -219,6 +219,7 @@ test('reads a == pair to the editor default highlight, Yellow200 #f8e6a0 in @atl
   assert.deepEqual(read('**==hi==** b\n'), [paragraph(text('hi', highlight, strong), text(' b'))])
   assert.deepEqual(read('==**a**_b_ `c`==\n'), [paragraph(text('a', highlight, strong), text('b', highlight, em), text(' ', highlight), text('c', code))])
   assert.deepEqual(read('==`a`==\n'), [paragraph(text('a', code))])
+  assert.deepEqual(read('==[==a==](/u) b==\n'), [paragraph(text('a', { attrs: { href: '/u' }, type: 'link' }, highlight), text(' b', highlight))])
   assert.deepEqual(read('x==y==z ==a == b==, (==c==) _d_==e==\n'), [paragraph(text('x==y==z '), text('a == b', highlight), text(', ('), text('c', highlight), text(') '), text('d', em), text('e', highlight))])
   assert.deepEqual(read('😀==b== ==c==😀 é==d==\n'), [paragraph(text('😀'), text('b', highlight), text(' '), text('c', highlight), text('😀 é==d=='))])
   assert.deepEqual(read('この機能は==日本語==でのみ、中文==重点==内容、ภาษา==ไทย==ดี 𠀀==𠀁==𠀂 이 기능은 ==한국어==에서만 サーバー==停止==中 このiPhone==専用==アプリ\n'), [
