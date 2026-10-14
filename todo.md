@@ -71,7 +71,8 @@
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
 Each post links the GitHub repository, the README's comparison table and a README that opens with
-what the package is. We draft each post for the place it goes; the maintainer posts them once
+what the package is. Before posting, `converter-comparison/run.sh` checks the table again with
+`0.3.0` and today's date in `--before`. We draft each post for the place it goes; the maintainer posts them once
 `0.3.0` is published. Found while planning discoverability, 2026-10-04.
 
 ### 114. Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.

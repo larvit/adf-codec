@@ -1,15 +1,15 @@
-import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
-import { isDeepStrictEqual } from "node:util";
-import * as atlaskitJson from "@atlaskit/editor-json-transformer";
-import * as atlaskitMarkdown from "@atlaskit/editor-markdown-transformer";
+import * as adf2markdown from "adf2markdown";
 import * as adfCodec from "@larvit/adf-codec";
 import * as adfToMarkdown from "adf-to-markdown";
 import adfToMd from "adf-to-md";
-import * as adf2markdown from "adf2markdown";
+import * as atlaskitJson from "@atlaskit/editor-json-transformer";
+import * as atlaskitMarkdown from "@atlaskit/editor-markdown-transformer";
+import { createRequire } from "node:module";
 import * as extendedParser from "extended-markdown-adf-parser";
+import { isDeepStrictEqual } from "node:util";
 import * as marklassian from "marklassian";
 import mdToAdf from "md-to-adf";
+import { readFileSync } from "node:fs";
 
 const { defaultSchema } = createRequire(import.meta.url)("@atlaskit/adf-schema/schema-default");
 
@@ -78,7 +78,8 @@ for (const [name, { toAdf, toMarkdown }] of Object.entries(converters)) {
   console.log("runtime dependencies:", Object.keys(manifest.dependencies ?? {}).length);
   const written = toMarkdown && show("ADF to markdown", () => toMarkdown(roundTripDoc));
   if (written !== undefined) {
-    if (toAdf) show("round-trip deep-equal", () => isDeepStrictEqual(toAdf(written), roundTripDoc));
+    const readBack = toAdf && show("read back", () => toAdf(written));
+    if (readBack !== undefined) console.log("round-trip deep-equal:", isDeepStrictEqual(readBack, roundTripDoc));
     const unknown = show("unknown node to markdown", () => toMarkdown(unknownNodeDoc));
     if (toAdf && unknown !== undefined) show("unknown node read back", () => toAdf(unknown));
   }

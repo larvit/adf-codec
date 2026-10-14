@@ -10,7 +10,6 @@
   cannot take as `!adf:carry{json="…"}`. `MIGRATION.md` says how to convert stored markdown.
 - `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
   node CommonMark spells, such as `[![alt](url)](href)` for a linked `!adf:mediaSingle`.
-
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 

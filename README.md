@@ -194,15 +194,16 @@ UI. They know markdown and not ADF, and rely on every spelling saying what it me
 
 ## Other ADF converters
 
-Serves [Goals](#goals) 3. Each package at the version named, checked 2026-10-14 by running its
-published code on one document holding marks, a link, a mention, a status, a panel and a list, and
+Serves [Goals](#goals) 3. Every npm package converting ADF to or from markdown with over 1,000
+downloads a week, at the version named, checked 2026-10-14 by running its published code with its
+default options on one document holding marks, a link, a mention, a status, a panel and a list, and
 on one holding a node type it cannot know:
 [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison).
 
-| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Runtime dependencies |
+| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Direct runtime dependencies |
 | --- | --- | --- | --- | --- | --- |
 | `@larvit/adf-codec` 0.2.0 | both ways | the same document | kept | markdown: lossless, portable, CommonMark | 0 |
-| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer`; ADF to markdown throws "not implemented" | – | – | markdown | 5 |
+| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 |
 | `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 |
 | `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 |
 | `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 |

@@ -16,7 +16,7 @@
       "datasourceTemplate": "docker",
       "depNameTemplate": "node",
       "description": "Pin the node image the gate runs",
-      "managerFilePatterns": ["docker-runner.sh"],
+      "managerFilePatterns": ["converter-comparison/run.sh", "docker-runner.sh"],
       "matchStrings": ["node_image=node:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
     },
