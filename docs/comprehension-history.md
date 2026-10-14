@@ -1025,3 +1025,42 @@ Inherited architect, would restructure first:
 - Locality: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: the reader asks the writer's `commonMarkSpelling`, and the writer reuses the reader's tokenizer, so neither side changes alone
 - Shape: `src/markdown/directive-syntax.ts:32` `Read`: the general reader-failure type housed in the directive grammar file, among 15 loose files in `src/markdown/`
 - Shape: `src/markdown/emit/adf-to-markdown.ts:45` `writeMarkdown`: writes both flavours in a file named for the lossless one
+
+## 2026-10-14T19:06:43Z, PR #49 at d8fbff6fde4dbbe28f9d4fb796d8385240d5a445, against 696aca1c717c69c63e1b5dce7e2e2ae78f5b5b8b
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | same | same | better |
+| Inherited architect | same | same | worse | same | same |
+| Maintainability senior | same | better | same | same | better |
+| Junior A | better | same | worse | same | better |
+
+Mid A, decided by:
+
+- Navigation, Locality: `src/adf/inline-nodes.ts:41` `takenMarkTypes` / `takesMark`: the code-text rule lives in one predicate beside the mark table, reached by the parser, the emitter's carry and the portable reducer
+- Locality: `src/markdown/parse/inline-content.ts:584` `highlighted`: asks `marksItem` instead of a hand-kept code check
+- Locality: `src/markdown/portable/inline-reduction.ts:136` `portableMarks`: drops exactly the marks the reader refuses, by the shared name
+- Locality: `src/markdown/emit/inline-line.ts:103` `freshFallbacks`: `carries` no longer shows every reason a node is carried; the set starts pre-filled
+- Shape, Self-sufficiency: `src/adf/inline-nodes.ts:40` `takenMarkTypes`: `undefined` means every mark, explained only by its comment; spec says code text takes only `link`
+
+Inherited architect, decided by:
+
+- Shape, Locality: `src/markdown/emit/inline-line.ts:102` `freshFallbacks`: seeds schema carries into a set named for fallbacks, and `carries` no longer says why a node is carried
+- Locality: `src/adf/inline-nodes.ts:5` `codeTextMarkTypes`: holds `code` with nothing saying why, and spec/flavour.md says code text takes only `link`
+- Locality: `src/adf/inline-nodes.ts:46` `takesMark`: the answer depends on the node's marks at call time, right only because a code span is built with `code` first
+- Locality: `src/markdown/parse/inline-content.ts:584` `highlighted`: one table now answers what two hand-written checks did
+
+Maintainability senior, decided by:
+
+- Locality, Overall: `src/adf/inline-nodes.ts:41` `takenMarkTypes` / `takesMark`: one function states the code-text rule the parser and emitter both ask; `undefined` meaning every mark is visible only in its comment
+- Locality: `src/markdown/parse/inline-content.ts:587` `highlighted`: routes through `marksItem` instead of a private copy of a schema rule
+- Locality: `src/markdown/portable/inline-reduction.ts:146` `portableMarks`: filters by the shared list, but checks `code` itself rather than asking `takesMark`
+- Locality: `src/markdown/emit/inline-line.ts:103` `freshFallbacks`: `carries` is right only if the caller seeded the set, and its comment no longer names withheld marks
+
+Junior A, decided by:
+
+- Navigation, Overall: `src/adf/inline-nodes.ts:5` `codeTextMarkTypes`: the code-text rule lives in one table beside the other inline nodes' table
+- Shape: `src/adf/inline-nodes.ts:41` `takenMarkTypes`: "taken" reads as accepted or as already held, and `undefined` means every mark
+- Shape: `src/markdown/emit/inline-line.ts:103` `freshFallbacks`: named fresh but seeds the carried set, and `carries`'s comment no longer names the withheld-mark carry
