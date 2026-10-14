@@ -12,6 +12,8 @@
   schema requires: ``**`npm ci`**`` now reads as plain code, and a directive mark other than a link
   around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
   holding another mark as `!adf:carry{json="…"}`, and `adfToPortableMarkdown` drops that mark.
+- `adfToPortableMarkdown` keeps both targets of a linked external image standing inline, as in a
+  table cell: `[alt](href) ([image](url))`, where it wrote `[alt](url)` and dropped the link.
 - `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
   node CommonMark spells, such as `[![alt](url)](href)` for a linked `!adf:mediaSingle`.
 - The README compares the package with seven other ADF converters, each checked against its

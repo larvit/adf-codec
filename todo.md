@@ -26,7 +26,6 @@
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
-| 99 | 0.3.0 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 115 | 0.3.0 | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 3 | 3 | 3 | 4 | 6 | 4 | 12.3 |
 | 91 | 0.3.0 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -76,14 +75,6 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
 its versions and its date in step with the output. We draft each post for the place it goes; the
 maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
-
-### 99. Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.
-
-`mediaLeaves` (`src/markdown/portable/inline-reduction.ts`) writes such an image `[alt](url)`, dropping
-the link's `href`; README §Portable markdown says link targets stay (Goal 7). `[![alt](url)](href)`
-there reads back as `[alt](href)`, breaking the byte-for-byte rewrite, so only one of `url` and
-`href` can survive; a reader panel picks which. If it picks `url`, the README names the dropped
-`href` where it says link targets stay.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
