@@ -385,3 +385,20 @@ Read most (opens and searches):
 - `docker-runner.sh` 1
 - `package.json` 1
 - `tsconfig.build.json` 1
+
+## Reading cost, chunk 5a2bec0d3370, finished 2026-10-14T20:13:58Z
+
+113495 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 11
+- `todo.md` 7
+- `src/conformance/commonmark-spec.test.ts` 6
+- `MIGRATION.md` 5
+- `spec/flavour.md` 4
+- `src/markdown/parse/inline-content.ts` 4
+- `src/markdown/parse/markdown-to-adf.test.ts` 4
+- `src/markdown/portable/inline-reduction.ts` 4
+- `CHANGELOG.md` 3
+- `docs/decisions.md` 3
