@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 113`
+`Next ID = 114`
 
 | Goal | W |
 |---|---|
@@ -38,6 +38,7 @@
 | 33 | 0.2.1 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 8 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.2.1 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 7 | 5 | 9 | 9 | 8.2 |
 | 102 | 0.2.1 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 7 | 2 | 4 | 1 | 8.0 |
+| 113 | 0.2.1 | principle | **Name a malformed block mark's `{attrs}` cause in `readNamedMark` without editing another module's message text.** | 2 | 2 | 3 | 2 | 3 | 1 | 7.5 |
 | 109 | 0.2.1 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 8 | 4 | 7 | 9 | 5.3 |
 | 7 | 0.3.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 4 | 6 | 8 | 1 | 25.2 |
@@ -170,6 +171,13 @@ the fix.
 (`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
 `taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
 the reason the project read worse.
+
+### 113. Name a malformed block mark's `{attrs}` cause in `readNamedMark` without editing another module's message text.
+
+Today `readNamedMark` in `src/markdown/parse/directive-nodes.ts` deletes `; ${directiveEscape}` from
+the fault `readAttributes` returns, so rewording a fault in `directive-syntax.ts` silently changes the
+block marks error. Both paired seats of PR #43's comprehension ruling named it the place that read
+worse. Principle: compose, do not entangle (`~/.claude/principles/technical-principles.md`).
 
 ### 109. Spell nested lists and quotes in time linear in the markdown.
 
