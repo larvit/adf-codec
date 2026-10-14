@@ -26,7 +26,6 @@
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
-| 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 2 | 6 | 7 | 3 | 21.2 |
 | 114 | 0.3.0 | defect | **Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.** | 3 | 4 | 5 | 5 | 7 | 4 | 15.4 |
 | 99 | 0.3.0 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -71,20 +70,9 @@
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Lands after item 71, so each post links the GitHub repository, the README's comparison table and a
-README that opens with what the package is. We draft each post for the place it goes; the maintainer
-posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
-
-### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
-
-Lands before items 7 and 46, which add HTML and a size column to the table. Its columns: which
-directions each converts, whether the round-trip holds, what an unknown node does, the formats and
-runtime dependencies. Candidates are the packages an npm search for ADF and markdown returns. Every
-cell cites that package's README or a run against its published version, and the table names each
-version and the date it was checked. Found while planning discoverability, 2026-10-04. Checked
-2026-10-05: no other package converts HTML or holds the round-trip; the candidates are
-`@atlaskit/editor-markdown-transformer`, `adf-to-markdown`, `adf-to-md`, `adf2markdown`,
-`extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
+Each post links the GitHub repository, the README's comparison table and a README that opens with
+what the package is. We draft each post for the place it goes; the maintainer posts them once
+`0.3.0` is published. Found while planning discoverability, 2026-10-04.
 
 ### 114. Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.
 
@@ -185,7 +173,7 @@ on such a document. Found while shipping item 106, 2026-10-11.
 
 Lands after items 6, 59, 60 and 62. Which flavours get a composed call is this item's to settle; the
 CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it
-documents markdown, its comparison table (item 71) names HTML, and its tagline and `package.json`'s
+documents markdown, its comparison table names HTML, and its tagline and `package.json`'s
 description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
 `not-a-string` (`docs/decisions.md` §Which code a cause takes).
 
@@ -266,7 +254,7 @@ tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minif
 figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
 ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
-dependencies" claim, and in a size column of the comparison table (item 71). Measured today,
+dependencies" claim, and in a size column of the comparison table. Measured today,
 unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.

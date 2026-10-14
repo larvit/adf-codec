@@ -146,6 +146,7 @@ Nothing throws. `code` is from a closed list, so a `switch` with no `default` co
 
 - [Goals](#goals)
 - [Audience](#audience)
+- [Other ADF converters](#other-adf-converters)
 - [The calls](#the-calls)
 - [The lossless flavour](#the-lossless-flavour)
 - [Portable markdown](#portable-markdown)
@@ -190,6 +191,24 @@ which is free text.
 Behind those apps, the people who read and write the markdown, and later the HTML: product
 managers, engineers and support agents working in Atlassian products through a plugin or another
 UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
+
+## Other ADF converters
+
+Serves [Goals](#goals) 3. Each package at the version named, checked 2026-10-14 by running its
+published code on one document holding marks, a link, a mention, a status, a panel and a list, and
+on one holding a node type it cannot know:
+[`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison).
+
+| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Runtime dependencies |
+| --- | --- | --- | --- | --- | --- |
+| `@larvit/adf-codec` 0.2.0 | both ways | the same document | kept | markdown: lossless, portable, CommonMark | 0 |
+| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer`; ADF to markdown throws "not implemented" | – | – | markdown | 5 |
+| `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 |
+| `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 |
+| `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 |
+| `extended-markdown-adf-parser` 2.4.0 | both ways | a different document: the mention comes back as linked text, the status without its `localId` | written as JSON, read back as a paragraph of that JSON's text | markdown | 9 |
+| `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 |
+| `md-to-adf` 0.6.4 | markdown to ADF | – | – | markdown | 2 |
 
 ## The calls
 
