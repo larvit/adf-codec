@@ -25,6 +25,8 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
+| 73 | 0.2.1 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
+| 71 | 0.2.1 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 2 | 6 | 7 | 3 | 21.2 |
 | 89 | 0.2.1 |  | **Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.** | 4 | 4 | 4 | 5 | 6 | 4 | 13.0 |
 | 99 | 0.2.1 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.2.1 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
@@ -41,7 +43,6 @@
 | 45 | 0.3.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 4 | 6 | 8 | 1 | 25.2 |
 | 6 | 0.3.0 | decision | **Specify the HTML dialect.** | 2 | 6 | 7 | 7 | 8 | 2, 4 | 24.7 |
 | 77 | 0.3.0 | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 4 | 4 | 6 | 5 | 9 | 1 | 23.0 |
-| 71 | 0.3.0 |  | **Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.** | 1 | 3 | 2 | 6 | 7 | 3 | 21.2 |
 | 80 | 0.3.0 |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 3 | 3 | 5 | 6 | 1 | 19.2 |
 | 68 | 0.3.0 |  | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 3 | 3 | 4 | 4 | 7 | 1 | 18.2 |
 | 75 | 0.3.0 |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 2 | 2 | 4 | 3 | 7 | 1 | 17.5 |
@@ -53,7 +54,6 @@
 | 51 | 0.3.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
 | 95 | 0.3.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
 | 91 | 0.3.0 |  | **Spell an emphasis or link once across the hard breaks between two nodes it marks, in both writers.** | 5 | 5 | 8 | 5 | 6 | 6 | 9.0 |
-| 73 | 0.4.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.4.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 4 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.4.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 5 | 4 | 7 | 1 | 19.5 |
 | 74 | 0.4.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 4 | 8 | 3 | 3 | 15.7 |
@@ -68,6 +68,23 @@
 | 8 | 0.5.0 |  | **Ship a CLI.** | 3 | 7 | 5 | 7 | 6 | 3 | 18.6 |
 
 ## Details
+
+### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
+
+Lands after item 71, so each post links the GitHub repository, the README's comparison table and a
+README that opens with what the package is. We draft each post for the place it goes; the maintainer
+posts them once `0.2.1` is published. Found while planning discoverability, 2026-10-04.
+
+### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
+
+Lands before items 7 and 46, which add HTML and a size column to the table. Its columns: which
+directions each converts, whether the round-trip holds, what an unknown node does, the formats and
+runtime dependencies. Candidates are the packages an npm search for ADF and markdown returns. Every
+cell cites that package's README or a run against its published version, and the table names each
+version and the date it was checked. Found while planning discoverability, 2026-10-04. Checked
+2026-10-05: no other package converts HTML or holds the round-trip; the candidates are
+`@atlaskit/editor-markdown-transformer`, `adf-to-markdown`, `adf-to-md`, `adf2markdown`,
+`extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
 
 ### 89. Build a `date`, `emoji`, `inlineCard`, `mention` or `status` holding no mark Atlassian's schema withholds from it, in every reader.
 
@@ -166,11 +183,11 @@ on such a document. Found while shipping item 106, 2026-10-11.
 
 ### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
 
-Lands after items 6, 59, 60 and 62. Which flavours get a composed call is this item's to settle;
-the CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as
-it documents markdown, and its tagline and `package.json`'s description and keywords name HTML
-again. `htmlToAdf` refuses a value that is not a string as `not-a-string`
-(`docs/decisions.md` §Which code a cause takes).
+Lands after items 6, 59, 60 and 62. Which flavours get a composed call is this item's to settle; the
+CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it
+documents markdown, its comparison table (item 71) names HTML, and its tagline and `package.json`'s
+description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
+`not-a-string` (`docs/decisions.md` §Which code a cause takes).
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -202,17 +219,6 @@ refuse a 500-row table. Before reading an array, the reader checks its `length` 
 left, so a Proxy claiming 2³² elements is refused at once. The chunk asks whether that refusal
 shares the 500-level guard's `unsupported-nesting-depth` or takes another code. Found by the
 technical-principles audit, 2026-10-04.
-
-### 71. Add a README table comparing the package with the other ADF converters, each cell checked against that package's own docs or behaviour.
-
-Lands after items 7 and 46: the table names HTML and compares item 46's size figure. Its columns:
-which directions each converts, whether the round-trip holds, what an unknown node does, the
-formats, runtime dependencies and size. Candidates are the packages an npm search for ADF and
-markdown returns. Every cell cites that package's README or a run against its published version, and
-the table names each version and the date it was checked. Found while planning discoverability,
-2026-10-04. Checked 2026-10-05: no other package converts HTML or holds the round-trip; the
-candidates are `@atlaskit/editor-markdown-transformer`, `adf-to-markdown`, `adf-to-md`,
-`adf2markdown`, `extended-markdown-adf-parser`, `marklassian` and `md-to-adf`.
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
@@ -260,8 +266,8 @@ tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minif
 figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
 ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
-dependencies" claim. Measured today, unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6
-kB.
+dependencies" claim, and in a size column of the comparison table (item 71). Measured today,
+unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
@@ -305,12 +311,6 @@ reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `
 typed across a line as two links. Joining the run across the break in `inline-line.ts` ruled worse
 with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
 first as a set of parted breaks, then as a flag the first fallback clears.
-
-### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
-
-Lands after `0.3.0` is published with item 71, so each post links the GitHub repository, the
-README's comparison table and a README that opens with what the package is. We draft each post for
-the place it goes; the maintainer posts them. Found while planning discoverability, 2026-10-04.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
