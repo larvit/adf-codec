@@ -100,6 +100,20 @@ holding no `content` key. A writer panel chose the spelling, 5 of 7. The grammar
 `-0` is spelled `-0` wherever the flavour writes a number or a JSON value, since JSON's grammar
 reads it back as `-0`. The grammar: `spec/flavour.md` §Block nodes and §The CommonMark blocks.
 
+## A block's marks are named, and `colwidth` is a comma list
+
+2026-10-03 for `colwidth`, 5 of 7, and 2026-10-14 for `marks`, 3 of 3: writer panels of product
+managers, engineers and support agents. Goal 6. Valid while ADF types these attributes as
+`src/adf/` does.
+
+`colwidth` is its widths joined by commas, `colwidth="340,420"`, where it was a JSON array. A
+block's `marks` names each mark with its `{attrs}`, in order,
+`marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"`, chosen over the escaped
+JSON array and an unquoted one. All three writers first sketched a key per mark, `{align=center}`,
+which loses the marks' order and can clash with the node's own attributes. A mark `src/adf/` does not
+type keeps the whole array as JSON, the general form (§Readable spellings take the `try` prefix).
+The grammar: `spec/flavour.md` §Block nodes.
+
 ## Empty markdown is a document of no blocks
 
 2026-10-03, a writer panel and the maintainer. Goals 1 and 6. Valid while ADF's schema requires
