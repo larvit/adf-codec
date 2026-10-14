@@ -132,12 +132,12 @@ commonmark.js avoids the backtick cost by caching backtick runs by length.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
-The last five chunks' median is 168135 new input tokens before their first commit, the five before
-them 97329. Files read most over the last five chunks, counting opens and searches:
-`docs/decisions.md` 28, `README.md` 27, `todo.md` 26, `CHANGELOG.md` 20,
-`src/markdown/parse/blocks.ts` 15, `src/markdown/portable/adf-to-portable-markdown.ts` 12, `spec/flavour.md` 10,
-`src/markdown/parse/portable-markdown-to-adf.test.ts` 10, `src/markdown/emit/line-escaping.ts` 9,
-`src/markdown/parse/markdown-to-adf.test.ts` 8.
+The last five chunks' median is 104037 new input tokens before their first commit, the five before
+them 96564. Files read most over the last five chunks, counting opens and searches: `README.md` 35,
+`todo.md` 35, `spec/flavour.md` 24, `docs/decisions.md` 23, `CHANGELOG.md` 14,
+`src/markdown/emit/adf-to-markdown.test.ts` 14, `src/markdown/parse/markdown-to-adf.test.ts` 14,
+`src/markdown/directive-syntax.ts` 10, `src/conformance/adf-schema.test.ts` 8,
+`src/conformance/property-harness.ts` 6.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
