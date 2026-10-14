@@ -520,8 +520,8 @@ Serves [Goals](#goals) 1, 4 and 5.
   the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
   one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
-  levels, a document meeting a writing or longest-string cause `unsupported-node-shape` lists, and
-  a conversion `engine-limit` stops. Show the refusal and keep the document read-only; saving
+  levels, a document meeting an `unsupported-node-shape` cause listed for it, for a writer or for
+  every call, and a conversion `engine-limit` stops. Show the refusal and keep the document read-only; saving
   markdown you could not produce is the loss the round-trip exists to stop.
 - Both readers narrow GFM's pipe table. A body row whose cell count differs from the header's is
   an error result, where GFM pads or cuts it. A line holding no `|` ends the table, where GFM reads
