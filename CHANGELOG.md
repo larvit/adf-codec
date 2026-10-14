@@ -4,6 +4,10 @@
 
 - `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
   node CommonMark spells, such as `[![alt](url)](href)` for a linked `!adf:mediaSingle`.
+- `losslessMarkdownToAdf` gives a `date`, `emoji`, `inlineCard`, `mention`, `status` or
+  `mediaInline` no mark Atlassian's schema withholds from it: `**!adf:mention[@A]{id=…}**` reads as
+  a plain mention, and a link around only such nodes reads as its destination, then the nodes.
+  `adfToLosslessMarkdown` writes a node holding such a mark as `!adf:carry`, so it still round-trips.
 
 ## 0.2.0
 

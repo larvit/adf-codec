@@ -284,6 +284,13 @@ test('carries a code mark over anything but text', () => {
   )
 })
 
+test('carries an inline node holding a mark Atlassian\'s schema withholds from it', () => {
+  const carried = (node: AdfNode): string => markdown(adfToLosslessMarkdown(document(paragraph(node))))
+  assert.equal(carried({ attrs: { id: 'b1c2', text: '@A' }, marks: [{ type: 'strong' }], type: 'mention' }), '!adf:carry{json="{\\"attrs\\":{\\"id\\":\\"b1c2\\",\\"text\\":\\"@A\\"},\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"type\\":\\"mention\\"}"}\n')
+  assert.equal(carried({ attrs: { id: 'm1' }, marks: [{ type: 'em' }], type: 'mediaInline' }), '!adf:carry{json="{\\"attrs\\":{\\"id\\":\\"m1\\"},\\"marks\\":[{\\"type\\":\\"em\\"}],\\"type\\":\\"mediaInline\\"}"}\n')
+  assert.equal(carried({ attrs: { id: 'm1' }, marks: [{ attrs: { href: '/u' }, type: 'link' }], type: 'mediaInline' }), '[!adf:mediaInline{id=m1}](/u)\n')
+})
+
 test('spells a heading level no ATX heading fits as a directive', () => {
   assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { level: 7 }, content: [{ text: 'x', type: 'text' }], type: 'heading' }))), '!adf:heading {level=7}\nx\n!adf:/heading\n')
   assert.equal(markdown(adfToLosslessMarkdown(document({ content: [{ text: 'x', type: 'text' }], type: 'heading' }))), '!adf:heading\nx\n!adf:/heading\n')
