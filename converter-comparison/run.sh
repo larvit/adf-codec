@@ -1,5 +1,5 @@
 #!/bin/sh
-# Re-checks the README's comparison table against each package's published version.
+# Keep these versions and --before in step with the README's comparison table.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 node_image=node:24.21.0-alpine3.24
