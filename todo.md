@@ -28,6 +28,7 @@
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
 | 99 | 0.3.0 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 115 | 0.3.0 | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 3 | 3 | 3 | 4 | 6 | 4 | 12.3 |
+| 91 | 0.3.0 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.3.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 3 | 2 | 6 | 2 | 10.4 |
@@ -51,7 +52,6 @@
 | 112 | 0.4.0 |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 3 | 3 | 5 | 6 | 6 | 4 | 16.3 |
 | 46 | 0.4.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.4.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
-| 91 | 0.4.0 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
 | 107 | 0.4.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.4.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
 | 9 | 0.5.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 4 | 6 | 8 | 3 | 21.0 |
@@ -93,6 +93,17 @@ there reads back as `[alt](href)`, breaking the byte-for-byte rewrite, so only o
 `mediaInline` take it, so a site may reject the document. `takenMarkTypes`
 (`src/adf/inline-nodes.ts`) restricts text only when it is marked `code`. It changes how stored
 markdown reads, so it ships in a minor. Found while building item 114, 2026-10-14.
+
+### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
+
+Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
+reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
+typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
+withholds from them, and none gives code text a mark but a link. So `**Ping !adf:mention[@A]{id=x}
+now**` and ``**Run `npm ci` first**`` each write back as two strong runs, with the space beside the
+mention or code spelled `!adf:text{text=" "}`. Joining the run across the break in
+`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
+first as a set of parted breaks, then as a flag the first fallback clears.
 
 ### 100. Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.
 
@@ -287,17 +298,6 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 `.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
-
-### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
-
-Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
-reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
-typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
-withholds from them, and none gives code text a mark but a link. So `**Ping !adf:mention[@A]{id=x}
-now**` and ``**Run `npm ci` first**`` each write back as two strong runs, with the space beside the
-mention or code spelled `!adf:text{text=" "}`. Joining the run across the break in
-`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
-first as a set of parted breaks, then as a flag the first fallback clears.
 
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
