@@ -461,7 +461,8 @@ Every call can raise these:
     one it needs;
   - puts a line ending or a null character in an `emoji`, `mention` or `status` content slot:
     replace a line ending with a space, or, for either, write the node as `!adf:carry`;
-  - wraps a directive mark around nothing or only hard breaks;
+  - wraps a directive mark around nothing, or only around nodes that take no such mark, such as a
+    hard break or a mention;
   - writes as a directive a node or mark the lossless flavour spells as CommonMark;
   - puts `!adf:textBreak{}` where it parts nothing, or `!adf:doc` anywhere but as the whole
     document.
@@ -504,7 +505,8 @@ Serves [Goals](#goals) 1, 4 and 5.
 - These CommonMark spellings parse without an error but build a document the reference
   implementation renders differently, because ADF holds no node for what the reference renders:
   - An empty link text reads as its destination, `[](/url)` as `/url` linked to `/url`, and `[]()`
-    as nothing. A link text holding only hard breaks reads the same, followed by its hard breaks.
+    as nothing. A link text holding no node that takes a link, such as a hard break or a mention,
+    reads the same, followed by those nodes.
   - An image reads as an image only alone in its paragraph. Anywhere else — beside other text, in
     a heading or a table cell, or in the paragraph a task marker opens — it reads as its
     alt text linked to its URL: `See ![the moon](moon.png).` reads as

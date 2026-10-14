@@ -76,9 +76,9 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
   assert.deepEqual(found, [])
 })
 
-test('the inline node table gives a type marks exactly where the ADF JSON Schemas give it a marks key', () => {
+test('the inline node table gives a type exactly the mark types the ADF JSON Schemas give it, in order', () => {
   const { marked } = schemaTypes()
-  for (const [type, model] of Object.entries(inlineNodes)) assert.equal(model.takesMarks, marked.has(type), type)
+  for (const [type, model] of Object.entries(inlineNodes)) assert.deepEqual(model.marks, [...(marked.get(type) ?? [])].sort(), type)
 })
 
 function spelled(): Spelled[] {
@@ -95,9 +95,9 @@ function spelledType(type: string, attributes: AttributeVocabulary, argument?: s
   return [type, kinds]
 }
 
-function schemaTypes(): { held: Map<string, Held>; marked: Set<string> } {
+function schemaTypes(): { held: Map<string, Held>; marked: Map<string, Set<string>> } {
   const held = new Map<string, Held>()
-  const marked = new Set<string>()
+  const marked = new Map<string, Set<string>>()
   for (const file of schemaFiles) {
     const definitions = schemaObject(schemaObject(JSON.parse(readFileSync(join(root, file), 'utf8')), file)['definitions'], `${file} definitions`)
     for (const [name, definition] of Object.entries(definitions)) {
@@ -107,7 +107,7 @@ function schemaTypes(): { held: Map<string, Held>; marked: Set<string> } {
         for (const type of (properties.get('type') ?? []).flatMap((schema) => enumStrings(schema, `${where} type`))) {
           const kinds = held.get(type) ?? new Map<string, Set<AttributeKind>>()
           held.set(type, kinds)
-          if (properties.has('marks')) marked.add(type)
+          for (const marks of properties.get('marks') ?? []) marked.set(type, new Set([...(marked.get(type) ?? []), ...heldMarkTypes(marks, definitions, `${where} ${type}.marks`)]))
           for (const [attribute, schemas] of attributes) {
             const attributeKinds = kinds.get(attribute) ?? new Set<AttributeKind>()
             kinds.set(attribute, attributeKinds)
@@ -118,6 +118,12 @@ function schemaTypes(): { held: Map<string, Held>; marked: Set<string> } {
     }
   }
   return { held, marked }
+}
+
+function heldMarkTypes(marks: SchemaObject, definitions: SchemaObject, where: string): string[] {
+  if (marks['maxItems'] === 0) return []
+  if (marks['items'] === undefined) return ['every mark type']
+  return alternatives(schemaObject(marks['items'], `${where} items`), definitions, where).flatMap((properties) => (properties.get('type') ?? []).flatMap((schema) => enumStrings(schema, `${where} type`)))
 }
 
 function alternatives(schema: SchemaObject, definitions: SchemaObject, where: string): Properties[] {

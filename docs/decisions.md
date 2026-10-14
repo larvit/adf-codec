@@ -228,18 +228,20 @@ link reference definition — and a directive link CommonMark could spell is ref
 link — the bracket form goes literal, the directive form refused — which is CommonMark's prose
 where its reference implementation nests one `<a>` in another.
 
-## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes marks reads as its destination, then its hard breaks
+## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes a link reads as its destination, then those nodes
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
 maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer. Goals 4,
-5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, a hard break
-takes no marks and no consumer has reported a link of hard breaks alone.
+5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, Atlassian's
+schema withholds the link from some inline nodes and no consumer has reported a link of such nodes
+alone.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
 and §Marks spell out. An image alone in its paragraph reads as the image, its title as the caption.
 Anywhere else it reads as its alt text linked to its URL, titled by its title. An empty alt text
-reads as the URL, and an empty link text as its destination. A link text holding only hard breaks
-reads as its destination, then those breaks: four of seven readers expected that over dropping them.
+reads as the URL, and an empty link text as its destination. A link text holding no node that takes
+a link, such as a hard break or a mention, reads as its destination, then those nodes: four of seven
+readers expected that of hard breaks over dropping them.
 `[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
 paragraph whose whole text is one image reads as that image, with the link marking its `media`.
 Inside any other link, the alt text is plain text the link marks, and the image's URL and title

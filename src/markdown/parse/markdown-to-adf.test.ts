@@ -909,6 +909,26 @@ test('gives the hard break inside a mark spelling no marks, and reads a link of 
   }
 })
 
+test('gives an inline node no mark Atlassian\'s schema withholds from it', () => {
+  const mention: AdfNode = { attrs: { id: 'b1c2', text: '@A' }, type: 'mention' }
+  const status: AdfNode = { attrs: { color: 'green', text: 'Done' }, type: 'status' }
+  const media: AdfNode = { attrs: { id: 'm1' }, type: 'mediaInline' }
+  const border: AdfMark = { attrs: { color: '#091e42', size: 2 }, type: 'border' }
+  const read = (markdown: string): AdfNode[] | string => content(losslessMarkdownToAdf(markdown))
+  assert.deepEqual(read('**!adf:mention[@A]{id=b1c2}**\n'), [{ content: [mention], type: 'paragraph' }])
+  assert.deepEqual(read('*a !adf:date{timestamp=1}*\n'), [{ content: [marked('a ', em), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' }])
+  assert.deepEqual(read('!adf:underline[a !adf:emoji[🎉]{shortName=":tada:"}]\n'), [
+    { content: [marked('a ', underline), { attrs: { shortName: ':tada:', text: '🎉' }, type: 'emoji' }], type: 'paragraph' },
+  ])
+  assert.deepEqual(read('[!adf:status[Done]{color=green}](/u)\n'), [{ content: [marked('/u', link('/u')), status], type: 'paragraph' }])
+  assert.deepEqual(read('[a !adf:inlineCard{url="https://x/"}](/u)\n'), [{ content: [marked('a ', link('/u')), { attrs: { url: 'https://x/' }, type: 'inlineCard' }], type: 'paragraph' }])
+  assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
+  assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
+  assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
+  assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark')
+  assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark')
+})
+
 test('decodes the fenced info string the block walk leaves raw', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('```java&#8203;script\nx\n```\n')), [
     { attrs: { language: 'java\u200bscript' }, content: [text('x')], type: 'codeBlock' },
@@ -1141,9 +1161,6 @@ test('reads the content slot as the text attribute the node spells there', () =>
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[ In review ]{color=yellow}\n')), status({ color: 'yellow', text: ' In review ' }))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[In!adf:text{text=" "}review]{color=yellow}\n')), status({ color: 'yellow', text: 'In review' }))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:status[a\\]b]{color=yellow}\n')), status({ color: 'yellow', text: 'a]b' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('**!adf:mention[@A]{id=b1c2}**\n')), [
-    { content: [{ attrs: { id: 'b1c2', text: '@A' }, marks: [strong], type: 'mention' }], type: 'paragraph' },
-  ])
 })
 
 test('names the content slot no lone plain text node reads back from', () => {
@@ -1198,10 +1215,10 @@ test('reads the directive marks, the nesting outermost first', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:subsup[a]{type=sub}\n')), wrapped({ attrs: { type: 'sub' }, type: 'subsup' }))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=2}\n')), wrapped({ attrs: { color: '#091e42', size: 2 }, type: 'border' }))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:date{timestamp=1}]\n')), [
-    { content: [marked('a', underline), { attrs: { timestamp: '1' }, marks: [underline], type: 'date' }], type: 'paragraph' },
+    { content: [marked('a', underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
   ])
   assert.deepEqual(content(losslessMarkdownToAdf('_!adf:underline[a!adf:date{timestamp=1}]_\n')), [
-    { content: [marked('a', em, underline), { attrs: { timestamp: '1' }, marks: [em, underline], type: 'date' }], type: 'paragraph' },
+    { content: [marked('a', em, underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
   ])
   assert.equal(content(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=x}\n')), 'unsupported-node-shape: the size attribute of border is no number')
 })
@@ -1249,9 +1266,9 @@ test('names the directive mark left without the content it wraps', () => {
   const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps none'
   assert.equal(content(losslessMarkdownToAdf('!adf:underline[]\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:underline{}\n')), named)
-  const breaks = 'the [content] it marks: this one wraps only hard breaks, which take no marks'
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), `unsupported-node-shape: the underline mark wraps ${breaks}`)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), `unsupported-node-shape: the link mark wraps ${breaks}`)
+  const breaks = (name: string): string => `unsupported-node-shape: the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark`
+  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), breaks('underline'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), breaks('link'))
 })
 
 test('reads the text break only between two text nodes CommonMark joins, building no node', () => {

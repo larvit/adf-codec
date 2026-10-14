@@ -24,7 +24,7 @@
       "content": [
         {
           "attrs": {
-            "timestamp": "]:a"
+            "id": "]:a"
           },
           "marks": [
             {
@@ -34,7 +34,7 @@
               "type": "link"
             }
           ],
-          "type": "date"
+          "type": "mediaInline"
         }
       ],
       "type": "paragraph"
