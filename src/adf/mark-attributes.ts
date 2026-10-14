@@ -4,7 +4,6 @@ import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 export const blockMarkAttributes = {
   alignment: { align: 'string' },
   breakout: { mode: 'string', width: 'number' },
-  dataConsumer: { sources: 'json' },
   fragment: { localId: 'string', name: 'string' },
   indentation: { level: 'number' },
 } satisfies Readonly<Record<string, AttributeVocabulary>>

@@ -68,8 +68,8 @@
   `mediaSingle` directive. Convert stored markdown per `MIGRATION.md`.
 - **Breaking:** `colwidth` is spelled as its widths joined by commas, `colwidth="340,420"`, where it
   was a JSON array, and a block's `marks` names each mark with its attributes,
-  `marks="breakout{mode=wide}"`, where it was a JSON array. The JSON array stays only where a mark's
-  type or attributes are ones the flavour does not list. Convert stored markdown per `MIGRATION.md`.
+  `marks="breakout{mode=wide}"`, where it was a JSON array. The JSON array stays only where the
+  flavour does not list a mark's type, one of its attributes, or the type of one's value. Convert stored markdown per `MIGRATION.md`.
 - Fix the time `adfToLosslessMarkdown` and `adfToPortableMarkdown` take on text holding a long run of
   `*`, `_`, `~` or backticks, or a heading ending in a long run of `#`: the time is linear in the
   run, and a run of 20000 `*` takes milliseconds where it took seconds.

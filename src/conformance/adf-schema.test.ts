@@ -16,7 +16,7 @@ type Properties = Map<string, SchemaObject[]>
 type SchemaObject = Readonly<Record<string, unknown>>
 type Spelled = [string, Map<string, AttributeKind>]
 
-const carried = ['annotation', 'backgroundColor', 'blockCard', 'bodiedRule', 'embedCard', 'fontSize', 'inlineExtension', 'placeholder']
+const carried = ['annotation', 'backgroundColor', 'blockCard', 'bodiedRule', 'dataConsumer', 'embedCard', 'fontSize', 'inlineExtension', 'placeholder']
 const definitionReference = '#/definitions/'
 const gaps: string[] = []
 const grammarOwn = ['doc', 'text']

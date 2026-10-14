@@ -431,7 +431,6 @@ test('refuses marks and attributes nested deeper than the emitter carries', () =
   const markedCode: AdfNode = { content: [{ text: 'x', type: 'text' }], marks: [{ attrs: { deep: nested(largestNesting - 2) }, type: 'em' }], type: 'codeBlock' }
   assert.equal(markdown(adfToLosslessMarkdown(document(markedCode))), deeper('marks', 'codeBlock'))
   roundTrips(marked(largestNesting - 3))
-  roundTrips({ ...marked(0), marks: [{ attrs: { sources: nested(largestNesting) }, type: 'dataConsumer' }] })
 })
 
 test('escapes a literal delimiter that would merge with an emitted one', () => {
