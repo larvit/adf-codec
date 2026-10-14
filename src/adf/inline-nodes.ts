@@ -37,7 +37,7 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
   return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }
 
-// Undefined where the schema withholds no mark: the table lists no such type, text among them, but code text takes only `codeTextMarkTypes`.
+// Undefined means every mark: the table lists only types the schema restricts, and it restricts text only when marked code.
 export function takenMarkTypes(node: AdfNode): readonly string[] | undefined {
   if (node.type === 'text') return nodeMarks(node).some((mark) => mark.type === 'code') ? codeTextMarkTypes : undefined
   return inlineNodeModel(node.type)?.markTypes

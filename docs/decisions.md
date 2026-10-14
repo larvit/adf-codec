@@ -259,11 +259,11 @@ Their CommonMark suite exceptions are `node-model` (§The CommonMark suite check
 ## A mark skips a node that cannot hold it, and a mark wrapping only such nodes is refused, but for a link around hard breaks alone
 
 2026-10-14, two reader panels of the viewer/editor app, the LLM pipeline and a support agent, 3 of
-3 each. Goals 1, 4 and 6. Valid while Atlassian's schema withholds marks from inline nodes. Code
-text follows by this entry's rule, unpanelled, 2026-10-14.
+3 each. Goals 1, 4 and 6. Valid while Atlassian's schema withholds marks from inline nodes. Extended
+to code text under this rule, without a panel, 2026-10-14.
 
 A mark spelling skips a node that takes none of its type, code text included, which takes only
-`link` and `annotation`. So `**Ping !adf:mention[@A]{id=x} now**` reads as bold text around a plain
+`code`, `link` and `annotation`. So `**Ping !adf:mention[@A]{id=x} now**` reads as bold text around a plain
 mention, and ``**`npm ci`**`` as plain code. A link whose text holds something besides hard breaks,
 but no node that takes a link, is `unsupported-node-shape` in `losslessMarkdownToAdf`: the panel
 refused to have `[!adf:status[Done]{color=green}](/u)` read as `/u` linked beside the status. A link

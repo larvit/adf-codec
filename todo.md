@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 116`
+`Next ID = 117`
 
 | Goal | W |
 |---|---|
@@ -27,7 +27,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
 | 99 | 0.3.0 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
-| 115 | 0.3.0 | defect | **Build text holding no `border` mark in every reader, and have `adfToLosslessMarkdown` carry text holding one.** | 3 | 3 | 3 | 4 | 6 | 4 | 12.3 |
+| 115 | 0.3.0 | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 3 | 3 | 3 | 4 | 6 | 4 | 12.3 |
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.3.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 3 | 2 | 6 | 2 | 10.4 |
@@ -37,6 +37,7 @@
 | 33 | 0.3.0 | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 5 | 8 | 6 | 9 | 9 | 8.7 |
 | 98 | 0.3.0 | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 3 | 3 | 7 | 5 | 9 | 9 | 8.2 |
 | 102 | 0.3.0 | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 3 | 4 | 7 | 2 | 4 | 1 | 8.0 |
+| 116 | 0.3.0 | question | **Retitle `docs/decisions.md` §A mark skips a node that cannot hold it to say only a link or directive mark wrapping only such nodes is refused.** | 1 | 1 | 1 | 2 | 3 | 6 | 5.4 |
 | 109 | 0.3.0 | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 5 | 8 | 4 | 7 | 9 | 5.3 |
 | 7 | 0.4.0 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 6 | 9 | 9 | 9 | 9 | 2, 4 | 25.8 |
 | 45 | 0.4.0 |  | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 3 | 4 | 6 | 8 | 1 | 25.2 |
@@ -49,7 +50,7 @@
 | 112 | 0.4.0 |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 3 | 3 | 5 | 6 | 6 | 4 | 16.3 |
 | 46 | 0.4.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.4.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
-| 91 | 0.4.0 |  | **Spell an emphasis or link once across the code spans, hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
+| 91 | 0.4.0 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
 | 107 | 0.4.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.4.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
 | 95 | 0.4.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
@@ -85,13 +86,13 @@ there reads back as `[alt](href)`, breaking the byte-for-byte rewrite, so only o
 `href` can survive; a reader panel picks which. If it picks `url`, the README names the dropped
 `href` where it says link targets stay.
 
-### 115. Build text holding no `border` mark in every reader, and have `adfToLosslessMarkdown` carry text holding one.
+### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
 `!adf:border[x]{color="#091e42" size=2}` builds text holding `border`, which
 `formatted_text_inline_node` (`spec/adf-schema/full.json`) withholds from text: only `media` and
-`mediaInline` take it, so a site may reject the document. `takesMark` (`src/adf/inline-nodes.ts`)
-gives text every mark but code text's. It changes how stored markdown reads, so it ships in a minor.
-Found while building item 114, 2026-10-14.
+`mediaInline` take it, so a site may reject the document. `takenMarkTypes`
+(`src/adf/inline-nodes.ts`) restricts text only when it is marked `code`. It changes how stored
+markdown reads, so it ships in a minor. Found while building item 114, 2026-10-14.
 
 ### 100. Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.
 
@@ -163,6 +164,14 @@ the fix.
 (`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
 `taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
 the reason the project read worse.
+
+### 116. Retitle `docs/decisions.md` §A mark skips a node that cannot hold it to say only a link or directive mark wrapping only such nodes is refused.
+
+The title says "a mark wrapping only such nodes is refused", but emphasis wrapping only a mention or
+a code span reads as the plain node, as the entry's body says. Proposed title: "A mark skips a node
+that cannot hold it, and a link or directive mark wrapping only such nodes is refused, but for a link
+around hard breaks alone", with `AGENTS.md`'s index line. Found by the prose review of item 114,
+2026-10-14.
 
 ### 109. Spell nested lists and quotes in time linear in the markdown.
 
@@ -271,14 +280,14 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
 
-### 91. Spell an emphasis or link once across the code spans, hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
+### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
 Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
 reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
 typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
-withholds from them, and none gives code text a mark but a link, so `**Ping !adf:mention[@A]{id=x}
-now**` and ``**Run `npm ci` first**`` write back with the space beside the mention or the code in
-each strong run spelled `!adf:text{text=" "}`. Joining the run across the break in
+withholds from them, and none gives code text a mark but a link. So `**Ping !adf:mention[@A]{id=x}
+now**` and ``**Run `npm ci` first**`` each write back as two strong runs, with the space beside the
+mention or code spelled `!adf:text{text=" "}`. Joining the run across the break in
 `inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
 first as a set of parted breaks, then as a flag the first fallback clears.
 
