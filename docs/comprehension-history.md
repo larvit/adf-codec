@@ -956,3 +956,72 @@ Inherited architect, would restructure first:
 - Shape: `src/markdown/parse/markdown-to-adf.ts:143` `quoteNode` / `splitPath`: the portable reader lives in parse/ and reaches back into portable/
 - Shape: `src/markdown/emit/adf-to-markdown.ts:157` `spellPortableBlock`: portable-only writing in a file whose name matches neither flavour
 - Locality: `src/markdown/emit/line-escaping.ts:260` `unspellableRuns`: the 3am unit, concentrated escaping that needs spec §Canonical form and §Marks open to change safely
+
+## 2026-10-14T13:01:12Z, PR #46 at 1e8fa26, against 06739b40b7e20ae09a36dbc98a8111e81ca6b9c6
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | same | better |
+| Inherited architect | better | better | same | better | better |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/adf/inline-nodes.ts:37` `takesMark`: the per-node mark types say which marks each node takes, and one predicate serves the parser and the emitter where each worked it out differently
+- Locality: `src/markdown/parse/directive-nodes.ts:138` `readNamedMark`: the caller passes the message it wants instead of cutting text out of another module's message
+- Locality: `src/markdown/parse/markdown-to-adf.ts:280` `commonMarkSpellings`: a new hand-kept table the parser must keep in step with the emitter's `commonMarkSpelling`
+- Navigation: `src/markdown/emit/inline-line.ts:224` `carries`: "withheld-mark" names the carry the same way as the corpus fixture and the decision index
+- Shape: `src/markdown/parse/inline-content.ts:405` `linkPiece`: refusals name the fix, though `marksItem` returning true for a non-node and the hard-break carve-out read a little harder
+
+Inherited architect, decided by:
+
+- Navigation, Self-sufficiency: `README.md:455` `unsupported-node-shape`: each cause sits beside its own remedy, grouped by direction, where one cell held them all
+- Locality, Self-sufficiency: `src/adf/inline-nodes.ts:37` `takesMark`: one predicate and a per-type mark list replace a boolean read two ways by the parser and the emitter
+- Locality: `src/markdown/parse/directive-nodes.ts:137` `readNamedMark`: the caller passes its message rather than editing another module's text
+- Locality: `src/markdown/parse/markdown-to-adf.ts:279` `commonMarkSpellings`: a hand-kept list of the emitter's CommonMark spellings in another file, where the new version rots first
+- Shape: `src/markdown/parse/inline-content.ts:294` `marksItem`: reads as a verb phrase and returns true for items no mark lands on
+- Locality: `src/markdown/parse/inline-content.ts:400` `linkPiece`: `linkTo`'s destination-ahead-of-hard-breaks branch is right only because `linkPiece` refused every other unlinkable node first, and neither says so
+- Navigation: `MIGRATION.md:3` `From 0.2.0 to 0.3.0`: a reader starting from a mark lost after upgrading finds a table and a fixture named after the cause
+
+## 2026-10-14T13:02:45Z, PR #46 at 1e8fa26
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Mid A | 7 | 5 | 6 | 5 | 5.5 |
+| Maintainability senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Inherited architect | 6.5 | 6 | 5.5 | 7 | 6 |
+| Mean | 6.88 | 5.50 | 6.13 | 5.75 | 5.88 |
+
+Junior A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/line-escaping.ts:230` `escapeClosedRuns` / `escapeClaims`: three parallel per-character arrays and a backward-built set of backtick lengths, opaque without spec §Canonical form open
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: a memo filled by the parser and the portable reducer and drained by the walk, deleted on read
+- Locality: `src/markdown/parse/markdown-to-adf.ts:237` `splitPath`: stand-in nodes and a re-run split to place an error path
+- Locality, Shape: `src/markdown/parse/inline-content.ts:449` `resolveNodes` / `pairedHighlights`: placeholder text nodes until a highlight pairs, counters and in-place overwrites
+- Shape: `src/markdown/emit/inline-line.ts:82` `emitLine`: a retry loop whose outcome also flows back into the parser
+
+Mid A, hardest first:
+
+- Locality, Overall: `src/markdown/parse/markdown-to-adf.ts:237` `splitPath`: fake taskList and bulletList stand-ins and a probe node re-run through the split to name a path
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:230` `escapeClosedRuns`: why a right-to-left walk suffices lives only in the spec
+- Locality: `src/markdown/parse/inline-content.ts:332` `closeBracket` / `truncatePieces`: four sites mutate `scan.pieces` and `deactivatedBefore`
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: filled from the parser and the portable reducer, the clearest action at a distance
+- Shape: `src/markdown/portable/inline-reduction.ts:194` `trimmedEdges`: two fixpoint loops with no termination argument and a number-or-undefined edge depth
+
+Maintainability senior, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/line-escaping.ts:142` `escapeClaims` / `unspellableRuns`: three passes whose sufficiency no statement gives, and an opening-link signal read from segment structure
+- Locality: `src/markdown/parse/inline-content.ts:332` `closeBracket` / `resolveNodes`: `Scan` mutated from about ten functions over a three-way `Inline` union
+- Locality: `src/markdown/parse/markdown-to-adf.ts:237` `splitPath`: a local simulation of the task-list split, hard to convince oneself is right
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: a reference-keyed memo filled across three directories
+- Shape: `src/markdown/portable/adf-to-portable-markdown.ts:59` `reduceToPortable`: reruns the reduction on the raw document to get a refusal's path
+
+Inherited architect, would restructure first:
+
+- Navigation, Shape: `src/markdown/portable/conventions.ts:8` `Claims` / `flavourClaims`: the switch for all three flavours filed under portable/
+- Navigation: `src/markdown/parse/markdown-to-adf.ts:161` `quoteNode` / `splitPath`: the portable reader lives in parse/ and the portable writer's spellings in `emit/adf-to-markdown.ts:157` `spellPortableBlock`
+- Locality: `src/markdown/parse/markdown-to-adf.ts:266` `directiveNode`: the reader asks the writer's `commonMarkSpelling`, and the writer reuses the reader's tokenizer, so neither side changes alone
+- Shape: `src/markdown/directive-syntax.ts:32` `Read`: the general reader-failure type housed in the directive grammar file, among 15 loose files in `src/markdown/`
+- Shape: `src/markdown/emit/adf-to-markdown.ts:45` `writeMarkdown`: writes both flavours in a file named for the lossless one
