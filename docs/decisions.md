@@ -283,16 +283,18 @@ each reader expected before seeing the options. A captioned image keeps the `!ad
 directive: each reader read `![alt](url "title")` as hover text, not a caption. Every reader still
 reads that title as the caption; `todo.md` item 100 puts that reading back to a reader panel.
 
-## A linked image standing inline in portable markdown is written `[alt](href) ([image](url))`
+## A linked image standing inline in portable markdown, its link to another target, is written `[alt](href) ([image](url))`
 
-2026-10-14, a reader panel of the export tool, the LLM pipeline and a support agent, 3 of 3. Goals 6
-and 7. Valid while the portable reader reads an image inside a link as the link's text.
+2026-10-14, a reader panel of the export tool, the LLM pipeline and a support agent, and a writer
+panel of a product manager, an engineer and that support agent, 3 of 3 each. Goals 6 and 7. Valid
+while the portable reader reads an image inside a link as its alt text, linked.
 
 Where `adfToPortableMarkdown` writes an external image inline, as in a table cell, and a link to
 another target marks it, the link keeps its target and the image follows as a link reading `image`.
-With no alt text, the link text is the link's target, as `[](href)` reads. Every reader first wrote
-`[![alt](url)](href)`, which reads back as `[alt](href)` and so breaks the byte-for-byte rewrite.
-Each then picked this over `[alt](url)` and `[alt](href)`, which drop a target.
+With no alt text, the link text is the link's target, which is how the reader reads `[](href)`, so
+the rewrite holds. Every seat first wrote `[![alt](url)](href)`, which reads back as `[alt](href)`
+and so breaks the byte-for-byte rewrite. Each then picked this over `[alt](url)` and `[alt](href)`,
+which drop a target.
 
 ## Ids stay site-local
 
@@ -354,8 +356,8 @@ past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates int
 ## The portable reader refuses what GFM's reading would drop
 
 2026-10-14, the maintainer. Goals 4 and 7. Valid while a refusal is a result and the caller can
-fix the markdown it sent, and until `todo.md` item 117 settles whether Goal 4, which ranks above
-Goal 7, reads such a row instead.
+fix the markdown it sent. `todo.md` item 117 settles whether Goal 4, which outranks Goal 7, has
+`portableMarkdownToAdf` read a row wider than its header as GFM does.
 
 Where GFM's reading of a shape drops content, `portableMarkdownToAdf` refuses the shape. A pipe
 table row holding more cells than its header is `malformed-pipe-table`, where GFM cuts the extra
