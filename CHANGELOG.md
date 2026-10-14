@@ -69,7 +69,8 @@
 - **Breaking:** `adfToLosslessMarkdown` writes `colwidth` as its widths joined by commas,
   `colwidth="340,420"`, and a block's `marks` as each mark's type and attributes,
   `marks="breakout{mode=wide}"`, where it wrote both as JSON arrays, and `losslessMarkdownToAdf`
-  refuses the arrays. Convert stored markdown per `MIGRATION.md`.
+  refuses an array the new spelling holds. `marks` stays a JSON array where the flavour does not list
+  a mark. Convert stored markdown per `MIGRATION.md`.
 - Fix the time `adfToLosslessMarkdown` and `adfToPortableMarkdown` take on text holding a long run of
   `*`, `_`, `~` or backticks, or a heading ending in a long run of `#`: the time is linear in the
   run, and a run of 20000 `*` takes milliseconds where it took seconds.
