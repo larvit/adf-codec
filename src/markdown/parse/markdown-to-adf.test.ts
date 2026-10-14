@@ -927,6 +927,7 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
   assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
   assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark')
+  assert.equal(read('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark')
   assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark')
 })
 
