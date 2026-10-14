@@ -351,3 +351,20 @@ Read most (opens and searches):
 - `docs/decisions.md` 2
 - `spec/flavour.md` 2
 - `AGENTS.md` 1
+
+## Reading cost, chunk 364dd99cc022, finished 2026-10-14T17:48:01Z
+
+104037 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/parse/markdown-to-adf.test.ts` 10
+- `docs/decisions.md` 8
+- `src/markdown/emit/adf-to-markdown.test.ts` 8
+- `README.md` 7
+- `todo.md` 7
+- `spec/flavour.md` 6
+- `CHANGELOG.md` 3
+- `src/conformance/adf-schema.test.ts` 3
+- `src/markdown/parse/inline-content.ts` 3
+- `corpus/round-trip/combinations/link-definition-directive.md` 2
