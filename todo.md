@@ -6,7 +6,7 @@
 
 `Bar = 9`
 
-`Next ID = 115`
+`Next ID = 116`
 
 | Goal | W |
 |---|---|
@@ -26,8 +26,8 @@
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 73 | 0.3.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
-| 114 | 0.3.0 | defect | **Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.** | 3 | 4 | 5 | 5 | 7 | 4 | 15.4 |
 | 99 | 0.3.0 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
+| 115 | 0.3.0 | defect | **Build text holding no `border` mark in every reader, and have `adfToLosslessMarkdown` carry text holding one.** | 3 | 3 | 3 | 4 | 6 | 4 | 12.3 |
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
 | 59 | 0.3.0 | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 5 | 3 | 2 | 6 | 2 | 10.4 |
@@ -77,13 +77,6 @@ README table, its versions and its date in step with the output. We draft each p
 goes; the maintainer posts them once `0.3.0` is published. Found while planning discoverability,
 2026-10-04.
 
-### 114. Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.
-
-``**`npm ci`**`` builds text holding `[strong, code]`; `code_inline_node` (`spec/adf-schema/full.json`)
-gives code text `code`, `link` and `annotation` alone, so a site may reject the document. The `==`
-highlight already skips code (`highlighted`, `src/markdown/parse/inline-content.ts`). It changes
-how stored markdown reads, so it ships in a minor.
-
 ### 99. Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.
 
 `mediaLeaves` (`src/markdown/portable/inline-reduction.ts`) writes such an image `[alt](url)`, dropping
@@ -91,6 +84,14 @@ the link's `href`; README §Portable markdown says link targets stay (Goal 7). `
 there reads back as `[alt](href)`, breaking the byte-for-byte rewrite, so only one of `url` and
 `href` can survive; a reader panel picks which. If it picks `url`, the README names the dropped
 `href` where it says link targets stay.
+
+### 115. Build text holding no `border` mark in every reader, and have `adfToLosslessMarkdown` carry text holding one.
+
+`!adf:border[x]{color="#091e42" size=2}` builds text holding `border`, which
+`formatted_text_inline_node` (`spec/adf-schema/full.json`) withholds from text: only `media` and
+`mediaInline` take it, so a site may reject the document. `takesMark` (`src/adf/inline-nodes.ts`)
+gives text every mark but code text's. It changes how stored markdown reads, so it ships in a minor.
+Found while building item 114, 2026-10-14.
 
 ### 100. Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.
 

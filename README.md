@@ -390,7 +390,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
   its key, `_(jira-issues-table not included)_`, or `_(extension not included)_` without one, and
   `_(synced block not included)_` for a `syncBlock`.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
-  keeping its text, and so does a mark the flavour cannot spell where it stands.
+  keeping its text, and so does a mark the flavour cannot spell where it stands. Code text keeps
+  only `link`.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
   paragraph drops.
@@ -484,7 +485,7 @@ Every call can raise these:
   - puts a line ending or a null character in an `emoji`, `mention` or `status` content slot:
     replace a line ending with a space, or, for either, write the node as `!adf:carry`;
   - wraps a directive mark around nothing, or only around nodes that take no such mark, such as a
-    hard break or a mention;
+    hard break, a mention or a code span;
   - writes a link whose text holds something besides hard breaks, but no node that takes a link,
     such as `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
   - writes as a directive a node or mark the lossless flavour spells as CommonMark;
@@ -535,6 +536,8 @@ Serves [Goals](#goals) 1, 4 and 5.
     alt text linked to its URL: `See ![the moon](moon.png).` reads as
     `See [the moon](moon.png).`. To keep an image an image, give it a paragraph of its own: a
     blank line between it and any other line.
+  - A code span inside emphasis, strikethrough or a directive mark reads as code alone, since ADF
+    gives code text no mark but a link: ``**`npm ci`**`` reads as `` `npm ci` ``.
   - Inside a link, an image reads as plain text the link marks. A link alone in its paragraph
     whose whole text is one image reads as that image, with the link marking it.
   - An image's title becomes its caption when the image stays an image, and its link's title when

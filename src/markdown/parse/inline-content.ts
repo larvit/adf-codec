@@ -292,7 +292,7 @@ function partText(items: readonly Inline[], scan: Scan): Result<AdfNode[]> {
 
 // spec/flavour.md, Marks: a spelling skips a node Atlassian's schema withholds its mark from.
 function marksItem(item: Inline, type: string): boolean {
-  return !isNode(item) || takesMark(item.type, type)
+  return !isNode(item) || takesMark(item, type)
 }
 
 function isNode(item: Inline): item is AdfNode {

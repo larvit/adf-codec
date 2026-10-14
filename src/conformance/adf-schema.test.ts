@@ -8,7 +8,7 @@ import test from 'node:test'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
-import { inlineNodes } from '../adf/inline-nodes.ts'
+import { codeTextMarkTypes, inlineNodes } from '../adf/inline-nodes.ts'
 import { markVocabularies } from '../adf/mark-attributes.ts'
 
 type Held = Map<string, Set<AttributeKind>>
@@ -79,6 +79,17 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
 test('the inline node table gives a type exactly the mark types the ADF JSON Schemas give it, in order', () => {
   const { marked } = schemaTypes()
   for (const [type, model] of Object.entries(inlineNodes)) assert.deepEqual(model.markTypes, [...(marked.get(type) ?? [])].sort(), type)
+})
+
+test('code text takes exactly the mark types the ADF JSON Schemas give a code_inline_node', () => {
+  for (const file of schemaFiles) {
+    const definitions = schemaObject(schemaObject(JSON.parse(readFileSync(join(root, file), 'utf8')), file)['definitions'], `${file} definitions`)
+    const where = `${file} code_inline_node`
+    const marks = alternatives(schemaObject(definitions['code_inline_node'], where), definitions, where).flatMap((properties) => properties.get('marks') ?? [])
+    // allOf narrows text_node's marks, which hold every mark type, to the ones code text takes.
+    const narrowed = marks.map((schema) => heldMarkTypes(schema, definitions, `${where}.marks`)).filter((types) => !types.includes('every mark type'))
+    assert.deepEqual(narrowed.flat().sort(), codeTextMarkTypes, file)
+  }
 })
 
 function spelled(): Spelled[] {

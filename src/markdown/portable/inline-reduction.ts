@@ -2,6 +2,7 @@ import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -141,9 +142,8 @@ function portableMarks(marks: readonly AdfMark[], container: LineContainer, text
     if (portable !== undefined) kept.push(portable)
   }
   const rank = (mark: AdfMark): number => (mark.type === highlight ? 0 : mark.type === 'code' ? 2 : 1)
-  // The reader highlights no code, as Atlassian's schema allows none.
   const code = kept.some((mark) => mark.type === 'code')
-  return kept.filter((mark) => !code || mark.type !== highlight).sort((first, second) => rank(first) - rank(second))
+  return kept.filter((mark) => !code || codeTextMarkTypes.includes(mark.type)).sort((first, second) => rank(first) - rank(second))
 }
 
 export function portableLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
