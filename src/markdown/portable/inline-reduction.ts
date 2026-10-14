@@ -85,7 +85,10 @@ function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], 
   const alt = nonEmpty(attrs['alt'])
   const url = nonEmpty(attrs['url'])
   if (attrs['type'] !== 'external' || url === undefined) return textLeaves(alt, marks, container, 'image')
-  return linkedLeaves(alt ?? url, url, marks, container)
+  const href = nodeAttrs(marks.find((mark) => mark.type === 'link') ?? {})['href']
+  if (href === url) return textLeaves(alt ?? url, marks, container)
+  if (typeof href !== 'string') return linkedLeaves(alt ?? url, url, marks, container)
+  return [...textLeaves(alt ?? url, marks, container), textLeaf(' (', []), ...linkedLeaves('image', url, marks, container), textLeaf(')', [])]
 }
 
 function noteLeaves(name: string): AdfNode[] {

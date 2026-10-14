@@ -4,6 +4,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { adfToPortableMarkdown, reduceToPortable } from './adf-to-portable-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
+import { portableMarkdownToAdf } from '../parse/markdown-to-adf.ts'
 
 const code: AdfMark = { type: 'code' }
 const em: AdfMark = { type: 'em' }
@@ -237,6 +238,17 @@ test('keeps the target of a link marking an external image', () => {
   assert.equal(portable(node('mediaSingle', { layout: 'wide' }, linked('https://example.com/docs'))), '[![Moon](https://example.com/moon.png)](https://example.com/docs "Docs")\n')
   assert.equal(portable(node('mediaSingle', {}, linked('a\\b', { attrs: { color: '#000', size: 1 }, type: 'border' }), node('caption', {}, text('The moon.')))), '[![Moon](https://example.com/moon.png)](a%5Cb "Docs")\n\nThe moon.\n')
   assert.equal(portable(linked('')), '[![Moon](https://example.com/moon.png)](<> "Docs")\n')
+})
+
+test('keeps both targets of a linked external image standing inline, the image last as a link reading image', () => {
+  const linked = (href: string, alt?: string): AdfNode => ({ attrs: { ...(alt === undefined ? {} : { alt }), type: 'external', url: 'https://example.com/moon.png' }, marks: [{ attrs: { href, title: 'Docs' }, type: 'link' }], type: 'media' })
+  const table = (...content: AdfNode[]): AdfNode => node('table', {}, row(cell('tableHeader', said('h'))), row(cell('tableCell', ...content)))
+  const inCell = portable(table(node('mediaSingle', {}, linked('https://example.com/docs', 'Moon'))))
+  assert.equal(inCell, '| h |\n| --- |\n| [Moon](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
+  const read = portableMarkdownToAdf(inCell)
+  assert.equal(read.ok && portableDocument(read.value), inCell)
+  assert.equal(portable(table(said('See'), node('mediaSingle', {}, linked('https://example.com/docs')))), '| h |\n| --- |\n| See [https://example.com/moon.png](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
+  assert.equal(portable(paragraph(text('See '), linked('https://example.com/moon.png', 'Moon'))), 'See [Moon](https://example.com/moon.png "Docs")\n')
 })
 
 test('keeps an external image wherever it stands and spells a stored file as its alt text, else a note', () => {
