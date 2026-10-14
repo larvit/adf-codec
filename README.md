@@ -463,8 +463,8 @@ Every call can raise these:
     replace a line ending with a space, or, for either, write the node as `!adf:carry`;
   - wraps a directive mark around nothing, or only around nodes that take no such mark, such as a
     hard break or a mention;
-  - writes a link around nodes none of which takes a link, more than hard breaks alone, such as
-    `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
+  - writes a link whose text holds something besides hard breaks, but no node that takes a link,
+    such as `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
   - writes as a directive a node or mark the lossless flavour spells as CommonMark;
   - puts `!adf:textBreak{}` where it parts nothing, or `!adf:doc` anywhere but as the whole
     document.

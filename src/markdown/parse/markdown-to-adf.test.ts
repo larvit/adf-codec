@@ -926,9 +926,9 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
   assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
   assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
-  assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark')
-  assert.equal(read('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark')
-  assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark')
+  assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
+  assert.equal(read('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
+  assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark: write the link mark around text beside them')
 })
 
 test('decodes the fenced info string the block walk leaves raw', () => {
@@ -1268,7 +1268,7 @@ test('names the directive mark left without the content it wraps', () => {
   const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps none'
   assert.equal(content(losslessMarkdownToAdf('!adf:underline[]\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:underline{}\n')), named)
-  const breaks = (name: string): string => `unsupported-node-shape: the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark`
+  const breaks = (name: string): string => `unsupported-node-shape: the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark: write the ${name} mark around text beside them`
   assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), breaks('underline'))
   assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), breaks('link'))
 })

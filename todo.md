@@ -25,7 +25,7 @@
 
 | ID | Release | Exempt | Item | R | S | C | A | G | Goals | Score |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 114 | 0.3.0 | defect | **Build text marked `code` holding no mark but `link` and `annotation`, in every reader, and carry any other in `adfToLosslessMarkdown`.** | 3 | 4 | 5 | 5 | 7 | 4 | 15.4 |
+| 114 | 0.3.0 | defect | **Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.** | 3 | 4 | 5 | 5 | 7 | 4 | 15.4 |
 | 99 | 0.3.0 | defect | **Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.** | 3 | 3 | 5 | 6 | 7 | 7 | 12.9 |
 | 100 | 0.3.0 | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 3 | 3 | 3 | 4 | 5 | 4, 6 | 10.9 |
 | 60 | 0.3.0 | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 3 | 4 | 4 | 2 | 6 | 2 | 10.7 |
@@ -52,7 +52,7 @@
 | 107 | 0.4.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.4.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
 | 95 | 0.4.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
-| 91 | 0.4.0 |  | **Spell an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions, statuses and inline media between two nodes it marks, in both writers.** | 5 | 5 | 8 | 5 | 6 | 6 | 9.0 |
+| 91 | 0.4.0 |  | **Spell an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 5 | 6 | 6 | 9.0 |
 | 73 | 0.5.0 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 1 | 6 | 8 | 3 | 23.0 |
 | 9 | 0.5.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 4 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.5.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 5 | 4 | 7 | 1 | 19.5 |
@@ -69,12 +69,12 @@
 
 ## Details
 
-### 114. Build text marked `code` holding no mark but `link` and `annotation`, in every reader, and carry any other in `adfToLosslessMarkdown`.
+### 114. Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.
 
-`**`npm ci`**` builds text holding `[strong, code]`; `code_inline_node` (`spec/adf-schema/full.json`)
+``**`npm ci`**`` builds text holding `[strong, code]`; `code_inline_node` (`spec/adf-schema/full.json`)
 gives code text `code`, `link` and `annotation` alone, so a site may reject the document. The `==`
-highlight already skips code (`highlighted`, `src/markdown/parse/inline-content.ts`). Moves the
-reading of stored markdown, so it ships where semver allows a breaking change.
+highlight already skips code (`highlighted`, `src/markdown/parse/inline-content.ts`). It changes
+how stored markdown reads, so it ships in a minor.
 
 ### 99. Write a linked external image standing inline or in a table cell in the spelling a reader panel picks, in `adfToPortableMarkdown`.
 
@@ -298,14 +298,14 @@ text. Only the property tests catch drift between these and the reader, and it h
 under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
 run it carries may differ from today's, which changes lossless output (§The formats are API).
 
-### 91. Spell an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions, statuses and inline media between two nodes it marks, in both writers.
+### 91. Spell an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
 Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
 reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
 typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
-withholds from them, so `**Ping !adf:mention[@A]{id=x} now**` writes back with each strong run's
-inner space spelled `!adf:text{text=" "}`. Joining the run across the break in `inline-line.ts` ruled worse
-with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
+withholds from them, so `**Ping !adf:mention[@A]{id=x} now**` writes back with the space beside
+the mention in each strong run spelled `!adf:text{text=" "}`. Joining the run across the break in
+`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
 first as a set of parted breaks, then as a flag the first fallback clears.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.

@@ -2,15 +2,14 @@
 
 ## Unreleased
 
+- **Breaking:** `losslessMarkdownToAdf` gives a `date`, `emoji`, `inlineCard`, `mention`, `status`
+  or `mediaInline` only the marks Atlassian's schema lets it hold: `**!adf:mention[@A]{id=…}**` now
+  reads as a plain mention. A link or directive mark around only nodes that cannot take it is
+  `unsupported-node-shape`, even in markdown `adfToLosslessMarkdown` wrote. A link around hard
+  breaks alone still reads as before. `adfToLosslessMarkdown` writes a node holding a mark its type
+  cannot take as `!adf:carry{json="…"}`. `MIGRATION.md` says how to convert stored markdown.
 - `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
   node CommonMark spells, such as `[![alt](url)](href)` for a linked `!adf:mediaSingle`.
-- **Breaking:** a mark spelling skips a `date`, `emoji`, `inlineCard`, `mention`, `status` or
-  `mediaInline` Atlassian's schema withholds the mark from, where `losslessMarkdownToAdf` gave it
-  the marks around it: `**!adf:mention[@A]{id=…}**` reads as a plain mention. A link around only
-  such nodes, or a directive mark around nodes none of which takes it, is `unsupported-node-shape`,
-  markdown `adfToLosslessMarkdown` wrote before included.
-  `adfToLosslessMarkdown` writes a node holding such a mark as `!adf:carry{json="…"}`. See
-  `MIGRATION.md`.
 
 ## 0.2.0
 
