@@ -1064,3 +1064,24 @@ Junior A, decided by:
 - Navigation, Overall: `src/adf/inline-nodes.ts:5` `codeTextMarkTypes`: the code-text rule lives in one table beside the other inline nodes' table
 - Shape: `src/adf/inline-nodes.ts:41` `takenMarkTypes`: "taken" reads as accepted or as already held, and `undefined` means every mark
 - Shape: `src/markdown/emit/inline-line.ts:103` `freshFallbacks`: named fresh but seeds the carried set, and `carries`'s comment no longer names the withheld-mark carry
+
+## 2026-10-14T20:46:20Z, PR #53 at 787d909, against 498e874
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | better | same | better |
+| Inherited architect | better | better | better | same | better |
+
+Mid A, decided by:
+
+- Shape: `src/markdown/emit/inline-line.ts:103` `withheldMarkFallbacks`: renamed from `freshFallbacks`, it now says the fallbacks start seeded with every node holding a withheld mark
+- Locality: `src/markdown/emit/inline-line.ts:234` `carries`: the comment now names `withheldMarkFallbacks` as where the withheld-mark carries are decided, linking the two units
+
+Inherited architect, decided by:
+
+- Locality, Navigation: `src/markdown/emit/inline-line.ts:234` `carries`: the comment now points at `withheldMarkFallbacks` for the third kind of carry, a hidden dependence made followable
+- Shape, Navigation: `src/markdown/emit/inline-line.ts:103` `withheldMarkFallbacks`: the old name `freshFallbacks` hid a pre-seeded set; the new one says what it holds
+- Shape: `src/markdown/portable/inline-reduction.ts:84` `mediaLeaves`: three branches, two writing `[alt](url)` by different routes, seen only by reading `portableMarks`
+- Self-sufficiency: `src/markdown/portable/inline-reduction.ts:83` `mediaLeaves`: the comment says why an inline image becomes a link, not why the other target goes in parentheses as `image`
