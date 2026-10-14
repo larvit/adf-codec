@@ -54,7 +54,7 @@ export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: Conve
 }
 
 export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<PortableLineFallback | undefined> {
-  const emission = lineSegments(nodes, container, path, { carried: new Set(), flavour: 'portable', openingLinkAsDirective: false })
+  const emission = lineSegments(nodes, container, path, freshFallbacks(nodes, 'portable'))
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
   const verdict = lineVerdict(emission.value.segments, container, 'portable')
@@ -80,7 +80,7 @@ export function tryImageLine(alt: string | undefined, url: string, link?: LinkDe
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
-  const fallbacks: LineFallbacks = { carried: new Set(), flavour, openingLinkAsDirective: false }
+  const fallbacks = freshFallbacks(nodes, flavour)
   // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {
     const emission = lineSegments(nodes, container, path, fallbacks)
@@ -97,6 +97,16 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     const taken = takeFallback(fallbacks, attempt.fallback, path)
     if (!taken.ok) return taken
   }
+}
+
+// Seeds the withheld-mark carries once per line, so no run at any depth reads a node's marks whole.
+function freshFallbacks(nodes: readonly AdfNode[], flavour: WrittenFlavour): LineFallbacks {
+  const carried = new Set<number>()
+  for (const [index, node] of nodes.entries()) {
+    const taken = takenMarkTypes(node)
+    if (taken !== undefined && nodeMarks(node).some((mark) => !taken.includes(mark.type))) carried.add(index)
+  }
+  return { carried, flavour, openingLinkAsDirective: false }
 }
 
 function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-link', path: ConvertErrorPath): Result<null> {
@@ -221,10 +231,9 @@ function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
 }
 
-// Decides the text-node, withheld-mark and slot-fault carries up front, so a line holding many of them is emitted once.
+// Decides the text-node and slot-fault carries up front, so a line holding many of them is emitted once.
 function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
-  const taken = takenMarkTypes(node)
-  if (carried.has(index) || (taken !== undefined && nodeMarks(node).some((mark) => !taken.includes(mark.type)))) return true
+  if (carried.has(index)) return true
   if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
   const model = inlineNodeModel(node.type)
   if (model === undefined) return true
