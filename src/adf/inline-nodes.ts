@@ -37,8 +37,12 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
   return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }
 
-// The table withholds nothing from a type it does not list, such as text; Atlassian's schema withholds from code text all but `codeTextMarkTypes`.
+// Undefined where the schema withholds no mark: the table lists no such type, text among them, but code text takes only `codeTextMarkTypes`.
+export function takenMarkTypes(node: AdfNode): readonly string[] | undefined {
+  if (node.type === 'text') return nodeMarks(node).some((mark) => mark.type === 'code') ? codeTextMarkTypes : undefined
+  return inlineNodeModel(node.type)?.markTypes
+}
+
 export function takesMark(node: AdfNode, markType: string): boolean {
-  if (node.type === 'text' && nodeMarks(node).some((mark) => mark.type === 'code')) return codeTextMarkTypes.includes(markType)
-  return inlineNodeModel(node.type)?.markTypes.includes(markType) ?? true
+  return takenMarkTypes(node)?.includes(markType) ?? true
 }

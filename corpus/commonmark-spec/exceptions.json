@@ -277,7 +277,7 @@
     "divergence": "a 1/5 em 1/3",
     "example": 516,
     "kind": "mark-model",
-    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element, and skips the code text, which takes no em."
   },
   {
     "check": "count",
@@ -291,7 +291,7 @@
     "divergence": "a 1/5 em 1/3",
     "example": 530,
     "kind": "mark-model",
-    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element."
+    "reason": "The mark spans adjacent text nodes, counted once per node where CommonMark nests one element, and skips the code text, which takes no em."
   },
   {
     "check": "count",

@@ -7,7 +7,7 @@ In `losslessMarkdownToAdf`, a mark spelling skips a node Atlassian's schema with
 | Input | `0.2.0` | `0.3.0` |
 | --- | --- | --- |
 | a `date`, `emoji`, `inlineCard`, `mention`, `status` or `mediaInline` inside a mark's spelling (`**!adf:mention[@A]{id=x}**`) | the node holds the mark | the node holds only marks its type takes; text beside it keeps the mark |
-| a link or directive mark around only nodes that cannot take it, hard breaks under a link aside (`[!adf:status[Done]{color=green}](/u)`) | the nodes hold the mark | `unsupported-node-shape`; write the mark around text beside them |
+| a link or directive mark around only nodes that cannot take it, a code span included, hard breaks under a link aside (`[!adf:status[Done]{color=green}](/u)`) | the nodes hold the mark | `unsupported-node-shape`; write the mark around text beside them |
 | a code span inside any mark's spelling but a link's (``**`npm ci`**``), in every reader | the code text holds the mark | the code text holds only `code` and the link |
 
 `0.2.0` wrote these spellings for a node holding such a mark; `0.3.0` writes the node as

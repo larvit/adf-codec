@@ -569,7 +569,7 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]):
   return paired
 }
 
-// Atlassian's schema refuses a highlight on code, a node holds one highlight, and a rebuilt node would lose its attributes.
+// A node holds one highlight, and a rebuilt node would lose its attributes.
 function markHighlights(pieces: readonly Piece[], nodes: Inline[][], paired: readonly { closer: number; opener: number }[]): void {
   for (const [index, piece] of pieces.entries()) {
     if (piece.kind === 'highlight') nodes[index] = adfNodes(nodes[index] ?? []).map((holder) => ({ ...holder, text: highlightDelimiter }))
@@ -584,7 +584,7 @@ function markHighlights(pieces: readonly Piece[], nodes: Inline[][], paired: rea
 function highlighted(node: Inline): Inline {
   if (!isNode(node)) return node
   const marks = nodeMarks(node)
-  if (node.type !== 'text' || Object.keys(nodeAttrs(node)).length > 0 || marks.some((mark) => mark.type === 'code' || mark.type === 'backgroundColor')) return node
+  if (node.type !== 'text' || Object.keys(nodeAttrs(node)).length > 0 || !marksItem(node, editorHighlight.type) || marks.some((mark) => mark.type === editorHighlight.type)) return node
   return { ...node, marks: [editorHighlight, ...marks] }
 }
 

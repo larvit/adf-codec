@@ -536,8 +536,8 @@ Serves [Goals](#goals) 1, 4 and 5.
     alt text linked to its URL: `See ![the moon](moon.png).` reads as
     `See [the moon](moon.png).`. To keep an image an image, give it a paragraph of its own: a
     blank line between it and any other line.
-  - A code span inside emphasis, strikethrough or a directive mark reads as code alone, since ADF
-    gives code text no mark but a link: ``**`npm ci`**`` reads as `` `npm ci` ``.
+  - A code span inside emphasis reads as code alone, since ADF gives code text no mark but a link
+    or an annotation: ``**`npm ci`**`` reads as `` `npm ci` ``.
   - Inside a link, an image reads as plain text the link marks. A link alone in its paragraph
     whose whole text is one image reads as that image, with the link marking it.
   - An image's title becomes its caption when the image stays an image, and its link's title when
