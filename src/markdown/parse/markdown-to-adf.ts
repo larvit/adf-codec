@@ -266,18 +266,23 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
   const readable = withinEngineLimits(() => commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo }))
   if (!readable.ok) return readable
   if (!readable.value) return built
-  const spelling = commonMarkSpellings.get(built.value.type)
+  const spelling = spellingToWrite(built.value)
   return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form${spelling === undefined ? '' : `: write ${spelling}`}`, path)
 }
 
-// The nodes `commonMarkSpelling` spells in the lossless flavour.
+function spellingToWrite(node: AdfNode): string | undefined {
+  if (node.type !== 'orderedList') return commonMarkSpellings.get(node.type)
+  const order = String(nodeAttrs(node)['order'])
+  return `each item behind its number, counting up from \`${order}. \`, or from \`${order}) \` right after another ordered list`
+}
+
+// One entry per node `commonMarkSpelling` spells in the lossless flavour, kept here because this refusal is its only reader; a node missing here is refused naming no spelling.
 const commonMarkSpellings: ReadonlyMap<string, string> = new Map([
   ['blockquote', 'each line behind `> `'],
-  ['bulletList', 'each item behind `- `'],
-  ['codeBlock', 'its text in a ``` fence'],
+  ['bulletList', 'each item behind `- `, or behind `* ` right after another bullet list'],
+  ['codeBlock', 'its text in a fence of more backticks than any run it holds, its language after the opening fence'],
   ['heading', 'one `#` per level before its text, `## Title` at level 2'],
-  ['mediaSingle', '`![alt](url)`, or `[![alt](url)](href "title")` when linked'],
-  ['orderedList', 'each item behind `1. `'],
+  ['mediaSingle', '`![alt](url)`, or `[![alt](url)](href)` when linked'],
   ['paragraph', 'its text alone'],
   ['rule', '`---`'],
   ['table', 'a pipe table'],

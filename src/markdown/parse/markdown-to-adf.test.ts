@@ -333,15 +333,15 @@ test('names the CommonMark spelling to write for the directive form a node Commo
   assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n')), named('blockquote', 'each line behind `> `'))
   assert.equal(content(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n')), named('heading', 'one `#` per level before its text, `## Title` at level 2'))
   assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n')), named('paragraph', 'its text alone'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList', 'each item behind `- `'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList', 'each item behind `- `, or behind `* ` right after another bullet list'))
   assert.equal(
-    content(losslessMarkdownToAdf('!adf:orderedList {order=1}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n')),
-    named('orderedList', 'each item behind `1. `'),
+    content(losslessMarkdownToAdf('!adf:orderedList {order=5}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n')),
+    named('orderedList', 'each item behind its number, counting up from `5. `, or from `5) ` right after another ordered list'),
   )
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n')), named('codeBlock', 'its text in a ``` fence'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n')), named('codeBlock', 'its text in a fence of more backticks than any run it holds, its language after the opening fence'))
   assert.equal(
     content(losslessMarkdownToAdf('!adf:mediaSingle {layout=center}\n!adf:media {alt=a type=external url=u}\n!adf:/mediaSingle\n')),
-    named('mediaSingle', '`![alt](url)`, or `[![alt](url)](href "title")` when linked'),
+    named('mediaSingle', '`![alt](url)`, or `[![alt](url)](href)` when linked'),
   )
   assert.equal(
     content(losslessMarkdownToAdf('!adf:table\n!adf:tableRow\n!adf:tableHeader\nPart.\n!adf:/tableHeader\n!adf:/tableRow\n!adf:/table\n')),
@@ -575,6 +575,8 @@ test('names the marks key no marks read back from', () => {
   const inBreakout = (cause: string): string => `unsupported-node-shape: the breakout mark in the marks attribute of rule: ${cause}`
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=1 mode=wide}"}\n')), inBreakout('the {attrs} keys read in alphabetical order: mode before width'))
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode}"}\n')), inBreakout('an attribute reads key=value, the value bare or double-quoted: this one does not'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide\\"x\\"}"}\n')), inBreakout('an attribute reads key=value, the value bare or double-quoted: this one does not'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=}"}\n')), inBreakout('an attribute reads key=value, the value bare or double-quoted: this one does not'))
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide"}\n')), inBreakout('the {attrs} closing brace is missing'))
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}strong"}\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n')), 'unsupported-node-shape: the reserved key attrs takes only the value empty: this one spells attrs=x')
