@@ -7,7 +7,8 @@
 - **Breaking:** a mark spelling skips a `date`, `emoji`, `inlineCard`, `mention`, `status` or
   `mediaInline` Atlassian's schema withholds the mark from, where `losslessMarkdownToAdf` gave it
   the marks around it: `**!adf:mention[@A]{id=…}**` reads as a plain mention. A link around only
-  such nodes, or a directive mark around nodes none of which takes it, is `unsupported-node-shape`.
+  such nodes, or a directive mark around nodes none of which takes it, is `unsupported-node-shape`,
+  markdown `adfToLosslessMarkdown` wrote before included.
   `adfToLosslessMarkdown` writes a node holding such a mark as `!adf:carry{json="…"}`. See
   `MIGRATION.md`.
 
