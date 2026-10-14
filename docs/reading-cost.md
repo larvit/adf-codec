@@ -368,3 +368,20 @@ Read most (opens and searches):
 - `src/conformance/adf-schema.test.ts` 3
 - `src/markdown/parse/inline-content.ts` 3
 - `corpus/round-trip/combinations/link-definition-directive.md` 2
+
+## Reading cost, chunk f98651837536, finished 2026-10-14T18:16:11Z
+
+159948 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 9
+- `README.md` 6
+- `CHANGELOG.md` 2
+- `docs/decisions.md` 2
+- `AGENTS.md` 1
+- `converter-comparison/compare.mjs` 1
+- `converter-comparison/run.sh` 1
+- `docker-runner.sh` 1
+- `package.json` 1
+- `tsconfig.build.json` 1
