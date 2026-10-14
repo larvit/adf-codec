@@ -334,3 +334,20 @@ Read most (opens and searches):
 - `src/markdown/directive-syntax.ts` 5
 - `README.md` 4
 - `src/conformance/flavour.test.ts` 4
+
+## Reading cost, chunk e9df4b437514, finished 2026-10-14T11:18:42Z
+
+69211 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 10
+- `todo.md` 7
+- `src/markdown/directive-syntax.ts` 5
+- `CHANGELOG.md` 4
+- `src/markdown/parse/markdown-to-adf.test.ts` 4
+- `src/markdown/parse/directive-nodes.ts` 3
+- `ci.sh` 2
+- `docs/decisions.md` 2
+- `spec/flavour.md` 2
+- `AGENTS.md` 1
