@@ -890,3 +890,69 @@ Junior A, decided by:
 
 - Self-sufficiency: `src/markdown/directive-syntax.ts:108` `slotFault`: the comment says on its own which node the emitter carries
 - Self-sufficiency: `src/markdown/portable/conventions.ts:13` `Claims.pipeTables`: the comment says what each mode reads, so the branches in blocks.ts read without the spec
+
+## 2026-10-14T08:45:14Z, PR #43 at b83adc4, against e193536
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | worse | same | worse |
+| Inherited architect | same | worse | worse | same | worse |
+
+Mid A, decided by:
+
+- Locality: `src/markdown/parse/directive-nodes.ts:140` `readNamedMark`: words its error by deleting `; ${directiveEscape}` from a fault built in directive-syntax.ts, so rewording that message silently changes this one
+- Shape, Locality: `src/markdown/parse/directive-nodes.ts:100` `readMarks` / `readMarkArray` / `readNamedMarks` / `readNamedMark`: one attribute's parse now spans four units and three modules, a cursor-driven list parser in a file about directive nodes
+- Shape: `src/markdown/directive-syntax.ts:299` `readAttributes` / `readDirectiveName`: exported but left among the private helpers, below the file's export block
+- Locality: `src/markdown/directive-syntax.ts:69` `attributeValue`: the numbers branch reads a JSON array only for a respelling check that lives in another file
+
+Inherited architect, decided by:
+
+- Locality, Overall: `src/markdown/parse/directive-nodes.ts:140` `readNamedMark`: strips the escape hint with a string replace tied to the wording of pairFault and prefixFault in directive-syntax.ts, which nothing there warns of
+- Locality, Shape: `src/markdown/parse/directive-nodes.ts:117` `readNamedMarks` / `readNamedMark`: a grammar inside a quoted attribute value, two levels of escaping held at once, the reader in a file otherwise about building nodes and the writer in block-directive.ts
+- Shape: `src/adf/mark-attributes.ts:22` `markVocabularies` / `markAttributes` / `isMarkType`: markAttributes silently means inline marks beside markVocabularies meaning all, and isMarkType('alignment') is false
+
+## 2026-10-14T08:45:16Z, PR #43 at b83adc4
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 6.5 | 5 | 6 | 5 | 5.5 |
+| Mid A | 6 | 5 | 5.5 | 5 | 5.5 |
+| Maintainability senior | 7 | 5.5 | 6.5 | 5.5 | 6 |
+| Inherited architect | 7 | 6 | 6 | 6.5 | 6.5 |
+| Mean | 6.63 | 5.38 | 6.00 | 5.50 | 5.88 |
+
+Junior A, hardest first:
+
+- Locality, Overall: `src/markdown/parse/markdown-to-adf.ts:237` `splitPath`: builds stand-in nodes and re-runs splitTaskList to find an error path, the comments naming the trick but not why it is correct
+- Locality, Self-sufficiency: `src/markdown/emit/line-escaping.ts:230` `escapeClosedRuns` / `escapeClaims`: per-character flags in Uint8Arrays and a backward-filled set of backtick lengths, opaque without the spec open
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: an identity-keyed memo deleted on read and filled by the parser and the portable writer, action at a distance
+- Locality: `src/markdown/parse/inline-content.ts:330` `closeBracket`: mutable Scan flags set mid-scan and read later, then a call back into the emitter to decide a parse error
+- Shape: `src/markdown/emit/inline-line.ts:82` `emitLine`: a retry loop widening a carried index set threaded through nested emitRun calls
+- Shape: `src/markdown/portable/inline-reduction.ts:194` `trimmedEdges`: two nested fixpoint loops and a number-or-undefined edge depth
+
+Mid A, hardest first:
+
+- Locality, Self-sufficiency: `src/markdown/emit/line-escaping.ts:142` `escapeClaims` / `escapeClosedRuns`: three passes over a Uint8Array whose conditions tie escaping kind, token kind and position, unverifiable against the spec's prose
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: filled only on an asked call, deleted on any read, so correctness depends on the order two directions call it
+- Locality: `src/markdown/parse/markdown-to-adf.ts:237` `splitPath`: stand-in nodes and a re-run split to report an error path
+- Locality: `src/markdown/emit/inline-line.ts:82` `emitLine`: a fixpoint loop the parser re-enters through openingLinkTakesDirective
+- Shape: `src/markdown/portable/conventions.ts:24` `flavourClaims`: the switch every reader and writer uses lives under portable/
+- Shape: `src/markdown/directive-syntax.ts:32` `Read`: the general reader-failure type defined in the directive grammar file
+
+Maintainability senior, hardest first:
+
+- Locality, Overall: `src/markdown/parse/markdown-to-adf.ts:237` `splitPath`: rebuilds a fake task list to place a refusal, correct only by knowing how splitTaskList and splitPlace move children
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:142` `escapeClaims` / `escapeClosedRuns`: four escaping kinds and three special cases at once, complete only against spec §Canonical form
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: a reference-keyed memo with delete-on-read and depth rebasing, called from the parser and the portable reducer
+- Shape: `src/markdown/parse/inline-content.ts:443` `resolveNodes` / `pairedHighlights`: parallel pieces and nodes arrays, a cursor advanced inside an index expression, and a seven-way Piece union
+- Shape: `src/markdown/portable/conventions.ts:8` `Claims`: sets all three readers' behaviour yet lives under portable/
+
+Inherited architect, would restructure first:
+
+- Shape, Navigation: `src/markdown/portable/conventions.ts:8` `Claims` / `flavourClaims`: the switch for all three flavours filed under the portable directory
+- Locality: `src/markdown/emit/adf-to-markdown.ts:127` `readableBlock`: the parse-to-emit dependency runs through a reference-keyed SpellingMemo shared across calls
+- Shape: `src/markdown/parse/markdown-to-adf.ts:143` `quoteNode` / `splitPath`: the portable reader lives in parse/ and reaches back into portable/
+- Shape: `src/markdown/emit/adf-to-markdown.ts:157` `spellPortableBlock`: portable-only writing in a file whose name matches neither flavour
+- Locality: `src/markdown/emit/line-escaping.ts:260` `unspellableRuns`: the 3am unit, concentrated escaping that needs spec §Canonical form and §Marks open to change safely
