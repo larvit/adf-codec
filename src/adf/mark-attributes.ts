@@ -1,5 +1,14 @@
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 
+// Marks only a block's marks key holds, so no inline spelling names them.
+export const blockMarkAttributes = {
+  alignment: { align: 'string' },
+  breakout: { mode: 'string', width: 'number' },
+  dataConsumer: { sources: 'json' },
+  fragment: { localId: 'string', name: 'string' },
+  indentation: { level: 'number' },
+} satisfies Readonly<Record<string, AttributeVocabulary>>
+
 export const markAttributes = {
   border: { color: 'string', size: 'number' },
   code: {},
@@ -12,8 +21,14 @@ export const markAttributes = {
   underline: {},
 } satisfies Readonly<Record<string, AttributeVocabulary>>
 
+const blockMarkVocabularies: ReadonlyMap<string, AttributeVocabulary> = new Map(Object.entries(blockMarkAttributes))
+
 export type MarkType = keyof typeof markAttributes
 
 export function isMarkType(type: string): type is MarkType {
   return Object.hasOwn(markAttributes, type)
+}
+
+export function markVocabulary(type: string): AttributeVocabulary | undefined {
+  return isMarkType(type) ? markAttributes[type] : blockMarkVocabularies.get(type)
 }

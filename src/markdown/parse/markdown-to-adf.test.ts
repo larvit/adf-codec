@@ -525,26 +525,51 @@ test('reads each attribute value as the type its section assigns', () => {
     { attrs: { height: 10, id: 'a-1', type: 'file', url: '/x y', width: 20.5 }, type: 'media' },
   ])
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=true}\n!adf:/table\n')), [{ attrs: { isNumberColumnEnabled: true }, type: 'table' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,420]"}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340, 420] }, type: 'tableCell' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,420.5"}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340, 420.5] }, type: 'tableCell' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:tableCell {colwidth=340}\n!adf:/tableCell\n')), [{ attrs: { colwidth: [340] }, type: 'tableCell' }])
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n')), [{ attrs: { localId: 'a-1' }, type: 'rule' }])
 })
 
-test('reads the reserved marks key as the node array it spells', () => {
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"}]"}\n')), [{ marks: [em], type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1 marks="[{\\"attrs\\":{\\"mode\\":\\"wide\\"},\\"type\\":\\"breakout\\"}]"}\n')), [
+test('reads the reserved marks key as the marks it names, in order', () => {
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=em}\n')), [{ marks: [em], type: 'rule' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {localId=a-1 marks="breakout{mode=wide}"}\n')), [
     { attrs: { localId: 'a-1' }, marks: [{ attrs: { mode: 'wide' }, type: 'breakout' }], type: 'rule' },
+  ])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="indentation{level=2} fragment{localId=f1 name=\\"Price list\\"}"}\n')), [
+    { marks: [{ attrs: { level: 2 }, type: 'indentation' }, { attrs: { localId: 'f1', name: 'Price list' }, type: 'fragment' }], type: 'rule' },
+  ])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}"}\n')), [{ marks: [{ attrs: {}, type: 'em' }], type: 'rule' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=empty}\n')), [{ marks: [], type: 'rule' }])
+})
+
+test('reads the reserved marks key as a JSON array where a mark is one the tables do not type', () => {
+  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"},{\\"attrs\\":{\\"color\\":\\"#fff\\"},\\"type\\":\\"backgroundColor\\"}]"}\n')), [
+    { marks: [em, { attrs: { color: '#fff' }, type: 'backgroundColor' }], type: 'rule' },
   ])
 })
 
-test('names the marks key no marks array reads back from', () => {
-  const named = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON: this one is not'
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n')), named)
+test('names the marks key no marks read back from', () => {
+  const array = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON: this one is not'
+  const named = 'unsupported-node-shape: the marks attribute of rule names each mark with its {attrs}, one space apart: this one does not'
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n')), array)
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n')), array)
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="{}"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks=x}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n')), named)
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n')), [{ marks: [{ attrs: {}, type: 'em' }], type: 'rule' }])
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:rule {marks=empty}\n')), [{ marks: [], type: 'rule' }])
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em  strong"}\n')), named)
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em "}\n')), named)
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n')), 'unsupported-node-shape: the reserved key attrs takes only the value empty: this one spells attrs=x')
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks=x}\n')), 'unsupported-node-shape: the marks attribute of rule names x, a mark it spells only in its JSON array')
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=wide}"}\n')), 'unsupported-node-shape: the width attribute of breakout is no number')
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{bogus=1}"}\n')), 'unsupported-node-shape: breakout holds no bogus attribute: this one spells it')
+})
+
+test('names the marks key spelled outside the canonical form', () => {
+  const spells = (spelling: string): string => `unsupported-node-shape: rule spells its marks attribute as marks=${spelling}`
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"}]"}\n')), spells('em'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n')), spells('"em{attrs=empty}"'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n')), spells('"em{attrs=empty}"'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{}"}\n')), spells('em'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em"}\n')), spells('em'))
+  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=\\"wide\\"}"}\n')), 'unsupported-node-shape: breakout spells its mode attribute as mode=wide')
 })
 
 test('names the attribute a node holds no reading for', () => {
@@ -552,7 +577,9 @@ test('names the attribute a node holds no reading for', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:media {width=wide}\n')), 'unsupported-node-shape: the width attribute of media is no number')
   assert.equal(content(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=yes}\n!adf:/table\n')), 'unsupported-node-shape: the isNumberColumnEnabled attribute of table is no boolean')
   assert.equal(content(losslessMarkdownToAdf('!adf:media {width=true}\n')), 'unsupported-node-shape: the width attribute of media is no number')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,"}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no json')
+  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,"}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no numbers')
+  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,420]"}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no numbers')
+  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth=""}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no numbers')
   assert.equal(content(losslessMarkdownToAdf('!adf:panel info {panelType=note}\nx\n!adf:/panel\n')), 'unsupported-node-shape: panel spells its panelType attribute as the directive argument, never in {attrs}')
   assert.equal(content(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
 })
@@ -561,16 +588,18 @@ test('names the depth an attribute value nests past, never the kind the JSON rea
   const nested = (levels: number): string => `${'['.repeat(levels)}1${']'.repeat(levels)}`
   const deeper = (key: string, type: string): string =>
     `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
-  assert.equal(content(losslessMarkdownToAdf(`!adf:tableCell {colwidth="${nested(largestNesting + 1)}"}\n!adf:/tableCell\n`)), deeper('colwidth', 'tableCell'))
+  assert.equal(content(losslessMarkdownToAdf(`!adf:extension {parameters="${nested(largestNesting + 1)}"}\n`)), deeper('parameters', 'extension'))
   assert.equal(content(losslessMarkdownToAdf(`!adf:rule {marks="${nested(largestNesting + 1)}"}\n`)), deeper('marks', 'rule'))
   assert.equal(content(losslessMarkdownToAdf(`!adf:rule {marks="[{\\"attrs\\":{\\"deep\\":${nested(largestNesting - 2)}},\\"type\\":\\"em\\"}]"}\n`)), deeper('marks', 'rule'))
+  assert.equal(content(losslessMarkdownToAdf(`!adf:rule {marks="dataConsumer{sources=\\"${nested(largestNesting + 1)}\\"}"}\n`)), deeper('sources', 'dataConsumer'))
   assert.equal(content(losslessMarkdownToAdf(`!adf:media {width="${nested(largestNesting + 1)}"}\n`)), 'unsupported-node-shape: the width attribute of media is no number')
 })
 
 test('names the attribute value spelled outside the canonical form', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:rule {localId="a-1"}\n')), 'unsupported-node-shape: rule spells its localId attribute as localId=a-1')
   assert.equal(content(losslessMarkdownToAdf('!adf:media {width="20.0"}\n')), 'unsupported-node-shape: media spells its width attribute as width=20')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340, 420]"}\n!adf:/tableCell\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth="[340,420]"')
+  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340, 420"}\n!adf:/tableCell\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth="340,420"')
+  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340"}\n!adf:/tableCell\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth=340')
 })
 
 test('names the argument and the body a node takes no reading for', () => {

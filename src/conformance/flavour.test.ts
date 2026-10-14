@@ -7,7 +7,7 @@ import test from 'node:test'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { markAttributes } from '../adf/mark-attributes.ts'
+import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
 import { textDirectiveName } from '../markdown/text-directive.ts'
 
 type Declared = { attributes: AttributeVocabulary }
@@ -80,7 +80,7 @@ function attributeList(heading: string, prose: string): AttributeVocabulary {
 
 function attributeKind(heading: string, parenthesized: string): AttributeKind {
   const first = parenthesized.split(/[\s,]/)[0] ?? ''
-  if (first === 'boolean' || first === 'json' || first === 'number' || first === 'string') return first
+  if (first === 'boolean' || first === 'json' || first === 'number' || first === 'numbers' || first === 'string') return first
   assert.ok(first.startsWith('`'), `${heading}: ${first} is neither an attribute kind nor a value set`)
   return 'string'
 }
@@ -104,5 +104,5 @@ test('no name is spelled in more than one position', () => {
 })
 
 test('the mark table holds the attributes spec/flavour.md gives each mark', () => {
-  assert.deepEqual(declarations('Marks'), vocabularies(Object.fromEntries(Object.entries(markAttributes).map(([type, attributes]) => [type, { attributes }]))))
+  assert.deepEqual(declarations('Marks'), vocabularies(Object.fromEntries(Object.entries({ ...blockMarkAttributes, ...markAttributes }).map(([type, attributes]) => [type, { attributes }]))))
 })

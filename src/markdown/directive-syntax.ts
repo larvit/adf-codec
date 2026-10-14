@@ -8,6 +8,8 @@ import { largestNesting } from '../nesting.ts'
 import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
+export type Attributes = { attributes: DirectiveAttributes; end: number }
+
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
 
 // Proof that `!adf:` stands at `index`; only `claimDirectivePrefix` builds one.
@@ -27,8 +29,6 @@ export type DirectiveSpan = { attributes: DirectiveAttributes; content: string |
 export type NestedSpans = ReadonlyMap<number, DirectiveSpan>
 
 export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
-
-type Attributes = { attributes: DirectiveAttributes; end: number }
 
 type AttributePair = { end: number; key: string; value: DirectiveValue }
 
@@ -65,6 +65,10 @@ const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${d
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
   if (kind === 'string') return { value: { kind, value: text } }
   if (kind === 'boolean') return text === 'true' || text === 'false' ? { value: { kind, value: text === 'true' } } : { refusal: 'kind' }
+  if (kind === 'numbers') {
+    const values = text.split(',').map((part) => parseJsonText(part).value)
+    return values.every((value) => typeof value === 'number') ? { value: { kind, value: values } } : { refusal: 'kind' }
+  }
   const parsed = parseJsonText(text).value
   if (parsed === undefined) return { refusal: 'kind' }
   if (kind === 'number') return typeof parsed === 'number' ? { value: { kind, value: parsed } } : { refusal: 'kind' }
@@ -145,6 +149,7 @@ export function spellAttributeValue(value: VocabularyValue): string {
   if (value.kind === 'boolean') return `${value.value}`
   if (value.kind === 'json') return spellJsonAttribute(value.value)
   if (value.kind === 'number') return spellStringAttribute(serializeCanonicalJson(value.value, 'compact'))
+  if (value.kind === 'numbers') return spellStringAttribute(value.value.map((item) => serializeCanonicalJson(item, 'compact')).join(','))
   return spellStringAttribute(value.value)
 }
 
@@ -200,7 +205,7 @@ function readOpenerLine(line: string): Read<DirectiveLine> | undefined {
   return { value: { argument: opener.value.argument, attributes: opener.value.attributes, kind: 'opener', name } }
 }
 
-function readDirectiveName(text: string, index: number): string | undefined {
+export function readDirectiveName(text: string, index: number): string | undefined {
   directiveName.lastIndex = index
   return directiveName.exec(text)?.[0]
 }
@@ -289,7 +294,7 @@ function readCodeSpanEnd(text: string, index: number): number | undefined {
   return text.slice(index, closer + opener).includes('\n') ? undefined : closer + opener
 }
 
-function readAttributes(text: string, index: number): Read<Attributes> {
+export function readAttributes(text: string, index: number): Read<Attributes> {
   const attributes = new Map<string, DirectiveValue>()
   let cursor = index + 1
   let previous = ''

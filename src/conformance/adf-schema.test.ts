@@ -9,14 +9,14 @@ import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabu
 import { blockArgument } from '../markdown/block-directive.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { markAttributes } from '../adf/mark-attributes.ts'
+import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
 
 type Held = Map<string, Set<AttributeKind>>
 type Properties = Map<string, SchemaObject[]>
 type SchemaObject = Readonly<Record<string, unknown>>
 type Spelled = [string, Map<string, AttributeKind>]
 
-const carried = ['alignment', 'annotation', 'backgroundColor', 'blockCard', 'bodiedRule', 'breakout', 'dataConsumer', 'embedCard', 'fontSize', 'fragment', 'indentation', 'inlineExtension', 'placeholder']
+const carried = ['annotation', 'backgroundColor', 'blockCard', 'bodiedRule', 'embedCard', 'fontSize', 'inlineExtension', 'placeholder']
 const definitionReference = '#/definitions/'
 const gaps: string[] = []
 const grammarOwn = ['doc', 'text']
@@ -85,7 +85,7 @@ function spelled(): Spelled[] {
   return [
     ...Object.entries(blockNodes).map(([type, model]) => spelledType(type, model.attributes, blockArgument(type))),
     ...Object.entries(inlineNodes).map(([type, model]) => spelledType(type, model.attributes)),
-    ...Object.entries(markAttributes).map(([type, attributes]) => spelledType(type, attributes)),
+    ...Object.entries({ ...blockMarkAttributes, ...markAttributes }).map(([type, attributes]) => spelledType(type, attributes)),
   ]
 }
 
@@ -166,6 +166,7 @@ function propertyKinds(property: SchemaObject, where: string): AttributeKind[] {
   if (type === 'boolean') return ['boolean']
   if (type === 'integer' || type === 'number') return ['number']
   if (type === 'string') return ['string']
+  if (type === 'array' && isSchemaObject(property['items']) && property['items']['type'] === 'number') return ['numbers']
   if (type === 'array' || type === 'object') return ['json']
   if (type !== undefined) return assert.fail(`${where}: the schema types it ${JSON.stringify(type)}, which reads as no attribute kind`)
   const combinator = ['$ref', 'allOf', 'anyOf'].find((keyword) => property[keyword] !== undefined)

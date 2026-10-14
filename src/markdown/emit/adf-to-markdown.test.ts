@@ -90,7 +90,7 @@ test('spells a CommonMark block as a directive where its own spelling holds neit
   assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { localId: 'a' }, type: 'paragraph' }))), '!adf:paragraph {localId=a}\n!adf:/paragraph\n')
   assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { wrap: true }, type: 'codeBlock' }))), '!adf:codeBlock {wrap=true}\n```\n```\n!adf:/codeBlock\n')
   assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ attrs: { localId: 'a' }, type: 'hardBreak' }, { text: 'x', type: 'text' })))), '!adf:hardBreak{localId=a}x\n')
-  assert.equal(markdown(adfToLosslessMarkdown(document({ marks: [{ type: 'border' }], type: 'blockquote' }))), '!adf:blockquote {marks="[{\\"type\\":\\"border\\"}]"}\n!adf:/blockquote\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document({ marks: [{ type: 'border' }], type: 'blockquote' }))), '!adf:blockquote {marks=border}\n!adf:/blockquote\n')
   assert.equal(markdown(adfToLosslessMarkdown(document({ type: 'listItem' }))), '!adf:listItem\n!adf:/listItem\n')
 })
 
@@ -615,9 +615,34 @@ test('carries an arg slot value no bare token spells', () => {
 
 test('carries a block node mark in the reserved attribute', () => {
   const section = (...marks: AdfMark[]): AdfDocument => document({ marks, type: 'layoutSection' })
-  assert.equal(markdown(adfToLosslessMarkdown(section({ type: 'breakout' }))), '!adf:layoutSection {marks="[{\\"type\\":\\"breakout\\"}]"}\n!adf:/layoutSection\n')
-  assert.equal(markdown(adfToLosslessMarkdown(section({ attrs: {}, type: 'breakout' }))), '!adf:layoutSection {marks="[{\\"attrs\\":{},\\"type\\":\\"breakout\\"}]"}\n!adf:/layoutSection\n')
+  assert.equal(markdown(adfToLosslessMarkdown(section({ type: 'breakout' }))), '!adf:layoutSection {marks=breakout}\n!adf:/layoutSection\n')
+  assert.equal(markdown(adfToLosslessMarkdown(section({ attrs: {}, type: 'breakout' }))), '!adf:layoutSection {marks="breakout{attrs=empty}"}\n!adf:/layoutSection\n')
   assert.equal(markdown(adfToLosslessMarkdown(section())), '!adf:layoutSection {marks=empty}\n!adf:/layoutSection\n')
+})
+
+test('spells each block mark by name and attrs, in order, where every mark is one the tables type', () => {
+  const section = (...marks: AdfMark[]): AdfDocument => document({ marks, type: 'layoutSection' })
+  assert.equal(markdown(adfToLosslessMarkdown(section({ attrs: { mode: 'wide' }, type: 'breakout' }))), '!adf:layoutSection {marks="breakout{mode=wide}"}\n!adf:/layoutSection\n')
+  assert.equal(
+    markdown(adfToLosslessMarkdown(section({ attrs: { level: 2 }, type: 'indentation' }, { attrs: { localId: 'f1', name: 'Price list' }, type: 'fragment' }))),
+    '!adf:layoutSection {marks="indentation{level=2} fragment{localId=f1 name=\\"Price list\\"}"}\n!adf:/layoutSection\n',
+  )
+  assert.equal(
+    markdown(adfToLosslessMarkdown(section({ type: 'em' }, { attrs: { color: '#fff' }, type: 'backgroundColor' }))),
+    '!adf:layoutSection {marks="[{\\"type\\":\\"em\\"},{\\"attrs\\":{\\"color\\":\\"#fff\\"},\\"type\\":\\"backgroundColor\\"}]"}\n!adf:/layoutSection\n',
+  )
+  assert.equal(
+    markdown(adfToLosslessMarkdown(section({ attrs: { level: '2' }, type: 'indentation' }))),
+    '!adf:layoutSection {marks="[{\\"attrs\\":{\\"level\\":\\"2\\"},\\"type\\":\\"indentation\\"}]"}\n!adf:/layoutSection\n',
+  )
+})
+
+test('spells colwidth as its widths, comma-separated, and carries a cell whose colwidth no list of numbers spells', () => {
+  const cell = (colwidth: JsonValue): AdfDocument => document({ attrs: { colwidth }, type: 'tableCell' })
+  assert.equal(markdown(adfToLosslessMarkdown(cell([340, 420.5]))), '!adf:tableCell {colwidth="340,420.5"}\n!adf:/tableCell\n')
+  assert.equal(markdown(adfToLosslessMarkdown(cell([340]))), '!adf:tableCell {colwidth=340}\n!adf:/tableCell\n')
+  assert.equal(markdown(adfToLosslessMarkdown(cell([]))), '```adf:tableCell\n{\n  "attrs": {\n    "colwidth": []\n  }\n}\n```\n')
+  assert.equal(markdown(adfToLosslessMarkdown(cell(['340']))), '```adf:tableCell\n{\n  "attrs": {\n    "colwidth": [\n      "340"\n    ]\n  }\n}\n```\n')
 })
 
 test('refuses the content a directive body has no room for', () => {
@@ -685,7 +710,7 @@ test('spells a mediaSingle the image form does not fit as a directive', () => {
   const single: AdfNode = { attrs: { layout: 'center' }, content: [media], marks: [{ type: 'border' }], type: 'mediaSingle' }
   assert.equal(
     markdown(adfToLosslessMarkdown(document(single))),
-    '!adf:mediaSingle {layout=center marks="[{\\"type\\":\\"border\\"}]"}\n!adf:media {type=external url="https://example.com/moon.png"}\n!adf:/mediaSingle\n',
+    '!adf:mediaSingle {layout=center marks=border}\n!adf:media {type=external url="https://example.com/moon.png"}\n!adf:/mediaSingle\n',
   )
 })
 

@@ -2,7 +2,7 @@
 Release checklist
 !adf:/heading
 
-!adf:paragraph {marks="[{\"attrs\":{\"align\":\"center\"},\"type\":\"alignment\"}]"}
+!adf:paragraph {marks="alignment{align=center}"}
 Centred.
 !adf:/paragraph
 
