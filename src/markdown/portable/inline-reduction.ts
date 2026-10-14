@@ -80,7 +80,7 @@ function idMention(id: unknown): string | undefined {
   return typeof id === 'string' && id !== '' ? `@${id}` : undefined
 }
 
-// An image standing inline is a link to it: CommonMark's inline image reads back as no node, and one inside a link as the link's text.
+// An image standing inline is a link to it: CommonMark's inline image reads back as no node, and one inside a link as its alt text, linked.
 function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   const alt = nonEmpty(attrs['alt'])
   const url = nonEmpty(attrs['url'])

@@ -30,7 +30,7 @@ In `docs/decisions.md`:
 - An image reads as an image only alone in its paragraph, else as its alt text linked; a link text of hard breaks alone reads as its destination, then the breaks
 - A mark skips a node that cannot hold it, and a directive mark wrapping only such nodes is refused, as is a `[text](url)` link unless its text is hard breaks alone
 - A linked image is written `[![alt](url)](href)`, a captioned image as its directive
-- A linked image standing inline in portable markdown is written `[alt](href) ([image](url))`
+- A linked image standing inline in portable markdown, its link to another target, is written `[alt](href) ([image](url))`
 - Ids stay site-local
 - Portable task ids come from position
 - A block a task item cannot hold stands after its task list
