@@ -73,8 +73,9 @@
 Each post links the GitHub repository, the README's comparison table and a README that opens with
 what the package is. Before posting, set `converter-comparison/run.sh`'s pins to each package's
 latest version, `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the
-README table, its versions and its date in step with the output. We draft each post for the place it goes; the maintainer posts them once
-`0.3.0` is published. Found while planning discoverability, 2026-10-04.
+README table, its versions and its date in step with the output. We draft each post for the place it
+goes; the maintainer posts them once `0.3.0` is published. Found while planning discoverability,
+2026-10-04.
 
 ### 114. Build code-marked text holding no mark besides `link` and `annotation`, in every reader, and have `adfToLosslessMarkdown` carry code text holding any other mark.
 
