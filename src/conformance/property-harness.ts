@@ -8,13 +8,13 @@ import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabu
 import type { JsonValue } from '../json-value.ts'
 import type { LinkDefinition } from '../markdown/commonmark/link-syntax.ts'
 import { blockArgument } from '../markdown/block-directive.ts'
+import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../markdown/external-image.ts'
 import { directivePrefix } from '../markdown/directive-syntax.ts'
 import { emptyKeys, mergeAdjacentText, nodeContent } from '../adf/document.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { joinsWhenRead } from '../markdown/adjacent-text.ts'
-import { markAttributes } from '../adf/mark-attributes.ts'
 
 type Positions = { block: AdfNode; inline: AdfNode }
 
@@ -61,6 +61,7 @@ const valueByKind: Readonly<Record<AttributeKind, Arbitrary<JsonValue>>> = {
   boolean: fc.boolean(),
   json: jsonValue,
   number: numberValue,
+  numbers: fc.array(numberValue, { maxLength: 3 }),
   string: textOf(0),
 }
 
@@ -108,6 +109,7 @@ const mark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(
   { arbitrary: fc.record({ attrs: fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true }), type: unknownType }), weight: 1 },
 ))
 const marks = fc.uniqueArray(mark, { maxLength: 3, selector: (held) => held.type })
+const blockMark: Arbitrary<AdfMark> = occasionallyEmpty(fc.oneof(...Object.entries(blockMarkAttributes).map(([type, vocabulary]) => attributes(vocabulary).map((attrs) => ({ attrs, type })))))
 
 const textNode = occasionallyEmpty(fc.record({ marks, text: fc.oneof({ arbitrary: text, weight: 19 }, { arbitrary: fc.constant(''), weight: 1 }) }).map((held): AdfNode => ({ ...held, type: 'text' })))
 
@@ -136,7 +138,11 @@ const positions = fc.letrec<Positions>((tie) => {
     inline: inlineContent,
     none: fc.constant<AdfNode[]>([]),
   }
-  const blockMarks = fc.oneof({ arbitrary: fc.constant<AdfMark[]>([]), weight: 4 }, { arbitrary: marks, weight: 1 })
+  const blockMarks = fc.oneof(
+    { arbitrary: fc.constant<AdfMark[]>([]), weight: 4 },
+    { arbitrary: marks, weight: 1 },
+    { arbitrary: fc.uniqueArray(fc.oneof(blockMark, mark), { maxLength: 3, selector: (held) => held.type }), weight: 1 },
+  )
   const blockArbitraries = Object.entries(blockNodes).map(([type, model]) => {
     const argument = blockArgument(type)
     const vocabulary: AttributeVocabulary = argument === undefined ? model.attributes : { ...model.attributes, [argument]: 'string' }

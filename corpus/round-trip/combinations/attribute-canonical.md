@@ -1,6 +1,6 @@
 !adf:table {isNumberColumnEnabled=true layout=wide width="760.5"}
 !adf:tableRow
-!adf:tableHeader {colspan=2 colwidth="[340,420]"}
+!adf:tableHeader {colspan=2 colwidth="340,420"}
 Assembly
 !adf:/tableHeader
 !adf:/tableRow

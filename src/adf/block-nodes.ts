@@ -9,7 +9,7 @@ export type BlockNodeModel = {
 const cellAttributes: AttributeVocabulary = {
   background: 'string',
   colspan: 'number',
-  colwidth: 'json',
+  colwidth: 'numbers',
   localId: 'string',
   rowspan: 'number',
   valign: 'string',

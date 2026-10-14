@@ -205,15 +205,19 @@ node the emitter would have written as CommonMark is a named error.
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
 type: strings verbatim, numbers and booleans in canonical JSON spelling — quoted where not bare
-(`width="33.33"`) — and `json` values as the inline carry's serialization (compact, keys sorted),
-quoted, `-0` spelled `-0`. `losslessMarkdownToAdf` builds an `attrs`, `content` or `marks` key only
+(`width="33.33"`) — `numbers`, a list of one number or more, as those spellings joined by commas
+(`colwidth="340,420"`), and `json` values as the inline carry's serialization (compact, keys
+sorted), quoted, `-0` spelled `-0`. `losslessMarkdownToAdf` builds an `attrs`, `content` or `marks` key only
 where the markdown spells one, an empty one through its reserved key (Attributes), so a document
 reads back deep-equal (`docs/decisions.md` §Equality is deep). A node CommonMark spells takes the
 directive form to hold an empty key.
 
-Marks on a block node ride the reserved attribute key `marks` — the node's marks array as a
-`json` value, `marks=empty` where it is empty:
-`!adf:layoutSection {marks="[{\"attrs\":{\"mode\":\"wide\"},\"type\":\"breakout\"}]"}`.
+Marks on a block node ride the reserved attribute key `marks`: each mark's type followed by its
+`{attrs}` spelled as a directive's, one space apart in the array's order, and `marks=empty` where
+the array is empty: `!adf:layoutSection {marks="breakout{mode=wide}"}`,
+`!adf:paragraph {marks="indentation{level=2} fragment{localId=f1 name=\"Price list\"}"}`. Where a
+mark's type is not one §Marks lists, or its attributes are not the ones listed there, the whole
+array is a `json` value instead: `marks="[{\"attrs\":{\"color\":\"#fff\"},\"type\":\"backgroundColor\"}]"`.
 A section saying its body is inline takes at most one paragraph, whose inline content becomes
 the node's `content`; any other body is a named error, and an empty pair is a node holding none.
 
@@ -366,7 +370,7 @@ The directive form nests cells as containers of block content inside `tableRow` 
 ```
 !adf:table {isNumberColumnEnabled=true width=760}
 !adf:tableRow
-!adf:tableHeader {colspan=2 colwidth="[340,420]"}
+!adf:tableHeader {colspan=2 colwidth="340,420"}
 Assembly
 !adf:/tableHeader
 !adf:/tableRow
@@ -386,7 +390,7 @@ Bolt M8
   `full-width` `wide`), `localId` (string), `width` (number, pixels).
 - `tableRow` — container of cells. Attributes: `localId` (string).
 - `tableCell`, `tableHeader` — containers, block body. Attributes: `background` (string),
-  `colspan` (number), `colwidth` (json, one pixel width per spanned column), `localId` (string),
+  `colspan` (number), `colwidth` (numbers, one pixel width per spanned column), `localId` (string),
   `rowspan` (number), `valign` (`bottom` `middle` `top`).
 
 ### Task and decision lists
@@ -535,6 +539,14 @@ breaks reads the same, followed by its hard breaks.
 - `textColor` — Attributes: `color` (string, `#rrggbb`).
 - `underline` — Attributes: none.
 
+A block's `marks` key also holds these, which no inline spelling wraps:
+
+- `alignment` — Attributes: `align` (`center` `end`).
+- `breakout` — Attributes: `mode` (`full-width` `wide`), `width` (number).
+- `dataConsumer` — Attributes: `sources` (json).
+- `fragment` — Attributes: `localId` (string), `name` (string).
+- `indentation` — Attributes: `level` (number, 1–6).
+
 A spelling adds its mark to every inline node it wraps but a hard break, which Atlassian's schema
 gives no marks, and nesting is the marks array in order, outermost first: `_!adf:underline[x]_`
 gives marks `[em, underline]`, `!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in
@@ -544,8 +556,8 @@ carrying an identical mark, attributes included, at that depth: `attrs: {}` diff
 and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
 emitted carry sits inside a mark spelling.
 
-An inline node whose marks no nesting spells — a hard break holding any mark, a mark type not listed
-here, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
+An inline node whose marks no nesting spells — a hard break holding any mark, a mark type the first
+list does not hold, an attrs key its spelling does not list, a value that is not the spelling's type, an attribute
 the spelling needs and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order
 putting a code span outside another mark, `code` over anything but a text node holding text, or over
 text holding a line ending or a null character, or a spelling CommonMark's flanking rules cannot
