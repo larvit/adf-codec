@@ -531,8 +531,8 @@ nesting, which is CommonMark's own rule: a `[text]` already holding one leaves t
 literal text, and the directive form, open to no literal reading, is a named error. ADF holds no
 empty text node, so a link whose text is empty reads as its destination linked, `[](/url)` as
 `/url`, and one whose destination is empty too, `[]()`, as nothing. A link text holding only hard
-breaks reads the same, followed by its hard breaks; one holding other nodes, none of which takes a
-link, is a named error.
+breaks reads the same, followed by its hard breaks. A link text holding something else, but no node
+that takes a link, is a named error.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.
@@ -550,18 +550,17 @@ A block's `marks` key also holds these, which no inline spelling wraps:
 - `indentation` — Attributes: `level` (number, 1–6).
 
 A spelling adds its mark to every text node it wraps, and to every other inline node Atlassian's
-schema gives that mark: `hardBreak`, `date`, `emoji`, `inlineCard`, `mention` and `status` take none
-a spelling makes, and `mediaInline` only `border` and `link`. Nesting is the marks array in order, outermost first:
-`_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in
-the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
+schema gives that mark. Of the marks a spelling makes, `date`, `emoji`, `hardBreak`, `inlineCard`,
+`mention` and `status` take none, and `mediaInline` takes only `border` and `link`. Nesting is the
+marks array in order, outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`,
+`!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
 the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes
 carrying an identical mark, attributes included, at that depth: `attrs: {}` differs from no `attrs`,
 and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
 emitted carry sits inside a mark spelling.
 
 An inline node whose marks no nesting spells — a node holding a mark Atlassian's schema withholds
-from it, a mark type the first
-list above does not hold, an attrs key its spelling does not list, a value that is not the
+from it, a mark type the first list above does not hold, an attrs key its spelling does not list, a value that is not the
 spelling's type, an attribute the spelling needs and the mark lacks, an empty `attrs` on a mark CommonMark spells, an order
 putting a code span outside another mark, `code` over anything but a text node holding text, or over
 text holding a line ending or a null character, or a spelling CommonMark's flanking rules cannot

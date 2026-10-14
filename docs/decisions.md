@@ -256,18 +256,18 @@ The same panel confirmed the other readings on 2026-10-09: a title as the captio
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
 Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
 
-## A mark skips a node that cannot hold it, and a link wrapping only such nodes is refused
+## A mark skips a node that cannot hold it, and a mark wrapping only such nodes is refused, but for a link around hard breaks alone
 
 2026-10-14, two reader panels of the viewer/editor app, the LLM pipeline and a support agent, 3 of
 3 each. Goals 1, 4 and 6. Valid while Atlassian's schema withholds marks from inline nodes.
 
-`src/adf/inline-nodes.ts` holds the mark types Atlassian's schema gives each inline node. A mark
-spelling skips a node that takes none of its type, so `**Ping !adf:mention[@A]{id=x} now**` reads
-as bold text around a plain mention. A link whose text holds no node that takes a link, and more
-than hard breaks, is `unsupported-node-shape` in `losslessMarkdownToAdf`: the panel refused to have
-`[!adf:status[Done]{color=green}](/u)` read as `/u` linked beside the status. Hard breaks alone keep
-§An image reads as an image only alone in its paragraph's reading. `adfToLosslessMarkdown` writes a
-node holding a mark its type does not take as `!adf:carry`, so the round-trip holds.
+A mark spelling skips a node that takes none of its type, so `**Ping !adf:mention[@A]{id=x} now**`
+reads as bold text around a plain mention. A link whose text holds something besides hard breaks,
+but no node that takes a link, is `unsupported-node-shape` in `losslessMarkdownToAdf`: the panel
+refused to have `[!adf:status[Done]{color=green}](/u)` read as `/u` linked beside the status. A link
+text of hard breaks alone still reads as its destination, then the breaks (§An image reads as an
+image only alone in its paragraph). `adfToLosslessMarkdown` writes a node holding a mark its type
+does not take as `!adf:carry`, so the round-trip holds.
 
 ## A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 
@@ -702,8 +702,7 @@ holds.
 
 For every node and mark the tables spell, the attribute names and kinds equal what `full.json` and
 `stage-0.json` (§Standards ship as data) hold between them, and so do the mark types each inline
-node takes. Value sets stay documentation, since
-any value round-trips. What the schema holds and the tables do not spell is pinned by name — an
+node takes. Value sets stay documentation, since any value round-trips. What the schema holds and the tables do not spell is pinned by name — an
 attribute as a gap, a type as carried — so a re-pin adding either goes red until someone spells it
 or pins it.
 

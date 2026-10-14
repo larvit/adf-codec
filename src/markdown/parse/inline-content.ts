@@ -212,7 +212,7 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
   }
   if (slot.nodes.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
   if (!slot.nodes.some((node) => marksItem(node, mark.type))) {
-    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark`, scan.path)
+    return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark: write the ${name} mark around text beside them`, scan.path)
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
   if (refused !== undefined) return refused

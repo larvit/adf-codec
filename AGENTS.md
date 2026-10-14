@@ -28,7 +28,7 @@ In `docs/decisions.md`:
 - Tables
 - Links
 - An image reads as an image only alone in its paragraph, else as its alt text linked; a link text of hard breaks alone reads as its destination, then the breaks
-- A mark skips a node that cannot hold it, and a link wrapping only such nodes is refused
+- A mark skips a node that cannot hold it, and a mark wrapping only such nodes is refused, but for a link around hard breaks alone
 - A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 - Ids stay site-local
 - Portable task ids come from position

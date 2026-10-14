@@ -33,7 +33,7 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
   return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }
 
-// An unknown type is no inline leaf the table holds, so the table withholds nothing from it.
+// The table withholds nothing from a type it does not list, such as text.
 export function takesMark(type: string, markType: string): boolean {
   return inlineNodeModel(type)?.markTypes.includes(markType) ?? true
 }
