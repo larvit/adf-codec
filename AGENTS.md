@@ -27,7 +27,8 @@ In `docs/decisions.md`:
 - CommonMark is a subset
 - Tables
 - Links
-- An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes a link reads as its destination, then those nodes
+- An image reads as an image only alone in its paragraph, else as its alt text linked; a link text of hard breaks alone reads as its destination, then the breaks
+- A mark skips a node that cannot hold it, and a link wrapping only such nodes is refused
 - A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 - Ids stay site-local
 - Portable task ids come from position

@@ -78,7 +78,7 @@ test("the ADF JSON Schemas hold no type the tables leave unspelled, the pinned c
 
 test('the inline node table gives a type exactly the mark types the ADF JSON Schemas give it, in order', () => {
   const { marked } = schemaTypes()
-  for (const [type, model] of Object.entries(inlineNodes)) assert.deepEqual(model.marks, [...(marked.get(type) ?? [])].sort(), type)
+  for (const [type, model] of Object.entries(inlineNodes)) assert.deepEqual(model.markTypes, [...(marked.get(type) ?? [])].sort(), type)
 })
 
 function spelled(): Spelled[] {

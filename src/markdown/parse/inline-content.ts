@@ -11,7 +11,7 @@ import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { highlightDelimiter } from '../portable/conventions.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
-import { inlineNodeModel } from '../../adf/inline-nodes.ts'
+import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
 import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
@@ -84,6 +84,7 @@ const ownMarksInMark = 'move the opaque carry, or the node spelling marks=empty,
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 const hreflessLink = 'the link mark spells its href: this one spells none'
 const linkInLink = 'no link wraps a link: the [content] this one marks already holds one'
+const unlinkable = 'the text of this link holds only nodes that take no link: write the link around text beside them'
 const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
 const textBreak: TextBreak = { kind: 'textBreak' }
 
@@ -210,7 +211,7 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
     return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.path)
   }
   if (slot.nodes.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
-  if (!slot.nodes.some((node) => takesMark(node, mark.type))) {
+  if (!slot.nodes.some((node) => marksItem(node, mark.type))) {
     return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark`, scan.path)
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
@@ -266,9 +267,9 @@ function mediaSingle({ alt, definition, link }: Image): AdfNode {
   return centeredImage([externalMedia(alt, definition.destination, link), ...caption])
 }
 
-// ADF holds no empty text node and some nodes take no link, so the destination text carries the link ahead of the text's nodes; an empty destination leaves them alone.
+// ADF holds no empty text node and a hard break takes no link, so the destination text carries the link ahead of the text's hard breaks; an empty destination leaves the breaks alone.
 function linkTo(nodes: readonly Inline[], definition: LinkDefinition): Inline[] {
-  if (nodes.some((node) => takesMark(node, 'link'))) return applyMark(nodes, linkMark(definition))
+  if (nodes.some((node) => marksItem(node, 'link'))) return applyMark(nodes, linkMark(definition))
   return definition.destination === '' ? [...nodes] : [{ marks: [linkMark(definition)], text: definition.destination, type: 'text' }, ...nodes]
 }
 
@@ -290,8 +291,8 @@ function partText(items: readonly Inline[], scan: Scan): Result<AdfNode[]> {
 }
 
 // spec/flavour.md, Marks: a spelling skips a node Atlassian's schema withholds its mark from.
-function takesMark(item: Inline, type: string): boolean {
-  return !isNode(item) || (inlineNodeModel(item.type)?.marks.includes(type) ?? true)
+function marksItem(item: Inline, type: string): boolean {
+  return !isNode(item) || takesMark(item.type, type)
 }
 
 function isNode(item: Inline): item is AdfNode {
@@ -400,7 +401,11 @@ function linkPiece(scan: Scan, inner: readonly Piece[], definition: LinkDefiniti
   const [only] = inner
   if (inner.length === 1 && only?.kind === 'image') return success({ ...only, link: definition })
   const nodes = resolveNodes(inner, scan, true)
-  return nodes.ok ? success({ kind: 'nodes', nodes: linkTo(nodes.value, definition) }) : nodes
+  if (!nodes.ok) return nodes
+  if (!nodes.value.some((node) => marksItem(node, 'link')) && nodes.value.some((node) => isNode(node) && node.type !== 'hardBreak')) {
+    return failure('unsupported-node-shape', unlinkable, scan.path)
+  }
+  return success({ kind: 'nodes', nodes: linkTo(nodes.value, definition) })
 }
 
 // CommonMark: no link nests inside another, though an image's description holds one.
@@ -591,7 +596,7 @@ function markType(character: string, used: number): string {
 // `*(*a*)*` builds one `em`: a node holds at most one mark of each type.
 function applyMark(nodes: readonly Inline[], mark: AdfMark): Inline[] {
   return nodes.map((node) => {
-    if (!isNode(node) || !takesMark(node, mark.type)) return node
+    if (!isNode(node) || !marksItem(node, mark.type)) return node
     const marks = nodeMarks(node)
     return marks.some((carried) => carried.type === mark.type) ? node : { ...node, marks: [mark, ...marks] }
   })

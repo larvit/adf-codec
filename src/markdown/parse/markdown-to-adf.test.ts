@@ -911,7 +911,6 @@ test('gives the hard break inside a mark spelling no marks, and reads a link of 
 
 test('gives an inline node no mark Atlassian\'s schema withholds from it', () => {
   const mention: AdfNode = { attrs: { id: 'b1c2', text: '@A' }, type: 'mention' }
-  const status: AdfNode = { attrs: { color: 'green', text: 'Done' }, type: 'status' }
   const media: AdfNode = { attrs: { id: 'm1' }, type: 'mediaInline' }
   const border: AdfMark = { attrs: { color: '#091e42', size: 2 }, type: 'border' }
   const read = (markdown: string): AdfNode[] | string => content(losslessMarkdownToAdf(markdown))
@@ -920,7 +919,9 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.deepEqual(read('!adf:underline[a !adf:emoji[🎉]{shortName=":tada:"}]\n'), [
     { content: [marked('a ', underline), { attrs: { shortName: ':tada:', text: '🎉' }, type: 'emoji' }], type: 'paragraph' },
   ])
-  assert.deepEqual(read('[!adf:status[Done]{color=green}](/u)\n'), [{ content: [marked('/u', link('/u')), status], type: 'paragraph' }])
+  const unlinkable = 'unsupported-node-shape: the text of this link holds only nodes that take no link: write the link around text beside them'
+  assert.equal(read('[!adf:status[Done]{color=green}](/u)\n'), unlinkable)
+  assert.equal(read('[!adf:status[Done]{color=green}\\\n](/u)\n'), unlinkable)
   assert.deepEqual(read('[a !adf:inlineCard{url="https://x/"}](/u)\n'), [{ content: [marked('a ', link('/u')), { attrs: { url: 'https://x/' }, type: 'inlineCard' }], type: 'paragraph' }])
   assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
   assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])

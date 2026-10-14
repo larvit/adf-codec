@@ -228,20 +228,18 @@ link reference definition — and a directive link CommonMark could spell is ref
 link — the bracket form goes literal, the directive form refused — which is CommonMark's prose
 where its reference implementation nests one `<a>` in another.
 
-## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text holding no node that takes a link reads as its destination, then those nodes
+## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text of hard breaks alone reads as its destination, then the breaks
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
 maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer. Goals 4,
-5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, Atlassian's
-schema withholds the link from some inline nodes and no consumer has reported a link of such nodes
-alone.
+5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, a hard break
+takes no marks and no consumer has reported a link of hard breaks alone.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
 and §Marks spell out. An image alone in its paragraph reads as the image, its title as the caption.
 Anywhere else it reads as its alt text linked to its URL, titled by its title. An empty alt text
-reads as the URL, and an empty link text as its destination. A link text holding no node that takes
-a link, such as a hard break or a mention, reads as its destination, then those nodes: four of seven
-readers expected that of hard breaks over dropping them.
+reads as the URL, and an empty link text as its destination. A link text holding only hard breaks
+reads as its destination, then those breaks: four of seven readers expected that over dropping them.
 `[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
 paragraph whose whole text is one image reads as that image, with the link marking its `media`.
 Inside any other link, the alt text is plain text the link marks, and the image's URL and title
@@ -257,6 +255,19 @@ text, the fallback two of the three named.
 The same panel confirmed the other readings on 2026-10-09: a title as the caption, an image amid
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
 Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
+
+## A mark skips a node that cannot hold it, and a link wrapping only such nodes is refused
+
+2026-10-14, two reader panels of the viewer/editor app, the LLM pipeline and a support agent, 3 of
+3 each. Goals 1, 4 and 6. Valid while Atlassian's schema withholds marks from inline nodes.
+
+`src/adf/inline-nodes.ts` holds the mark types Atlassian's schema gives each inline node. A mark
+spelling skips a node that takes none of its type, so `**Ping !adf:mention[@A]{id=x} now**` reads
+as bold text around a plain mention. A link whose text holds no node that takes a link, and more
+than hard breaks, is `unsupported-node-shape` in `losslessMarkdownToAdf`: the panel refused to have
+`[!adf:status[Done]{color=green}](/u)` read as `/u` linked beside the status. Hard breaks alone keep
+§An image reads as an image only alone in its paragraph's reading. `adfToLosslessMarkdown` writes a
+node holding a mark its type does not take as `!adf:carry`, so the round-trip holds.
 
 ## A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 
@@ -690,7 +701,8 @@ has no fixture.
 holds.
 
 For every node and mark the tables spell, the attribute names and kinds equal what `full.json` and
-`stage-0.json` (§Standards ship as data) hold between them. Value sets stay documentation, since
+`stage-0.json` (§Standards ship as data) hold between them, and so do the mark types each inline
+node takes. Value sets stay documentation, since
 any value round-trips. What the schema holds and the tables do not spell is pinned by name — an
 attribute as a gap, a type as carried — so a re-pin adding either goes red until someone spells it
 or pins it.

@@ -530,8 +530,9 @@ CommonMark could spell is a named error, and so is one spelling none. No link wr
 nesting, which is CommonMark's own rule: a `[text]` already holding one leaves the outer brackets
 literal text, and the directive form, open to no literal reading, is a named error. ADF holds no
 empty text node, so a link whose text is empty reads as its destination linked, `[](/url)` as
-`/url`, and one whose destination is empty too, `[]()`, as nothing. A link text holding no node
-that takes a link reads the same, followed by its nodes.
+`/url`, and one whose destination is empty too, `[]()`, as nothing. A link text holding only hard
+breaks reads the same, followed by its hard breaks; one holding other nodes, none of which takes a
+link, is a named error.
 
 - `border` — Attributes: `color` (string, `#rrggbb` or `#rrggbbaa`), `size` (number, 1–3).
 - `code`, `em`, `strike`, `strong` — Attributes: none.
@@ -548,9 +549,9 @@ A block's `marks` key also holds these, which no inline spelling wraps:
 - `fragment` — Attributes: `localId` (string), `name` (string).
 - `indentation` — Attributes: `level` (number, 1–6).
 
-A spelling adds its mark to every inline node it wraps but one Atlassian's schema withholds the mark
-from: `hardBreak`, `date`, `emoji`, `inlineCard`, `mention` and `status` take none a spelling makes,
-and `mediaInline` only `border` and `link`. Nesting is the marks array in order, outermost first:
+A spelling adds its mark to every text node it wraps, and to every other inline node Atlassian's
+schema gives that mark: `hardBreak`, `date`, `emoji`, `inlineCard`, `mention` and `status` take none
+a spelling makes, and `mediaInline` only `border` and `link`. Nesting is the marks array in order, outermost first:
 `_!adf:underline[x]_` gives marks `[em, underline]`, `!adf:underline[_x_]` the reverse. `adfToLosslessMarkdown` nests in
 the order the array holds rather than sorting it — `docs/decisions.md` §Equality is deep restores
 the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes
