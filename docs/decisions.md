@@ -288,8 +288,9 @@ reads that title as the caption; `todo.md` item 100 puts that reading back to a 
 2026-10-14, a reader panel of the export tool, the LLM pipeline and a support agent, 3 of 3. Goals 6
 and 7. Valid while the portable reader reads an image inside a link as the link's text.
 
-Where `adfToPortableMarkdown` writes an external image inline, as in a table cell, a link marking it
-keeps its target and the image follows as a link reading `image`. Every reader first wrote
+Where `adfToPortableMarkdown` writes an external image inline, as in a table cell, and a link to
+another target marks it, the link keeps its target and the image follows as a link reading `image`.
+With no alt text, the link text is the link's target, as `[](href)` reads. Every reader first wrote
 `[![alt](url)](href)`, which reads back as `[alt](href)` and so breaks the byte-for-byte rewrite.
 Each then picked this over `[alt](url)` and `[alt](href)`, which drop a target.
 

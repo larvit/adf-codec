@@ -247,8 +247,10 @@ test('keeps both targets of a linked external image standing inline, the image l
   assert.equal(inCell, '| h |\n| --- |\n| [Moon](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
   const read = portableMarkdownToAdf(inCell)
   assert.equal(read.ok && portableDocument(read.value), inCell)
-  assert.equal(portable(table(said('See'), node('mediaSingle', {}, linked('https://example.com/docs')))), '| h |\n| --- |\n| See [https://example.com/moon.png](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
+  assert.equal(portable(table(said('See'), node('mediaSingle', {}, linked('https://example.com/docs')))), '| h |\n| --- |\n| See [https://example.com/docs](https://example.com/docs "Docs") ([image](https://example.com/moon.png)) |\n')
   assert.equal(portable(paragraph(text('See '), linked('https://example.com/moon.png', 'Moon'))), 'See [Moon](https://example.com/moon.png "Docs")\n')
+  assert.equal(portable(paragraph(text('See '), linked('https://example.com/moon.png'))), 'See [https://example.com/moon.png](https://example.com/moon.png "Docs")\n')
+  assert.equal(portable(paragraph(text('See '), linked(''))), 'See [https://example.com/moon.png](<> "Docs") ([image](https://example.com/moon.png))\n')
 })
 
 test('keeps an external image wherever it stands and spells a stored file as its alt text, else a note', () => {
