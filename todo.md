@@ -49,10 +49,10 @@
 | 112 | 0.4.0 |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 3 | 3 | 5 | 6 | 6 | 4 | 16.3 |
 | 46 | 0.4.0 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 4 | 3 | 5 | 5 | 3, 8 | 14.8 |
 | 72 | 0.4.0 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 2 | 1 | 1 | 3 | 6 | 3 | 13.1 |
+| 91 | 0.4.0 |  | **Spell an emphasis or link once across the code spans, hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 6 | 6 | 6 | 11.0 |
 | 107 | 0.4.0 | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 4 | 5 | 7 | 3 | 5 | 1 | 10.8 |
 | 51 | 0.4.0 |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 4 | 5 | 2 | 7 | 4, 5 | 10.4 |
 | 95 | 0.4.0 | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 5 | 6 | 9 | 2 | 6 | 1 | 9.5 |
-| 91 | 0.4.0 |  | **Spell an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 5 | 5 | 8 | 5 | 6 | 6 | 9.0 |
 | 9 | 0.5.0 |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 2 | 6 | 4 | 6 | 8 | 3 | 21.0 |
 | 38 | 0.5.0 |  | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 2 | 2 | 5 | 4 | 7 | 1 | 19.5 |
 | 74 | 0.5.0 |  | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 4 | 4 | 4 | 8 | 3 | 3 | 15.7 |
@@ -271,6 +271,17 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
 
+### 91. Spell an emphasis or link once across the code spans, hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
+
+Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
+reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
+typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
+withholds from them, and none gives code text a mark but a link, so `**Ping !adf:mention[@A]{id=x}
+now**` and ``**Run `npm ci` first**`` write back with the space beside the mention or the code in
+each strong run spelled `!adf:text{text=" "}`. Joining the run across the break in
+`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
+first as a set of parted breaks, then as a flag the first fallback clears.
+
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
 The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
@@ -295,16 +306,6 @@ reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text 
 text. Only the property tests catch drift between these and the reader, and it holds the project
 under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
 run it carries may differ from today's, which changes lossless output (§The formats are API).
-
-### 91. Spell an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
-
-Lands after item 95, which lets the joined spelling be tried and kept only where it reads back. No
-reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
-typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
-withholds from them, so `**Ping !adf:mention[@A]{id=x} now**` writes back with the space beside
-the mention in each strong run spelled `!adf:text{text=" "}`. Joining the run across the break in
-`inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
-first as a set of parted breaks, then as a flag the first fallback clears.
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
