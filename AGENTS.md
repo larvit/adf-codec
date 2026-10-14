@@ -33,6 +33,7 @@ In `docs/decisions.md`:
 - A block a task item cannot hold stands after its task list
 - A callout title keeps its link targets
 - The portable flavour's spellings
+- The portable reader refuses what GFM's reading would drop
 - The HTML dialect
 - No runtime dependencies
 - Standards ship as data

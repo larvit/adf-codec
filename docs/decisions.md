@@ -308,6 +308,16 @@ spellings, raw HTML (`<details>`, `<mark>`), MkDocs `!!!` and the `:::` admoniti
 footnotes, definition lists, wikilinks, embeds, tags, comments, TOC tokens, spoilers, task states
 past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates into nodes.
 
+## The portable reader refuses what GFM's reading would drop
+
+2026-10-14, the maintainer. Goals 4 and 7. Valid while a refusal is a result (Goal 1) and the
+caller can fix the markdown it sent.
+
+Where GFM's reading of a shape drops content, `portableMarkdownToAdf` refuses the shape rather than
+drop it, and reads every other shape as GFM does. A pipe table row holding more cells than its header
+is `malformed-pipe-table`, where GFM cuts the extra cells. Cutting breaks Goal 7, and reading the row
+any way GFM does not, such as widening the table, breaks Goal 4; a refusal breaks neither.
+
 ## The HTML dialect
 
 2026-08-23, the maintainer. Goals 6 and 8. Valid while HTML output is read by consumers styling it
