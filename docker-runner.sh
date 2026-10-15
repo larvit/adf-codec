@@ -4,7 +4,7 @@ bun_image=oven/bun:1.4.3-alpine
 deno_image=denoland/deno:2.9.7
 firefox_image=selenium/standalone-firefox:155.0.1
 floor_image=node:18.20.8-alpine3.21
-node_image=node:24.21.0-alpine3.24
+node_image=node:24.22.0-alpine3.24
 
 in_image() {
   local image=$1 entrypoint=$2
