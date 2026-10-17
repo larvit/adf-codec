@@ -355,14 +355,14 @@ past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates int
 
 ## The portable reader refuses what GFM's reading would drop
 
-2026-10-14, the maintainer. Goals 4 and 7. Valid while a refusal is a result and the caller can
-fix the markdown it sent. `todo.md` item 117 settles whether Goal 4, which outranks Goal 7, has
-`portableMarkdownToAdf` read a row wider than its header as GFM does.
+2026-10-14, the maintainer; Goal 7 ruling over Goal 4 here, 2026-10-17, the maintainer. Goals 4 and
+7. Valid while a refusal is a result and the caller can fix the markdown it sent.
 
 Where GFM's reading of a shape drops content, `portableMarkdownToAdf` refuses the shape. A pipe
 table row holding more cells than its header is `malformed-pipe-table`, where GFM cuts the extra
 cells. Cutting the cells breaks Goal 7, and building any table GFM does not, such as a wider one,
-breaks Goal 4; a refusal builds no table.
+breaks Goal 4; a refusal builds no table. Goal 7 is a Maintain goal, holding whatever it costs, so
+it wins over Goal 4, an Achieve goal, even where a bot gets an error for a row GitHub renders.
 
 ## The HTML dialect
 

@@ -33,13 +33,12 @@
 | 46 | 0.4.0 | 7 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 6.0 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 6.0 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.0 |
-| 117 | 0.4.0 |  | defect | **Read a GFM pipe-table row holding more cells than its header as GFM does, or name the goal that outranks Goal 4 in refusing it.** | 1 | 1 | 2 | 2 | 2 | 4 by 2 | 4.0 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 4.0 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.0 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | 10 by 2 | 2.0 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
-| 72 | 0.4.0 | 6, 7, 45, 46, 51, 68, 75, 77, 80, 81, 107, 112, 117 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 4.8 |
+| 72 | 0.4.0 | 6, 7, 45, 46, 51, 68, 75, 77, 80, 81, 107, 112 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 4.8 |
 | 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 12.0 |
 | 38 | 0.5.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 8.0 |
 | 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 4.0 |
@@ -225,14 +224,6 @@ reads `a |` over `--- |` as a one-column table. `portableMarkdownToAdf` refuses 
 paragraph. A long row stays refused (`docs/decisions.md` §The portable reader refuses what GFM's
 reading would drop), so the README's pipe-table guarantee keeps the long row for both readers, and
 the short row and the line holding no `|` for `losslessMarkdownToAdf` alone. The one-column shape needs `isBareDelimiterRow` in the writer's escaping to cover it too.
-
-### 117. Read a GFM pipe-table row holding more cells than its header as GFM does, or name the goal that outranks Goal 4 in refusing it.
-
-`portableMarkdownToAdf` refuses such a row as `malformed-pipe-table` by Goal 7 (`docs/decisions.md`
-§The portable reader refuses what GFM's reading would drop). Goal 4 ranks above Goal 7, and by it a
-bot whose model writes an over-wide row gets an error where GitHub renders a table. The maintainer either reads the row as GFM does, cutting
-the cells, or states the goal that outranks Goal 4 here and cites it in the entry. Found by the
-principles audit of item 99, 2026-10-14.
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
