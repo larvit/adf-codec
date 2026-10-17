@@ -158,7 +158,8 @@ Nothing throws. `code` is from a closed list, so a `switch` with no `default` co
 
 ## Goals
 
-The most useful ADF conversion library available, judged by these goals, in priority order:
+The most useful ADF conversion library available, judged by these goals. A Maintain goal holds
+whatever it costs; the Achieve goals are weighed against each other in the order listed.
 
 1. **Maintain:** Lossless, and every call returns a result, never a throw.
 2. **Maintain:** ADF is the hub.
@@ -167,13 +168,13 @@ The most useful ADF conversion library available, judged by these goals, in prio
    - Counter-signal: issues asking what a call does, or saying it did something else, rise.
    - Why: users won by a vague pitch come back as confusion.
 4. **Achieve:** Each format reads and writes as its standard says.
-   - Signal: the exceptions [The guarantees](#the-guarantees) list fall in number.
+   - Signal: fewer exceptions are listed under [The guarantees](#the-guarantees).
    - Counter-signal: breaking releases rise.
    - Why: conformance bought by changing stored formats costs every consumer a migration.
 5. **Maintain:** Our markdown is CommonMark, extended only where CommonMark has no spelling.
 6. **Achieve:** No surprises: output reads and edits the way its audience expects.
-   - Signal: reader panels pick the output the library already writes.
-   - Counter-signal: `spec/flavour.md` gains a special case for each panel's verdict.
+   - Signal: readers shown the candidate outputs pick the one the library already writes.
+   - Counter-signal: `spec/flavour.md` gains a special case for each such pick.
    - Why: output fitted case by case is output no reader can predict.
    1. **Maintain:** A function's name says which markdown it reads or writes.
 7. **Maintain:** Lossy conversion drops form, never content.
@@ -206,7 +207,7 @@ managers, engineers and support agents working in Atlassian products through a p
 UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
 
 Contributors, human or agent, who change the source. They rely on each concern having one obvious
-place, and on the gate catching a change that breaks a guarantee.
+place, and on CI failing a change that breaks a guarantee.
 
 ## Other ADF converters
 
