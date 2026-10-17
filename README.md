@@ -181,7 +181,7 @@ whatever it costs; the Achieve goals are weighed against each other in the order
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
 10. **Achieve:** Easy for a contributor to understand and change safely.
-    - Signal: fresh readers find the source easier to follow, and the reading a change needs before its first commit falls.
+    - Signal: new readers find the source easier to follow, and contributors read less before a change's first commit.
     - Counter-signal: fewer features and fixes for the other goals ship per release.
     - Why: readability bought by stalling the audience's work costs more than it saves.
 
