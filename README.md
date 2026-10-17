@@ -160,16 +160,29 @@ Nothing throws. `code` is from a closed list, so a `switch` with no `default` co
 
 The most useful ADF conversion library available, judged by these goals, in priority order:
 
-1. **Lossless, and every call returns a result, never a throw.**
-2. **ADF is the hub.**
-3. **Easy to find, and clear at a glance what it does.**
-4. **Each format reads and writes as its standard says.**
-5. **Our markdown is CommonMark, extended only where CommonMark has no spelling.**
-6. **No surprises: output reads and edits the way its audience expects.**
-   1. **A function's name says which markdown it reads or writes.**
-7. **Lossy conversion drops form, never content.**
-8. **Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.**
-9. **Fast, and linear in the document's size as JSON.**
+1. **Maintain:** Lossless, and every call returns a result, never a throw.
+2. **Maintain:** ADF is the hub.
+3. **Achieve:** Easy to find, and clear at a glance what it does.
+   - Signal: weekly npm downloads rise.
+   - Counter-signal: issues asking what a call does, or saying it did something else, rise.
+   - Why: users won by a vague pitch come back as confusion.
+4. **Achieve:** Each format reads and writes as its standard says.
+   - Signal: the exceptions [The guarantees](#the-guarantees) list fall in number.
+   - Counter-signal: breaking releases rise.
+   - Why: conformance bought by changing stored formats costs every consumer a migration.
+5. **Maintain:** Our markdown is CommonMark, extended only where CommonMark has no spelling.
+6. **Achieve:** No surprises: output reads and edits the way its audience expects.
+   - Signal: reader panels pick the output the library already writes.
+   - Counter-signal: `spec/flavour.md` gains a special case for each panel's verdict.
+   - Why: output fitted case by case is output no reader can predict.
+   1. **Maintain:** A function's name says which markdown it reads or writes.
+7. **Maintain:** Lossy conversion drops form, never content.
+8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
+9. **Maintain:** Fast, and linear in the document's size as JSON.
+10. **Achieve:** Easy for a contributor to understand and change safely.
+    - Signal: the comprehension panel's verdicts improve, and tokens read before a chunk's first commit fall.
+    - Counter-signal: items that move other goals ship fewer per release.
+    - Why: readability bought by stalling the audience's work costs more than it saves.
 
 ## Audience
 
@@ -191,6 +204,9 @@ which is free text.
 Behind those apps, the people who read and write the markdown, and later the HTML: product
 managers, engineers and support agents working in Atlassian products through a plugin or another
 UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
+
+Contributors, human or agent, who change the source. They rely on each concern having one obvious
+place, and on the gate catching a change that breaks a guarantee.
 
 ## Other ADF converters
 
