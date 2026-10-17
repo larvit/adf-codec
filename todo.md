@@ -115,7 +115,7 @@ run it carries may differ from today's, which changes lossless output (§The for
 
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
-Item 95 lets the joined spelling be tried and kept only where it reads back. No
+It needs item 95, which lets the joined spelling be tried and kept only where it reads back. No
 reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
 typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
 withholds from them, and none gives code text a mark but a link. So `**Ping !adf:mention[@A]{id=x}
@@ -165,7 +165,8 @@ three directories.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Each post links the GitHub repository, the README's comparison table and a README that opens with what the package is. Before
+Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the posts announce the finished
+release. Each post links the GitHub repository, the README's comparison table and a README that opens with what the package is. Before
 posting, set `converter-comparison/run.sh`'s pins to each package's latest version,
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
 its versions and its date in step with the output. We draft each post for the place it goes; the
@@ -256,7 +257,7 @@ exception and count one fewer.
 whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
 type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
 where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
-and hostile. Technical principle: for pure logic over many inputs, prefer a property test. Found by the technical-principles audit, 2026-10-04.
+and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
 
 ### 77. Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.
 
@@ -286,7 +287,7 @@ are API). Found by the README-goals audit of item 83, 2026-10-11.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
-The maintainer does this. Gitea
+Blocked by every other `0.4.0` item (the maintainer, 2026-10-05). The maintainer does this. Gitea
 cannot convert an existing repository to a mirror, so the copy is deleted and re-created. That drops
 the copy's commit hashes from before the 2026-10-04 history rewrite, and its Actions secrets. The
 Gitea copy holds no issues or releases to move. Actions stay off on the mirror: Gitea runs
