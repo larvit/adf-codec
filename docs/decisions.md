@@ -359,8 +359,8 @@ past `[x]`/`[ ]`, and lifting bare URLs, `@name`, `:shortcode:` or ISO dates int
 and 7. Valid while a refusal is a result and the caller can fix the markdown it sent.
 
 Where GFM's reading of a shape drops content, `portableMarkdownToAdf` refuses the shape. A pipe
-table row holding more cells than its header is `malformed-pipe-table`, where GFM cuts the extra
-cells. Cutting the cells breaks Goal 7. Building a table GFM does not, such as a wider one, breaks
+table body row holding more cells than its header is `malformed-pipe-table`, where GFM cuts the
+extra cells. Cutting the cells breaks Goal 7. Building a table GFM does not, such as a wider one, breaks
 Goal 4. A refusal builds no table, but it still breaks Goal 4: a bot gets an error for a row GitHub
 renders. Goal 7 is a Maintain goal, holding whatever it costs, so it wins over Goal 4, an Achieve
 goal.
