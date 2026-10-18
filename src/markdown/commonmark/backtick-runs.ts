@@ -4,9 +4,8 @@ export function backtickRun(text: string, index: number): number {
   return text.charAt(index) === '`' ? runLength(text, index) : 0
 }
 
-// As `closingBacktickRun`, for `from` past the end of an opener's run, with each run's start read once by its length.
-// Readers ask with `from` rising, which keeps each length's cursor moving forward, so asking at every opener stays
-// linear in the text; an ask behind the cursor restarts that length from its first run.
+// Where the first run of exactly `opener` backticks at or after `from` begins, `from` never inside a run. Ask with
+// `from` rising, so each length's cursor only moves forward and a walk stays linear; an earlier `from` rescans that length.
 export function backtickCloser(text: string): (from: number, opener: number) => number | undefined {
   const cursors = new Map<number, number>()
   const starts = new Map<number, number[]>()
