@@ -1,8 +1,8 @@
 import type { Claims, WrittenFlavour } from '../portable/conventions.ts'
-import type { InlineToken } from '../inline-tokens.ts'
+import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
-import { delimiterRunToken, readInlineToken } from '../inline-tokens.ts'
+import { delimiterRunToken, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims, highlightFlanking } from '../portable/conventions.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
@@ -45,6 +45,7 @@ type EscapeWalk = {
   readonly container: LineContainer
   readonly escapings: Escapings
   readonly headingCloser: number | undefined
+  readonly inline: InlineSource
   readonly linkClose: number
   readonly scan: string
 }
@@ -145,6 +146,7 @@ function escapeClaims(scan: string, escapings: Escapings, container: LineContain
     container,
     escapings,
     headingCloser: container === 'heading' ? closingHashes(scan) : undefined,
+    inline: inlineSource(scan),
     linkClose: lastLinkClose(scan, escapings),
     scan,
   }
@@ -161,7 +163,7 @@ function escapeClaims(scan: string, escapings: Escapings, container: LineContain
       index = end
       continue
     }
-    const token = readInlineToken(scan, index, claims)
+    const token = readInlineToken(walk.inline, index, claims)
     const claimed = claimsCharacter(walk, index, token, line)
     if (claimed) escaped[index] = 1
     // The reader takes a `==` whole, so its second `=` starts nothing unless the first is escaped.
@@ -185,12 +187,12 @@ function runHolds(escapings: Escapings, start: number, end: number, kind: (escap
   return false
 }
 
-function claimsRunRest({ claims, container, escapings, scan }: EscapeWalk, index: number, end: number, line: ScanLine): boolean {
+function claimsRunRest({ claims, container, escapings, inline, scan }: EscapeWalk, index: number, end: number, line: ScanLine): boolean {
   const escaping = escapings(index)
-  if (escaping === 'bracketed-link-target') return readInlineToken(scan, index, claims).kind === 'code-span'
+  if (escaping === 'bracketed-link-target') return readInlineToken(inline, index, claims).kind === 'code-span'
   if (!isEscapable(escaping)) return false
   if (claimsLineStart(line, index, container)) return true
-  const token = scan.charAt(index) === '`' ? readInlineToken(scan, index, claims) : delimiterRunToken(scan, index, end - index, claims)
+  const token = scan.charAt(index) === '`' ? readInlineToken(inline, index, claims) : delimiterRunToken(scan, index, end - index, claims)
   return token.kind !== 'text'
 }
 

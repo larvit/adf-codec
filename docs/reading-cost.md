@@ -402,3 +402,20 @@ Read most (opens and searches):
 - `src/markdown/portable/inline-reduction.ts` 4
 - `CHANGELOG.md` 3
 - `docs/decisions.md` 3
+
+## Reading cost, chunk b3e66162c81c, finished 2026-10-17T21:28:11Z
+
+156454 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 6
+- `README.md` 5
+- `docs/decisions.md` 5
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 5
+- `CHANGELOG.md` 2
+- `src/markdown/portable/inline-reduction.ts` 2
+- `MIGRATION.md` 1
+- `ci.sh` 1
+- `docker-runner.sh` 1
+- `spec/flavour.md` 1

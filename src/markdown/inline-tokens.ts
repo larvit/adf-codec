@@ -1,7 +1,8 @@
+import type { BacktickRuns } from './commonmark/backtick-runs.ts'
 import type { ClaimedPrefix } from './directive-syntax.ts'
 import type { Claims } from './portable/conventions.ts'
 import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from './commonmark/grammar.ts'
-import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
+import { backtickRun, backtickRuns, closingRun } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive-syntax.ts'
 import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
 import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
@@ -18,10 +19,23 @@ export type InlineToken =
   | { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
   | { construct: string; kind: 'html' }
 
-export function readInlineToken(source: string, index: number, claims: Claims): InlineToken {
+// A text and what its openers look ahead for, read once, so a walk reading a token at every index stays linear in it.
+export type InlineSource = {
+  readonly backticks: BacktickRuns
+  // Each HTML construct terminator's last start in the text, -1 for none, read the first time an opener asks.
+  readonly terminators: Map<string, number>
+  readonly text: string
+}
+
+export function inlineSource(text: string): InlineSource {
+  return { backticks: backtickRuns(text), terminators: new Map(), text }
+}
+
+export function readInlineToken(inline: InlineSource, index: number, claims: Claims): InlineToken {
+  const source = inline.text
   switch (source.charAt(index)) {
     case '<':
-      return angleToken(source, index)
+      return angleToken(inline, index)
     case '!': {
       const prefix = claims.directives ? claimDirectivePrefix(source, index) : undefined
       if (prefix !== undefined) return { kind: 'directive', prefix }
@@ -41,7 +55,7 @@ export function readInlineToken(source: string, index: number, claims: Claims): 
       return reference === undefined ? text(1) : { kind: 'entity', width: reference.length }
     }
     case '`':
-      return backtickToken(source, index)
+      return backtickToken(inline, index)
     case '*':
     case '_':
     case '~':
@@ -61,19 +75,28 @@ export function delimiterRunToken(source: string, index: number, length: number,
   return flags.canOpen || flags.canClose ? { ...flags, kind: 'delimiter-run', width: length } : text(length)
 }
 
-function angleToken(source: string, index: number): InlineToken {
+function angleToken(inline: InlineSource, index: number): InlineToken {
+  const source = inline.text
   const bracketed = readBracketedAutolink(source, index)
   if (bracketed !== undefined) return { email: false, kind: 'autolink', width: bracketed }
   const email = readEmailAutolink(source, index)
   if (email !== undefined) return { email: true, kind: 'autolink', width: email }
-  const construct = inlineHtmlConstruct(source, index)
+  const construct = inlineHtmlConstruct(source, index, (terminator, from) => lastStart(inline, terminator) >= from)
   return construct === undefined ? text(1) : { construct, kind: 'html' }
 }
 
-function backtickToken(source: string, index: number): InlineToken {
-  const opener = backtickRun(source, index)
-  const closer = closingBacktickRun(source, index + opener, opener)
+function backtickToken(inline: InlineSource, index: number): InlineToken {
+  const opener = backtickRun(inline.text, index)
+  const closer = closingRun(inline.backticks, index + opener, opener)
   return closer === undefined ? text(opener) : { kind: 'code-span', opener, width: closer + opener - index }
+}
+
+function lastStart(inline: InlineSource, terminator: string): number {
+  const known = inline.terminators.get(terminator)
+  if (known !== undefined) return known
+  const last = inline.text.lastIndexOf(terminator)
+  inline.terminators.set(terminator, last)
+  return last
 }
 
 function text(width: number): InlineToken {

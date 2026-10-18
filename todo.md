@@ -6,13 +6,12 @@
 
 `Bar = 0.1`
 
-`Next ID = 119`
+`Next ID = 120`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 96 | 0.3.0 |  | defect | **Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.** | 2 | 1 | 2 | 3 | 3 | 9 by 3 | 9.0 |
 | 98 | 0.3.0 |  | defect | **Read blank lines inside deeply nested list items in time linear in the markdown.** | 2 | 1 | 2 | 3 | 3 | 9 by 2 | 6.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.5 |
 | 100 | 0.3.0 |  | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 1 | 2 | 2 | 3 | 3 | 6 by 4 | 4.0 |
@@ -25,7 +24,8 @@
 | 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | 10 by 4 | 2.0 |
 | 59 | 0.3.0 |  | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 1.5 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 1.5 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 96, 98, 100, 102, 109, 115 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 32.0 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 98, 100, 102, 109, 115 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 32.0 |
+| 119 | 0.3.0 |  | defect | **Read a directive's content holding many unclosed backtick runs in time linear in the text.** | 2 | 1 | 2 | 3 | 2 | 9 by 2 | 8.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 8.0 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 6.0 |
 | 6 | 0.4.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
@@ -58,14 +58,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 96. Read and write a text holding many unclosed backtick runs, or many `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, in time linear in the text.
-
-`readInlineToken` (`src/markdown/inline-tokens.ts`) searches the rest of the text at every opener:
-`closingBacktickRun` for a run of the same length, and `inlineHtmlConstruct` for the terminator. So
-in a text of length n, backtick runs of lengths 1 to k with no closers cost about k·n, and `<!--`
-repeated with no `-->` is quadratic, in the reader and the emitter's escape walk alike.
-commonmark.js avoids the backtick cost by caching backtick runs by length.
 
 ### 98. Read blank lines inside deeply nested list items in time linear in the markdown.
 
@@ -136,11 +128,11 @@ parts by ADF and format true as they grow.
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
 The last five chunks' median is 113495 new input tokens before their first commit, the five before
-them 96564. Files read most over the last five chunks, counting opens and searches: `README.md` 38,
-`todo.md` 36, `spec/flavour.md` 22, `docs/decisions.md` 20,
-`src/markdown/parse/markdown-to-adf.test.ts` 18, `src/markdown/emit/adf-to-markdown.test.ts` 14,
-`CHANGELOG.md` 12, `src/markdown/directive-syntax.ts` 10, `src/conformance/adf-schema.test.ts` 8,
-`src/markdown/parse/inline-content.ts` 7.
+them 108874. Files read most over the last five chunks, counting opens and searches: `README.md` 39,
+`todo.md` 36, `docs/decisions.md` 20, `src/markdown/parse/markdown-to-adf.test.ts` 18,
+`CHANGELOG.md` 14, `spec/flavour.md` 13, `src/markdown/emit/adf-to-markdown.test.ts` 8,
+`src/markdown/parse/inline-content.ts` 7, `MIGRATION.md` 6,
+`src/conformance/commonmark-spec.test.ts` 6.
 
 ### 102. Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.
 
@@ -174,6 +166,16 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
 its versions and its date in step with the output. We draft each post for the place it goes; the
 maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
+
+### 119. Read a directive's content holding many unclosed backtick runs in time linear in the text.
+
+`readCodeSpanEnd` (`src/markdown/directive-syntax.ts`) calls `closingBacktickRun`, which searches
+the rest of the text at every opener, so backtick runs of lengths 1 to k with no closers inside an
+inline directive's `[content]` cost about k·n. Measured on 2026-10-18: 24 ms at 40k characters,
+126 ms at 160k and 1004 ms at 640k, where the same runs outside a directive take 6, 18 and 63 ms.
+The inline reader reads such runs through `backtickRuns` and `closingRun`
+(`src/markdown/commonmark/backtick-runs.ts`), kept once per text; the directive reader would need
+them kept for the source it reads from.
 
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 

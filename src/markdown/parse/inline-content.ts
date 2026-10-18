@@ -20,7 +20,7 @@ import { openingLinkTakesDirective } from '../emit/inline-line.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from './directive-marks.ts'
 import { readInlineDirectiveNode } from './directive-nodes.ts'
-import { readInlineToken } from '../inline-tokens.ts'
+import { inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { readTextDirective } from '../text-directive.ts'
 
 // Only a `paragraph` block takes `image`, the `mediaSingle` a lone image builds; every other container takes `nodes`, where the image is its linked alt text.
@@ -109,9 +109,10 @@ function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' 
 }
 
 function scanInline(scan: Scan): Result<Scanned> {
+  const inline = inlineSource(scan.source)
   let index = 0
   while (index < scan.source.length) {
-    const read = readToken(scan, index, readInlineToken(scan.source, index, scan.claims))
+    const read = readToken(scan, index, readInlineToken(inline, index, scan.claims))
     if (!read.ok) return read
     index = read.value
   }
