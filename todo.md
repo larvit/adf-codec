@@ -173,9 +173,10 @@ maintainer posts them once `0.3.0` is published. Found while planning discoverab
 the rest of the text at every opener, so backtick runs of lengths 1 to k with no closers inside an
 inline directive's `[content]` cost about k·n. Measured on 2026-10-18: 24 ms at 40k characters,
 126 ms at 160k and 1004 ms at 640k, where the same runs outside a directive take 6, 18 and 63 ms.
-The inline reader reads such runs through `backtickRuns` and `closingRun`
+The inline reader reads such runs through `backtickCloser`
 (`src/markdown/commonmark/backtick-runs.ts`), kept once per text; the directive reader would need
-them kept for the source it reads from.
+them kept for the source it reads from. Delete `closingBacktickRun` once nothing calls it, so one
+reader finds a closer.
 
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 

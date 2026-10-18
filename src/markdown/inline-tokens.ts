@@ -1,8 +1,7 @@
-import type { BacktickRuns } from './commonmark/backtick-runs.ts'
 import type { ClaimedPrefix } from './directive-syntax.ts'
 import type { Claims } from './portable/conventions.ts'
 import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from './commonmark/grammar.ts'
-import { backtickRun, backtickRuns, closingRun } from './commonmark/backtick-runs.ts'
+import { backtickCloser, backtickRun } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive-syntax.ts'
 import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
 import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
@@ -21,14 +20,14 @@ export type InlineToken =
 
 // A text and what its openers look ahead for, read once, so a walk reading a token at every index stays linear in it.
 export type InlineSource = {
-  readonly backticks: BacktickRuns
+  readonly closingBacktickRun: (from: number, opener: number) => number | undefined
   // Each HTML construct terminator's last start in the text, -1 for none, read the first time an opener asks.
   readonly terminators: Map<string, number>
   readonly text: string
 }
 
 export function inlineSource(text: string): InlineSource {
-  return { backticks: backtickRuns(text), terminators: new Map(), text }
+  return { closingBacktickRun: backtickCloser(text), terminators: new Map(), text }
 }
 
 export function readInlineToken(inline: InlineSource, index: number, claims: Claims): InlineToken {
@@ -87,7 +86,7 @@ function angleToken(inline: InlineSource, index: number): InlineToken {
 
 function backtickToken(inline: InlineSource, index: number): InlineToken {
   const opener = backtickRun(inline.text, index)
-  const closer = closingRun(inline.backticks, index + opener, opener)
+  const closer = inline.closingBacktickRun(index + opener, opener)
   return closer === undefined ? text(opener) : { kind: 'code-span', opener, width: closer + opener - index }
 }
 

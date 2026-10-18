@@ -146,7 +146,7 @@ function htmlTagName(text: string): string {
   return text.replace(tagName, '<$1>')
 }
 
-// `terminated` says whether a terminator starts at or after `from`, which a caller asking at every opener answers from what it kept.
+// `terminated` says whether `terminator` starts at or after `from` in `text`.
 export function inlineHtmlConstruct(text: string, index: number, terminated: (terminator: string, from: number) => boolean): string | undefined {
   for (const construct of inlineHtmlConstructs) {
     construct.opener.lastIndex = index
