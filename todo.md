@@ -68,8 +68,8 @@ readability goal, such as fejkdata's goal 3, visthus's goal 8 and adf-codec's go
 merges, file an item in each such project's `todo.md` to drop its own goal." Goal 10 is the last
 goal, so no other goal renumbers. The chunk moves each `10 by N` in a Moves cell to
 `code health by N`, 14 cells today, and revises any `docs/decisions.md` entry that cites goal 10;
-none does today. Dropping goal 10 changes README.md's goals, which is lilleman's call, so the
-chunk asks for that approval before it merges, and is reviewed like any chunk.
+none does today. Dropping goal 10 changes README.md's goals, so the chunk asks lilleman to approve
+the drop before it merges, and is reviewed like any chunk.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
