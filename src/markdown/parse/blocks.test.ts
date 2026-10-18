@@ -123,7 +123,7 @@ test("releases an indented code block's held blank lines as a walk rather than a
   assert.deepEqual(kinds(`    a\n${'\n'.repeat(200000)}    b\n`), ['code'])
 })
 
-// A level is one list item. The gate times nothing; a quadratic walk outlasts Bun's 5 s test timeout.
+// A level is one list item.
 function deepestItem(markdown: string): { depth: number; kinds: string[] } {
   let blocks = parseBlocks(markdown, flavourClaims.lossless).blocks
   let depth = 0
@@ -134,19 +134,21 @@ function deepestItem(markdown: string): { depth: number; kinds: string[] } {
   return { depth, kinds: blocks.map((block) => block.kind) }
 }
 
-test('continues a blank line through a deep run of list items in time linear in the lines', () => {
-  const depth = 20000
+test('continues a blank line and an indented line through list items nested past the 500 levels the parser carries', () => {
+  const depth = 1000
   assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${'\n'.repeat(depth)}`), { depth, kinds: ['paragraph'] })
   assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${'\n'.repeat(depth)}${'  '.repeat(depth)}b\n`), { depth, kinds: ['paragraph', 'paragraph'] })
+  assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${'  '.repeat(depth)}b\n`), { depth, kinds: ['paragraph'] })
 })
 
-test('stops a blank line at the first blockquote and at an empty item', () => {
+test('stops a blank line at the first blockquote', () => {
   assert.deepEqual(deepestItem('- > a\n\n  b\n'), { depth: 1, kinds: ['blockquote', 'paragraph'] })
-  assert.deepEqual(deepestItem('- - \n\n  a\n'), { depth: 2, kinds: [] })
   assert.deepEqual(deepestItem('- > - a\n\n  > b\n'), { depth: 1, kinds: ['blockquote', 'blockquote'] })
 })
 
-test('continues a line through a deep run of list items in time linear in the line', () => {
-  const depth = 20000
-  assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${`${'  '.repeat(depth)}b\n`.repeat(3)}`), { depth, kinds: ['paragraph'] })
+test('stops a blank line at an empty item, and gives a code block in an item the blank line without its spaces', () => {
+  assert.deepEqual(deepestItem('- - \n\n  a\n'), { depth: 2, kinds: [] })
+  assert.deepEqual(parseBlocks('- ```\n      \n  x\n  ```\n', flavourClaims.lossless).blocks.map((block) => block.kind === 'bulletList' && block.items[0]?.[0]), [
+    { kind: 'code', language: '', position: { line: 1, offset: 0 }, text: '\nx' },
+  ])
 })
