@@ -258,7 +258,7 @@ Their CommonMark suite exceptions are `node-model` (§The CommonMark suite check
 
 A reader panel on 2026-10-18 read the title again: seven readers across the bot, the LLM pipeline,
 a support agent and a product manager. Two picked a caption, two the picture alone, and three neither,
-each describing hover text, which ADF holds no node for. No output reached five of seven, so the
+each describing hover text, which ADF holds no node for. No output reached the five of seven that settles a panel, so the
 title still reads as the image's caption until `todo.md` item 121 is answered.
 
 ## A mark skips a node that cannot hold it, and a directive mark wrapping only such nodes is refused, as is a `[text](url)` link unless its text is hard breaks alone
