@@ -63,8 +63,9 @@ type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; ind
 type ParagraphLine = { position: SourcePosition; text: string }
 
 // The line from an absolute column on: a tab a cut splits keeps the stop it is measured against, and its leftover columns
-// stand as `spaces` before `text`, so a cut never builds a string. At most 3, which a cut of `largestOpenerIndentation` takes whole.
-// They are blank, so blankness reads `text` alone; a block takes the line through `lineText`.
+// stand as `spaces` before `text`, so a cut shares `text`. At most 3, and blank, so blankness reads `text` alone. A cut of
+// `largestOpenerIndentation` leaves some only on a line indented as code, which no marker follows: a marker check reads
+// `spaces` first, and a block takes the line through `lineText`.
 type Line = { column: number; spaces: number; text: string }
 
 type LeafOpener = { index: number; position: SourcePosition }
@@ -201,7 +202,7 @@ function continuesContainer(container: EdgeContainer, line: Line): Line | undefi
 }
 
 function blockquoteRest(opener: Line): Line | undefined {
-  if (!opener.text.startsWith('>')) return undefined
+  if (opener.spaces > 0 || !opener.text.startsWith('>')) return undefined
   return removeColumns({ column: opener.column + 1, spaces: 0, text: opener.text.slice(1) }, 1)
 }
 

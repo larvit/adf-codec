@@ -152,3 +152,29 @@ test('stops a blank line at an empty item, and gives a code block in an item the
     { kind: 'code', language: '', position: { line: 1, offset: 0 }, text: '\nx' },
   ])
 })
+
+function outline(blocks: readonly Block[]): string {
+  return blocks
+    .map((block) => {
+      if (block.kind === 'blockquote') return `quote(${outline(block.blocks)})`
+      if (block.kind === 'bulletList') return `list(${block.items.map(outline).join(',')})`
+      if (block.kind === 'code') return `code(${JSON.stringify(block.text)})`
+      if (block.kind === 'paragraph') return `paragraph(${block.text.split('\n').map((line) => line.trim()).join('|')})`
+      return block.kind
+    })
+    .join(' ')
+}
+
+test('reads a marker a tab pushes to four columns past its container as text, not as a marker', () => {
+  const read = (markdown: string): string => outline(parseBlocks(markdown, flavourClaims.lossless).blocks)
+  assert.equal(read('> a\n \t> b\n'), 'quote(paragraph(a|> b))')
+  assert.equal(read('> > a\n>\t\t> b\n'), 'quote(quote(paragraph(a|> b)))')
+  assert.equal(read('- > a\n\t\t> b\n'), 'list(quote(paragraph(a|> b)))')
+  assert.equal(read('x\n\t# h\n'), 'paragraph(x|# h)')
+})
+
+test('gives what follows an item the columns of the tab a cut splits', () => {
+  const read = (markdown: string): string => outline(parseBlocks(markdown, flavourClaims.lossless).blocks)
+  assert.equal(read('- ```\n\tx\n  ```\n'), 'list(code("  x"))')
+  assert.equal(read('- a\n \t- b\n'), 'list(paragraph(a) list(paragraph(b)))')
+})
