@@ -166,10 +166,11 @@ When a link's text holds an image, the reader turns the image into its alt text,
 the image's URL and title (`docs/decisions.md` §An image reads as an image only alone in its
 paragraph). README `## Goals` Goal 7 holds an image and a title as content, and a Maintain goal
 holds whatever it costs. ADF holds no inline external image, so the item must find a shape that
-keeps the image, its title and the link together. When it lands, it also rewrites two statements
-that will no longer hold: the README's guarantee that inside another link the title is dropped,
-and the sentence in `docs/decisions.md` §An image reads as an image only alone in its paragraph
-that says the drop stands until this item ends it.
+keeps the image, its title and the link together. When it lands, it also rewrites three statements
+that will no longer hold: the README's guarantee that inside a link an image reads as plain text
+the link marks, its guarantee that inside another link the title is dropped, and the sentence in
+`docs/decisions.md` §An image reads as an image only alone in its paragraph that says the drop
+stands until this item ends it.
 
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 
