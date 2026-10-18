@@ -606,7 +606,7 @@ function sourceLine(markdown: string, line: number, start: number, end: number):
   return { position: { line, offset: start }, text: replaceNullCharacters(markdown.slice(start, end)) }
 }
 
-// Counting stops at `upTo` columns, so a test against a width costs the width, not the line's whole indentation.
+// `upTo` caps the cost: checking a line against an item's width reads at most that width.
 function leadingColumns(line: Line, upTo = Infinity): number {
   let columns = 0
   for (const character of line.text) {

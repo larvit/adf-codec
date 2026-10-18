@@ -21,10 +21,10 @@
   directive's `[content]`. Such a text took time quadratic in its length: 160000 characters of `<?`
   took seven seconds each way, now 50 ms.
 - Every reader takes time linear in the markdown when it holds blank lines under list items nested
-  deeply, and `losslessMarkdownToAdf` when it holds many unclosed backtick runs inside an inline
-  directive's `[content]`. Such a list is still refused as `unsupported-nesting-depth`, now after
-  40 ms where 20000 nested items and as many blank lines took 10.7 seconds; 640000 characters of
-  backtick runs in a directive took one second, now 100 ms.
+  deeply. Such a list is still refused as `unsupported-nesting-depth`, now after 40 ms where 20000
+  nested items and as many blank lines took 10.7 seconds.
+- `losslessMarkdownToAdf` takes time linear in the markdown when an inline directive's `[content]`
+  holds many unclosed backtick runs: 640000 characters of them took one second, now 100 ms.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 
