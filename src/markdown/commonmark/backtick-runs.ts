@@ -1,16 +1,14 @@
 import { runLength } from './emphasis-matching.ts'
 
-// Each run's start by its length, read once, so asking for a closer at every opener stays linear in the text.
-export interface BacktickRuns {
-  readonly asked: Map<number, number>
-  readonly starts: ReadonlyMap<number, readonly number[]>
-}
-
 export function backtickRun(text: string, index: number): number {
   return text.charAt(index) === '`' ? runLength(text, index) : 0
 }
 
-export function backtickRuns(text: string): BacktickRuns {
+// As `closingBacktickRun`, for `from` past the end of an opener's run, with each run's start read once by its length.
+// Readers ask with `from` rising, which keeps each length's cursor moving forward, so asking at every opener stays
+// linear in the text; an ask behind the cursor restarts that length from its first run.
+export function backtickCloser(text: string): (from: number, opener: number) => number | undefined {
+  const asked = new Map<number, number>()
   const starts = new Map<number, number[]>()
   for (let start = text.indexOf('`'); start !== -1; ) {
     const length = runLength(text, start)
@@ -19,19 +17,15 @@ export function backtickRuns(text: string): BacktickRuns {
     else known.push(start)
     start = text.indexOf('`', start + length)
   }
-  return { asked: new Map(), starts }
-}
-
-// As `closingBacktickRun`, for `from` past the end of an opener's run. Readers ask with `from` rising, which keeps
-// each length's cursor moving forward; an ask behind the cursor restarts that length from its first run.
-export function closingRun(runs: BacktickRuns, from: number, opener: number): number | undefined {
-  const starts = runs.starts.get(opener)
-  if (starts === undefined) return undefined
-  let at = runs.asked.get(opener) ?? 0
-  if ((starts[at - 1] ?? -1) >= from) at = 0
-  while ((starts[at] ?? Infinity) < from) at += 1
-  runs.asked.set(opener, at)
-  return starts[at]
+  return (from, opener) => {
+    const runs = starts.get(opener)
+    if (runs === undefined) return undefined
+    let at = asked.get(opener) ?? 0
+    if ((runs[at - 1] ?? -1) >= from) at = 0
+    while ((runs[at] ?? Infinity) < from) at += 1
+    asked.set(opener, at)
+    return runs[at]
+  }
 }
 
 // Where the run of exactly `opener` backticks closing a code span begins, `undefined` where none does.

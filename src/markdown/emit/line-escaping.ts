@@ -47,7 +47,6 @@ type EscapeWalk = {
   readonly headingCloser: number | undefined
   readonly inline: InlineSource
   readonly linkClose: number
-  readonly scan: string
 }
 
 const escapingCodes: readonly ['backslash', 'bracketed', 'bracketed-link-target', 'none'] = ['backslash', 'bracketed', 'bracketed-link-target', 'none']
@@ -148,7 +147,6 @@ function escapeClaims(scan: string, escapings: Escapings, container: LineContain
     headingCloser: container === 'heading' ? closingHashes(scan) : undefined,
     inline: inlineSource(scan),
     linkClose: lastLinkClose(scan, escapings),
-    scan,
   }
   const escaped = new Uint8Array(scan.length)
   let line = scanLine(scan, 0)
@@ -174,7 +172,7 @@ function escapeClaims(scan: string, escapings: Escapings, container: LineContain
 
 // A text character beside one of the emitter's delimiters would lengthen that delimiter's run, so every text character in such a run escapes.
 function runEscapes(walk: EscapeWalk, start: number, end: number, line: ScanLine): RunEscapes {
-  const { escapings, scan } = walk
+  const { escapings, inline: { text: scan } } = walk
   if (runHolds(escapings, start, end, isSyntax) && runHolds(escapings, start, end, isEscapable)) return { escapable: true }
   let index = start
   // A backtick run escapes whole: a bare rest would be a shorter backtick string, which can close a span an earlier run opens.
@@ -187,7 +185,8 @@ function runHolds(escapings: Escapings, start: number, end: number, kind: (escap
   return false
 }
 
-function claimsRunRest({ claims, container, escapings, inline, scan }: EscapeWalk, index: number, end: number, line: ScanLine): boolean {
+function claimsRunRest({ claims, container, escapings, inline }: EscapeWalk, index: number, end: number, line: ScanLine): boolean {
+  const scan = inline.text
   const escaping = escapings(index)
   if (escaping === 'bracketed-link-target') return readInlineToken(inline, index, claims).kind === 'code-span'
   if (!isEscapable(escaping)) return false
@@ -196,7 +195,7 @@ function claimsRunRest({ claims, container, escapings, inline, scan }: EscapeWal
   return token.kind !== 'text'
 }
 
-function claimsCharacter({ container, escapings, headingCloser, linkClose, scan }: EscapeWalk, index: number, token: InlineToken, line: ScanLine): boolean {
+function claimsCharacter({ container, escapings, headingCloser, inline: { text: scan }, linkClose }: EscapeWalk, index: number, token: InlineToken, line: ScanLine): boolean {
   const escaping = escapings(index)
   if (escaping === 'bracketed-link-target') return token.kind === 'directive'
   if (!isEscapable(escaping)) return false
