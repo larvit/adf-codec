@@ -68,14 +68,15 @@ of seven.
 
 ADF holds no node for hover text, so the caption is the only ADF place for the title's words. Goal 7
 says lossy conversion drops form, never content. The README's portable section defines content as
-what a reader sees or follows, which a hover title is not at rest. The goals do not say whether a
-title is content. Earlier entries of this class: §An image reads as an image only alone in its paragraph (the
+what a reader sees or follows. A hover title is seen only when the pointer rests on the picture.
+The goals do not say whether a
+title is content. Earlier entries on what an image's title reads as: §An image reads as an image only alone in its paragraph (the
 caption, 2026-10-09, 3 of 3); §A linked image is written `[![alt](url)](href)`, a captioned image as
-its directive (2026-10-11, 3 of 3, reading a title as hover text); and the title that drops inside
-another link, chosen by Goal 6 over Goal 7.
+its directive (2026-10-11, 3 of 3, reading a title as hover text); and, inside another link, a title drops,
+chosen by Goal 6 over Goal 7 (§An image reads as an image only alone in its paragraph).
 
-Candidate entry: an image's title stays the caption of an image that stays an image, because ADF
-holds no hover text and the caption keeps the title's words. This image keeps "The moon, at night"
+Candidate entry: an image's title becomes its caption when the image stands alone in its paragraph,
+because ADF holds no hover text and the caption keeps the title's words. This image keeps "The moon, at night"
 as visible text under the picture.
 
 Blocks 73: the announcement waits for this answer, since the answer may change what the package
