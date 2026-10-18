@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 120 | 0.3.0 |  | defect | **Read a tab-indented line under nested list items in time linear in the line, where today a tab an item's width splits copies the whole line at each level.** | 2 | 1 | 2 | 3 | 3 | 9 by 2 | 6.0 |
+| 120 | 0.3.0 |  | defect | **Read a tab-indented line under nested list items in time linear in the line.** | 2 | 1 | 2 | 3 | 3 | 9 by 2 | 6.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.5 |
 | 100 | 0.3.0 |  | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 1 | 2 | 2 | 3 | 3 | 6 by 4 | 4.0 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 3.6 |
@@ -58,16 +58,16 @@
 
 ## Details
 
-### 120. Read a tab-indented line under nested list items in time linear in the line, where today a tab an item's width splits copies the whole line at each level.
+### 120. Read a tab-indented line under nested list items in time linear in the line.
 
 `removeColumns` in `src/markdown/parse/blocks.ts` returns `' '.repeat(n) + line.text.slice(index)`
-where an item's width splits a tab, a fresh string, so the next level's `slice` copies the whole
-line instead of sharing it. Measured on 2026-10-18 on 20 tab-indented lines under 20000, 40000 and
-80000 nested list items: 176, 460 and 1812 ms, where the same lines indented with spaces took 73, 90
-and 173 ms. Keep the split tab's leftover columns as a number on `Line` beside `column` and `text`,
-so a cut never builds a string. `docs/decisions.md` §Cost fixes are measured, never timed names
-this exception (cites item 120); delete that clause with the fix. Found while reviewing item 98's
-chunk, 2026-10-18.
+where an item's width ends inside a tab, a fresh string, so the next level's `slice` copies the
+whole line instead of sharing it. Measured on 2026-10-18 on 20 tab-indented lines under 20000,
+40000 and 80000 nested list items: 176, 460 and 1812 ms, where the same lines indented with spaces
+took 73, 90 and 173 ms. Keep the split tab's leftover columns as a number on `Line` beside `column`
+and `text`, so a cut never builds a string. Delete the clause naming this item from
+`docs/decisions.md` §Cost fixes are measured, never timed. Found while reviewing item 98's chunk,
+2026-10-18.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 

@@ -1,6 +1,6 @@
 import type { ClaimedPrefix } from './directive-syntax.ts'
-import type { CodeSpanCloser } from './commonmark/backtick-runs.ts'
 import type { Claims } from './portable/conventions.ts'
+import type { CodeSpanCloser } from './commonmark/backtick-runs.ts'
 import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from './commonmark/grammar.ts'
 import { backtickCloser, backtickRun } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive-syntax.ts'

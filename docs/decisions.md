@@ -827,10 +827,8 @@ A cost fix that changes no behaviour lands on the suite staying green with no fi
 changed, and a before-and-after figure in its PR; the gate times nothing. Measured and kept:
 `adfDocumentFault`'s shape and depth walks stay two — the parting gives depth its own code — at
 52 ms for a 9 MB document the emit takes 314 ms over. The 500-level guard runs after the block walk,
-so it bounds nothing in it: `matchBlankLine` continues a blank line through the open list items in
-one step, which took 20000 nested items and as many blank lines from 10.7 s to 39 ms; and an item
-reads a line's indentation only up to its own width, though a tab an item's width splits still
-costs the whole line at each level (`todo.md` item 120).
+so it doesn't bound the walk's cost. Kept: where an item's width falls inside a tab, each level still
+copies the whole line (`todo.md` item 120).
 
 ## Only the hard break holds a raw newline
 
