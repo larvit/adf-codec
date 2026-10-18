@@ -827,8 +827,7 @@ A cost fix that changes no behaviour lands on the suite staying green with no fi
 changed, and a before-and-after figure in its PR; the gate times nothing. Measured and kept:
 `adfDocumentFault`'s shape and depth walks stay two — the parting gives depth its own code — at
 52 ms for a 9 MB document the emit takes 314 ms over. The 500-level guard runs after the block walk,
-so it doesn't bound the walk's cost. Kept: where an item's width falls inside a tab, each level still
-copies the whole line (`todo.md` item 120).
+so it doesn't bound the walk's cost.
 
 ## Only the hard break holds a raw newline
 

@@ -23,6 +23,8 @@
 - Every reader takes time linear in the markdown when it holds blank lines under list items nested
   deeply. Such a list is still refused as `unsupported-nesting-depth`, now after 40 ms where 20000
   nested items and as many blank lines took 10.7 seconds.
+- Every reader takes time linear in the markdown when it holds tab-indented lines under list items
+  nested deeply. 20 lines of 40000 tabs under 80000 nested items took 2.0 seconds, now 0.1.
 - `losslessMarkdownToAdf` takes time linear in the markdown when an inline directive's `[content]`
   holds many unclosed backtick runs: 640000 characters of them took one second, now 100 ms.
 - The README compares the package with seven other ADF converters, each checked against its
