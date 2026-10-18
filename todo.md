@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 120`
+`Next ID = 121`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 120 | 0.3.0 |  | defect | **Read a tab-indented line under nested list items in time linear in the line, where today a tab an item's width splits copies the whole line at each level.** | 2 | 1 | 2 | 3 | 3 | 9 by 2 | 6.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.5 |
 | 100 | 0.3.0 |  | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 1 | 2 | 2 | 3 | 3 | 6 by 4 | 4.0 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 3.6 |
@@ -23,7 +24,7 @@
 | 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | 10 by 4 | 2.0 |
 | 59 | 0.3.0 |  | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 1.5 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 1.5 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 100, 102, 109, 115 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 32.0 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 100, 102, 109, 115, 120 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 32.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 8.0 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 6.0 |
 | 6 | 0.4.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
@@ -56,6 +57,17 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 120. Read a tab-indented line under nested list items in time linear in the line, where today a tab an item's width splits copies the whole line at each level.
+
+`removeColumns` in `src/markdown/parse/blocks.ts` returns `' '.repeat(n) + line.text.slice(index)`
+where an item's width splits a tab, a fresh string, so the next level's `slice` copies the whole
+line instead of sharing it. Measured on 2026-10-18 on 20 tab-indented lines under 20000, 40000 and
+80000 nested list items: 176, 460 and 1812 ms, where the same lines indented with spaces took 73, 90
+and 173 ms. Keep the split tab's leftover columns as a number on `Line` beside `column` and `text`,
+so a cut never builds a string. `docs/decisions.md` §Cost fixes are measured, never timed names
+this exception (cites item 120); delete that clause with the fix. Found while reviewing item 98's
+chunk, 2026-10-18.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
