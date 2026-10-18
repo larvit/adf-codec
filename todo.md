@@ -25,7 +25,7 @@
 | 59 | 0.3.0 |  | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 1.5 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 1.5 |
 | 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 98, 100, 102, 109, 115 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 32.0 |
-| 119 | 0.3.0 |  | defect | **Read a directive's content holding many unclosed backtick runs in time linear in the text.** | 2 | 1 | 2 | 3 | 2 | 9 by 2 | 8.0 |
+| 119 | 0.3.0 |  | defect | **Read a directive's content holding many unclosed backtick runs in time linear in the markdown.** | 2 | 1 | 2 | 3 | 2 | 9 by 2 | 8.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 8.0 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 6.0 |
 | 6 | 0.4.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
@@ -167,16 +167,15 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 its versions and its date in step with the output. We draft each post for the place it goes; the
 maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
 
-### 119. Read a directive's content holding many unclosed backtick runs in time linear in the text.
+### 119. Read a directive's content holding many unclosed backtick runs in time linear in the markdown.
 
 `readCodeSpanEnd` (`src/markdown/directive-syntax.ts`) calls `closingBacktickRun`, which searches
 the rest of the text at every opener, so backtick runs of lengths 1 to k with no closers inside an
 inline directive's `[content]` cost about k·n. Measured on 2026-10-18: 24 ms at 40k characters,
 126 ms at 160k and 1004 ms at 640k, where the same runs outside a directive take 6, 18 and 63 ms.
-The inline reader reads such runs through `backtickCloser`
-(`src/markdown/commonmark/backtick-runs.ts`), kept once per text; the directive reader would need
-them kept for the source it reads from. Delete `closingBacktickRun` once nothing calls it, so one
-reader finds a closer.
+The inline reader finds closers through one `backtickCloser` per text
+(`src/markdown/commonmark/backtick-runs.ts`); `readCodeSpanEnd` needs one built for the source it
+reads. Then delete `closingBacktickRun`, so one function finds every closer.
 
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 

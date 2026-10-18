@@ -18,10 +18,10 @@ export type InlineToken =
   | { closes: boolean; kind: 'highlight'; opens: boolean; width: number }
   | { construct: string; kind: 'html' }
 
-// A text and what its openers look ahead for, read once, so a walk reading a token at every index stays linear in it.
+// Build one per text and pass it to every `readInlineToken` call on that text, so a walk stays linear in the text's length.
 export type InlineSource = {
   readonly codeSpanCloser: (from: number, opener: number) => number | undefined
-  // Each HTML construct terminator's last start in the text, -1 for none, read the first time an opener asks.
+  // Where each HTML terminator last starts in the text, -1 for none; filled the first time an opener asks.
   readonly terminators: Map<string, number>
   readonly text: string
 }
