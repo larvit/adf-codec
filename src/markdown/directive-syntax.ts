@@ -1,6 +1,7 @@
 import type { AttributeKind, VocabularyPair, VocabularyValue } from '../adf/attribute-vocabulary.ts'
 import type { CodeSpanCloser } from './commonmark/backtick-runs.ts'
 import type { ConvertFault } from '../result.ts'
+import type { InlineSource } from './inline-tokens.ts'
 import type { JsonValue } from '../json-value.ts'
 import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
 import { backtickRun } from './commonmark/backtick-runs.ts'
@@ -101,8 +102,8 @@ export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined
   return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
-export function readInlineDirective(text: string, prefix: ClaimedPrefix, codeSpanCloser: CodeSpanCloser): Read<DirectiveSpan> {
-  return readClaimedDirective(text, prefix.index, 1, codeSpanCloser)
+export function readInlineDirective(inline: InlineSource, prefix: ClaimedPrefix): Read<DirectiveSpan> {
+  return readClaimedDirective(inline.text, prefix.index, 1, inline.codeSpanCloser)
 }
 
 export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<string> {

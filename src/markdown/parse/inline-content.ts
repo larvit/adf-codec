@@ -173,7 +173,7 @@ function readLineEnding(scan: Scan, index: number): number {
 function readDirective(scan: Scan, inline: InlineSource, prefix: ClaimedPrefix): Result<number> {
   const held = scan.spans.get(prefix.index)
   if (held !== undefined) return pushDirective(scan, held, prefix.index)
-  const directive = readInlineDirective(scan.source, prefix, inline.codeSpanCloser)
+  const directive = readInlineDirective(inline, prefix)
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
   return pushDirective(scan, directive.value, prefix.index)
 }
