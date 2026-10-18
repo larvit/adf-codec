@@ -9,8 +9,13 @@ import { losslessMarkdownToAdf } from './parse/markdown-to-adf.ts'
 
 const constructs = ['<!A>', '<??>', '<![CDATA[]]>']
 
-test('an HTML construct whose terminator starts right after its opener reads as HTML', () => {
-  for (const construct of constructs) assert.equal(readInlineToken(inlineSource(`a ${construct}`), 2, flavourClaims.commonmark).kind, 'html', construct)
+// CommonMark 0.31.2, Raw HTML: the terminator must start after the opener, and may start right after it.
+test('an HTML opener reads as HTML only where its terminator starts after it', () => {
+  const cases: [string, string][] = [...constructs.map((text): [string, string] => [text, 'html']), ['<!---->', 'html'], ['?> <? ?>', 'html'], ['?> <?', 'text'], ['<?>', 'text']]
+  for (const [text, kind] of cases) {
+    const at = text.lastIndexOf('<')
+    assert.equal(readInlineToken(inlineSource(`a ${text}`), at + 2, flavourClaims.commonmark).kind, kind, text)
+  }
 })
 
 test('text spelling such a construct round-trips', () => {

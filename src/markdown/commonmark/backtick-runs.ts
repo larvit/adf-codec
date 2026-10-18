@@ -8,7 +8,7 @@ export function backtickRun(text: string, index: number): number {
 // Readers ask with `from` rising, which keeps each length's cursor moving forward, so asking at every opener stays
 // linear in the text; an ask behind the cursor restarts that length from its first run.
 export function backtickCloser(text: string): (from: number, opener: number) => number | undefined {
-  const asked = new Map<number, number>()
+  const cursors = new Map<number, number>()
   const starts = new Map<number, number[]>()
   for (let start = text.indexOf('`'); start !== -1; ) {
     const length = runLength(text, start)
@@ -20,10 +20,10 @@ export function backtickCloser(text: string): (from: number, opener: number) => 
   return (from, opener) => {
     const runs = starts.get(opener)
     if (runs === undefined) return undefined
-    let at = asked.get(opener) ?? 0
+    let at = cursors.get(opener) ?? 0
     if ((runs[at - 1] ?? -1) >= from) at = 0
     while ((runs[at] ?? Infinity) < from) at += 1
-    asked.set(opener, at)
+    cursors.set(opener, at)
     return runs[at]
   }
 }
