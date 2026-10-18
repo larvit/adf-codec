@@ -61,8 +61,8 @@
 
 ### 124. Drop goal 10, which restates code health, and point the Moves cells that cite it at `code health`.
 
-`~/.claude/CLAUDE.md` → "Shared goal" now states code health, the goal every project shares, so
-goal 10 and code health weigh the same moves twice. In lilleman's words (2026-10-18): "every
+`~/.claude/CLAUDE.md` → "Shared goal" now states code health, the goal every project shares, and
+goal 10 restates it. In lilleman's words (2026-10-18): "every
 project shares the goal, so it lives in `~/.claude` once ... It replaces each project's own
 readability goal, such as fejkdata's goal 3, visthus's goal 8 and adf-codec's goal 10: once it
 merges, file an item in each such project's `todo.md` to drop its own goal." Goal 10 is the last
