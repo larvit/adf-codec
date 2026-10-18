@@ -256,6 +256,11 @@ The same panel confirmed the other readings on 2026-10-09: a title as the captio
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
 Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
 
+A reader panel on 2026-10-18 read the title again: seven readers across the bot, the LLM pipeline,
+a support agent and a product manager. Two picked a caption, two the picture alone, and three neither,
+each describing hover text, which ADF holds no node for. No output reached five of seven, so the
+caption reading stands until `todo.md` item 121 is answered.
+
 ## A mark skips a node that cannot hold it, and a directive mark wrapping only such nodes is refused, as is a `[text](url)` link unless its text is hard breaks alone
 
 2026-10-14, two reader panels of the viewer/editor app, the LLM pipeline and a support agent, 3 of 3
@@ -280,8 +285,9 @@ Goal 6. Valid while the audience reads a title as hover text.
 
 `adfToLosslessMarkdown` writes a `media` whose only mark is a link as `[![alt](url)](href)`, which
 each reader expected before seeing the options. A captioned image keeps the `!adf:caption`
-directive: each reader read `![alt](url "title")` as hover text, not a caption. Every reader still
-reads that title as the caption; `todo.md` item 100 puts that reading back to a reader panel.
+directive: each reader read `![alt](url "title")` as hover text, not a caption. The caption reading
+stands; a reader panel on 2026-10-18 did not settle it (§An image reads as an image only alone in its
+paragraph), and `todo.md` item 121 asks the maintainer for the answer.
 
 ## A linked image standing inline in portable markdown, its link to another target, is written `[alt](href) ([image](url))`
 
