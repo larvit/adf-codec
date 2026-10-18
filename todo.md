@@ -6,13 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 121`
+`Next ID = 122`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 100 | 0.3.0 |  | decision | **Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.** | 1 | 2 | 2 | 3 | 3 | 6 by 4 | 6.2 |
+| 121 | 0.3.0 |  | question | **Decide whether an image's title stays its caption, in a goal in `README.md` or a decision in `docs/decisions.md`.** | 1 | 2 | 2 | 3 | 2 |  | 0.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.8 |
 | 60 | 0.3.0 |  | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 2 | 1 | 2 | 3 | 4 | 10 by 4 | 4.0 |
 | 92 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | 10 by 4 | 4.0 |
@@ -23,7 +23,7 @@
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 3.0 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 2.0 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 2.0 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 100, 102, 109, 115 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 17.4 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 121 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 17.4 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.3 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.2 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.4 |
@@ -57,11 +57,29 @@
 
 ## Details
 
-### 100. Put the reading of an image's title as its caption back to a reader panel, now that a writer panel reads a title as hover text.
+### 121. Decide whether an image's title stays its caption, in a goal in `README.md` or a decision in `docs/decisions.md`.
 
-Every reader reads `![a](u "t")` as an image captioned `t` (`docs/decisions.md` §An image reads as an
-image only alone in its paragraph, 3 of 3 on 2026-10-09). On 2026-10-11 a writer panel of the same
-audience kept the captioned image's `!adf:caption` directive, 3 of 3, reading a title as hover text.
+Seven readers read `![Moon over the hills](https://docs.example.com/images/moon-over-hills.jpg "The
+moon, at night")` alone in its paragraph: the bot, the LLM pipeline, a support agent and a product
+manager, some of them twice. Each wrote what it expected to see in Jira or Confluence, then picked
+the picture with the title printed under it, the picture alone, or neither. Two picked the caption,
+two the picture alone, and three neither, expecting the title as hover text. No output reached five
+of seven.
+
+ADF holds no node for hover text, so the caption is the only ADF place for the title's words. Goal 7
+says lossy conversion drops form, never content. The README's portable section defines content as
+what a reader sees or follows, which a hover title is not at rest. The goals do not say whether a
+title is content. Earlier entries of this class: §An image reads as an image only alone in its paragraph (the
+caption, 2026-10-09, 3 of 3); §A linked image is written `[![alt](url)](href)`, a captioned image as
+its directive (2026-10-11, 3 of 3, reading a title as hover text); and the title that drops inside
+another link, chosen by Goal 6 over Goal 7.
+
+Candidate entry: an image's title stays the caption of an image that stays an image, because ADF
+holds no hover text and the caption keeps the title's words. This image keeps "The moon, at night"
+as visible text under the picture.
+
+Blocks 73: the announcement waits for this answer, since the answer may change what the package
+writes for a titled image.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
@@ -79,9 +97,9 @@ parts by ADF and format true as they grow.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
-The last five chunks' median is 113495 new input tokens before their first commit, the five before
-them 93713. Files read most over the last five chunks, counting opens and searches: `todo.md` 28,
-`README.md` 24, `docs/decisions.md` 11, `CHANGELOG.md` 8, `MIGRATION.md` 6,
+The last five chunks' median is 106412 new input tokens before their first commit, the five before
+them 104037. Files read most over the last five chunks, counting opens and searches: `todo.md` 19,
+`README.md` 18, `docs/decisions.md` 9, `CHANGELOG.md` 6, `MIGRATION.md` 6,
 `src/conformance/commonmark-spec.test.ts` 6, `src/markdown/portable/inline-reduction.ts` 6,
 `spec/flavour.md` 5, `src/markdown/portable/adf-to-portable-markdown.test.ts` 5,
 `src/markdown/parse/inline-content.ts` 4.
