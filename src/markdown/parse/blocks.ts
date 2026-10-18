@@ -62,10 +62,10 @@ type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; ind
 
 type ParagraphLine = { position: SourcePosition; text: string }
 
-// The line from an absolute column on: a tab a cut splits keeps the stop it is measured against, and its leftover columns
-// stand as `spaces` before `text`, so a cut shares `text`. At most 3, and blank, so blankness reads `text` alone. A cut of
-// `largestOpenerIndentation` leaves some only on a line indented as code, which no marker follows: a marker check reads
-// `spaces` first, and a block takes the line through `lineText`.
+// The line from an absolute column on, so a tab after a cut still measures its stop. When a cut splits a tab, its leftover
+// columns, at most 3 and all blank, go in `spaces` rather than in a new `text`. Blankness reads `text` alone, and a block
+// reads the line through `lineText`. After a `largestOpenerIndentation` cut, `spaces` is non-zero only on a line indented as
+// code, so a marker check no code-indent guard precedes, as in `blockquoteRest`, refuses such a line.
 type Line = { column: number; spaces: number; text: string }
 
 type LeafOpener = { index: number; position: SourcePosition }
@@ -621,7 +621,7 @@ function leadingColumns(line: Line, upTo = Infinity): number {
   return columns
 }
 
-// CommonMark's tab stops: a tab the cut splits leaves the columns it holds past the cut as `spaces`.
+// CommonMark's tab stops.
 function removeColumns(line: Line, columns: number): Line {
   const target = line.column + columns
   if (line.spaces >= columns) return { column: target, spaces: line.spaces - columns, text: line.text }
