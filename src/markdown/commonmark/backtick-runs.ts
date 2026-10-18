@@ -1,12 +1,14 @@
 import { runLength } from './emphasis-matching.ts'
 
+export type CodeSpanCloser = (from: number, opener: number) => number | undefined
+
 export function backtickRun(text: string, index: number): number {
   return text.charAt(index) === '`' ? runLength(text, index) : 0
 }
 
 // Where the first run of exactly `opener` backticks at or after `from` begins, `from` never inside a run. Ask with
 // `from` rising, so each length's cursor only moves forward and a walk stays linear; an earlier `from` rescans that length.
-export function backtickCloser(text: string): (from: number, opener: number) => number | undefined {
+export function backtickCloser(text: string): CodeSpanCloser {
   const counts = new Map<number, number>()
   eachRun(text, (_, length) => counts.set(length, (counts.get(length) ?? 0) + 1))
   const firsts = new Map<number, number>()
@@ -33,17 +35,6 @@ export function backtickCloser(text: string): (from: number, opener: number) => 
     cursors.set(opener, at)
     return at < end ? starts[at] : undefined
   }
-}
-
-// Where the run of exactly `opener` backticks closing a code span begins, `undefined` where none does.
-export function closingBacktickRun(text: string, from: number, opener: number): number | undefined {
-  let cursor = from
-  while (cursor < text.length) {
-    const run = backtickRun(text, cursor)
-    if (run === opener) return cursor
-    cursor += run === 0 ? 1 : run
-  }
-  return undefined
 }
 
 export function fencedCodeBlock(info: string, body: string): string {

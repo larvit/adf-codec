@@ -826,8 +826,10 @@ rather than a figure.
 A cost fix that changes no behaviour lands on the suite staying green with no fixture output
 changed, and a before-and-after figure in its PR; the gate times nothing. Measured and kept:
 `adfDocumentFault`'s shape and depth walks stay two — the parting gives depth its own code — at
-52 ms for a 9 MB document the emit takes 314 ms over; and `continuesContainer`'s re-scan per item
-level stays, linear in the lines and bounded in depth by the 500-level guard.
+52 ms for a 9 MB document the emit takes 314 ms over. The 500-level guard runs after the block walk,
+so it bounds nothing in it: `matchBlankLine` continues a blank line through the open list items in
+one step, and an item reads a line's indentation only up to its own width, which took 20000 nested
+items and as many blank lines from 10.7 s to 39 ms.
 
 ## Only the hard break holds a raw newline
 

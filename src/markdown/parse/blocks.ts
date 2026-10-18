@@ -73,6 +73,8 @@ type ContainerStack = {
   edges: readonly { container: EdgeContainer; depth: number }[]
   open: readonly OpenContainer[]
   push: (container: OpenContainer) => void
+  // The index in `edges` of each blockquote.
+  quotes: readonly number[]
 }
 
 type Walk = ParsedBlocks & {
@@ -112,13 +114,17 @@ function containerStack(): ContainerStack {
   const depthsOf = (name: string): number[] => entryOf(directiveDepths, name, () => [])
   const edges: { container: EdgeContainer; depth: number }[] = []
   const open: OpenContainer[] = []
+  const quotes: number[] = []
   return {
     directiveDepth: (name) => directiveDepths.get(name)?.at(-1),
     drop: (depth) => {
       const dropped = open.splice(depth)
       for (const container of dropped) {
         if (container.kind === 'directive') depthsOf(container.name).pop()
-        else edges.pop()
+        else {
+          edges.pop()
+          if (container.kind === 'blockquote') quotes.pop()
+        }
       }
       return dropped
     },
@@ -127,8 +133,12 @@ function containerStack(): ContainerStack {
     push: (container) => {
       const depth = open.push(container) - 1
       if (container.kind === 'directive') depthsOf(container.name).push(depth)
-      else edges.push({ container, depth })
+      else {
+        if (container.kind === 'blockquote') quotes.push(edges.length)
+        edges.push({ container, depth })
+      }
     },
+    quotes,
   }
 }
 
@@ -157,22 +167,34 @@ function swallowsLines(leaf: OpenLeaf | undefined): boolean {
 
 // A directive container has no continuation marker, so every line continues it.
 function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } {
+  if (isBlankLine(line.text)) return matchBlankLine(walk, line, 0, 0)
+  let quotes = 0
   let rest = line
-  for (const { container, depth } of walk.stack.edges) {
-    const next = continuesContainer(walk, container, rest)
+  for (const [index, { container, depth }] of walk.stack.edges.entries()) {
+    const next = continuesContainer(container, rest)
     if (next === undefined) return { depth, rest }
     rest = next
+    if (container.kind !== 'blockquote') continue
+    quotes += 1
+    if (isBlankLine(rest.text)) return matchBlankLine(walk, rest, index + 1, quotes)
   }
   return { depth: walk.stack.open.length, rest }
 }
 
-function continuesContainer(walk: Walk, container: EdgeContainer, line: Line): Line | undefined {
+// A blank line continues every list item up to the next blockquote, so it is matched in one step rather than one per item.
+// A list item begins with at most one blank line: an empty one gives the second up. Only the innermost item is empty:
+// opening a container inside an item gives it a block.
+function matchBlankLine(walk: Walk, line: Line, from: number, quote: number): { depth: number; rest: Line } {
+  const { edges, quotes } = walk.stack
+  const last = edges.length - 1
+  const emptyItem = last >= from && edges[last]?.container.blocks.length === 0 && walk.leaf === undefined
+  const stop = Math.min(quotes[quote] ?? edges.length, emptyItem ? last : edges.length)
+  return { depth: edges[stop]?.depth ?? walk.stack.open.length, rest: stop === from ? line : { column: line.column, text: '' } }
+}
+
+function continuesContainer(container: EdgeContainer, line: Line): Line | undefined {
   if (container.kind === 'blockquote') return blockquoteRest(removeColumns(line, largestOpenerIndentation))
-  // A list item begins with at most one blank line: an empty one gives the second up.
-  if (isBlankLine(line.text)) {
-    return container.blocks.length === 0 && walk.leaf === undefined ? undefined : { column: line.column, text: '' }
-  }
-  return leadingColumns(line) < container.indentation ? undefined : removeColumns(line, container.indentation)
+  return leadingColumns(line, container.indentation) < container.indentation ? undefined : removeColumns(line, container.indentation)
 }
 
 function blockquoteRest(opener: Line): Line | undefined {
@@ -583,9 +605,11 @@ function sourceLine(markdown: string, line: number, start: number, end: number):
   return { position: { line, offset: start }, text: replaceNullCharacters(markdown.slice(start, end)) }
 }
 
-function leadingColumns(line: Line): number {
+// Counting stops at `upTo` columns, so a test against a width costs the width, not the line's whole indentation.
+function leadingColumns(line: Line, upTo = Infinity): number {
   let columns = 0
   for (const character of line.text) {
+    if (columns >= upTo) break
     if (character === ' ') columns += 1
     else if (character === '\t') columns += tabStop - ((line.column + columns) % tabStop)
     else break

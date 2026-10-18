@@ -122,3 +122,31 @@ test('closes the containers a closer names past as unclosed, and crosses no list
 test("releases an indented code block's held blank lines as a walk rather than as one call's arguments", () => {
   assert.deepEqual(kinds(`    a\n${'\n'.repeat(200000)}    b\n`), ['code'])
 })
+
+// A level is one list item. The gate times nothing; a quadratic walk outlasts Bun's 5 s test timeout.
+function deepestItem(markdown: string): { depth: number; kinds: string[] } {
+  let blocks = parseBlocks(markdown, flavourClaims.lossless).blocks
+  let depth = 0
+  for (let list = blocks[0]; list?.kind === 'bulletList'; list = blocks[0]) {
+    blocks = list.items.at(-1) ?? []
+    depth += 1
+  }
+  return { depth, kinds: blocks.map((block) => block.kind) }
+}
+
+test('continues a blank line through a deep run of list items in time linear in the lines', () => {
+  const depth = 20000
+  assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${'\n'.repeat(depth)}`), { depth, kinds: ['paragraph'] })
+  assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${'\n'.repeat(depth)}${'  '.repeat(depth)}b\n`), { depth, kinds: ['paragraph', 'paragraph'] })
+})
+
+test('stops a blank line at the first blockquote and at an empty item', () => {
+  assert.deepEqual(deepestItem('- > a\n\n  b\n'), { depth: 1, kinds: ['blockquote', 'paragraph'] })
+  assert.deepEqual(deepestItem('- - \n\n  a\n'), { depth: 2, kinds: [] })
+  assert.deepEqual(deepestItem('- > - a\n\n  > b\n'), { depth: 1, kinds: ['blockquote', 'blockquote'] })
+})
+
+test('continues a line through a deep run of list items in time linear in the line', () => {
+  const depth = 20000
+  assert.deepEqual(deepestItem(`${'- '.repeat(depth)}a\n${`${'  '.repeat(depth)}b\n`.repeat(3)}`), { depth, kinds: ['paragraph'] })
+})

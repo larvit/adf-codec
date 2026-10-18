@@ -2,7 +2,7 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ClaimedPrefix, DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
 import type { Claims } from '../portable/conventions.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
-import type { InlineToken } from '../inline-tokens.ts'
+import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { centeredImage, externalMedia } from '../external-image.ts'
@@ -112,7 +112,7 @@ function scanInline(scan: Scan): Result<Scanned> {
   const inline = inlineSource(scan.source)
   let index = 0
   while (index < scan.source.length) {
-    const read = readToken(scan, index, readInlineToken(inline, index, scan.claims))
+    const read = readToken(scan, inline, index, readInlineToken(inline, index, scan.claims))
     if (!read.ok) return read
     index = read.value
   }
@@ -120,8 +120,8 @@ function scanInline(scan: Scan): Result<Scanned> {
   return assemble(scan)
 }
 
-function readToken(scan: Scan, index: number, token: InlineToken): Result<number> {
-  if (token.kind === 'directive') return readDirective(scan, token.prefix)
+function readToken(scan: Scan, inline: InlineSource, index: number, token: InlineToken): Result<number> {
+  if (token.kind === 'directive') return readDirective(scan, inline, token.prefix)
   if (token.kind === 'html') return failure('unmappable-html', `no raw HTML converts at this version: ${token.construct}`, scan.path)
   const end = index + token.width
   switch (token.kind) {
@@ -170,10 +170,10 @@ function readLineEnding(scan: Scan, index: number): number {
   return index + 1
 }
 
-function readDirective(scan: Scan, prefix: ClaimedPrefix): Result<number> {
+function readDirective(scan: Scan, inline: InlineSource, prefix: ClaimedPrefix): Result<number> {
   const held = scan.spans.get(prefix.index)
   if (held !== undefined) return pushDirective(scan, held, prefix.index)
-  const directive = readInlineDirective(scan.source, prefix)
+  const directive = readInlineDirective(scan.source, prefix, inline.codeSpanCloser)
   if (directive.fault !== undefined) return faulted(directive.fault, scan.path)
   return pushDirective(scan, directive.value, prefix.index)
 }

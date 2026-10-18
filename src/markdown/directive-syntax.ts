@@ -1,8 +1,9 @@
 import type { AttributeKind, VocabularyPair, VocabularyValue } from '../adf/attribute-vocabulary.ts'
+import type { CodeSpanCloser } from './commonmark/backtick-runs.ts'
 import type { ConvertFault } from '../result.ts'
 import type { JsonValue } from '../json-value.ts'
 import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
-import { backtickRun, closingBacktickRun } from './commonmark/backtick-runs.ts'
+import { backtickRun } from './commonmark/backtick-runs.ts'
 import { isNumberList } from '../adf/attribute-vocabulary.ts'
 import { overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
@@ -100,8 +101,8 @@ export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined
   return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
-export function readInlineDirective(text: string, prefix: ClaimedPrefix): Read<DirectiveSpan> {
-  return readClaimedDirective(text, prefix.index, 1)
+export function readInlineDirective(text: string, prefix: ClaimedPrefix, codeSpanCloser: CodeSpanCloser): Read<DirectiveSpan> {
+  return readClaimedDirective(text, prefix.index, 1, codeSpanCloser)
 }
 
 export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<string> {
@@ -227,26 +228,26 @@ function readOpenerAttributes(rest: string, index: number): Read<Attributes> {
   return rest.charAt(index) === ' ' ? readAttributesAt(rest, index + 1, false) : { value: { attributes: noAttributes, end: index } }
 }
 
-function readNestedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> | undefined {
-  return claimsDirectivePrefix(text, index) ? readClaimedDirective(text, index, depth) : undefined
+function readNestedDirective(text: string, index: number, depth: number, codeSpanCloser: CodeSpanCloser): Read<DirectiveSpan> | undefined {
+  return claimsDirectivePrefix(text, index) ? readClaimedDirective(text, index, depth, codeSpanCloser) : undefined
 }
 
-function readClaimedDirective(text: string, index: number, depth: number): Read<DirectiveSpan> {
+function readClaimedDirective(text: string, index: number, depth: number, codeSpanCloser: CodeSpanCloser): Read<DirectiveSpan> {
   const name = inlineDirectiveName(text, index)
   if (name === undefined) return { fault: malformedDirective(prefixFault) }
   if (depth > largestNesting) {
     return { fault: { code: 'unsupported-nesting-depth', message: `the input nests inline directives deeper than the ${largestNesting} levels the parser carries` } }
   }
-  const slot = readContentSlot(text, index + directivePrefix.length + name.length, depth)
+  const slot = readContentSlot(text, index + directivePrefix.length + name.length, depth, codeSpanCloser)
   if (slot.fault !== undefined) return { fault: slot.fault }
   const attributes = readAttributesAt(text, slot.value.end, slot.value.content === undefined)
   if (attributes.fault !== undefined) return { fault: attributes.fault }
   return { value: { attributes: attributes.value.attributes, content: slot.value.content, length: attributes.value.end - index, name, spans: slot.value.spans } }
 }
 
-function readContentSlot(text: string, index: number, depth: number): Read<Content> {
+function readContentSlot(text: string, index: number, depth: number, codeSpanCloser: CodeSpanCloser): Read<Content> {
   if (text.charAt(index) !== '[') return { value: { content: undefined, end: index, spans: noSpans } }
-  const close = readDirectiveContent(text, index + 1, depth)
+  const close = readDirectiveContent(text, index + 1, depth, codeSpanCloser)
   if (close.fault !== undefined) return { fault: close.fault }
   return { value: { content: text.slice(index + 1, close.value.end), end: close.value.end + 1, spans: close.value.spans } }
 }
@@ -259,7 +260,7 @@ function readAttributesAt(text: string, index: number, braceClaims: boolean): Re
 }
 
 // A code span, an escape and a nested directive each bind before the content's own closing bracket.
-function readDirectiveContent(text: string, start: number, depth: number): Read<DirectiveContent> {
+function readDirectiveContent(text: string, start: number, depth: number, codeSpanCloser: CodeSpanCloser): Read<DirectiveContent> {
   const spans = new Map<number, DirectiveSpan>()
   let brackets = 0
   let cursor = start
@@ -270,12 +271,12 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
       continue
     }
     if (character === '`') {
-      const span = readCodeSpanEnd(text, cursor)
+      const span = readCodeSpanEnd(text, cursor, codeSpanCloser)
       if (span === undefined) break
       cursor = span
       continue
     }
-    const nested = readNestedDirective(text, cursor, depth + 1)
+    const nested = readNestedDirective(text, cursor, depth + 1, codeSpanCloser)
     if (nested?.fault !== undefined) return { fault: nested.fault }
     if (nested !== undefined) {
       spans.set(cursor - start, nested.value)
@@ -291,9 +292,9 @@ function readDirectiveContent(text: string, start: number, depth: number): Read<
 }
 
 // `undefined` where the span crosses the line ending an inline directive may not cross.
-function readCodeSpanEnd(text: string, index: number): number | undefined {
+function readCodeSpanEnd(text: string, index: number, codeSpanCloser: CodeSpanCloser): number | undefined {
   const opener = backtickRun(text, index)
-  const closer = closingBacktickRun(text, index + opener, opener)
+  const closer = codeSpanCloser(index + opener, opener)
   if (closer === undefined) return index + opener
   return text.slice(index, closer + opener).includes('\n') ? undefined : closer + opener
 }

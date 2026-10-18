@@ -1,7 +1,7 @@
 import type { ClaimedPrefix } from './directive-syntax.ts'
 import type { Claims } from './portable/conventions.ts'
 import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from './commonmark/grammar.ts'
-import { backtickCloser, backtickRun } from './commonmark/backtick-runs.ts'
+import { backtickCloser, backtickRun, type CodeSpanCloser } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive-syntax.ts'
 import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
 import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
@@ -20,7 +20,7 @@ export type InlineToken =
 
 // Build one per text and pass it to every `readInlineToken` call on that text, so a walk stays linear in the text's length.
 export type InlineSource = {
-  readonly codeSpanCloser: (from: number, opener: number) => number | undefined
+  readonly codeSpanCloser: CodeSpanCloser
   // Where each HTML terminator last starts in the text, -1 for none; filled the first time an opener asks.
   readonly terminators: Map<string, number>
   readonly text: string
