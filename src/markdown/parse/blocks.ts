@@ -62,8 +62,10 @@ type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; ind
 
 type ParagraphLine = { position: SourcePosition; text: string }
 
-// The line from an absolute column on: a tab a cut splits keeps the stop it is measured against.
-type Line = { column: number; text: string }
+// The line from an absolute column on: a tab a cut splits keeps the stop it is measured against, and its leftover columns
+// stand as `spaces` before `text`, so a cut never builds a string. At most 3, which a cut of `largestOpenerIndentation` takes whole.
+// They are blank, so blankness reads `text` alone; a block takes the line through `lineText`.
+type Line = { column: number; spaces: number; text: string }
 
 type LeafOpener = { index: number; position: SourcePosition }
 
@@ -103,7 +105,7 @@ export function parseBlocks(markdown: string, claims: Claims): ParsedBlocks {
   }
   for (const line of sourceLines(markdown)) {
     walk.position = line.position
-    readLine(walk, { column: 0, text: line.text })
+    readLine(walk, { column: 0, spaces: 0, text: line.text })
   }
   closeContainers(walk, 0)
   return { blocks: walk.blocks, definitions: walk.definitions }
@@ -153,7 +155,7 @@ function readLine(walk: Walk, line: Line): void {
   const opened = openContainers(walk, matched.rest, paragraphOpen, matched.depth)
   if (!opened.opened && matched.depth < walk.stack.open.length) {
     if (continuesLazily(walk, opened.rest)) {
-      appendParagraph(walk, opened.rest.text)
+      appendParagraph(walk, lineText(opened.rest))
       return
     }
     closeContainers(walk, matched.depth)
@@ -190,7 +192,7 @@ function matchBlankLine(walk: Walk, line: Line, from: number, quotesPassed: numb
   const innermost = edges[last]?.container
   const emptyItem = last >= from && innermost?.kind === 'item' && innermost.blocks.length === 0 && walk.leaf === undefined
   const stop = Math.min(quoteEdges[quotesPassed] ?? edges.length, emptyItem ? last : edges.length)
-  return { depth: edges[stop]?.depth ?? walk.stack.open.length, rest: stop === from ? line : { column: line.column, text: '' } }
+  return { depth: edges[stop]?.depth ?? walk.stack.open.length, rest: stop === from ? line : { column: line.column, spaces: 0, text: '' } }
 }
 
 function continuesContainer(container: EdgeContainer, line: Line): Line | undefined {
@@ -200,12 +202,12 @@ function continuesContainer(container: EdgeContainer, line: Line): Line | undefi
 
 function blockquoteRest(opener: Line): Line | undefined {
   if (!opener.text.startsWith('>')) return undefined
-  return removeColumns({ column: opener.column + 1, text: opener.text.slice(1) }, 1)
+  return removeColumns({ column: opener.column + 1, spaces: 0, text: opener.text.slice(1) }, 1)
 }
 
 function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: number): { opened: boolean; rest: Line } {
   const unmatched = walk.stack.open[depth]
-  const tail = thematicBreakTail(line.text)
+  const tail = thematicBreakTail(lineText(line))
   let opened = false
   let rest = line
   while (leadingColumns(rest) < indentedCodeColumns) {
@@ -236,7 +238,7 @@ function containerStart(
 function itemStart(line: Line, opener: Line, paragraphOpen: boolean, enclosing: OpenContainer | undefined, position: SourcePosition): ContainerStart | undefined {
   const marker = listMarker(opener.text)
   if (marker === undefined) return undefined
-  const after: Line = { column: opener.column + marker.width, text: opener.text.slice(marker.width) }
+  const after: Line = { column: opener.column + marker.width, spaces: 0, text: opener.text.slice(marker.width) }
   const blank = isBlankLine(after.text)
   if (paragraphOpen && !markerInterruptsParagraph(marker.start, blank)) return undefined
   const spaces = leadingColumns(after)
@@ -379,7 +381,7 @@ function pushFault(walk: Walk, fault: ConvertFault): void {
 function continuesLazily(walk: Walk, line: Line): boolean {
   if (walk.leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
-  const opener = removeColumns(line, largestOpenerIndentation).text
+  const opener = lineText(removeColumns(line, largestOpenerIndentation))
   return !opensBlock(walk.claims, opener)
 }
 
@@ -392,16 +394,16 @@ function opensBlock(claims: Claims, opener: string): boolean {
 function readBlockLine(walk: Walk, line: Line): void {
   const leaf = walk.leaf
   if (leaf?.kind === 'fenced-code') {
-    if (closingCodeFence(removeColumns(line, largestOpenerIndentation).text, leaf.marker)) closeLeaf(walk)
-    else leaf.lines.push(removeColumns(line, leaf.indentation).text)
+    if (closingCodeFence(lineText(removeColumns(line, largestOpenerIndentation)), leaf.marker)) closeLeaf(walk)
+    else leaf.lines.push(lineText(removeColumns(line, leaf.indentation)))
     return
   }
   if (leaf?.kind === 'html') {
-    if (leaf.closer === undefined ? isBlankLine(line.text) : leaf.closer.test(line.text)) closeLeaf(walk)
+    if (leaf.closer === undefined ? isBlankLine(line.text) : leaf.closer.test(lineText(line))) closeLeaf(walk)
     return
   }
   if (leaf?.kind === 'pipe-table') {
-    const cells = leadingColumns(line) < indentedCodeColumns ? pipeTableRow(walk.claims, removeColumns(line, largestOpenerIndentation).text) : undefined
+    const cells = leadingColumns(line) < indentedCodeColumns ? pipeTableRow(walk.claims, lineText(removeColumns(line, largestOpenerIndentation))) : undefined
     if (cells !== undefined) {
       leaf.rows.push(cells)
       return
@@ -417,7 +419,7 @@ function readBlockLine(walk: Walk, line: Line): void {
     return
   }
   if (walk.leaf === undefined && leadingColumns(line) >= indentedCodeColumns) {
-    walk.leaf = { held: [], kind: 'indented-code', lines: [removeColumns(line, indentedCodeColumns).text], position: walk.position }
+    walk.leaf = { held: [], kind: 'indented-code', lines: [lineText(removeColumns(line, indentedCodeColumns))], position: walk.position }
     return
   }
   openLeaf(walk, line)
@@ -425,18 +427,18 @@ function readBlockLine(walk: Walk, line: Line): void {
 
 function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>, line: Line): boolean {
   if (isBlankLine(line.text)) {
-    leaf.held.push(removeColumns(line, indentedCodeColumns).text)
+    leaf.held.push(lineText(removeColumns(line, indentedCodeColumns)))
     return true
   }
   if (leadingColumns(line) < indentedCodeColumns) return false
   for (const held of leaf.held) leaf.lines.push(held)
-  leaf.lines.push(removeColumns(line, indentedCodeColumns).text)
+  leaf.lines.push(lineText(removeColumns(line, indentedCodeColumns)))
   leaf.held.length = 0
   return true
 }
 
 function openLeaf(walk: Walk, line: Line): void {
-  const opener = removeColumns(line, largestOpenerIndentation).text
+  const opener = lineText(removeColumns(line, largestOpenerIndentation))
   const directive = walk.claims.directives ? readDirectiveLine(opener) : undefined
   if (directive !== undefined) {
     closeLeaf(walk)
@@ -460,12 +462,12 @@ function openLeaf(walk: Walk, line: Line): void {
   }
   const html = openingHtmlBlock(opener, walk.leaf?.kind === 'paragraph')
   if (html === undefined) {
-    appendParagraph(walk, line.text)
+    appendParagraph(walk, lineText(line))
     return
   }
   closeLeaf(walk)
   walk.leaf = { closer: html.closer, construct: html.construct, kind: 'html', position: walk.position }
-  if (html.closer?.test(line.text) === true) closeLeaf(walk)
+  if (html.closer?.test(lineText(line)) === true) closeLeaf(walk)
 }
 
 // A setext underline over a paragraph the definitions emptied is no heading: it opens the next block.
@@ -608,7 +610,7 @@ function sourceLine(markdown: string, line: number, start: number, end: number):
 
 // `upTo` caps the cost: checking a line against an item's width reads at most that width.
 function leadingColumns(line: Line, upTo = Infinity): number {
-  let columns = 0
+  let columns = line.spaces
   for (const character of line.text) {
     if (columns >= upTo) break
     if (character === ' ') columns += 1
@@ -618,18 +620,23 @@ function leadingColumns(line: Line, upTo = Infinity): number {
   return columns
 }
 
-// CommonMark's tab stops: a tab the cut splits gives the columns it holds past the cut back as spaces.
+// CommonMark's tab stops: a tab the cut splits leaves the columns it holds past the cut as `spaces`.
 function removeColumns(line: Line, columns: number): Line {
   const target = line.column + columns
-  let column = line.column
+  if (line.spaces >= columns) return { column: target, spaces: line.spaces - columns, text: line.text }
+  let column = line.column + line.spaces
   let index = 0
   while (column < target && index < line.text.length) {
     const character = line.text.charAt(index)
     if (character !== ' ' && character !== '\t') break
     const width = character === ' ' ? 1 : tabStop - (column % tabStop)
     index += 1
-    if (column + width > target) return { column: target, text: ' '.repeat(column + width - target) + line.text.slice(index) }
+    if (column + width > target) return { column: target, spaces: column + width - target, text: line.text.slice(index) }
     column += width
   }
-  return { column, text: line.text.slice(index) }
+  return { column, spaces: 0, text: line.text.slice(index) }
+}
+
+function lineText(line: Line): string {
+  return line.spaces === 0 ? line.text : ' '.repeat(line.spaces) + line.text
 }
