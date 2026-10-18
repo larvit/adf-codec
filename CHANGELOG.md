@@ -16,6 +16,9 @@
   table cell: `[alt](href) ([image](url))`, where it wrote `[alt](url)` and dropped the link's target.
 - `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
   node CommonMark spells, such as `[![alt](url)](href)` for a linked `!adf:mediaSingle`.
+- Every reader and writer takes time linear in a text holding many unclosed backtick runs, or many
+  `<!--`, `<?`, `<![CDATA[` or `<!` openers without a terminator, where such a text took time
+  quadratic in its length: 160k characters of `<?` took seven seconds each way, now 50 ms.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 
