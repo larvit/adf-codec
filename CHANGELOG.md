@@ -20,11 +20,11 @@
   `<![CDATA[` or `<!` openers without a terminator, or many unclosed backtick runs outside a
   directive's `[content]`. Such a text took time quadratic in its length: 160000 characters of `<?`
   took seven seconds each way, now 50 ms.
-- Every reader takes time linear in the markdown when it holds many unclosed backtick runs inside an
-  inline directive's `[content]`, or blank lines or indented lines under list items nested deeply.
-  640000 characters of backtick runs in a directive took one second, now 100 ms; 20000 nested items
-  and as many blank lines took 10.7 seconds before they were refused as `unsupported-nesting-depth`,
-  now 40 ms.
+- Every reader takes time linear in the markdown when it holds blank lines under list items nested
+  deeply, and `losslessMarkdownToAdf` when it holds many unclosed backtick runs inside an inline
+  directive's `[content]`. Such a list is still refused as `unsupported-nesting-depth`, now after
+  40 ms where 20000 nested items and as many blank lines took 10.7 seconds; 640000 characters of
+  backtick runs in a directive took one second, now 100 ms.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 
