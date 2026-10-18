@@ -116,9 +116,9 @@ parts by ADF and format true as they grow.
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
 The last five chunks' median is 113495 new input tokens before their first commit, the five before
-them 108874. Files read most over the last five chunks, counting opens and searches: `README.md` 39,
-`todo.md` 36, `docs/decisions.md` 20, `src/markdown/parse/markdown-to-adf.test.ts` 18,
-`CHANGELOG.md` 14, `spec/flavour.md` 13, `src/markdown/emit/adf-to-markdown.test.ts` 8,
+them 93713. Files read most over the last five chunks, counting opens and searches: `todo.md` 35,
+`README.md` 31, `docs/decisions.md` 19, `src/markdown/parse/markdown-to-adf.test.ts` 14,
+`CHANGELOG.md` 11, `spec/flavour.md` 11, `src/markdown/emit/adf-to-markdown.test.ts` 8,
 `src/markdown/parse/inline-content.ts` 7, `MIGRATION.md` 6,
 `src/conformance/commonmark-spec.test.ts` 6.
 
