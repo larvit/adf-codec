@@ -74,7 +74,7 @@ type ContainerStack = {
   open: readonly OpenContainer[]
   push: (container: OpenContainer) => void
   // The index in `edges` of each blockquote.
-  quotes: readonly number[]
+  quoteEdges: readonly number[]
 }
 
 type Walk = ParsedBlocks & {
@@ -114,7 +114,7 @@ function containerStack(): ContainerStack {
   const depthsOf = (name: string): number[] => entryOf(directiveDepths, name, () => [])
   const edges: { container: EdgeContainer; depth: number }[] = []
   const open: OpenContainer[] = []
-  const quotes: number[] = []
+  const quoteEdges: number[] = []
   return {
     directiveDepth: (name) => directiveDepths.get(name)?.at(-1),
     drop: (depth) => {
@@ -123,7 +123,7 @@ function containerStack(): ContainerStack {
         if (container.kind === 'directive') depthsOf(container.name).pop()
         else {
           edges.pop()
-          if (container.kind === 'blockquote') quotes.pop()
+          if (container.kind === 'blockquote') quoteEdges.pop()
         }
       }
       return dropped
@@ -134,11 +134,11 @@ function containerStack(): ContainerStack {
       const depth = open.push(container) - 1
       if (container.kind === 'directive') depthsOf(container.name).push(depth)
       else {
-        if (container.kind === 'blockquote') quotes.push(edges.length)
+        if (container.kind === 'blockquote') quoteEdges.push(edges.length)
         edges.push({ container, depth })
       }
     },
-    quotes,
+    quoteEdges,
   }
 }
 
@@ -168,15 +168,15 @@ function swallowsLines(leaf: OpenLeaf | undefined): boolean {
 // A directive container has no continuation marker, so every line continues it.
 function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } {
   if (isBlankLine(line.text)) return matchBlankLine(walk, line, 0, 0)
-  let quotes = 0
+  let quotesPassed = 0
   let rest = line
   for (const [index, { container, depth }] of walk.stack.edges.entries()) {
     const next = continuesContainer(container, rest)
     if (next === undefined) return { depth, rest }
     rest = next
     if (container.kind !== 'blockquote') continue
-    quotes += 1
-    if (isBlankLine(rest.text)) return matchBlankLine(walk, rest, index + 1, quotes)
+    quotesPassed += 1
+    if (isBlankLine(rest.text)) return matchBlankLine(walk, rest, index + 1, quotesPassed)
   }
   return { depth: walk.stack.open.length, rest }
 }
@@ -184,11 +184,12 @@ function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } 
 // A blank line continues every list item up to the next blockquote, so it is matched in one step rather than one per item.
 // A list item begins with at most one blank line: an empty one gives the second up. Only the innermost item is empty:
 // opening a container inside an item gives it a block.
-function matchBlankLine(walk: Walk, line: Line, from: number, quote: number): { depth: number; rest: Line } {
-  const { edges, quotes } = walk.stack
+function matchBlankLine(walk: Walk, line: Line, from: number, quotesPassed: number): { depth: number; rest: Line } {
+  const { edges, quoteEdges } = walk.stack
   const last = edges.length - 1
-  const emptyItem = last >= from && edges[last]?.container.blocks.length === 0 && walk.leaf === undefined
-  const stop = Math.min(quotes[quote] ?? edges.length, emptyItem ? last : edges.length)
+  const innermost = edges[last]?.container
+  const emptyItem = last >= from && innermost?.kind === 'item' && innermost.blocks.length === 0 && walk.leaf === undefined
+  const stop = Math.min(quoteEdges[quotesPassed] ?? edges.length, emptyItem ? last : edges.length)
   return { depth: edges[stop]?.depth ?? walk.stack.open.length, rest: stop === from ? line : { column: line.column, text: '' } }
 }
 
