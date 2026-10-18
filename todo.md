@@ -6,13 +6,12 @@
 
 `Bar = 0.1`
 
-`Next ID = 122`
+`Next ID = 124`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 121 | 0.3.0 |  | question | **Decide whether an image's title stays its caption, in a goal in `README.md` or a decision in `docs/decisions.md`.** | 1 | 2 | 2 | 3 | 2 |  | 0.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.8 |
 | 60 | 0.3.0 |  | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 2 | 1 | 2 | 3 | 4 | 10 by 4 | 4.0 |
 | 92 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | 10 by 4 | 4.0 |
@@ -23,7 +22,9 @@
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 3.0 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 2.0 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 2.0 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 121 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 17.4 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 17.4 |
+| 123 | 0.3.0 |  | defect | **Spell a link title that holds a pipe inside a portable table cell, instead of dropping the title.** | 2 | 1 | 2 | 3 | 2 | 7 by 2 | 4.4 |
+| 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link marks the image's alt text, as Goal 7 requires.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 2.6 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.3 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.2 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.4 |
@@ -56,32 +57,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 121. Decide whether an image's title stays its caption, in a goal in `README.md` or a decision in `docs/decisions.md`.
-
-Seven readers read `![Moon over the hills](https://docs.example.com/images/moon-over-hills.jpg "The
-moon, at night")` alone in its paragraph: the bot, the LLM pipeline, a support agent and a product
-manager, some of them twice. Each wrote what it expected to see in Jira or Confluence, then picked
-the picture with the title printed under it, the picture alone, or neither. Two picked the caption,
-two the picture alone, and three neither, expecting the title as hover text. No output reached five
-of seven.
-
-ADF holds no node for hover text, so the caption is the only ADF place for the title's words. Goal 7
-says lossy conversion drops form, never content. The README's portable section defines content as
-what a reader sees or follows. A hover title is seen only when the pointer rests on the picture.
-The goals do not say whether a
-title is content. Earlier entries on what an image's title reads as: §An image reads as an image only alone in its paragraph (the
-caption, 2026-10-09, 3 of 3); §A linked image is written `[![alt](url)](href)`, a captioned image as
-its directive (2026-10-11, 3 of 3, reading a title as hover text); and, inside another link, a title drops,
-chosen by Goal 6 over Goal 7 (§An image reads as an image only alone in its paragraph).
-
-Candidate entry: an image's title becomes its caption when the image stands alone in its paragraph,
-because ADF holds no hover text and the caption keeps the title's words. This image keeps "The moon, at night"
-as visible text under the picture. The other answer drops the title, so the picture stands alone;
-Goal 7 allows that only if a title is not content.
-
-Blocks 73: the announcement waits for this answer, since the answer may change what the package
-writes for a titled image.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
@@ -174,6 +149,22 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
 its versions and its date in step with the output. We draft each post for the place it goes; the
 maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
+
+### 123. Spell a link title that holds a pipe inside a portable table cell, instead of dropping the title.
+
+In a table cell, `adfToPortableMarkdown` writes a link whose title holds a `|` without the title
+(`portableLink` in `src/markdown/portable/inline-reduction.ts`). The same fallback drops a title
+that no CommonMark title spelling holds. README `## Goals` Goal 7 counts a title as content, so the
+drop breaks a Maintain goal today. GFM reads `\|` inside a table cell as a pipe, so the title can
+keep its pipe as `\|`. The reader must read it back to the same title.
+
+### 122. Keep an image's URL and title when a link marks the image's alt text, as Goal 7 requires.
+
+Inside any other link, the reader turns an image into its alt text, linked, and drops the image's
+URL and title (`docs/decisions.md` §An image reads as an image only alone in its paragraph). README
+`## Goals` Goal 7 holds an image and a title as content, and a Maintain goal holds whatever it
+costs. ADF holds no inline external image, so the item must find a shape that keeps the image, its
+title and the link together.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 
