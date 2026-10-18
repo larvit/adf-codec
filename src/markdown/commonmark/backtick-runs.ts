@@ -7,23 +7,31 @@ export function backtickRun(text: string, index: number): number {
 // Where the first run of exactly `opener` backticks at or after `from` begins, `from` never inside a run. Ask with
 // `from` rising, so each length's cursor only moves forward and a walk stays linear; an earlier `from` rescans that length.
 export function backtickCloser(text: string): (from: number, opener: number) => number | undefined {
-  const cursors = new Map<number, number>()
-  const starts = new Map<number, number[]>()
-  for (let start = text.indexOf('`'); start !== -1; ) {
-    const length = runLength(text, start)
-    const known = starts.get(length)
-    if (known === undefined) starts.set(length, [start])
-    else known.push(start)
-    start = text.indexOf('`', start + length)
+  const counts = new Map<number, number>()
+  eachRun(text, (_, length) => counts.set(length, (counts.get(length) ?? 0) + 1))
+  const firsts = new Map<number, number>()
+  let total = 0
+  for (const [length, count] of counts) {
+    firsts.set(length, total)
+    total += count
   }
+  // Each length's starts in order, packed off the JS heap: a text near V8's longest string holds a run every two characters.
+  const starts = new Int32Array(total)
+  const ends = new Map(firsts)
+  eachRun(text, (start, length) => {
+    const at = ends.get(length) ?? 0
+    starts[at] = start
+    ends.set(length, at + 1)
+  })
+  const cursors = new Map<number, number>()
   return (from, opener) => {
-    const runs = starts.get(opener)
-    if (runs === undefined) return undefined
-    let at = cursors.get(opener) ?? 0
-    if ((runs[at - 1] ?? -1) >= from) at = 0
-    while ((runs[at] ?? Infinity) < from) at += 1
+    const first = firsts.get(opener) ?? 0
+    const end = ends.get(opener) ?? 0
+    let at = cursors.get(opener) ?? first
+    if (at > first && (starts[at - 1] ?? -1) >= from) at = first
+    while (at < end && (starts[at] ?? Infinity) < from) at += 1
     cursors.set(opener, at)
-    return runs[at]
+    return at < end ? starts[at] : undefined
   }
 }
 
@@ -52,4 +60,12 @@ export function longestBacktickRun(text: string): number {
     start = text.indexOf('`', end)
   }
   return longest
+}
+
+function eachRun(text: string, visit: (start: number, length: number) => void): void {
+  for (let start = text.indexOf('`'); start !== -1; ) {
+    const length = runLength(text, start)
+    visit(start, length)
+    start = text.indexOf('`', start + length)
+  }
 }
