@@ -20,14 +20,14 @@ export type InlineToken =
 
 // A text and what its openers look ahead for, read once, so a walk reading a token at every index stays linear in it.
 export type InlineSource = {
-  readonly closingBacktickRun: (from: number, opener: number) => number | undefined
+  readonly codeSpanCloser: (from: number, opener: number) => number | undefined
   // Each HTML construct terminator's last start in the text, -1 for none, read the first time an opener asks.
   readonly terminators: Map<string, number>
   readonly text: string
 }
 
 export function inlineSource(text: string): InlineSource {
-  return { closingBacktickRun: backtickCloser(text), terminators: new Map(), text }
+  return { codeSpanCloser: backtickCloser(text), terminators: new Map(), text }
 }
 
 export function readInlineToken(inline: InlineSource, index: number, claims: Claims): InlineToken {
@@ -86,7 +86,7 @@ function angleToken(inline: InlineSource, index: number): InlineToken {
 
 function backtickToken(inline: InlineSource, index: number): InlineToken {
   const opener = backtickRun(inline.text, index)
-  const closer = inline.closingBacktickRun(index + opener, opener)
+  const closer = inline.codeSpanCloser(index + opener, opener)
   return closer === undefined ? text(opener) : { kind: 'code-span', opener, width: closer + opener - index }
 }
 
