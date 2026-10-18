@@ -28,6 +28,7 @@ In `docs/decisions.md`:
 - Tables
 - Links
 - An image reads as an image only alone in its paragraph, else as its alt text linked; a link text of hard breaks alone reads as its destination, then the breaks
+- An image's title is its caption when the image stands alone in its paragraph, since a title counts as content
 - A mark skips a node that cannot hold it, and a directive mark wrapping only such nodes is refused, as is a `[text](url)` link unless its text is hard breaks alone
 - A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 - A linked image standing inline in portable markdown, its link to another target, is written `[alt](href) ([image](url))`

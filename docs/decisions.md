@@ -243,7 +243,8 @@ reads as its destination, then those breaks: four of seven readers expected that
 `[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
 paragraph whose whole text is one image reads as that image, with the link marking its `media`.
 Inside any other link, the alt text is plain text the link marks, and the image's URL and title
-drop: the panel chose this by Goal 6, which outranks Goal 7.
+drop. The panel chose this by Goal 6, but Goal 7 holds the image and its title as content, so this
+stands only until `todo.md` item 122 ends it.
 
 In `portableMarkdownToAdf`, a `[!WORD]` marker with no `+` or `-` stands apart from the lines after
 it, and so does a `+` or `-` callout's title line, so an image alone on the marker line or after the
@@ -256,10 +257,16 @@ The same panel confirmed the other readings on 2026-10-09: a title as the captio
 text as linked alt text, and an empty link text as its URL, each 3 of 3; `[]()` as nothing, 5 of 7.
 Their CommonMark suite exceptions are `node-model` (§The CommonMark suite checks three ways).
 
-A reader panel on 2026-10-18 read the title again: seven readers across the bot, the LLM pipeline,
-a support agent and a product manager. Two picked a caption, two the picture alone, and three neither,
-each describing hover text, which ADF holds no node for. No output reached the five of seven that settles a panel, so the
-title still reads as the image's caption until `todo.md` item 121 is answered.
+The title's caption, and the reader panel of 2026-10-18 that tested it, are in §An image's title is its
+caption when the image stands alone in its paragraph.
+
+## An image's title is its caption when the image stands alone in its paragraph, since a title counts as content
+
+2026-10-18, the maintainer, after a reader panel of seven split: two picked the caption, two the
+picture alone, and three neither, and those three described hover text. No output reached the five
+of seven that settles a panel, so the goal decided. Goal 7 counts a title as content, so the title keeps its words,
+and ADF holds no hover text for an image, so the caption is the one ADF node that keeps them. Valid
+while a title counts as content (`README.md` `## Goals`, Goal 7).
 
 ## A mark skips a node that cannot hold it, and a directive mark wrapping only such nodes is refused, as is a `[text](url)` link unless its text is hard breaks alone
 
@@ -286,9 +293,8 @@ Goal 6. Valid while the audience reads a title as hover text.
 `adfToLosslessMarkdown` writes a `media` whose only mark is a link as `[![alt](url)](href)`, which
 each reader expected before seeing the options. A captioned image keeps the `!adf:caption`
 directive: each reader read `![alt](url "title")` as hover text, not a caption. The library's readers
-still build a title as the image's caption; a reader panel on 2026-10-18 did not settle whether they
-should (§An image reads as an image only alone in its paragraph), and `todo.md` item 121 asks the
-maintainer for the answer.
+build a title as the image's caption, since a title counts as content (§An image's title is its
+caption when the image stands alone in its paragraph).
 
 ## A linked image standing inline in portable markdown, its link to another target, is written `[alt](href) ([image](url))`
 

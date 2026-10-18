@@ -177,7 +177,7 @@ whatever it costs; the Achieve goals are weighed against each other in the order
    - Counter-signal: `spec/flavour.md` gains a special case for each such pick.
    - Why: output fitted case by case is output no reader can predict.
    1. **Maintain:** A function's name says which markdown it reads or writes.
-7. **Maintain:** Lossy conversion drops form, never content.
+7. **Maintain:** Lossy conversion drops form, never content. A title counts as content.
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
 10. **Achieve:** Easy for a contributor to understand and change safely.
@@ -373,8 +373,8 @@ Ping !adf:mention[@Mikael]{id=5b10a2} — !adf:status[In review]{color=yellow} �
 Serves [Goals](#goals) 7. Portable markdown is a second flavour of the same grammar.
 `adfToPortableMarkdown` writes markdown other tools render — GitHub, GitLab, Obsidian and the like —
 keeping the content and dropping the rest: attributes, colours, layout, identity. Content is what a
-reader of the rendered document sees or follows: its text, images and link targets. It writes no
-directive.
+reader of the rendered document sees or follows, titles included: its text, images and link targets.
+It writes no directive.
 
 `portableMarkdownToAdf` reads CommonMark and `~~` as `losslessMarkdownToAdf` reads them, and the
 conventions below as nodes, taking other tools' spellings too. It reads GFM's pipe tables with or
