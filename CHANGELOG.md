@@ -23,7 +23,7 @@
 - Every reader takes time linear in the markdown when it holds blank lines under list items nested
   deeply. Such a list is still refused as `unsupported-nesting-depth`, now after 40 ms where 20000
   nested items and as many blank lines took 10.7 seconds.
-- Every reader takes time linear in the markdown when it holds tab-indented lines under list items
+- Every reader takes time linear in the markdown when tab-indented lines sit under list items
   nested deeply. Such a list is still refused as `unsupported-nesting-depth`, now after 107 ms where
   20 lines of 40000 tabs under 80000 nested items took 1988 ms.
 - `losslessMarkdownToAdf` takes time linear in the markdown when an inline directive's `[content]`

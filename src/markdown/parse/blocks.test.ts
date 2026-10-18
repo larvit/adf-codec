@@ -165,7 +165,7 @@ function outline(blocks: readonly Block[]): string {
     .join(' ')
 }
 
-test('reads a marker a tab pushes to four columns past its container as text, not as a marker', () => {
+test('reads a marker a tab indents four or more columns into its container as text', () => {
   const read = (markdown: string): string => outline(parseBlocks(markdown, flavourClaims.lossless).blocks)
   assert.equal(read('> a\n \t> b\n'), 'quote(paragraph(a|> b))')
   assert.equal(read('> > a\n>\t\t> b\n'), 'quote(quote(paragraph(a|> b)))')
@@ -173,7 +173,7 @@ test('reads a marker a tab pushes to four columns past its container as text, no
   assert.equal(read('x\n\t# h\n'), 'paragraph(x|# h)')
 })
 
-test('gives what follows an item the columns of the tab a cut splits', () => {
+test("keeps as spaces the columns a tab holds past an item's indentation", () => {
   const read = (markdown: string): string => outline(parseBlocks(markdown, flavourClaims.lossless).blocks)
   assert.equal(read('- ```\n\tx\n  ```\n'), 'list(code("  x"))')
   assert.equal(read('- a\n \t- b\n'), 'list(paragraph(a) list(paragraph(b)))')
