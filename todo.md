@@ -77,7 +77,8 @@ chosen by Goal 6 over Goal 7 (§An image reads as an image only alone in its par
 
 Candidate entry: an image's title becomes its caption when the image stands alone in its paragraph,
 because ADF holds no hover text and the caption keeps the title's words. This image keeps "The moon, at night"
-as visible text under the picture.
+as visible text under the picture. The other answer drops the title, so the picture stands alone;
+Goal 7 allows that only if a title is not content.
 
 Blocks 73: the announcement waits for this answer, since the answer may change what the package
 writes for a titled image.
