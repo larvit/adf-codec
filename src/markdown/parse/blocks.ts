@@ -62,10 +62,7 @@ type ContainerStart = { kind: 'blockquote'; rest: Line } | { fresh: boolean; ind
 
 type ParagraphLine = { position: SourcePosition; text: string }
 
-// The line from an absolute column on, so a tab after a cut still measures its stop. When a cut splits a tab, its leftover
-// columns, at most 3 and all blank, go in `spaces` rather than in a new `text`. Blankness reads `text` alone, and a block
-// reads the line through `lineText`. After a `largestOpenerIndentation` cut, `spaces` is non-zero only on a line indented as
-// code, so a marker check no code-indent guard precedes, as in `blockquoteRest`, refuses such a line.
+// A cut through a tab leaves its columns as blank `spaces` before `text`; a marker check reads `spaces` first unless a code-indent guard precedes.
 type Line = { column: number; spaces: number; text: string }
 
 type LeafOpener = { index: number; position: SourcePosition }
