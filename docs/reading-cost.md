@@ -419,3 +419,16 @@ Read most (opens and searches):
 - `ci.sh` 1
 - `docker-runner.sh` 1
 - `spec/flavour.md` 1
+
+## Reading cost, chunk bf9bc185d8b8, finished 2026-10-18T09:09:42Z
+
+84940 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 6
+- `README.md` 2
+- `AGENTS.md` 1
+- `CHANGELOG.md` 1
+- `docs/decisions.md` 1
+- `package.json` 1

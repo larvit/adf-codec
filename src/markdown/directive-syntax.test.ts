@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { DirectiveAttributes, DirectiveLine } from './directive-syntax.ts'
+import { backtickCloser } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix, readDirectiveLine, readInlineDirective } from './directive-syntax.ts'
 import { largestNesting } from '../nesting.ts'
 
@@ -24,7 +25,7 @@ function fault(line: string): string {
 function inline(text: string): unknown {
   const prefix = claimDirectivePrefix(text, 0)
   if (prefix === undefined) return 'unclaimed'
-  const read = readInlineDirective(text, prefix)
+  const read = readInlineDirective(text, prefix, backtickCloser(text))
   if (read.fault !== undefined) return read.fault.message
   return { attributes: read.value.attributes, content: read.value.content, length: read.value.length, name: read.value.name }
 }
@@ -155,4 +156,9 @@ test('refuses inline directives nested deeper than the parser carries', () => {
   const nest = (depth: number): string => `${'!adf:underline['.repeat(depth)}x${']'.repeat(depth)}`
   spans(nest(largestNesting), 'underline', nest(largestNesting - 1))
   assert.equal(inline(nest(largestNesting + 1)), `the input nests inline directives deeper than the ${largestNesting} levels the parser carries`)
+})
+
+test('reads a directive whose content holds many unclosed backtick runs in time linear in its length', () => {
+  const runs = Array.from({ length: 3000 }, (_, index) => '`'.repeat(index + 1)).join(' ')
+  spans(`!adf:x[${runs}]`, 'x', runs)
 })
