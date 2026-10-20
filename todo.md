@@ -13,6 +13,8 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 124 | 0.3.0 |  |  | **Drop goal 10, which restates code health, and point the Moves cells that cite it at `code health`.** | 1 | 2 | 1 | 2 | 2 | code health by 2 | 14.2 |
+| 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or a pipe in a table cell, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 10.6 |
+| 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 8.5 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 6.4 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 6.4 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 3.7 |
@@ -23,9 +25,7 @@
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 2.9 |
 | 59 | 0.3.0 |  | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 2.4 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 2.4 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 124 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 13.7 |
-| 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or a pipe in a table cell, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 10.6 |
-| 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 8.5 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 122, 123, 124 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 13.7 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 10.6 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 10.6 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 5.0 |
@@ -70,6 +70,28 @@ goal, so no other goal renumbers. The chunk moves each `10 by N` in a Moves cell
 `code health by N`, 14 cells today, and revises any `docs/decisions.md` entry that cites goal 10;
 none does today. Dropping goal 10 changes README.md's goals, so the chunk asks lilleman to approve
 the drop before it merges, and is reviewed like any chunk.
+
+### 123. Spell a link title holding a backslash, an entity reference or a pipe in a table cell, instead of dropping it.
+
+The portable writer drops a link's title when CommonMark cannot spell it as written: a title
+holding a backslash or an entity reference (`spellTitle` in `src/markdown/commonmark/link-syntax.ts`),
+or, in a table cell, one holding a pipe (`portableLink` in `src/markdown/portable/inline-reduction.ts`).
+README `## Goals` Goal 7 counts a title as content, so each drop breaks a Maintain goal today.
+Escaping keeps the title: `\\` for a backslash, `\&` for an ampersand that would open an entity
+reference, and `\|` for a pipe in a table cell. `portableMarkdownToAdf` must read each spelling
+back to the same title.
+
+### 122. Keep an image's URL and title when a link's text holds the image, instead of dropping them.
+
+When a link's text holds an image, the reader turns the image into its alt text, linked, and drops
+the image's URL and title (`docs/decisions.md` §An image reads as an image only alone in its
+paragraph). README `## Goals` Goal 7 holds an image and a title as content, and a Maintain goal
+holds whatever it costs. ADF holds no inline external image, so the item must find a shape that
+keeps the image, its title and the link together. When it lands, it also rewrites three statements
+that will no longer hold: the README's guarantee that inside a link an image reads as plain text
+the link marks, its guarantee that inside another link the title is dropped, and the sentence in
+`docs/decisions.md` §An image reads as an image only alone in its paragraph that says the drop
+stands until this item ends it.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
@@ -162,28 +184,6 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
 its versions and its date in step with the output. We draft each post for the place it goes; the
 maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
-
-### 123. Spell a link title holding a backslash, an entity reference or a pipe in a table cell, instead of dropping it.
-
-The portable writer drops a link's title when CommonMark cannot spell it as written: a title
-holding a backslash or an entity reference (`spellTitle` in `src/markdown/commonmark/link-syntax.ts`),
-or, in a table cell, one holding a pipe (`portableLink` in `src/markdown/portable/inline-reduction.ts`).
-README `## Goals` Goal 7 counts a title as content, so each drop breaks a Maintain goal today.
-Escaping keeps the title: `\\` for a backslash, `\&` for an ampersand that would open an entity
-reference, and `\|` for a pipe in a table cell. `portableMarkdownToAdf` must read each spelling
-back to the same title.
-
-### 122. Keep an image's URL and title when a link's text holds the image, instead of dropping them.
-
-When a link's text holds an image, the reader turns the image into its alt text, linked, and drops
-the image's URL and title (`docs/decisions.md` §An image reads as an image only alone in its
-paragraph). README `## Goals` Goal 7 holds an image and a title as content, and a Maintain goal
-holds whatever it costs. ADF holds no inline external image, so the item must find a shape that
-keeps the image, its title and the link together. When it lands, it also rewrites three statements
-that will no longer hold: the README's guarantee that inside a link an image reads as plain text
-the link marks, its guarantee that inside another link the title is dropped, and the sentence in
-`docs/decisions.md` §An image reads as an image only alone in its paragraph that says the drop
-stands until this item ends it.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
