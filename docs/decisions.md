@@ -585,13 +585,15 @@ depend on a store that the gate would then have to keep.
 Docs on `main` describe the release being built rather than the version npm holds, so they match it
 the moment the bump publishes; add no interim note marking the gap.
 
-## Plan items rank by rank_todo.py's weights, code health first, then each achieve goal at 0.97 times the one before
+## Plan items rank by the global loop's goal weights, code health first
 
-2026-10-20, the maintainer, after the global ranking changed: this repo follows it and keeps no weights
-of its own. Serves the order the README gives its Achieve goals (`## Goals`), and code health, which
-every project pursues above its README goals. `rank_todo.py` sets the weights; `todo.md`'s `## Scoring`
-keeps the formula and the bar, which are the project's to tune. Valid while `rank_todo.py` sets the
-weights.
+2026-10-20, the maintainer, asking that this repo follow the global loop's rankings after they changed.
+The repo keeps no weights of its own: the global loop's `rank_todo.py` sets them. Serves code health,
+which every project pursues above each achieve goal its README states, and the order the README gives
+its Achieve goals (`## Goals`). By position, each achieve goal weighs 0.97 times the one before, code
+health first. While the comprehension overall is under 7.0, code health weighs 4 times its position
+weight. README goal 10 restates code health until item 124 drops it. `todo.md`'s `## Scoring` keeps
+the formula and the bar, which are the project's to tune. Valid while `rank_todo.py` sets the weights.
 
 ## No schema validation
 

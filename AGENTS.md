@@ -53,7 +53,7 @@ In `docs/decisions.md`:
 - `message` and `path`
 - Publish on a version bump
 - Docs describe the release being built
-- Plan items rank by rank_todo.py's weights, code health first, then each achieve goal at 0.97 times the one before
+- Plan items rank by the global loop's goal weights, code health first
 - No schema validation
 - The gate runs on Deno and Bun
 - The gate installs the tarball
