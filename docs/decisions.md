@@ -585,6 +585,13 @@ depend on a store that the gate would then have to keep.
 Docs on `main` describe the release being built rather than the version npm holds, so they match it
 the moment the bump publishes; add no interim note marking the gap.
 
+## Plan items rank by rank_todo.py's weights, code health first, then each achieve goal at 0.97 times the one before
+
+2026-10-20, the maintainer, after the global ranking changed: this repo follows it and keeps no weights
+of its own. Serves code health (`~/.claude/CLAUDE.md`, ranked first) and the order the README gives
+its Achieve goals (`## Goals`). `rank_todo.py` sets the weights; `todo.md`'s `## Scoring` keeps the
+formula and the bar, which are the project's to tune. Valid while `rank_todo.py` sets the weights.
+
 ## No schema validation
 
 2026-08-23, the mark refusal 2026-08-25, the maintainer. Goal 1. Valid while the site a document
