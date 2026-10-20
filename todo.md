@@ -13,7 +13,7 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 124 | 0.3.0 |  |  | **Drop goal 10, which restates code health, and point the Moves cells that cite it at `code health`.** | 1 | 2 | 1 | 2 | 2 | code health by 2 | 14.2 |
-| 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or a pipe in a table cell, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 10.6 |
+| 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 10.6 |
 | 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 8.5 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 6.4 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 6.4 |
@@ -71,7 +71,7 @@ goal, so no other goal renumbers. The chunk moves each `10 by N` in a Moves cell
 none does today. Dropping goal 10 changes README.md's goals, so the chunk asks lilleman to approve
 the drop before it merges, and is reviewed like any chunk.
 
-### 123. Spell a link title holding a backslash, an entity reference or a pipe in a table cell, instead of dropping it.
+### 123. Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.
 
 The portable writer drops a link's title when CommonMark cannot spell it as written: a title
 holding a backslash or an entity reference (`spellTitle` in `src/markdown/commonmark/link-syntax.ts`),
