@@ -672,11 +672,11 @@ compared against `undefined` — have a half no valid document reaches.
 
 ## The size ratchet
 
-2026-09-20, the import boundaries 2026-10-22, the maintainer. KISS, a technical principle. Valid
-while no measure picks out what readers find hard better than a function's length.
+2026-09-20, the maintainer; the import boundaries, 2026-10-22, the maintainer. KISS, a technical
+principle. Valid while no measure picks out what readers find hard better than a function's length.
 
-`.oxlintrc.json` holds one size rule and the import boundaries of §The source parts by ADF and
-format. The size rule, over the files `tsconfig.build.json` builds, is a per-function line
+`.oxlintrc.json` holds one size rule. It also holds the import boundaries §The source parts by ADF
+and format draws. The size rule, over the files `tsconfig.build.json` builds, is a per-function line
 ceiling, set at that set's worst and moving only downward. It covers the built files alone, since
 one ceiling over the tests too would have to be their worst, loosening the guard over the shipped
 code. It guards against drift and never drives a refactor, so no cyclomatic rule and no second size
@@ -687,9 +687,6 @@ a silent green: `IIFEs: true`, since oxlint exempts an IIFE otherwise; an explic
 config gone missing fails the leg instead of falling back to oxlint's own defaults; and
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
-
-The boundaries are `no-restricted-imports` overrides over the same files, since the technical
-principles refuse a test that scans the source and a regex misses import spellings a rule reads.
 
 ## The project ships under the comprehension floor until items 62 and 95 land
 
@@ -913,8 +910,9 @@ is the markdown flavour's choice, not ADF's.
 
 ## The source parts by ADF and format
 
-2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, `plain/` 2026-10-03, the maintainer.
-Goal 2. Valid while each format has a reader and a writer through ADF.
+2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, `plain/` 2026-10-03, the import
+boundaries' lint 2026-10-22, the maintainer. Goal 2. Valid while each format has a reader and a
+writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
 lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a content
@@ -939,5 +937,9 @@ whether a list marker interrupts a paragraph — is one function there too, neve
 direction, however conservative the copy would be. Where the rule is the emitter's own choice, input
 consults it rather than restating it, so no fixture the emitter writes can be refused, and a
 spelling the emitter refuses gives its own error rather than a second name for it. That consulting
-is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`. `.oxlintrc.json` holds that import, and keeps
-`markdown/directive/` from importing `emit/` or `parse/` (§The size ratchet).
+is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
+
+`.oxlintrc.json` enforces that limit for `markdown/parse/`, and keeps `markdown/directive/` from
+importing `emit/` or `parse/`, as `no-restricted-imports` overrides. They are lint rules because the
+technical principles refuse a test that scans the source, and a lint rule reads every import
+spelling: `from`, a bare `import`, double quotes and a dynamic `import()`.
