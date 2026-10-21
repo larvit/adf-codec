@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 125`
+`Next ID = 126`
 
 ## Items
 
@@ -20,11 +20,12 @@
 | 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 13.1 |
 | 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 10.5 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
+| 125 | 0.3.0 |  | decision | **Anchor each level of L, E and I in `docs/score-anchors.md` with shipped chunks that `score-outcomes` measures.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 122, 123 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
@@ -126,6 +127,10 @@ reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text 
 text. Only the property tests catch drift between these and the reader, and it holds the project
 under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
 run it carries may differ from today's, which changes lossless output (§The formats are API).
+
+### 125. Anchor each level of L, E and I in `docs/score-anchors.md` with shipped chunks that `score-outcomes` measures.
+
+`docs/score-anchors.md` does not exist, so no level has an anchor. `score-outcomes`, the maintainer's script kept outside this repo, reads merge commits. This repo merges by rebase, which leaves none, so the script finds no finished chunk to anchor a level with. First make the script measure rebase merges. Change it in its own repo, by PR if that directory is a git repo. Then name two or three shipped items for each level, as the scoring rules say. Until this ships, judge each score by its level's words, as `docs/decisions.md` says.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
