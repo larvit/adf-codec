@@ -2,7 +2,7 @@
 # Keep these versions and --before in step with the README's comparison table.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
-node_image=node:24.22.0-alpine3.24
+node_image=node:24.22.1-alpine3.24
 docker run --rm --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here:/comparison:ro" -w /tmp \
   "$node_image" sh -c '
     npm install --before=2026-10-15 --ignore-scripts --no-audit --no-fund --silent \
