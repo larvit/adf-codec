@@ -25,7 +25,7 @@ export type ParseError = ConvertError & { position: SourcePosition }
 
 export type Result<T, E extends ConvertError = ConvertError> = { error: E; ok: false } | { ok: true; value: T }
 
-// A reader with no path to name; the walk attaches the path where it knows it.
+// A fault without a path, for a reader that cannot know it; its caller adds the path.
 export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
 
 export function failure<T>(code: ConvertErrorCode, message: string, path: ConvertErrorPath): Result<T> {
