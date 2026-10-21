@@ -12,44 +12,43 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 124 | 0.3.0 |  |  | **Drop goal 10, which restates code health, and point the Moves cells that cite it at `code health`.** | 1 | 2 | 1 | 2 | 2 | code health by 2 | 14.2 |
-| 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 10.6 |
-| 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 8.5 |
-| 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 6.4 |
-| 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 6.4 |
-| 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 3.7 |
-| 60 | 0.3.0 |  | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 2 | 1 | 2 | 3 | 4 | 10 by 4 | 3.1 |
-| 92 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | 10 by 4 | 3.1 |
-| 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | 10 by 4 | 3.1 |
-| 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | 10 by 7 | 1.8 |
-| 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 2.9 |
-| 59 | 0.3.0 |  | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 2.4 |
-| 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 2.4 |
-| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 122, 123, 124 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 13.7 |
-| 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 10.6 |
-| 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 10.6 |
-| 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 5.0 |
-| 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 4.8 |
-| 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 3.4 |
-| 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | 10 by 2 | 3.1 |
+| 60 | 0.3.0 |  | decision | **Collect the questions `parse/` asks `emit/` into one named module.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
+| 92 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
+| 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
+| 59 | 0.3.0 |  | decision | **Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 13.1 |
+| 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 10.5 |
+| 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
+| 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
+| 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
+| 73 | 0.3.0 | 33, 59, 60, 62, 91, 92, 95, 102, 109, 115, 122, 123 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
+| 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
+| 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
+| 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
+| 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
 | 6 | 0.4.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
-| 7 | 0.4.0 | 6, 59, 60, 62 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.2 |
-| 46 | 0.4.0 | 7 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
-| 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
+| 7 | 0.4.0 | 6, 59, 60, 62 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.3 |
+| 46 | 0.4.0 | 7 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
+| 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
-| 72 | 0.4.0 | 6, 7, 45, 46, 51, 68, 75, 77, 80, 81, 107, 112 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.1 |
-| 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 21.2 |
-| 38 | 0.5.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 14.2 |
-| 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | 10 by 3 | 3.5 |
-| 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | 10 by 3 | 3.5 |
-| 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | 10 by 2 | 3.1 |
-| 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | 10 by 5 | 2.4 |
-| 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | 10 by 1 | 1.9 |
-| 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.7 |
-| 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 1.2 |
-| 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | 10 by 1 | 1.2 |
-| 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 3 | 1 | 2 | 4 | 6 | 10 by 3 | 0.8 |
+| 72 | 0.4.0 | 6, 7, 45, 46, 51, 68, 75, 77, 80, 81, 107, 112 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 26.2 |
+| 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
+| 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
+| 38 | 0.5.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 17.4 |
+| 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
+| 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 6.5 |
+| 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh` and `docker-runner.sh` to standalone Python scripts.** | 3 | 1 | 2 | 4 | 6 | code health by 3 | 4.4 |
+| 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 2.1 |
+| 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 1.5 |
 | 74 | 0.5.0 |  | owner | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 3 | 2 | 4 | 7 | 4 |  | 0.0 |
 | 8 | 0.6.0 |  | owner | **Ship a CLI.** | 3 | 2 | 1 | 4 | 7 |  | 0.0 |
 
@@ -59,17 +58,44 @@
 
 ## Details
 
-### 124. Drop goal 10, which restates code health, and point the Moves cells that cite it at `code health`.
+### 60. Collect the questions `parse/` asks `emit/` into one named module.
 
-`~/.claude/CLAUDE.md` → "Shared goal" now states code health, the goal every project shares, and
-goal 10 restates it. In lilleman's words (2026-10-18): "every
-project shares the goal, so it lives in `~/.claude` once ... It replaces each project's own
-readability goal, such as fejkdata's goal 3, visthus's goal 8 and adf-codec's goal 10: once it
-merges, file an item in each such project's `todo.md` to drop its own goal." Goal 10 is the last
-goal, so no other goal renumbers. The chunk moves each `10 by N` in a Moves cell to
-`code health by N`, 14 cells today, and revises any `docs/decisions.md` entry that cites goal 10;
-none does today. Dropping goal 10 changes README.md's goals, so the chunk asks lilleman to approve
-the drop before it merges, and is reviewed like any chunk.
+`parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
+from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
+parts by ADF and format true as they grow.
+
+### 92. Lower the reading cost of the files a chunk reads most before its first commit.
+
+The last five chunks' median is 106412 new input tokens before their first commit, the five before
+them 104037. Files read most over the last five chunks, counting opens and searches: `todo.md` 19,
+`README.md` 18, `docs/decisions.md` 9, `CHANGELOG.md` 6, `MIGRATION.md` 6,
+`src/conformance/commonmark-spec.test.ts` 6, `src/markdown/portable/inline-reduction.ts` 6,
+`spec/flavour.md` 5, `src/markdown/portable/adf-to-portable-markdown.test.ts` 5,
+`src/markdown/parse/inline-content.ts` 4.
+
+### 102. Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.
+
+`splitPath` (`src/markdown/parse/markdown-to-adf.ts`) builds stand-ins and `splitPlace`
+(`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
+`taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
+the reason the project read worse.
+
+### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.
+
+Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
+needs `Read<T>` and `Flavour` out of the portable flavour and `markdown/`; it needs the carry and
+the mark spellings too, which item 7 moves where it learns what HTML shares.
+Once moved, a reader takes a `Flavour` and looks up its claims, as a writer does, so no reader is
+handed a set of claims no flavour holds.
+
+### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
+
+Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts` and the `mintTaskIds` call.
+Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
+`emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
+`portable/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour` and
+`flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
+three directories.
 
 ### 123. Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.
 
@@ -92,6 +118,14 @@ that will no longer hold: the README's guarantee that inside a link an image rea
 the link marks, its guarantee that inside another link the title is dropped, and the sentence in
 `docs/decisions.md` §An image reads as an image only alone in its paragraph that says the drop
 stands until this item ends it.
+
+### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
+
+`escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
+reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text `[` opens link
+text. Only the property tests catch drift between these and the reader, and it holds the project
+under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
+run it carries may differ from today's, which changes lossless output (§The formats are API).
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
@@ -118,36 +152,6 @@ on such a document. Found while shipping item 106, 2026-10-11.
 (`src/adf/inline-nodes.ts`) restricts text only when it is marked `code`. It changes how stored
 markdown reads, so it ships in a minor. Found while building item 114, 2026-10-14.
 
-### 60. Collect the questions `parse/` asks `emit/` into one named module.
-
-`parse/` asks `emit/` through `commonMarkSpelling` and `openingLinkTakesDirective`, each imported
-from where it happens to live. One module naming the questions keeps `docs/decisions.md` §The source
-parts by ADF and format true as they grow.
-
-### 92. Lower the reading cost of the files a chunk reads most before its first commit.
-
-The last five chunks' median is 106412 new input tokens before their first commit, the five before
-them 104037. Files read most over the last five chunks, counting opens and searches: `todo.md` 19,
-`README.md` 18, `docs/decisions.md` 9, `CHANGELOG.md` 6, `MIGRATION.md` 6,
-`src/conformance/commonmark-spec.test.ts` 6, `src/markdown/portable/inline-reduction.ts` 6,
-`spec/flavour.md` 5, `src/markdown/portable/adf-to-portable-markdown.test.ts` 5,
-`src/markdown/parse/inline-content.ts` 4.
-
-### 102. Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.
-
-`splitPath` (`src/markdown/parse/markdown-to-adf.ts`) builds stand-ins and `splitPlace`
-(`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
-`taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
-the reason the project read worse.
-
-### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
-
-`escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
-reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text `[` opens link
-text. Only the property tests catch drift between these and the reader, and it holds the project
-under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
-run it carries may differ from today's, which changes lossless output (§The formats are API).
-
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
 It needs item 95, which lets the joined spelling be tried and kept only where it reads back. No
@@ -159,23 +163,6 @@ mention or code spelled `!adf:text{text=" "}`. Joining the run across the break 
 `inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
 first as a set of parted breaks, then as a flag the first fallback clears.
 
-### 59. Group the directive grammar into `src/markdown/directive/`, move `Read<T>` to `result.ts`, and move `Flavour` and `flavourClaims` to `markdown/flavour.ts`.
-
-Eight directive files sit across three directories, and the `markdown/` root holds 14 entries. HTML
-needs `Read<T>` and `Flavour` out of the portable flavour and `markdown/`; it needs the carry and
-the mark spellings too, which item 7 moves where it learns what HTML shares.
-Once moved, a reader takes a `Flavour` and looks up its claims, as a writer does, so no reader is
-handed a set of claims no flavour holds.
-
-### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
-
-Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts` and the `mintTaskIds` call.
-Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
-`emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
-`portable/conventions.ts`, which `emit/` imports them from; item 59 moves `Flavour` and
-`flavourClaims`. Every comprehension reader on 2026-10-03 named the portable flavour's spread across
-three directories.
-
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
 Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the posts announce the finished
@@ -185,6 +172,14 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 its versions and its date in step with the output. We draft each post for the place it goes. The
 maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts announcing a release
 wait for its publish). Found while planning discoverability, 2026-10-04.
+
+### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
+
+`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
+whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
+type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
+where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
+and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -223,14 +218,6 @@ document's whole tree. Give the node's path, and name its type and the attribute
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
-
-### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
-
-`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
-whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
-type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
-where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
-and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
 
 ### 6. Specify the HTML dialect.
 
@@ -307,11 +294,6 @@ interim sentence.
 quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
 `adfToPortableMarkdown`. Scan backward, as the expand title's trim does.
 
-### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
-
-`adfToLosslessMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute
-values already escape it.
-
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
 
 Three Node test legs over one unchanged tree reported `emit/inline-line.ts` at 95.83%, 96.23% and
@@ -328,6 +310,11 @@ measured one.
 Technical principle "Compose, do not entangle": Deno, Bun and the tests read the install leg's
 `node_modules`, the floor and consumer legs the pack leg's, and the browser leg whatever `dist/` the
 build leg left, so a leg run alone can pass on stale output.
+
+### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
+
+`adfToLosslessMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute
+values already escape it.
 
 ### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
 
@@ -358,13 +345,6 @@ for a module of its own.
 hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
 Found by the principles audit of item 99, 2026-10-14.
 
-### 34. Read emphasis flanking by the whole character beside an astral symbol.
-
-Check whether `delimiterRunToken` (`inline-tokens.ts`), `emittedRuns` and `resolveEmphasis`
-(`line-escaping.ts`) read one UTF-16 unit beside an astral symbol. A lone surrogate is neither
-punctuation nor symbol, but CommonMark reads `😀` as punctuation. Where they do, read the code
-point, with a fixture per direction.
-
 ### 82. Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.
 
 Technical principle: tests use random UUID v7 ids; `portable-markdown-to-adf.test.ts` already does.
@@ -374,6 +354,13 @@ Found by the technical-principles audit of item 78, 2026-10-05.
 
 Technical principle "Prefer a standalone Python script over a shell script": `AGENTS.md` §3 teaches
 bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes.
+
+### 34. Read emphasis flanking by the whole character beside an astral symbol.
+
+Check whether `delimiterRunToken` (`inline-tokens.ts`), `emittedRuns` and `resolveEmphasis`
+(`line-escaping.ts`) read one UTF-16 unit beside an astral symbol. A lone surrogate is neither
+punctuation nor symbol, but CommonMark reads `😀` as punctuation. Where they do, read the code
+point, with a fixture per direction.
 
 ### 74. Keep the release path publishing after npm retires bypass-2FA tokens.
 
