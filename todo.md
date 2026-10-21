@@ -225,6 +225,10 @@ documents markdown, its comparison table names HTML, and its tagline and `packag
 description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
 `not-a-string` (`docs/decisions.md` §Which code a cause takes).
 
+`html/` may not import `markdown/`, so it learns here which of the carry (`opaque-carry.ts`) and the
+mark spellings (`mark-spellings.ts`) it shares and moves them out of `markdown/`; a composed call
+naming a markdown `Flavour` sits above both peers.
+
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
 Item 7 changes the size. The quantity is what a consumer downloads and loads: the

@@ -1,8 +1,8 @@
-import type { DirectiveAttributes, DirectiveValue } from './directive/syntax.ts'
-import type { EmptyKey } from '../adf/document.ts'
-import type { Read } from '../result.ts'
-import { emptyKeys } from '../adf/document.ts'
-import { unsupportedNodeShape } from './directive/syntax.ts'
+import type { DirectiveAttributes, DirectiveValue } from './syntax.ts'
+import type { EmptyKey } from '../../adf/document.ts'
+import type { Read } from '../../result.ts'
+import { emptyKeys } from '../../adf/document.ts'
+import { unsupportedNodeShape } from './syntax.ts'
 
 type EmptyKeysRead = { empty: ReadonlySet<EmptyKey>; rest: Map<string, DirectiveValue> }
 

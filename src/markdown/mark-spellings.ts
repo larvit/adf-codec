@@ -8,7 +8,7 @@ import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './direct
 import { holdsEntityReference } from './commonmark/entity-references.ts'
 import { isAutolink } from './commonmark/grammar.ts'
 import { isMarkType, markAttributes } from '../adf/mark-attributes.ts'
-import { spellEmptyKeys } from './empty-keys.ts'
+import { spellEmptyKeys } from './directive/empty-keys.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | { kind: 'emphasis'; spelling: string }

@@ -4,7 +4,7 @@ import { attributeNestingMessage, nodeAttrs, nodeMarks } from '../../adf/documen
 import { blockArgument, marksAttribute, spellBlockMarks } from './block.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { isBareToken, spellAttributes, spellDirectiveOpener, spellVocabulary } from './syntax.ts'
-import { spellEmptyKeys } from '../empty-keys.ts'
+import { spellEmptyKeys } from './empty-keys.ts'
 import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
 export function spellBlockDirectiveOpener(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, spelledByBody: readonly string[] = []): Result<string> | undefined {
