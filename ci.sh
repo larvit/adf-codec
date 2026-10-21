@@ -5,7 +5,7 @@ source ./docker-runner.sh
 
 leg "install ($node_image)" in_image "$node_image" npm ci
 leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
-leg "size ratchet ($node_image)" in_image "$node_image" npm run size-ratchet
+leg "lint ($node_image)" in_image "$node_image" npm run lint
 
 test_log=$(mktemp)
 node_tests() {

@@ -2,6 +2,20 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "categories": { "correctness": "off" },
   "ignorePatterns": ["src/**/*.test.ts", "src/conformance/property-harness.ts"],
+  "overrides": [
+    {
+      "files": ["src/markdown/directive/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/parse/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
+      "files": ["src/markdown/parse/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "!../emit/spelling-questions.ts"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    }
+  ],
   "rules": {
     "eslint/max-lines-per-function": ["error", { "IIFEs": true, "max": 52, "skipBlankLines": false, "skipComments": false }]
   }

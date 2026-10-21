@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 126 | 0.3.0 |  | question | **Decide whether `.oxlintrc.json` may hold the import boundaries, and hold them there.** | 1 | 2 | 1 | 2 | 2 | code health by 2 | 17.4 |
 | 92 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
 | 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
@@ -24,7 +23,7 @@
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.3.0 | 33, 62, 91, 92, 95, 102, 109, 115, 122, 123, 125, 126 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.3.0 | 33, 62, 91, 92, 95, 102, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
@@ -58,22 +57,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 126. Decide whether `.oxlintrc.json` may hold the import boundaries, and hold them there.
-
-Two boundaries in `docs/decisions.md` §The source parts by ADF and format hold by convention only:
-`src/markdown/parse/` imports from `src/markdown/emit/` only `emit/spelling-questions.ts`, and
-`src/markdown/directive/` imports neither `emit/` nor `parse/`. The technical principles refuse a
-test that scans the source: principle "Assert the outcome" bans it. oxlint 1.89.0 can hold both
-boundaries with `overrides` carrying `no-restricted-imports`. Verified: a forbidden import fails
-the `size-ratchet` leg in each form, as `from '…'`, as a bare `import '…'`, with a double-quoted
-specifier and as a dynamic `import()`. An import of `../emit/spelling-questions.ts`, listed as the
-exception, passes.
-
-But the maintainer's §The size ratchet gives `.oxlintrc.json` a single rule and says no second
-lint rule joins it. The question for the maintainer: may the config hold a second kind of rule, the
-import boundaries? If so, amend that entry's "single rule" and "no second lint rule", and rename the
-`size-ratchet` script and `ci.sh` leg, whose name would no longer say what they hold.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
@@ -221,8 +204,9 @@ Three tests read source text:
   production cause and every call site names a declared code. A code held in a variable or passed
   through another helper escapes it.
 
-Item 81 changes `result.test.ts` too. Whether `.oxlintrc.json` may hold a lint rule for the
-`JSON.parse` ban is item 126's question. Found by the technical-principles audit of item 60,
+Item 81 changes `result.test.ts` too. `docs/decisions.md` §The size ratchet now lets
+`.oxlintrc.json` hold rules beyond the size ceiling, so the `JSON.parse` ban can become a lint
+rule. Found by the technical-principles audit of item 60,
 2026-10-22.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
