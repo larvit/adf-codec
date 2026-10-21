@@ -19,8 +19,8 @@ import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-
 import { noSpans, readInlineDirective } from '../directive/syntax.ts'
 import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
-import { readDirectiveMark } from '../directive/marks.ts'
-import { readInlineDirectiveNode } from '../directive/nodes.ts'
+import { readDirectiveMark } from '../directive/mark-reading.ts'
+import { readInlineDirectiveNode } from '../directive/node-reading.ts'
 import { inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { readTextDirective } from '../directive/text.ts'
 

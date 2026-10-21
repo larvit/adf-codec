@@ -6,8 +6,8 @@ import type { MarkSpelling } from '../mark-spellings.ts'
 import { directivePrefix } from './syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { markSpelling } from '../mark-spellings.ts'
-import { readEmptyKeys } from '../empty-keys.ts'
-import { readVocabulary } from './attributes.ts'
+import { readEmptyKeys } from './empty-keys.ts'
+import { readVocabulary } from './attribute-reading.ts'
 
 export function readDirectiveMark(name: string, attributes: DirectiveAttributes, path: ConvertErrorPath): Result<AdfMark> | undefined {
   const spelling = markSpelling(name)
