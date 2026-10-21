@@ -601,6 +601,10 @@ weighs 4 times its position weight.
 `todo.md`'s `## Scoring` keeps the formula and the bar, the lowest Score a non-exempt item may have.
 Both are the project's to tune: the maintainer confirmed the bar at 0.1 on 2026-10-21.
 
+## Until `docs/score-anchors.md` exists, L, E and I are judged by the levels' words
+
+2026-10-21, the maintainer, agreeing to track the gap as `todo.md` item 125. An anchor is a shipped item that shows what a level looks like. `score-outcomes` measures only merge commits, and this repo merges by rebase, so it finds no shipped chunk to anchor a level with. L picks a worker's rung, and E + I the reviewers', so scores decide how carefully a change is checked. Serves code health. Valid while `docs/score-anchors.md` does not exist.
+
 ## Posts announcing a release wait for its publish, and their drafts wait for the finished release
 
 2026-10-21, the maintainer, asking for the choice that best reaches the goals. Serves Goal 3.

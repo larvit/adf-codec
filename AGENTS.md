@@ -54,6 +54,7 @@ In `docs/decisions.md`:
 - Publish on a version bump
 - Docs describe the release being built
 - Plan items rank by `rank_todo.py`'s goal weights, code health first
+- Until `docs/score-anchors.md` exists, L, E and I are judged by the levels' words
 - Posts announcing a release wait for its publish, and their drafts wait for the finished release
 - No schema validation
 - The gate runs on Deno and Bun
@@ -169,6 +170,8 @@ Per chunk:
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
 maintainer's) and the `NPM_TOKEN` secret.
+
+Before you change a file outside this repo, check whether its directory is a git repo. If it is, change it through a branch and a PR there, as here.
 
 ### Ask, don't guess
 
