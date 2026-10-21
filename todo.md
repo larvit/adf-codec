@@ -178,12 +178,13 @@ three directories.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
-Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the posts announce the finished
+Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the drafts describe the finished
 release. Each post links the GitHub repository, the README's comparison table and a README that opens with what the package is. Before
 posting, set `converter-comparison/run.sh`'s pins to each package's latest version,
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
-its versions and its date in step with the output. We draft each post for the place it goes; the
-maintainer posts them once `0.3.0` is published. Found while planning discoverability, 2026-10-04.
+its versions and its date in step with the output. We draft each post for the place it goes. The
+maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts announcing a release
+wait for its publish). Found while planning discoverability, 2026-10-04.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 

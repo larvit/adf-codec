@@ -54,6 +54,7 @@ In `docs/decisions.md`:
 - Publish on a version bump
 - Docs describe the release being built
 - Plan items rank by `rank_todo.py`'s goal weights, code health first
+- Posts announcing a release wait for its publish, and their drafts wait for the finished release
 - No schema validation
 - The gate runs on Deno and Bun
 - The gate installs the tarball

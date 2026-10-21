@@ -601,6 +601,13 @@ weighs 4 times its position weight. README goal 10 restates code health until it
 `todo.md`'s `## Scoring` keeps the formula and the bar, the lowest Score a non-exempt item may have.
 Both are the project's to tune: the maintainer confirmed the bar at 0.1 on 2026-10-21.
 
+## Posts announcing a release wait for its publish, and their drafts wait for the finished release
+
+2026-10-21, the agent, choosing at the maintainer's request what best serves the goals. Serves Goal 3:
+its counter-signal is issues saying a call did something else, and a post that runs ahead of npm sends
+readers to a version without what the post describes. Drafts describe the finished release, so they
+wait for every item in it. Valid while a version bump on `main` publishes (§Publish on a version bump).
+
 ## No schema validation
 
 2026-08-23, the mark refusal 2026-08-25, the maintainer. Goal 1. Valid while the site a document
