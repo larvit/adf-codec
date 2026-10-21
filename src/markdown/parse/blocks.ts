@@ -1,6 +1,6 @@
-import type { Claims } from '../portable/conventions.ts'
+import type { Claims, Flavour } from '../flavour.ts'
 import type { ConvertFault, SourcePosition } from '../../result.ts'
-import type { DirectiveAttributes, DirectiveLine } from '../directive-syntax.ts'
+import type { DirectiveAttributes, DirectiveLine } from '../directive/syntax.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import {
   atxHeading,
@@ -20,8 +20,9 @@ import {
   type ThematicBreakTail,
 } from '../commonmark/grammar.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
-import { blockDirectiveForm } from '../block-directive.ts'
-import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive-syntax.ts'
+import { blockDirectiveForm } from '../directive/block.ts'
+import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive/syntax.ts'
+import { flavourClaims } from '../flavour.ts'
 import { readLinkDefinitions } from '../commonmark/link-reference-definitions.ts'
 
 export type Block = { position: SourcePosition } & (
@@ -90,10 +91,10 @@ const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
 
-export function parseBlocks(markdown: string, claims: Claims): ParsedBlocks {
+export function parseBlocks(markdown: string, flavour: Flavour): ParsedBlocks {
   const walk: Walk = {
     blocks: [],
-    claims,
+    claims: flavourClaims[flavour],
     definitions: new Map(),
     endedLists: new Set(),
     leaf: undefined,

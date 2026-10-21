@@ -10,7 +10,7 @@ import type { Result } from '../result.ts'
 import { adfDocument, attributes, blockTaskItemChildren, jsonKey, jsonValue, markdownPieces, propertyRuns, propertyTimeout, textOf } from './property-harness.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown } from '../markdown/portable/adf-to-portable-markdown.ts'
-import { blockArgument, marksAttribute } from '../markdown/block-directive.ts'
+import { blockArgument, marksAttribute } from '../markdown/directive/block.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { carryName } from '../markdown/opaque-carry.ts'
 import { commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
@@ -24,14 +24,14 @@ import {
   spellJsonAttribute,
   spellStringAttribute,
   spellVocabulary,
-} from '../markdown/directive-syntax.ts'
+} from '../markdown/directive/syntax.ts'
 import { fencedCodeBlock } from '../markdown/commonmark/backtick-runs.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
 import { markSpelling } from '../markdown/mark-spellings.ts'
 import { nodeContent, nodeMarks } from '../adf/document.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
-import { textDirectiveName } from '../markdown/text-directive.ts'
+import { textDirectiveName } from '../markdown/directive/text.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Choice = { arbitrary: Arbitrary<string>; hostile?: true; weight: number }

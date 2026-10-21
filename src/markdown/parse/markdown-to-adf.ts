@@ -1,23 +1,24 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
-import type { BlockDirectiveNode } from './directive-nodes.ts'
-import type { Claims } from '../portable/conventions.ts'
+import type { BlockDirectiveNode } from '../directive/nodes.ts'
 import type { ConvertFault } from '../../result.ts'
+import type { Flavour } from '../flavour.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
-import { commonMarkSpelling, type SpellingMemo } from '../emit/adf-to-markdown.ts'
-import { documentAttribute, documentName, documentSpelling } from '../block-directive.ts'
+import { commonMarkSpelling, type SpellingMemo } from '../emit/spelling-questions.ts'
+import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
 import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
-import { flavourClaims, leadingMarker, readAlertMarker, readTaskMarker } from '../portable/conventions.ts'
+import { flavourClaims } from '../flavour.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { leadingMarker, readAlertMarker, readTaskMarker } from '../portable/conventions.ts'
 import { mintTaskIds } from '../portable/task-ids.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
-import { readBlockDirectiveNode } from './directive-nodes.ts'
-import { spellStringAttribute, unsupportedNodeShape } from '../directive-syntax.ts'
+import { readBlockDirectiveNode } from '../directive/nodes.ts'
+import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.ts'
 import { spellsEmpty } from '../empty-keys.ts'
 import { splitPlace, splitTaskList } from '../portable/task-list.ts'
 import { withinEngineLimits } from '../length-bound.ts'
@@ -30,40 +31,40 @@ type TaskParagraph = { kind: 'taskParagraph'; position: SourcePosition; text: st
 type ReadBlock = Block | TaskParagraph
 
 // `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand.
-type Reading = { claims: Claims; definitions: LinkDefinitions; inExpand: boolean; memo: SpellingMemo }
+type Reading = { definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
 
 export function commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError> {
-  return readDocument(markdown, flavourClaims.commonmark)
+  return readDocument(markdown, 'commonmark')
 }
 
 export function losslessMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
-  return readDocument(markdown, flavourClaims.lossless)
+  return readDocument(markdown, 'lossless')
 }
 
 export function portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
-  return readDocument(markdown, flavourClaims.portable)
+  return readDocument(markdown, 'portable')
 }
 
-function readDocument(markdown: string, claims: Claims): Result<AdfDocument, ParseError> {
+function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
   return positioned(
-    withinEngineLimits(() => readMarkdown(markdown, claims)),
+    withinEngineLimits(() => readMarkdown(markdown, flavour)),
     { line: 1, offset: 0 },
   )
 }
 
-function readMarkdown(markdown: string, claims: Claims): Result<AdfDocument> {
+function readMarkdown(markdown: string, flavour: Flavour): Result<AdfDocument> {
   if (typeof markdown !== 'string') return failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, [])
-  const parsed = parseBlocks(markdown, claims)
+  const parsed = parseBlocks(markdown, flavour)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
     const fault = documentFault(only)
     return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
   }
-  const reading: Reading = { claims, definitions: parsed.definitions, inExpand: false, memo: new Map() }
+  const reading: Reading = { definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
   const content = readBlocks(parsed.blocks, reading, [], 0)
   if (!content.ok) return content
   const document: AdfDocument = { content: content.value, type: 'doc', version: 1 }
-  if (claims.taskMarkers) mintTaskIds(document, markdown)
+  if (flavourClaims[flavour].taskMarkers) mintTaskIds(document, markdown)
   return success(document)
 }
 
@@ -84,7 +85,7 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
       const fault = documentFault(block) ?? unsupportedNodeShape(`delete the ${documentSpelling} line to give the document content: it stands only as the whole document`)
       return positioned(faulted(fault, nodePath), block.position)
     }
-    if (block.kind === 'bulletList' && reading.claims.taskMarkers) {
+    if (block.kind === 'bulletList' && flavourClaims[reading.flavour].taskMarkers) {
       const listed = positioned(bulletBlocks(block.items, reading, nodePath, depth), block.position)
       if (!listed.ok) return listed
       for (const node of listed.value) content.push(node)
@@ -113,7 +114,7 @@ function documentFault(block: DirectiveBlock): ConvertFault | undefined {
 function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':
-      return reading.claims.alerts ? quoteNode(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
+      return flavourClaims[reading.flavour].alerts ? quoteNode(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
     case 'bulletList':
       // readBlocks reads a portable task list before it reaches here.
       return listNode({ type: 'bulletList' }, block.items, reading, path, depth)
@@ -165,7 +166,7 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   const { folded, panelType } = led.marker
   const { line, rest } = markerLine(led.text)
   if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...paragraphsOf(led.position, line, rest), ...body], reading, path, depth + 1))
-  const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.claims)
+  const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour)
   if (!title.ok) return title
   const text = titleText(title.value.nodes)
   const type = reading.inExpand ? 'nestedExpand' : 'expand'
@@ -369,7 +370,7 @@ function listNode(node: AdfNode, items: readonly Block[][], reading: Reading, pa
 }
 
 function codeBlockNode(language: string, text: string, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const carriedType = reading.claims.carryFence ? carryFenceType(language) : undefined
+  const carriedType = flavourClaims[reading.flavour].carryFence ? carryFenceType(language) : undefined
   if (carriedType !== undefined) {
     const carried = readCarriedBlock(carriedType, text, depth)
     return carried.fault === undefined ? success(carried.value) : faulted(carried.fault, path)
@@ -380,14 +381,14 @@ function codeBlockNode(language: string, text: string, reading: Reading, path: C
 
 // spec/flavour.md, The CommonMark image: only a `paragraph` block gives a lone image the block it needs.
 function paragraphNode(text: string, reading: Reading, path: ConvertErrorPath): Result<AdfNode> {
-  const content = parseInlineContent(text, reading.definitions, path, 'paragraph', reading.claims)
+  const content = parseInlineContent(text, reading.definitions, path, 'paragraph', reading.flavour)
   if (!content.ok) return content
   const image = content.value.image
   return success(image === undefined ? withContent({ type: 'paragraph' }, content.value.nodes) : image)
 }
 
 function contentNode(node: AdfNode, text: string, reading: Reading, path: ConvertErrorPath, container: LineContainer): Result<AdfNode> {
-  const content = parseInlineContent(text, reading.definitions, path, container, reading.claims)
+  const content = parseInlineContent(text, reading.definitions, path, container, reading.flavour)
   if (!content.ok) return content
   return success(withContent(node, content.value.nodes))
 }

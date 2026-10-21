@@ -3,15 +3,14 @@ import test from 'node:test'
 
 import type { Block } from './blocks.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
-import { flavourClaims } from '../portable/conventions.ts'
 import { parseBlocks } from './blocks.ts'
 
 function definitions(markdown: string): [string, LinkDefinition][] {
-  return [...parseBlocks(markdown, flavourClaims.lossless).definitions]
+  return [...parseBlocks(markdown, 'lossless').definitions]
 }
 
 function kinds(markdown: string): string[] {
-  return parseBlocks(markdown, flavourClaims.lossless).blocks.map((block) => block.kind)
+  return parseBlocks(markdown, 'lossless').blocks.map((block) => block.kind)
 }
 
 function faults(markdown: string): string[] {
@@ -24,7 +23,7 @@ function faults(markdown: string): string[] {
       if (block.kind === 'bulletList' || block.kind === 'orderedList') for (const item of block.items) walk(item)
     }
   }
-  walk(parseBlocks(markdown, flavourClaims.lossless).blocks)
+  walk(parseBlocks(markdown, 'lossless').blocks)
   return messages
 }
 
@@ -90,7 +89,7 @@ test('opens a container where the content model takes content, and holds it open
   assert.deepEqual(faults('!adf:panel info\n> Part.\n!adf:/panel\n'), [])
   assert.deepEqual(faults('!adf:panel info\n- !adf:panel warning\n  Part.\n  !adf:/panel\n!adf:/panel\n'), [])
   assert.deepEqual(faults('!adf:panel info\n```\n!adf:/panel\n```\n!adf:/panel\n'), [])
-  assert.deepEqual(parseBlocks('!adf:panel info {panelColor="#ff0000"}\nPart.\n!adf:/panel\n', flavourClaims.lossless).blocks, [
+  assert.deepEqual(parseBlocks('!adf:panel info {panelColor="#ff0000"}\nPart.\n!adf:/panel\n', 'lossless').blocks, [
     {
       argument: 'info',
       attributes: new Map([['panelColor', { decoded: '#ff0000', spelling: '"#ff0000"' }]]),
@@ -100,7 +99,7 @@ test('opens a container where the content model takes content, and holds it open
       position: { line: 1, offset: 0 },
     },
   ])
-  assert.deepEqual(parseBlocks('!adf:rule\n', flavourClaims.lossless).blocks, [
+  assert.deepEqual(parseBlocks('!adf:rule\n', 'lossless').blocks, [
     { argument: undefined, attributes: new Map(), blocks: undefined, kind: 'directive', name: 'rule', position: { line: 1, offset: 0 } },
   ])
 })
@@ -125,7 +124,7 @@ test("releases an indented code block's held blank lines as a walk rather than a
 
 // A level is one list item.
 function deepestItem(markdown: string): { depth: number; kinds: string[] } {
-  let blocks = parseBlocks(markdown, flavourClaims.lossless).blocks
+  let blocks = parseBlocks(markdown, 'lossless').blocks
   let depth = 0
   for (let list = blocks[0]; list?.kind === 'bulletList'; list = blocks[0]) {
     blocks = list.items.at(-1) ?? []
@@ -148,7 +147,7 @@ test('stops a blank line at the first blockquote', () => {
 
 test('stops a blank line at an empty item, and gives a code block in an item the blank line without its spaces', () => {
   assert.deepEqual(deepestItem('- - \n\n  a\n'), { depth: 2, kinds: [] })
-  assert.deepEqual(parseBlocks('- ```\n      \n  x\n  ```\n', flavourClaims.lossless).blocks.map((block) => block.kind === 'bulletList' && block.items[0]?.[0]), [
+  assert.deepEqual(parseBlocks('- ```\n      \n  x\n  ```\n', 'lossless').blocks.map((block) => block.kind === 'bulletList' && block.items[0]?.[0]), [
     { kind: 'code', language: '', position: { line: 1, offset: 0 }, text: '\nx' },
   ])
 })
@@ -166,7 +165,7 @@ function outline(blocks: readonly Block[]): string {
 }
 
 test('reads a marker a tab indents four or more columns into its container as text', () => {
-  const read = (markdown: string): string => outline(parseBlocks(markdown, flavourClaims.lossless).blocks)
+  const read = (markdown: string): string => outline(parseBlocks(markdown, 'lossless').blocks)
   assert.equal(read('> a\n \t> b\n'), 'quote(paragraph(a|> b))')
   assert.equal(read('> > a\n>\t\t> b\n'), 'quote(quote(paragraph(a|> b)))')
   assert.equal(read('- > a\n\t\t> b\n'), 'list(quote(paragraph(a|> b)))')
@@ -174,7 +173,7 @@ test('reads a marker a tab indents four or more columns into its container as te
 })
 
 test("keeps as spaces the columns a tab holds past an item's indentation", () => {
-  const read = (markdown: string): string => outline(parseBlocks(markdown, flavourClaims.lossless).blocks)
+  const read = (markdown: string): string => outline(parseBlocks(markdown, 'lossless').blocks)
   assert.equal(read('- ```\n\tx\n  ```\n'), 'list(code("  x"))')
   assert.equal(read('- a\n \t- b\n'), 'list(paragraph(a) list(paragraph(b)))')
 })

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { DirectiveAttributes, DirectiveLine } from './directive-syntax.ts'
-import { claimDirectivePrefix, readDirectiveLine, readInlineDirective } from './directive-syntax.ts'
-import { inlineSource } from './inline-tokens.ts'
-import { largestNesting } from '../nesting.ts'
+import type { DirectiveAttributes, DirectiveLine } from './syntax.ts'
+import { claimDirectivePrefix, readDirectiveLine, readInlineDirective } from './syntax.ts'
+import { inlineSource } from '../inline-tokens.ts'
+import { largestNesting } from '../../nesting.ts'
 
 // A pair the input spells bare decodes to itself; a quoted one names its spelling beside the decoding.
 type Pair = [string, string, string?]

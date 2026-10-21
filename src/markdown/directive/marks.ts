@@ -1,13 +1,13 @@
 import type { AdfMark } from '../../adf/document.ts'
 import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { ConvertFault } from '../../result.ts'
-import type { DirectiveAttributes } from '../directive-syntax.ts'
+import type { DirectiveAttributes } from './syntax.ts'
 import type { MarkSpelling } from '../mark-spellings.ts'
-import { directivePrefix } from '../directive-syntax.ts'
+import { directivePrefix } from './syntax.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { markSpelling } from '../mark-spellings.ts'
 import { readEmptyKeys } from '../empty-keys.ts'
-import { readVocabulary } from './directive-attributes.ts'
+import { readVocabulary } from './attributes.ts'
 
 export function readDirectiveMark(name: string, attributes: DirectiveAttributes, path: ConvertErrorPath): Result<AdfMark> | undefined {
   const spelling = markSpelling(name)

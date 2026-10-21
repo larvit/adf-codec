@@ -1,6 +1,6 @@
 import type { AdfNode } from '../adf/document.ts'
 import { identicalMarks, isSpellableText, nodeMarks } from '../adf/document.ts'
-import { spellInlineLeafDirective } from './directive-syntax.ts'
+import { spellInlineLeafDirective } from './directive/syntax.ts'
 
 export const textBreakName = 'textBreak'
 

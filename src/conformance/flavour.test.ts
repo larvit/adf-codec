@@ -8,7 +8,7 @@ import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabu
 import { blockNodes } from '../adf/block-nodes.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { blockMarkAttributes, markAttributes, markVocabularies } from '../adf/mark-attributes.ts'
-import { textDirectiveName } from '../markdown/text-directive.ts'
+import { textDirectiveName } from '../markdown/directive/text.ts'
 
 type Declared = { attributes: AttributeVocabulary }
 

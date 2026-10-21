@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { adfToLosslessMarkdown } from './emit/adf-to-markdown.ts'
-import { flavourClaims } from './portable/conventions.ts'
+import { flavourClaims } from './flavour.ts'
 import { inlineSource, readInlineToken } from './inline-tokens.ts'
 import { losslessMarkdownToAdf } from './parse/markdown-to-adf.ts'
 

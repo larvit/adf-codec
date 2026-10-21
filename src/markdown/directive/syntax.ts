@@ -1,15 +1,15 @@
-import type { AttributeKind, VocabularyPair, VocabularyValue } from '../adf/attribute-vocabulary.ts'
-import type { CodeSpanCloser } from './commonmark/backtick-runs.ts'
-import type { ConvertFault } from '../result.ts'
-import type { InlineSource } from './inline-tokens.ts'
-import type { JsonValue } from '../json-value.ts'
-import { backslashEscape, holdsNullCharacter } from './commonmark/grammar.ts'
-import { backtickRun } from './commonmark/backtick-runs.ts'
-import { isNumberList } from '../adf/attribute-vocabulary.ts'
-import { overNested } from '../json-value.ts'
-import { largestNesting } from '../nesting.ts'
-import { parseJsonText } from '../json-text.ts'
-import { serializeCanonicalJson } from '../canonical-json.ts'
+import type { AttributeKind, VocabularyPair, VocabularyValue } from '../../adf/attribute-vocabulary.ts'
+import type { CodeSpanCloser } from '../commonmark/backtick-runs.ts'
+import type { ConvertFault, Read } from '../../result.ts'
+import type { InlineSource } from '../inline-tokens.ts'
+import type { JsonValue } from '../../json-value.ts'
+import { backslashEscape, holdsNullCharacter } from '../commonmark/grammar.ts'
+import { backtickRun } from '../commonmark/backtick-runs.ts'
+import { isNumberList } from '../../adf/attribute-vocabulary.ts'
+import { overNested } from '../../json-value.ts'
+import { largestNesting } from '../../nesting.ts'
+import { parseJsonText } from '../../json-text.ts'
+import { serializeCanonicalJson } from '../../canonical-json.ts'
 
 export type AttributeReading = { refusal: 'kind' | 'nesting'; value?: undefined } | { refusal?: undefined; value: VocabularyValue }
 
@@ -30,8 +30,6 @@ export type DirectiveLine =
 export type DirectiveSpan = { attributes: DirectiveAttributes; content: string | undefined; length: number; name: string; spans: NestedSpans }
 
 export type NestedSpans = ReadonlyMap<number, DirectiveSpan>
-
-export type Read<T> = { fault: ConvertFault; value?: undefined } | { fault?: undefined; value: T }
 
 type AttributePair = { end: number; key: string; value: DirectiveValue }
 
