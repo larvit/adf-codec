@@ -924,15 +924,15 @@ them. A primitive knowing neither ADF nor a format stays at `src/` root. A const
 what both read where there are two.
 
 A flavour's own code, both directions included, sits in its own directory: `markdown/portable/`;
-`todo.md` item 62 moves what still sits in `parse/` and `emit/`. The directive grammar likewise
-sits in `markdown/directive/`. Otherwise each format directory parts into `emit/` (ADF→format) and
+`todo.md` item 62 moves what still sits in `parse/` and `emit/`. The directive grammar, both
+directions included, sits in `markdown/directive/`, which imports neither `emit/` nor `parse/`.
+Otherwise each format directory parts into `emit/` (ADF→format) and
 `parse/` (format→ADF), the rest of it holding what both directions read. A construct's reader lives
 there beside the regex the emitter escapes against, so the two cannot drift; a reader with no emit
 counterpart goes in `parse/`, unless it is part of a construct that side already holds — a grammar
 stays in one file rather than splitting across the seam. A rule both directions must answer alike —
 whether a list marker interrupts a paragraph — is one function there too, never a copy per
 direction, however conservative the copy would be. Where the rule is the emitter's own choice, input
-consults it rather than restating it, and that is the only import `parse/` takes from `emit/`,
-through `emit/spelling-questions.ts`, which names `commonMarkSpelling`, `openingLinkTakesDirective`
-and the `SpellingMemo` type — so no fixture the emitter writes can be refused, and a spelling the
-emitter refuses gives its own error rather than a second name for it.
+consults it rather than restating it, so no fixture the emitter writes can be refused, and a
+spelling the emitter refuses gives its own error rather than a second name for it. That consulting
+is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
