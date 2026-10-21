@@ -204,10 +204,8 @@ Three tests read source text:
   production cause and every call site names a declared code. A code held in a variable or passed
   through another helper escapes it.
 
-Item 81 changes `result.test.ts` too. `docs/decisions.md` §The size ratchet now lets
-`.oxlintrc.json` hold rules beyond the size ceiling, so the `JSON.parse` ban can become a lint
-rule. Found by the technical-principles audit of item 60,
-2026-10-22.
+Item 81 changes `result.test.ts` too. Found by the technical-principles audit of
+item 60, 2026-10-22.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 
