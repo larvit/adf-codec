@@ -603,10 +603,11 @@ Both are the project's to tune: the maintainer confirmed the bar at 0.1 on 2026-
 
 ## Posts announcing a release wait for its publish, and their drafts wait for the finished release
 
-2026-10-21, the agent, choosing at the maintainer's request what best serves the goals. Serves Goal 3:
-its counter-signal is issues saying a call did something else, and a post that runs ahead of npm sends
-readers to a version without what the post describes. Drafts describe the finished release, so they
-wait for every item in it. Valid while a version bump on `main` publishes (§Publish on a version bump).
+2026-10-21, the maintainer, asking for the choice that best reaches the goals. Serves Goal 3.
+A post that goes out before its publish sends readers to a version without what the post describes.
+They then open issues saying a call did something else, which Goal 3 counts as a counter-signal.
+Drafts describe the finished release, so they wait for every item in it. Valid while a version bump on
+`main` publishes (§Publish on a version bump).
 
 ## No schema validation
 
