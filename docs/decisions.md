@@ -596,7 +596,7 @@ any weights of its own. The script puts code health first, since every project p
 above each achieve goal its README states. The README's Achieve goals follow in the order `## Goals`
 gives them, and by position each weighs 0.97 times the one before. While the comprehension panel's
 overall score is under 7.0, or `docs/comprehension-history.md` holds no scoring run, code health
-weighs 4 times its position weight. README goal 10 restates code health until item 124 drops it.
+weighs 4 times its position weight.
 
 `todo.md`'s `## Scoring` keeps the formula and the bar, the lowest Score a non-exempt item may have.
 Both are the project's to tune: the maintainer confirmed the bar at 0.1 on 2026-10-21.
