@@ -1,8 +1,8 @@
 import type { AdfAttributes } from '../../adf/document.ts'
 import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
-import type { DirectiveAttributes } from '../directive-syntax.ts'
+import type { DirectiveAttributes } from './syntax.ts'
 import { attributeNestingMessage } from '../../adf/document.ts'
-import { attributeValue, spellAttributeValue } from '../directive-syntax.ts'
+import { attributeValue, spellAttributeValue } from './syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 
 export type Elsewhere = { key: string; slot: 'argument' | 'content' }

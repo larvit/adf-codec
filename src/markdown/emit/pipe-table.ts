@@ -1,6 +1,6 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath } from '../../result.ts'
-import type { WrittenFlavour } from '../portable/conventions.ts'
+import type { WrittenFlavour } from '../flavour.ts'
 import { holdsOnlyAttributes, nodeContent } from '../../adf/document.ts'
 import { spellPipeDelimiter, spellPipeRow } from '../pipe-table-syntax.ts'
 import { tryPipeCell } from './inline-line.ts'

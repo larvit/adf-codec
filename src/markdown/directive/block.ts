@@ -1,13 +1,13 @@
-import type { AdfMark } from '../adf/document.ts'
-import type { BlockType } from '../adf/block-nodes.ts'
-import type { JsonValue } from '../json-value.ts'
-import { blockNodeModel } from '../adf/block-nodes.ts'
-import { isAdfMark } from '../adf/document.ts'
-import { markVocabularies } from '../adf/mark-attributes.ts'
-import { overNested } from '../json-value.ts'
-import { serializeCanonicalJson } from '../canonical-json.ts'
-import { spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellStringAttribute } from './directive-syntax.ts'
-import { spellMarkVocabulary } from './mark-spellings.ts'
+import type { AdfMark } from '../../adf/document.ts'
+import type { BlockType } from '../../adf/block-nodes.ts'
+import type { JsonValue } from '../../json-value.ts'
+import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { isAdfMark } from '../../adf/document.ts'
+import { markVocabularies } from '../../adf/mark-attributes.ts'
+import { overNested } from '../../json-value.ts'
+import { serializeCanonicalJson } from '../../canonical-json.ts'
+import { spellAttributes, spellDirectiveOpener, spellJsonAttribute, spellStringAttribute } from './syntax.ts'
+import { spellMarkVocabulary } from '../mark-spellings.ts'
 
 const argumentByType = new Map(
   Object.entries({

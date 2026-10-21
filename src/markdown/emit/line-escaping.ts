@@ -1,10 +1,11 @@
-import type { Claims, WrittenFlavour } from '../portable/conventions.ts'
+import type { Claims, WrittenFlavour } from '../flavour.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
 import { delimiterRunToken, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
-import { flavourClaims, highlightFlanking } from '../portable/conventions.ts'
+import { flavourClaims } from '../flavour.ts'
+import { highlightFlanking } from '../portable/conventions.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 

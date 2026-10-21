@@ -1,4 +1,4 @@
-import type { Claims } from './portable/conventions.ts'
+import type { Claims } from './flavour.ts'
 import type { JsonValue } from '../json-value.ts'
 import { carryFenceType } from './opaque-carry.ts'
 import { infoStringCarries } from './commonmark/grammar.ts'

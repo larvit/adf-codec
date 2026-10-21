@@ -1,6 +1,6 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
-import type { ClaimedPrefix, DirectiveSpan, NestedSpans } from '../directive-syntax.ts'
-import type { Claims } from '../portable/conventions.ts'
+import type { ClaimedPrefix, DirectiveSpan, NestedSpans } from '../directive/syntax.ts'
+import type { Claims, Flavour } from '../flavour.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
@@ -9,19 +9,20 @@ import { centeredImage, externalMedia } from '../external-image.ts'
 import { commonMarkLink, linkHref, linkMark } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { flavourClaims } from '../flavour.ts'
 import { highlightDelimiter } from '../portable/conventions.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
 import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
 import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
-import { noSpans, readInlineDirective } from '../directive-syntax.ts'
-import { openingLinkTakesDirective } from '../emit/inline-line.ts'
+import { noSpans, readInlineDirective } from '../directive/syntax.ts'
+import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
-import { readDirectiveMark } from './directive-marks.ts'
-import { readInlineDirectiveNode } from './directive-nodes.ts'
+import { readDirectiveMark } from '../directive/marks.ts'
+import { readInlineDirectiveNode } from '../directive/nodes.ts'
 import { inlineSource, readInlineToken } from '../inline-tokens.ts'
-import { readTextDirective } from '../text-directive.ts'
+import { readTextDirective } from '../directive/text.ts'
 
 // Only a `paragraph` block takes `image`, the `mediaSingle` a lone image builds; every other container takes `nodes`, where the image is its linked alt text.
 export type InlineContent = { image?: AdfNode; nodes: AdfNode[] }
@@ -89,8 +90,8 @@ const spellableLink = 'link takes the directive form only where CommonMark canno
 const textBreak: TextBreak = { kind: 'textBreak' }
 
 // The outermost content: only here does a text break see both its neighbours.
-export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, claims: Claims): Result<InlineContent> {
-  const scan = freshScan(source, { definitions, path }, { claims, container, inLink: false, spans: noSpans })
+export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
+  const scan = freshScan(source, { definitions, path }, { claims: flavourClaims[flavour], container, inLink: false, spans: noSpans })
   const scanned = scanInline(scan)
   if (!scanned.ok) return scanned
   const nodes = partText(scanned.value.nodes, scan)

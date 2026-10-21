@@ -1,5 +1,6 @@
-import type { DirectiveSpan, Read } from './directive-syntax.ts'
-import { readSoleStringAttribute, spellAttributes, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive-syntax.ts'
+import type { DirectiveSpan } from './syntax.ts'
+import type { Read } from '../../result.ts'
+import { readSoleStringAttribute, spellAttributes, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './syntax.ts'
 
 const name = 'text'
 const spelledRun = /^(?:[ \t]+|\n+|\0+)$/
