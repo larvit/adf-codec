@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 126`
+`Next ID = 128`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 126 | 0.3.0 |  | question | **Decide whether `.oxlintrc.json` may hold the import boundaries, and hold them there.** | 1 | 2 | 1 | 2 | 2 | code health by 2 | 17.4 |
 | 92 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
 | 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
@@ -27,6 +28,7 @@
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
+| 127 | 0.4.0 |  | principle | **Hold what `result.test.ts`, `json-text.test.ts` and `entity-references.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
@@ -56,6 +58,21 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 126. Decide whether `.oxlintrc.json` may hold the import boundaries, and hold them there.
+
+Two boundaries in `docs/decisions.md` §The source parts by ADF and format hold by convention only:
+`src/markdown/parse/` imports from `src/markdown/emit/` only `emit/spelling-questions.ts`, and
+`src/markdown/directive/` imports neither `emit/` nor `parse/`. A test scanning the source is
+refused, since `~/.claude/principles/technical-principles.md` says a test never scans source.
+oxlint 1.89.0 can hold both with `overrides` carrying `no-restricted-imports`. Verified: a
+`from '…'`, a bare `import '…'`, a double-quoted and a dynamic `import()` each fail the
+`size-ratchet` leg, and the exception `!../emit/spelling-questions.ts` passes.
+
+But §The size ratchet, the maintainer's, gives `.oxlintrc.json` a single rule and says no second
+lint rule joins it. The question for the maintainer: may the config hold a second kind of rule, the
+import boundaries? If so, amend that entry's "single rule" and "no second lint rule", and rename the
+`size-ratchet` script and `ci.sh` leg, whose name would no longer say what they hold.
 
 ### 92. Lower the reading cost of the files a chunk reads most before its first commit.
 
@@ -188,6 +205,25 @@ round-trips them; `docs/decisions.md` §The code list gives a cause the carry an
 them from the README's `unsupported-node-shape` cause "Writing, in `adfToLosslessMarkdown`". Found by the README-goals
 audit, 2026-10-04.
 
+### 127. Hold what `result.test.ts`, `json-text.test.ts` and `entity-references.test.ts` check by asserting outcomes, so none reads source text.
+
+Technical principle "Assert the outcome", which bans scanning the source with `ast` or a regex.
+Three tests read source text:
+
+- `src/result.test.ts` regex-parses the `ConvertErrorCode` union out of `result.ts`, and each
+  `failure('…'` and `code: '…'` out of every shipped file, to guard that every declared code has a
+  production cause and every call site names a declared code. A code held in a variable or passed
+  through another helper escapes it.
+- `src/json-text.test.ts` greps every shipped file for `JSON.parse(`, to guard that only
+  `parseJsonText` reads JSON text. `JSON.parse (` or `JSON['parse'](` escapes it.
+- `src/markdown/commonmark/entity-references.test.ts` regex-extracts the `packedReferences` literal
+  from `entity-references.ts`, to guard that each of the 2125 packed references parts into one name
+  and one value the table decodes. Reformatting the literal fails it with the table unchanged.
+
+Item 81 also touches `result.test.ts`; a lint rule for the `JSON.parse` ban meets item 126's
+question about what `.oxlintrc.json` may hold. Found by the technical-principles audit of item 60,
+2026-10-22.
+
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 
 GFM pads a short row with empty cells, reads a line holding no `|` after a table as a row, and
@@ -225,9 +261,9 @@ documents markdown, its comparison table names HTML, and its tagline and `packag
 description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
 `not-a-string` (`docs/decisions.md` §Which code a cause takes).
 
-`html/` may not import `markdown/`, so it learns here which of the carry (`opaque-carry.ts`) and the
-mark spellings (`mark-spellings.ts`) it shares and moves them out of `markdown/`; a composed call
-naming a markdown `Flavour` sits above both peers.
+`html/` may not import `markdown/`. Whatever it shares with the carry (`opaque-carry.ts`) or the
+mark spellings (`mark-spellings.ts`) moves out of `markdown/` as `docs/decisions.md` §The source
+parts by ADF and format says. A composed call naming a markdown `Flavour` sits above both peers.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 

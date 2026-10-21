@@ -933,6 +933,6 @@ stays in one file rather than splitting across the seam. A rule both directions 
 whether a list marker interrupts a paragraph — is one function there too, never a copy per
 direction, however conservative the copy would be. Where the rule is the emitter's own choice, input
 consults it rather than restating it, and that is the only import `parse/` takes from `emit/`,
-through `emit/spelling-questions.ts`, which names `commonMarkSpelling` and
-`openingLinkTakesDirective` and which a test holds — so no fixture the emitter writes can be
-refused, and a spelling the emitter refuses gives its own error rather than a second name for it.
+through `emit/spelling-questions.ts`, which names `commonMarkSpelling`, `openingLinkTakesDirective`
+and the `SpellingMemo` type — so no fixture the emitter writes can be refused, and a spelling the
+emitter refuses gives its own error rather than a second name for it.
