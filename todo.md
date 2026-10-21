@@ -20,7 +20,7 @@
 | 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 13.1 |
 | 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 10.5 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
-| 125 | 0.3.0 |  | decision | **Anchor each level of L, E and I in `docs/score-anchors.md` with shipped chunks that `score-outcomes` measures.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
+| 125 | 0.3.0 |  |  | **Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
@@ -128,9 +128,13 @@ text. Only the property tests catch drift between these and the reader, and it h
 under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
 run it carries may differ from today's, which changes lossless output (§The formats are API).
 
-### 125. Anchor each level of L, E and I in `docs/score-anchors.md` with shipped chunks that `score-outcomes` measures.
+### 125. Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.
 
-`docs/score-anchors.md` does not exist, so no level has an anchor. `score-outcomes`, the maintainer's script kept outside this repo, reads merge commits. This repo merges by rebase, which leaves none, so the script finds no finished chunk to anchor a level with. First make the script measure rebase merges. Change it in its own repo, by PR if that directory is a git repo. Then name two or three shipped items for each level, as the scoring rules say. Until this ships, judge each score by its level's words, as `docs/decisions.md` says.
+`docs/score-anchors.md` does not exist, so no level has an anchor. Pick two or three shipped items
+for E and I now, by each level's words and what followed each release, since no tool measures them.
+L anchors need `score-outcomes` first. The maintainer's script, kept outside this repo, reads merge
+commits, and this repo merges by rebase, which leaves none. Change the script in its own repo, as
+AGENTS.md §7 says. Until then, judge each L by its words.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
