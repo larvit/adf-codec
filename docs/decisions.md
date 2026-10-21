@@ -585,16 +585,21 @@ depend on a store that the gate would then have to keep.
 Docs on `main` describe the release being built rather than the version npm holds, so they match it
 the moment the bump publishes; add no interim note marking the gap.
 
-## Plan items rank by the global loop's goal weights, code health first
+## Plan items rank by `rank_todo.py`'s goal weights, code health first
 
-2026-10-20, the maintainer, asking that this repo follow the global loop's rankings after they changed.
-The repo keeps no weights of its own: the global loop's `rank_todo.py` sets them. Serves code health,
-which every project pursues above each achieve goal its README states, and the order the README gives
-its Achieve goals (`## Goals`). By position, each achieve goal weighs 0.97 times the one before, code
-health first. While the comprehension overall is under 7.0, code health weighs 4 times its position
-weight. README goal 10 restates code health until item 124 drops it. `todo.md`'s `## Scoring` keeps
-the formula and the bar, which are the project's to tune: the maintainer kept the bar at 0.1 on
-2026-10-21, rather than the global example's 1. Valid while `rank_todo.py` sets the weights.
+2026-10-20, the maintainer, asking that this repo follow `rank_todo.py`'s ranking after it
+changed. It serves code health and the order `## Goals` gives its Achieve goals. Valid while
+`rank_todo.py` sets the weights.
+
+`rank_todo.py` is the maintainer's ranking script, kept outside this repo. The repo doesn't keep
+any weights of its own. The script puts code health first, since every project pursues code health
+above each achieve goal its README states. The README's Achieve goals follow in the order `## Goals`
+gives them, and by position each weighs 0.97 times the one before. While the comprehension panel's
+overall score is under 7.0, or `docs/comprehension-history.md` holds no scoring run, code health
+weighs 4 times its position weight. README goal 10 restates code health until item 124 drops it.
+
+`todo.md`'s `## Scoring` keeps the formula and the bar, the lowest Score a non-exempt item may have.
+Both are the project's to tune: the maintainer confirmed the bar at 0.1 on 2026-10-21.
 
 ## No schema validation
 
