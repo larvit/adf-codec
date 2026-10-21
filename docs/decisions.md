@@ -593,7 +593,8 @@ which every project pursues above each achieve goal its README states, and the o
 its Achieve goals (`## Goals`). By position, each achieve goal weighs 0.97 times the one before, code
 health first. While the comprehension overall is under 7.0, code health weighs 4 times its position
 weight. README goal 10 restates code health until item 124 drops it. `todo.md`'s `## Scoring` keeps
-the formula and the bar, which are the project's to tune. Valid while `rank_todo.py` sets the weights.
+the formula and the bar, which are the project's to tune: the maintainer kept the bar at 0.1 on
+2026-10-21, rather than the global example's 1. Valid while `rank_todo.py` sets the weights.
 
 ## No schema validation
 
