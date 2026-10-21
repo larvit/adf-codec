@@ -7,6 +7,26 @@ leg "install ($node_image)" in_image "$node_image" npm ci
 leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
 leg "lint ($node_image)" in_image "$node_image" npm run lint
 
+# The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green.
+boundaries_fire() {
+  local allowed=src/markdown/parse/boundary-probe-allowed.ts directive=src/markdown/directive/boundary-probe.ts lint_log parse=src/markdown/parse/boundary-probe.ts
+  lint_log=$(mktemp) &&
+  # The paths are baked in: the trap fires after this function's locals are gone.
+  trap "rm -f $allowed $directive $lint_log $parse" EXIT &&
+  trap 'exit 130' INT &&
+  trap 'exit 143' TERM &&
+  echo "import '../emit/spelling-questions.ts';" > "$allowed" &&
+  in_image "$node_image" npm run lint &&
+  echo "import '../parse/blocks.ts';" > "$directive" &&
+  echo "import '../emit/adf-to-markdown.ts';" > "$parse" &&
+  ! in_image "$node_image" npm run lint -- --format unix 2>&1 | tee "$lint_log" &&
+  grep -q "^$directive:.*eslint(no-restricted-imports)" "$lint_log" &&
+  grep -q "^$parse:.*eslint(no-restricted-imports)" "$lint_log" &&
+  rm -f "$allowed" "$directive" "$lint_log" "$parse"
+}
+
+leg "import boundaries fire ($node_image)" boundaries_fire
+
 test_log=$(mktemp)
 node_tests() {
   in_image "$node_image" npm test 2>&1 | tee "$test_log"
