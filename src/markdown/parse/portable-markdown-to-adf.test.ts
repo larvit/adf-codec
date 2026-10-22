@@ -205,7 +205,7 @@ test('names where a refused block stands after the task list splits', () => {
   assert.equal(refused('- [ ] a\n\n  <div>x</div>\n\n  tail <b>y</b>\n'), '/content/1')
 })
 
-test('holds task lists to the 500 levels the parser carries, refusing one level deeper where it stands', () => {
+test('refuses a task list nested one level past the 500 the parser carries, at its deepest item', () => {
   const nested = (levels: number): string => Array.from({ length: levels }, (_, level) => `${'  '.repeat(level)}- [ ] a\n`).join('')
   assert.ok(portableMarkdownToAdf(nested(largestNesting)).ok)
   const refused = portableMarkdownToAdf(nested(largestNesting + 1))

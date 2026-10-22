@@ -19,7 +19,7 @@ export function splitTaskList(list: AdfNode): AdfNode[] {
   return blocks
 }
 
-// Where `target` stands among `blocks`: its block's index, then the steps down to it. Every node the split moves keeps its identity, but a lone paragraph, which becomes a taskItem holding its inline nodes.
+// Where `target` stands among `blocks`: its block's index, then the steps down to it. The split rebuilds lists and items but never an inline node, so an inline marker stays findable.
 export function pathTo(blocks: readonly AdfNode[], target: AdfNode): [number, ...ConvertErrorPath] | undefined {
   const pending: Visit[] = blocks.map((node, step) => ({ node, parent: undefined, step }))
   for (let visit = pending.pop(); visit !== undefined; visit = pending.pop()) {
