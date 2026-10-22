@@ -911,9 +911,8 @@ is the markdown flavour's choice, not ADF's.
 ## The source parts by ADF and format
 
 2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, `plain/` 2026-10-03, the import
-boundaries' lint 2026-10-22, the maintainer; the portable flavour's own directory, item 62,
-2026-10-22. Goal 2. Valid while each format has a reader and a
-writer through ADF.
+boundaries' lint 2026-10-22, the maintainer; `parse/` and `emit/` free of `portable/`,
+2026-10-22. Goal 2. Valid while each format has a reader and a writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
 lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a content
@@ -926,14 +925,14 @@ them. A primitive knowing neither ADF nor a format stays at `src/` root. A const
 `spec/flavour.md` draws, and a placement nothing here settles goes beside its only reader, or in
 what both read where there are two.
 
-A flavour's own code, both directions included, sits in its own directory: `markdown/portable/`.
-It hands `parse/` and `emit/` the blocks it reads and writes its own way, so neither imports it.
-Syntax that `parse/` and `emit/` read for a claim in `flavourClaims`, such as `==`, sits in
-`markdown/` itself. The directive grammar, both
-directions included, sits in `markdown/directive/`, which imports neither `emit/` nor `parse/`.
-Otherwise each format directory parts into `emit/` (ADF→format) and
-`parse/` (format→ADF), the rest of it holding what both directions read. A construct's reader lives
-there beside the regex the emitter escapes against, so the two cannot drift; a reader with no emit
+A flavour's own code, both directions included, sits in its own directory: `markdown/portable/`. The
+portable reader and writer hand `parse/` and `emit/` their own block readers and writers
+(`FlavourBlockReaders`, `FlavourBlockWriters`), so neither imports `portable/`. Syntax that `parse/`
+and `emit/` read under a `flavourClaims` claim, such as `==`, sits outside `portable/`. The
+directive grammar, both directions included, sits in `markdown/directive/`, which imports neither
+`emit/` nor `parse/`. Otherwise each format directory parts into `emit/` (ADF→format) and `parse/`
+(format→ADF), the rest of it holding what both directions read. A construct's reader lives there
+beside the regex the emitter escapes against, so the two cannot drift; a reader with no emit
 counterpart goes in `parse/`, unless it is part of a construct that side already holds — a grammar
 stays in one file rather than splitting across the seam. A rule both directions must answer alike —
 whether a list marker interrupts a paragraph — is one function there too, never a copy per
@@ -944,6 +943,6 @@ is the only import `parse/` takes from `emit/`, through `emit/spelling-questions
 
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `parse/` and `emit/` from
 importing `markdown/portable/`, and keeps `markdown/directive/` from importing `emit/` or `parse/`,
-as `no-restricted-imports` overrides. They are lint rules because the
-technical principles refuse a test that scans the source, and a lint rule reads every import
-spelling: `from`, a bare `import`, double quotes and a dynamic `import()`.
+as `no-restricted-imports` overrides. They are lint rules because the technical principles refuse a
+test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
+double quotes and a dynamic `import()`.

@@ -22,7 +22,7 @@ type BlockContainer = 'directive' | 'document' | 'list-item'
 type Delimiters = readonly [string, string]
 // headroom: the nesting levels the deepest node below may still spend before `largestNesting` refuses it.
 export type EmittedBlock = SpelledBlock & { headroom: number }
-// A flavour's own blocks, spelled before CommonMark's, and the openings its reader claims, which a list item or quote escapes.
+// spell: the flavour's own blocks, tried before CommonMark's; claimsItem, claimsQuote: whether a list item's or quote's text opens with a marker the flavour's reader would take, so the writer escapes it.
 export type FlavourBlockWriters = {
   claimsItem: (text: string) => boolean
   claimsQuote: (text: string) => boolean
@@ -202,7 +202,7 @@ function alertEscaped(body: string, writing: Writing): string {
   return writing.flavour === 'portable' && writing.blocks.claimsQuote(body) ? `\\${body}` : body
 }
 
-// Each quote speller calls it directly, not through a wrapper, so a quote level spends one frame between walks (docs/decisions.md §Nothing recurses unbounded).
+// Quote spellers call this directly, never through a wrapper: each frame a quote level adds lowers the depth the stack holds (docs/decisions.md §Nothing recurses unbounded).
 export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, bodyText: (body: string) => string): Result<EmittedBlock> {
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
