@@ -19,7 +19,7 @@ import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.
 import { spellsEmpty } from '../directive/empty-keys.ts'
 import { withinEngineLimits } from '../length-bound.ts'
 
-// A flavour's own reading of a quote and of a bullet list, which may read to several blocks; `path` is the container's, `index` the list's among its blocks.
+// A flavour's own reading of a quote, and of a bullet list into one or more blocks; `path` is the container's, `index` the list's place among the container's blocks.
 export type FlavourBlockReaders = {
   bulletList: (items: readonly Block[][], reading: FlavourReading, path: ConvertErrorPath, depth: number, index: number) => Result<AdfNode[]>
   quote: (blocks: readonly Block[], reading: FlavourReading, path: ConvertErrorPath, depth: number) => Result<AdfNode>

@@ -142,8 +142,8 @@ wait for its publish). Found while planning discoverability, 2026-10-04.
 
 ### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
 
-Mutation testing of item 62's move left about 40 mutants alive in code it moved verbatim, so the
-gaps predate it: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
+Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
+on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
 `markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
 `src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
 `spec/flavour.md` or `docs/decisions.md`, never from the code.

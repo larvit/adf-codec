@@ -16,7 +16,6 @@ type Paragraph = Extract<Block, { kind: 'paragraph' }>
 // The paragraph a task marker opens: a task item holds no image, so a lone one there reads as its linked alt text.
 type TaskParagraph = { kind: 'taskParagraph'; position: SourcePosition; text: string }
 
-// Inside an expand, a folded callout reads as a nestedExpand.
 const expandBlockReaders: FlavourBlockReaders = { bulletList: bulletBlocks, quote: quoteReader('nestedExpand') }
 const portableBlockReaders: FlavourBlockReaders = { bulletList: bulletBlocks, quote: quoteReader('expand') }
 
@@ -48,7 +47,7 @@ function paragraphsOf(position: SourcePosition, ...texts: string[]): Paragraph[]
   return texts.filter((text) => text !== '').map((text) => ({ kind: 'paragraph', position, text }))
 }
 
-// The closure is the reader rather than a wrapper around one, so a quote level spends one stack frame (docs/decisions.md §Nothing recurses unbounded).
+// The closure is the reader itself, never a wrapper calling one: a wrapper adds a stack frame to every quote level (docs/decisions.md §Nothing recurses unbounded).
 function quoteReader(foldedType: 'expand' | 'nestedExpand'): FlavourBlockReaders['quote'] {
   return (blocks, reading, path, depth) => {
     const [first, ...body] = blocks

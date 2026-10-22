@@ -2,7 +2,7 @@ export type Flavour = 'commonmark' | 'lossless' | 'portable'
 
 export type WrittenFlavour = Exclude<Flavour, 'commonmark'>
 
-// What a reader reads past CommonMark, and so what its writer escapes, but for the portable callouts and task lists that `FlavourBlockReaders` and `FlavourBlockWriters` carry (docs/decisions.md §Each call names its flavour).
+// What a reader reads past CommonMark, and so what its writer escapes; the portable flavour's alerts, callouts and task markers are left to `FlavourBlockReaders` and `FlavourBlockWriters` (docs/decisions.md §Each call names its flavour).
 export type Claims = {
   carryFence: boolean
   directives: boolean
@@ -17,7 +17,7 @@ type WrittenClaims = Claims & { pipeTables: 'flavour' | 'gfm'; strikethrough: tr
 // Directives exclude highlights: a directive's slot reads `==`.
 type ReadClaims = Claims & ({ directives: false } | { directives: true; highlights: false })
 
-// A folded callout inside an expand directive would read as an expand, not a nestedExpand, so the portable flavour reads no directives.
+// Pinned false: inside an expand directive, a folded callout would read as an expand, not a nestedExpand.
 export const flavourClaims: Readonly<{ commonmark: ReadClaims; portable: { directives: false } } & Record<WrittenFlavour, ReadClaims & WrittenClaims>> = {
   commonmark: { carryFence: false, directives: false, highlights: false, pipeTables: false, strikethrough: false },
   lossless: { carryFence: true, directives: true, highlights: false, pipeTables: 'flavour', strikethrough: true },
