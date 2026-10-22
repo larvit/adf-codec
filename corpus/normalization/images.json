@@ -110,7 +110,23 @@
           "type": "text"
         },
         {
-          "text": ", ",
+          "text": " (",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://example.com/moon.png"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "image",
+          "type": "text"
+        },
+        {
+          "text": "), ",
           "type": "text"
         },
         {

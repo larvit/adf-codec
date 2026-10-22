@@ -231,8 +231,8 @@ where its reference implementation nests one `<a>` in another.
 ## An image reads as an image only alone in its paragraph, else as its alt text linked; a link text of hard breaks alone reads as its destination, then the breaks
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
-maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer. Goals 4,
-5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, a hard break
+maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer; an image
+inside a link 2026-10-22, a reader panel, 3 of 3 and 5 of 7. Goals 4, 5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, a hard break
 takes no marks and no consumer has reported a link of hard breaks alone.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
@@ -242,9 +242,13 @@ reads as the URL, and an empty link text as its destination. A link text holding
 reads as its destination, then those breaks: four of seven readers expected that over dropping them.
 `[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
 paragraph whose whole text is one image reads as that image, with the link marking its `media`.
-Inside any other link, the alt text is plain text the link marks, and the image's URL and title
-drop. The panel chose this by Goal 6, but Goal 7 holds the image and its title as content, so this
-stands only until `todo.md` item 122 ends it.
+Inside any other link, the alt text is plain text the link marks, and ` (image)` follows the link,
+`image` linked to the image's URL and titled by its title, so Goal 7 keeps both. For a link whose
+text is the image alone, the bot, the LLM pipeline and a support agent picked this 3 of 3. For a
+link holding words beside the image they split on where `(image)` stands, and four more readers, the
+bot, the LLM pipeline, a product manager and an engineer, made it 5 of 7 for after the whole link
+over right after the alt text. Every reader rejected linking the alt text to the image: the words
+lose the link they were written in.
 
 In `portableMarkdownToAdf`, a `[!WORD]` marker with no `+` or `-` stands apart from the lines after
 it, and so does a `+` or `-` callout's title line, so an image alone on the marker line or after the
@@ -302,14 +306,15 @@ counts as content (§An image's title is its caption when the image stands alone
 
 2026-10-14, a reader panel of the export tool, the LLM pipeline and a support agent, and a writer
 panel of a product manager, an engineer and that support agent, 3 of 3 each. Goals 6 and 7. Valid
-while the portable reader reads an image inside a link as its alt text, linked.
+while ADF holds no inline external image, so the portable reader reads an image inside a link as
+linked text.
 
 Where `adfToPortableMarkdown` writes an external image inline, as in a table cell, and a link to
 another target marks it, the link keeps its target and the image follows as a link reading `image`.
 With no alt text, the link text is the link's target, which is how the reader reads `[](href)`, so
-the rewrite holds. Every seat first wrote `[![alt](url)](href)`, which reads back as `[alt](href)`
-and so breaks the byte-for-byte rewrite. Each then picked this over `[alt](url)` and `[alt](href)`,
-which drop a target.
+the rewrite holds. Every seat first wrote `[![alt](url)](href)`, which reads back as linked text
+written in another spelling, and so breaks the byte-for-byte rewrite. Each then picked this over
+`[alt](url)` and `[alt](href)`, which drop a target.
 
 ## Ids stay site-local
 
