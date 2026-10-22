@@ -166,11 +166,13 @@ Per chunk:
    it (docs-only) — re-run only what its own findings or fixes invalidate.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer), report, stop.
 
-A chunk reads these files in part, with `grep -n '^#'` for the headings and a ranged read for the rest:
+A chunk reads these files in part, with `grep -n '^#'` for the headings and a ranged read for
+the rest:
 
 - `CHANGELOG.md`: `## Unreleased` only, the one section a chunk edits.
 - `MIGRATION.md`: the top `## From` section, the release being built.
-- `README.md`, `spec/flavour.md`: the sections the chunk changes or cites.
+- `README.md`: `## Goals`, `## Audience` and the sections the chunk changes or cites.
+- `spec/flavour.md`: the sections the chunk changes or cites.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
