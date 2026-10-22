@@ -2,7 +2,7 @@ export type Flavour = 'commonmark' | 'lossless' | 'portable'
 
 export type WrittenFlavour = Exclude<Flavour, 'commonmark'>
 
-// What a reader reads past CommonMark, and so what its writer escapes (docs/decisions.md §Each call names its flavour).
+// What a reader reads past CommonMark, and so what its writer escapes, but for the portable callouts and task lists that `FlavourBlockReaders` and `FlavourBlockWriters` carry (docs/decisions.md §Each call names its flavour).
 export type Claims = {
   carryFence: boolean
   directives: boolean

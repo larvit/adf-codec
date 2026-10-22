@@ -4,8 +4,7 @@ import type { CodeSpanCloser } from './commonmark/backtick-runs.ts'
 import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailAutolink } from './commonmark/grammar.ts'
 import { backtickCloser, backtickRun } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive/syntax.ts'
-import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
-import { highlightDelimiter, highlightFlanking } from './highlight-syntax.ts'
+import { delimiterFlags, isWordCharacter, runLength } from './commonmark/emphasis-matching.ts'
 import { readEntityReference } from './commonmark/entity-references.ts'
 
 // `directive` and `html` carry no `width`: a directive reads by its own grammar, and the reader refuses HTML.
@@ -26,6 +25,11 @@ export type InlineSource = {
   readonly terminators: Map<string, number>
   readonly text: string
 }
+
+// ー, ｰ and the kana voicing marks sit outside the kana scripts; Script_Extensions would also take Latin combining marks.
+const boundingScript = /^[\u3099\u309a\u30fc\uff70\uff9e\uff9f\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Khmer}\p{Script=Lao}\p{Script=Myanmar}\p{Script=Thai}]$/u
+
+export const highlightDelimiter = '=='
 
 export function inlineSource(text: string): InlineSource {
   return { codeSpanCloser: backtickCloser(text), terminators: new Map(), text }
@@ -101,4 +105,20 @@ function lastStart(inline: InlineSource, terminator: string): number {
 
 function text(width: number): InlineToken {
   return { kind: 'text', width }
+}
+
+// A delimiter is bounded outside by the code point beyond it, and flanks by the character inside it.
+export function highlightFlanking(source: string, index: number): { closes: boolean; opens: boolean } {
+  const end = index + highlightDelimiter.length
+  const before = Array.from(source.slice(Math.max(0, index - 2), index)).at(-1) ?? ''
+  const after = Array.from(source.slice(end, end + 2))[0] ?? ''
+  return { closes: flanks(before) && bounds(after, before), opens: flanks(after) && bounds(before, after) }
+}
+
+function bounds(outside: string, inside: string): boolean {
+  return !isWordCharacter(outside) || boundingScript.test(outside) || boundingScript.test(inside)
+}
+
+function flanks(character: string): boolean {
+  return character !== '' && !/\s/.test(character)
 }

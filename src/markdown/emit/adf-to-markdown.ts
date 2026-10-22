@@ -141,7 +141,7 @@ function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, wri
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   const own = writing.flavour === 'portable' ? writing.blocks.spell(node, path, depth, writing) : undefined
   if (own !== undefined) return own
-  if (node.type === 'blockquote') return tryBlockquote(node, path, depth, writing)
+  if (node.type === 'blockquote') return holdsOnlyAttributes(node, []) ? quotedBlocks(node, path, depth, writing, (body) => alertEscaped(body, writing)) : undefined
   if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, writing)
   if (node.type === 'codeBlock') return readableText(tryCodeBlock(node, writing.flavour))
   if (node.type === 'heading') return tryHeading(node, path, writing.flavour)
@@ -198,15 +198,15 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
   return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
-function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  if (!holdsOnlyAttributes(node, [])) return undefined
-  return quotedBlocks(node, path, depth, writing, (body) => (writing.flavour === 'portable' && writing.blocks.claimsQuote(body) ? `\\${body}` : body))
+function alertEscaped(body: string, writing: Writing): string {
+  return writing.flavour === 'portable' && writing.blocks.claimsQuote(body) ? `\\${body}` : body
 }
 
-export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, text: (body: string) => string): Result<EmittedBlock> {
+// Each quote speller calls it directly, not through a wrapper, so a quote level spends one frame between walks (docs/decisions.md §Nothing recurses unbounded).
+export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, bodyText: (body: string) => string): Result<EmittedBlock> {
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
-  return success(commonMarkText(quoted(text(joinBlocks(inner.value.blocks, 'document'))), inner.value.headroom))
+  return success(commonMarkText(quoted(bodyText(joinBlocks(inner.value.blocks, 'document'))), inner.value.headroom))
 }
 
 function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): string | undefined {

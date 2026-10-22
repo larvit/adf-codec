@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 128`
+`Next ID = 129`
 
 ## Items
 
@@ -21,6 +21,7 @@
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 73 | 0.3.0 | 33, 91, 95, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
@@ -138,6 +139,14 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 its versions and its date in step with the output. We draft each post for the place it goes. The
 maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts announcing a release
 wait for its publish). Found while planning discoverability, 2026-10-04.
+
+### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
+
+Mutation testing of item 62's move left about 40 mutants alive in code it moved verbatim, so the
+gaps predate it: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
+`markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
+`src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
+`spec/flavour.md` or `docs/decisions.md`, never from the code.
 
 ### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
 
