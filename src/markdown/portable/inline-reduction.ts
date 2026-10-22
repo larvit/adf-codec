@@ -4,6 +4,7 @@ import type { MarkRun } from '../emit/line-escaping.ts'
 import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { imageAside } from '../external-image.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
@@ -80,7 +81,7 @@ function idMention(id: unknown): string | undefined {
   return typeof id === 'string' && id !== '' ? `@${id}` : undefined
 }
 
-// An image standing inline is a link to it: CommonMark's inline image reads back as no node, and one inside a link as its alt text, linked.
+// An image standing inline is a link to it: the reader builds no node for an inline image, reading it as its alt text linked, and inside a link as the link's text, then (image).
 function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   const alt = nonEmpty(attrs['alt'])
   const url = nonEmpty(attrs['url'])
@@ -89,9 +90,7 @@ function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], 
   const href = link === undefined ? undefined : nodeAttrs(link)['href']
   if (typeof href !== 'string') return linkedLeaves(alt ?? url, url, marks, container)
   if (href === url) return textLeaves(alt ?? url, marks, container)
-  const linkedAlt = textLeaves(alt ?? nonEmpty(href) ?? url, marks, container)
-  const image = linkedLeaves('image', url, marks, container)
-  return [...linkedAlt, textLeaf(' (', []), ...image, textLeaf(')', [])]
+  return [...textLeaves(alt ?? nonEmpty(href) ?? url, marks, container), ...imageAside((text) => linkedLeaves(text, url, marks, container))]
 }
 
 function noteLeaves(name: string): AdfNode[] {
