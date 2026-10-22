@@ -752,6 +752,8 @@ test('spells a table as a pipe table only where every row and cell is plain', ()
   const marked = (mark: AdfMark): AdfDocument => table(row(cell('tableHeader', { content: [{ marks: [mark], text: 'l', type: 'text' }], type: 'paragraph' })))
   assert.ok(directive(adfToLosslessMarkdown(marked({ attrs: { href: 'https://example.com/?x|y' }, type: 'link' }))))
   assert.ok(directive(adfToLosslessMarkdown(marked({ attrs: { href: 'https://example.com/', title: 'a|b' }, type: 'link' }))))
+  assert.ok(directive(adfToLosslessMarkdown(marked({ attrs: { href: 'https://example.com/|' }, type: 'link' }))))
+  assert.ok(directive(adfToLosslessMarkdown(table(row(cell('tableHeader', { content: [{ marks: [{ type: 'code' }], text: 'a\\|b', type: 'text' }], type: 'paragraph' }))))))
   const codeSpan: AdfNode = { marks: [{ type: 'code' }], text: 'a|b', type: 'text' }
   assert.ok(directive(adfToLosslessMarkdown(table(row(cell('tableHeader', { content: [codeSpan], type: 'paragraph' }))))))
   assert.equal(markdown(adfToLosslessMarkdown(marked({ attrs: { href: 'https://example.com/x' }, type: 'link' }))), '| [l](https://example.com/x) |\n| --- |\n')
