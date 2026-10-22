@@ -1,7 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block } from '../parse/blocks.ts'
 import type { ConvertError, ConvertErrorPath, ParseError, Result, SourcePosition } from '../../result.ts'
-import type { FlavourBlockReaders, Reading } from '../parse/markdown-to-adf.ts'
+import type { FlavourBlockReaders, FlavourReading, Reading } from '../parse/markdown-to-adf.ts'
 import { containerNode, contentNode, listNode, readBlocks, readDocument, tooDeep } from '../parse/markdown-to-adf.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from './conventions.ts'
@@ -15,7 +15,13 @@ type Paragraph = Extract<Block, { kind: 'paragraph' }>
 // The paragraph a task marker opens: a task item holds no image, so a lone one there reads as its linked alt text.
 type TaskParagraph = { kind: 'taskParagraph'; position: SourcePosition; text: string }
 
-const portableBlockReaders: FlavourBlockReaders = { bulletList: bulletBlocks, quote: quoteNode }
+// inExpand: whether an expand holds the blocks, which makes a folded callout a nestedExpand.
+function blockReaders(inExpand: boolean): FlavourBlockReaders {
+  return { bulletList: bulletBlocks, quote: (blocks, reading, path, depth) => quoteNode(blocks, reading, path, depth, inExpand) }
+}
+
+const expandBlockReaders = blockReaders(true)
+const portableBlockReaders = blockReaders(false)
 
 export function portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   const read = readDocument(markdown, { blocks: portableBlockReaders, flavour: 'portable' })
@@ -41,7 +47,7 @@ function paragraphsOf(position: SourcePosition, ...texts: string[]): Paragraph[]
   return texts.filter((text) => text !== '').map((text) => ({ kind: 'paragraph', position, text }))
 }
 
-function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function quoteNode(blocks: readonly Block[], reading: FlavourReading, path: ConvertErrorPath, depth: number, inExpand: boolean): Result<AdfNode> {
   const [first, ...body] = blocks
   const led = markerLed(first, readAlertMarker)
   if (led === undefined) return containerNode({ type: 'blockquote' }, blocks, reading, path, depth)
@@ -51,8 +57,8 @@ function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErro
   const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour)
   if (!title.ok) return title
   const text = titleText(title.value.nodes)
-  const type = reading.inExpand ? 'nestedExpand' : 'expand'
-  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, inExpand: true }, path, depth + 1))
+  const type = inExpand ? 'nestedExpand' : 'expand'
+  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, blocks: expandBlockReaders }, path, depth + 1))
 }
 
 // docs/decisions.md, A callout title keeps its link targets.

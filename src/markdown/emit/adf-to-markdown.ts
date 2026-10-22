@@ -32,14 +32,14 @@ type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 export type PlacedBlock = SpelledBlock & { node: AdfNode }
 export type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
-type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; spelling: 'list'; text: string }
+type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; interruptsParagraph: boolean; ordered: boolean; spelling: 'list'; text: string }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
 export type WrittenAs = { flavour: 'lossless' } | { blocks: FlavourBlockWriters; flavour: 'portable' }
 export type Writing = WrittenAs & { memo: SpellingMemo | undefined }
 
-export const bulletDelimiters: Delimiters = ['-', '*']
+const bulletDelimiters: Delimiters = ['-', '*']
 export const largestListMarker = 999999999
 // Bare because tryList admits no item carrying attributes, marks or text.
 const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
@@ -94,22 +94,14 @@ export function joinBlocks(blocks: readonly PlacedBlock[], container: BlockConta
   return text
 }
 
-// A task list is spelled as a bullet list.
 function sharesMarker(previous: PlacedBlock, next: PlacedBlock): boolean {
-  return previous.spelling === 'list' && next.spelling === 'list' && (previous.node.type === 'orderedList') === (next.node.type === 'orderedList')
+  return previous.spelling === 'list' && next.spelling === 'list' && previous.ordered === next.ordered
 }
 
 function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
   const bothCommonMark = previous.spelling !== 'directive' && next.spelling !== 'directive'
-  if (bothCommonMark && next.spelling === 'list' && container === 'list-item') return interruptsParagraph(next.node) ? '\n' : '\n\n'
+  if (bothCommonMark && next.spelling === 'list' && container === 'list-item') return next.interruptsParagraph ? '\n' : '\n\n'
   return container === 'directive' && !bothCommonMark ? '\n' : '\n\n'
-}
-
-function interruptsParagraph(node: AdfNode): boolean {
-  const items = nodeContent(node)
-  const empty = node.type !== 'taskList' && (items[0] === undefined || nodeContent(items[0]).length === 0)
-  if (node.type !== 'orderedList') return markerInterruptsParagraph(undefined, empty)
-  return markerInterruptsParagraph(listStart(node, items.length) ?? 0, empty)
 }
 
 export function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
@@ -160,7 +152,7 @@ function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   return undefined
 }
 
-export function quoted(text: string): string {
+function quoted(text: string): string {
   return text
     .split('\n')
     .map((line) => (line === '' ? '>' : `> ${line}`))
@@ -176,7 +168,7 @@ function carriedFence(carried: Result<{ headroom: number; text: string }>): Resu
   return success({ ...carried.value, spelling: 'commonmark' })
 }
 
-export function commonMarkText(text: string, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
+function commonMarkText(text: string, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
   return { headroom, spelling: 'commonmark', text }
 }
 
@@ -208,11 +200,13 @@ function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string,
 
 function tryBlockquote(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   if (!holdsOnlyAttributes(node, [])) return undefined
+  return quotedBlocks(node, path, depth, writing, (body) => (writing.flavour === 'portable' && writing.blocks.claimsQuote(body) ? `\\${body}` : body))
+}
+
+export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, text: (body: string) => string): Result<EmittedBlock> {
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
-  const text = joinBlocks(inner.value.blocks, 'document')
-  const alert = writing.flavour === 'portable' && writing.blocks.claimsQuote(text)
-  return success(commonMarkText(quoted(alert ? `\\${text}` : text), inner.value.headroom))
+  return success(commonMarkText(quoted(text(joinBlocks(inner.value.blocks, 'document'))), inner.value.headroom))
 }
 
 function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): string | undefined {
@@ -278,17 +272,21 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
     const inner = joinBlocks(item.walk.blocks, 'list-item')
     return writing.flavour === 'portable' && writing.blocks.claimsItem(inner) ? `\\${inner}` : inner
   })
-  const list = ordered ? spelledList(inners, (offset) => `${start + offset}`, orderedDelimiters, headroom) : spelledList(inners, () => '', bulletDelimiters, headroom)
+  const list = spelledList(inners, ordered ? start : undefined, headroom)
   if (list !== undefined) return success(list)
   // The directive form spends a level the walk did not count.
   if (headroom < 1) return tooDeep(path)
   return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
 }
 
-export function spelledList(inners: readonly string[], number: (offset: number) => string, [usual, alternate]: Delimiters, headroom: number): EmittedBlock | undefined {
+// start: an ordered list's first number, undefined for a bullet list.
+export function spelledList(inners: readonly string[], start: number | undefined, headroom: number): EmittedBlock | undefined {
+  const [usual, alternate] = start === undefined ? bulletDelimiters : orderedDelimiters
+  const number = (offset: number): string => (start === undefined ? '' : `${start + offset}`)
   const text = listLines(inners, number, usual)
   const alternateText = listLines(inners, number, alternate)
-  return text === undefined || alternateText === undefined ? undefined : { alternateText, headroom, spelling: 'list', text }
+  if (text === undefined || alternateText === undefined) return undefined
+  return { alternateText, headroom, interruptsParagraph: markerInterruptsParagraph(start, inners[0] === ''), ordered: start !== undefined, spelling: 'list', text }
 }
 
 function listLines(inners: readonly string[], number: (offset: number) => string, delimiter: string): string | undefined {

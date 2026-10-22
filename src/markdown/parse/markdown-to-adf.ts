@@ -21,14 +21,15 @@ import { withinEngineLimits } from '../length-bound.ts'
 
 // A flavour's own reading of a quote and of a bullet list, which may read to several blocks.
 export type FlavourBlockReaders = {
-  bulletList: (items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number, listIndex: number) => Result<AdfNode[]>
-  quote: (blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number) => Result<AdfNode>
+  bulletList: (items: readonly Block[][], reading: FlavourReading, path: ConvertErrorPath, depth: number, listIndex: number) => Result<AdfNode[]>
+  quote: (blocks: readonly Block[], reading: FlavourReading, path: ConvertErrorPath, depth: number) => Result<AdfNode>
 }
+
+export type FlavourReading = Extract<Reading, { flavour: 'portable' }>
 
 export type ReadAs = { flavour: 'commonmark' | 'lossless' } | { blocks: FlavourBlockReaders; flavour: 'portable' }
 
-// `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand. An expand directive leaves it unset, so no flavour reads both.
-export type Reading = ReadAs & { definitions: LinkDefinitions; inExpand: boolean; memo: SpellingMemo }
+export type Reading = ReadAs & { definitions: LinkDefinitions; memo: SpellingMemo }
 
 export function commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError> {
   return readDocument(markdown, { flavour: 'commonmark' })
@@ -53,7 +54,7 @@ function readMarkdown(markdown: string, readAs: ReadAs): Result<AdfDocument> {
     const fault = documentFault(only)
     return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
   }
-  const reading: Reading = { ...readAs, definitions: parsed.definitions, inExpand: false, memo: new Map() }
+  const reading: Reading = { ...readAs, definitions: parsed.definitions, memo: new Map() }
   const content = readBlocks(parsed.blocks, reading, [], 0)
   return content.ok ? success({ content: content.value, type: 'doc', version: 1 }) : content
 }
