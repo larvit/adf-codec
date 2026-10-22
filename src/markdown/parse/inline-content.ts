@@ -45,7 +45,7 @@ type Bracket = { active: boolean; image: boolean; kind: 'open'; start: number }
 type Image = { alt: string; definition: LinkDefinition; kind: 'image'; link?: LinkDefinition }
 
 // The (image) after a link for one image its text holds: running text reads it, alt text drops it.
-type ImageLink = { kind: 'imageLink'; nodes: Inline[] }
+type ImageLink = { image: LinkDefinition; kind: 'imageLink'; nodes: Inline[] }
 
 type Nodes = { kind: 'nodes'; nodes: Inline[] }
 
@@ -227,7 +227,10 @@ function directiveMarkPieces(scan: Scan, name: string, mark: AdfMark, slot: Slot
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, nodes, index) : undefined
   if (refused !== undefined) return refused
-  return success([...slot.pieces.map((piece) => ({ ...piece, nodes: applyMark(piece.nodes, mark) })), ...slot.imageLinks])
+  const attrs = nodeAttrs(mark)
+  const title = attrs['title']
+  const imageLinks = mark.type === 'link' ? besideLink(slot.imageLinks, linkHref(attrs) ?? '', typeof title === 'string' ? title : undefined) : slot.imageLinks
+  return success([...slot.pieces.map((piece) => ({ ...piece, nodes: applyMark(piece.nodes, mark) })), ...imageLinks])
 }
 
 // spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
@@ -279,7 +282,7 @@ function resolvedPieces(pieces: readonly Piece[], nodes: readonly Inline[][]): R
       continue
     }
     if (run.length > 0) resolved.push({ kind: 'nodes', nodes: run })
-    resolved.push({ kind: 'imageLink', nodes: held })
+    resolved.push({ ...piece, nodes: held })
     run = []
   }
   if (run.length > 0) resolved.push({ kind: 'nodes', nodes: run })
@@ -295,7 +298,12 @@ function linkedAlt(piece: Piece, inLink: boolean): Piece[] {
   if (inLink && piece.kind === 'imageLink') return []
   if (piece.kind !== 'image' || (inLink && piece.link === undefined)) return [piece]
   const alt: Piece = { kind: 'nodes', nodes: linkTo(piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }], piece.link ?? piece.definition) }
-  return piece.link === undefined ? [alt] : [alt, imageLink(piece.definition)]
+  return piece.link === undefined ? [alt] : [alt, ...besideLink([imageLink(piece.definition)], piece.link.destination, piece.link.title)]
+}
+
+// As adfToPortableMarkdown writes it: a link to the image itself needs no (image), unless the image holds a title the link does not.
+function besideLink(imageLinks: readonly ImageLink[], href: string, title: string | undefined): ImageLink[] {
+  return imageLinks.filter(({ image }) => image.destination !== href || (image.title !== undefined && image.title !== '' && image.title !== title))
 }
 
 function linkedImages(pieces: readonly Piece[]): ImageLink[] {
@@ -306,7 +314,7 @@ function linkedImages(pieces: readonly Piece[]): ImageLink[] {
 }
 
 function imageLink(definition: LinkDefinition): ImageLink {
-  return { kind: 'imageLink', nodes: imageAside((text) => [{ marks: [linkMark(definition)], text, type: 'text' }]) }
+  return { image: definition, kind: 'imageLink', nodes: imageAside((text) => [{ marks: [linkMark(definition)], text, type: 'text' }]) }
 }
 
 function mediaSingle({ alt, definition, link }: Image): AdfNode {
@@ -453,7 +461,7 @@ function linkPieces(scan: Scan, inner: readonly Piece[], definition: LinkDefinit
   if (!nodes.value.some((node) => marksItem(node, 'link')) && nodes.value.some((node) => isNode(node) && node.type !== 'hardBreak')) {
     return failure('unsupported-node-shape', unlinkable, scan.path)
   }
-  return success([{ kind: 'nodes', nodes: linkTo(nodes.value, definition) }, ...linkedImages(inner)])
+  return success([{ kind: 'nodes', nodes: linkTo(nodes.value, definition) }, ...besideLink(linkedImages(inner), definition.destination, definition.title)])
 }
 
 // CommonMark: no link nests inside another, though an image's description holds one.

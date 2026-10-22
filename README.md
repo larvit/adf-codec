@@ -556,8 +556,9 @@ Serves [Goals](#goals) 1, 4 and 5.
     mark but a link or an annotation: ``**`npm ci`**`` reads as `` `npm ci` ``.
   - Inside a link, an image reads as plain text the link marks, and `(image)` follows the link,
     linked to the image: `[look at ![the moon](moon.png) tonight](/moon)` reads as
-    `[look at the moon tonight](/moon) ([image](moon.png))`. A link alone in its paragraph whose
-    whole text is one image reads as that image, with the link marking it.
+    `[look at the moon tonight](/moon) ([image](moon.png))`. A link to the image's own URL takes
+    no `(image)`, unless the image's title is one the link lacks. A link alone in its paragraph
+    whose whole text is one image reads as that image, with the link marking it.
   - An image's title becomes its caption when the image stays an image, and otherwise the title of
     the link to the image.
 
