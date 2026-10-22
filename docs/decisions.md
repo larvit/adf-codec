@@ -716,7 +716,7 @@ held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5
 rounds under a fall the seats laid on item 93's `splitPath` and `splitPlace`, which place a refused
 block's path by replaying `splitTaskList` on stand-in nodes; both seats read the chunk's own image
 builder as a gain. The scores at be23835 were Junior 6.5, Mid 6, Senior 6 and Architect 6, mean
-6.13. `todo.md` item 102 is to place that path without the replay. Item 106, 2026-10-13, shipped
+6.13. Item 102, 2026-10-22, placed that path in the blocks the one split built. Item 106, 2026-10-13, shipped
 after three rounds under a worse ruling, the maintainer's call: both paired seats read the overall
 as the same, but Locality fell to a mean of 5.13, laid on the spelling memo the chunk splits between
 the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The overall

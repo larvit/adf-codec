@@ -8,8 +8,8 @@ import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/spelling-questions.ts'
 import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
-import { emptyKeys, nodeAttrs, nodeContent } from '../../adf/document.ts'
-import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
+import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
+import { failure, faulted, positioned, success, type ConvertError, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -20,7 +20,7 @@ import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from '../directive/node-reading.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.ts'
 import { spellsEmpty } from '../directive/empty-keys.ts'
-import { splitPlace, splitTaskList } from '../portable/task-list.ts'
+import { pathTo, splitTaskList } from '../portable/task-list.ts'
 import { withinEngineLimits } from '../length-bound.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
@@ -210,52 +210,58 @@ function taskItems(items: readonly Block[][]) {
 }
 
 function bulletBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
-  const led = taskItems(items)
-  if (led === undefined) {
+  const tasks = taskBlocks(items, reading, path, depth)
+  if (tasks === undefined) {
     const list = listNode({ type: 'bulletList' }, items, reading, path, depth)
     return list.ok ? success([list.value]) : list
   }
+  if (!tasks.ok) return tasks
+  const { nodes: blocks, refusal } = tasks.value
+  if (refusal === undefined) return success(blocks)
+  const listIndex = path.at(-1)
+  const place = pathTo(blocks, refusal.marker)
+  if (place === undefined || typeof listIndex !== 'number') return { error: refusal.error, ok: false }
+  const [blockIndex, ...steps] = place
+  return { error: { ...refusal.error, path: [...path.slice(0, -1), listIndex + blockIndex, ...steps.slice(0, -2), ...refusal.within] }, ok: false }
+}
+
+// A block a task list refused. A placeholder holding `marker` stands where the block's node would, so the split that builds the list places the refusal too, and `within` is the error's path below that node.
+type Refusal = { error: ConvertError; marker: AdfNode; within: ConvertErrorPath }
+
+// Nodes read from task blocks and the first refusal among them; a list is read up to the task holding its refusal.
+type TaskNodes = { nodes: AdfNode[]; refusal: Refusal | undefined }
+
+function taskBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<TaskNodes> | undefined {
+  const led = taskItems(items)
+  if (led === undefined) return undefined
   if (depth + 1 > largestNesting) return tooDeep([...path, 'content', 0])
   const tasks: AdfNode[] = []
+  let refusal: Refusal | undefined
   for (const [index, { marker, others, position, text }] of led.entries()) {
     const body = text.replace(/^(?:[ \t\n]|\\\n)+/, '')
     const marked: TaskParagraph[] = body === '' ? [] : [{ kind: 'taskParagraph', position, text: body }]
-    const blocks = [...marked, ...others]
     const task: AdfNode & { content: AdfNode[] } = { attrs: { state: marker.state }, content: [], type: 'blockTaskItem' }
-    for (const [at, block] of blocks.entries()) {
-      const read = readBlocks([block], reading, [...path, 'content', index], depth + 1)
-      if (!read.ok) return { error: { ...read.error, path: splitPath(read.error.path, { block, next: blocks[at + 1], path, reading, task, tasks }) }, ok: false }
-      for (const node of read.value) task.content.push(node)
+    for (const block of [...marked, ...others]) {
+      const read = readTaskBlock(block, reading, [...path, 'content', index], depth + 1)
+      for (const node of read.nodes) task.content.push(node)
+      refusal ??= read.refusal
     }
     tasks.push(task)
+    if (refusal !== undefined) break
   }
-  return success(splitTaskList({ content: tasks, type: 'taskList' }))
+  return success({ nodes: splitTaskList({ content: tasks, type: 'taskList' }), refusal })
 }
 
-type Refusal = { block: ReadBlock; next: ReadBlock | undefined; path: ConvertErrorPath; reading: Reading; task: AdfNode; tasks: readonly AdfNode[] }
-
-// splitTaskList moves a task's children, so the path names where the refused block's node will stand: the split runs with a stand-in of that node's type.
-function splitPath(refused: ConvertErrorPath, { block, next, path, reading, task, tasks }: Refusal): ConvertErrorPath {
-  const [, offset, ...within] = refused.slice(path.length + 2)
-  const listIndex = path.at(-1)
-  if (typeof offset !== 'number' || typeof listIndex !== 'number') return refused
-  // A nested task list reads as a task list, then the blocks its own split moved out; a bulletList stands in for each of those, since the split moves it out too.
-  const before = Array.from({ length: offset }, (_, at): AdfNode => ({ type: at === 0 ? 'taskList' : 'bulletList' }))
-  const node: AdfNode & { content: [AdfNode] } = { content: [{ text: '', type: 'text' }], type: offset === 0 ? childType(block, reading) : 'bulletList' }
-  const after = next === undefined ? [] : [{ type: childType(next, reading) }]
-  const list = { content: [...tasks, { ...task, content: [...nodeContent(task), ...before, node, ...after] }], type: 'taskList' }
-  const place = splitPlace(list, node)
-  if (place === undefined) return refused
-  const [blockIndex, ...steps] = place
-  return [...path.slice(0, -1), listIndex + blockIndex, ...steps, ...within]
-}
-
-// The split tells only paragraphs and task lists from other blocks, so any other block's kind serves as its type; a paragraph may read as another node.
-function childType(block: ReadBlock, reading: Reading): string {
-  if (block.kind === 'bulletList') return taskItems(block.items) === undefined ? 'bulletList' : 'taskList'
-  if (block.kind !== 'paragraph') return block.kind === 'taskParagraph' ? 'paragraph' : block.kind
-  const read = paragraphNode(block.text, reading, [])
-  return read.ok ? read.value.type : 'paragraph'
+// The nodes a block of a task reads to. A refused one is a placeholder, typed as the split tells paragraphs and task lists from other blocks, so a paragraph that failed to read stays a paragraph.
+function readTaskBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): TaskNodes {
+  const nodePath = [...path, 'content', 0]
+  const nested = block.kind === 'bulletList' && depth <= largestNesting ? taskBlocks(block.items, reading, nodePath, depth) : undefined
+  if (nested?.ok) return nested.value
+  const read = positioned(nested ?? readBlocks([block], reading, path, depth), block.position)
+  if (read.ok) return { nodes: read.value, refusal: undefined }
+  const marker: AdfNode = { text: '', type: 'text' }
+  const type = block.kind === 'taskParagraph' ? 'paragraph' : block.kind === 'bulletList' && taskItems(block.items) !== undefined ? 'taskList' : block.kind
+  return { nodes: [{ content: [marker], type }], refusal: { error: read.error, marker, within: read.error.path.slice(nodePath.length) } }
 }
 
 function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {

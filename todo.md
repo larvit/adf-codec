@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 102 | 0.3.0 |  | decision | **Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 13.1 |
 | 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 10.5 |
@@ -22,7 +21,7 @@
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.3.0 | 33, 62, 91, 95, 102, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.3.0 | 33, 62, 91, 95, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
@@ -56,13 +55,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 102. Place a block a portable task list refuses at its path in the returned document without replaying `splitTaskList` on stand-in nodes.
-
-`splitPath` (`src/markdown/parse/markdown-to-adf.ts`) builds stand-ins and `splitPlace`
-(`src/markdown/portable/task-list.ts`) finds them again by object identity, right only while
-`taskOfParagraphs` keeps the original child objects. Both paired-ruling seats on 2026-10-11 named it
-the reason the project read worse.
 
 ### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
 

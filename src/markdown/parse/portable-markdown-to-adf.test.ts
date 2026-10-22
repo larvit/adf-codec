@@ -197,6 +197,12 @@ test('names where a refused block stands after the task list splits', () => {
   assert.equal(refused('- [ ] A\n\n  # h\n  - [ ] C <b>x</b>\n'), '/content/2/content/0')
   assert.equal(refused('- [ ] A\n  - [ ] C\n\n    # h\n\n    <div>x</div>\n'), '/content/2')
   assert.equal(refused('> q\n>\n> - [ ] A\n>\n>   # h\n>\n>   <div>x</div>\n'), '/content/0/content/3')
+  assert.equal(refused('- [ ] a <b>x</b>\n\n  # h\n'), '/content/0/content/0')
+  assert.equal(refused('- [ ] A\n  - [ ] B\n\n    # h\n  - [ ] C <b>x</b>\n'), '/content/2/content/0')
+  assert.equal(refused('- [ ] A\n  - [ ] B\n\n    # h\n  - [ ] C\n\n    <div>x</div>\n'), '/content/3')
+  assert.equal(refused('- [ ] A\n  - [ ] B\n    - [ ] C <b>x</b>\n'), '/content/0/content/1/content/1/content/0')
+  assert.equal(refused('- [ ] A\n  - [ ] B <b>x</b>\n  - [ ] C <i>y</i>\n'), '/content/0/content/1/content/0')
+  assert.equal(refused('- [ ] a\n\n  <div>x</div>\n\n  tail <b>y</b>\n'), '/content/1')
 })
 
 test('reads a task list beside a list of another bullet character as two lists', () => {
