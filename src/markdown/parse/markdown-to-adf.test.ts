@@ -1107,6 +1107,8 @@ test('reads a lone image as the media the flavour spells for it', () => {
 test('flattens the description of a lone image to the plain text alt holds', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('![a [b](/u) c](/v)\n')), [image('/v', 'a b c')])
   assert.deepEqual(content(losslessMarkdownToAdf('![a ![b](/c) d](/e)\n')), [image('/e', 'a b d')])
+  assert.deepEqual(content(losslessMarkdownToAdf('![x [y ![a](/u)](/h)](/v)\n')), [image('/v', 'x y a')])
+  assert.deepEqual(content(losslessMarkdownToAdf('![x !adf:link[y ![a](/u)]{href="a\\nb"}](/v)\n')), [image('/v', 'x y a')])
   assert.deepEqual(content(losslessMarkdownToAdf('![a\nb](/u)\n')), [image('/u', 'a b')])
   assert.deepEqual(content(losslessMarkdownToAdf('![a  \nb](/u)\n')), [image('/u', 'a b')])
   assert.deepEqual(content(losslessMarkdownToAdf('![a `b`](/u)\n')), [image('/u', 'a b')])
@@ -1198,6 +1200,7 @@ test('names the content slot no lone plain text node reads back from', () => {
   assert.equal(code(losslessMarkdownToAdf('!adf:status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(code(losslessMarkdownToAdf('!adf:status[!adf:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(content(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n')), named)
+  assert.equal(content(losslessMarkdownToAdf('!adf:link[x !adf:status[![a](/u)]{color=yellow}]{href="a\\nb"}\n')), named)
   assert.equal(code(losslessMarkdownToAdf('!adf:status[<div>]{color=yellow}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:date[<div>]{timestamp=1}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:widget[<div>]\n')), 'unmappable-html')

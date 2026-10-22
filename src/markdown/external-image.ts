@@ -12,3 +12,8 @@ export function externalMedia(alt: string, url: string, link?: LinkDefinition): 
   const media: AdfNode = { attrs: alt === '' ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }
   return link === undefined ? media : { ...media, marks: [linkMark(link)] }
 }
+
+// spec/flavour.md, The CommonMark image: the ` (image)` standing after a link for an image inside it, `image` built by `link`.
+export function imageAside(link: (text: string) => AdfNode[]): AdfNode[] {
+  return [{ text: ' (', type: 'text' }, ...link('image'), { text: ')', type: 'text' }]
+}

@@ -5,7 +5,7 @@ import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
-import { centeredImage, externalMedia } from '../external-image.ts'
+import { centeredImage, externalMedia, imageAside } from '../external-image.ts'
 import { commonMarkLink, linkHref, linkMark } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -34,7 +34,7 @@ type OwnMarks = { kind: 'ownMarks'; node: AdfNode }
 
 type Inline = AdfNode | OwnMarks | TextBreak
 
-// `images` are the destinations of the images an `!adf:link` slot holds, for the link to follow with (image).
+// `images` are the images an `!adf:link` slot holds, whose (image) the link stands after itself.
 type Scanned = { image?: AdfNode; images: LinkDefinition[]; nodes: Inline[] }
 
 export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
@@ -44,6 +44,9 @@ type Bracket = { active: boolean; image: boolean; kind: 'open'; start: number }
 // `link` is the link whose text is this image alone.
 type Image = { alt: string; definition: LinkDefinition; kind: 'image'; link?: LinkDefinition }
 
+// The (image) after a link, one per image its text holds: running text reads it, alt text drops it.
+type ImageLinks = { definitions: LinkDefinition[]; kind: 'imageLinks' }
+
 type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; opens: boolean; position: number; stretch: number }
 
 type Pairing = EmphasisPairing<Run>
@@ -52,7 +55,8 @@ type Piece =
   | Bracket
   | OwnMarks
   | Image
-  | { images?: LinkDefinition[]; kind: 'nodes'; nodes: Inline[] }
+  | ImageLinks
+  | { kind: 'nodes'; nodes: Inline[] }
   | TextBreak
   | { canClose: boolean; canOpen: boolean; character: string; kind: 'run'; length: number }
   | { closes: boolean; kind: 'highlight'; opens: boolean }
@@ -66,7 +70,7 @@ type Scan = {
   // Pieces below this have been walked for openers to deactivate: an image close folds the link-marked piece into alt text, leaving this the only record that the brackets around it are doomed.
   deactivatedBefore: number
   definitions: LinkDefinitions
-  // Whether an `!adf:link` slot holds this content, where an image reads as its plain alt text.
+  // Whether an `!adf:link` slot holds this content through mark slots alone, where an image reads as its plain alt text and the link stands its (image) after itself.
   inLink: boolean
   openingSpellableLink: boolean
   path: ConvertErrorPath
@@ -180,35 +184,35 @@ function readDirective(scan: Scan, inline: InlineSource, prefix: ClaimedPrefix):
 }
 
 function pushDirective(scan: Scan, span: DirectiveSpan, index: number): Result<number> {
-  const piece = directivePiece(scan, span, index)
-  if (!piece.ok) return piece
+  const pieces = directivePieces(scan, span, index)
+  if (!pieces.ok) return pieces
   flush(scan, false)
-  scan.pieces.push(piece.value)
+  for (const piece of pieces.value) scan.pieces.push(piece)
   return success(index + span.length)
 }
 
-function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<Piece> {
+function directivePieces(scan: Scan, span: DirectiveSpan, index: number): Result<Piece[]> {
   const carried = readCarriedInline(span)
   if (carried !== undefined) {
     if (carried.fault !== undefined) return faulted(carried.fault, scan.path)
-    return success({ kind: 'ownMarks', node: carried.value })
+    return success([{ kind: 'ownMarks', node: carried.value }])
   }
-  if (span.name === textBreakName) return span.content === undefined && span.attributes.size === 0 ? success(textBreak) : failure('unsupported-node-shape', `${textBreakName} spells the bare leaf form, ${textBreakSpelling}: this one spells more`, scan.path)
+  if (span.name === textBreakName) return span.content === undefined && span.attributes.size === 0 ? success([textBreak]) : failure('unsupported-node-shape', `${textBreakName} spells the bare leaf form, ${textBreakSpelling}: this one spells more`, scan.path)
   const text = readTextDirective(span)
   if (text?.fault !== undefined) return faulted(text.fault, scan.path)
-  if (text !== undefined) return success({ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] })
-  const slot = slotContent(scan, span)
-  if (!slot.ok) return slot
+  if (text !== undefined) return success([{ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] }])
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
-  if (mark !== undefined) return mark.ok ? directiveMarkPiece(scan, span.name, mark.value, slot.value, index) : mark
+  const slot = slotContent(scan, span, mark !== undefined && (scan.inLink || span.name === 'link'))
+  if (!slot.ok) return slot
+  if (mark !== undefined) return mark.ok ? directiveMarkPieces(scan, span.name, mark.value, slot.value, index) : mark
   const content = slot.value?.nodes
   if (content?.some(isTextBreak) === true) return failure('unsupported-node-shape', `delete ${textBreakSpelling} from this content slot: a slot holds one text node`, scan.path)
   const node = readInlineDirectiveNode(span.name, span.attributes, content === undefined ? undefined : adfNodes(content), scan.path)
   if (!node.ok) return node
-  return success(node.value.marks === undefined ? { images: slot.value?.images ?? [], kind: 'nodes', nodes: [node.value] } : { kind: 'ownMarks', node: node.value })
+  return success([node.value.marks === undefined ? { kind: 'nodes', nodes: [node.value] } : { kind: 'ownMarks', node: node.value }])
 }
 
-function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotContent | undefined, index: number): Result<Piece> {
+function directiveMarkPieces(scan: Scan, name: string, mark: AdfMark, slot: SlotContent | undefined, index: number): Result<Piece[]> {
   if (slot === undefined || slot.nodes.length === 0) {
     return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.path)
   }
@@ -218,12 +222,11 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
   if (refused !== undefined) return refused
-  if (mark.type === 'link') return success({ kind: 'nodes', nodes: [...applyMark(slot.nodes, mark), ...imageLinks(slot.images)] })
-  return success({ images: slot.images, kind: 'nodes', nodes: applyMark(slot.nodes, mark) })
+  return success(withImageLinks({ kind: 'nodes', nodes: applyMark(slot.nodes, mark) }, slot.images))
 }
 
 // spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
-function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[], index: number): Result<Piece> | undefined {
+function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[], index: number): Result<Piece[]> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.path)
   if (marksLink(nodes)) return failure('unsupported-node-shape', linkInLink, scan.path)
@@ -233,10 +236,10 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[]
   return undefined
 }
 
-function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | undefined> {
+function slotContent(scan: Scan, span: DirectiveSpan, inLink: boolean): Result<SlotContent | undefined> {
   if (span.content === undefined) return success(undefined)
   const { claims, definitions, path } = scan
-  const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, inLink: scan.inLink || span.name === 'link', spans: span.spans }))
+  const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, inLink, spans: span.spans }))
   if (!parsed.ok) return parsed
   return success({ images: parsed.value.images, nodes: parsed.value.nodes })
 }
@@ -252,7 +255,7 @@ function pushNode(scan: Scan, node: AdfNode): void {
 }
 
 function assemble(scan: Scan): Result<Scanned> {
-  const nodes = resolveNodes(scan.pieces.map((piece) => (scan.inLink && piece.kind === 'image' && piece.link === undefined ? piece : linkedAlt(piece))), scan, true)
+  const nodes = resolveNodes(scan.pieces.flatMap((piece) => linkedAlt(piece, scan.inLink)), scan, true)
   if (!nodes.ok) return nodes
   const images = scan.inLink ? linkedImages(scan.pieces) : []
   const [only] = scan.pieces
@@ -260,21 +263,22 @@ function assemble(scan: Scan): Result<Scanned> {
 }
 
 // spec/flavour.md, The CommonMark image: an image no paragraph holds alone reads as its alt text, linked, and inside a link as the link's text, then (image) linked to it.
-function linkedAlt(piece: Piece): Piece {
-  if (piece.kind !== 'image') return piece
-  const alt = linkTo(piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }], piece.link ?? piece.definition)
-  return { kind: 'nodes', nodes: piece.link === undefined ? alt : [...alt, ...imageLinks([piece.definition])] }
+function linkedAlt(piece: Piece, inLink: boolean): Piece[] {
+  if (inLink && piece.kind === 'imageLinks') return []
+  if (piece.kind !== 'image' || (inLink && piece.link === undefined)) return [piece]
+  const alt: Piece = { kind: 'nodes', nodes: linkTo(piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }], piece.link ?? piece.definition) }
+  return piece.link === undefined ? [alt] : withImageLinks(alt, [piece.definition])
 }
 
 function linkedImages(pieces: readonly Piece[]): LinkDefinition[] {
   return pieces.flatMap((piece) => {
     if (piece.kind === 'image') return piece.link === undefined ? [piece.definition] : []
-    return piece.kind === 'nodes' ? (piece.images ?? []) : []
+    return piece.kind === 'imageLinks' ? piece.definitions : []
   })
 }
 
-function imageLinks(definitions: readonly LinkDefinition[]): AdfNode[] {
-  return definitions.flatMap((definition) => [{ text: ' (', type: 'text' }, { marks: [linkMark(definition)], text: 'image', type: 'text' }, { text: ')', type: 'text' }])
+function withImageLinks(link: Piece, definitions: LinkDefinition[]): Piece[] {
+  return definitions.length === 0 ? [link] : [link, { definitions, kind: 'imageLinks' }]
 }
 
 function mediaSingle({ alt, definition, link }: Image): AdfNode {
@@ -404,24 +408,24 @@ function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: 
     return success(false)
   }
   if (inner.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
-  const piece = linkPiece(scan, inner, definition)
-  if (!piece.ok) return piece
+  const pieces = linkPieces(scan, inner, definition)
+  if (!pieces.ok) return pieces
   truncatePieces(scan, at)
   deactivateOpeners(scan, at)
-  scan.pieces.push(piece.value)
+  for (const piece of pieces.value) scan.pieces.push(piece)
   return success(true)
 }
 
 // An image alone in the link text keeps its piece, so a paragraph holding nothing else builds the linked image.
-function linkPiece(scan: Scan, inner: readonly Piece[], definition: LinkDefinition): Result<Piece> {
+function linkPieces(scan: Scan, inner: readonly Piece[], definition: LinkDefinition): Result<Piece[]> {
   const [only] = inner
-  if (inner.length === 1 && only?.kind === 'image') return success({ ...only, link: definition })
+  if (inner.length === 1 && only?.kind === 'image') return success([{ ...only, link: definition }])
   const nodes = resolveNodes(inner, scan, true)
   if (!nodes.ok) return nodes
   if (!nodes.value.some((node) => marksItem(node, 'link')) && nodes.value.some((node) => isNode(node) && node.type !== 'hardBreak')) {
     return failure('unsupported-node-shape', unlinkable, scan.path)
   }
-  return success({ kind: 'nodes', nodes: [...linkTo(nodes.value, definition), ...imageLinks(linkedImages(inner))] })
+  return success(withImageLinks({ kind: 'nodes', nodes: linkTo(nodes.value, definition) }, linkedImages(inner)))
 }
 
 // CommonMark: no link nests inside another, though an image's description holds one.
@@ -447,7 +451,7 @@ function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition:
 }
 
 function imageAlt(inner: readonly Piece[], scan: Scan): Result<string> {
-  const nodes = resolveNodes(inner, scan, false)
+  const nodes = resolveNodes(inner.filter((piece) => piece.kind !== 'imageLinks'), scan, false)
   if (!nodes.ok) return nodes
   if (nodes.value.some(isTextBreak)) return failure('unsupported-node-shape', `delete ${textBreakSpelling} from this image description: the description reads as plain alt text`, scan.path)
   return success(adfNodes(nodes.value).map(altText).join(''))
@@ -499,6 +503,8 @@ function pieceNodes(piece: Piece): Inline[] {
       return [{ text: '', type: 'text' }]
     case 'image':
       return piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }]
+    case 'imageLinks':
+      return piece.definitions.flatMap((definition) => imageAside((text) => [{ marks: [linkMark(definition)], text, type: 'text' }]))
     case 'nodes':
       return piece.nodes
     case 'open':
