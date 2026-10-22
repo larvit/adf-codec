@@ -19,9 +19,9 @@ import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.
 import { spellsEmpty } from '../directive/empty-keys.ts'
 import { withinEngineLimits } from '../length-bound.ts'
 
-// A flavour's own reading of a quote and of a bullet list, which may read to several blocks.
+// A flavour's own reading of a quote and of a bullet list, which may read to several blocks; `path` is the container's, `index` the list's among its blocks.
 export type FlavourBlockReaders = {
-  bulletList: (items: readonly Block[][], reading: FlavourReading, path: ConvertErrorPath, depth: number, listIndex: number) => Result<AdfNode[]>
+  bulletList: (items: readonly Block[][], reading: FlavourReading, path: ConvertErrorPath, depth: number, index: number) => Result<AdfNode[]>
   quote: (blocks: readonly Block[], reading: FlavourReading, path: ConvertErrorPath, depth: number) => Result<AdfNode>
 }
 
@@ -77,7 +77,7 @@ export function readBlocks(blocks: readonly Block[], reading: Reading, path: Con
       return positioned(faulted(fault, nodePath), block.position)
     }
     if (block.kind === 'bulletList' && reading.flavour === 'portable') {
-      const listed = positioned(reading.blocks.bulletList(block.items, reading, nodePath, depth, content.length), block.position)
+      const listed = positioned(reading.blocks.bulletList(block.items, reading, path, depth, content.length), block.position)
       if (!listed.ok) return listed
       for (const node of listed.value) content.push(node)
       continue

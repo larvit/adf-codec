@@ -203,6 +203,7 @@ test('alternates the marker between adjacent lists of a kind, the marker change 
   const ordered: AdfNode = { attrs: { order: 9 }, content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }, { content: [paragraph({ text: 'y', type: 'text' }), paragraph({ text: 'z', type: 'text' })], type: 'listItem' }], type: 'orderedList' }
   assert.equal(markdown(adfToLosslessMarkdown(document(ordered, ordered))), '9. x\n10. y\n\n    z\n\n9) x\n10) y\n\n    z\n')
   assert.equal(markdown(adfToLosslessMarkdown(document(list, ordered, list))), '- x\n\n9. x\n10. y\n\n    z\n\n- x\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document(list, paragraph({ text: 'y', type: 'text' }), list))), '- x\n\ny\n\n- x\n')
   assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { panelType: 'info' }, content: [list, list], type: 'panel' }))), '!adf:panel info\n- x\n\n* x\n!adf:/panel\n')
   const nested: AdfNode = { content: [{ content: [list, list], type: 'listItem' }], type: 'bulletList' }
   assert.equal(markdown(adfToLosslessMarkdown(document(nested))), '- - x\n  * x\n')

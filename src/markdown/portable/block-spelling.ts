@@ -20,17 +20,17 @@ export const portableWriting: WrittenAs = { blocks: portableBlockWriters, flavou
 
 // The portable flavour's nodes, in the shapes the portable reduction leaves them.
 function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
-  if (node.type === 'panel') return quotedUnder(alertMarker(nodeAttrs(node)['panelType']), node, path, depth, writing)
+  if (node.type === 'panel') return quotedBlocks(node, path, depth, writing, headed(alertMarker(nodeAttrs(node)['panelType'])))
   if (node.type === 'taskList') return tryTaskList(node, path, depth, writing)
   if (node.type !== 'expand' && node.type !== 'nestedExpand') return undefined
   const title = nodeAttrs(node)['title']
-  if (typeof title !== 'string') return quotedUnder(foldedAlertMarker, node, path, depth, writing)
+  if (typeof title !== 'string') return quotedBlocks(node, path, depth, writing, headed(foldedAlertMarker))
   const line = emitInlineLine([{ text: title, type: 'text' }], 'paragraph', path, writing.flavour)
-  return line.ok ? quotedUnder(`${foldedAlertMarker} ${line.value}`, node, path, depth, writing) : line
+  return line.ok ? quotedBlocks(node, path, depth, writing, headed(`${foldedAlertMarker} ${line.value}`)) : line
 }
 
-function quotedUnder(head: string, node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
-  return quotedBlocks(node, path, depth, writing, (body) => (body === '' ? head : `${head}\n\n${body}`))
+function headed(head: string): (body: string) => string {
+  return (body) => (body === '' ? head : `${head}\n\n${body}`)
 }
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
