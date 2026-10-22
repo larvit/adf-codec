@@ -4,12 +4,15 @@ import test from 'node:test'
 import type { AdfNode } from '../../adf/document.ts'
 import { pathTo, splitTaskList } from './task-list.ts'
 
-test('names the steps from a block to a node deep in it, and none for a node it does not hold', () => {
+test('names the steps from a block to a node deep in it', () => {
   const target: AdfNode = { text: 'x', type: 'text' }
   const blocks: AdfNode[] = [{ type: 'rule' }, { content: [{ content: [{ type: 'paragraph' }, { content: [target], type: 'paragraph' }], type: 'blockquote' }], type: 'panel' }]
   assert.deepEqual(pathTo(blocks, target), [1, 'content', 0, 'content', 1, 'content', 0])
   assert.deepEqual(pathTo(blocks, blocks[0] ?? target), [0])
-  assert.equal(pathTo(blocks, { text: 'x', type: 'text' }), undefined)
+})
+
+test('names no steps to a node the blocks do not hold', () => {
+  assert.equal(pathTo([{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], { text: 'x', type: 'text' }), undefined)
 })
 
 test('keeps the inline nodes of a lone paragraph in the taskItem it becomes, so pathTo still finds them', () => {
