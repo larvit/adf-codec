@@ -16,8 +16,8 @@
   table cell: `[alt](href) ([image](url))`, where it wrote `[alt](url)` and dropped the link's target.
 - `adfToPortableMarkdown` keeps a link title holding a backslash or an entity reference such as
   `&amp;`, and in a table cell one holding a `|`, where it dropped the title. It escapes the
-  character, as in `[docs](https://example.com "AT\&amp;T")`, and `portableMarkdownToAdf` reads the
-  title back.
+  character where CommonMark would read it otherwise, as in `[docs](https://example.com "AT\&amp;T")`,
+  and `portableMarkdownToAdf` reads the title back.
 - `losslessMarkdownToAdf` names the CommonMark spelling to write when it refuses a directive whose
   node CommonMark spells, such as `[![alt](url)](href)` for a linked `!adf:mediaSingle`.
 - Every reader and writer takes time linear in the text when it holds many `<!--`, `<?`,
