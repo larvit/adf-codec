@@ -12,6 +12,9 @@
   schema requires: ``**`npm ci`**`` now reads as plain code, and a directive mark other than a link
   around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
   holding another mark as `!adf:carry{json="…"}`, and `adfToPortableMarkdown` drops that mark.
+- Every reader keeps the URL and title of an image inside a link's text, where it dropped them:
+  `(image)` follows the link, linked to the image, so `[look at ![the moon](moon.png "Full") tonight](/moon)`
+  reads as `[look at the moon tonight](/moon) ([image](moon.png "Full"))`.
 - `adfToPortableMarkdown` keeps both targets of a linked external image standing inline, as in a
   table cell: `[alt](href) ([image](url))`, where it wrote `[alt](url)` and dropped the link's target.
 - `adfToPortableMarkdown` keeps a link title holding a backslash or an entity reference such as

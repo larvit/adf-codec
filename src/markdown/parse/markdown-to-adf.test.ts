@@ -1134,7 +1134,7 @@ test('reads an image alone in a link as the image the link marks, and the link a
   const captioned = linked(image('/u', 'a'), link('/v'))
   assert.deepEqual(content(losslessMarkdownToAdf('[![a](/u "c")](/v)\n')), [{ ...captioned, content: [...(captioned.content ?? []), { content: [text('c')], type: 'caption' }] }])
   assert.deepEqual(content(losslessMarkdownToAdf('[![a][i]][v]\n\n[i]: /u\n[v]: /v\n')), [linked(image('/u', 'a'), link('/v'))])
-  assert.deepEqual(content(losslessMarkdownToAdf('[[![a](/u)](/v)](/w)\n')), [{ content: [text('['), marked('a', link('/v')), text('](/w)')], type: 'paragraph' }])
+  assert.deepEqual(content(losslessMarkdownToAdf('[[![a](/u)](/v)](/w)\n')), [{ content: [text('['), marked('a', link('/v')), text(' ('), marked('image', link('/u')), text(')](/w)')], type: 'paragraph' }])
 })
 
 test('reads an image no paragraph holds alone as its alt text, linked to its destination', () => {
@@ -1150,13 +1150,25 @@ test('reads an image no paragraph holds alone as its alt text, linked to its des
   assert.deepEqual(content(losslessMarkdownToAdf('a ! b\n')), [paragraph('a ! b')])
 })
 
-test('reads an image inside a link not alone in its paragraph as plain alt text the link marks, dropping its own destination', () => {
-  assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text('.')])
-  assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text('.')])
-  assert.deepEqual(firstContent('[b ![a](/u)](/v)\n'), [marked('b a', link('/v'))])
+test('reads an image inside a link not alone in its paragraph as plain alt text the link marks, then (image) linked to its destination', () => {
+  const image = (destination: string, title?: string): AdfNode[] => [text(' ('), marked('image', link(destination, title)), text(')')]
+  assert.deepEqual(firstContent('See [![a](/u "t")](/v).\n'), [text('See '), marked('a', link('/v')), text(' ('), marked('image', link('/u', 't')), text(').')])
+  assert.deepEqual(firstContent('See [![](/u)](/v).\n'), [text('See '), marked('/v', link('/v')), text(' ('), marked('image', link('/u')), text(').')])
+  assert.deepEqual(firstContent('[b ![a](/u "t") c](/v)\n'), [marked('b a c', link('/v')), ...image('/u', 't')])
+  assert.deepEqual(firstContent('[![a](/u) and ![b](/w)](/v)\n'), [marked('a and b', link('/v')), text(' ('), marked('image', link('/u')), text(') ('), marked('image', link('/w')), text(')')])
+  assert.deepEqual(firstContent('*[b ![a](/u)](/v)*\n'), [marked('b a', em, link('/v')), marked(' (', em), marked('image', em, link('/u')), marked(')', em)])
   const unspellable = { attrs: { href: 'a\nb' }, type: 'link' }
-  assert.deepEqual(firstContent('!adf:link[b ![a](/u)]{href="a\\nb"}\n'), [marked('b a', unspellable)])
-  assert.deepEqual(firstContent('!adf:link[!adf:underline[![a](/u)]]{href="a\\nb"}\n'), [marked('a', unspellable, { type: 'underline' })])
+  assert.deepEqual(firstContent('!adf:link[b ![a](/u)]{href="a\\nb"}\n'), [marked('b a', unspellable), ...image('/u')])
+  assert.deepEqual(firstContent('!adf:link[!adf:underline[![a](/u)]]{href="a\\nb"}\n'), [marked('a', unspellable, { type: 'underline' }), ...image('/u')])
+  assert.deepEqual(firstContent('!adf:link[![a](/u) !adf:underline[![b](/w)]]{href="a\\nb"}\n'), [
+    marked('a ', unspellable),
+    marked('b', unspellable, { type: 'underline' }),
+    text(' ('),
+    marked('image', link('/u')),
+    text(') ('),
+    marked('image', link('/w')),
+    text(')'),
+  ])
   assert.equal(content(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n')), 'unsupported-node-shape: no link wraps a link: the [content] this one marks already holds one')
 })
 

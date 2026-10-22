@@ -34,7 +34,8 @@ type OwnMarks = { kind: 'ownMarks'; node: AdfNode }
 
 type Inline = AdfNode | OwnMarks | TextBreak
 
-type Scanned = { image?: AdfNode; nodes: Inline[] }
+// `images` are the destinations of the images an `!adf:link` slot holds, for the link to follow with (image).
+type Scanned = { image?: AdfNode; images: LinkDefinition[]; nodes: Inline[] }
 
 export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
 
@@ -51,7 +52,7 @@ type Piece =
   | Bracket
   | OwnMarks
   | Image
-  | { kind: 'nodes'; nodes: Inline[] }
+  | { images?: LinkDefinition[]; kind: 'nodes'; nodes: Inline[] }
   | TextBreak
   | { canClose: boolean; canOpen: boolean; character: string; kind: 'run'; length: number }
   | { closes: boolean; kind: 'highlight'; opens: boolean }
@@ -78,7 +79,7 @@ type Scan = {
 // What a directive's content slot inherits from the content holding it.
 type SharedScan = Pick<Scan, 'definitions' | 'path'>
 
-type SlotContent = { nodes: Inline[] }
+type SlotContent = Pick<Scanned, 'images' | 'nodes'>
 
 const ownMarksInMark = 'move the opaque carry, or the node spelling marks=empty, out of the mark spelling: it holds its own marks'
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
@@ -204,7 +205,7 @@ function directivePiece(scan: Scan, span: DirectiveSpan, index: number): Result<
   if (content?.some(isTextBreak) === true) return failure('unsupported-node-shape', `delete ${textBreakSpelling} from this content slot: a slot holds one text node`, scan.path)
   const node = readInlineDirectiveNode(span.name, span.attributes, content === undefined ? undefined : adfNodes(content), scan.path)
   if (!node.ok) return node
-  return success(node.value.marks === undefined ? { kind: 'nodes', nodes: [node.value] } : { kind: 'ownMarks', node: node.value })
+  return success(node.value.marks === undefined ? { images: slot.value?.images ?? [], kind: 'nodes', nodes: [node.value] } : { kind: 'ownMarks', node: node.value })
 }
 
 function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotContent | undefined, index: number): Result<Piece> {
@@ -217,7 +218,8 @@ function directiveMarkPiece(scan: Scan, name: string, mark: AdfMark, slot: SlotC
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, slot.nodes, index) : undefined
   if (refused !== undefined) return refused
-  return success({ kind: 'nodes', nodes: applyMark(slot.nodes, mark) })
+  if (mark.type === 'link') return success({ kind: 'nodes', nodes: [...applyMark(slot.nodes, mark), ...imageLinks(slot.images)] })
+  return success({ images: slot.images, kind: 'nodes', nodes: applyMark(slot.nodes, mark) })
 }
 
 // spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
@@ -236,7 +238,7 @@ function slotContent(scan: Scan, span: DirectiveSpan): Result<SlotContent | unde
   const { claims, definitions, path } = scan
   const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, inLink: scan.inLink || span.name === 'link', spans: span.spans }))
   if (!parsed.ok) return parsed
-  return success({ nodes: parsed.value.nodes })
+  return success({ images: parsed.value.images, nodes: parsed.value.nodes })
 }
 
 function flush(scan: Scan, strip: boolean): void {
@@ -252,14 +254,27 @@ function pushNode(scan: Scan, node: AdfNode): void {
 function assemble(scan: Scan): Result<Scanned> {
   const nodes = resolveNodes(scan.pieces.map((piece) => (scan.inLink && piece.kind === 'image' && piece.link === undefined ? piece : linkedAlt(piece))), scan, true)
   if (!nodes.ok) return nodes
+  const images = scan.inLink ? linkedImages(scan.pieces) : []
   const [only] = scan.pieces
-  return success(scan.pieces.length === 1 && only?.kind === 'image' ? { image: mediaSingle(only), nodes: nodes.value } : { nodes: nodes.value })
+  return success(scan.pieces.length === 1 && only?.kind === 'image' ? { image: mediaSingle(only), images, nodes: nodes.value } : { images, nodes: nodes.value })
 }
 
-// spec/flavour.md, The CommonMark image: an image no paragraph holds alone reads as its alt text, linked.
+// spec/flavour.md, The CommonMark image: an image no paragraph holds alone reads as its alt text, linked, and inside a link as the link's text, then (image) linked to it.
 function linkedAlt(piece: Piece): Piece {
   if (piece.kind !== 'image') return piece
-  return { kind: 'nodes', nodes: linkTo(piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }], piece.link ?? piece.definition) }
+  const alt = linkTo(piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }], piece.link ?? piece.definition)
+  return { kind: 'nodes', nodes: piece.link === undefined ? alt : [...alt, ...imageLinks([piece.definition])] }
+}
+
+function linkedImages(pieces: readonly Piece[]): LinkDefinition[] {
+  return pieces.flatMap((piece) => {
+    if (piece.kind === 'image') return piece.link === undefined ? [piece.definition] : []
+    return piece.kind === 'nodes' ? (piece.images ?? []) : []
+  })
+}
+
+function imageLinks(definitions: readonly LinkDefinition[]): AdfNode[] {
+  return definitions.flatMap((definition) => [{ text: ' (', type: 'text' }, { marks: [linkMark(definition)], text: 'image', type: 'text' }, { text: ')', type: 'text' }])
 }
 
 function mediaSingle({ alt, definition, link }: Image): AdfNode {
@@ -406,7 +421,7 @@ function linkPiece(scan: Scan, inner: readonly Piece[], definition: LinkDefiniti
   if (!nodes.value.some((node) => marksItem(node, 'link')) && nodes.value.some((node) => isNode(node) && node.type !== 'hardBreak')) {
     return failure('unsupported-node-shape', unlinkable, scan.path)
   }
-  return success({ kind: 'nodes', nodes: linkTo(nodes.value, definition) })
+  return success({ kind: 'nodes', nodes: [...linkTo(nodes.value, definition), ...imageLinks(linkedImages(inner))] })
 }
 
 // CommonMark: no link nests inside another, though an image's description holds one.
