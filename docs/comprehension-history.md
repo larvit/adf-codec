@@ -1085,3 +1085,35 @@ Inherited architect, decided by:
 - Shape, Navigation: `src/markdown/emit/inline-line.ts:103` `withheldMarkFallbacks`: the old name `freshFallbacks` hid a pre-seeded set; the new one says what it holds
 - Shape: `src/markdown/portable/inline-reduction.ts:84` `mediaLeaves`: three branches, two writing `[alt](url)` by different routes, seen only by reading `portableMarks`
 - Self-sufficiency: `src/markdown/portable/inline-reduction.ts:83` `mediaLeaves`: the comment says why an inline image becomes a link, not why the other target goes in parentheses as `image`
+
+## 2026-10-22T19:35:21Z, PR #80 at ff220e6, against 2e06141
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | same | better |
+| Inherited architect | better | better | better | same | better |
+
+Mid A, decided by:
+
+- Navigation, Shape: `src/markdown/portable/portable-markdown-to-adf.ts:22` `portableMarkdownToAdf`: the portable reading has its own file, and `parse/markdown-to-adf.ts` shrinks from 394 to 267 lines
+- Navigation, Shape: `src/markdown/directive/syntax.ts:1` `directive/`: ten directive files once spread over three directories share one folder
+- Navigation, Shape: `.oxlintrc.json:5` `overrides`: lint enforces the layering, and `parse/` reaches `emit/` only through `spelling-questions.ts`
+- Navigation, Shape: `src/markdown/flavour.ts:6` `Claims`: the shared claims left a portable-named file for a neutral home
+- Locality: `src/markdown/portable/portable-markdown-to-adf.ts:102` `bulletBlocks` / `readTaskBlock`: a refusal's path is found by one marker after the one split, not a replayed split on stand-ins
+- Locality: `src/markdown/emit/adf-to-markdown.ts:35` `SpelledBlock`: a list's interruption and kind are fixed when spelled, not re-derived with a taskList special case
+- Locality: `src/markdown/commonmark/backtick-runs.ts:11` `backtickCloser`: per-length cursors that need `from` rising add hidden state (counterweight)
+- Shape: `src/markdown/emit/adf-to-markdown.ts:26` `FlavourBlockWriters` / `FlavourBlockReaders`: the core now exports internals and a reader follows an injected function (counterweight)
+
+Inherited architect, decided by:
+
+- Locality, Shape: `src/markdown/parse/markdown-to-adf.ts:23` `FlavourBlockReaders` / `ReadAs`: the core reader is flavour-neutral but for two hooks; the callback costs a search to find its supplier
+- Locality: `src/markdown/portable/portable-markdown-to-adf.ts:147` `readTaskBlock` / `bulletBlocks`: one marker found by identity replaces `splitPath`'s fake list; `steps.slice(0, -2)` still costs a re-read
+- Navigation, Shape: `src/markdown/flavour.ts:1` `Flavour` / `Claims` / `flavourClaims`: what any flavour claims no longer lives in a portable-named file
+- Navigation, Shape: `src/markdown/directive/syntax.ts:1` `directive/`: one folder answers where the directive grammar is
+- Navigation, Shape: `src/markdown/emit/spelling-questions.ts:1` `spelling-questions`: the one parse→emit dependency is a named seam
+- Locality, Shape: `src/markdown/portable/block-spelling.ts:12` `portableBlockWriters`: the emitter loses the portable spellings and re-derives no list facts; the portable file imports five emitter internals back
+- Locality: `src/markdown/commonmark/backtick-runs.ts:11` `backtickCloser`: a closure correct only for rising `from`, stated not enforced (against)
+- Locality: `src/markdown/parse/blocks.ts:67` `Line.spaces` / `matchBlankLine`: tab remainders in a separate field every site must remember (against)
+- Shape: `src/markdown/portable/portable-markdown-to-adf.ts:19` `expandBlockReaders` / `portableBlockReaders`: a swapped reader object replaces the `inExpand` flag, less obvious on first read
