@@ -331,8 +331,9 @@ does a `+` or `-` callout's title line, so an image alone on the marker line or 
 reads as the image. An empty alt text reads as the destination, as an empty link text does. Inside
 a link's text, an `!adf:link`'s included, the alt text is plain text the link marks, and after the
 link stands ` (image)`, `image` linked to the image's destination and titled by its title, one for
-each image in the order they stand (`docs/decisions.md` §An image reads as an image only alone in
-its paragraph).
+each image in the order they stand. An image whose destination is the link's own takes none, unless
+it holds a non-empty title the link does not (`docs/decisions.md` §An image reads as an image only
+alone in its paragraph).
 
 ### Tables
 

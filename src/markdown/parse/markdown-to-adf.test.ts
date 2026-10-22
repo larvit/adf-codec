@@ -1183,6 +1183,15 @@ test('reads an image inside a link not alone in its paragraph as plain alt text 
   assert.equal(content(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n')), 'unsupported-node-shape: no link wraps a link: the [content] this one marks already holds one')
 })
 
+test('writes no (image) after a link to the image itself, unless the image holds a title the link does not', () => {
+  assert.deepEqual(firstContent('See [![a](/u)](/u).\n'), [text('See '), marked('a', link('/u')), text('.')])
+  assert.deepEqual(firstContent('See [![a](/u "t")](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
+  assert.deepEqual(firstContent('See [![a](/u)](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
+  assert.deepEqual(firstContent('See [![a](/u "t")](/u).\n'), [text('See '), marked('a', link('/u')), text(' ('), marked('image', link('/u', 't')), text(').')])
+  assert.deepEqual(firstContent('[b ![a](/u) ![c](/w)](/u)\n'), [marked('b a c', link('/u')), text(' ('), marked('image', link('/w')), text(')')])
+  assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b)]{href="a\\nb"}\n'), [marked('b a', { attrs: { href: 'a\nb' }, type: 'link' })])
+})
+
 test('carries the mark a spelling nested inside its own kind names once', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('*(*a*)*\n')), [{ content: [marked('(a)', em)], type: 'paragraph' }])
   assert.deepEqual(content(losslessMarkdownToAdf(`${'*'.repeat(600)}a${'*'.repeat(600)}\n`)), [{ content: [marked('a', strong)], type: 'paragraph' }])

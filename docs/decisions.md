@@ -232,8 +232,9 @@ where its reference implementation nests one `<a>` in another.
 
 2026-10-04, the maintainer and a writer panel, 3 of 3; `[]()` 2026-10-09, by Goals 4 and 7, as the
 maintainer's plan item asked; a link text of hard breaks alone 2026-10-09, the maintainer; an image
-inside a link 2026-10-22, a reader panel, 3 of 3 and 5 of 7. Goals 4, 5, 6 and 7. Valid while `mediaInline` carries no URL, ADF holds no empty text node, a hard break
-takes no marks and no consumer has reported a link of hard breaks alone.
+inside a link 2026-10-22, a reader panel, 3 of 3 and 5 of 7. Goals 4, 5, 6 and 7. Valid while
+`mediaInline` carries no URL, ADF holds no empty text node, a hard break takes no marks and no
+consumer has reported a link of hard breaks alone.
 
 Every reader reads every CommonMark image and empty link, as `spec/flavour.md` §The CommonMark image
 and §Marks spell out. An image alone in its paragraph reads as the image, its title as the caption.
@@ -248,7 +249,9 @@ text is the image alone, the bot, the LLM pipeline and a support agent picked th
 link holding words beside the image they split on where `(image)` stands, and four more readers, the
 bot, the LLM pipeline, a product manager and an engineer, made it 5 of 7 for after the whole link
 over right after the alt text. Every reader rejected linking the alt text to the image: the words
-lose the link they were written in.
+lose the link they were written in. A link to the image's own URL takes no `(image)`, unless the
+image holds a title the link does not: it would repeat the link, as `adfToPortableMarkdown` never
+writes it (§A linked image standing inline in portable markdown).
 
 In `portableMarkdownToAdf`, a `[!WORD]` marker with no `+` or `-` stands apart from the lines after
 it, and so does a `+` or `-` callout's title line, so an image alone on the marker line or after the
