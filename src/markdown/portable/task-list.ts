@@ -19,19 +19,23 @@ export function splitTaskList(list: AdfNode): AdfNode[] {
   return blocks
 }
 
-// Where `node`, a child of one of the list's tasks, stands among the blocks splitTaskList returns; a task's lone paragraph becomes a taskItem, found by the paragraph's first inline node.
-export function splitPlace(list: AdfNode, node: AdfNode & { content: [AdfNode] }): [number, ...ConvertErrorPath] | undefined {
-  const [inline] = node.content
-  const places = splitTaskList(list).flatMap((block, index): [number, ...ConvertErrorPath][] => {
-    if (block === node) return [[index]]
-    if (block.type !== 'taskList') return []
-    return nodeContent(block).flatMap((item, child): [number, ...ConvertErrorPath][] => {
-      if (item === node || nodeContent(item)[0] === inline) return [[index, 'content', child]]
-      const at = nodeContent(item).indexOf(node)
-      return at === -1 ? [] : [[index, 'content', child, 'content', at]]
-    })
-  })
-  return places[0]
+// Where `target` stands among `blocks`: its block's index, then the steps down to it. Every node the split moves keeps its identity, but a lone paragraph, which becomes a taskItem holding its inline nodes.
+export function pathTo(blocks: readonly AdfNode[], target: AdfNode): [number, ...ConvertErrorPath] | undefined {
+  const pending: Visit[] = blocks.map((node, step) => ({ node, parent: undefined, step }))
+  for (let visit = pending.pop(); visit !== undefined; visit = pending.pop()) {
+    if (visit.node === target) return stepsTo(visit)
+    for (const [step, node] of nodeContent(visit.node).entries()) pending.push({ node, parent: visit, step })
+  }
+  return undefined
+}
+
+type Visit = { node: AdfNode; parent: Visit | undefined; step: number }
+
+function stepsTo(visit: Visit): [number, ...ConvertErrorPath] {
+  const steps: (number | string)[] = []
+  let at = visit
+  for (; at.parent !== undefined; at = at.parent) steps.push(at.step, 'content')
+  return [at.step, ...steps.reverse()]
 }
 
 // An item is a task and the children up to the next one.
