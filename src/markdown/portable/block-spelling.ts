@@ -1,20 +1,22 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath, Result } from '../../result.ts'
-import type { EmittedBlock, FlavourBlockWriters, PlacedBlock, PlacedBlocks, Writing } from '../emit/adf-to-markdown.ts'
+import type { EmittedBlock, FlavourBlockWriters, PlacedBlock, PlacedBlocks, Writing, WrittenAs } from '../emit/adf-to-markdown.ts'
 import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from './conventions.ts'
-import { bulletDelimiters, commonMarkText, emitBlock, joinBlocks, quoted, spelledList, walkBlocks } from '../emit/adf-to-markdown.ts'
+import { emitBlock, joinBlocks, quotedBlocks, spelledList, walkBlocks } from '../emit/adf-to-markdown.ts'
 import { emitInlineLine } from '../emit/inline-line.ts'
 import { failure, success } from '../../result.ts'
 import { isTaskItem } from '../../adf/block-nodes.ts'
 import { largestNesting } from '../../nesting.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 
-export const portableBlockWriters: FlavourBlockWriters = {
+const portableBlockWriters: FlavourBlockWriters = {
   // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
   claimsItem: (text) => leadingMarker(text, readTaskMarker) !== undefined,
   claimsQuote: (text) => leadingMarker(text, readAlertMarker) !== undefined,
   spell: spellPortableBlock,
 }
+
+export const portableWriting: WrittenAs = { blocks: portableBlockWriters, flavour: 'portable' }
 
 // The portable flavour's nodes, in the shapes the portable reduction leaves them.
 function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
@@ -28,10 +30,7 @@ function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
 }
 
 function quotedUnder(head: string, node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
-  const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
-  if (!inner.ok) return inner
-  const body = joinBlocks(inner.value.blocks, 'document')
-  return success(commonMarkText(quoted(body === '' ? head : `${head}\n\n${body}`), inner.value.headroom))
+  return quotedBlocks(node, path, depth, writing, (body) => (body === '' ? head : `${head}\n\n${body}`))
 }
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
@@ -47,12 +46,7 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
     if (task || previous === undefined) items.push([...walk.value.blocks])
     else for (const block of walk.value.blocks) previous.push(block)
   }
-  const list = spelledList(
-    items.map((blocks) => joinBlocks(blocks, 'list-item')),
-    () => '',
-    bulletDelimiters,
-    headroom,
-  )
+  const list = spelledList(items.map((blocks) => joinBlocks(blocks, 'list-item')), undefined, headroom)
   // The portable reduction leaves no task a list item cannot hold: a directive here would break the flavour.
   return list === undefined ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success(list)
 }

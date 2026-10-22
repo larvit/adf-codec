@@ -17,7 +17,8 @@ type WrittenClaims = Claims & { pipeTables: 'flavour' | 'gfm'; strikethrough: tr
 // Directives exclude highlights: a directive's slot reads `==`.
 type ReadClaims = Claims & ({ directives: false } | { directives: true; highlights: false })
 
-export const flavourClaims: Readonly<{ commonmark: ReadClaims } & Record<WrittenFlavour, ReadClaims & WrittenClaims>> = {
+// A folded callout inside an expand directive would read as an expand, not a nestedExpand, so the portable flavour reads no directives.
+export const flavourClaims: Readonly<{ commonmark: ReadClaims; portable: { directives: false } } & Record<WrittenFlavour, ReadClaims & WrittenClaims>> = {
   commonmark: { carryFence: false, directives: false, highlights: false, pipeTables: false, strikethrough: false },
   lossless: { carryFence: true, directives: true, highlights: false, pipeTables: 'flavour', strikethrough: true },
   portable: { carryFence: false, directives: false, highlights: true, pipeTables: 'gfm', strikethrough: true },
