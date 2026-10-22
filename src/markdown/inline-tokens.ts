@@ -5,7 +5,7 @@ import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailA
 import { backtickCloser, backtickRun } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive/syntax.ts'
 import { delimiterFlags, runLength } from './commonmark/emphasis-matching.ts'
-import { highlightDelimiter, highlightFlanking } from './portable/conventions.ts'
+import { highlightDelimiter, highlightFlanking } from './highlight-syntax.ts'
 import { readEntityReference } from './commonmark/entity-references.ts'
 
 // `directive` and `html` carry no `width`: a directive reads by its own grammar, and the reader refuses HTML.

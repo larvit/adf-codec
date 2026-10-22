@@ -9,22 +9,26 @@ leg "lint ($node_image)" in_image "$node_image" npm run lint
 
 # The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green.
 boundaries_fire() {
-  local allowed=src/markdown/parse/boundary-probe-allowed.ts directive=src/markdown/directive/boundary-probe.ts directive_emit=src/markdown/directive/boundary-probe-emit.ts lint_log parse=src/markdown/parse/boundary-probe.ts
+  local allowed=src/markdown/parse/boundary-probe-allowed.ts directive=src/markdown/directive/boundary-probe.ts directive_emit=src/markdown/directive/boundary-probe-emit.ts emit=src/markdown/emit/boundary-probe.ts lint_log parse=src/markdown/parse/boundary-probe.ts parse_portable=src/markdown/parse/boundary-probe-portable.ts
   lint_log=$(mktemp) &&
   # The paths are baked in: the trap fires after this function's locals are gone.
-  trap "rm -f $allowed $directive $directive_emit $lint_log $parse" EXIT &&
+  trap "rm -f $allowed $directive $directive_emit $emit $lint_log $parse $parse_portable" EXIT &&
   trap 'exit 130' INT &&
   trap 'exit 143' TERM &&
   echo "import '../emit/spelling-questions.ts';" > "$allowed" &&
   in_image "$node_image" npm run lint &&
   echo "import '../parse/blocks.ts';" > "$directive" &&
   echo "import '../emit/image.ts';" > "$directive_emit" &&
+  echo "import '../portable/conventions.ts';" > "$emit" &&
   echo "import '../emit/adf-to-markdown.ts';" > "$parse" &&
+  echo "import '../portable/conventions.ts';" > "$parse_portable" &&
   ! in_image "$node_image" npm run lint -- --format unix 2>&1 | tee "$lint_log" &&
   grep -q "^$directive:.*eslint(no-restricted-imports)" "$lint_log" &&
   grep -q "^$directive_emit:.*eslint(no-restricted-imports)" "$lint_log" &&
+  grep -q "^$emit:.*eslint(no-restricted-imports)" "$lint_log" &&
   grep -q "^$parse:.*eslint(no-restricted-imports)" "$lint_log" &&
-  rm -f "$allowed" "$directive" "$directive_emit" "$lint_log" "$parse"
+  grep -q "^$parse_portable:.*eslint(no-restricted-imports)" "$lint_log" &&
+  rm -f "$allowed" "$directive" "$directive_emit" "$emit" "$lint_log" "$parse" "$parse_portable"
 }
 
 leg "import boundaries fire ($node_image)" boundaries_fire

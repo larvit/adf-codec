@@ -10,9 +10,15 @@
       }
     },
     {
+      "files": ["src/markdown/emit/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
       "files": ["src/markdown/parse/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "!../emit/spelling-questions.ts"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "!../emit/spelling-questions.ts", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     }
   ],

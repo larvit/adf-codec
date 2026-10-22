@@ -9,7 +9,7 @@ import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
-import { highlightDelimiter } from '../portable/conventions.ts'
+import { highlightDelimiter } from '../highlight-syntax.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { inlineNodeModel, takenMarkTypes } from '../../adf/inline-nodes.ts'

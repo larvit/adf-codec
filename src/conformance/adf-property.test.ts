@@ -6,7 +6,8 @@ import type { AdfNode } from '../adf/document.ts'
 import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
-import { losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to-adf.ts'
 import { toEditorNormal } from '../markdown/portable/editor-normal.ts'
 
 const gateRuns = 1600

@@ -688,11 +688,11 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
-## The project ships under the comprehension floor until items 62 and 95 land
+## The project ships under the comprehension floor until item 95 lands
 
-2026-10-03, the maintainer; item 95 in place of item 61, 2026-10-09, the maintainer. KISS, a
-technical principle, and its comprehension floor of 7.
-Valid while `todo.md` items 62 and 95 are open.
+2026-10-03, the maintainer; item 95 in place of item 61, 2026-10-09, the maintainer; item 62
+landed 2026-10-22. KISS, a technical principle, and its comprehension floor of 7.
+Valid while `todo.md` item 95 is open.
 
 A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
 2026-10-08 is the baseline.
@@ -911,7 +911,8 @@ is the markdown flavour's choice, not ADF's.
 ## The source parts by ADF and format
 
 2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, `plain/` 2026-10-03, the import
-boundaries' lint 2026-10-22, the maintainer. Goal 2. Valid while each format has a reader and a
+boundaries' lint 2026-10-22, the maintainer; the portable flavour's own directory, item 62,
+2026-10-22. Goal 2. Valid while each format has a reader and a
 writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
@@ -925,8 +926,10 @@ them. A primitive knowing neither ADF nor a format stays at `src/` root. A const
 `spec/flavour.md` draws, and a placement nothing here settles goes beside its only reader, or in
 what both read where there are two.
 
-A flavour's own code, both directions included, sits in its own directory: `markdown/portable/`;
-`todo.md` item 62 moves what still sits in `parse/` and `emit/`. The directive grammar, both
+A flavour's own code, both directions included, sits in its own directory: `markdown/portable/`.
+It hands `parse/` and `emit/` the blocks it reads and writes its own way, so neither imports it.
+Syntax that `parse/` and `emit/` read for a claim in `flavourClaims`, such as `==`, sits in
+`markdown/` itself. The directive grammar, both
 directions included, sits in `markdown/directive/`, which imports neither `emit/` nor `parse/`.
 Otherwise each format directory parts into `emit/` (ADF→format) and
 `parse/` (format→ADF), the rest of it holding what both directions read. A construct's reader lives
@@ -939,7 +942,8 @@ consults it rather than restating it, so no fixture the emitter writes can be re
 spelling the emitter refuses gives its own error rather than a second name for it. That consulting
 is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
 
-`.oxlintrc.json` enforces that limit for `markdown/parse/`, and keeps `markdown/directive/` from
-importing `emit/` or `parse/`, as `no-restricted-imports` overrides. They are lint rules because the
+`.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `parse/` and `emit/` from
+importing `markdown/portable/`, and keeps `markdown/directive/` from importing `emit/` or `parse/`,
+as `no-restricted-imports` overrides. They are lint rules because the
 technical principles refuse a test that scans the source, and a lint rule reads every import
 spelling: `from`, a bare `import`, double quotes and a dynamic `import()`.

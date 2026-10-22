@@ -13,7 +13,7 @@ import { adfToPortableMarkdown } from '../markdown/portable/adf-to-portable-mark
 import { blockArgument, marksAttribute } from '../markdown/directive/block.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { carryName } from '../markdown/opaque-carry.ts'
-import { commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import {
   directivePrefix,
   spellAttributes,
@@ -30,6 +30,7 @@ import { inlineNodes } from '../adf/inline-nodes.ts'
 import { markAttributes } from '../adf/mark-attributes.ts'
 import { markSpelling } from '../markdown/mark-spellings.ts'
 import { nodeContent, nodeMarks } from '../adf/document.ts'
+import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to-adf.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 import { textDirectiveName } from '../markdown/directive/text.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'

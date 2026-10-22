@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 62 | 0.3.0 |  | decision | **Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 123 | 0.3.0 |  | defect | **Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.** | 3 | 1 | 2 | 4 | 3 | 7 by 2 | 13.1 |
 | 122 | 0.3.0 |  | defect | **Keep an image's URL and title when a link's text holds the image, instead of dropping them.** | 3 | 1 | 2 | 4 | 5 | 7 by 4 | 10.5 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
@@ -21,7 +20,7 @@
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.3.0 | 33, 62, 91, 95, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.3.0 | 33, 91, 95, 109, 115, 122, 123, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
@@ -30,7 +29,7 @@
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
 | 6 | 0.4.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
-| 7 | 0.4.0 | 6, 62 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.3 |
+| 7 | 0.4.0 | 6 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.3 |
 | 46 | 0.4.0 | 7 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
@@ -55,14 +54,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 62. Move the portable flavour's reading out of `parse/` and its writing out of `emit/` into `markdown/portable/`, so `emit/` no longer imports `portable/`.
-
-Reading: the alert and task-marker reads in `parse/markdown-to-adf.ts` and the `mintTaskIds` call.
-Writing: `spellPortableBlock`, `quotedUnder`, `tryTaskList` and `taskBlocks` in
-`emit/adf-to-markdown.ts`. And `highlightDelimiter` and `highlightFlanking` move out of
-`portable/conventions.ts`, which `emit/` imports them from. Every comprehension reader on
-2026-10-03 named the portable flavour's spread across three directories.
 
 ### 123. Spell a link title holding a backslash, an entity reference or, in a table cell, a pipe, instead of dropping it.
 
