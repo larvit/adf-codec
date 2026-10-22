@@ -4,7 +4,6 @@ import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition, TitleEscapes } from '../commonmark/link-syntax.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
-import { barePipeCells } from '../pipe-table-syntax.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
@@ -67,9 +66,8 @@ export function portableLineFallback(nodes: readonly AdfNode[], container: LineC
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, flavour: WrittenFlavour): string | undefined {
   const emitted = emitLine(nodes, 'table-cell', path, flavour)
   if (!emitted.ok) return undefined
-  // spec/flavour.md, Tables: the lossless flavour writes a table holding a `|` in syntax as directives; the portable flavour's only such `|` is in a title, escaped.
-  const splitsCell = (syntax: string): boolean => (flavour === 'lossless' ? syntax.includes('|') : barePipeCells(syntax) !== undefined)
-  if (emitted.value.segments.some((segment) => isSyntax(segment.escaping) && splitsCell(segment.text))) return undefined
+  // spec/flavour.md, Tables; the portable reduction leaves a `|` in syntax only escaped, in a link title.
+  if (flavour === 'lossless' && emitted.value.segments.some((segment) => isSyntax(segment.escaping) && segment.text.includes('|'))) return undefined
   return emitted.value.line
 }
 
@@ -78,6 +76,7 @@ export function tryImageLine(alt: string | undefined, url: string, flavour: Writ
   const destination = spellDestination(url)
   if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
+  // Both flavours read an image's description with highlights off, so the lossless flavour's escapes read back in either.
   if (link === undefined) return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
   const target = spellLinkTarget(link.destination, link.title, titleEscapes(flavour, 'paragraph'))
   if (target === undefined) return undefined

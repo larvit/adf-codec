@@ -5,7 +5,7 @@ export type LinkDefinition = { destination: string; title?: string }
 
 export type LinkPart = { length: number; value: string }
 
-// spec/flavour.md, Marks: the lossless flavour escapes a quote alone and writes any other title CommonMark reads otherwise as a directive; the portable flavour has none.
+// The lossless flavour escapes a quote alone, writing a title holding a backslash or an entity reference as a directive (spec/flavour.md, Marks); the portable flavour writes no directive, so it escapes those too, and a table cell's `|` (README, Portable markdown).
 export type TitleEscapes = 'lossless' | 'portable' | 'portable-table-cell'
 
 const bracketedDestination = /<((?:[^\n<>\\]|\\[^\n])*)>/y
@@ -125,7 +125,7 @@ function spellTitle(title: string, escapes: TitleEscapes): string | undefined {
   let spelled = ''
   for (let index = 0; index < title.length; index += 1) {
     const character = title.charAt(index)
-    const escaped = character === '\\' || character === '"' || (character === '&' && readEntityReference(title, index) !== undefined) || (character === '|' && escapes === 'portable-table-cell')
+    const escaped = (character === '\\' && (backslashEscape(title, index) !== undefined || index === title.length - 1)) || character === '"' || (character === '&' && readEntityReference(title, index) !== undefined) || (character === '|' && escapes === 'portable-table-cell')
     spelled += escaped ? `\\${character}` : character
   }
   return ` "${spelled}"`

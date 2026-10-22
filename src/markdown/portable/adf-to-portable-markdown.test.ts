@@ -323,20 +323,43 @@ test('keeps a table as a pipe table headed by its first row, one line per cell',
   assert.equal(portable(node('table', {}, row())), '')
 })
 
-test('escapes a backslash, an ampersand opening an entity reference and, in a table cell, a pipe in a link title, which reads back', () => {
-  const titles = ['C:\\dir\\', 'AT&amp;T & &#38; &x', 'say "hi"', 'a|b', 'a\\|b']
-  const spelled = ['"C:\\\\dir\\\\"', '"AT\\&amp;T & \\&#38; &x"', '"say \\"hi\\""', '"a|b"', '"a\\\\|b"']
-  const inCell = ['"C:\\\\dir\\\\"', '"AT\\&amp;T & \\&#38; &x"', '"say \\"hi\\""', '"a\\|b"', '"a\\\\\\|b"']
-  for (const [index, title] of titles.entries()) {
-    const linked = paragraph(text('t', link('https://e.com', title)))
-    const table: AdfNode = { content: [row(cell('tableHeader', linked))], type: 'table' }
-    assert.equal(portable(linked), `[t](https://e.com ${spelled[index]})\n`)
-    assert.equal(portable(table), `| [t](https://e.com ${inCell[index]}) |\n| --- |\n`)
-    assert.deepEqual(portableMarkdownToAdf(portable(linked)), { ok: true, value: document(linked) })
-    assert.deepEqual(portableMarkdownToAdf(portable(table)), { ok: true, value: document(table) })
-  }
-  const image: AdfNode = { attrs: { alt: 'Moon', type: 'external', url: 'https://e.com/moon.png' }, marks: [link('https://e.com', 'C:\\dir')], type: 'media' }
-  assert.equal(portable(node('mediaSingle', { layout: 'center' }, image)), '[![Moon](https://e.com/moon.png)](https://e.com "C:\\\\dir")\n')
+function titledLink(title: string): AdfNode {
+  return paragraph(text('t', link('https://e.com', title)))
+}
+
+function headerOnly(content: AdfNode): AdfNode {
+  return { content: [row(cell('tableHeader', content))], type: 'table' }
+}
+
+function assertTitleReadsBack(title: string): void {
+  for (const content of [titledLink(title), headerOnly(titledLink(title))]) assert.deepEqual(portableMarkdownToAdf(portable(content)), { ok: true, value: document(content) }, title)
+}
+
+test('escapes a quote, a backslash CommonMark would read as an escape and an ampersand opening an entity reference in a link title', () => {
+  assert.equal(portable(titledLink('say "hi"')), '[t](https://e.com "say \\"hi\\"")\n')
+  assert.equal(portable(titledLink('C:\\dir\\')), '[t](https://e.com "C:\\dir\\\\")\n')
+  assert.equal(portable(titledLink('\\"\\&x \\|')), '[t](https://e.com "\\\\\\"\\\\&x \\\\|")\n')
+  assert.equal(portable(titledLink('AT&amp;T & &#38; &x')), '[t](https://e.com "AT\\&amp;T & \\&#38; &x")\n')
+})
+
+test('escapes a pipe in a link title in a table cell, and only there', () => {
+  assert.equal(portable(titledLink('a|b')), '[t](https://e.com "a|b")\n')
+  assert.equal(portable(headerOnly(titledLink('a|b'))), '| [t](https://e.com "a\\|b") |\n| --- |\n')
+  assert.equal(portable(headerOnly(titledLink('a\\|b'))), '| [t](https://e.com "a\\\\\\|b") |\n| --- |\n')
+})
+
+test('reads each escaped link title back to the same title, in a paragraph and in a table cell', () => {
+  assertTitleReadsBack('say "hi"')
+  assertTitleReadsBack('C:\\dir\\')
+  assertTitleReadsBack('\\"\\&x \\|')
+  assertTitleReadsBack('AT&amp;T & &#38; &x')
+  assertTitleReadsBack('a|b')
+  assertTitleReadsBack('a\\|b')
+})
+
+test('escapes a linked image\'s title as a paragraph\'s link title', () => {
+  const image: AdfNode = { attrs: { alt: 'Moon', type: 'external', url: 'https://e.com/moon.png' }, marks: [link('https://e.com', 'a\\|b')], type: 'media' }
+  assert.equal(portable(node('mediaSingle', { layout: 'center' }, image)), '[![Moon](https://e.com/moon.png)](https://e.com "a\\\\|b")\n')
 })
 
 test('keeps code, em, link, strike and strong and drops every other mark, and code text every mark but link, keeping its text', () => {
@@ -349,7 +372,7 @@ test('keeps code, em, link, strike and strong and drops every other mark, and co
 
 test('percent-encodes a link href no CommonMark escape writes until one does', () => {
   assert.equal(portable(paragraph(text('a', link('a\\b')), text(' '), text('b', { attrs: { id: 'i' }, type: 'link' }), text(' '), text('c', link('/&amp;')))), '[a](a%5Cb) b [c](/%26amp;)\n')
-  assert.equal(portable(paragraph(text('t', link('https://e.com', 'two\nlines')), text(' '), text('u', link('https://e.com', 'a\\b')))), '[t](https://e.com "two lines") [u](https://e.com "a\\\\b")\n')
+  assert.equal(portable(paragraph(text('t', link('https://e.com', 'two\nlines')), text(' '), text('u', link('https://e.com', 'a\\b')))), '[t](https://e.com "two lines") [u](https://e.com "a\\b")\n')
   assert.equal(portable(paragraph(text(']: a', link('/u'), code))), '[\\]: a](/u)\n')
 })
 
