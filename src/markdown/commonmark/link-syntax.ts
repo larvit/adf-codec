@@ -1,9 +1,12 @@
 import { backslashEscape, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
-import { holdsEntityReference } from './entity-references.ts'
+import { holdsEntityReference, readEntityReference } from './entity-references.ts'
 
 export type LinkDefinition = { destination: string; title?: string }
 
 export type LinkPart = { length: number; value: string }
+
+// spec/flavour.md, Marks: the lossless flavour escapes a quote alone and writes any other title CommonMark reads otherwise as a directive; the portable flavour has none.
+export type TitleEscapes = 'lossless' | 'portable' | 'portable-table-cell'
 
 const bracketedDestination = /<((?:[^\n<>\\]|\\[^\n])*)>/y
 const linkLabel = /\[((?:[^[\]\\]|\\[\s\S]){0,999})\]/y
@@ -95,10 +98,10 @@ export function spellDestination(href: string): string | undefined {
   return href.startsWith('<') ? undefined : escapeUnbalanced(href, '(', ')')
 }
 
-export function spellLinkTarget(href: string, title: string | undefined): string | undefined {
+export function spellLinkTarget(href: string, title: string | undefined, escapes: TitleEscapes): string | undefined {
   const destination = spellDestination(href)
   if (destination === undefined || title === undefined) return destination
-  const spelledTitle = spellTitle(title)
+  const spelledTitle = spellTitle(title, escapes)
   return spelledTitle === undefined ? undefined : `${destination === '' ? '<>' : destination}${spelledTitle}`
 }
 
@@ -116,6 +119,14 @@ export function escapeUnbalanced(spelling: string, opener: string, closer: strin
   return spelled
 }
 
-function spellTitle(title: string): string | undefined {
-  return /[\n\r\\]/.test(title) || holdsNullCharacter(title) || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
+function spellTitle(title: string, escapes: TitleEscapes): string | undefined {
+  if (/[\n\r]/.test(title) || holdsNullCharacter(title)) return undefined
+  if (escapes === 'lossless') return title.includes('\\') || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
+  let spelled = ''
+  for (let index = 0; index < title.length; index += 1) {
+    const character = title.charAt(index)
+    const escaped = character === '\\' || character === '"' || (character === '&' && readEntityReference(title, index) !== undefined) || (character === '|' && escapes === 'portable-table-cell')
+    spelled += escaped ? `\\${character}` : character
+  }
+  return ` "${spelled}"`
 }

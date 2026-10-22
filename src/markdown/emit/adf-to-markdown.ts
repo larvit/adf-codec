@@ -145,7 +145,7 @@ function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, writing)
   if (node.type === 'codeBlock') return readableText(tryCodeBlock(node, writing.flavour))
   if (node.type === 'heading') return tryHeading(node, path, writing.flavour)
-  if (node.type === 'mediaSingle') return readableText(tryImage(node))
+  if (node.type === 'mediaSingle') return readableText(tryImage(node, writing.flavour))
   if (node.type === 'paragraph') return tryParagraph(node, path, writing.flavour)
   if (node.type === 'rule') return readableText(tryRule(node))
   if (node.type === 'table') return readableText(tryPipeTable(node, path, writing.flavour))
