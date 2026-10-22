@@ -319,8 +319,24 @@ test('keeps a table as a pipe table headed by its first row, one line per cell',
   assert.equal(portable(node('table', {}, said('stray'))), '| stray |\n| --- |\n')
   const titled = paragraph(text('t', link('https://e.com', 'a|b')))
   const folded = [node('expand', { title: 'Log' }, said('x')), node('nestedExpand', {}, said('y'))]
-  assert.equal(portable(node('table', {}, row(cell('tableHeader', titled), cell('tableHeader', ...folded)))), '| [t](https://e.com) | Log x y |\n| --- | --- |\n')
+  assert.equal(portable(node('table', {}, row(cell('tableHeader', titled), cell('tableHeader', ...folded)))), '| [t](https://e.com "a\\|b") | Log x y |\n| --- | --- |\n')
   assert.equal(portable(node('table', {}, row())), '')
+})
+
+test('escapes a backslash, an ampersand opening an entity reference and, in a table cell, a pipe in a link title, which reads back', () => {
+  const titles = ['C:\\dir\\', 'AT&amp;T & &#38; &x', 'say "hi"', 'a|b', 'a\\|b']
+  const spelled = ['"C:\\\\dir\\\\"', '"AT\\&amp;T & \\&#38; &x"', '"say \\"hi\\""', '"a|b"', '"a\\\\|b"']
+  const inCell = ['"C:\\\\dir\\\\"', '"AT\\&amp;T & \\&#38; &x"', '"say \\"hi\\""', '"a\\|b"', '"a\\\\\\|b"']
+  for (const [index, title] of titles.entries()) {
+    const linked = paragraph(text('t', link('https://e.com', title)))
+    const table: AdfNode = { content: [row(cell('tableHeader', linked))], type: 'table' }
+    assert.equal(portable(linked), `[t](https://e.com ${spelled[index]})\n`)
+    assert.equal(portable(table), `| [t](https://e.com ${inCell[index]}) |\n| --- |\n`)
+    assert.deepEqual(portableMarkdownToAdf(portable(linked)), { ok: true, value: document(linked) })
+    assert.deepEqual(portableMarkdownToAdf(portable(table)), { ok: true, value: document(table) })
+  }
+  const image: AdfNode = { attrs: { alt: 'Moon', type: 'external', url: 'https://e.com/moon.png' }, marks: [link('https://e.com', 'C:\\dir')], type: 'media' }
+  assert.equal(portable(node('mediaSingle', { layout: 'center' }, image)), '[![Moon](https://e.com/moon.png)](https://e.com "C:\\\\dir")\n')
 })
 
 test('keeps code, em, link, strike and strong and drops every other mark, and code text every mark but link, keeping its text', () => {
@@ -333,7 +349,7 @@ test('keeps code, em, link, strike and strong and drops every other mark, and co
 
 test('percent-encodes a link href no CommonMark escape writes until one does', () => {
   assert.equal(portable(paragraph(text('a', link('a\\b')), text(' '), text('b', { attrs: { id: 'i' }, type: 'link' }), text(' '), text('c', link('/&amp;')))), '[a](a%5Cb) b [c](/%26amp;)\n')
-  assert.equal(portable(paragraph(text('t', link('https://e.com', 'two\nlines')), text(' '), text('u', link('https://e.com', 'a\\b')))), '[t](https://e.com "two lines") [u](https://e.com)\n')
+  assert.equal(portable(paragraph(text('t', link('https://e.com', 'two\nlines')), text(' '), text('u', link('https://e.com', 'a\\b')))), '[t](https://e.com "two lines") [u](https://e.com "a\\\\b")\n')
   assert.equal(portable(paragraph(text(']: a', link('/u'), code))), '[\\]: a](/u)\n')
 })
 

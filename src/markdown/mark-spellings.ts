@@ -1,6 +1,6 @@
 import type { AdfAttributes, AdfMark, AdfNode } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
-import type { LinkDefinition } from './commonmark/link-syntax.ts'
+import type { LinkDefinition, TitleEscapes } from './commonmark/link-syntax.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
 import { emptyKeys, nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { escapeUnbalanced, spellLinkTarget } from './commonmark/link-syntax.ts'
@@ -55,12 +55,12 @@ export function linkHref(attrs: AdfAttributes): string | undefined {
 }
 
 // spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's depth + 1, the parser's 0.
-export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], marksInside: number, bracketed: boolean): CommonMarkLink | undefined {
+export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], marksInside: number, bracketed: boolean, escapes: TitleEscapes): CommonMarkLink | undefined {
   if (Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   const title = attrs['title']
   const autolinkHolds = !bracketed || (!href.includes('`') && !holdsDirectivePrefix(href) && escapeUnbalanced(href, '[', ']') === href)
   if (isBareLink(nodes, href, marksInside) && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return { form: 'autolink' }
-  const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined)
+  const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, escapes)
   return target === undefined ? undefined : { form: 'inline', target }
 }
 

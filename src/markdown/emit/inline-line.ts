@@ -1,9 +1,10 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
 import type { LineContainer } from '../line-container.ts'
-import type { LinkDefinition } from '../commonmark/link-syntax.ts'
+import type { LinkDefinition, TitleEscapes } from '../commonmark/link-syntax.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
+import { barePipeCells } from '../pipe-table-syntax.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
@@ -28,6 +29,7 @@ type InlineContext = {
   atBlockEnd: boolean
   bracketed: boolean
   carried: ReadonlySet<number>
+  container: LineContainer
   flavour: WrittenFlavour
   openingLinkAsDirective: boolean
   path: ConvertErrorPath
@@ -65,17 +67,19 @@ export function portableLineFallback(nodes: readonly AdfNode[], container: LineC
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, flavour: WrittenFlavour): string | undefined {
   const emitted = emitLine(nodes, 'table-cell', path, flavour)
   if (!emitted.ok) return undefined
-  if (emitted.value.segments.some((segment) => isSyntax(segment.escaping) && segment.text.includes('|'))) return undefined
+  // spec/flavour.md, Tables: the lossless flavour writes a table holding a `|` in syntax as directives; the portable flavour's only such `|` is in a title, escaped.
+  const splitsCell = (syntax: string): boolean => (flavour === 'lossless' ? syntax.includes('|') : barePipeCells(syntax) !== undefined)
+  if (emitted.value.segments.some((segment) => isSyntax(segment.escaping) && splitsCell(segment.text))) return undefined
   return emitted.value.line
 }
 
-export function tryImageLine(alt: string | undefined, url: string, link?: LinkDefinition): string | undefined {
+export function tryImageLine(alt: string | undefined, url: string, flavour: WrittenFlavour, link?: LinkDefinition): string | undefined {
   if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
   const destination = spellDestination(url)
   if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
   if (link === undefined) return attemptLine([syntax('!['), ...description, syntax(`](${destination})`)], 'paragraph', 'lossless').line
-  const target = spellLinkTarget(link.destination, link.title)
+  const target = spellLinkTarget(link.destination, link.title, titleEscapes(flavour, 'paragraph'))
   if (target === undefined) return undefined
   return attemptLine([syntax('[!['), ...description, syntax(']('), bracketedLinkTarget(destination), syntax(`)](${target})`)], 'paragraph', 'lossless').line
 }
@@ -123,7 +127,7 @@ function takeFallback(fallbacks: LineFallbacks, fallback: NodeRange | 'opening-l
 }
 
 function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<Emission> {
-  const context: InlineContext = { atBlockEnd: true, bracketed: false, ...fallbacks, path, spansLines: container === 'paragraph' }
+  const context: InlineContext = { atBlockEnd: true, bracketed: false, ...fallbacks, container, path, spansLines: container === 'paragraph' }
   const emission = emitRun(nodes, 0, 0, context)
   if (!emission.ok) return emission
   if (emission.value.carry !== undefined) return emission
@@ -177,6 +181,11 @@ function textDirectiveSegment(text: string): InlineSegment {
 
 function syntax(text: string): InlineSegment {
   return { escaping: 'none', text }
+}
+
+function titleEscapes(flavour: WrittenFlavour, container: LineContainer): TitleEscapes {
+  if (flavour === 'lossless') return 'lossless'
+  return container === 'table-cell' ? 'portable-table-cell' : 'portable'
 }
 
 function bracketedLinkTarget(target: string): InlineSegment {
@@ -345,7 +354,7 @@ function tryLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range:
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return success({ carry: range })
   const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective
-  const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes, depth + 1, context.bracketed)
+  const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes, depth + 1, context.bracketed, titleEscapes(context.flavour, context.container))
   if (commonMark === undefined) return undefined
   if (commonMark.form === 'autolink') return success({ segments: [syntax(`<${href}>`)] })
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })

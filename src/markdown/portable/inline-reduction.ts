@@ -8,7 +8,7 @@ import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
-import { spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
+import { spellDestination } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
 const highlightMark: AdfMark = { type: highlight }
@@ -158,8 +158,7 @@ export function portableLink(mark: AdfMark, container: LineContainer): AdfMark |
   const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/[\r\0]/g, '').replace(/\n/g, ' ') : undefined
   if (typeof held !== 'string') return undefined
   const href = writableHref(container === 'table-cell' ? held.replaceAll('|', '%7C') : held)
-  if (title === undefined || spellLinkTarget(href, title) === undefined || (container === 'table-cell' && title.includes('|'))) return { attrs: { href }, type: 'link' }
-  return { attrs: { href, title }, type: 'link' }
+  return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
 }
 
 // spec/flavour.md, Links: the characters no destination spelling holds, then an ampersand an entity reference would read.
