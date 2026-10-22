@@ -3,8 +3,9 @@ import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result, SourcePosition } from '../../result.ts'
-import { commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf } from './markdown-to-adf.ts'
+import { commonMarkToAdf, losslessMarkdownToAdf } from './markdown-to-adf.ts'
 import { largestNesting } from '../../nesting.ts'
+import { portableMarkdownToAdf } from '../portable/portable-markdown-to-adf.ts'
 
 const em: AdfMark = { type: 'em' }
 const strike: AdfMark = { type: 'strike' }

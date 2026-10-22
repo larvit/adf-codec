@@ -2,70 +2,60 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from '../directive/node-reading.ts'
 import type { ConvertFault } from '../../result.ts'
-import type { Flavour } from '../flavour.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
 import { commonMarkSpelling, type SpellingMemo } from '../emit/spelling-questions.ts'
 import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
 import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
-import { failure, faulted, positioned, success, type ConvertError, type ConvertErrorPath, type ParseError, type Result, type SourcePosition } from '../../result.ts'
+import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { leadingMarker, readAlertMarker, readTaskMarker } from '../portable/conventions.ts'
-import { mintTaskIds } from '../portable/task-ids.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
-import { pathTo, splitTaskList } from '../portable/task-list.ts'
 import { readBlockDirectiveNode } from '../directive/node-reading.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.ts'
 import { spellsEmpty } from '../directive/empty-keys.ts'
 import { withinEngineLimits } from '../length-bound.ts'
 
-type Paragraph = Extract<Block, { kind: 'paragraph' }>
+// A flavour's own reading of a quote and of a bullet list, which may read to several blocks.
+export type FlavourBlockReaders = {
+  bulletList: (items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number, listIndex: number) => Result<AdfNode[]>
+  quote: (blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number) => Result<AdfNode>
+}
 
-// The paragraph a task marker opens: a task item holds no image, so a lone one there reads as its linked alt text.
-type TaskParagraph = { kind: 'taskParagraph'; position: SourcePosition; text: string }
+export type ReadAs = { flavour: 'commonmark' | 'lossless' } | { blocks: FlavourBlockReaders; flavour: 'portable' }
 
-type ReadBlock = Block | TaskParagraph
-
-// `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand.
-type Reading = { definitions: LinkDefinitions; flavour: Flavour; inExpand: boolean; memo: SpellingMemo }
+// `inExpand` is whether an expand holds the blocks, which makes a folded callout a nestedExpand. An expand directive leaves it unset, so no flavour reads both.
+export type Reading = ReadAs & { definitions: LinkDefinitions; inExpand: boolean; memo: SpellingMemo }
 
 export function commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError> {
-  return readDocument(markdown, 'commonmark')
+  return readDocument(markdown, { flavour: 'commonmark' })
 }
 
 export function losslessMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
-  return readDocument(markdown, 'lossless')
+  return readDocument(markdown, { flavour: 'lossless' })
 }
 
-export function portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
-  return readDocument(markdown, 'portable')
-}
-
-function readDocument(markdown: string, flavour: Flavour): Result<AdfDocument, ParseError> {
+export function readDocument(markdown: string, readAs: ReadAs): Result<AdfDocument, ParseError> {
   return positioned(
-    withinEngineLimits(() => readMarkdown(markdown, flavour)),
+    withinEngineLimits(() => readMarkdown(markdown, readAs)),
     { line: 1, offset: 0 },
   )
 }
 
-function readMarkdown(markdown: string, flavour: Flavour): Result<AdfDocument> {
+function readMarkdown(markdown: string, readAs: ReadAs): Result<AdfDocument> {
   if (typeof markdown !== 'string') return failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, [])
-  const parsed = parseBlocks(markdown, flavour)
+  const parsed = parseBlocks(markdown, readAs.flavour)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
     const fault = documentFault(only)
     return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
   }
-  const reading: Reading = { definitions: parsed.definitions, flavour, inExpand: false, memo: new Map() }
+  const reading: Reading = { ...readAs, definitions: parsed.definitions, inExpand: false, memo: new Map() }
   const content = readBlocks(parsed.blocks, reading, [], 0)
-  if (!content.ok) return content
-  const document: AdfDocument = { content: content.value, type: 'doc', version: 1 }
-  if (flavourClaims[flavour].taskMarkers) mintTaskIds(document, markdown)
-  return success(document)
+  return content.ok ? success({ content: content.value, type: 'doc', version: 1 }) : content
 }
 
 // `typeof` alone, since anything more throws on a revoked Proxy.
@@ -76,7 +66,7 @@ function typeName(value: unknown): string {
   return type === 'object' ? 'an object' : `a ${type}`
 }
 
-function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+export function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   if (depth > largestNesting) return tooDeep(path)
   const content: AdfNode[] = []
   for (const block of blocks) {
@@ -85,8 +75,8 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
       const fault = documentFault(block) ?? unsupportedNodeShape(`delete the ${documentSpelling} line to give the document content: it stands only as the whole document`)
       return positioned(faulted(fault, nodePath), block.position)
     }
-    if (block.kind === 'bulletList' && flavourClaims[reading.flavour].taskMarkers) {
-      const listed = positioned(bulletBlocks(block.items, reading, nodePath, depth, content.length), block.position)
+    if (block.kind === 'bulletList' && reading.flavour === 'portable') {
+      const listed = positioned(reading.blocks.bulletList(block.items, reading, nodePath, depth, content.length), block.position)
       if (!listed.ok) return listed
       for (const node of listed.value) content.push(node)
       continue
@@ -98,7 +88,7 @@ function readBlocks(blocks: readonly ReadBlock[], reading: Reading, path: Conver
   return success(content)
 }
 
-function tooDeep<T>(path: ConvertErrorPath): Result<T> {
+export function tooDeep<T>(path: ConvertErrorPath): Result<T> {
   return failure('unsupported-nesting-depth', `the input nests deeper than the ${largestNesting} levels the parser carries`, path)
 }
 
@@ -111,12 +101,12 @@ function documentFault(block: DirectiveBlock): ConvertFault | undefined {
   return unsupportedNodeShape(`${documentName} spells the one form ${documentSpelling}: this one spells another`)
 }
 
-function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+function readBlock(block: Block, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   switch (block.kind) {
     case 'blockquote':
-      return flavourClaims[reading.flavour].alerts ? quoteNode(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
+      return reading.flavour === 'portable' ? reading.blocks.quote(block.blocks, reading, path, depth) : containerNode({ type: 'blockquote' }, block.blocks, reading, path, depth)
     case 'bulletList':
-      // readBlocks reads a portable task list before it reaches here.
+      // readBlocks reads a portable bullet list before it reaches here.
       return listNode({ type: 'bulletList' }, block.items, reading, path, depth)
     case 'code':
       return codeBlockNode(block.language, block.text, reading, path, depth)
@@ -136,132 +126,7 @@ function readBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, d
       return success({ type: 'rule' })
     case 'table':
       return tableNode(block.rows, reading, path)
-    case 'taskParagraph':
-      return contentNode({ type: 'paragraph' }, block.text, reading, path, 'paragraph')
   }
-}
-
-function markerLed<T extends { length: number }>(block: Block | undefined, read: (text: string) => T | undefined): { marker: T; position: SourcePosition; text: string } | undefined {
-  if (block?.kind !== 'paragraph') return undefined
-  const marker = leadingMarker(block.text, read)
-  return marker === undefined ? undefined : { marker, position: block.position, text: block.text.slice(marker.length) }
-}
-
-function markerLine(text: string): { line: string; rest: string } {
-  const lineEnd = text.indexOf('\n')
-  const line = lineEnd === -1 ? text : text.slice(0, lineEnd)
-  const hardBreak = lineEnd !== -1 && /(?:^|[^\\])(?:\\\\)*\\$/.test(line)
-  return { line: (hardBreak ? line.slice(0, -1) : line).replace(/^[ \t]+/, ''), rest: lineEnd === -1 ? '' : text.slice(lineEnd + 1) }
-}
-
-// docs/decisions.md, An image reads as an image only alone in its paragraph: a marker or title line stands apart from the lines after it.
-function paragraphsOf(position: SourcePosition, ...texts: string[]): Paragraph[] {
-  return texts.filter((text) => text !== '').map((text) => ({ kind: 'paragraph', position, text }))
-}
-
-function quoteNode(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
-  const [first, ...body] = blocks
-  const led = markerLed(first, readAlertMarker)
-  if (led === undefined) return containerNode({ type: 'blockquote' }, blocks, reading, path, depth)
-  const { folded, panelType } = led.marker
-  const { line, rest } = markerLine(led.text)
-  if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...paragraphsOf(led.position, line, rest), ...body], reading, path, depth + 1))
-  const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour)
-  if (!title.ok) return title
-  const text = titleText(title.value.nodes)
-  const type = reading.inExpand ? 'nestedExpand' : 'expand'
-  return filledNode(text === '' ? { type } : { attrs: { title: text }, type }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, inExpand: true }, path, depth + 1))
-}
-
-// docs/decisions.md, A callout title keeps its link targets.
-function titleText(nodes: readonly AdfNode[]): string {
-  let text = ''
-  let linked = ''
-  for (const [index, node] of nodes.entries()) {
-    const href = linkTarget(node)
-    text += node.text ?? ''
-    linked += href === undefined ? '' : node.text ?? ''
-    if (href === undefined || linkTarget(nodes[index + 1]) === href) continue
-    if (href !== linked && href !== `mailto:${linked}`) text += ` (${href})`
-    linked = ''
-  }
-  return text
-}
-
-function linkTarget(node: AdfNode | undefined): string | undefined {
-  const href = node?.marks?.find((mark) => mark.type === 'link')?.attrs?.href
-  return typeof href === 'string' ? href : undefined
-}
-
-// Atlassian's schema requires a panel and an expand to hold a block.
-function filledNode(node: AdfNode, content: Result<AdfNode[]>): Result<AdfNode> {
-  if (!content.ok) return content
-  return success({ ...node, content: content.value.length === 0 ? [{ type: 'paragraph' }] : content.value })
-}
-
-function taskItems(items: readonly Block[][]) {
-  const led = []
-  for (const [first, ...others] of items) {
-    const marked = markerLed(first, readTaskMarker)
-    if (marked === undefined) return undefined
-    led.push({ ...marked, others })
-  }
-  return led
-}
-
-function bulletBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number, listIndex: number): Result<AdfNode[]> {
-  const tasks = taskBlocks(items, reading, path, depth)
-  if (tasks === undefined) {
-    const list = listNode({ type: 'bulletList' }, items, reading, path, depth)
-    return list.ok ? success([list.value]) : list
-  }
-  if (!tasks.ok) return tasks
-  const { nodes: blocks, refusal } = tasks.value
-  if (refusal === undefined) return success(blocks)
-  const place = pathTo(blocks, refusal.marker)
-  // task-list.test.ts pins that the split keeps the marker; were it lost, the error keeps its pre-split path, since nothing here throws.
-  if (place === undefined) return { error: refusal.error, ok: false }
-  const [blockIndex, ...steps] = place
-  return { error: { ...refusal.error, path: [...path.slice(0, -1), listIndex + blockIndex, ...steps.slice(0, -2), ...refusal.within] }, ok: false }
-}
-
-// A block a task list refused. Its placeholder holds `marker` as its one child and stands where the block's node would, so the one split that builds the list places it; `within` is the error's path below that node.
-type Refusal = { error: ConvertError; marker: AdfNode; within: ConvertErrorPath }
-
-// Nodes read from task blocks and the first refusal among them; a list is read up to the task holding its refusal.
-type TaskNodes = { nodes: AdfNode[]; refusal: Refusal | undefined }
-
-function taskBlocks(items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<TaskNodes> | undefined {
-  const led = taskItems(items)
-  if (led === undefined) return undefined
-  if (depth + 1 > largestNesting) return tooDeep([...path, 'content', 0])
-  const tasks: AdfNode[] = []
-  let refusal: Refusal | undefined
-  for (const [index, { marker, others, position, text }] of led.entries()) {
-    const body = text.replace(/^(?:[ \t\n]|\\\n)+/, '')
-    const marked: TaskParagraph[] = body === '' ? [] : [{ kind: 'taskParagraph', position, text: body }]
-    const task: AdfNode & { content: AdfNode[] } = { attrs: { state: marker.state }, content: [], type: 'blockTaskItem' }
-    for (const block of [...marked, ...others]) {
-      const read = readTaskBlock(block, reading, [...path, 'content', index], depth + 1)
-      for (const node of read.nodes) task.content.push(node)
-      refusal ??= read.refusal
-    }
-    tasks.push(task)
-    if (refusal !== undefined) break
-  }
-  return success({ nodes: splitTaskList({ content: tasks, type: 'taskList' }), refusal })
-}
-
-// A refused block reads to a placeholder. The split tells only paragraphs and task lists from other blocks, so a paragraph that failed to read stays a paragraph.
-function readTaskBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): TaskNodes {
-  const nodePath = [...path, 'content', 0]
-  const nested = block.kind === 'bulletList' ? taskBlocks(block.items, reading, nodePath, depth) : undefined
-  if (nested?.ok) return nested.value
-  const read = positioned(nested ?? readBlocks([block], reading, path, depth), block.position)
-  if (read.ok) return { nodes: read.value, refusal: undefined }
-  const marker: AdfNode = { text: '', type: 'text' }
-  const type = block.kind === 'taskParagraph' ? 'paragraph' : nested === undefined ? block.kind : 'taskList'
-  return { nodes: [{ content: [marker], type }], refusal: { error: read.error, marker, within: read.error.path.slice(nodePath.length) } }
 }
 
 function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
@@ -355,7 +220,7 @@ function inlineBodyNode(node: AdfNode, blocks: readonly Block[], reading: Readin
   return positioned(contentNode(node, only.text, reading, path, 'paragraph'), only.position)
 }
 
-function containerNode(node: AdfNode, blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+export function containerNode(node: AdfNode, blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const content = readBlocks(blocks, reading, path, depth + 1)
   if (!content.ok) return content
   return success(withContent(node, content.value))
@@ -365,7 +230,7 @@ function withContent(node: AdfNode, content: readonly AdfNode[]): AdfNode {
   return content.length === 0 ? node : { ...node, content: [...content] }
 }
 
-function listNode(node: AdfNode, items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
+export function listNode(node: AdfNode, items: readonly Block[][], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const content: AdfNode[] = []
   for (const [index, blocks] of items.entries()) {
     const item = containerNode({ type: 'listItem' }, blocks, reading, [...path, 'content', index], depth)
@@ -393,7 +258,7 @@ function paragraphNode(text: string, reading: Reading, path: ConvertErrorPath): 
   return success(image === undefined ? withContent({ type: 'paragraph' }, content.value.nodes) : image)
 }
 
-function contentNode(node: AdfNode, text: string, reading: Reading, path: ConvertErrorPath, container: LineContainer): Result<AdfNode> {
+export function contentNode(node: AdfNode, text: string, reading: Reading, path: ConvertErrorPath, container: LineContainer): Result<AdfNode> {
   const content = parseInlineContent(text, reading.definitions, path, container, reading.flavour)
   if (!content.ok) return content
   return success(withContent(node, content.value.nodes))

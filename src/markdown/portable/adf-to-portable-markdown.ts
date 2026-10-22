@@ -11,6 +11,7 @@ import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkDefinition } from '../mark-spellings.ts'
 import { longestMarkdown, tooLong, withinEngineLimits } from '../length-bound.ts'
+import { portableBlockWriters } from './block-spelling.ts'
 import { splitTaskList } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
 import { toEditorNormal } from './editor-normal.ts'
@@ -53,7 +54,7 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
 export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => {
     const reduced = reduceToPortable(document)
-    return reduced.ok ? writeMarkdown(reduced.value, 'portable') : reduced
+    return reduced.ok ? writeMarkdown(reduced.value, { blocks: portableBlockWriters, flavour: 'portable' }) : reduced
   })
 }
 
@@ -132,7 +133,7 @@ function portableSequence(blocks: readonly Sourced[], reduction: Reduction): Res
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const block = numberedPastMarkers(next.block)
     const listed = block.type === 'bulletList' || block.type === 'orderedList'
-    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { flavour: 'portable', memo: reduction.memo }) : success(!listed)
+    const spelled = listed && block === next.block ? commonMarkSpelling(block, next.path, reduction.depth, { blocks: portableBlockWriters, flavour: 'portable', memo: reduction.memo }) : success(!listed)
     if (!spelled.ok) return spelled
     if (spelled.value) {
       sequence.push(block)

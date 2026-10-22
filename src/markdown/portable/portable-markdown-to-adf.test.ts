@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
-import { adfToPortableMarkdown } from '../portable/adf-to-portable-markdown.ts'
+import { adfToPortableMarkdown } from './adf-to-portable-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
-import { portableMarkdownToAdf } from './markdown-to-adf.ts'
+import { portableMarkdownToAdf } from './portable-markdown-to-adf.ts'
 
 const code: AdfMark = { type: 'code' }
 const em: AdfMark = { type: 'em' }

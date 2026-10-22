@@ -5,7 +5,7 @@ import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../co
 import { delimiterRunToken, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims } from '../flavour.ts'
-import { highlightFlanking } from '../portable/conventions.ts'
+import { highlightFlanking } from '../highlight-syntax.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 
