@@ -205,6 +205,19 @@ test('names where a refused block stands after the task list splits', () => {
   assert.equal(refused('- [ ] a\n\n  <div>x</div>\n\n  tail <b>y</b>\n'), '/content/1')
 })
 
+test('holds task lists to the 500 levels the parser carries, refusing one level deeper where it stands', () => {
+  const nested = (levels: number): string => Array.from({ length: levels }, (_, level) => `${'  '.repeat(level)}- [ ] a\n`).join('')
+  assert.ok(portableMarkdownToAdf(nested(largestNesting)).ok)
+  const refused = portableMarkdownToAdf(nested(largestNesting + 1))
+  assert.deepEqual(refused.ok ? undefined : [refused.error.code, refused.error.path], [
+    'unsupported-nesting-depth',
+    ['content', 0, ...Array.from({ length: largestNesting }, () => ['content', 1]).flat(), 'content', 0],
+  ])
+  assert.ok(portableMarkdownToAdf(`${'> '.repeat(largestNesting - 1)}- [ ] a\n`).ok)
+  const quoted = portableMarkdownToAdf(`${'> '.repeat(largestNesting)}- [ ] a\n`)
+  assert.equal(quoted.ok ? undefined : quoted.error.code, 'unsupported-nesting-depth')
+})
+
 test('reads a task list beside a list of another bullet character as two lists', () => {
   const tasks = (state: string, value: string): AdfNode => bare('taskList', node('taskItem', { state }, text(value)))
   assert.deepEqual(read('- [x] a\n* b\n'), [tasks('DONE', 'a'), bare('bulletList', bare('listItem', bare('paragraph', text('b'))))])

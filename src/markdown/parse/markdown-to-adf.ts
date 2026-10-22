@@ -219,7 +219,7 @@ function bulletBlocks(items: readonly Block[][], reading: Reading, path: Convert
   const { nodes: blocks, refusal } = tasks.value
   if (refusal === undefined) return success(blocks)
   const place = pathTo(blocks, refusal.marker)
-  // Failures are values, so a marker the split ever copied out of sight leaves the error unplaced rather than asserting; task-list.test.ts pins that the split keeps it.
+  // Failures are values, so a marker the split ever copied out of sight leaves the error at its pre-split path rather than asserting; task-list.test.ts pins that the split keeps it.
   if (place === undefined) return { error: refusal.error, ok: false }
   const [blockIndex, ...steps] = place
   return { error: { ...refusal.error, path: [...path.slice(0, -1), listIndex + blockIndex, ...steps.slice(0, -2), ...refusal.within] }, ok: false }
