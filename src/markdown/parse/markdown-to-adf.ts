@@ -219,13 +219,13 @@ function bulletBlocks(items: readonly Block[][], reading: Reading, path: Convert
   const { nodes: blocks, refusal } = tasks.value
   if (refusal === undefined) return success(blocks)
   const place = pathTo(blocks, refusal.marker)
-  // Failures are values, so a marker the split ever copied out of sight leaves the error at its pre-split path rather than asserting; task-list.test.ts pins that the split keeps it.
+  // task-list.test.ts pins that the split keeps the marker; were it lost, the error keeps its pre-split path, since nothing here throws.
   if (place === undefined) return { error: refusal.error, ok: false }
   const [blockIndex, ...steps] = place
   return { error: { ...refusal.error, path: [...path.slice(0, -1), listIndex + blockIndex, ...steps.slice(0, -2), ...refusal.within] }, ok: false }
 }
 
-// A block a task list refused. A placeholder holding `marker` as its one child stands where the block's node would, so the split that builds the list places the refusal too, and `within` is the error's path below that node.
+// A block a task list refused. Its placeholder holds `marker` as its one child and stands where the block's node would, so the one split that builds the list places it; `within` is the error's path below that node.
 type Refusal = { error: ConvertError; marker: AdfNode; within: ConvertErrorPath }
 
 // Nodes read from task blocks and the first refusal among them; a list is read up to the task holding its refusal.
@@ -252,7 +252,7 @@ function taskBlocks(items: readonly Block[][], reading: Reading, path: ConvertEr
   return success({ nodes: splitTaskList({ content: tasks, type: 'taskList' }), refusal })
 }
 
-// The nodes a block of a task reads to. A refused one is a placeholder, typed as the split tells paragraphs and task lists from other blocks, so a paragraph that failed to read stays a paragraph.
+// A refused block reads to a placeholder. The split tells only paragraphs and task lists from other blocks, so a paragraph that failed to read stays a paragraph.
 function readTaskBlock(block: ReadBlock, reading: Reading, path: ConvertErrorPath, depth: number): TaskNodes {
   const nodePath = [...path, 'content', 0]
   const nested = block.kind === 'bulletList' ? taskBlocks(block.items, reading, nodePath, depth) : undefined
