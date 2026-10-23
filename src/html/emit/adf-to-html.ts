@@ -112,16 +112,23 @@ function containerPieces(tag: string, attributes: string, children: Pending[] | 
   return [`<${tag}${attributes}>\n`, ...children, `\n</${tag}>`]
 }
 
-// An item's blocks sit at its own level, one below its list; its first paragraph stands bare where it holds content and no attribute, panel pick, docs/decisions.md §The HTML dialect.
+// An item's blocks sit at its own level, one below its list; its first paragraph stands on the item's line, panel picks, docs/decisions.md §The HTML dialect.
 function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
   if (node.content === undefined) return success([`<li${attributes}></li>`])
   const blocks = blockPieces(node.content, path, depth)
   const [first] = node.content
-  if (first === undefined || first.type !== 'paragraph' || dataAttributes(first, []) !== '' || nodeContent(first).length === 0) return success([`<li${attributes}>\n`, ...blocks, '\n</li>'])
-  const bare = inlineHtml(nodeContent(first), [...path, 'content', 0])
-  if (!bare.ok) return bare
-  // The bare paragraph's inline content stands in for its block.
-  return success(blocks.length === 1 ? [`<li${attributes}>${bare.value}</li>`] : [`<li${attributes}>${bare.value}`, ...blocks.slice(1), '\n</li>'])
+  const line = first?.type === 'paragraph' ? tryFirstParagraph(first, [...path, 'content', 0]) : undefined
+  if (line === undefined) return success([`<li${attributes}>\n`, ...blocks, '\n</li>'])
+  if (!line.ok) return line
+  // The first paragraph, written on the item's line, stands in for its block.
+  return success(blocks.length === 1 ? [`<li${attributes}>${line.value}</li>`] : [`<li${attributes}>${line.value}`, ...blocks.slice(1), '\n</li>'])
+}
+
+// `undefined` where the paragraph takes a line of its own: where it rides the carry, or holds neither content nor an attribute, which bare would read back as no paragraph.
+function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
+  const attributes = dataAttributes(paragraph, [])
+  if (attributes !== '') return inlineElement('p', attributes, nodeContent(paragraph), path)
+  return nodeContent(paragraph).length === 0 ? undefined : inlineHtml(nodeContent(paragraph), path)
 }
 
 function tryLeafBlock(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
