@@ -38,7 +38,7 @@ type Scanned = { image?: AdfNode; pieces: Resolved[] }
 
 export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
 
-type Bracket = { active: boolean; image: boolean; kind: 'open'; start: number }
+type Bracket = { image: boolean; kind: 'open' }
 
 // `link` is the link whose text is this image alone.
 type Image = { alt: string; definition: LinkDefinition; kind: 'image'; link?: LinkDefinition }
@@ -51,6 +51,9 @@ type Nodes = { kind: 'nodes'; nodes: Inline[] }
 type Resolved = ImageLink | Nodes
 
 type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; opens: boolean; position: number; stretch: number }
+
+// `index` is the bracket's piece, `start` the index of the source its text starts at.
+type OpenBracket = { image: boolean; index: number; start: number }
 
 type Pairing = EmphasisPairing<Run>
 
@@ -68,13 +71,15 @@ type Run = { canClose: boolean; canOpen: boolean; character: string; index: numb
 
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
+  // CommonMark's bracket stack, innermost last.
+  brackets: OpenBracket[]
   claims: Claims
   container: LineContainer | undefined
-  // Pieces below this have been walked for openers to deactivate: an image close folds the link-marked piece into alt text, leaving this the only record that the brackets around it are doomed.
-  deactivatedBefore: number
   definitions: LinkDefinitions
   // Whether this content is an `!adf:link`'s text, where an image reads as its plain alt text.
   inLink: boolean
+  // A link opener deeper in `brackets` than this is active; one below it stood open while a link closed, and no link holds another.
+  linkOpenersFrom: number
   openingSpellableLink: boolean
   path: ConvertErrorPath
   pending: string
@@ -111,7 +116,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
 }
 
 function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'inLink' | 'spans'>): Scan {
-  return { ...shared, ...own, deactivatedBefore: 0, openingSpellableLink: false, pending: '', pieces: [], source }
+  return { ...shared, ...own, brackets: [], linkOpenersFrom: 0, openingSpellableLink: false, pending: '', pieces: [], source }
 }
 
 function scanInline(scan: Scan): Result<Scanned> {
@@ -137,7 +142,8 @@ function readToken(scan: Scan, inline: InlineSource, index: number, token: Inlin
       return success(end)
     case 'bracket':
       flush(scan, false)
-      scan.pieces.push({ active: true, image: token.image, kind: 'open', start: end })
+      scan.brackets.push({ image: token.image, index: scan.pieces.length, start: end })
+      scan.pieces.push({ image: token.image, kind: 'open' })
       return success(end)
     case 'bracket-close':
       return closeBracket(scan, index)
@@ -364,7 +370,7 @@ function holdsOwnMarks(item: Inline | Piece): boolean {
   return 'kind' in item && item.kind === 'ownMarks'
 }
 
-// Only a link a `nodes` piece spells, or an (image)'s, makes the outer brackets literal; an `ownMarks` node's link is its own, so the own-marks guard in `closeLink` refuses it.
+// Only a link a `nodes` piece spells, or an (image)'s, makes the outer brackets literal; an `ownMarks` node's link is its own, so the own-marks guard in `linkPieces` refuses it.
 function holdsLink(pieces: readonly Piece[]): boolean {
   return pieces.some((piece) => piece.kind === 'imageLink' || (piece.kind === 'nodes' && marksLink(piece.nodes)))
 }
@@ -379,19 +385,30 @@ function linkedText(text: string, scheme: string): AdfNode {
 
 function closeBracket(scan: Scan, index: number): Result<number> {
   flush(scan, false)
-  const open = lastBracket(scan.pieces)
-  if (open === undefined) return success(literalClose(scan, index))
-  const target = open.bracket.active ? resolveTarget(scan, open.bracket, index) : undefined
-  if (target === undefined) return success(unopened(scan, open, index))
+  const open = popBracket(scan)
+  const target = open?.active === true ? resolveTarget(scan, open.start, index) : undefined
+  if (open === undefined || target === undefined) return success(literalClose(scan, index))
   const inner = scan.pieces.slice(open.index + 1)
-  if (open.bracket.image) {
-    const closed = closeImage(scan, open.index, inner, target.definition)
-    if (!closed.ok) return closed
-    return success(index + 1 + target.length)
+  // Ahead of the own-marks guard in `linkPieces`: brackets going literal put the carry inside no mark for it to refuse.
+  if (!open.image && holdsLink(inner)) {
+    scan.linkOpenersFrom = scan.brackets.length
+    return success(literalClose(scan, index))
   }
-  const closed = closeLink(scan, open.index, inner, target.definition)
+  const closed = open.image ? imagePieces(scan, inner, target.definition) : linkPieces(scan, inner, target.definition)
   if (!closed.ok) return closed
-  return success(closed.value ? index + 1 + target.length : unopened(scan, open, index))
+  if (!open.image) scan.linkOpenersFrom = scan.brackets.length
+  scan.pieces.length = open.index
+  for (const piece of closed.value) scan.pieces.push(piece)
+  return success(index + 1 + target.length)
+}
+
+// Every close takes the innermost bracket off the stack, whether it closes a link, an image or nothing; its piece reads as literal text unless the close replaces it.
+function popBracket(scan: Scan): (OpenBracket & { active: boolean }) | undefined {
+  const open = scan.brackets.pop()
+  if (open === undefined) return undefined
+  const active = open.image || scan.brackets.length >= scan.linkOpenersFrom
+  scan.linkOpenersFrom = Math.min(scan.linkOpenersFrom, scan.brackets.length)
+  return { ...open, active }
 }
 
 function literalClose(scan: Scan, index: number): number {
@@ -399,53 +416,26 @@ function literalClose(scan: Scan, index: number): number {
   return index + 1
 }
 
-function unopened(scan: Scan, open: { bracket: Bracket; index: number }, index: number): number {
-  scan.pieces[open.index] = { kind: 'nodes', nodes: bracketNodes(open.bracket) }
-  return literalClose(scan, index)
-}
-
 function bracketNodes(bracket: Bracket): AdfNode[] {
   return [{ text: bracket.image ? '![' : '[', type: 'text' }]
 }
 
-function lastBracket(pieces: readonly Piece[]): { bracket: Bracket; index: number } | undefined {
-  for (let index = pieces.length - 1; index >= 0; index -= 1) {
-    const piece = pieces[index]
-    if (piece?.kind === 'open') return { bracket: piece, index }
-  }
-  return undefined
-}
-
-function resolveTarget(scan: Scan, bracket: Bracket, index: number): { definition: LinkDefinition; length: number } | undefined {
+function resolveTarget(scan: Scan, start: number, index: number): { definition: LinkDefinition; length: number } | undefined {
   const after = index + 1
   if (scan.source.charAt(after) === '(') {
     const inline = readInlineTarget(scan.source, after)
     if (inline !== undefined) return { definition: inline.definition, length: inline.length }
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
-  const name = label === undefined || label.value === '' ? scan.source.slice(bracket.start, index) : label.value
+  const name = label === undefined || label.value === '' ? scan.source.slice(start, index) : label.value
   const definition = scan.definitions.get(normalizeLabel(name))
   if (definition === undefined) return undefined
   return { definition, length: label?.length ?? 0 }
 }
 
-function closeLink(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<boolean> {
-  // Ahead of the guard below: brackets going literal put the carry inside no mark for it to refuse.
-  if (holdsLink(inner)) {
-    deactivateOpeners(scan, at)
-    return success(false)
-  }
-  if (inner.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
-  const pieces = linkPieces(scan, inner, definition)
-  if (!pieces.ok) return pieces
-  truncatePieces(scan, at)
-  deactivateOpeners(scan, at)
-  for (const piece of pieces.value) scan.pieces.push(piece)
-  return success(true)
-}
-
 // An image alone in the link text keeps its piece, so a paragraph holding nothing else builds the linked image.
 function linkPieces(scan: Scan, inner: readonly Piece[], definition: LinkDefinition): Result<Piece[]> {
+  if (inner.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.path)
   const [only] = inner
   if (inner.length === 1 && only?.kind === 'image') return success([{ ...only, link: definition }])
   const nodes = resolveNodes(inner, scan, true)
@@ -457,26 +447,9 @@ function linkPieces(scan: Scan, inner: readonly Piece[], definition: LinkDefinit
   return success([{ kind: 'nodes', nodes: linkTo(nodes.value, definition) }, ...besideLink(images, definition)])
 }
 
-// CommonMark: no link nests inside another, though an image's description holds one.
-function deactivateOpeners(scan: Scan, before: number): void {
-  for (let index = scan.deactivatedBefore; index < before; index += 1) {
-    const piece = scan.pieces[index]
-    if (piece?.kind === 'open' && !piece.image) piece.active = false
-  }
-  scan.deactivatedBefore = before
-}
-
-function truncatePieces(scan: Scan, to: number): void {
-  scan.pieces.length = to
-  scan.deactivatedBefore = Math.min(scan.deactivatedBefore, to)
-}
-
-function closeImage(scan: Scan, at: number, inner: readonly Piece[], definition: LinkDefinition): Result<null> {
+function imagePieces(scan: Scan, inner: readonly Piece[], definition: LinkDefinition): Result<Piece[]> {
   const alt = imageAlt(inner, scan)
-  if (!alt.ok) return alt
-  truncatePieces(scan, at)
-  scan.pieces.push({ alt: alt.value, definition, kind: 'image' })
-  return success(null)
+  return alt.ok ? success([{ alt: alt.value, definition, kind: 'image' }]) : alt
 }
 
 function imageAlt(inner: readonly Piece[], scan: Scan): Result<string> {
@@ -500,6 +473,7 @@ function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean)
   return nodes.ok ? success(mergeReadText(nodes.value.flat())) : nodes
 }
 
+// `nodes[index]` holds piece `index`'s nodes, which each step below rewrites in place.
 function markedNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean): Result<Inline[][]> {
   const nodes = pieces.map(pieceNodes)
   const runs = delimiterRuns(pieces)
@@ -572,13 +546,27 @@ function writeUnpaired(nodes: Inline[][], runs: readonly Run[], pairings: readon
   }
 }
 
-// Innermost pairing first, so prepending leaves the marks array outermost first (spec/flavour.md, Marks).
+// Pairings nest and come innermost first, so one walk holding the open ones on a stack marks each piece once.
+// A type takes its place from the innermost pairing of it, and the marks array runs outermost first (spec/flavour.md, Marks).
 function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: readonly Pairing[]): boolean {
+  const opening = new Map<number, Pairing[]>()
   for (const pairing of pairings) {
-    const mark: AdfMark = { type: markType(pairing.opener.character, pairing.used) }
-    for (let index = pairing.opener.index + 1; index < pairing.closer.index; index += 1) {
-      if (pieces[index]?.kind === 'ownMarks') return false
-      nodes[index] = applyMark(nodes[index] ?? [], mark)
+    const opened = opening.get(pairing.opener.index)
+    if (opened === undefined) opening.set(pairing.opener.index, [pairing])
+    else opened.push(pairing)
+  }
+  const open: { closer: number; marks: AdfMark[] }[] = []
+  for (const [index, piece] of pieces.entries()) {
+    while (open.at(-1)?.closer === index) open.pop()
+    const marks = open.at(-1)?.marks
+    if (marks !== undefined) {
+      if (piece.kind === 'ownMarks') return false
+      nodes[index] = marks.reduceRight((marked, mark) => applyMark(marked, mark), nodes[index] ?? [])
+    }
+    for (const pairing of [...(opening.get(index) ?? [])].reverse()) {
+      const type = markType(pairing.opener.character, pairing.used)
+      const outer = open.at(-1)?.marks ?? []
+      open.push({ closer: pairing.closer.index, marks: [...outer.filter((mark) => mark.type !== type), { type }] })
     }
   }
   return true
