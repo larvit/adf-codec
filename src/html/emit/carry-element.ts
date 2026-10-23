@@ -29,32 +29,23 @@ export function carryElement(tag: string, json: string, content: string): string
 // What a carry element shows, block by block, as the writer panels picked it (docs/decisions.md §The HTML dialect); a reader of the element reads its JSON alone.
 function shownBlocks(root: AdfNode, codeLineFeed: string): ShownBlock[] {
   const shown: ShownBlock[] = []
-  // The blocks the walk is inside, innermost last; a `null` on `pending` closes the innermost.
-  const blocks: AdfNode[] = []
-  let html = ''
-  const pending: (AdfNode | null)[] = [root]
+  let current: ShownBlock = { code: undefined, html: '' }
+  // Each entry holds the code block it stands in; a `null` node ends a block, after which the content stands in `code` again.
+  const pending: { code: AdfNode | undefined; node: AdfNode | null }[] = [{ code: undefined, node: root }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
-    const parts = next === null || partsShownText(next.type)
-    if (parts && html !== '') shown.push({ code: innermostCode(blocks), html })
-    if (parts) html = ''
-    if (next === null) {
-      blocks.pop()
-      continue
+    const { node } = next
+    const code = node?.type === 'codeBlock' ? node : next.code
+    if (node === null || partsShownText(node.type)) {
+      if (current.html !== '') shown.push(current)
+      current = { code, html: '' }
     }
-    if (parts) {
-      blocks.push(next)
-      pending.push(null)
-    }
-    html += shownPiece(next, innermostCode(blocks) === undefined ? '<br>' : codeLineFeed)
-    for (const child of [...nodeContent(next)].reverse()) pending.push(child)
+    if (node === null) continue
+    current = { ...current, html: current.html + shownPiece(node, current.code === undefined ? '<br>' : codeLineFeed) }
+    if (partsShownText(node.type)) pending.push({ code: next.code, node: null })
+    for (const child of [...nodeContent(node)].reverse()) pending.push({ code, node: child })
   }
-  if (html !== '') shown.push({ code: undefined, html })
+  if (current.html !== '') shown.push(current)
   return shown
-}
-
-function innermostCode(blocks: readonly AdfNode[]): AdfNode | undefined {
-  const innermost = blocks.at(-1)
-  return innermost?.type === 'codeBlock' ? innermost : undefined
 }
 
 // The node's own part of what its carry element shows: its text, what it shows in its place, or a note naming what it references, linked to its link mark's target, else to the URL a card or an image links to; an image a link to another target marks is followed by a link to it.
@@ -63,15 +54,18 @@ function shownPiece(node: AdfNode, lineFeed: string): string {
   const mark = nodeMarks(node).find((held) => held.type === 'link')
   const target = mark === undefined ? undefined : linkAttrs(nodeAttrs(mark))
   const url = shownUrl(node)
-  if (['media', 'mediaInline'].includes(node.type) && target !== undefined && url !== undefined && target.href !== url) {
-    const linkText = visibleText(nodeAttrs(node)['alt']) ?? visibleText(target.href) ?? url
-    return `${linked(shownValue(linkText, lineFeed), target)} (${linked('image', { href: url })})`
-  }
+  if (['media', 'mediaInline'].includes(node.type) && target !== undefined && url !== undefined && target.href !== url) return linkedImage(node, target, url, lineFeed)
   const link = target ?? (url === undefined ? undefined : { href: url })
   const text = node.text ?? shownText(node)
   if (text !== undefined) return linked(shownValue(text, lineFeed), link)
   const name = referenceName(node)
   return name === undefined ? '' : linked(`<em>(${shownValue(name, lineFeed)})</em>`, link)
+}
+
+// The image's alt, else the link's target, else its URL, linked to the target, then a link to the image, as portable markdown writes it inline.
+function linkedImage(media: AdfNode, target: LinkAttrs, url: string, lineFeed: string): string {
+  const text = visibleText(nodeAttrs(media)['alt']) ?? visibleText(target.href) ?? url
+  return `${linked(shownValue(text, lineFeed), target)} (${linked('image', { href: url })})`
 }
 
 // The shown HTML inside an `<a>` where it links and HTML can hold the link.

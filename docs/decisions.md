@@ -422,8 +422,9 @@ A fourth panel of the same three roles picked, 3 of 3, a code block inside a car
 `<pre><code>…</code></pre>` over `<pre>…</pre>` and over a `<p>` whose lines part at `<br>`, which
 loses the indentation. All three wrote `<code class="language-python">`, which no option held.
 
-Inside a carry element, an image a link to another target marks takes the spelling portable
-markdown gives it inline (§A linked image standing inline in portable markdown, its link to another
+Inside a carry element (2026-10-24, no panel of its own: the second panel's `<a>` joined to a
+portable spelling), an image a link to another target marks takes the spelling portable markdown
+gives it inline (§A linked image standing inline in portable markdown, its link to another
 target, is written `[alt](href) ([image](url))`), keeping both targets, which Goal 7 counts as
 content. A link marking a node that shows a note goes around the note.
 

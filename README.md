@@ -19,9 +19,9 @@ products store as ADF.
   and Obsidian render — GitHub Flavored Markdown's alerts, task lists and pipe tables, Obsidian
   Flavored Markdown's callouts and highlights. It keeps the text, images by URL and link targets and
   drops the rest.
-- **HTML out:** `adfToHtml` writes paragraphs, headings, lists, quotes, code blocks, images and
-  links as their HTML elements, and every other node as an element holding its JSON and showing its
-  content.
+- **HTML out:** `adfToHtml` writes paragraphs, headings, lists, quotes, code blocks and links as
+  their HTML elements, and every other node, an image Atlassian's editor wrote among them, as an
+  element holding its JSON and showing its content.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
   TypeScript types ship beside the JavaScript.
@@ -479,7 +479,7 @@ content. No stylesheet ships. The complete dialect:
 | `hardBreak` | `<br>` |
 | `heading` | `<h1>` to `<h6>` |
 | `link` | `<a href="…" title="…">` |
-| `mediaSingle` holding an external `media`, centered, uncaptioned | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it |
+| `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it; an image holding such an attribute, as editor-written ones do, rides the carry element |
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
