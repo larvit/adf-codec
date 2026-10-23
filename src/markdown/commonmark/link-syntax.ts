@@ -9,14 +9,16 @@ export type LinkPart = { length: number; value: string }
 export type TitleEscapes = 'lossless' | 'portable' | 'portable-table-cell'
 
 const bracketedDestination = /<((?:[^\n<>\\]|\\[^\n])*)>/y
-const linkLabel = /\[((?:[^[\]\\]|\\[\s\S]){0,999})\]/y
+// CommonMark: a link label holds at most this many characters between its brackets, an escape counting as two.
+export const labelLimit = 999
+const linkLabel = new RegExp(String.raw`\[((?:[^[\]\\]|\\[\s\S]){0,${labelLimit}})\]`, 'y')
 const titleClosers: Readonly<Record<string, string>> = { '"': '"', "'": "'", '(': ')' }
 
 // The label is matched by its normalized raw text, escapes and all.
 export function readLabel(text: string, offset: number): LinkPart | undefined {
   linkLabel.lastIndex = offset
   const value = linkLabel.exec(text)?.[1]
-  return value === undefined ? undefined : { length: value.length + 2, value }
+  return value === undefined || value.length > labelLimit ? undefined : { length: value.length + 2, value }
 }
 
 export function normalizeLabel(raw: string): string {

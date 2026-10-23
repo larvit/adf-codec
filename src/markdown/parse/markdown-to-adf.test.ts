@@ -1078,8 +1078,12 @@ test('reads the reference links a definition resolves, and leaves the rest liter
 
 test('reads link text past 999 characters as no label, in every reader', () => {
   const longest = `foo${' '.repeat(993)}bar`
-  const tooLong = `foo${' '.repeat(1000)}bar`
+  const tooLong = `foo${' '.repeat(994)}bar`
+  const escaped = '\\*'.repeat(499)
+  const escapedTooLong = '\\*'.repeat(500)
   for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read(`[a][${escaped}]\n\n[${escaped}]: /u\n`)), [{ content: [marked('a', link('/u'))], type: 'paragraph' }])
+    assert.deepEqual(content(read(`[a][${escapedTooLong}]\n\n[${escapedTooLong}]: /u\n`)), [paragraph(`[a][${'*'.repeat(500)}]`), paragraph(`[${'*'.repeat(500)}]: /u`)])
     assert.deepEqual(content(read(`[${longest}]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
     assert.deepEqual(content(read(`[${longest}][]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
     assert.deepEqual(content(read(`[${tooLong}]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}]`)])

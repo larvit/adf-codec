@@ -15,7 +15,7 @@ import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../a
 import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
 import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
-import { normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
+import { labelLimit, normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
 import { noSpans, readInlineDirective } from '../directive/syntax.ts'
 import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
@@ -431,9 +431,8 @@ function resolveTarget(scan: Scan, start: number, index: number): { definition: 
     if (inline !== undefined) return { definition: inline.definition, length: inline.length }
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
-  // CommonMark: a label holds at most 999 characters, so longer link text names no definition.
   const labelIsText = label === undefined || label.value === ''
-  if (labelIsText && index - start > 999) return undefined
+  if (labelIsText && index - start > labelLimit) return undefined
   const name = labelIsText ? scan.source.slice(start, index) : label.value
   const definition = scan.definitions.get(normalizeLabel(name))
   if (definition === undefined) return undefined
@@ -566,7 +565,7 @@ function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: rea
     }
     for (const pairing of opening.get(index) ?? []) {
       const type = markType(pairing.opener.character, pairing.used)
-      // A type takes its place from the innermost pairing of it.
+      // Each type once, so a piece's marks stay at most three however deep the pairings nest.
       const outer = open.at(-1)?.marks.filter((mark) => mark.type !== type) ?? []
       open.push({ closer: pairing.closer.index, marks: [...outer, { type }] })
     }
