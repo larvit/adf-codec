@@ -2,14 +2,14 @@ import type { AdfNode } from '../adf/document.ts'
 import type { DirectiveSpan } from './directive/syntax.ts'
 import type { JsonSpelling } from '../canonical-json.ts'
 import type { JsonValue } from '../json-value.ts'
-import { canonicalJsonPieces, spellsCanonicalJson } from '../canonical-json.ts'
+import { carriedJson } from '../adf/carried-json.ts'
+import { spellsCanonicalJson } from '../canonical-json.ts'
 import { directiveEscape, malformedDirective, readSoleStringAttribute, spellAttributes, spellDirectiveOpener, spellInlineLeafDirective, spellStringAttribute, unsupportedNodeShape } from './directive/syntax.ts'
-import { failure, success, type ConvertErrorPath, type Read, type Result } from '../result.ts'
+import { success, type ConvertErrorPath, type Read, type Result } from '../result.ts'
 import { fencedCodeBlock } from './commonmark/backtick-runs.ts'
 import { infoStringCarries } from './commonmark/grammar.ts'
 import { isAdfNode } from '../adf/document.ts'
-import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
-import { joinedWithin } from './length-bound.ts'
+import { overNested } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { parseJsonText } from '../json-text.ts'
 
@@ -52,16 +52,6 @@ export function readCarriedInline(span: DirectiveSpan): Read<AdfNode> | undefine
   const spelled = readSoleStringAttribute(span, jsonAttribute)
   if (spelled.fault !== undefined) return spelled
   return readCarriedJson(spelled.value, 'compact', largestNesting)
-}
-
-function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
-  const headroom = levels - nestingDepth(node)
-  if (!isJsonValue(spelled) || headroom < 0) {
-    return failure('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, path)
-  }
-  // Two-space JSON indents each value by its depth, so a short compact value can spell past the bound: join only up to it.
-  const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
-  return json.ok ? success({ headroom, json: json.value }) : json
 }
 
 // `type` is the one the fence's info string names, `undefined` for the inline carry.

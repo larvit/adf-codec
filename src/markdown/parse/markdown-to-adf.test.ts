@@ -364,7 +364,7 @@ test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s 
   const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
   assert.equal(
     content(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`)),
-    'unsupported-node-shape: the markdown for this document, or for a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes',
+    'unsupported-node-shape: the markdown or HTML for this document, or a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes',
   )
 })
 

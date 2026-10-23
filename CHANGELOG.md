@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `adfToHtml` writes ADF as HTML: paragraphs, headings, lists, quotes, code blocks, rules, hard
+  breaks, external images, and `em`, `strong`, `code` and links as their elements. Every other node
+  is an element of class `adf-carry` holding the node's JSON in `data-adf` and showing its text. A
+  link or image whose URL a browser would run, such as `javascript:`, rides that element too.
 - **Breaking:** `losslessMarkdownToAdf` gives a `date`, `emoji`, `inlineCard`, `mention`, `status`
   or `mediaInline` only the marks Atlassian's schema lets it hold: `**!adf:mention[@A]{id=…}**` now
   reads as a plain mention. A link or directive mark around only nodes that cannot take it is

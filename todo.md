@@ -6,14 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 141`
+`Next ID = 142`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 130 | 0.3.0 |  |  | **Ship `adfToHtml`, writing paragraphs, headings, lists, quotes, code blocks, rules, hard breaks, external images and the marks CommonMark spells as semantic HTML, and every other node as a carry element showing its text.** | 3 | 2 | 2 | 5 | 6 | 3 by 6 | 2.1 |
-| 131 | 0.3.0 | 130 |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
+| 131 | 0.3.0 |  |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
 | 133 | 0.3.0 | 131 |  | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -31,6 +30,7 @@
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
+| 141 | 0.4.0 | 131 |  | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 | 131 |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 136 | 0.4.0 | 131 |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 134 | 0.4.0 | 131 |  | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.8 |
@@ -61,19 +61,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 130. Ship `adfToHtml`, writing paragraphs, headings, lists, quotes, code blocks, rules, hard breaks, external images and the marks CommonMark spells as semantic HTML, and every other node as a carry element showing its text.
-
-The first, limited HTML: the dialect (`docs/decisions.md` §The HTML dialect) specified for this set,
-and a writer panel picking its spellings. A code block is `<pre><code>`, its language a class. Every
-other node is a carry element holding the node's JSON in a `data-*` attribute and showing the node's
-text, so an HTML reader loses no content (goal 7). The README documents HTML as it documents
-markdown, its comparison table names HTML, and its tagline and `package.json`'s description and
-keywords name HTML.
-
-Whatever `html/` shares with the carry (`opaque-carry.ts`) or the mark spellings
-(`mark-spellings.ts`) splits: the ADF question moves to `adf/`, and each format keeps its own
-spelling.
 
 ### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
 
@@ -226,6 +213,11 @@ document's whole tree. Give the node's path, and name its type and the attribute
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
+
+### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
+
+GFM spells `strike`, and no other HTML item writes it: item 130 wrote the marks CommonMark spells.
+A writer panel picks `<s>` or `<del>`.
 
 ### 135. Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 

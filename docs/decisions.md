@@ -398,6 +398,13 @@ themselves.
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
+The spellings, `spec/html.md`, are a writer panel's (2026-10-23): a product manager, an engineer and
+a support agent picked, 3 of 3, an image standing alone as `<p><img …></p>` over `<figure>` and a
+bare `<img>`, a list item's first paragraph bare, `<li>Bolt</li>`, over `<li><p>Bolt</p></li>`,
+`class="language-js"` over `lang-js`, and `<br>` over `<br />`. For the carry element, seven readers
+picked `data-adf` 6 of 7 over `data-adf-node`. Four of them wanted the class `adf-carry` and three
+no class; this entry's stable `adf-*` classes settle it.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each
@@ -775,13 +782,13 @@ node takes. Value sets stay documentation, since any value round-trips. What the
 attribute as a gap, a type as carried — so a re-pin adding either goes red until someone spells it
 or pins it.
 
-## Markdown past V8's longest string is refused on every engine
+## Output past V8's longest string is refused on every engine
 
-2026-10-11, the maintainer. Goals 1 and 6. Valid while V8's longest string, 2^29 − 24 characters,
-is the shortest of the engines the library claims.
+2026-10-11, HTML 2026-10-23, the maintainer. Goals 1 and 6. Valid while V8's longest string,
+2^29 − 24 characters, is the shortest of the engines the library claims.
 
-Every writer, and `losslessMarkdownToAdf`'s `commonMarkSpelling` ask, refuses markdown longer than
-2^29 − 24 characters (`longestMarkdown`), so the same document converts alike everywhere. A writer
+Every writer, and `losslessMarkdownToAdf`'s `commonMarkSpelling` ask, refuses markdown or HTML
+longer than 2^29 − 24 characters (`longestOutput`), so the same document converts alike everywhere. A writer
 first refuses a document whose text alone passes the bound: the lossless writer spells every
 character of it, and the portable reduction refuses on the caller's text, edge whitespace and all,
 since merging that text first could build past the bound. Each block, the writer's result and the
@@ -793,6 +800,19 @@ carry's two-space JSON, which indents every value its depth over, stops at the b
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
+
+## A URL a browser would run is carried, never written
+
+2026-10-23, written with `adfToHtml`, for the maintainer's review. Goals 1 and 6: an export tool's
+HTML runs no script. Valid while a consumer may show the HTML in a browser without sanitizing it.
+
+`adfToHtml` writes no `href` or `src` a browser would run as script or read as a local file: the
+link's text or the image rides the carry element, whose `data-adf` no browser follows, so nothing
+is lost. The list is cmark's, the CommonMark reference implementation's, which leaves these URLs
+out of its HTML by default: `javascript:`, `vbscript:`, `file:`, and `data:` other than a PNG, GIF,
+JPEG or WebP image, any case. A browser drops tabs and line breaks anywhere in a URL, and leading
+control characters and spaces, before it reads the scheme (the WHATWG URL standard), so the check
+reads the URL so too: a tab inside `javascript:` still runs.
 
 ## Nothing recurses unbounded
 

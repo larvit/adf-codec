@@ -9,7 +9,7 @@ import { mintTaskIds } from './task-ids.ts'
 import { parseInlineContent } from '../parse/inline-content.ts'
 import { pathTo, splitTaskList } from './task-list.ts'
 import { positioned, success } from '../../result.ts'
-import { withinEngineLimits } from '../length-bound.ts'
+import { withinEngineLimits } from '../../length-bound.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
 

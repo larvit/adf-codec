@@ -4,6 +4,7 @@ import test from 'node:test'
 
 import type { AdfNode } from '../adf/document.ts'
 import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
+import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
@@ -50,6 +51,16 @@ test('a generated document writes portable markdown refusing only what the guard
       const reduced = reduceToPortable(document)
       assert.deepEqual(shownText(read.value.content ?? []), reduced.ok ? shownText(reduced.value.content ?? []) : reduced, `reading ${JSON.stringify(written.value)}`)
       assert.deepEqual(adfToPortableMarkdown(read.value), written, `reading ${JSON.stringify(written.value)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('a generated document writes HTML', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(adfDocument, (document) => {
+      const written = adfToHtml(document)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
     }),
     propertyRuns(gateRuns),
   )

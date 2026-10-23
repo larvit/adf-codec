@@ -12,7 +12,7 @@ import { flavourClaims } from '../flavour.ts'
 import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { longestMarkdown, tooLong, withinEngineLimits, withinLongest } from '../length-bound.ts'
+import { longestOutput, tooLong, withinEngineLimits, withinLongest } from '../../length-bound.ts'
 import { spellBlockDirectiveOpener } from '../directive/block-spelling.ts'
 import { spellDirectiveCloser, spellDirectiveOpener } from '../directive/syntax.ts'
 import { tryImage } from './image.ts'
@@ -55,7 +55,7 @@ export function writeMarkdown(document: AdfDocument, writtenAs: WrittenAs): Resu
   if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(`${documentSpelling}\n`)
   // Every character of text is spelled at least once, so this much text cannot fit, and none of it is spelled.
-  if (heldTextLength(document.content) > longestMarkdown) return tooLong()
+  if (heldTextLength(document.content) > longestOutput) return tooLong()
   const walk = walkBlocks(document.content, [], 0, { ...writtenAs, memo: undefined })
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
