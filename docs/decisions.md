@@ -13,7 +13,7 @@ A function's name says which markdown it reads or writes, and a reader reads tha
 | `commonMarkToAdf` | CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as CommonMark reads them |
 | `adfToPortableMarkdown`, `portableMarkdownToAdf` | CommonMark, GFM's pipe tables, `~~`, alerts and task markers, and Obsidian's callouts and `==`; no directive and no `adf:` fence |
 
-The calls between markdown and HTML that `todo.md` item 7 ships take their flavour's name too. No
+The calls between markdown and HTML that `todo.md` item 139 ships take their flavour's name too. No
 `adfToCommonMark`: the portable writer serves every persona a CommonMark writer would. The panel
 picked `portable` 4 of 7 over `plain` 3, `gfm` and `rendered` none: the export readers read it as
 "renders anywhere, lossy", and three readers read `plain` as holding no tables or alerts.
@@ -164,7 +164,7 @@ language, and none is empty beside another, since a text node holds text. The gr
 ## Foreign HTML sorts three ways
 
 2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 5. Valid while ADF holds no node
-for a bare container, a comment or a script. Lands with `todo.md` item 6.
+for a bare container, a comment or a script. Lands with `todo.md` item 137.
 
 Every foreign element `htmlToAdf` and the markdown readers read sorts one of three ways, never a
 silent drop of content:
