@@ -55,7 +55,7 @@ export function writableContent(document: AdfDocument): Result<readonly AdfNode[
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(undefined)
-  // Every character of text is written at least once, so this much text cannot fit, and none of it is written.
+  // Text alone past the bound is refused before anything is written (docs/decisions.md §Output past V8's longest string is refused on every engine).
   return heldTextLength(document.content) > longestOutput ? tooLong() : success(document.content)
 }
 

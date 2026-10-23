@@ -225,7 +225,8 @@ The comprehension panel's fill-ins:
 
 - Language: TypeScript.
 - Kind: a pure-function document converter with hand-written parsers and emitters.
-- Domain: Atlassian Document Format and CommonMark parsing.
-- Domain docs: the CommonMark spec, ADF's JSON schema and `spec/flavour.md`.
+- Domain: Atlassian Document Format, CommonMark and HTML.
+- Domain docs: the CommonMark spec, the WHATWG HTML standard, ADF's JSON schema, `spec/flavour.md` and
+  `spec/html.md`.
 - 3am question: a viewer/editor app reports that a document it saved comes back with two text
   nodes merged and a mark gone after `losslessMarkdownToAdf(adfToLosslessMarkdown(doc))`.

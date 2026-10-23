@@ -242,14 +242,14 @@ the union. Found by the technical-principles audit of item 78, 2026-10-05.
 
 ### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 
-GFM spells `strike`, and no other HTML item writes it: item 130 wrote the marks CommonMark spells.
-A writer panel picks `<s>` or `<del>`.
+GFM spells `strike`, and no other HTML item writes it: `adfToHtml` writes only the marks CommonMark
+spells. A writer panel picks `<s>` or `<del>`.
 
 ### 135. Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
-A writer panel picks the spellings; an external image already has one from item 130. Atlassian's
-editor puts `localId`, `width` and `widthType` on every `mediaSingle`, so every editor-written
-image rides the carry until this item.
+A writer panel picks the spellings; a plain external image already has one, `<p><img …></p>`.
+Atlassian's editor puts `localId`, `width` and `widthType` on every `mediaSingle`, so every
+editor-written image rides the carry until this item.
 
 ### 136. Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
