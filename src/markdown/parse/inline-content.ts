@@ -432,8 +432,9 @@ function resolveTarget(scan: Scan, start: number, index: number): { definition: 
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
   // CommonMark: a label holds at most 999 characters, so longer link text names no definition.
-  if (label === undefined && index - start > 999) return undefined
-  const name = label === undefined || label.value === '' ? scan.source.slice(start, index) : label.value
+  const labelIsText = label === undefined || label.value === ''
+  if (labelIsText && index - start > 999) return undefined
+  const name = labelIsText ? scan.source.slice(start, index) : label.value
   const definition = scan.definitions.get(normalizeLabel(name))
   if (definition === undefined) return undefined
   return { definition, length: label?.length ?? 0 }

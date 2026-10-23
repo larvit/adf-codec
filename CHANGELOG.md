@@ -37,6 +37,8 @@
   20 lines of 40000 tabs under 80000 nested items took 1988 ms.
 - `losslessMarkdownToAdf` takes time linear in the markdown when an inline directive's `[content]`
   holds many unclosed backtick runs: 640000 characters of them took one second, now 100 ms.
+- Every reader leaves `[text]` and `[text][]` literal when the text runs over 999 characters, where
+  it read them as a link to the matching definition: CommonMark caps a link label at 999 characters.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 
