@@ -94,7 +94,7 @@ export function identicalMarks(left: readonly AdfMark[], right: readonly AdfMark
 }
 
 // The length of the text the nodes hold, the nodes below them included.
-export function heldTextLength(nodes: readonly AdfNode[]): number {
+function heldTextLength(nodes: readonly AdfNode[]): number {
   let length = 0
   const pending = [...nodes]
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
