@@ -1,3 +1,4 @@
+import type { JsonValue } from '../../json-value.ts'
 import type { LinkAttrs } from '../../adf/mark-attributes.ts'
 
 // What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): a control other than ASCII whitespace or a carriage return, which a parser reads as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
@@ -15,6 +16,12 @@ export function jsonValue(json: string): string {
   return escapeHtml(json.replace(unwritables, (character) => jsonEscape(character)))
 }
 
+// A code block's ` class="language-…"`, `''` where it holds no language, `undefined` where a class cannot hold the language as one token.
+export function languageClass(language: JsonValue | undefined): string | undefined {
+  if (language === undefined) return ''
+  return typeof language === 'string' && /^[^\t\n\f\r ]+$/.test(language) ? optionalAttribute('class', `language-${language}`) : undefined
+}
+
 // ` name="value"`, `''` where the value is undefined, `undefined` where HTML cannot hold it.
 export function optionalAttribute(name: string, value: string | undefined): string | undefined {
   if (value === undefined) return ''
@@ -22,9 +29,9 @@ export function optionalAttribute(name: string, value: string | undefined): stri
   return escaped === undefined ? undefined : ` ${name}="${escaped}"`
 }
 
-// The text a carry element shows, dropping what HTML cannot hold, each line feed a line break.
-export function shownValue(value: string): string {
-  return escapeHtml(value.replace(unwritables, '')).replaceAll('\n', '<br>')
+// The text a carry element shows, dropping what HTML cannot hold, each line feed spelled `lineFeed`.
+export function shownValue(value: string, lineFeed: string): string {
+  return escapeHtml(value.replace(unwritables, '')).replaceAll('\n', lineFeed)
 }
 
 // `undefined` where HTML cannot hold the value, so its node rides the carry element.

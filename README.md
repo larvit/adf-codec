@@ -488,12 +488,16 @@ content. No stylesheet ships. The complete dialect:
 
 - Text and attribute values are escaped: `&`, `<`, `>` and `"`. A node holding what HTML cannot
   hold, such as a carriage return or a control character, rides the carry element.
-- The carry element shows each block's content as a `<p>` in a `<div>`, parted by `<br>` in a
-  `<span>`. It shows text a link marks as a link, a mention, status or emoji by its text, a date as
-  `2026-09-13` in UTC, a card as a link to its URL, an external image as a link to it, a stored one
-  by its `alt`, and an expand by its title. What it cannot show leaves a note, `<em>(image)</em>`.
-- A link's or image's URL is written as the ADF holds it, `javascript:` included: sanitize the
-  HTML before showing a document from an author you do not trust.
+- In a `<div>`, the carry element shows each block's content as a `<p>`, and a code block's as
+  `<pre><code>` keeping its indentation; in a `<span>`, it parts blocks with `<br>`. It shows text a
+  link marks as a link, a mention, status or emoji by its text, a date as `2026-09-13` in UTC, a
+  card as a link to its URL, an external image as a link to it, a stored one by its `alt`, and an
+  expand by its title. An image a link to another target marks shows that link, then `(image)`
+  linking to the image. What it cannot show leaves a note, `<em>(image)</em>`, inside the node's
+  link where it has one.
+- Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, and a
+  card's or a carried link's in the carry element. Sanitize the HTML before showing a document from
+  an author you do not trust.
 
 ## The errors
 

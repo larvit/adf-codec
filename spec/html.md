@@ -47,9 +47,9 @@ marks are two `<a>` elements.
 ## Escaping
 
 Text and attribute values escape `&`, `<`, `>` and `"` as `&amp;`, `&lt;`, `&gt;` and `&quot;`.
-Attribute values are double-quoted. A link's `href` and an image's `src` are the URL as the ADF
-holds it, whatever its scheme (`docs/decisions.md` §HTML writes a URL as the ADF holds it, whatever
-its scheme).
+Attribute values are double-quoted. Every URL is written as the ADF holds it, whatever its scheme
+(`docs/decisions.md` §HTML writes a URL as the ADF holds it, whatever its scheme): a link's `href`,
+an image's `src`, and the `href` of each link a carry element shows.
 
 HTML text and attribute values cannot hold a carriage return, which a parser reads as a line feed,
 a control other than a tab, line feed or form feed, a noncharacter, or a lone surrogate, which
@@ -76,13 +76,20 @@ later release writes it as its own element.
   in its place: a mention's text, else `@` and its id; an emoji's text, else its `shortName`; a
   status's text; a date as `2026-09-13` in UTC; a card's URL, else its name, else the URL its data
   holds; media's `alt`, else an external one's URL; an extension's text; an expand's title.
-  - In a `<div>`, each block's content is a `<p>`; in a `<span>`, `<br>` parts two blocks'.
-  - A hard break and a line feed in text are `<br>`.
+  - In a `<div>`, each block's content is a `<p>`, and a code block's is
+    `<pre><code class="language-js">…</code></pre>`, keeping its line feeds and spaces. Its class
+    is the one the code block's element takes, and it has none where the language is no class
+    token. In a `<span>`, `<br>` parts two blocks'.
+  - A hard break is `<br>`, and so is a line feed in text outside a `<div>`'s code block.
   - Text a link marks is `<a href="…" title="…">` around it, and a card or an external image is a
     link to its URL.
+  - An image a link to another target marks shows as portable markdown writes it inline, the link
+    around its `alt`, else the link's target, else its URL, then `image` linking to the image in
+    parentheses: `<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)`.
   - A node referencing what it cannot show is a note naming it, `<em>(image)</em>`: `image` for
     media with no `alt` or URL, `link card` for a card with neither URL nor name, an extension's
-    key, else `extension`, for an extension with no text, and `synced block` for a `syncBlock`.
+    key, else `extension`, for an extension with no text, and `synced block` for a `syncBlock`. A
+    link marking the node goes around the note: `<a href="…"><em>(image)</em></a>`.
   - Characters HTML cannot hold are dropped.
 - A node rides the carry where it holds a mark or a key its element does not write, an attribute
   its type does not hold as that kind, an empty `attrs`, `content` or `marks`, or a value its
