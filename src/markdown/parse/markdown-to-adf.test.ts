@@ -1313,6 +1313,7 @@ test('names the link a directive link wraps, no link holding another', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n')), named)
   assert.equal(content(losslessMarkdownToAdf('!adf:link[<http://x/>]{href="/u"}\n')), named)
+  assert.equal(content(losslessMarkdownToAdf('!adf:link[x !adf:underline[[![](/u)]()]]{href="a\\nb"}\n')), named)
 })
 
 test('names the directive mark left without the content it wraps', () => {
