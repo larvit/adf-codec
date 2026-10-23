@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 125 | 0.3.0 |  |  | **Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
 | 130 | 0.3.0 |  |  | **Ship `adfToHtml`, writing paragraphs, headings, lists, quotes, code blocks, rules, hard breaks, external images and the marks CommonMark spells as semantic HTML, and every other node as a carry element showing its text.** | 3 | 2 | 2 | 5 | 6 | 3 by 6 | 2.1 |
 | 131 | 0.3.0 | 130 |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
 | 133 | 0.3.0 | 131 |  | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
@@ -25,7 +24,7 @@
 | 109 | 0.4.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.4.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.4.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.4.0 | 33, 91, 95, 109, 115, 125, 140 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.4.0 | 33, 91, 95, 109, 115, 140 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -62,14 +61,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 125. Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.
-
-`docs/score-anchors.md` does not exist, so no level has an anchor. Pick two or three shipped items
-for E and I now, by each level's words and what followed each release, since no tool measures them.
-L anchors need `score-outcomes` first. The maintainer's script, kept outside this repo, reads merge
-commits, and this repo merges by rebase, which leaves none. Change the script in its own repo, as
-AGENTS.md §7 says. Until then, judge each L by its words.
 
 ### 130. Ship `adfToHtml`, writing paragraphs, headings, lists, quotes, code blocks, rules, hard breaks, external images and the marks CommonMark spells as semantic HTML, and every other node as a carry element showing its text.
 
