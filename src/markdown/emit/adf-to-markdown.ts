@@ -1,22 +1,22 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { WrittenFlavour } from '../flavour.ts'
-import { adfDocumentFault, heldTextLength, holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { blockDirectiveForm, documentSpelling } from '../directive/block.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
 import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
+import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { longestOutput, tooLong, withinEngineLimits, withinLongest } from '../../length-bound.ts'
 import { spellBlockDirectiveOpener } from '../directive/block-spelling.ts'
 import { spellDirectiveCloser, spellDirectiveOpener } from '../directive/syntax.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
+import { withinEngineLimits, withinLongest } from '../../length-bound.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type Delimiters = readonly [string, string]
@@ -50,13 +50,10 @@ export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
 }
 
 export function writeMarkdown(document: AdfDocument, writtenAs: WrittenAs): Result<string> {
-  const fault = adfDocumentFault(document)
-  if (fault !== undefined) return faulted(fault, [])
-  if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
-  if (document.content === undefined) return success(`${documentSpelling}\n`)
-  // Every character of text is spelled at least once, so this much text cannot fit, and none of it is spelled.
-  if (heldTextLength(document.content) > longestOutput) return tooLong()
-  const walk = walkBlocks(document.content, [], 0, { ...writtenAs, memo: undefined })
+  const content = writableContent(document)
+  if (!content.ok) return content
+  if (content.value === undefined) return success(`${documentSpelling}\n`)
+  const walk = walkBlocks(content.value, [], 0, { ...writtenAs, memo: undefined })
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
   return withinLongest(text === '' ? '' : `${text}\n`)

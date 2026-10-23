@@ -5,9 +5,9 @@ import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
-import { centeredImage, externalMedia } from '../../adf/external-image.ts'
+import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { imageAside } from '../image-aside.ts'
-import { commonMarkLink, definitionTarget, linkDefinition, linkHref, linkMark } from '../mark-spellings.ts'
+import { commonMarkLink, definitionAttrs, linkDefinition, linkHref, linkMark } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
@@ -319,7 +319,7 @@ function imageLink(definition: LinkDefinition): ImageLink {
 function mediaSingle({ alt, definition, link }: Image): AdfNode {
   const { title } = definition
   const caption: AdfNode[] = title === undefined || title === '' ? [] : [{ content: [{ text: title, type: 'text' }], type: 'caption' }]
-  return centeredImage([externalMedia(alt, definition.destination, link === undefined ? undefined : definitionTarget(link)), ...caption])
+  return centeredImage([externalMedia(alt, definition.destination, link === undefined ? undefined : definitionAttrs(link)), ...caption])
 }
 
 // ADF holds no empty text node and a hard break takes no link, so the destination text carries the link ahead of the text's hard breaks; an empty destination leaves the breaks alone.

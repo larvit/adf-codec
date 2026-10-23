@@ -56,11 +56,12 @@ test('a generated document writes portable markdown refusing only what the guard
   )
 })
 
-test('a generated document writes HTML', { timeout: propertyTimeout }, () => {
+test('a generated document writes HTML holding no null character', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const written = adfToHtml(document)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+      assert.ok(!written.value.includes('\0'), `writing ${JSON.stringify(document)}`)
     }),
     propertyRuns(gateRuns),
   )

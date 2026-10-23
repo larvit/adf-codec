@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
 import { adfToHtml } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -97,10 +97,12 @@ test('carries a node holding what its element cannot', () => {
   assert.equal(carried({ content: [], type: 'paragraph' }), true)
   assert.equal(carried({ attrs: {}, type: 'rule' }), true)
   assert.equal(carried({ attrs: { level: 7 }, content: [text('x')], type: 'heading' }), true)
+  assert.equal(carried({ attrs: { localId: 'q1' }, content: [paragraph(text('x'))], type: 'blockquote' }), true)
   assert.equal(carried({ attrs: { order: 1.5 }, content: [item(paragraph(text('x')))], type: 'orderedList' }), true)
   assert.equal(carried({ content: [item(paragraph(text('x'))), paragraph(text('y'))], type: 'bulletList' }), true)
   assert.equal(carried({ content: [], type: 'bulletList' }), true)
   assert.equal(carried({ attrs: { language: 'c sharp' }, content: [text('x')], type: 'codeBlock' }), true)
+  assert.equal(carried({ attrs: { language: 'a\0b' }, content: [text('x')], type: 'codeBlock' }), true)
   assert.equal(carried({ content: [text('a'), text('b')], type: 'codeBlock' }), true)
   assert.equal(carried({ content: [text('x\0')], type: 'codeBlock' }), true)
   assert.equal(carried(item(paragraph(text('x')))), true)
@@ -135,16 +137,20 @@ test('writes a container holding no content key as its element holding nothing',
   assert.equal(html(adfToHtml(document({ type: 'blockquote' }, { type: 'bulletList' }, { type: 'orderedList' }))), '<blockquote></blockquote>\n<ul></ul>\n<ol></ol>\n')
 })
 
-test('carries a link or image whose target the anchor cannot hold', () => {
+test('carries a link or image holding a value its element cannot', () => {
   const carried = (mark: AdfMark): boolean => html(adfToHtml(document(paragraph(text('x', mark))))).startsWith('<p><span class="adf-carry"')
   assert.equal(carried({ attrs: { title: 'No target' }, type: 'link' }), true)
   assert.equal(carried({ attrs: { href: 'https://example.com/\0' }, type: 'link' }), true)
   assert.equal(carried({ attrs: { href: 'https://example.com/', title: 'x\0' }, type: 'link' }), true)
-  const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'https://example.com/a.png' }, marks: [{ attrs: { href: 'https://example.com/\0' }, type: 'link' }], type: 'media' }], type: 'mediaSingle' }
-  assert.equal(html(adfToHtml(document(image))).startsWith('<div class="adf-carry"'), true)
+  const imageCarried = (media: AdfNode): boolean => html(adfToHtml(document({ attrs: { layout: 'center' }, content: [media], type: 'mediaSingle' }))).startsWith('<div class="adf-carry"')
+  const linked = (attrs: AdfAttributes): AdfNode => ({ attrs: { type: 'external', url: 'https://example.com/a.png' }, marks: [{ attrs, type: 'link' }], type: 'media' })
+  assert.equal(imageCarried(linked({ href: 'https://example.com/\0' })), true)
+  assert.equal(imageCarried(linked({ href: 'https://example.com/', title: 'x\0' })), true)
+  assert.equal(imageCarried({ attrs: { type: 'external', url: 'https://example.com/\0.png' }, type: 'media' }), true)
+  assert.equal(imageCarried({ attrs: { alt: 'The\0moon', type: 'external', url: 'https://example.com/a.png' }, type: 'media' }), true)
 })
 
-test('refuses an inline carry nesting past 500 levels, in a paragraph, a heading and a list item', () => {
+test('refuses an inline carry nesting past 500 levels, in a paragraph, a heading and a list item, the first in document order', () => {
   let deep: AdfNode = text('x')
   for (let level = 0; level < largestNesting; level += 1) deep = { content: [deep], type: 'unknownInline' }
   const refused = (block: AdfNode): string => {
@@ -154,11 +160,22 @@ test('refuses an inline carry nesting past 500 levels, in a paragraph, a heading
   assert.equal(refused(paragraph(deep)), 'unsupported-nesting-depth at content/0/content/0')
   assert.equal(refused({ attrs: { level: 1 }, content: [deep], type: 'heading' }), 'unsupported-nesting-depth at content/0/content/0')
   assert.equal(refused({ content: [item(paragraph(deep))], type: 'bulletList' }), 'unsupported-nesting-depth at content/0/content/0/content/0/content/0')
+  assert.equal(refused({ content: [item(paragraph(text('a')), paragraph(deep)), item(paragraph(deep))], type: 'bulletList' }), 'unsupported-nesting-depth at content/0/content/0/content/1/content/0')
 })
+
+const tooLong = 'unsupported-node-shape: the markdown or HTML for this document, or a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes'
 
 test('refuses text past V8\'s longest string', () => {
   const long = 'a'.repeat(2 ** 28)
-  assert.equal(html(adfToHtml(document(paragraph(text(long), text(long, { type: 'em' }), text(long))))), 'unsupported-node-shape: the markdown or HTML for this document, or a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes')
+  assert.equal(html(adfToHtml(document(paragraph(text(long), text(long, { type: 'em' }), text(long))))), tooLong)
+})
+
+test('refuses at the block whose HTML passes V8\'s longest string, before a later block refuses', () => {
+  // The two code blocks' text is the bound exactly, so only what their elements add passes it.
+  const code: AdfNode = { content: [text('a'.repeat(536870888 / 2))], type: 'codeBlock' }
+  let deep: AdfNode = { type: 'rule' }
+  for (let level = 0; level <= largestNesting; level += 1) deep = { content: [deep], type: 'blockquote' }
+  assert.equal(html(adfToHtml(document(code, code, deep))), tooLong)
 })
 
 test('writes an empty document as nothing, and one holding no content key as its carry', () => {
@@ -168,7 +185,7 @@ test('writes an empty document as nothing, and one holding no content key as its
 
 test('refuses what is no document, a version HTML cannot carry, and nesting past the levels a reader reads', () => {
   assert.equal(html(adfToHtml({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
-  assert.equal(html(adfToHtml({ type: 'doc', version: 2 })), 'unsupported-document-version: no HTML spelling carries ADF version 2')
+  assert.equal(html(adfToHtml({ type: 'doc', version: 2 })), 'unsupported-document-version: no format this library writes carries ADF version 2')
   let deep: AdfNode = paragraph(text('x'))
   for (let level = 0; level <= largestNesting; level += 1) deep = { content: [deep], type: 'blockquote' }
   const refused = adfToHtml(document(deep))

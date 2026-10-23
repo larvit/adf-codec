@@ -1,20 +1,20 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { adfDocumentFault, heldTextLength, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
-import { centeredImage, externalMedia } from '../../adf/external-image.ts'
+import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
-import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
 import { inlineLeaves, isBlockNodeType, oneLine, portableLink, reduceInline, writableHref } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { linkTarget } from '../../adf/mark-attributes.ts'
-import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
+import { linkAttrs } from '../../adf/mark-attributes.ts'
+import { nodeAttrs, nodeContent, nodeMarks, writableContent } from '../../adf/document.ts'
 import { portableWriting } from './block-spelling.ts'
 import { splitTaskList } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
 import { toEditorNormal } from './editor-normal.ts'
+import { withinEngineLimits } from '../../length-bound.ts'
 
 // depth: the level the node reduced stands at, counted as the emitter counts it.
 type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
@@ -59,11 +59,9 @@ export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
 }
 
 export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
-  const fault = adfDocumentFault(document)
-  if (fault !== undefined) return faulted(fault, [])
-  if (document.version !== 1) return failure('unsupported-document-version', `no markdown spelling carries ADF version ${document.version}`, [])
   // Measured on the caller's text, edge whitespace and all: `toEditorNormal`'s merge could build past the bound.
-  if (heldTextLength(nodeContent(document)) > longestOutput) return tooLong()
+  const checked = writableContent(document)
+  if (!checked.ok) return checked
   // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
   const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
   if (!blocks.ok) {
@@ -367,5 +365,5 @@ function reduceMedia(media: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const alt = typeof held === 'string' ? oneLine(held).trim() : ''
   const mark = nodeMarks(media).find(({ type }) => type === 'link')
   const link = mark === undefined ? undefined : portableLink(mark, 'paragraph')
-  return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkTarget(nodeAttrs(link)))])])
+  return success([centeredImage([externalMedia(alt, writableHref(url), link === undefined ? undefined : linkAttrs(nodeAttrs(link)))])])
 }
