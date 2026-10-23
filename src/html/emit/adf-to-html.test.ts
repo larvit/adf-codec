@@ -182,6 +182,7 @@ test('shows a code block in a div carry as pre and code, keeping its line feeds 
 
 test('shows a block inside a code block in a div carry as a paragraph, and the text after it as code', () => {
   assert.equal(shown(html(adfToHtml(document({ content: [text('x'), paragraph(text('a\nb')), text('z')], type: 'codeBlock' })))), '<pre><code>x</code></pre><p>a<br>b</p><pre><code>z</code></pre>')
+  assert.equal(shown(html(adfToHtml(document({ content: [text('x'), { attrs: { id: 'u' }, content: [paragraph(text('a'))], type: 'mention' }, text('z')], type: 'codeBlock' })))), '<pre><code>x@u</code></pre><p>a</p><pre><code>z</code></pre>')
 })
 
 test('gives a code block in a div carry the class its element takes, and none where its language is no class token', () => {
