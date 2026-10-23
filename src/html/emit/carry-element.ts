@@ -30,11 +30,11 @@ export function carryElement(tag: string, json: string, content: string): string
 function shownBlocks(root: AdfNode, codeLineFeed: string): ShownBlock[] {
   const shown: ShownBlock[] = []
   let current: ShownBlock = { code: undefined, html: '' }
-  // Each entry holds the code block it stands in; a `null` node ends a block, after which the content stands in `code` again.
+  // Each entry holds the code block it stands in, none where another block stands between them; a `null` node ends a block, after which the content stands in `code` again.
   const pending: { code: AdfNode | undefined; node: AdfNode | null }[] = [{ code: undefined, node: root }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const { node } = next
-    const code = node?.type === 'codeBlock' ? node : next.code
+    const code = node?.type === 'codeBlock' ? node : node !== null && partsShownText(node.type) ? undefined : next.code
     if (node === null || partsShownText(node.type)) {
       if (current.html !== '') shown.push(current)
       current = { code, html: '' }

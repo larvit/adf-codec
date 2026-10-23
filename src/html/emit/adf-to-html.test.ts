@@ -180,6 +180,10 @@ test('shows a code block in a div carry as pre and code, keeping its line feeds 
   assert.equal(shown(html(adfToHtml(document({ content: [text('a\r\n  b'), text('c')], type: 'codeBlock' })))), '<pre><code>a\n  bc</code></pre>')
 })
 
+test('shows a block inside a code block in a div carry as a paragraph, and the text after it as code', () => {
+  assert.equal(shown(html(adfToHtml(document({ content: [text('x'), paragraph(text('a\nb')), text('z')], type: 'codeBlock' })))), '<pre><code>x</code></pre><p>a<br>b</p><pre><code>z</code></pre>')
+})
+
 test('gives a code block in a div carry the class its element takes, and none where its language is no class token', () => {
   const carried = (language: AdfAttributes[string]): string => shown(html(adfToHtml(document({ attrs: { language }, content: [text('x')], marks: [{ attrs: { mode: 'wide' }, type: 'breakout' }], type: 'codeBlock' }))))
   assert.equal(carried('js'), '<pre><code class="language-js">x</code></pre>')
