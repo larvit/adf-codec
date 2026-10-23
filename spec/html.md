@@ -16,7 +16,7 @@ document whose `content` is an empty array is the empty string.
 | `blockquote` | `<blockquote>`, a line feed, its blocks, a line feed, `</blockquote>` |
 | `bulletList` | `<ul>`, a line feed, its items a line each, a line feed, `</ul>` |
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
-| `listItem` | `<li>…</li>`: a first paragraph holding content and no attribute bare, its inline content straight after `<li>`, then each other block after a line feed and a line feed before `</li>`; with no bare paragraph, `<li>`, a line feed, its blocks, a line feed, `</li>` |
+| `listItem` | its first paragraph straight after `<li>`: bare where it holds content and no attribute, `<li>Bolt</li>`, and as its `<p>` element where it holds an attribute, `<li><p data-local-id="p1">Bolt</p></li>`; where other blocks follow, each after a line feed, and a line feed before `</li>`. Otherwise `<li>`, a line feed, its blocks, a line feed, `</li>` |
 | `codeBlock` | `<pre><code class="language-js">…</code></pre>`, the language one token holding no whitespace; no `class` where it holds no `language` |
 | `rule` | `<hr>` |
 | `mediaSingle`, centered, holding one external `media` | `<p><img src="…" alt="…"></p>`, no `alt` where the media holds none; `<p><a href="…"><img …></a></p>` where a link marks it |
@@ -24,9 +24,10 @@ document whose `content` is an empty array is the empty string.
 A container holding no `content` key is its element holding nothing: `<blockquote></blockquote>`,
 `<ul></ul>`, `<li></li>`; so is a paragraph or heading, `<p></p>`.
 
-Every other attribute its type holds (`spec/flavour.md` §Block nodes) is a `data-*` attribute on the
-element, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the element's own
-attributes and sorted by name. A string is its value; any other value is its JSON, compact:
+For a paragraph, heading, quote, list, list item, code block or rule, every other attribute its type
+holds (`spec/flavour.md` §Block nodes) is a `data-*` attribute on its element, named as HTML's
+`dataset` names it, `localId` as `data-local-id`, after the element's own attributes and sorted by
+name. A string is its value; any other value is its JSON, compact:
 `<ol start="3" data-local-id="91177a27-b0ff">`, `<pre data-wrap="true"><code>`. A code block's
 `data-*` attributes stand on its `<pre>`.
 
@@ -91,10 +92,12 @@ later release writes it as its own element.
   - an unmarked text node straight after another, which would read back as one;
   - a link whose `href` or `title` holds a character HTML cannot hold, and an image whose `url` or
     `alt` holds one or whose link's `href` or `title` does;
+  - an image holding an attribute besides its `center` layout and its media's `type`, `url` and
+    non-empty `alt`;
   - a heading whose `level` is not 1 to 6, and an ordered list whose `order` is not a safe integer
     or is `-0`;
   - a code block holding more than one text node, a marked one, or a language holding whitespace;
-  - a rule or hard break holding `content`;
+  - a rule or hard break holding `content`, and a hard break holding an attribute;
   - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
     an attribute its type does not hold: the whole list rides the carry;
   - a `listItem` outside a list, an inline node in block position and a block node inline.

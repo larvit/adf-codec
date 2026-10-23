@@ -412,6 +412,12 @@ block and a block carried for it would show no element at all; inside a carry el
 line feed, and media it cannot show as `<em>(image)</em>` over `<em>(image not shown)</em>` and
 nothing.
 
+A third panel, seven readers in the same three roles, was asked how to write a list item whose first
+paragraph holds an attribute, the shape of every item Atlassian's editor writes. It picked
+`<li data-local-id="i1"><p data-local-id="p1">Bolt</p></li>`, 6 of 7, over the same elements with
+the `<p>` on a line of its own, 1 of 7, and over
+`<li data-local-id="i1" data-paragraph-local-id="p1">Bolt</li>`, 0 of 7.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each

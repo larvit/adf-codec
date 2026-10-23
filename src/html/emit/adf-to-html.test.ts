@@ -92,10 +92,13 @@ test('writes lists tight, an item holding more than one paragraph or a list in e
   assert.equal(html(adfToHtml(document({ content: [item(paragraph())], type: 'bulletList' }))), '<ul>\n<li>\n<p></p>\n</li>\n</ul>\n')
 })
 
-test('writes an item\'s first paragraph as its element where it holds an attribute, and as its carry where it holds a mark', () => {
-  const first = (node: AdfNode): string => html(adfToHtml(document({ content: [item(node)], type: 'bulletList' })))
-  assert.equal(first({ attrs: { localId: ids.paragraph }, content: [text('Bolt')], type: 'paragraph' }), `<ul>\n<li>\n<p data-local-id="${ids.paragraph}">Bolt</p>\n</li>\n</ul>\n`)
-  assert.equal(first({ content: [text('Bolt')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }).startsWith('<ul>\n<li>\n<div class="adf-carry"'), true)
+test('writes an item\'s first paragraph as its element on the item\'s line where it holds an attribute, and as its carry where it holds a mark', () => {
+  const listed = (...blocks: AdfNode[]): string => html(adfToHtml(document({ content: [item(...blocks)], type: 'bulletList' })))
+  const held: AdfNode = { attrs: { localId: ids.paragraph }, content: [text('Bolt')], type: 'paragraph' }
+  assert.equal(listed(held), `<ul>\n<li><p data-local-id="${ids.paragraph}">Bolt</p></li>\n</ul>\n`)
+  assert.equal(listed(held, { content: [item(paragraph(text('M8')))], type: 'bulletList' }), `<ul>\n<li><p data-local-id="${ids.paragraph}">Bolt</p>\n<ul>\n<li>M8</li>\n</ul>\n</li>\n</ul>\n`)
+  assert.equal(listed({ attrs: { localId: ids.paragraph }, type: 'paragraph' }), `<ul>\n<li><p data-local-id="${ids.paragraph}"></p></li>\n</ul>\n`)
+  assert.equal(listed({ content: [text('Bolt')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }).startsWith('<ul>\n<li>\n<div class="adf-carry"'), true)
 })
 
 test('writes the attributes an element cannot express as data-* attributes on it, sorted, a value that is no string as JSON', () => {
@@ -104,7 +107,7 @@ test('writes the attributes an element cannot express as data-* attributes on it
   assert.equal(html(adfToHtml(document({ attrs: { level: 2, ...localId }, content: [text('x')], type: 'heading' }))), `<h2 data-local-id="${ids.paragraph}">x</h2>\n`)
   assert.equal(html(adfToHtml(document({ attrs: { localId: ids.quote }, content: [paragraph(text('x'))], type: 'blockquote' }))), `<blockquote data-local-id="${ids.quote}">\n<p>x</p>\n</blockquote>\n`)
   const listed: AdfNode = { attrs: { localId: ids.list, order: 3 }, content: [{ attrs: { localId: ids.item }, content: [{ attrs: localId, content: [text('Bolt')], type: 'paragraph' }], type: 'listItem' }], type: 'orderedList' }
-  assert.equal(html(adfToHtml(document(listed))), `<ol start="3" data-local-id="${ids.list}">\n<li data-local-id="${ids.item}">\n<p data-local-id="${ids.paragraph}">Bolt</p>\n</li>\n</ol>\n`)
+  assert.equal(html(adfToHtml(document(listed))), `<ol start="3" data-local-id="${ids.list}">\n<li data-local-id="${ids.item}"><p data-local-id="${ids.paragraph}">Bolt</p></li>\n</ol>\n`)
   const code: AdfNode = { attrs: { wrap: true, language: 'js', hideLineNumbers: false, ...localId }, content: [text('x')], type: 'codeBlock' }
   assert.equal(html(adfToHtml(document(code))), `<pre data-hide-line-numbers="false" data-local-id="${ids.paragraph}" data-wrap="true"><code class="language-js">x</code></pre>\n`)
   assert.equal(html(adfToHtml(document({ attrs: { weight: -0, color: '#ccc', style: 'a"b' }, type: 'rule' }))), '<hr data-color="#ccc" data-style="a&quot;b" data-weight="-0">\n')
@@ -259,6 +262,7 @@ test('refuses a carried block whose JSON nests past the levels its depth leaves,
   assert.equal(refusal(adfToHtml(document(paragraph(deep)))), 'unsupported-nesting-depth at /content/0/content/0')
   assert.equal(refusal(adfToHtml(document({ attrs: { level: 1 }, content: [deep], type: 'heading' }))), 'unsupported-nesting-depth at /content/0/content/0')
   assert.equal(refusal(adfToHtml(document({ content: [item(paragraph(deep))], type: 'bulletList' }))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
+  assert.equal(refusal(adfToHtml(document({ content: [item({ attrs: { localId: ids.paragraph }, content: [deep], type: 'paragraph' })], type: 'bulletList' }))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
   assert.equal(refusal(adfToHtml(document({ content: [item(paragraph(text('a')), paragraph(deep)), item(paragraph(deep))], type: 'bulletList' }))), 'unsupported-nesting-depth at /content/0/content/0/content/1/content/0')
 })
 

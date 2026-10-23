@@ -466,15 +466,15 @@ saving what this pair read replaces mentions, attachments and macros with text.
 ## HTML
 
 Serves [Goals](#goals) 1, 6 and 7. `adfToHtml` writes the HTML element for each node HTML has one
-for, an attribute HTML has none for as `data-*`, and keeps every other node whole: an element of
-class `adf-carry` holds the node's JSON in `data-adf` and shows the node's content, its links
-included, so a reader of the page loses no content. No stylesheet ships. The complete dialect:
+for, and keeps every other node whole: an element of class `adf-carry` holds the node's JSON in
+`data-adf` and shows the node's content, its links included, so a reader of the page loses no
+content. No stylesheet ships. The complete dialect:
 [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md).
 
 | ADF | HTML |
 | --- | --- |
 | `blockquote` | `<blockquote>` |
-| `bulletList`, `orderedList`, `listItem` | `<ul>`, `<ol>`, `<ol start="3">` for an `order` of 3, and `<li>`; an item's first paragraph stands bare, `<li>Bolt</li>` |
+| `bulletList`, `orderedList`, `listItem` | `<ul>`, `<ol>`, `<ol start="3">` for an `order` of 3, and `<li>`; an item's first paragraph stands bare, `<li>Bolt</li>`, or as `<li><p data-local-id="p1">Bolt</p></li>` where it holds an attribute |
 | `codeBlock` | `<pre><code class="language-js">`, no `class` without a language |
 | `hardBreak` | `<br>` |
 | `heading` | `<h1>` to `<h6>` |
@@ -483,14 +483,15 @@ included, so a reader of the page loses no content. No stylesheet ships. The com
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
-| any other attribute the node's type holds | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
+| any other attribute the node's type holds, on a paragraph, heading, quote, list, list item, code block or rule | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Text and attribute values are escaped: `&`, `<`, `>` and `"`. A node holding what HTML cannot
   hold, such as a carriage return or a control character, rides the carry element.
-- The carry element shows each block's content as a `<p>`, text a link marks as a link, a mention,
-  status or emoji by its text, a date as `2026-09-13` in UTC, a card as a link to its URL, an image as
-  a link to it, and an expand by its title. What it cannot show leaves a note, `<em>(image)</em>`.
+- The carry element shows each block's content as a `<p>` in a `<div>`, parted by `<br>` in a
+  `<span>`. It shows text a link marks as a link, a mention, status or emoji by its text, a date as
+  `2026-09-13` in UTC, a card as a link to its URL, an external image as a link to it, a stored one
+  by its `alt`, and an expand by its title. What it cannot show leaves a note, `<em>(image)</em>`.
 - A link's or image's URL is written as the ADF holds it, `javascript:` included: sanitize the
   HTML before showing a document from an author you do not trust.
 
