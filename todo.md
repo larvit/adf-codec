@@ -12,24 +12,24 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 129 | 0.3.0 |  | defect | **Read emphasis and link brackets in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 4 | 9 by 3 | 13.1 |
-| 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 125 | 0.3.0 |  |  | **Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
-| 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
-| 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
-| 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
-| 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.3.0 | 33, 91, 95, 109, 115, 125, 129 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 6 | 0.3.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
+| 7 | 0.3.0 | 6 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.3 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 129 | 0.4.0 |  | defect | **Read emphasis and link brackets in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 4 | 9 by 3 | 13.1 |
+| 95 | 0.4.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
+| 33 | 0.4.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 109 | 0.4.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 115 | 0.4.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
+| 91 | 0.4.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
+| 73 | 0.4.0 | 33, 91, 95, 109, 115, 125, 129 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
-| 6 | 0.4.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
-| 7 | 0.4.0 | 6 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.3 |
 | 46 | 0.4.0 | 7 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
@@ -55,6 +55,48 @@
 
 ## Details
 
+### 125. Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.
+
+`docs/score-anchors.md` does not exist, so no level has an anchor. Pick two or three shipped items
+for E and I now, by each level's words and what followed each release, since no tool measures them.
+L anchors need `score-outcomes` first. The maintainer's script, kept outside this repo, reads merge
+commits, and this repo merges by rebase, which leaves none. Change the script in its own repo, as
+AGENTS.md §7 says. Until then, judge each L by its words.
+
+### 6. Specify the HTML dialect.
+
+Element-by-element mapping, the `data-*` fidelity scheme, the opaque-carry form, and the documented
+foreign-element set `htmlToAdf` accepts — the set the markdown readers share (`spec/flavour.md` §Raw
+HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
+
+### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
+
+Which flavours get a composed call is this item's to settle; the
+CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it
+documents markdown, its comparison table names HTML, and its tagline and `package.json`'s
+description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
+`not-a-string` (`docs/decisions.md` §Which code a cause takes).
+
+Whatever `html/` shares with the carry (`opaque-carry.ts`) or the mark spellings
+(`mark-spellings.ts`) splits: the ADF question moves to `adf/`, and each format keeps its own
+spelling. Where a composed call naming a markdown `Flavour` sits is this item's to settle.
+
+### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
+
+Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
+on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
+`markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
+`src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
+`spec/flavour.md` or `docs/decisions.md`, never from the code.
+
+### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
+
+`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
+whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
+type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
+where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
+and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
+
 ### 129. Read emphasis and link brackets in time linear in the inline markdown, in every reader.
 
 The inline reader in `src/markdown/parse/inline-content.ts` is quadratic in two shapes, counted in
@@ -77,14 +119,6 @@ reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text 
 text. Only the property tests catch drift between these and the reader, and it holds the project
 under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
 run it carries may differ from today's, which changes lossless output (§The formats are API).
-
-### 125. Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.
-
-`docs/score-anchors.md` does not exist, so no level has an anchor. Pick two or three shipped items
-for E and I now, by each level's words and what followed each release, since no tool measures them.
-L anchors need `score-outcomes` first. The maintainer's script, kept outside this repo, reads merge
-commits, and this repo merges by rebase, which leaves none. Change the script in its own repo, as
-AGENTS.md §7 says. Until then, judge each L by its words.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
@@ -131,22 +165,6 @@ posting, set `converter-comparison/run.sh`'s pins to each package's latest versi
 its versions and its date in step with the output. We draft each post for the place it goes. The
 maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts announcing a release
 wait for its publish). Found while planning discoverability, 2026-10-04.
-
-### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
-
-Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
-on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
-`markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
-`src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
-`spec/flavour.md` or `docs/decisions.md`, never from the code.
-
-### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
-
-`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
-whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
-type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
-where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
-and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -203,24 +221,6 @@ document's whole tree. Give the node's path, and name its type and the attribute
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
-
-### 6. Specify the HTML dialect.
-
-Element-by-element mapping, the `data-*` fidelity scheme, the opaque-carry form, and the documented
-foreign-element set `htmlToAdf` accepts — the set the markdown readers share (`spec/flavour.md` §Raw
-HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
-
-### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
-
-Which flavours get a composed call is this item's to settle; the
-CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it
-documents markdown, its comparison table names HTML, and its tagline and `package.json`'s
-description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
-`not-a-string` (`docs/decisions.md` §Which code a cause takes).
-
-Whatever `html/` shares with the carry (`opaque-carry.ts`) or the mark spellings
-(`mark-spellings.ts`) splits: the ADF question moves to `adf/`, and each format keeps its own
-spelling. Where a composed call naming a markdown `Flavour` sits is this item's to settle.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
