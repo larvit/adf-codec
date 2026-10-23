@@ -418,6 +418,15 @@ paragraph holds an attribute, the shape of every item Atlassian's editor writes.
 the `<p>` on a line of its own, 1 of 7, and over
 `<li data-local-id="i1" data-paragraph-local-id="p1">Bolt</li>`, 0 of 7.
 
+A fourth panel of the same three roles picked, 3 of 3, a code block inside a carry element as
+`<pre><code>…</code></pre>` over `<pre>…</pre>` and over a `<p>` whose lines part at `<br>`, which
+loses the indentation. All three wrote `<code class="language-python">`, which no option held.
+
+Inside a carry element, an image a link to another target marks takes the spelling portable
+markdown gives it inline (§A linked image standing inline in portable markdown, its link to another
+target, is written `[alt](href) ([image](url))`), keeping both targets, which Goal 7 counts as
+content. A link marking a node that shows a note goes around the note.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each
@@ -818,10 +827,13 @@ that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which co
 
 2026-10-23, the maintainer. Goal 1. Valid until `todo.md` item 142 weighs the alternatives.
 
-`adfToHtml` writes a link's `href` and an image's `src` exactly as the ADF holds them, escaped as
-every attribute value is, `javascript:`, `vbscript:`, `file:` and `data:` included. Carrying such a
-link or image in the carry element, as cmark's default leaves these URLs out of its HTML, was
-proposed and not taken: item 142 weighs that against writing the URL.
+`adfToHtml` writes every URL exactly as the ADF holds it, escaped as every attribute value is,
+`javascript:`, `vbscript:`, `file:` and `data:` included. That covers a link's `href`, an image's
+`src`, and the `href` of each link the carry element shows: a carried node's link mark, a card's
+`url` or `data.url`, and an external image's `url`. Carrying such a link or image in the carry
+element, as cmark's default leaves these URLs out of its HTML, was proposed and not taken: item 142
+weighs that against writing the URL. Carrying alone no longer keeps the URL out of the HTML, since
+the carry element links what it shows, so that remedy would also drop the shown `href`.
 
 ## Nothing recurses unbounded
 

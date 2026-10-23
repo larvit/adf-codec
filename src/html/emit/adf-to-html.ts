@@ -1,20 +1,22 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { anchorOpener, optionalAttribute, writableValue } from './escaping.ts'
-import { blockNodeModel } from '../../adf/block-nodes.ts'
+import { anchorOpener, languageClass, optionalAttribute, writableValue } from './escaping.ts'
+import { blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
+import { dataAttributes } from './data-attributes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
 import { inlineHtml, writableText } from './inline.ts'
+import { isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
-import { vocabularyPairs } from '../../adf/attribute-vocabulary.ts'
 
 // depth: the nesting level of the block list holding the node, as `largestNesting` counts it; an item's attributes are its element's, checked by its list.
 type Block = { depth: number; kind: 'block'; node: AdfNode; path: ConvertErrorPath }
 type Item = { attributes: string; depth: number; kind: 'item'; node: AdfNode; path: ConvertErrorPath }
 type Pending = Block | Item | string
+
+const headingLevels: readonly unknown[] = [1, 2, 3, 4, 5, 6]
 
 export function adfToHtml(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => writeHtml(document))
@@ -59,23 +61,8 @@ function writeBlock(block: Block): Result<Pending[]> {
   return html.ok ? success([html.value]) : html
 }
 
-// The attributes a node holds besides those its element writes, as `data-*` attributes sorted by key, a value that is no string as JSON; `undefined` where the node holds what no attribute writes: a mark, text, an empty key, or an attribute its type does not hold as that kind (docs/decisions.md §The HTML dialect).
-function dataAttributes(node: AdfNode, written: readonly string[]): string | undefined {
-  const model = blockNodeModel(node.type)
-  if (model === undefined || !holdsOnlyAttributes(node, Object.keys(model.attributes))) return undefined
-  const pairs = vocabularyPairs(nodeAttrs(node), model.attributes, written)
-  if (pairs === undefined) return undefined
-  let attributes = ''
-  for (const { key, kind, value } of pairs.sort((left, right) => (left.key < right.key ? -1 : 1))) {
-    const attribute = optionalAttribute(`data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`, kind === 'string' ? value : serializeCanonicalJson(value, 'compact'))
-    if (attribute === undefined) return undefined
-    attributes += attribute
-  }
-  return attributes
-}
-
 function quotePieces({ depth, node, path }: Block): Pending[] | undefined {
-  const attributes = dataAttributes(node, [])
+  const attributes = dataAttributes(node, blockNodes.blockquote.attributes, [])
   return attributes === undefined ? undefined : containerPieces('blockquote', attributes, node.content === undefined ? undefined : blockPieces(node.content, path, depth + 1))
 }
 
@@ -86,7 +73,7 @@ function listPieces({ depth, node, path }: Block): Pending[] | undefined {
   const items: Pending[] = []
   // The items' blocks sit one level below the list, as a markdown list's do.
   for (const [index, item] of nodeContent(node).entries()) {
-    const attributes = item.type === 'listItem' ? dataAttributes(item, []) : undefined
+    const attributes = item.type === 'listItem' ? dataAttributes(item, blockNodes.listItem.attributes, []) : undefined
     if (attributes === undefined) return undefined
     if (index > 0) items.push('\n')
     items.push({ attributes, depth: depth + 1, kind: 'item', node: item, path: [...path, 'content', index] })
@@ -96,13 +83,13 @@ function listPieces({ depth, node, path }: Block): Pending[] | undefined {
 
 function listElement(node: AdfNode): { attributes: string; tag: string } | undefined {
   if (node.type === 'bulletList') {
-    const attributes = dataAttributes(node, [])
+    const attributes = dataAttributes(node, blockNodes.bulletList.attributes, [])
     return attributes === undefined ? undefined : { attributes, tag: 'ul' }
   }
   if (node.type !== 'orderedList') return undefined
   const order = nodeAttrs(node)['order']
-  if (order !== undefined && (typeof order !== 'number' || !Number.isSafeInteger(order) || Object.is(order, -0))) return undefined
-  const attributes = dataAttributes(node, ['order'])
+  if (order !== undefined && (!Number.isSafeInteger(order) || Object.is(order, -0))) return undefined
+  const attributes = dataAttributes(node, blockNodes.orderedList.attributes, ['order'])
   return attributes === undefined ? undefined : { attributes: `${order === undefined ? '' : ` start="${order}"`}${attributes}`, tag: 'ol' }
 }
 
@@ -126,17 +113,15 @@ function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
 
 // `undefined` where the paragraph takes a line of its own: where it rides the carry, or holds neither content nor an attribute, which bare would read back as no paragraph.
 function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
-  const attributes = dataAttributes(paragraph, [])
+  const attributes = dataAttributes(paragraph, blockNodes.paragraph.attributes, [])
   if (attributes !== '') return inlineElement('p', attributes, nodeContent(paragraph), path)
   return nodeContent(paragraph).length === 0 ? undefined : inlineHtml(nodeContent(paragraph), path)
 }
 
 function tryLeafBlock(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
-  if (node.type === 'paragraph') return inlineElement('p', dataAttributes(node, []), nodeContent(node), path)
-  if (node.type === 'heading') {
-    const level = nodeAttrs(node)['level']
-    if (typeof level === 'number' && Number.isInteger(level) && level >= 1 && level <= 6) return inlineElement(`h${level}`, dataAttributes(node, ['level']), nodeContent(node), path)
-  }
+  if (node.type === 'paragraph') return inlineElement('p', dataAttributes(node, blockNodes.paragraph.attributes, []), nodeContent(node), path)
+  const level = nodeAttrs(node)['level']
+  if (node.type === 'heading' && headingLevels.includes(level)) return inlineElement(`h${level}`, dataAttributes(node, blockNodes.heading.attributes, ['level']), nodeContent(node), path)
   const html = tryCodeBlock(node) ?? tryImage(node) ?? tryRule(node)
   return html === undefined ? undefined : success(html)
 }
@@ -148,14 +133,11 @@ function inlineElement(tag: string, attributes: string | undefined, nodes: reado
   return inline.ok ? success(`<${tag}${attributes}>${inline.value}</${tag}>`) : inline
 }
 
-// A class holds the language as one token, so a language holding whitespace rides the carry.
 function tryCodeBlock(node: AdfNode): string | undefined {
   if (node.type !== 'codeBlock') return undefined
-  const attributes = dataAttributes(node, ['language'])
-  const language = nodeAttrs(node)['language']
-  if (attributes === undefined || (language !== undefined && (typeof language !== 'string' || !/^[^\t\n\f\r ]+$/.test(language)))) return undefined
-  const className = optionalAttribute('class', language === undefined ? undefined : `language-${language}`)
-  if (className === undefined) return undefined
+  const attributes = dataAttributes(node, blockNodes.codeBlock.attributes, ['language'])
+  const className = languageClass(nodeAttrs(node)['language'])
+  if (attributes === undefined || className === undefined) return undefined
   if (node.content === undefined) return `<pre${attributes}><code${className}></code></pre>`
   const [only, ...others] = node.content
   const code = only === undefined || others.length > 0 || !isUnmarkedSpellableText(only) ? undefined : writableText(only.text)
@@ -163,7 +145,7 @@ function tryCodeBlock(node: AdfNode): string | undefined {
 }
 
 function tryImage(node: AdfNode): string | undefined {
-  const image = node.type === 'mediaSingle' ? plainImage(node) : undefined
+  const image = plainImage(node)
   if (image === undefined) return undefined
   const src = writableValue(image.url)
   const alt = optionalAttribute('alt', image.alt)
@@ -175,6 +157,6 @@ function tryImage(node: AdfNode): string | undefined {
 }
 
 function tryRule(node: AdfNode): string | undefined {
-  const attributes = node.type === 'rule' && nodeContent(node).length === 0 ? dataAttributes(node, []) : undefined
+  const attributes = node.type === 'rule' && nodeContent(node).length === 0 ? dataAttributes(node, blockNodes.rule.attributes, []) : undefined
   return attributes === undefined ? undefined : `<hr${attributes}>`
 }
