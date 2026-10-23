@@ -1076,7 +1076,7 @@ test('reads the reference links a definition resolves, and leaves the rest liter
   assert.deepEqual(content(losslessMarkdownToAdf('[][]\n')), [paragraph('[][]')])
 })
 
-test('reads link text past 999 characters as no label, in every reader', () => {
+test('leaves a link label past 999 characters literal, an escape counting as two, in every reader', () => {
   const longest = `foo${' '.repeat(993)}bar`
   const tooLong = `foo${' '.repeat(994)}bar`
   const escaped = '\\*'.repeat(499)

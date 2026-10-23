@@ -52,7 +52,7 @@ type Resolved = ImageLink | Nodes
 
 type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; opens: boolean; position: number; stretch: number }
 
-// `index` is the bracket's piece, `start` the index of the source its text starts at.
+// `index` is the bracket's position in `pieces`; `start` is where its text starts in `source`.
 type OpenBracket = { image: boolean; index: number; start: number }
 
 type Pairing = EmphasisPairing<Run>
@@ -78,7 +78,7 @@ type Scan = {
   definitions: LinkDefinitions
   // Whether this content is an `!adf:link`'s text, where an image reads as its plain alt text.
   inLink: boolean
-  // A link opener at this index of `brackets` or above is active; one below it stood open while a link closed, and no link holds another.
+  // Link openers below this index of `brackets` were open when a link closed, so they stay literal: no link holds another.
   linkOpenersFrom: number
   openingSpellableLink: boolean
   path: ConvertErrorPath
@@ -392,7 +392,7 @@ function closeBracket(scan: Scan, index: number): Result<number> {
   const inner = scan.pieces.slice(open.index + 1)
   // A link closing, or one inside these brackets, leaves every link opener still open literal.
   if (!open.image) scan.linkOpenersFrom = scan.brackets.length
-  // Ahead of the own-marks guard in `linkPieces`: brackets going literal put the carry inside no mark for it to refuse.
+  // Before `linkPieces`' own-marks guard: brackets that go literal mark nothing, so a carry inside them is no error.
   if (!open.image && holdsLink(inner)) return success(unopened(scan, open, index))
   const closed = open.image ? imagePieces(scan, inner, target.definition) : linkPieces(scan, inner, target.definition)
   if (!closed.ok) return closed
@@ -401,7 +401,7 @@ function closeBracket(scan: Scan, index: number): Result<number> {
   return success(index + 1 + target.length)
 }
 
-// Every close takes the innermost bracket off the stack, whether it closes a link, an image or nothing.
+// A close that builds nothing still pops its bracket, so no later close walks past it.
 function popBracket(scan: Scan): (OpenBracket & { active: boolean }) | undefined {
   const open = scan.brackets.pop()
   if (open === undefined) return undefined
