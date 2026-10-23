@@ -19,9 +19,9 @@ products store as ADF.
   and Obsidian render — GitHub Flavored Markdown's alerts, task lists and pipe tables, Obsidian
   Flavored Markdown's callouts and highlights. It keeps the text, images by URL and link targets and
   drops the rest.
-- **HTML out:** `adfToHtml` writes paragraphs, headings, lists, quotes, code blocks and links as
-  their HTML elements, and every other node, an image Atlassian's editor wrote among them, as an
-  element holding its JSON and showing its content.
+- **HTML out:** `adfToHtml` writes paragraphs, headings, lists, quotes, code blocks, rules, line
+  breaks, emphasis, inline code and links as their HTML elements. Every other node, an image
+  Atlassian's editor wrote among them, becomes an element holding its JSON and showing its content.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
   TypeScript types ship beside the JavaScript.
@@ -68,37 +68,6 @@ if (portable.ok) console.log(portable.value)
 // > [!WARNING]
 // >
 // > Check the collation before importing.
-```
-
-### ADF to HTML
-
-Full reference: [HTML](#html).
-
-```ts
-import { adfToHtml, type AdfDocument } from '@larvit/adf-codec'
-
-const page: AdfDocument = {
-  content: [
-    { attrs: { level: 2, localId: 'a1f3' }, content: [{ text: 'Release notes', type: 'text' }], type: 'heading' },
-    {
-      content: [
-        { text: 'Read the ', type: 'text' },
-        { marks: [{ attrs: { href: 'https://spec.commonmark.org/' }, type: 'link' }], text: 'spec', type: 'text' },
-        { text: ', then ask ', type: 'text' },
-        { attrs: { id: '5b10a2', text: '@Mikael' }, type: 'mention' },
-      ],
-      type: 'paragraph',
-    },
-  ],
-  type: 'doc',
-  version: 1,
-}
-
-// URLs are written as the ADF holds them, javascript: included: sanitize HTML from an author you do not trust before showing it.
-const html = adfToHtml(page)
-if (html.ok) console.log(html.value)
-// <h2 data-local-id="a1f3">Release notes</h2>
-// <p>Read the <a href="https://spec.commonmark.org/">spec</a>, then ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;,&quot;text&quot;:&quot;@Mikael&quot;},&quot;type&quot;:&quot;mention&quot;}">@Mikael</span></p>
 ```
 
 ### Markdown to ADF
@@ -155,6 +124,37 @@ if (!markdown.ok) {
 
 Unedited, the markdown reads back to a document that deep-equals `doc`, node types this version
 does not know included.
+
+### ADF to HTML
+
+Full reference: [HTML](#html).
+
+```ts
+import { adfToHtml, type AdfDocument } from '@larvit/adf-codec'
+
+const page: AdfDocument = {
+  content: [
+    { attrs: { level: 2, localId: 'a1f3' }, content: [{ text: 'Release notes', type: 'text' }], type: 'heading' },
+    {
+      content: [
+        { text: 'Read the ', type: 'text' },
+        { marks: [{ attrs: { href: 'https://spec.commonmark.org/' }, type: 'link' }], text: 'spec', type: 'text' },
+        { text: ', then ask ', type: 'text' },
+        { attrs: { id: '5b10a2', text: '@Mikael' }, type: 'mention' },
+      ],
+      type: 'paragraph',
+    },
+  ],
+  type: 'doc',
+  version: 1,
+}
+
+// URLs are written as the ADF holds them, javascript: included: sanitize HTML from an author you do not trust before showing it.
+const html = adfToHtml(page)
+if (html.ok) console.log(html.value)
+// <h2 data-local-id="a1f3">Release notes</h2>
+// <p>Read the <a href="https://spec.commonmark.org/">spec</a>, then ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;,&quot;text&quot;:&quot;@Mikael&quot;},&quot;type&quot;:&quot;mention&quot;}">@Mikael</span></p>
+```
 
 ### Handle a result's error
 
@@ -465,8 +465,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
 
 ## HTML
 
-Serves [Goals](#goals) 1, 6 and 7. `adfToHtml` writes the HTML element for each node HTML has one
-for, and keeps every other node whole: an element of class `adf-carry` holds the node's JSON in
+Serves [Goals](#goals) 1, 6 and 7. `adfToHtml` writes the nodes and marks the table lists as their
+HTML elements, and keeps every other node whole: an element of class `adf-carry` holds the node's JSON in
 `data-adf` and shows the node's content, its links included, so a reader of the page loses no
 content. No stylesheet ships. The complete dialect:
 [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md).
@@ -483,21 +483,21 @@ content. No stylesheet ships. The complete dialect:
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
-| any other attribute the node's type holds, on a paragraph, heading, quote, list, list item, code block or rule | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
+| an attribute its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block or rule | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
+- Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, and a
+  card's or a carried link's in the carry element. Sanitize the HTML before showing a document from
+  an author you do not trust.
 - Text and attribute values are escaped: `&`, `<`, `>` and `"`. A node holding what HTML cannot
   hold, such as a carriage return or a control character, rides the carry element.
 - In a `<div>`, the carry element shows each block's content as a `<p>`, and a code block's as
   `<pre><code>` keeping its indentation; in a `<span>`, it parts blocks with `<br>`. It shows text a
   link marks as a link, a mention, status or emoji by its text, a date as `2026-09-13` in UTC, a
-  card as a link to its URL, an external image as a link to it, a stored one by its `alt`, and an
-  expand by its title. An image a link to another target marks shows that link, then `(image)`
-  linking to the image. What it cannot show leaves a note, `<em>(image)</em>`, inside the node's
-  link where it has one.
-- Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, and a
-  card's or a carried link's in the carry element. Sanitize the HTML before showing a document from
-  an author you do not trust.
+  card as a link to its URL, or to the target of a link marking it, an external image as a link to
+  it, a stored one by its `alt`, and an expand by its title. An image marked by a link to another
+  target shows that link, then `(image)` linking to the image. A node it cannot show leaves a note
+  instead, such as `<em>(image)</em>`; a link marking the node goes around the note.
 
 ## The errors
 

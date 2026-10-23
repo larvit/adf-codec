@@ -30,7 +30,7 @@ export function carryElement(tag: string, json: string, content: string): string
 function shownBlocks(root: AdfNode, codeLineFeed: string): ShownBlock[] {
   const shown: ShownBlock[] = []
   let current: ShownBlock = { code: undefined, html: '' }
-  // Each entry holds the code block it stands in, none where another block stands between them; a `null` node ends a block, after which the content stands in `code` again.
+  // Each entry holds the code block it stands in, none where another block stands between them; a `null` node ends a block, and what follows stands in that entry's `code`, the code block around the block that ended.
   const pending: { code: AdfNode | undefined; node: AdfNode | null }[] = [{ code: undefined, node: root }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const { node } = next
@@ -48,7 +48,7 @@ function shownBlocks(root: AdfNode, codeLineFeed: string): ShownBlock[] {
   return shown
 }
 
-// The node's own part of what its carry element shows: its text, what it shows in its place, or a note naming what it references, linked to its link mark's target, else to the URL a card or an image links to; an image a link to another target marks is followed by a link to it.
+// The node's own part of what its carry element shows.
 function shownPiece(node: AdfNode, lineFeed: string): string {
   if (node.type === 'hardBreak') return '<br>'
   const mark = nodeMarks(node).find((held) => held.type === 'link')
@@ -62,7 +62,7 @@ function shownPiece(node: AdfNode, lineFeed: string): string {
   return name === undefined ? '' : linked(`<em>(${shownValue(name, lineFeed)})</em>`, link)
 }
 
-// The image's alt, else the link's target, else its URL, linked to the target, then a link to the image, as portable markdown writes it inline.
+// As portable markdown writes it inline (docs/decisions.md §The HTML dialect).
 function linkedImage(media: AdfNode, target: LinkAttrs, url: string, lineFeed: string): string {
   const text = visibleText(nodeAttrs(media)['alt']) ?? visibleText(target.href) ?? url
   return `${linked(shownValue(text, lineFeed), target)} (${linked('image', { href: url })})`

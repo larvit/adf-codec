@@ -7,7 +7,7 @@ leg "install ($node_image)" in_image "$node_image" npm ci
 leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
 leg "lint ($node_image)" in_image "$node_image" npm run lint
 
-# The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green. Each line is a probe and the import a boundary refuses it.
+# The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green. Each line names a probe file and an import its boundary refuses.
 boundary_probes="src/adf/boundary-probe.ts ../markdown/flavour.ts
 src/adf/boundary-probe-html.ts ../html/emit/adf-to-html.ts
 src/html/boundary-probe.ts ../markdown/flavour.ts

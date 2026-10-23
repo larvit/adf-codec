@@ -11,7 +11,7 @@ import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.t
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 
-// depth: the nesting level of the block list holding the node, as `largestNesting` counts it; an item's attributes are its element's, checked by its list.
+// depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s `data-*` attributes, built when its list checked the item.
 type Block = { depth: number; kind: 'block'; node: AdfNode; path: ConvertErrorPath }
 type Item = { attributes: string; depth: number; kind: 'item'; node: AdfNode; path: ConvertErrorPath }
 type Pending = Block | Item | string
@@ -99,7 +99,7 @@ function containerPieces(tag: string, attributes: string, children: Pending[] | 
   return [`<${tag}${attributes}>\n`, ...children, `\n</${tag}>`]
 }
 
-// An item's blocks sit at its own level, one below its list; its first paragraph stands on the item's line, panel picks, docs/decisions.md §The HTML dialect.
+// An item's first paragraph stands on the item's line, as the writer panels picked (docs/decisions.md §The HTML dialect).
 function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
   if (node.content === undefined) return success([`<li${attributes}></li>`])
   const blocks = blockPieces(node.content, path, depth)
@@ -111,7 +111,7 @@ function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
   return success(blocks.length === 1 ? [`<li${attributes}>${line.value}</li>`] : [`<li${attributes}>${line.value}`, ...blocks.slice(1), '\n</li>'])
 }
 
-// `undefined` where the paragraph takes a line of its own: where it rides the carry, or holds neither content nor an attribute, which bare would read back as no paragraph.
+// `undefined` where the paragraph takes a line of its own: where it rides the carry, or holds neither content nor an attribute: written bare, it would read back as no paragraph.
 function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
   const attributes = dataAttributes(paragraph, blockNodes.paragraph.attributes, [])
   if (attributes !== '') return inlineElement('p', attributes, nodeContent(paragraph), path)
@@ -126,7 +126,7 @@ function tryLeafBlock(node: AdfNode, path: ConvertErrorPath): Result<string> | u
   return html === undefined ? undefined : success(html)
 }
 
-// `undefined` where the attributes are, so the node rides the carry.
+// `undefined` where `attributes` is undefined, so the node rides the carry.
 function inlineElement(tag: string, attributes: string | undefined, nodes: readonly AdfNode[], path: ConvertErrorPath): Result<string> | undefined {
   if (attributes === undefined) return undefined
   const inline = inlineHtml(nodes, path)

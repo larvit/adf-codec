@@ -59,7 +59,7 @@ function shown(written: string): string {
   return written.slice(written.indexOf('">') + 2).replace(/<\/(?:div|span)>(?:<\/p>)?\n$/, '')
 }
 
-test('writes paragraphs, headings and rules as their elements, one block a line', () => {
+test('writes paragraphs, headings and rules as their elements, separated by line feeds', () => {
   const heading = (level: number): AdfNode => ({ attrs: { level }, content: [text(`Level ${level}`)], type: 'heading' })
   assert.equal(html(adfToHtml(document(heading(1), paragraph(text('Read the manual.')), { type: 'rule' }, heading(6)))), '<h1>Level 1</h1>\n<p>Read the manual.</p>\n<hr>\n<h6>Level 6</h6>\n')
   assert.equal(html(adfToHtml(document(paragraph(), { attrs: { level: 2 }, type: 'heading' }))), '<p></p>\n<h2></h2>\n')
@@ -75,7 +75,7 @@ test('writes the marks CommonMark spells, the first mark outermost', () => {
   assert.equal(html(adfToHtml(document(paragraph(text('Line one'), { type: 'hardBreak' }, text('Line two'))))), '<p>Line one<br>Line two</p>\n')
 })
 
-test('escapes text and attribute values, and keeps tabs, line feeds and form feeds', () => {
+test('escapes text, and keeps tabs, line feeds and form feeds', () => {
   assert.equal(html(adfToHtml(document(paragraph(text('a < b && c > "d" \'e\'\tf\ng\fh'))))), '<p>a &lt; b &amp;&amp; c &gt; &quot;d&quot; \'e\'\tf\ng\fh</p>\n')
 })
 
@@ -88,7 +88,7 @@ test('carries text holding a character HTML text cannot hold, escaping it in the
   assert.equal(html(adfToHtml(document(paragraph(text('a\u{1fffe}b', { type: 'underline' }))))).includes('&quot;text&quot;:&quot;a\\ud83f\\udffeb&quot;'), true)
 })
 
-test('writes lists tight, an item holding more than one paragraph or a list in elements after the first', () => {
+test('writes lists tight, and an item\'s blocks after its first paragraph as elements on lines of their own', () => {
   assert.equal(html(adfToHtml(document({ content: [item(paragraph(text('Bolt'))), item(paragraph(text('Nut')))], type: 'bulletList' }))), '<ul>\n<li>Bolt</li>\n<li>Nut</li>\n</ul>\n')
   const listed: AdfNode = { attrs: { order: 3 }, content: [item(paragraph(text('Bolt')), { content: [item(paragraph(text('M8')))], type: 'bulletList' }), item(paragraph(text('a')), paragraph(text('b')))], type: 'orderedList' }
   assert.equal(html(adfToHtml(document(listed))), '<ol start="3">\n<li>Bolt\n<ul>\n<li>M8</li>\n</ul>\n</li>\n<li>a\n<p>b</p>\n</li>\n</ol>\n')
@@ -195,7 +195,7 @@ test('shows a code block in a span carry as text, its line feeds line breaks', (
   assert.equal(shown(html(adfToHtml(document(paragraph({ attrs: { language: 'python' }, content: [text('if ready:\n    deploy()')], type: 'codeBlock' }))))), 'if ready:<br>    deploy()')
 })
 
-test('shows the content a carried node holds in an attribute, a link to what it links to', () => {
+test('shows the content a carried node holds in an attribute, and links a card or an external image to its URL', () => {
   const inline = (node: AdfNode): string => shown(html(adfToHtml(document(paragraph(node)))))
   assert.equal(inline({ attrs: { timestamp: '1700000000000' }, type: 'date' }), '2023-11-14')
   assert.equal(inline({ attrs: { shortName: ':smile:', text: '😄' }, type: 'emoji' }), '😄')
@@ -210,7 +210,7 @@ test('shows the content a carried node holds in an attribute, a link to what it 
   assert.equal(image({ attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, marks: [{ attrs: { title: 'No target' }, type: 'link' }], type: 'media' }), '<p><a href="https://example.com/moon.jpg">The moon</a></p>')
 })
 
-test('shows a carried image a link to another target marks as that link, then a link to the image reading image', () => {
+test('shows a carried image marked by a link to another target as that link, then a link to the image reading image', () => {
   const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
   const image = (attrs: AdfAttributes): string => shown(html(adfToHtml(document({ attrs: { layout: 'wide' }, content: [{ attrs, marks: [link], type: 'media' }], type: 'mediaSingle' }))))
   assert.equal(image({ alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }), '<p><a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)</p>')
@@ -269,7 +269,7 @@ test('carries a node holding what its element cannot', () => {
   assert.equal(carriedBlock({ attrs: { layout: 'center' }, content: [{ attrs: { alt: '', type: 'external', url: 'https://example.com/a.png' }, type: 'media' }], type: 'mediaSingle' }), true)
 })
 
-test('carries inline what its element cannot hold, and a text node an unmarked one before it would join', () => {
+test('carries inline what its element cannot hold, and a text node that would join the unmarked one before it', () => {
   assert.equal(carriedSpans(text('a'), text('b')), 1)
   assert.equal(carriedSpans(text('a'), text('b'), text('c')), 1)
   assert.equal(carriedSpans(text('a'), text('b', { type: 'em' }), text('c')), 0)

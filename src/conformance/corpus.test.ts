@@ -150,7 +150,7 @@ for (const name of names(realPayloadsRoot, '.json')) {
   })
 }
 
-// The element each block an editor writes with no attribute but `localId`, and `level` or `order`, opens with; every other block is carried.
+// The opening tag of each block type whose only attributes are `localId`, `level` and `order`, as the editor writes them.
 const blockElements: Readonly<Record<string, string>> = { blockquote: '<blockquote', bulletList: '<ul', heading: '<h', orderedList: '<ol', paragraph: '<p', rule: '<hr' }
 
 for (const name of names(realPayloadsRoot, '.json')) {

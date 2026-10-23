@@ -1,7 +1,7 @@
 import type { JsonValue } from '../../json-value.ts'
 import type { LinkAttrs } from '../../adf/mark-attributes.ts'
 
-// What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): a control other than ASCII whitespace or a carriage return, which a parser reads as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
+// What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): any control but a tab, line feed or form feed, a carriage return among them, since a parser reads it as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
 const unwritable = /(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u
 const unwritables = new RegExp(unwritable.source, 'gu')
 
@@ -29,7 +29,6 @@ export function optionalAttribute(name: string, value: string | undefined): stri
   return escaped === undefined ? undefined : ` ${name}="${escaped}"`
 }
 
-// The text a carry element shows, dropping what HTML cannot hold, each line feed spelled `lineFeed`.
 export function shownValue(value: string, lineFeed: string): string {
   return escapeHtml(value.replace(unwritables, '')).replaceAll('\n', lineFeed)
 }

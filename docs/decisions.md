@@ -398,19 +398,25 @@ themselves.
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
-The spellings, `spec/html.md`, are a writer panel's (2026-10-23): a product manager, an engineer and
-a support agent picked, 3 of 3, an image standing alone as `<p><img …></p>` over `<figure>` and a
-bare `<img>`, a list item's first paragraph bare, `<li>Bolt</li>`, over `<li><p>Bolt</p></li>`,
-`class="language-js"` over `lang-js`, and `<br>` over `<br />`. For the carry element, seven readers
-picked `data-adf` 6 of 7 over `data-adf-node`. Four of them wanted the class `adf-carry` and three
-no class; this entry's stable `adf-*` classes settle it.
+The spellings, `spec/html.md`, are four writer panels' (2026-10-23 and -24), each of a product
+manager, an engineer and a support agent. The first picked each of these 3 of 3:
 
-A second panel of the same three roles picked, 3 of 3: an attribute the element cannot express as
-`data-local-id` over `data-adf-local-id` and `id`, since Atlassian's editor puts a `localId` on every
-block and a block carried for it would show no element at all; inside a carry element a link as
-`<a>` over `text (url)` and over its text alone, a carried node's blocks as `<p>` over `<br>` and a
-line feed, and media it cannot show as `<em>(image)</em>` over `<em>(image not shown)</em>` and
-nothing.
+- an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
+- a list item's first paragraph bare, `<li>Bolt</li>`, over `<li><p>Bolt</p></li>`;
+- `class="language-js"`, over `lang-js`;
+- `<br>`, over `<br />`.
+
+Seven readers picked `data-adf` for the carry element, 6 of 7, over `data-adf-node`. Four wanted the
+class `adf-carry` and three no class; this entry's stable `adf-*` classes settle it.
+
+Atlassian's editor puts a `localId` on every block, so carrying each block holding one would leave
+no element at all. The second panel picked each of these 3 of 3:
+
+- an attribute the element cannot express as `data-local-id`, over `data-adf-local-id` and `id`;
+- a link inside a carry element as `<a>`, over `text (url)` and its text alone;
+- a carried node's blocks as `<p>`, over `<br>` and a line feed;
+- media a carry element cannot show as `<em>(image)</em>`, over `<em>(image not shown)</em>` and
+  nothing.
 
 A third panel, seven readers in the same three roles, was asked how to write a list item whose first
 paragraph holds an attribute, the shape of every item Atlassian's editor writes. It picked
@@ -420,13 +426,14 @@ the `<p>` on a line of its own, 1 of 7, and over
 
 A fourth panel of the same three roles picked, 3 of 3, a code block inside a carry element as
 `<pre><code>…</code></pre>` over `<pre>…</pre>` and over a `<p>` whose lines part at `<br>`, which
-loses the indentation. All three wrote `<code class="language-python">`, which no option held.
+loses the indentation. All three wrote `<code class="language-python">`, which no option held, so
+the shown code keeps the class its code block's own element takes.
 
-Inside a carry element (2026-10-24, no panel of its own: the second panel's `<a>` joined to a
-portable spelling), an image a link to another target marks takes the spelling portable markdown
-gives it inline (§A linked image standing inline in portable markdown, its link to another
-target, is written `[alt](href) ([image](url))`), keeping both targets, which Goal 7 counts as
-content. A link marking a node that shows a note goes around the note.
+Inside a carry element, an image marked by a link to another target shows as portable markdown
+writes it inline (§A linked image standing inline in portable markdown, its link to another target,
+is written `[alt](href) ([image](url))`), so both targets stay; Goal 7 counts them as content. A link
+marking a node that shows a note goes around the note. Recorded 2026-10-24 without a panel of its
+own: it joins the second panel's `<a>` to that portable spelling.
 
 ## No runtime dependencies
 
@@ -573,8 +580,8 @@ handles one cause alike whichever node, attribute or direction raised it.
   emitter carries such a node (2026-10-14).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
-- A document whose markdown would be longer than V8's longest string is `unsupported-node-shape`
-  at the document's path, in either writer, and so is a directive `losslessMarkdownToAdf` reads
+- A document whose output would be longer than V8's longest string is `unsupported-node-shape`
+  at the document's path, in every writer, and so is a directive `losslessMarkdownToAdf` reads
   whose CommonMark spelling would be: the document does not convert, and no spelling in the input
   causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested JSON,
   since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in a
@@ -831,10 +838,10 @@ that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which co
 `adfToHtml` writes every URL exactly as the ADF holds it, escaped as every attribute value is,
 `javascript:`, `vbscript:`, `file:` and `data:` included. That covers a link's `href`, an image's
 `src`, and the `href` of each link the carry element shows: a carried node's link mark, a card's
-`url` or `data.url`, and an external image's `url`. Carrying such a link or image in the carry
-element, as cmark's default leaves these URLs out of its HTML, was proposed and not taken: item 142
-weighs that against writing the URL. Carrying alone no longer keeps the URL out of the HTML, since
-the carry element links what it shows, so that remedy would also drop the shown `href`.
+`url` or `data.url`, and an external image's `url`. Carrying such a link or image, to leave the URL
+out of the HTML as cmark does by default, was proposed and not taken; item 142 weighs it against
+writing the URL. Carrying alone would not keep the URL out, since the carry element links what it
+shows: the carry would also have to drop the shown `href`.
 
 ## Nothing recurses unbounded
 
