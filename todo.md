@@ -6,19 +6,20 @@
 
 `Bar = 0.1`
 
-`Next ID = 129`
+`Next ID = 130`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 129 | 0.3.0 |  | defect | **Read emphasis and link brackets in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 4 | 9 by 3 | 13.1 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 125 | 0.3.0 |  |  | **Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.3.0 | 33, 91, 95, 109, 115, 125 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.3.0 | 33, 91, 95, 109, 115, 125, 129 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
@@ -53,6 +54,22 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 129. Read emphasis and link brackets in time linear in the inline markdown, in every reader.
+
+The inline reader in `src/markdown/parse/inline-content.ts` is quadratic in two shapes, counted in
+operations (§Cost fixes are measured, never timed), 4× per doubling: about 255 000, 1 010 000 and
+4 020 000 at n = 500, 1000 and 2000.
+
+- `markPairings`, called through `markedNodes`, re-marks every piece each emphasis pairing spans:
+  `'*'.repeat(n) + '[b a](/v)'.repeat(n) + '*'.repeat(n)`. Pair by range instead, outermost
+  pairing first, marking each piece once.
+- `lastBracket`, called by `closeBracket`, walks back over every piece a bracket that went literal
+  left: `'['.repeat(n) + '[b a](/v)' + '](/w)'.repeat(n)`. Drop such a bracket from the search, as
+  CommonMark's bracket stack does.
+
+The seats found `closeBracket` and `resolveNodes` hard to read; leave both easier to read. Found by
+the stability review of item 122, 2026-10-23.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 

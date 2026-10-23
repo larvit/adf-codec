@@ -1189,7 +1189,12 @@ test('writes no (image) after a link to the image itself, unless the image holds
   assert.deepEqual(firstContent('See [![a](/u)](/u "t").\n'), [text('See '), marked('a', link('/u', 't')), text('.')])
   assert.deepEqual(firstContent('See [![a](/u "t")](/u).\n'), [text('See '), marked('a', link('/u')), text(' ('), marked('image', link('/u', 't')), text(').')])
   assert.deepEqual(firstContent('[b ![a](/u) ![c](/w)](/u)\n'), [marked('b a c', link('/u')), text(' ('), marked('image', link('/w')), text(')')])
+  assert.deepEqual(firstContent('See [![a](/u "")](/u).\n'), [text('See '), marked('a', link('/u')), text('.')])
+  const titled = { attrs: { href: 'a\nb', title: 't' }, type: 'link' }
   assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b)]{href="a\\nb"}\n'), [marked('b a', { attrs: { href: 'a\nb' }, type: 'link' })])
+  assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b "t")]{href="a\\nb" title=t}\n'), [marked('b a', titled)])
+  assert.deepEqual(firstContent('!adf:link[!adf:underline[![a]()]]{href="a\\nb"}\n'), [marked('a', { attrs: { href: 'a\nb' }, type: 'link' }, { type: 'underline' }), text(' ('), marked('image', link('')), text(')')])
+  assert.deepEqual(firstContent('!adf:link[b ![a](a&#10;b "u")]{href="a\\nb" title=t}\n'), [marked('b a', titled), text(' ('), marked('image', link('a\nb', 'u')), text(')')])
 })
 
 test('carries the mark a spelling nested inside its own kind names once', () => {
