@@ -328,12 +328,13 @@ its alt text linked to its destination, the link titled by the image's title: be
 content, in a heading, a table cell or an `!adf:paragraph`, and in the paragraph a portable task
 marker opens. A `[!WORD]` marker with no `+` or `-` stands apart from the lines after it, and so
 does a `+` or `-` callout's title line, so an image alone on the marker line or after the title
-reads as the image. An empty alt text reads as the destination, as an empty link text does. Inside
-a link's text, an `!adf:link`'s included, the alt text is plain text the link marks, and after the
-link stands ` (image)`, `image` linked to the image's destination and titled by its title, one for
-each image in the order they stand. An image whose destination is the link's own takes none, unless
-it holds a non-empty title the link does not (`docs/decisions.md` §An image reads as an image only
-alone in its paragraph).
+reads as the image. An empty alt text reads as the destination, as an empty link text does.
+
+Inside a link's text, the alt text is plain text the link marks. This holds for an `!adf:link`'s
+text too. After the link comes ` (image)` for each image, in the order the images stand. Each
+`image` links to its image's destination and carries the image's title. An image whose destination
+is the link's own takes no ` (image)`, unless the image has a non-empty title the link lacks
+(`docs/decisions.md` §An image reads as an image only alone in its paragraph).
 
 ### Tables
 

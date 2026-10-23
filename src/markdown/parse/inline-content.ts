@@ -34,7 +34,7 @@ type OwnMarks = { kind: 'ownMarks'; node: AdfNode }
 
 type Inline = AdfNode | OwnMarks | TextBreak
 
-// `imageLinks` are the (image)s an `!adf:link` slot's link stands after itself.
+// `imageLinks` are the (image)s an `!adf:link` slot holds, which the link places after itself.
 type Scanned = { image?: AdfNode; imageLinks: ImageLink[]; pieces: Resolved[] }
 
 export type LinkDefinitions = ReadonlyMap<string, LinkDefinition>
@@ -44,7 +44,7 @@ type Bracket = { active: boolean; image: boolean; kind: 'open'; start: number }
 // `link` is the link whose text is this image alone.
 type Image = { alt: string; definition: LinkDefinition; kind: 'image'; link?: LinkDefinition }
 
-// The (image) after a link for one image its text holds: running text reads it, alt text drops it.
+// The (image) after a link for one image its text holds: running text keeps it, alt text drops it.
 type ImageLink = { image: LinkDefinition; kind: 'imageLink'; nodes: Inline[] }
 
 type Nodes = { kind: 'nodes'; nodes: Inline[] }
@@ -74,7 +74,7 @@ type Scan = {
   // Pieces below this have been walked for openers to deactivate: an image close folds the link-marked piece into alt text, leaving this the only record that the brackets around it are doomed.
   deactivatedBefore: number
   definitions: LinkDefinitions
-  // Whether an `!adf:link` slot holds this content through mark slots alone, where an image reads as its plain alt text and the link stands its (image) after itself.
+  // Whether an `!adf:link` slot holds this content through mark slots alone, where an image reads as its plain alt text and the link places its (image) after itself.
   inLink: boolean
   openingSpellableLink: boolean
   path: ConvertErrorPath
@@ -270,7 +270,7 @@ function assemble(scan: Scan): Result<Scanned> {
   return success(scan.pieces.length === 1 && only?.kind === 'image' ? { ...resolved, image: mediaSingle(only) } : resolved)
 }
 
-// A content slot is read before the scan holding it knows whether an image description holds it, so each (image) stays a piece of its own.
+// A slot is read before its holder knows whether it sits in an image description, which drops every (image), so each (image) stays a piece of its own.
 function resolvedPieces(pieces: readonly Piece[], nodes: readonly Inline[][]): Resolved[] {
   const resolved: Resolved[] = []
   let run: Inline[] = []
@@ -292,7 +292,7 @@ function contentNodes(pieces: readonly Resolved[]): Inline[] {
   return mergeReadText(pieces.flatMap((piece) => piece.nodes))
 }
 
-// spec/flavour.md, The CommonMark image: an image no paragraph holds alone reads as its alt text, linked, and inside a link as the link's text, then (image) linked to it.
+// spec/flavour.md, The CommonMark image: an image no paragraph holds alone reads as its alt text, linked, and inside a link as the link's text, then (image) linked to the image.
 function linkedAlt(piece: Piece, inLink: boolean): Piece[] {
   if (inLink && piece.kind === 'imageLink') return []
   if (piece.kind !== 'image' || (inLink && piece.link === undefined)) return [piece]
@@ -300,7 +300,7 @@ function linkedAlt(piece: Piece, inLink: boolean): Piece[] {
   return piece.link === undefined ? [alt] : [alt, ...besideLink([imageLink(piece.definition)], piece.link)]
 }
 
-// As adfToPortableMarkdown writes it: a link to the image itself needs no (image), unless the image holds a title the link does not.
+// A link to the image itself needs no (image), as `adfToPortableMarkdown` writes none; one stays to keep an image title the link lacks.
 function besideLink(imageLinks: readonly ImageLink[], link: LinkDefinition): ImageLink[] {
   return imageLinks.filter(({ image }) => image.destination !== link.destination || (image.title !== undefined && image.title !== '' && image.title !== link.title))
 }

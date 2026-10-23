@@ -243,15 +243,17 @@ reads as the URL, and an empty link text as its destination. A link text holding
 reads as its destination, then those breaks: four of seven readers expected that over dropping them.
 `[]()` reads as nothing: it renders nothing, so Goal 7 loses no content. A link alone in its
 paragraph whose whole text is one image reads as that image, with the link marking its `media`.
-Inside any other link, the alt text is plain text the link marks, and ` (image)` follows the link,
-`image` linked to the image's URL and titled by its title, so Goal 7 keeps both. For a link whose
-text is the image alone, the bot, the LLM pipeline and a support agent picked this 3 of 3. For a
-link holding words beside the image they split on where `(image)` stands, and four more readers, the
-bot, the LLM pipeline, a product manager and an engineer, made it 5 of 7 for after the whole link
-over right after the alt text. Every reader rejected linking the alt text to the image: the words
-lose the link they were written in. A link to the image's own URL takes no `(image)`, unless the
-image holds a title the link does not: it would repeat the link, as `adfToPortableMarkdown` never
-writes it (§A linked image standing inline in portable markdown).
+
+Inside any other link, the alt text is plain text the link marks. After the link comes ` (image)`,
+where `image` links to the image's URL and carries its title, so Goal 7 keeps both. Three readers,
+the bot, the LLM pipeline and a support agent, picked this 3 of 3 for a link whose text is the image
+alone. For a link with words beside the image, the three split on where `(image)` goes. Four fresh
+readers joined: a second bot, a second LLM pipeline, a product manager and an engineer. Five of the
+seven put `(image)` after the whole link rather than right after the alt text. Every reader rejected
+linking the alt text to the image, since the words would lose the link they were written in.
+
+A link to the image's own URL takes no `(image)`, since the link already reaches the image. The
+exception is an image whose title the link lacks: there `(image)` keeps the title.
 
 In `portableMarkdownToAdf`, a `[!WORD]` marker with no `+` or `-` stands apart from the lines after
 it, and so does a `+` or `-` callout's title line, so an image alone on the marker line or after the
@@ -315,8 +317,8 @@ linked text.
 Where `adfToPortableMarkdown` writes an external image inline, as in a table cell, and a link to
 another target marks it, the link keeps its target and the image follows as a link reading `image`.
 With no alt text, the link text is the link's target, which is how the reader reads `[](href)`, so
-the rewrite holds. Every seat first wrote `[![alt](url)](href)`, which reads back as linked text
-written in another spelling, and so breaks the byte-for-byte rewrite. Each then picked this over
+the rewrite holds. Every seat first wrote `[![alt](url)](href)`, but the reader reads that as
+`[alt](href) ([image](url))`, so writing it breaks the byte-for-byte rewrite. Each then picked this over
 `[alt](url)` and `[alt](href)`, which drop a target.
 
 ## Ids stay site-local
