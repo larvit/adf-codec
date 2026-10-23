@@ -64,12 +64,11 @@ operations (§Cost fixes are measured, never timed), 4× per doubling: about 255
 - `markPairings`, called through `markedNodes`, re-marks every piece each emphasis pairing spans:
   `'*'.repeat(n) + '[b a](/v)'.repeat(n) + '*'.repeat(n)`. Pair by range instead, outermost
   pairing first, marking each piece once.
-- `lastBracket`, called by `closeBracket`, walks back over every piece a bracket that went literal
-  left: `'['.repeat(n) + '[b a](/v)' + '](/w)'.repeat(n)`. Drop such a bracket from the search, as
-  CommonMark's bracket stack does.
+- `lastBracket`, called by `closeBracket`, walks back over the pieces each literal bracket leaves:
+  `'['.repeat(n) + '[b a](/v)' + '](/w)'.repeat(n)`. Drop a bracket from the search once it goes
+  literal, as CommonMark's bracket stack does.
 
-The seats found `closeBracket` and `resolveNodes` hard to read; leave both easier to read. Found by
-the stability review of item 122, 2026-10-23.
+The seats found `closeBracket` and `resolveNodes` hard to read; leave both easier to read.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 

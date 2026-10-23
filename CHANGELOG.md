@@ -13,7 +13,7 @@
   around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
   holding another mark as `!adf:carry{json="…"}`, and `adfToPortableMarkdown` drops that mark.
 - Every reader keeps the URL and title of an image inside a link's text, where it dropped them:
-  `(image)` follows the link, linked to the image, so
+  after the link comes `(image)`, which links to the image, so
   `[look at ![the moon](moon.png "Full") tonight](/moon)` reads as
   `[look at the moon tonight](/moon) ([image](moon.png "Full"))`. A link to the image's own URL
   takes no `(image)`, unless the image's title is one the link lacks.
