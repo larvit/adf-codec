@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { Result } from '../result.ts'
+import type { Result } from './result.ts'
 import { joinedWithin, tooLong, withinEngineLimits, withinLongest } from './length-bound.ts'
-import { success } from '../result.ts'
+import { success } from './result.ts'
 
 function thrown(name: string, message: string): () => Result<string> {
   return () => {

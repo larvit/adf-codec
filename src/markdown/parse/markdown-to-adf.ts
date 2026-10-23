@@ -17,7 +17,7 @@ import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from '../directive/node-reading.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.ts'
 import { spellsEmpty } from '../directive/empty-keys.ts'
-import { withinEngineLimits } from '../length-bound.ts'
+import { withinEngineLimits } from '../../length-bound.ts'
 
 // A flavour's own reading of a quote, and of a bullet list into one or more blocks; `path` is the container's, `index` the list's place among the container's blocks.
 export type FlavourBlockReaders = {

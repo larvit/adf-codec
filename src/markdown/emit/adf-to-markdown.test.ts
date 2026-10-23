@@ -44,7 +44,7 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })
 
-const tooLong = 'unsupported-node-shape: the markdown for this document, or for a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes'
+const tooLong = 'unsupported-node-shape: the markdown or HTML for this document, or a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes'
 
 // A code block of 300 lines; two of these together fall some 1000 characters short of V8's longest string, so only what their spelling adds passes it.
 function nearlyHalfTheBound(): AdfNode {
