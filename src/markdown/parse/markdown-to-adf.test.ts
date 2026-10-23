@@ -1076,6 +1076,17 @@ test('reads the reference links a definition resolves, and leaves the rest liter
   assert.deepEqual(content(losslessMarkdownToAdf('[][]\n')), [paragraph('[][]')])
 })
 
+test('reads link text past 999 characters as no label, in every reader', () => {
+  const longest = `foo${' '.repeat(993)}bar`
+  const tooLong = `foo${' '.repeat(1000)}bar`
+  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+    assert.deepEqual(content(read(`[${longest}]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
+    assert.deepEqual(content(read(`[${longest}][]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
+    assert.deepEqual(content(read(`[${tooLong}]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}]`)])
+    assert.deepEqual(content(read(`[${tooLong}][]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}][]`)])
+  }
+})
+
 test('reads an autolink, the email form as the mailto link it means', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('<https://example.com/>\n')), [
     { content: [marked('https://example.com/', link('https://example.com/'))], type: 'paragraph' },
