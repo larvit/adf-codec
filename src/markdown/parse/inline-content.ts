@@ -232,7 +232,7 @@ function directiveMarkPieces(scan: Scan, name: string, mark: AdfMark, slot: read
   return success([...marked.filter((piece) => piece.kind === 'nodes'), ...besideLink(images, link)])
 }
 
-// spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `assemble` asks the emitter.
+// spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `parseInlineContent` asks the emitter.
 function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[], index: number): Result<Piece[]> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.path)
