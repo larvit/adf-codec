@@ -1,12 +1,15 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
+import { anchorOpener, writableValue } from './escaping.ts'
 import { carriedInline } from './carry-element.ts'
 import { holdsOnlyAttributes, isSpellableText, isUnmarkedSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { htmlValue, optionalAttribute } from './escaping.ts'
-import { linkAttrs, type LinkAttrs } from '../../adf/mark-attributes.ts'
+import { linkAttrs } from '../../adf/mark-attributes.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
-// Each names its element.
-const elementMarks: readonly string[] = ['code', 'em', 'strong']
+const markElements: ReadonlyMap<string, string> = new Map([
+  ['code', 'code'],
+  ['em', 'em'],
+  ['strong', 'strong'],
+])
 
 export function inlineHtml(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<string> {
   let html = ''
@@ -41,22 +44,17 @@ function tryInlineNode(node: AdfNode): string | undefined {
   return `${openers.join('')}${text}${closers.join('')}`
 }
 
-// No element holds empty text apart from no text.
+// Empty text reads back as no text node, so it rides the carry.
 export function writableText(text: string | undefined): string | undefined {
-  return text === undefined || text === '' ? undefined : htmlValue(text)
+  return text === undefined || text === '' ? undefined : writableValue(text)
 }
 
 function markElement(mark: AdfMark): { closer: string; opener: string } | undefined {
   const { type } = mark
-  if (elementMarks.includes(type)) return mark.attrs === undefined ? { closer: `</${type}>`, opener: `<${type}>` } : undefined
+  const element = markElements.get(type)
+  if (element !== undefined) return mark.attrs === undefined ? { closer: `</${element}>`, opener: `<${element}>` } : undefined
   if (type !== 'link' || Object.keys(nodeAttrs(mark)).some((key) => key !== 'href' && key !== 'title')) return undefined
   const link = linkAttrs(nodeAttrs(mark))
   const opener = link === undefined ? undefined : anchorOpener(link)
   return opener === undefined ? undefined : { closer: '</a>', opener }
-}
-
-export function anchorOpener({ href, title }: LinkAttrs): string | undefined {
-  const url = htmlValue(href)
-  const titled = optionalAttribute('title', title)
-  return url === undefined || titled === undefined ? undefined : `<a href="${url}"${titled}>`
 }

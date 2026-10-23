@@ -7,34 +7,38 @@ leg "install ($node_image)" in_image "$node_image" npm ci
 leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
 leg "lint ($node_image)" in_image "$node_image" npm run lint
 
-# The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green.
+# The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green. Each line is a probe and the import a boundary refuses it.
+boundary_probes="src/adf/boundary-probe.ts ../markdown/flavour.ts
+src/adf/boundary-probe-html.ts ../html/emit/adf-to-html.ts
+src/html/boundary-probe.ts ../markdown/flavour.ts
+src/markdown/boundary-probe-html.ts ../html/emit/adf-to-html.ts
+src/markdown/directive/boundary-probe.ts ../parse/blocks.ts
+src/markdown/directive/boundary-probe-emit.ts ../emit/image.ts
+src/markdown/directive/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
+src/markdown/emit/boundary-probe.ts ../portable/conventions.ts
+src/markdown/emit/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
+src/markdown/parse/boundary-probe.ts ../emit/adf-to-markdown.ts
+src/markdown/parse/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
+src/markdown/parse/boundary-probe-portable.ts ../portable/conventions.ts"
+
 boundaries_fire() {
-  local adf=src/adf/boundary-probe.ts adf_html=src/adf/boundary-probe-html.ts allowed=src/markdown/parse/boundary-probe-allowed.ts directive=src/markdown/directive/boundary-probe.ts directive_emit=src/markdown/directive/boundary-probe-emit.ts directive_html=src/markdown/directive/boundary-probe-html.ts emit=src/markdown/emit/boundary-probe.ts emit_html=src/markdown/emit/boundary-probe-html.ts html=src/html/boundary-probe.ts lint_log markdown=src/markdown/boundary-probe-html.ts parse=src/markdown/parse/boundary-probe.ts parse_html=src/markdown/parse/boundary-probe-html.ts parse_portable=src/markdown/parse/boundary-probe-portable.ts
-  local probes="$adf $adf_html $allowed $directive $directive_emit $directive_html $emit $emit_html $html $markdown $parse $parse_html $parse_portable"
+  local allowed=src/markdown/parse/boundary-probe-allowed.ts lint_log probe probes target
+  probes=$(cut -d ' ' -f 1 <<< "$boundary_probes" | tr '\n' ' ') &&
   lint_log=$(mktemp) &&
   # The paths are baked in: the trap fires after this function's locals are gone.
-  trap "rm -f $probes $lint_log" EXIT &&
+  trap "rm -f $allowed $probes $lint_log" EXIT &&
   trap 'exit 130' INT &&
   trap 'exit 143' TERM &&
   echo "import '../emit/spelling-questions.ts';" > "$allowed" &&
   in_image "$node_image" npm run lint &&
-  echo "import '../markdown/flavour.ts';" > "$adf" &&
-  echo "import '../html/emit/adf-to-html.ts';" > "$adf_html" &&
-  echo "import '../parse/blocks.ts';" > "$directive" &&
-  echo "import '../emit/image.ts';" > "$directive_emit" &&
-  echo "import '../../html/emit/adf-to-html.ts';" > "$directive_html" &&
-  echo "import '../portable/conventions.ts';" > "$emit" &&
-  echo "import '../../html/emit/adf-to-html.ts';" > "$emit_html" &&
-  echo "import '../markdown/flavour.ts';" > "$html" &&
-  echo "import '../html/emit/adf-to-html.ts';" > "$markdown" &&
-  echo "import '../emit/adf-to-markdown.ts';" > "$parse" &&
-  echo "import '../../html/emit/adf-to-html.ts';" > "$parse_html" &&
-  echo "import '../portable/conventions.ts';" > "$parse_portable" &&
+  while read -r probe target; do
+    echo "import '$target';" > "$probe" || return 1
+  done <<< "$boundary_probes" &&
   ! in_image "$node_image" npm run lint -- --format unix 2>&1 | tee "$lint_log" &&
   for probe in $probes; do
-    [ "$probe" = "$allowed" ] || grep -q "^$probe:.*eslint(no-restricted-imports)" "$lint_log" || return 1
+    grep -q "^$probe:.*eslint(no-restricted-imports)" "$lint_log" || return 1
   done &&
-  rm -f $probes "$lint_log"
+  rm -f "$allowed" $probes "$lint_log"
 }
 
 leg "import boundaries fire ($node_image)" boundaries_fire

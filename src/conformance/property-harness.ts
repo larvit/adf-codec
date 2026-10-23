@@ -11,11 +11,11 @@ import { blockArgument } from '../markdown/directive/block.ts'
 import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../adf/plain-image.ts'
-import { definitionAttrs } from '../markdown/mark-spellings.ts'
 import { directivePrefix } from '../markdown/directive/syntax.ts'
 import { emptyKeys, mergeAdjacentText, nodeContent } from '../adf/document.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
 import { joinsWhenRead } from '../markdown/adjacent-text.ts'
+import { toLinkAttrs } from '../markdown/mark-spellings.ts'
 
 type Positions = { block: AdfNode; inline: AdfNode }
 
@@ -96,7 +96,7 @@ function occasionallyApart(arbitrary: Arbitrary<AdfNode[]>): Arbitrary<AdfNode[]
 }
 
 function externalImage({ alt, link, url }: { alt: string | undefined; link: LinkDefinition | undefined; url: string }): AdfNode {
-  return centeredImage([externalMedia(alt ?? '', url, link === undefined ? undefined : definitionAttrs(link))])
+  return centeredImage([externalMedia(alt ?? '', url, link === undefined ? undefined : toLinkAttrs(link))])
 }
 
 function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): AdfNode {

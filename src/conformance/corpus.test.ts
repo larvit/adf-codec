@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
+import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { isAdfDocument } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
@@ -146,6 +147,23 @@ for (const name of names(realPayloadsRoot, '.json')) {
     const parsed = losslessMarkdownToAdf(emitted.value)
     assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
     assert.deepEqual(parsed.value, payload)
+  })
+}
+
+// The element each block an editor writes with no attribute but `localId`, and `level` or `order`, opens with; every other block is carried.
+const blockElements: Readonly<Record<string, string>> = { blockquote: '<blockquote', bulletList: '<ul', heading: '<h', orderedList: '<ol', paragraph: '<p', rule: '<hr' }
+
+for (const name of names(realPayloadsRoot, '.json')) {
+  test(`real-payloads/${name} writes each block holding only its id as its element`, () => {
+    const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
+    assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+    assert.ok(adfToHtml(payload).ok)
+    for (const block of payload.content ?? []) {
+      const opening = Object.hasOwn(blockElements, block.type) ? blockElements[block.type] : undefined
+      if (opening === undefined || block.marks !== undefined || Object.keys(block.attrs ?? {}).some((key) => !['level', 'localId', 'order'].includes(key))) continue
+      const written = adfToHtml({ content: [block], type: 'doc', version: 1 })
+      assert.ok(written.ok && written.value.startsWith(opening), `${block.type} wrote ${written.ok ? written.value.slice(0, 80) : written.error.code}`)
+    }
   })
 }
 
