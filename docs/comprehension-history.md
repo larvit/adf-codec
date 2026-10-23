@@ -1117,3 +1117,26 @@ Inherited architect, decided by:
 - Locality: `src/markdown/commonmark/backtick-runs.ts:11` `backtickCloser`: a closure correct only for rising `from`, stated not enforced (against)
 - Locality: `src/markdown/parse/blocks.ts:67` `Line.spaces` / `matchBlankLine`: tab remainders in a separate field every site must remember (against)
 - Shape: `src/markdown/portable/portable-markdown-to-adf.ts:19` `expandBlockReaders` / `portableBlockReaders`: a swapped reader object replaces the `inExpand` flag, less obvious on first read
+
+## 2026-10-23T01:53:14Z, PR #82 at 8e7da0d, against 33e2a86
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | worse | same | worse |
+| Inherited architect | same | worse | same | same | worse |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/markdown/parse/inline-content.ts:264` `assemble`: an (image) leaves a slot through `Scanned.imageLinks`, is dropped by `linkedAlt`, regathered by `linkedImages` and kept apart by `resolvedPieces`; five functions and two recursion levels to follow one image
+- Locality: `src/markdown/parse/inline-content.ts:209` `directivePieces`: `inLink` holds only through mark slots, so the mark is read before the slot and a node directive silently resets it
+- Shape: `src/markdown/parse/inline-content.ts:58` `Piece`: gains `ImageLink`, `Scanned` becomes `{ imageLinks, pieces }`, and `linkedAlt` now also discards `imageLink` pieces, which its name does not say
+- Shape: `src/markdown/mark-spellings.ts:58` `commonMarkLink`: a sixth positional parameter, `escapes`, which the parser always passes as `'lossless'`
+- Locality: `src/markdown/portable/inline-reduction.ts:154` `portableLink`: reads easier; it keeps the title and leaves escaping to `spellTitle`, and `imageAside` builds the (image) once
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/parse/inline-content.ts:209` `directivePieces`: each slot returns its nodes and a list of (image)s still to place, tracked through eight units, and `inLink`'s narrowed meaning lives in one boolean expression
+- Locality: `src/markdown/emit/inline-line.ts:69` `tryPipeCell`: the portable flavour skips the pipe check, its safety resting on three guards elsewhere, and the comment names the wrong file for half of it
+- Locality: `src/markdown/portable/inline-reduction.ts:154` `portableLink`: reads easier; the reducer only normalizes and escaping stays in `spellTitle`
