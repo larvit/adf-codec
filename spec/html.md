@@ -17,7 +17,7 @@ document whose `content` is an empty array is the empty string.
 | `bulletList` | `<ul>`, a line feed, its items a line each, a line feed, `</ul>` |
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
 | `listItem` | its first paragraph straight after `<li>`: bare where it holds content and no attribute, `<li>Bolt</li>`, and as its `<p>` element where it holds an attribute, `<li><p data-local-id="p1">Bolt</p></li>`; where other blocks follow, each after a line feed, and a line feed before `</li>`. Otherwise `<li>`, a line feed, its blocks, a line feed, `</li>` |
-| `codeBlock` | `<pre><code class="language-js">…</code></pre>`, the language one token holding no whitespace; no `class` where it holds no `language` |
+| `codeBlock` | `<pre><code class="language-js">…</code></pre>`, the language one token holding no ASCII whitespace (a tab, line feed, form feed, carriage return or space); no `class` where it holds no `language` |
 | `rule` | `<hr>` |
 | `mediaSingle`, centered, holding one external `media` | `<p><img src="…" alt="…"></p>`, no `alt` where the media holds none; `<p><a href="…"><img …></a></p>` where a link marks it |
 
@@ -73,7 +73,7 @@ later release writes it as its own element.
   included, each character HTML cannot hold spelled as a JSON escape, `\u0085`. A document holding
   no `content` key is the block carry of `{"type":"doc","version":1}`.
 - The content shown is every text node's text below the node, and what a node holding no text shows
-  in its place: a mention's text, else `@` and its id; an emoji's text, else its `shortName`; a
+  in its place: a mention's text, else `@` and its id where it has one; an emoji's text, else its `shortName`; a
   status's text; a date as `2026-09-13` in UTC; a card's URL, else its name, else the URL its data
   holds; media's `alt`, else an external one's URL; an extension's text; an expand's title.
   - In a `<div>`, each block's content is a `<p>`, and a code block's is
@@ -103,7 +103,7 @@ later release writes it as its own element.
     non-empty `alt`;
   - a heading whose `level` is not 1 to 6, and an ordered list whose `order` is not a safe integer
     or is `-0`;
-  - a code block holding more than one text node, a marked one, or a language holding whitespace;
+  - a code block holding more than one text node, a marked one, or a language holding ASCII whitespace;
   - a rule or hard break holding `content`, and a hard break holding an attribute;
   - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
     an attribute its type does not hold: the whole list rides the carry;
