@@ -6,7 +6,7 @@ import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import { centeredImage, externalMedia, imageAside } from '../external-image.ts'
-import { commonMarkLink, linkHref, linkMark } from '../mark-spellings.ts'
+import { commonMarkLink, linkDefinition, linkHref, linkMark } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { failure, faulted, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
@@ -227,9 +227,8 @@ function directiveMarkPieces(scan: Scan, name: string, mark: AdfMark, slot: Slot
   }
   const refused = mark.type === 'link' ? refuseLinkDirective(scan, mark, nodes, index) : undefined
   if (refused !== undefined) return refused
-  const attrs = nodeAttrs(mark)
-  const title = attrs['title']
-  const imageLinks = mark.type === 'link' ? besideLink(slot.imageLinks, linkHref(attrs) ?? '', typeof title === 'string' ? title : undefined) : slot.imageLinks
+  const link = mark.type === 'link' ? linkDefinition(nodeAttrs(mark)) : undefined
+  const imageLinks = link === undefined ? slot.imageLinks : besideLink(slot.imageLinks, link)
   return success([...slot.pieces.map((piece) => ({ ...piece, nodes: applyMark(piece.nodes, mark) })), ...imageLinks])
 }
 
@@ -298,17 +297,17 @@ function linkedAlt(piece: Piece, inLink: boolean): Piece[] {
   if (inLink && piece.kind === 'imageLink') return []
   if (piece.kind !== 'image' || (inLink && piece.link === undefined)) return [piece]
   const alt: Piece = { kind: 'nodes', nodes: linkTo(piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }], piece.link ?? piece.definition) }
-  return piece.link === undefined ? [alt] : [alt, ...besideLink([imageLink(piece.definition)], piece.link.destination, piece.link.title)]
+  return piece.link === undefined ? [alt] : [alt, ...besideLink([imageLink(piece.definition)], piece.link)]
 }
 
 // As adfToPortableMarkdown writes it: a link to the image itself needs no (image), unless the image holds a title the link does not.
-function besideLink(imageLinks: readonly ImageLink[], href: string, title: string | undefined): ImageLink[] {
-  return imageLinks.filter(({ image }) => image.destination !== href || (image.title !== undefined && image.title !== '' && image.title !== title))
+function besideLink(imageLinks: readonly ImageLink[], link: LinkDefinition): ImageLink[] {
+  return imageLinks.filter(({ image }) => image.destination !== link.destination || (image.title !== undefined && image.title !== '' && image.title !== link.title))
 }
 
 function linkedImages(pieces: readonly Piece[]): ImageLink[] {
   return pieces.flatMap((piece) => {
-    if (piece.kind === 'image') return piece.link === undefined ? [imageLink(piece.definition)] : []
+    if (piece.kind === 'image') return [imageLink(piece.definition)]
     return piece.kind === 'imageLink' ? [piece] : []
   })
 }
@@ -372,9 +371,9 @@ function holdsOwnMarks(item: Inline | Piece): boolean {
   return 'kind' in item && item.kind === 'ownMarks'
 }
 
-// Only a link a `nodes` piece spells, an image's, or an (image)'s makes the outer brackets literal; an `ownMarks` node's link is its own, so the own-marks guard in `closeLink` refuses it.
+// Only a link a `nodes` piece spells, or an (image)'s, makes the outer brackets literal; an `ownMarks` node's link is its own, so the own-marks guard in `closeLink` refuses it.
 function holdsLink(pieces: readonly Piece[]): boolean {
-  return pieces.some((piece) => piece.kind === 'imageLink' || (piece.kind === 'nodes' && marksLink(piece.nodes)) || (piece.kind === 'image' && piece.link !== undefined))
+  return pieces.some((piece) => piece.kind === 'imageLink' || (piece.kind === 'nodes' && marksLink(piece.nodes)))
 }
 
 function marksLink(nodes: readonly Inline[]): boolean {
@@ -461,7 +460,7 @@ function linkPieces(scan: Scan, inner: readonly Piece[], definition: LinkDefinit
   if (!nodes.value.some((node) => marksItem(node, 'link')) && nodes.value.some((node) => isNode(node) && node.type !== 'hardBreak')) {
     return failure('unsupported-node-shape', unlinkable, scan.path)
   }
-  return success([{ kind: 'nodes', nodes: linkTo(nodes.value, definition) }, ...besideLink(linkedImages(inner), definition.destination, definition.title)])
+  return success([{ kind: 'nodes', nodes: linkTo(nodes.value, definition) }, ...besideLink(linkedImages(inner), definition)])
 }
 
 // CommonMark: no link nests inside another, though an image's description holds one.
