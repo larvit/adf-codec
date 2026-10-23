@@ -38,10 +38,10 @@
 - `losslessMarkdownToAdf` takes time linear in the markdown when an inline directive's `[content]`
   holds many unclosed backtick runs: 640000 characters of them took one second, now 100 ms.
 - Every reader takes time linear in the inline markdown when emphasis spans many links, or many
-  closing brackets follow a link: 8000 links inside 8000 `*` took 4.4 seconds, now 170 ms.
-- Every reader leaves a link label over 999 characters literal, counting an escape as two, where it
-  read a link to the matching definition: CommonMark caps a link label at 999 characters. This holds
-  for `[text]`, `[text][]`, `[text][label]` and the definition `[label]: url` alike.
+  closing brackets follow a link: 8000 links inside 8000 `*` took two seconds, now about 100 ms.
+- Every reader leaves `[text]`, `[text][]`, `[text][label]` and a definition `[label]: url` literal
+  when the label runs over 999 characters, where it read them as a link or a definition. CommonMark
+  caps a label at 999 characters, an escape counting as two.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 
