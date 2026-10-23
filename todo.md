@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 142`
+`Next ID = 143`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 142 | 0.3.0 |  | security | **Settle in `docs/decisions.md`, weighing the pros and cons with the maintainer, whether `adfToHtml` writes a `javascript:`, `vbscript:`, `file:` or non-image `data:` URL as the ADF holds it.** | 2 | 2 | 2 | 4 | 3 | 6 by 3 | 4.5 |
 | 131 | 0.3.0 |  |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
 | 133 | 0.3.0 | 131 |  | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
@@ -61,6 +62,21 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 142. Settle in `docs/decisions.md`, weighing the pros and cons with the maintainer, whether `adfToHtml` writes a `javascript:`, `vbscript:`, `file:` or non-image `data:` URL as the ADF holds it.
+
+The exposure: ADF from an author a consumer does not trust can hold a link's `href` or an external
+image's `url` of `javascript:…`. `adfToHtml` writes it into `href` or `src` as held
+(`docs/decisions.md` §HTML writes a URL as the ADF holds it, whatever its scheme). An export tool
+showing that HTML unsanitized in a browser runs the script when a reader follows the link.
+
+Weigh writing the URL as held, leaving sanitizing to the consumer as for any HTML, against carrying
+such a link or image in the carry element, which keeps the URL in `data-adf`. cmark, the CommonMark
+reference implementation, leaves `javascript:`, `vbscript:`, `file:` and `data:` other than a PNG,
+GIF, JPEG or WebP image out of its HTML by default; a browser reads a scheme after dropping tabs,
+line breaks and leading control characters. Say whether the markdown writers' links follow the
+same rule. Ask the maintainer with the pros and cons, and record the answer in place of that
+decision.
 
 ### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
 

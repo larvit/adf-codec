@@ -67,7 +67,7 @@ In `docs/decisions.md`:
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
 - Output past V8's longest string is refused on every engine
-- A URL a browser would run is carried, never written
+- HTML writes a URL as the ADF holds it, whatever its scheme
 - Nothing recurses unbounded
 - JSON text is read by `parseJsonText`
 - No value `JSON.parse` or `structuredClone` builds loops a call

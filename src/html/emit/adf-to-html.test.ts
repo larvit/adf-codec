@@ -123,16 +123,12 @@ test('carries inline what its element cannot hold, and a text node an unmarked o
   assert.equal(carriedSpans(paragraph(text('x'))), 1)
 })
 
-test('carries a link or image whose URL a browser would run as script, or read as a file or non-image data', () => {
+test('writes a link\'s or image\'s URL as the ADF holds it, escaped, whatever its scheme', () => {
   const linked = (href: string): string => html(adfToHtml(document(paragraph(text('x', { attrs: { href }, type: 'link' })))))
-  for (const href of ['javascript:alert(1)', 'JavaScript:alert(1)', ' \u0001java\tscript:alert(1)', 'vbscript:x', 'file:///etc/passwd', 'data:text/html,x', 'data:image/svg+xml,x']) {
-    assert.equal(linked(href).startsWith('<p><span class="adf-carry"'), true, href)
-  }
-  for (const href of ['https://example.com/', '/relative', '#top', 'mailto:a@example.com', 'data:image/png;base64,AAAA', 'javascriptx:alert(1)']) {
-    assert.equal(linked(href).startsWith('<p><a href='), true, href)
-  }
-  const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'javascript:alert(1)' }, type: 'media' }], type: 'mediaSingle' }
-  assert.equal(html(adfToHtml(document(image))).startsWith('<div class="adf-carry"'), true)
+  assert.equal(linked('javascript:alert("x")'), '<p><a href="javascript:alert(&quot;x&quot;)">x</a></p>\n')
+  assert.equal(linked('data:text/html,<b>x</b>'), '<p><a href="data:text/html,&lt;b&gt;x&lt;/b&gt;">x</a></p>\n')
+  const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'vbscript:x' }, type: 'media' }], type: 'mediaSingle' }
+  assert.equal(html(adfToHtml(document(image))), '<p><img src="vbscript:x"></p>\n')
 })
 
 test('writes a container holding no content key as its element holding nothing', () => {
@@ -144,7 +140,7 @@ test('carries a link or image whose target the anchor cannot hold', () => {
   assert.equal(carried({ attrs: { title: 'No target' }, type: 'link' }), true)
   assert.equal(carried({ attrs: { href: 'https://example.com/\0' }, type: 'link' }), true)
   assert.equal(carried({ attrs: { href: 'https://example.com/', title: 'x\0' }, type: 'link' }), true)
-  const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'https://example.com/a.png' }, marks: [{ attrs: { href: 'javascript:alert(1)' }, type: 'link' }], type: 'media' }], type: 'mediaSingle' }
+  const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'https://example.com/a.png' }, marks: [{ attrs: { href: 'https://example.com/\0' }, type: 'link' }], type: 'media' }], type: 'mediaSingle' }
   assert.equal(html(adfToHtml(document(image))).startsWith('<div class="adf-carry"'), true)
 })
 

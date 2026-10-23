@@ -209,12 +209,9 @@ function writableText(node: AdfNode): node is AdfNode & { text: string } {
   return typeof node.text === 'string' && node.text !== '' && !node.text.includes('\0')
 }
 
-// cmark's dangerous-URL rule: its schemes and its safe image data. A browser drops tabs and line breaks and a leading control or space before it reads the scheme, so the check does too.
+// Any scheme, `javascript:` included, as the ADF holds it: docs/decisions.md §HTML writes a URL as the ADF holds it, whatever its scheme.
 function writableUrl(url: string): boolean {
-  if (url.includes('\0')) return false
-  const scheme = url.replace(/[\t\n\r]/g, '').replace(/^[\u0001- ]+/, '').toLowerCase()
-  if (/^(?:file|javascript|vbscript):/.test(scheme)) return false
-  return !scheme.startsWith('data:') || /^data:image\/(?:gif|jpeg|png|webp)/.test(scheme)
+  return !url.includes('\0')
 }
 
 function carriedBlock(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
