@@ -801,18 +801,14 @@ carry's two-space JSON, which indents every value its depth over, stops at the b
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
 
-## A URL a browser would run is carried, never written
+## HTML writes a URL as the ADF holds it, whatever its scheme
 
-2026-10-23, written with `adfToHtml`, for the maintainer's review. Goals 1 and 6: an export tool's
-HTML runs no script. Valid while a consumer may show the HTML in a browser without sanitizing it.
+2026-10-23, the maintainer. Goal 1. Valid until `todo.md` item 142 weighs the alternatives.
 
-`adfToHtml` writes no `href` or `src` a browser would run as script or read as a local file: the
-link's text or the image rides the carry element, whose `data-adf` no browser follows, so nothing
-is lost. The list is cmark's, the CommonMark reference implementation's, which leaves these URLs
-out of its HTML by default: `javascript:`, `vbscript:`, `file:`, and `data:` other than a PNG, GIF,
-JPEG or WebP image, any case. A browser drops tabs and line breaks anywhere in a URL, and leading
-control characters and spaces, before it reads the scheme (the WHATWG URL standard), so the check
-reads the URL so too: a tab inside `javascript:` still runs.
+`adfToHtml` writes a link's `href` and an image's `src` exactly as the ADF holds them, escaped as
+every attribute value is, `javascript:`, `vbscript:`, `file:` and `data:` included. Carrying such a
+link or image in the carry element, as cmark's default leaves these URLs out of its HTML, was
+proposed and not taken: item 142 weighs that against writing the URL.
 
 ## Nothing recurses unbounded
 

@@ -41,7 +41,9 @@ marks are two `<a>` elements.
 
 Text and attribute values escape `&`, `<`, `>` and `"` as `&amp;`, `&lt;`, `&gt;` and `&quot;`,
 and a carriage return as `&#13;`, which an HTML parser would otherwise read as a line feed.
-Attribute values are double-quoted.
+Attribute values are double-quoted. A link's `href` and an image's `src` are the URL as the ADF
+holds it, whatever its scheme (`docs/decisions.md` §HTML writes a URL as the ADF holds it, whatever
+its scheme).
 
 ## The carry element
 
@@ -58,18 +60,15 @@ the node's text.
   included. A document holding no `content` key is the block carry of `{"type":"doc","version":1}`.
 - The text shown is every text node's text below the node, and what a node holding no text shows
   in its place: a mention's text, else `@` and its id; an emoji's text, else its `shortName`; a
-  status's text; a date as `2026-09-13` in UTC; a card's URL, else its name, else the URL its data holds; media's `alt`, else an
-  external one's URL; an extension's text; an expand's title. A line feed parts two blocks and
-  stands for a hard break. Null characters are dropped.
+  status's text; a date as `2026-09-13` in UTC; a card's URL, else its name, else the URL its data
+  holds; media's `alt`, else an external one's URL; an extension's text; an expand's title. A line
+  feed parts two blocks and stands for a hard break. Null characters are dropped.
 - A node rides the carry where it holds an attribute, mark or key its element does not write, an
   empty `attrs`, `content` or `marks`, or a value its element cannot hold:
   - text holding no character, or a null character, which HTML cannot hold; text holding a mark
     twice, or a mark with attributes besides a link's `href` and `title`;
   - an unmarked text node straight after another, which would read back as one;
-  - a link or an image whose URL a browser would run or read as a file: a `javascript:`,
-    `vbscript:` or `file:` URL, or `data:` other than a PNG, GIF, JPEG or WebP image, read after
-    dropping tabs and line breaks and a leading control character or space (`docs/decisions.md`
-    §A URL a browser would run is carried, never written);
+  - a link or an image whose URL holds a null character;
   - a code block holding more than one text node, a marked one, or a language holding whitespace;
   - a list holding a node that is no `listItem`, or an item holding attributes or marks: the whole
     list rides the carry;

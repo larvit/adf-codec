@@ -469,8 +469,8 @@ ships. The complete dialect:
 - Text and attribute values are escaped: `&`, `<`, `>`, `"` and a carriage return.
 - The carry element shows a mention, status or emoji by its text, a date as `2026-09-13` in UTC, a
   card by its URL, an image by its `alt`, else its URL, and an expand by its title.
-- A link or image whose URL a browser would run or read as a file, such as `javascript:`, rides
-  the carry element, so the HTML follows no such URL.
+- A link's or image's URL is written as the ADF holds it, `javascript:` included: sanitize the
+  HTML before showing a document from an author you do not trust.
 
 ## The errors
 
