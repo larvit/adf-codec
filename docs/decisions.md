@@ -968,7 +968,8 @@ spelling the emitter refuses gives its own error rather than a second name for i
 is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
 
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `parse/` and `emit/` from
-importing `markdown/portable/`, and keeps `markdown/directive/` from importing `emit/` or `parse/`,
-as `no-restricted-imports` overrides. They are lint rules because the technical principles refuse a
+importing `markdown/portable/`, keeps `markdown/directive/` from importing `emit/` or `parse/`,
+keeps `markdown/` and `html/` from importing each other, and keeps `adf/` from importing either, as
+`no-restricted-imports` overrides. They are lint rules because the technical principles refuse a
 test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
 double quotes and a dynamic `import()`.

@@ -49,7 +49,9 @@ its scheme).
 
 A node the sections above cannot write where it stands is the carry element: `<div>` in block
 position, `<span>` inline, of class `adf-carry`, holding the node's JSON in `data-adf` and showing
-the node's text.
+the node's text. A carry element may hold a node the sections above write, as the markdown carry
+may: it reads back as the node it holds, so HTML stored while a node rode the carry reads the same
+once a later release writes it as its own element.
 
 ```html
 <div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;panelType&quot;:&quot;info&quot;},…,&quot;type&quot;:&quot;panel&quot;}">Check the collation.</div>
@@ -68,8 +70,10 @@ the node's text.
   - text holding no character, or a null character, which HTML cannot hold; text holding a mark
     twice, or a mark with attributes besides a link's `href` and `title`;
   - an unmarked text node straight after another, which would read back as one;
-  - a link or an image whose URL holds a null character;
-  - a code block holding more than one text node, a marked one, or a language holding whitespace;
+  - a link whose `href` or `title` holds a null character, and an image whose `url` or `alt` holds
+    one or whose link's `href` or `title` does;
+  - a code block holding more than one text node, a marked one, or a language holding whitespace
+    or a null character;
   - a list holding a node that is no `listItem`, or an item holding attributes or marks: the whole
     list rides the carry;
   - a `listItem` outside a list, an inline node in block position and a block node inline.

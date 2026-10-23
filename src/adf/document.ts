@@ -1,6 +1,7 @@
-import type { ConvertFault } from '../result.ts'
+import { failure, faulted, success, type ConvertFault, type Result } from '../result.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { longestOutput, tooLong } from '../length-bound.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
@@ -46,6 +47,16 @@ export function adfDocumentFault(value: unknown): ConvertFault | undefined {
   if (holdsItself(content)) return notADocument('an ADF document is a tree: an object in it holds itself')
   if (!isNodeArray(content)) return notADocument("an ADF document's content holds ADF nodes: one of them is not")
   return nestingFault(content)
+}
+
+// The checks every writer opens with; `undefined` where the document holds no `content` key, which each format spells its own way.
+export function writableContent(document: AdfDocument): Result<readonly AdfNode[] | undefined> {
+  const fault = adfDocumentFault(document)
+  if (fault !== undefined) return faulted(fault, [])
+  if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
+  if (document.content === undefined) return success(undefined)
+  // Every character of text is written at least once, so this much text cannot fit, and none of it is written.
+  return heldTextLength(document.content) > longestOutput ? tooLong() : success(document.content)
 }
 
 export function attributeNestingMessage(key: string, type: string): string {

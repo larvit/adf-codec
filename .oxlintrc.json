@@ -4,21 +4,39 @@
   "ignorePatterns": ["src/**/*.test.ts", "src/conformance/property-harness.ts"],
   "overrides": [
     {
+      "files": ["src/adf/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/markdown/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
+      "files": ["src/html/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/markdown/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
+      "files": ["src/markdown/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
       "files": ["src/markdown/directive/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/parse/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/html/**", "**/parse/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     },
     {
       "files": ["src/markdown/emit/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     },
     {
       "files": ["src/markdown/parse/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "!../emit/spelling-questions.ts", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "!../emit/spelling-questions.ts", "**/html/**", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     }
   ],

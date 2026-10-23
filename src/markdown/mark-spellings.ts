@@ -7,7 +7,7 @@ import { escapeUnbalanced, spellLinkTarget } from './commonmark/link-syntax.ts'
 import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './directive/syntax.ts'
 import { holdsEntityReference } from './commonmark/entity-references.ts'
 import { isAutolink } from './commonmark/grammar.ts'
-import { isMarkType, linkTarget, linkTargetMark, markAttributes, type LinkTarget } from '../adf/mark-attributes.ts'
+import { isMarkType, linkAttrs, linkMarkFrom, markAttributes, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { spellEmptyKeys } from './directive/empty-keys.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
@@ -38,19 +38,19 @@ export function markSpelling(type: string): MarkSpelling | undefined {
 }
 
 export function linkMark(definition: LinkDefinition): AdfMark {
-  return linkTargetMark(definitionTarget(definition))
+  return linkMarkFrom(definitionAttrs(definition))
 }
 
-export function definitionTarget({ destination, title }: LinkDefinition): LinkTarget {
+export function definitionAttrs({ destination, title }: LinkDefinition): LinkAttrs {
   return title === undefined ? { href: destination } : { href: destination, title }
 }
 
 export function linkDefinition(attrs: AdfAttributes): LinkDefinition | undefined {
-  const target = linkTarget(attrs)
-  return target === undefined ? undefined : targetDefinition(target)
+  const target = linkAttrs(attrs)
+  return target === undefined ? undefined : attrsDefinition(target)
 }
 
-export function targetDefinition({ href, title }: LinkTarget): LinkDefinition {
+export function attrsDefinition({ href, title }: LinkAttrs): LinkDefinition {
   return title === undefined ? { destination: href } : { destination: href, title }
 }
 
