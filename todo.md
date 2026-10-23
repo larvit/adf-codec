@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 140`
+`Next ID = 141`
 
 ## Items
 
@@ -18,14 +18,14 @@
 | 133 | 0.3.0 | 131 |  | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
+| 140 | 0.4.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
-| 129 | 0.4.0 |  | defect | **Read emphasis and link brackets in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 4 | 9 by 3 | 13.1 |
 | 95 | 0.4.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 33 | 0.4.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.4.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 115 | 0.4.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.4.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.4.0 | 33, 91, 95, 109, 115, 125, 129 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.4.0 | 33, 91, 95, 109, 115, 125, 140 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -109,6 +109,15 @@ on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `
 `src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
 `spec/flavour.md` or `docs/decisions.md`, never from the code.
 
+### 140. Read an inline link's target in time linear in the inline markdown, in every reader.
+
+`'[a](b'.repeat(n)` reads in time quadratic in n: each `](` after an open bracket reads its
+destination to the end of the line through `readDestination` (`src/markdown/commonmark/link-syntax.ts`),
+finds no `)` and fails. `skipLinkWhitespace` also copies the rest of the text on every call.
+`losslessMarkdownToAdf` takes 1.6 s at n = 4000 and 25 s at n = 16 000 on Node 24, 4× per doubling.
+cmark's pathological tests name the shape "unclosed links B". Found while shipping item 129,
+2026-10-23.
+
 ### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
 
 `blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
@@ -116,21 +125,6 @@ whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fen
 type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
 where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
 and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
-
-### 129. Read emphasis and link brackets in time linear in the inline markdown, in every reader.
-
-The inline reader in `src/markdown/parse/inline-content.ts` is quadratic in two shapes, counted in
-operations (§Cost fixes are measured, never timed), 4× per doubling: about 255 000, 1 010 000 and
-4 020 000 at n = 500, 1000 and 2000.
-
-- `markPairings`, called through `markedNodes`, re-marks every piece each emphasis pairing spans:
-  `'*'.repeat(n) + '[b a](/v)'.repeat(n) + '*'.repeat(n)`. Pair by range instead, outermost
-  pairing first, marking each piece once.
-- `lastBracket`, called by `closeBracket`, walks back over the pieces each literal bracket leaves:
-  `'['.repeat(n) + '[b a](/v)' + '](/w)'.repeat(n)`. Drop a bracket from the search once it goes
-  literal, as CommonMark's bracket stack does.
-
-The seats found `closeBracket` and `resolveNodes` hard to read; leave both easier to read.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
@@ -351,8 +345,8 @@ agree. Found by the technical-principles audit, 2026-10-04.
 Technical principle "One owner per value": the `Walk` record passes through functions that mutate it
 and return `void`; `walk.leaf` alone is written in seven places, and `openedList` reads the
 `endedLists` that `closeLeaf` fills. `ContainerStack` in the same file shows the shape to follow. `inline-content.ts`'s `Scan` has the same shape: about fifteen
-functions write `pending`, `pieces`, `deactivatedBefore` and `openingSpellableLink` and return
-`void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
+functions write `pending`, `pieces`, `brackets`, `linkOpenersFrom` and `openingSpellableLink` on the `Scan`
+they are handed, most of them returning `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
 `mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
 `writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the

@@ -78,7 +78,7 @@ type Scan = {
   definitions: LinkDefinitions
   // Whether this content is an `!adf:link`'s text, where an image reads as its plain alt text.
   inLink: boolean
-  // A link opener deeper in `brackets` than this is active; one below it stood open while a link closed, and no link holds another.
+  // A link opener at this index of `brackets` or above is active; one below it stood open while a link closed, and no link holds another.
   linkOpenersFrom: number
   openingSpellableLink: boolean
   path: ConvertErrorPath
@@ -386,23 +386,22 @@ function linkedText(text: string, scheme: string): AdfNode {
 function closeBracket(scan: Scan, index: number): Result<number> {
   flush(scan, false)
   const open = popBracket(scan)
-  const target = open?.active === true ? resolveTarget(scan, open.start, index) : undefined
-  if (open === undefined || target === undefined) return success(literalClose(scan, index))
+  if (open === undefined) return success(literalClose(scan, index))
+  const target = open.active ? resolveTarget(scan, open.start, index) : undefined
+  if (target === undefined) return success(unopened(scan, open, index))
   const inner = scan.pieces.slice(open.index + 1)
+  // A link closing, or one inside these brackets, leaves every link opener still open literal.
+  if (!open.image) scan.linkOpenersFrom = scan.brackets.length
   // Ahead of the own-marks guard in `linkPieces`: brackets going literal put the carry inside no mark for it to refuse.
-  if (!open.image && holdsLink(inner)) {
-    scan.linkOpenersFrom = scan.brackets.length
-    return success(literalClose(scan, index))
-  }
+  if (!open.image && holdsLink(inner)) return success(unopened(scan, open, index))
   const closed = open.image ? imagePieces(scan, inner, target.definition) : linkPieces(scan, inner, target.definition)
   if (!closed.ok) return closed
-  if (!open.image) scan.linkOpenersFrom = scan.brackets.length
   scan.pieces.length = open.index
   for (const piece of closed.value) scan.pieces.push(piece)
   return success(index + 1 + target.length)
 }
 
-// Every close takes the innermost bracket off the stack, whether it closes a link, an image or nothing; its piece reads as literal text unless the close replaces it.
+// Every close takes the innermost bracket off the stack, whether it closes a link, an image or nothing.
 function popBracket(scan: Scan): (OpenBracket & { active: boolean }) | undefined {
   const open = scan.brackets.pop()
   if (open === undefined) return undefined
@@ -416,7 +415,12 @@ function literalClose(scan: Scan, index: number): number {
   return index + 1
 }
 
-function bracketNodes(bracket: Bracket): AdfNode[] {
+function unopened(scan: Scan, open: OpenBracket, index: number): number {
+  scan.pieces[open.index] = { kind: 'nodes', nodes: bracketNodes(open) }
+  return literalClose(scan, index)
+}
+
+function bracketNodes(bracket: Bracket | OpenBracket): AdfNode[] {
   return [{ text: bracket.image ? '![' : '[', type: 'text' }]
 }
 
@@ -427,6 +431,8 @@ function resolveTarget(scan: Scan, start: number, index: number): { definition: 
     if (inline !== undefined) return { definition: inline.definition, length: inline.length }
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
+  // CommonMark: a label holds at most 999 characters, so longer link text names no definition.
+  if (label === undefined && index - start > 999) return undefined
   const name = label === undefined || label.value === '' ? scan.source.slice(start, index) : label.value
   const definition = scan.definitions.get(normalizeLabel(name))
   if (definition === undefined) return undefined
@@ -546,15 +552,9 @@ function writeUnpaired(nodes: Inline[][], runs: readonly Run[], pairings: readon
   }
 }
 
-// Pairings nest and come innermost first, so one walk holding the open ones on a stack marks each piece once.
-// A type takes its place from the innermost pairing of it, and the marks array runs outermost first (spec/flavour.md, Marks).
+// Pairings nest, so one walk holding the open ones on a stack marks each piece once, the marks outermost first (spec/flavour.md, Marks).
 function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: readonly Pairing[]): boolean {
-  const opening = new Map<number, Pairing[]>()
-  for (const pairing of pairings) {
-    const opened = opening.get(pairing.opener.index)
-    if (opened === undefined) opening.set(pairing.opener.index, [pairing])
-    else opened.push(pairing)
-  }
+  const opening = pairingsByOpener(pairings)
   const open: { closer: number; marks: AdfMark[] }[] = []
   for (const [index, piece] of pieces.entries()) {
     while (open.at(-1)?.closer === index) open.pop()
@@ -563,13 +563,26 @@ function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: rea
       if (piece.kind === 'ownMarks') return false
       nodes[index] = marks.reduceRight((marked, mark) => applyMark(marked, mark), nodes[index] ?? [])
     }
-    for (const pairing of [...(opening.get(index) ?? [])].reverse()) {
+    for (const pairing of opening.get(index) ?? []) {
       const type = markType(pairing.opener.character, pairing.used)
-      const outer = open.at(-1)?.marks ?? []
-      open.push({ closer: pairing.closer.index, marks: [...outer.filter((mark) => mark.type !== type), { type }] })
+      // A type takes its place from the innermost pairing of it.
+      const outer = open.at(-1)?.marks.filter((mark) => mark.type !== type) ?? []
+      open.push({ closer: pairing.closer.index, marks: [...outer, { type }] })
     }
   }
   return true
+}
+
+// `matchEmphasis` lists a run's pairings innermost first, so each list here is reversed to stack the outermost first.
+function pairingsByOpener(pairings: readonly Pairing[]): Map<number, Pairing[]> {
+  const opening = new Map<number, Pairing[]>()
+  for (const pairing of pairings) {
+    const opened = opening.get(pairing.opener.index)
+    if (opened === undefined) opening.set(pairing.opener.index, [pairing])
+    else opened.push(pairing)
+  }
+  for (const opened of opening.values()) opened.reverse()
+  return opening
 }
 
 function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][]): HighlightDelimiter[] {
@@ -603,7 +616,10 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]):
     if (!opener.opens || opener.position < resume) continue
     const earliest = opener.position + highlightDelimiter.length + 1
     let candidate = found[closer]
-    while (candidate !== undefined && (!candidate.closes || candidate.position < earliest)) candidate = found[(closer += 1)]
+    while (candidate !== undefined && (!candidate.closes || candidate.position < earliest)) {
+      closer += 1
+      candidate = found[closer]
+    }
     if (candidate === undefined) break
     if (candidate.stretch !== opener.stretch || !identicalMarks(nodeMarks(opener.holder), nodeMarks(candidate.holder))) continue
     paired.push({ closer: candidate.index, opener: opener.index })
