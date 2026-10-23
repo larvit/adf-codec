@@ -6,15 +6,17 @@
 
 `Bar = 0.1`
 
-`Next ID = 130`
+`Next ID = 140`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 125 | 0.3.0 |  |  | **Anchor each level of L, E and I in `docs/score-anchors.md` with two or three shipped items.** | 3 | 2 | 3 | 6 | 4 | code health by 2 | 8.7 |
-| 6 | 0.3.0 |  | decision | **Specify the HTML dialect.** | 3 | 2 | 1 | 4 | 6 |  | 0.0 |
-| 7 | 0.3.0 | 6 | decision | **Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.** | 4 | 2 | 2 | 6 | 9 | 3 by 6 | 0.3 |
+| 130 | 0.3.0 |  |  | **Ship `adfToHtml`, writing paragraphs, headings, lists, quotes, code blocks, rules, hard breaks, external images and the marks CommonMark spells as semantic HTML, and every other node as a carry element showing its text.** | 3 | 2 | 2 | 5 | 6 | 3 by 6 | 2.1 |
+| 131 | 0.3.0 | 130 |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
+| 133 | 0.3.0 | 131 |  | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
+| 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 129 | 0.4.0 |  | defect | **Read emphasis and link brackets in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 4 | 9 by 3 | 13.1 |
@@ -30,11 +32,14 @@
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
-| 46 | 0.4.0 | 7 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
+| 135 | 0.4.0 | 131 |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
+| 136 | 0.4.0 | 131 |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
+| 134 | 0.4.0 | 131 |  | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.8 |
+| 46 | 0.4.0 | 134, 135, 136 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
-| 72 | 0.4.0 | 6, 7, 45, 46, 51, 68, 75, 77, 80, 81, 107, 112 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 72 | 0.4.0 | 45, 46, 51, 68, 75, 77, 80, 81, 107, 112, 134, 135, 136 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 26.2 |
 | 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -48,6 +53,9 @@
 | 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 1.5 |
 | 74 | 0.5.0 |  | owner | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 3 | 2 | 4 | 7 | 4 |  | 0.0 |
 | 8 | 0.6.0 |  | owner | **Ship a CLI.** | 3 | 2 | 1 | 4 | 7 |  | 0.0 |
+| 139 | 0.7.0 | 131 | decision | **Ship the calls between markdown and HTML, composed through ADF and each named by its flavour.** | 2 | 1 | 2 | 3 | 4 | 3 by 3 | 3.2 |
+| 137 | 0.7.0 | 131 | decision | **Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
+| 138 | 0.7.0 | 137 |  | **Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.** | 3 | 1 | 3 | 5 | 5 | 4 by 4 | 2.5 |
 
 ## Renamed
 
@@ -63,23 +71,35 @@ L anchors need `score-outcomes` first. The maintainer's script, kept outside thi
 commits, and this repo merges by rebase, which leaves none. Change the script in its own repo, as
 AGENTS.md §7 says. Until then, judge each L by its words.
 
-### 6. Specify the HTML dialect.
+### 130. Ship `adfToHtml`, writing paragraphs, headings, lists, quotes, code blocks, rules, hard breaks, external images and the marks CommonMark spells as semantic HTML, and every other node as a carry element showing its text.
 
-Element-by-element mapping, the `data-*` fidelity scheme, the opaque-carry form, and the documented
-foreign-element set `htmlToAdf` accepts — the set the markdown readers share (`spec/flavour.md` §Raw
-HTML in input). The set sorts per `docs/decisions.md` §Foreign HTML sorts three ways.
-
-### 7. Ship HTML: `adfToHtml`, `htmlToAdf`, and markdown to and from HTML composed through ADF, each call named by its flavour.
-
-Which flavours get a composed call is this item's to settle; the
-CommonMark spec suite also runs against the one reading CommonMark. The README documents HTML as it
-documents markdown, its comparison table names HTML, and its tagline and `package.json`'s
-description and keywords name HTML again. `htmlToAdf` refuses a value that is not a string as
-`not-a-string` (`docs/decisions.md` §Which code a cause takes).
+The first, limited HTML: the dialect (`docs/decisions.md` §The HTML dialect) specified for this set,
+and a writer panel picking its spellings. A code block is `<pre><code>`, its language a class. Every
+other node is a carry element holding the node's JSON in a `data-*` attribute and showing the node's
+text, so an HTML reader loses no content (goal 7). The README documents HTML as it documents
+markdown, its comparison table names HTML, and its tagline and `package.json`'s description and
+keywords name HTML.
 
 Whatever `html/` shares with the carry (`opaque-carry.ts`) or the mark spellings
 (`mark-spellings.ts`) splits: the ADF question moves to `adf/`, and each format keeps its own
-spelling. Where a composed call naming a markdown `Flavour` sits is this item's to settle.
+spelling.
+
+### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
+
+A hand-written HTML tokenizer, linear in the input, its nesting bounded (`docs/decisions.md`
+§Nothing recurses unbounded). A carry element reads from its `data-*` attribute; the text it shows
+is ignored. A property checks that `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. `htmlToAdf`
+refuses a value that is not a string as `not-a-string` (`docs/decisions.md` §Which code a cause
+takes).
+
+### 133. Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+A writer panel picks the elements, classes and `data-*` attributes.
+
+### 132. Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+Header cells as `<th>`; a cell's span, width and background in HTML attributes or `data-*`, as a
+writer panel picks.
 
 ### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
 
@@ -222,9 +242,22 @@ document's whole tree. Give the node's path, and name its type and the attribute
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
 
+### 135. Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+A writer panel picks the spellings; an external image already has one from item 130.
+
+### 136. Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+A writer panel picks the spellings.
+
+### 134. Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+An expand is `<details><summary>`, as `htmlToAdf` reads it (`docs/decisions.md` §Foreign HTML sorts
+three ways). A writer panel picks the rest.
+
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
-Item 7 changes the size. The quantity is what a consumer downloads and loads: the
+The HTML items change the size. The quantity is what a consumer downloads and loads: the
 tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minified + gzipped — the
 figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
 ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
@@ -370,3 +403,18 @@ the release path.
 Its Moves cell is empty: no README goal or persona covers a CLI yet. The chunk
 proposes both (the maintainer, 2026-10-02), and they land in the README's `## Goals` and `##
 Audience` with the CLI.
+
+### 139. Ship the calls between markdown and HTML, composed through ADF and each named by its flavour.
+
+Waits until a consumer needs it. Which flavours get a composed call is this item's to settle; the
+CommonMark spec suite runs against the one reading CommonMark, checked against the spec's expected
+HTML. Where a composed call naming a markdown `Flavour` sits is this item's to settle.
+
+### 137. Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.
+
+Waits until a consumer needs `htmlToAdf` to read HTML that `adfToHtml` did not write.
+
+### 138. Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.
+
+Waits until a consumer needs it. The change touches `inline-content.ts` and `markdown-to-adf.ts`,
+places the comprehension seats found hard; leave each place it touches easier to read.
