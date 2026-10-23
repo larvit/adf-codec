@@ -1,23 +1,44 @@
-// An HTML parser reads a null character as U+FFFD, so each function here refuses or drops one, and the writer escapes through nothing else.
+import type { LinkAttrs } from '../../adf/mark-attributes.ts'
 
-// `undefined` where the value holds a null character, so its node rides the carry element.
-export function htmlValue(value: string): string | undefined {
-  return value.includes('\0') ? undefined : escapeHtml(value)
+// What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): a control other than ASCII whitespace or a carriage return, which a parser reads as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
+const unwritable = /(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u
+const unwritables = new RegExp(unwritable.source, 'gu')
+
+export function anchorOpener({ href, title }: LinkAttrs): string | undefined {
+  const url = writableValue(href)
+  const titled = optionalAttribute('title', title)
+  return url === undefined || titled === undefined ? undefined : `<a href="${url}"${titled}>`
 }
 
-// ` name="value"`, `''` where the value is undefined, `undefined` where it holds a null character.
+// The carry's JSON, which spells each character HTML cannot hold as a JSON escape reading back to the same string.
+export function jsonValue(json: string): string {
+  return escapeHtml(json.replace(unwritables, (character) => jsonEscape(character)))
+}
+
+// ` name="value"`, `''` where the value is undefined, `undefined` where HTML cannot hold it.
 export function optionalAttribute(name: string, value: string | undefined): string | undefined {
   if (value === undefined) return ''
-  const escaped = htmlValue(value)
+  const escaped = writableValue(value)
   return escaped === undefined ? undefined : ` ${name}="${escaped}"`
 }
 
-// What the carry element holds: its JSON spells a null character `\u0000`, and the text it shows drops one.
-export function carriedValue(value: string): string {
-  return escapeHtml(value.replaceAll('\0', ''))
+// The text a carry element shows, dropping what HTML cannot hold, each line feed a line break.
+export function shownValue(value: string): string {
+  return escapeHtml(value.replace(unwritables, '')).replaceAll('\n', '<br>')
 }
 
-// A carriage return is a character reference, since an HTML parser reads a raw one as a line feed.
+// `undefined` where HTML cannot hold the value, so its node rides the carry element.
+export function writableValue(value: string): string | undefined {
+  return unwritable.test(value) ? undefined : escapeHtml(value)
+}
+
 function escapeHtml(text: string): string {
-  return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll('\r', '&#13;')
+  return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
+}
+
+// An astral noncharacter spells as its two surrogates' escapes.
+function jsonEscape(character: string): string {
+  let escaped = ''
+  for (let index = 0; index < character.length; index += 1) escaped += `\\u${character.charCodeAt(index).toString(16).padStart(4, '0')}`
+  return escaped
 }

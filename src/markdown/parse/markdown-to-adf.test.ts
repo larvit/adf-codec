@@ -362,10 +362,9 @@ test('refuses the directive form of a blockquote opening with a code span', () =
 // The input is some 1000 characters short of V8's longest string; the `> ` the quote adds to each of its 600 lines passes it. Reading this much outlasts Bun's 5 s default timeout.
 test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s longest string', { timeout: 120_000 }, () => {
   const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
-  assert.equal(
-    content(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`)),
-    'unsupported-node-shape: the markdown or HTML for this document, or a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes',
-  )
+  const refused = losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`)
+  assert.equal(code(refused), 'unsupported-node-shape')
+  assert.equal(refused.ok ? '' : refused.error.message.includes('536870888'), true)
 })
 
 test('names the directive name no node reads back to', () => {

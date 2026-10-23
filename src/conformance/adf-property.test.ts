@@ -12,6 +12,19 @@ import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to
 import { toEditorNormal } from '../markdown/portable/editor-normal.ts'
 
 const gateRuns = 1600
+// What HTML text cannot hold (WHATWG HTML §13.1.3), and the line feed a carry element shows as a line break.
+const unshown = /\n|(?![\t\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/gu
+
+// Every text node's text in document order.
+function documentTexts(nodes: readonly AdfNode[]): string[] {
+  const texts: string[] = []
+  const pending = [...nodes].reverse()
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node.text !== undefined) texts.push(node.text)
+    for (const child of [...(node.content ?? [])].reverse()) pending.push(child)
+  }
+  return texts
+}
 
 // Each block's text, an expand's title and an image's alt and url, in document order: what the portable pair keeps.
 function shownText(nodes: readonly AdfNode[]): string[] {
@@ -56,12 +69,20 @@ test('a generated document writes portable markdown refusing only what the guard
   )
 })
 
-test('a generated document writes HTML holding no null character', { timeout: propertyTimeout }, () => {
+test('a generated document writes HTML holding no character HTML cannot hold, and showing every text node\'s text in document order', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
       const written = adfToHtml(document)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
-      assert.ok(!written.value.includes('\0'), `writing ${JSON.stringify(document)}`)
+      assert.ok(!/(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u.test(written.value), `writing ${JSON.stringify(document)}`)
+      const page = written.value.replace(/<[^>]*>/g, '').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&amp;', '&').replace(unshown, '')
+      let from = 0
+      for (const text of documentTexts(document.content ?? [])) {
+        const shown = text.replace(unshown, '')
+        const at = page.indexOf(shown, from)
+        assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
+        from = at + shown.length
+      }
     }),
     propertyRuns(gateRuns),
   )

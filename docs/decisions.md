@@ -405,6 +405,13 @@ bare `<img>`, a list item's first paragraph bare, `<li>Bolt</li>`, over `<li><p>
 picked `data-adf` 6 of 7 over `data-adf-node`. Four of them wanted the class `adf-carry` and three
 no class; this entry's stable `adf-*` classes settle it.
 
+A second panel of the same three roles picked, 3 of 3: an attribute the element cannot express as
+`data-local-id` over `data-adf-local-id` and `id`, since Atlassian's editor puts a `localId` on every
+block and a block carried for it would show no element at all; inside a carry element a link as
+`<a>` over `text (url)` and over its text alone, a carried node's blocks as `<p>` over `<br>` and a
+line feed, and media it cannot show as `<em>(image)</em>` over `<em>(image not shown)</em>` and
+nothing.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each
@@ -970,6 +977,7 @@ is the only import `parse/` takes from `emit/`, through `emit/spelling-questions
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `parse/` and `emit/` from
 importing `markdown/portable/`, keeps `markdown/directive/` from importing `emit/` or `parse/`,
 keeps `markdown/` and `html/` from importing each other, and keeps `adf/` from importing either, as
-`no-restricted-imports` overrides. They are lint rules because the technical principles refuse a
+`no-restricted-imports` overrides. A later override replaces an earlier one's rule, so each
+`markdown/` subdirectory's override repeats the ban on `html/`, and `ci.sh` probes every override. They are lint rules because the technical principles refuse a
 test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
 double quotes and a dynamic `import()`.

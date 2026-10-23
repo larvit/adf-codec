@@ -15,7 +15,7 @@ const pastEngineLimit = [
 ]
 
 export function tooLong<T>(): Result<T> {
-  return failure('unsupported-node-shape', `the markdown or HTML for this document, or a directive's plain CommonMark, would be longer than ${longestOutput} characters, the longest this library writes`, [])
+  return failure('unsupported-node-shape', `this conversion would build text longer than ${longestOutput} characters, the longest this library writes`, [])
 }
 
 export function withinLongest(text: string): Result<string> {

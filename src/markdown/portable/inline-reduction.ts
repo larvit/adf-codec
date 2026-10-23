@@ -1,14 +1,13 @@
-import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
-import { blockNodeModel } from '../../adf/block-nodes.ts'
-import { cardUrl, shownText, visibleText } from '../../adf/shown-text.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { imageAside } from '../image-aside.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { partsShownText, referenceName, shownText, shownUrl, visibleText } from '../../adf/shown-text.ts'
 import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
@@ -23,10 +22,6 @@ export function reduceInline(nodes: readonly AdfNode[], container: LineContainer
   return spellableLine(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))), container, path)
 }
 
-export function isBlockNodeType(type: string): boolean {
-  return blockNodeModel(type) !== undefined || type === 'blockCard' || type === 'embedCard'
-}
-
 export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   const leaves: AdfNode[] = []
@@ -35,7 +30,7 @@ export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer
     const held = nodeLeaves(node, container, [...path, 'content', index], depth)
     if (!held.ok) return held
     if (held.value.length === 0) continue
-    const block = isBlockNodeType(node.type) && node.type !== 'media'
+    const block = partsShownText(node.type)
     if (leaves.length > 0 && (joinsNext || block)) leaves.push(textLeaf(' ', []))
     joinsNext = block
     for (const leaf of held.value) leaves.push(leaf)
@@ -45,14 +40,12 @@ export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer
 
 function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const marks = nodeMarks(node)
-  const attrs = nodeAttrs(node)
   if (node.type === 'text') return success(textLeaves(node.text, marks, container))
   if (node.type === 'hardBreak') return success([lineBreak(container)])
   if (['date', 'emoji', 'mention', 'status'].includes(node.type)) return success(textLeaves(shownText(node), marks, container))
   if (node.type === 'placeholder') return success([])
-  if (['extension', 'inlineExtension'].includes(node.type)) return success(textLeaves(shownText(node), marks, container, noteName(attrs['extensionKey']) ?? 'extension'))
-  if (node.type === 'syncBlock') return success(noteLeaves('synced block'))
-  if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(attrs, marks, container))
+  if (['extension', 'inlineExtension', 'syncBlock'].includes(node.type)) return success(textLeaves(shownText(node), marks, container, referenceName(node)))
+  if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(node, marks, container))
   if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(node, marks, container))
   const own = textLeaves(node.text ?? shownText(node), marks, container)
   const held = inlineLeaves(nodeContent(node), container, path, depth + 1)
@@ -61,8 +54,8 @@ function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorP
 }
 
 function cardLeaves(card: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  const href = cardUrl(card)
-  if (href === undefined) return textLeaves(shownText(card), marks, container, 'link card')
+  const href = shownUrl(card)
+  if (href === undefined) return textLeaves(shownText(card), marks, container, referenceName(card))
   return linkedLeaves(shownText(card) ?? href, href, marks, container)
 }
 
@@ -71,10 +64,10 @@ function linkedLeaves(text: string, href: string, marks: readonly AdfMark[], con
 }
 
 // An image standing inline is a link to it: the reader builds no node for an inline image, reading it as its alt text linked, and inside a link as the link's text, then (image).
-function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  const alt = visibleText(attrs['alt'])
-  const url = visibleText(attrs['url'])
-  if (attrs['type'] !== 'external' || url === undefined) return textLeaves(alt, marks, container, 'image')
+function mediaLeaves(media: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+  const alt = visibleText(nodeAttrs(media)['alt'])
+  const url = shownUrl(media)
+  if (url === undefined) return textLeaves(alt, marks, container, referenceName(media))
   const link = marks.find((mark) => mark.type === 'link')
   const href = link === undefined ? undefined : nodeAttrs(link)['href']
   if (typeof href !== 'string') return linkedLeaves(alt ?? url, url, marks, container)
@@ -84,14 +77,6 @@ function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], 
 
 function noteLeaves(name: string): AdfNode[] {
   return [textLeaf(`(${name} not included)`, [{ type: 'em' }])]
-}
-
-function noteName(value: unknown): string | undefined {
-  return visibleText(value) === undefined ? undefined : oneLine(String(value)).trim()
-}
-
-export function oneLine(text: string): string {
-  return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
 }
 
 function lineBreak(container: LineContainer): AdfNode {

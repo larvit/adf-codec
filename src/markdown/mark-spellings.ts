@@ -38,19 +38,19 @@ export function markSpelling(type: string): MarkSpelling | undefined {
 }
 
 export function linkMark(definition: LinkDefinition): AdfMark {
-  return linkMarkFrom(definitionAttrs(definition))
+  return linkMarkFrom(toLinkAttrs(definition))
 }
 
-export function definitionAttrs({ destination, title }: LinkDefinition): LinkAttrs {
+export function toLinkAttrs({ destination, title }: LinkDefinition): LinkAttrs {
   return title === undefined ? { href: destination } : { href: destination, title }
 }
 
 export function linkDefinition(attrs: AdfAttributes): LinkDefinition | undefined {
   const target = linkAttrs(attrs)
-  return target === undefined ? undefined : attrsDefinition(target)
+  return target === undefined ? undefined : toLinkDefinition(target)
 }
 
-export function attrsDefinition({ href, title }: LinkAttrs): LinkDefinition {
+export function toLinkDefinition({ href, title }: LinkAttrs): LinkDefinition {
   return title === undefined ? { destination: href } : { destination: href, title }
 }
 
