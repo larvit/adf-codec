@@ -3,8 +3,8 @@
 ## Unreleased
 
 - `adfToHtml` writes ADF as HTML: paragraphs, headings, lists, quotes, code blocks, rules, hard
-  breaks, a centered external image holding no attribute but its URL and alt, and `em`, `strong`,
-  `code` and links as their elements. A paragraph, heading, quote, list, list item, code block or
+  breaks, a centered, uncaptioned external image holding no attribute but its URL and alt, and `em`,
+  `strong`, `code` and links as their elements. A paragraph, heading, quote, list, list item, code block or
   rule writes its other attributes as `data-*` attributes, `localId` as `data-local-id`. Every other
   node is an element of class `adf-carry` holding the node's JSON in `data-adf` and showing its
   content, links included. Every URL is written as the ADF holds it,

@@ -1,10 +1,10 @@
 import type { AdfNode } from '../../adf/document.ts'
+import type { LinkAttrs } from '../../adf/mark-attributes.ts'
 import { anchorOpener, jsonValue, languageClass, shownValue } from './escaping.ts'
 import { carriedJson } from '../../adf/carried-json.ts'
 import { largestNesting } from '../../nesting.ts'
-import { linkAttrs, type LinkAttrs } from '../../adf/mark-attributes.ts'
-import { nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { partsShownText, referenceName, shownText, shownUrl, visibleText } from '../../adf/shown-text.ts'
+import { nodeAttrs, nodeContent } from '../../adf/document.ts'
+import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
 // The content a carry element shows of one block; `code` the code block holding it, if any.
@@ -51,21 +51,23 @@ function shownBlocks(root: AdfNode, codeLineFeed: string): ShownBlock[] {
 // The node's own part of what its carry element shows.
 function shownPiece(node: AdfNode, lineFeed: string): string {
   if (node.type === 'hardBreak') return '<br>'
-  const mark = nodeMarks(node).find((held) => held.type === 'link')
-  const target = mark === undefined ? undefined : linkAttrs(nodeAttrs(mark))
-  const url = shownUrl(node)
-  if (['media', 'mediaInline'].includes(node.type) && target !== undefined && url !== undefined && target.href !== url) return linkedImage(node, target, url, lineFeed)
-  const link = target ?? (url === undefined ? undefined : { href: url })
-  const text = node.text ?? shownText(node)
+  if (['media', 'mediaInline'].includes(node.type)) return linkedImage(node, lineFeed)
+  return linkedText(node, shownText(node), shownUrl(node), lineFeed)
+}
+
+// As portable markdown writes it inline, except that a link around a note stays (docs/decisions.md §The HTML dialect).
+function linkedImage(media: AdfNode, lineFeed: string): string {
+  const { after, link, text } = shownImage(media, shownLink(media)?.href)
+  const shown = linkedText(media, text, link, lineFeed)
+  return after === undefined ? shown : `${shown} (${linked('image', { href: after })})`
+}
+
+function linkedText(node: AdfNode, standIn: string | undefined, url: string | undefined, lineFeed: string): string {
+  const link = shownLink(node) ?? (url === undefined ? undefined : { href: url })
+  const text = node.text ?? standIn
   if (text !== undefined) return linked(shownValue(text, lineFeed), link)
   const name = referenceName(node)
   return name === undefined ? '' : linked(`<em>(${shownValue(name, lineFeed)})</em>`, link)
-}
-
-// As portable markdown writes it inline (docs/decisions.md §The HTML dialect).
-function linkedImage(media: AdfNode, target: LinkAttrs, url: string, lineFeed: string): string {
-  const text = visibleText(nodeAttrs(media)['alt']) ?? visibleText(target.href) ?? url
-  return `${linked(shownValue(text, lineFeed), target)} (${linked('image', { href: url })})`
 }
 
 // The shown HTML inside an `<a>` where it links and HTML can hold the link.

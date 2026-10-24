@@ -1,7 +1,8 @@
 import type { AdfNode } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
+import type { LinkAttrs } from './mark-attributes.ts'
 import { blockNodeModel } from './block-nodes.ts'
-import { nodeAttrs } from './document.ts'
+import { nodeAttrs, nodeMarks } from './document.ts'
 
 export function isBlockNodeType(type: string): boolean {
   return blockNodeModel(type) !== undefined || type === 'blockCard' || type === 'embedCard'
@@ -38,7 +39,24 @@ export function referenceName(node: AdfNode): string | undefined {
   }
 }
 
-// The text a node shows in place of itself, read from the attribute holding its content; `undefined` where it holds none.
+// What an image shows in place of itself, `href` the target of the link marking it, if any: `text`, else a note; `link`, its URL, which `text` links to where no link marks it; `after`, its URL, shown after a link going elsewhere.
+export function shownImage(media: AdfNode, href: string | undefined): { after: string | undefined; link: string | undefined; text: string | undefined } {
+  const alt = visibleText(nodeAttrs(media)['alt'])
+  const url = shownUrl(media)
+  if (url === undefined) return { after: undefined, link: undefined, text: alt }
+  if (href === undefined) return { after: undefined, link: url, text: alt ?? url }
+  if (href === url) return { after: undefined, link: undefined, text: alt ?? url }
+  return { after: url, link: undefined, text: alt ?? visibleText(href) ?? url }
+}
+
+// The link a node's first link mark makes: its `href` where that is a string, and its `title` only where that is one.
+export function shownLink(node: AdfNode): LinkAttrs | undefined {
+  const { href, title } = nodeAttrs(nodeMarks(node).find((mark) => mark.type === 'link') ?? {})
+  if (typeof href !== 'string') return undefined
+  return typeof title === 'string' ? { href, title } : { href }
+}
+
+// The text a node shows in place of itself, read from the attribute holding its content; `undefined` where it holds none, and for an image, which `shownImage` answers.
 export function shownText(node: AdfNode): string | undefined {
   const attrs = nodeAttrs(node)
   switch (node.type) {
@@ -56,9 +74,6 @@ export function shownText(node: AdfNode): string | undefined {
     case 'extension':
     case 'inlineExtension':
       return visibleText(attrs['text'])
-    case 'media':
-    case 'mediaInline':
-      return visibleText(attrs['alt']) ?? shownUrl(node)
     case 'mention': {
       const id = attrs['id']
       return visibleText(attrs['text']) ?? (typeof id === 'string' && id !== '' ? `@${id}` : undefined)

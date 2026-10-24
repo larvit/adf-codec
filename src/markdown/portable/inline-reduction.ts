@@ -7,7 +7,7 @@ import { imageAside } from '../image-aside.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { partsShownText, referenceName, shownText, shownUrl, visibleText } from '../../adf/shown-text.ts'
+import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
@@ -59,20 +59,15 @@ function cardLeaves(card: AdfNode, marks: readonly AdfMark[], container: LineCon
   return linkedLeaves(shownText(card) ?? href, href, marks, container)
 }
 
-function linkedLeaves(text: string, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+function linkedLeaves(text: string | undefined, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   return textLeaves(text, [...marks.filter((mark) => mark.type !== 'link'), { attrs: { href }, type: 'link' }], container)
 }
 
 // An image standing inline is a link to it: the reader builds no node for an inline image, reading it as its alt text linked, and inside a link as the link's text, then (image).
 function mediaLeaves(media: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  const alt = visibleText(nodeAttrs(media)['alt'])
-  const url = shownUrl(media)
-  if (url === undefined) return textLeaves(alt, marks, container, referenceName(media))
-  const link = marks.find((mark) => mark.type === 'link')
-  const href = link === undefined ? undefined : nodeAttrs(link)['href']
-  if (typeof href !== 'string') return linkedLeaves(alt ?? url, url, marks, container)
-  if (href === url) return textLeaves(alt ?? url, marks, container)
-  return [...textLeaves(alt ?? visibleText(href) ?? url, marks, container), ...imageAside((text) => linkedLeaves(text, url, marks, container))]
+  const { after, link, text } = shownImage(media, shownLink(media)?.href)
+  const shown = link === undefined ? textLeaves(text, marks, container, referenceName(media)) : linkedLeaves(text, link, marks, container)
+  return after === undefined ? shown : [...shown, ...imageAside((word) => linkedLeaves(word, after, marks, container))]
 }
 
 function noteLeaves(name: string): AdfNode[] {

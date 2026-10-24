@@ -20,8 +20,9 @@ products store as ADF.
   Flavored Markdown's callouts and highlights. It keeps the text, images by URL and link targets and
   drops the rest.
 - **HTML out:** `adfToHtml` writes paragraphs, headings, lists, quotes, code blocks, rules, line
-  breaks, emphasis, inline code and links as their HTML elements. Every other node, an image
-  Atlassian's editor wrote among them, becomes an element holding its JSON and showing its content.
+  breaks, emphasis, inline code, links and a plain external image as their HTML elements. Every other
+  node, an image Atlassian's editor wrote among them, becomes an element holding its JSON and showing
+  its content.
 - **No throws:** every call returns a result; a refusal carries a code from a closed list.
 - **Runs anywhere:** pure functions with no runtime dependencies, in Node, Deno, Bun and browsers.
   TypeScript types ship beside the JavaScript.
@@ -483,7 +484,7 @@ content. No stylesheet ships. The complete dialect:
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
-| an attribute its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block or rule | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
+| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block or rule | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, and a
