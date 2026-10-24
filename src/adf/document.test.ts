@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import vm from 'node:vm'
 
+import type { AdfDocument } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
-import { adfDocumentFault, isAdfDocument } from './document.ts'
+import { adfDocumentFault, isAdfDocument, writableContent } from './document.ts'
 import { largestNesting } from '../nesting.ts'
 
 function fault(value: unknown): string {
@@ -113,4 +114,18 @@ test('refuses an object holding itself, and accepts one shared', () => {
   const shared = { content: [text, text], type: 'paragraph' }
   const values = { b: 1 }
   assert.equal(fault({ content: [shared, shared, { attrs: { a: [values, values] }, type: 'paragraph' }], type: 'doc', version: 1 }), 'accepted')
+})
+
+test('opens every writer with the same checks: a document, version 1, and no more text than the longest output holds', () => {
+  const checked = (document: AdfDocument): string => {
+    const result = writableContent(document)
+    return result.ok ? JSON.stringify(result.value) ?? 'no content key' : result.error.code
+  }
+  assert.equal(checked({ type: 'doc', version: Number.NaN }), 'not-an-adf-document')
+  assert.equal(checked({ type: 'doc', version: 2 }), 'unsupported-document-version')
+  assert.equal(checked({ type: 'doc', version: 1 }), 'no content key')
+  assert.equal(checked({ content: [{ type: 'rule' }], type: 'doc', version: 1 }), '[{"type":"rule"}]')
+  const long = 'a'.repeat(2 ** 28)
+  const text = { content: [{ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' }], type: 'paragraph' }
+  assert.equal(checked({ content: [text], type: 'doc', version: 1 }), 'unsupported-node-shape')
 })

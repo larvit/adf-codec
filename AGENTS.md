@@ -66,7 +66,8 @@ In `docs/decisions.md`:
 - The CommonMark suite checks three ways
 - The flavour spec is read as a source
 - The node tables answer to Atlassian's schema
-- Markdown past V8's longest string is refused on every engine
+- Output past V8's longest string is refused on every engine
+- HTML writes a URL as the ADF holds it, whatever its scheme
 - Nothing recurses unbounded
 - JSON text is read by `parseJsonText`
 - No value `JSON.parse` or `structuredClone` builds loops a call
@@ -224,7 +225,8 @@ The comprehension panel's fill-ins:
 
 - Language: TypeScript.
 - Kind: a pure-function document converter with hand-written parsers and emitters.
-- Domain: Atlassian Document Format and CommonMark parsing.
-- Domain docs: the CommonMark spec, ADF's JSON schema and `spec/flavour.md`.
+- Domain: Atlassian Document Format, CommonMark and HTML.
+- Domain docs: the CommonMark spec, the WHATWG HTML standard, ADF's JSON schema, `spec/flavour.md` and
+  `spec/html.md`.
 - 3am question: a viewer/editor app reports that a document it saved comes back with two text
   nodes merged and a mark gone after `losslessMarkdownToAdf(adfToLosslessMarkdown(doc))`.

@@ -1,9 +1,9 @@
-import { failure, success, type Result } from '../result.ts'
+import { failure, success, type Result } from './result.ts'
 
-// V8's longest string, refused on every engine so a document converts alike everywhere (docs/decisions.md §Markdown past V8's longest string is refused on every engine).
-export const longestMarkdown = 2 ** 29 - 24
+// V8's longest string, refused on every engine so a document converts alike everywhere (docs/decisions.md §Output past V8's longest string is refused on every engine).
+export const longestOutput = 2 ** 29 - 24
 
-// Measured on Firefox 155, Node 24 and Bun 1.4; SpiderMonkey's `invalid array length` is taken from its js.msg. SpiderMonkey's overflow and V8's string overflow both mean a string past longestMarkdown; the others name an engine's own limit or its memory running short.
+// Measured on Firefox 155, Node 24 and Bun 1.4; SpiderMonkey's `invalid array length` is taken from its js.msg. SpiderMonkey's overflow and V8's string overflow both mean a string past longestOutput; the others name an engine's own limit or its memory running short.
 const pastLongestString = ['InternalError: allocation size overflow', 'RangeError: Invalid string length']
 const pastEngineLimit = [
   'RangeError: Array buffer allocation failed',
@@ -15,11 +15,11 @@ const pastEngineLimit = [
 ]
 
 export function tooLong<T>(): Result<T> {
-  return failure('unsupported-node-shape', `the markdown for this document, or for a directive's plain CommonMark, would be longer than ${longestMarkdown} characters, the longest this library writes`, [])
+  return failure('unsupported-node-shape', `this conversion would build text longer than ${longestOutput} characters, the longest this library writes`, [])
 }
 
 export function withinLongest(text: string): Result<string> {
-  return text.length > longestMarkdown ? tooLong() : success(text)
+  return text.length > longestOutput ? tooLong() : success(text)
 }
 
 export function joinedWithin(pieces: Iterable<string>): Result<string> {
@@ -27,7 +27,7 @@ export function joinedWithin(pieces: Iterable<string>): Result<string> {
   let length = 0
   for (const piece of pieces) {
     length += piece.length
-    if (length > longestMarkdown) return tooLong()
+    if (length > longestOutput) return tooLong()
     kept.push(piece)
   }
   return success(kept.join(''))

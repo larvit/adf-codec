@@ -44,7 +44,10 @@ test('refuses a value that is not an ADF document, naming the check it failed', 
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })
 
-const tooLong = 'unsupported-node-shape: the markdown for this document, or for a directive\'s plain CommonMark, would be longer than 536870888 characters, the longest this library writes'
+// The code, and the bound the message names.
+function pastTheBound(result: Result<string>): boolean {
+  return !result.ok && result.error.code === 'unsupported-node-shape' && result.error.message.includes('536870888')
+}
 
 // A code block of 300 lines; two of these together fall some 1000 characters short of V8's longest string, so only what their spelling adds passes it.
 function nearlyHalfTheBound(): AdfNode {
@@ -56,18 +59,18 @@ test('refuses a carry whose JSON would run past V8\'s longest string, on every e
   let value: JsonValue = new Array<JsonValue>(560_000).fill(0)
   for (let level = 0; level < 495; level += 1) value = [value]
   const result = adfToLosslessMarkdown(document({ attrs: { value }, type: 'unknownBlock' }))
-  assert.equal(markdown(result), tooLong)
+  assert.equal(pastTheBound(result), true)
 })
 
 test('refuses a quote whose prefixed lines would pass V8\'s longest string', () => {
   const code = nearlyHalfTheBound()
-  assert.equal(markdown(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), tooLong)
+  assert.equal(pastTheBound(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), true)
 })
 
 test('refuses text past V8\'s longest string', () => {
   const long = 'a'.repeat(2 ** 28)
   const result = adfToLosslessMarkdown(document(paragraph({ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' })))
-  assert.equal(markdown(result), tooLong)
+  assert.equal(pastTheBound(result), true)
 })
 
 test('escapes more characters in a line than V8\'s Set holds', () => {

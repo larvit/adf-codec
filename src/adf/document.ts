@@ -1,6 +1,7 @@
-import type { ConvertFault } from '../result.ts'
+import { failure, faulted, success, type ConvertFault, type Result } from '../result.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { longestOutput, tooLong } from '../length-bound.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
@@ -48,6 +49,16 @@ export function adfDocumentFault(value: unknown): ConvertFault | undefined {
   return nestingFault(content)
 }
 
+// The checks every writer opens with; `undefined` where the document holds no `content` key, which each format spells its own way.
+export function writableContent(document: AdfDocument): Result<readonly AdfNode[] | undefined> {
+  const fault = adfDocumentFault(document)
+  if (fault !== undefined) return faulted(fault, [])
+  if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
+  if (document.content === undefined) return success(undefined)
+  // Text alone past the bound is refused before anything is written (docs/decisions.md §Output past V8's longest string is refused on every engine).
+  return heldTextLength(document.content) > longestOutput ? tooLong() : success(document.content)
+}
+
 export function attributeNestingMessage(key: string, type: string): string {
   return `the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
 }
@@ -83,7 +94,7 @@ export function identicalMarks(left: readonly AdfMark[], right: readonly AdfMark
 }
 
 // The length of the text the nodes hold, the nodes below them included.
-export function heldTextLength(nodes: readonly AdfNode[]): number {
+function heldTextLength(nodes: readonly AdfNode[]): number {
   let length = 0
   const pending = [...nodes]
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {

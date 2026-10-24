@@ -398,6 +398,48 @@ themselves.
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
+The spellings, `spec/html.md`, are four writer panels' (2026-10-23 and -24), each of a product
+manager, an engineer and a support agent. The first picked each of these 3 of 3:
+
+- an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
+- a list item's first paragraph bare, `<li>Bolt</li>`, over `<li><p>Bolt</p></li>`;
+- `class="language-js"`, over `lang-js`;
+- `<br>`, over `<br />`.
+
+Seven readers picked `data-adf` for the carry element, 6 of 7, over `data-adf-node`. Four wanted the
+class `adf-carry` and three no class; this entry's stable `adf-*` classes settle it.
+
+Atlassian's editor puts a `localId` on every block, so carrying each block holding one would leave
+no element at all. The second panel picked each of these 3 of 3:
+
+- an attribute the element cannot express as `data-local-id`, over `data-adf-local-id` and `id`;
+- a link inside a carry element as `<a>`, over `text (url)` and its text alone;
+- a carried node's blocks as `<p>`, over `<br>` and a line feed;
+- media a carry element cannot show as `<em>(image)</em>`, over `<em>(image not shown)</em>` and
+  nothing.
+
+A third panel, seven readers in the same three roles, was asked how to write a list item whose first
+paragraph holds an attribute, the shape of every item Atlassian's editor writes. It picked
+`<li data-local-id="i1"><p data-local-id="p1">Bolt</p></li>`, 6 of 7, over the same elements with
+the `<p>` on a line of its own, 1 of 7, and over
+`<li data-local-id="i1" data-paragraph-local-id="p1">Bolt</li>`, 0 of 7.
+
+A fourth panel of the same three roles picked, 3 of 3, a code block inside a carry element as
+`<pre><code>…</code></pre>` over `<pre>…</pre>` and over a `<p>` whose lines part at `<br>`, which
+loses the indentation. All three wrote `<code class="language-python">`, which no option held, so
+the shown code keeps the class its code block's own element takes.
+
+Inside a carry element, an image marked by a link to another target shows as portable markdown
+writes it inline (§A linked image standing inline in portable markdown, its link to another target,
+is written `[alt](href) ([image](url))`), so both targets stay; Goal 7 counts them as content. A link
+marking a node that shows a note goes around the note. Recorded 2026-10-24 without a panel of its
+own: it joins the second panel's `<a>` to that portable spelling.
+
+Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
+text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone,
+until `todo.md` item 133 writes inline cards as their own elements, in 0.3.0. Recorded 2026-10-24
+without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each
@@ -543,8 +585,8 @@ handles one cause alike whichever node, attribute or direction raised it.
   emitter carries such a node (2026-10-14).
 - A non-finite number takes two codes: `unsupported-node-shape` parsing, `not-an-adf-document`
   emitting — no document holds one, so no round-trip crosses them (2026-09-23).
-- A document whose markdown would be longer than V8's longest string is `unsupported-node-shape`
-  at the document's path, in either writer, and so is a directive `losslessMarkdownToAdf` reads
+- A document whose output would be longer than V8's longest string is `unsupported-node-shape`
+  at the document's path, in every writer, and so is a directive `losslessMarkdownToAdf` reads
   whose CommonMark spelling would be: the document does not convert, and no spelling in the input
   causes the bound (§The code list). A carried node passes it on about 1 MB of deeply nested JSON,
   since the block carry indents two spaces a level; `todo.md` item 107 respells the carry in a
@@ -775,13 +817,13 @@ node takes. Value sets stay documentation, since any value round-trips. What the
 attribute as a gap, a type as carried — so a re-pin adding either goes red until someone spells it
 or pins it.
 
-## Markdown past V8's longest string is refused on every engine
+## Output past V8's longest string is refused on every engine
 
-2026-10-11, the maintainer. Goals 1 and 6. Valid while V8's longest string, 2^29 − 24 characters,
-is the shortest of the engines the library claims.
+2026-10-11, HTML 2026-10-23, the maintainer. Goals 1 and 6. Valid while V8's longest string,
+2^29 − 24 characters, is the shortest of the engines the library claims.
 
-Every writer, and `losslessMarkdownToAdf`'s `commonMarkSpelling` ask, refuses markdown longer than
-2^29 − 24 characters (`longestMarkdown`), so the same document converts alike everywhere. A writer
+Every writer, and `losslessMarkdownToAdf`'s `commonMarkSpelling` ask, refuses markdown or HTML
+longer than 2^29 − 24 characters (`longestOutput`), so the same document converts alike everywhere. A writer
 first refuses a document whose text alone passes the bound: the lossless writer spells every
 character of it, and the portable reduction refuses on the caller's text, edge whitespace and all,
 since merging that text first could build past the bound. Each block, the writer's result and the
@@ -793,6 +835,18 @@ carry's two-space JSON, which indents every value its depth over, stops at the b
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
+
+## HTML writes a URL as the ADF holds it, whatever its scheme
+
+2026-10-23, the maintainer. Goal 1. Valid until `todo.md` item 142 weighs the alternatives.
+
+`adfToHtml` writes every URL exactly as the ADF holds it, escaped as every attribute value is,
+`javascript:`, `vbscript:`, `file:` and `data:` included. That covers a link's `href`, an image's
+`src`, and the `href` of each link the carry element shows: a carried node's link mark, a card's
+`url` or `data.url`, and an external image's `url`. Carrying such a link or image, to leave the URL
+out of the HTML as cmark does by default, was proposed and not taken; item 142 weighs it against
+writing the URL. Carrying alone would not keep the URL out, since the carry element links what it
+shows: the carry would also have to drop the shown `href`.
 
 ## Nothing recurses unbounded
 
@@ -952,7 +1006,9 @@ spelling the emitter refuses gives its own error rather than a second name for i
 is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
 
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `parse/` and `emit/` from
-importing `markdown/portable/`, and keeps `markdown/directive/` from importing `emit/` or `parse/`,
-as `no-restricted-imports` overrides. They are lint rules because the technical principles refuse a
+importing `markdown/portable/`, keeps `markdown/directive/` from importing `emit/` or `parse/`,
+keeps `markdown/` and `html/` from importing each other, and keeps `adf/` from importing either, as
+`no-restricted-imports` overrides. A later override replaces an earlier one's rule, so each
+`markdown/` subdirectory's override repeats the ban on `html/`, and `ci.sh` probes every override. They are lint rules because the technical principles refuse a
 test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
 double quotes and a dynamic `import()`.

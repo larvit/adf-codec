@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { Result } from '../result.ts'
-import { joinedWithin, tooLong, withinEngineLimits, withinLongest } from './length-bound.ts'
-import { success } from '../result.ts'
+import type { Result } from './result.ts'
+import { joinedWithin, withinEngineLimits, withinLongest } from './length-bound.ts'
+import { success } from './result.ts'
+
+// The code at the document's path, and the bound the message names.
+function pastTheBound(result: Result<string>): boolean {
+  return !result.ok && result.error.code === 'unsupported-node-shape' && result.error.path.length === 0 && result.error.message.includes('536870888')
+}
 
 function thrown(name: string, message: string): () => Result<string> {
   return () => {
@@ -16,7 +21,7 @@ function thrown(name: string, message: string): () => Result<string> {
 test('joins pieces up to the bound, and builds nothing past it', () => {
   assert.deepEqual(joinedWithin(['a', 'b']), success('ab'))
   const half = 'a'.repeat(2 ** 28)
-  assert.deepEqual(joinedWithin([half, half]), tooLong())
+  assert.equal(pastTheBound(joinedWithin([half, half])), true)
 })
 
 test('passes a text within the bound', () => {
@@ -24,8 +29,8 @@ test('passes a text within the bound', () => {
 })
 
 test('refuses a string past the bound as too long on every engine, and any other engine limit as engine-limit', () => {
-  assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Invalid string length')), tooLong())
-  assert.deepEqual(withinEngineLimits(thrown('InternalError', 'allocation size overflow')), tooLong())
+  assert.equal(pastTheBound(withinEngineLimits(thrown('RangeError', 'Invalid string length'))), true)
+  assert.equal(pastTheBound(withinEngineLimits(thrown('InternalError', 'allocation size overflow'))), true)
   assert.deepEqual(withinEngineLimits(thrown('RangeError', 'Out of memory')), {
     error: { code: 'engine-limit', message: 'the conversion passed a limit of this JavaScript engine on a string, array, Map or Set, or ran it out of memory (Out of memory)', path: [] },
     ok: false,

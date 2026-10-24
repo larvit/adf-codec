@@ -3,6 +3,8 @@ import { createServer } from 'node:http'
 import { extname, join } from 'node:path'
 import { readFileSync, readdirSync } from 'node:fs'
 
+import { adfToHtml } from '../dist/index.js'
+
 const contentTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript' }
 const driver = 'http://127.0.0.1:4444'
 const repoRoot = join(import.meta.dirname, '..')
@@ -130,6 +132,7 @@ for (const [index, { json, name }] of corpus.realPayloads.entries()) {
     assert.ok(result.emitted.ok, `it did not emit — ${refusal(result.emitted)}`)
     assert.ok(result.parsed.ok, `it did not parse back — ${refusal(result.parsed)}`)
     assert.deepEqual(revived(result.parsed.value), JSON.parse(json))
+    assert.deepEqual(result.html, adfToHtml(JSON.parse(json)), 'it wrote other HTML than Node wrote')
   })
 }
 

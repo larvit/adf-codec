@@ -1,13 +1,13 @@
-import type { AdfAttributes, AdfMark, AdfNode } from '../../adf/document.ts'
+import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
-import { blockNodeModel } from '../../adf/block-nodes.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
-import { imageAside } from '../external-image.ts'
+import { imageAside } from '../image-aside.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
@@ -22,10 +22,6 @@ export function reduceInline(nodes: readonly AdfNode[], container: LineContainer
   return spellableLine(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))), container, path)
 }
 
-export function isBlockNodeType(type: string): boolean {
-  return blockNodeModel(type) !== undefined || type === 'blockCard' || type === 'embedCard'
-}
-
 export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
   const leaves: AdfNode[] = []
@@ -34,7 +30,7 @@ export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer
     const held = nodeLeaves(node, container, [...path, 'content', index], depth)
     if (!held.ok) return held
     if (held.value.length === 0) continue
-    const block = isBlockNodeType(node.type) && node.type !== 'media'
+    const block = partsShownText(node.type)
     if (leaves.length > 0 && (joinsNext || block)) leaves.push(textLeaf(' ', []))
     joinsNext = block
     for (const leaf of held.value) leaves.push(leaf)
@@ -44,77 +40,38 @@ export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer
 
 function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const marks = nodeMarks(node)
-  const attrs = nodeAttrs(node)
   if (node.type === 'text') return success(textLeaves(node.text, marks, container))
   if (node.type === 'hardBreak') return success([lineBreak(container)])
-  if (node.type === 'date') return success(textLeaves(isoDate(attrs['timestamp']), marks, container))
-  if (node.type === 'emoji') return success(textLeaves(nonEmpty(attrs['text']) ?? attrs['shortName'], marks, container))
+  if (['date', 'emoji', 'mention', 'status'].includes(node.type)) return success(textLeaves(shownText(node), marks, container))
   if (node.type === 'placeholder') return success([])
-  if (node.type === 'mention') return success(textLeaves(nonEmpty(attrs['text']) ?? idMention(attrs['id']), marks, container))
-  if (node.type === 'status') return success(textLeaves(attrs['text'], marks, container))
-  if (['extension', 'inlineExtension'].includes(node.type)) return success(textLeaves(nonEmpty(attrs['text']), marks, container, noteName(attrs['extensionKey']) ?? 'extension'))
-  if (node.type === 'syncBlock') return success(noteLeaves('synced block'))
-  if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(attrs, marks, container))
-  if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(attrs, marks, container))
-  const own = textLeaves(node.text ?? (['expand', 'nestedExpand'].includes(node.type) ? attrs['title'] : undefined), marks, container)
+  if (['extension', 'inlineExtension', 'syncBlock'].includes(node.type)) return success(textLeaves(shownText(node), marks, container, referenceName(node)))
+  if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(node, marks, container))
+  if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(node, marks, container))
+  const own = textLeaves(node.text ?? shownText(node), marks, container)
   const held = inlineLeaves(nodeContent(node), container, path, depth + 1)
   if (!held.ok) return held
   return success(own.length > 0 && held.value.length > 0 ? [...own, textLeaf(' ', []), ...held.value] : [...own, ...held.value])
 }
 
-function cardLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  const data = attrs['data']
-  const held = typeof data === 'object' && data !== null && !Array.isArray(data) ? data : {}
-  const url = nonEmpty(attrs['url'])
-  const heldUrl = nonEmpty(held['url'])
-  const name = nonEmpty(held['name'])
-  const href = url ?? heldUrl
-  if (href === undefined) return textLeaves(name, marks, container, 'link card')
-  return linkedLeaves(url ?? name ?? href, href, marks, container)
+function cardLeaves(card: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+  const href = shownUrl(card)
+  if (href === undefined) return textLeaves(shownText(card), marks, container, referenceName(card))
+  return linkedLeaves(shownText(card) ?? href, href, marks, container)
 }
 
-function linkedLeaves(text: string, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+function linkedLeaves(text: string | undefined, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   return textLeaves(text, [...marks.filter((mark) => mark.type !== 'link'), { attrs: { href }, type: 'link' }], container)
 }
 
-function idMention(id: unknown): string | undefined {
-  return typeof id === 'string' && id !== '' ? `@${id}` : undefined
-}
-
 // An image standing inline is a link to it: the reader builds no node for an inline image, reading it as its alt text linked, and inside a link as the link's text, then (image).
-function mediaLeaves(attrs: Readonly<AdfAttributes>, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  const alt = nonEmpty(attrs['alt'])
-  const url = nonEmpty(attrs['url'])
-  if (attrs['type'] !== 'external' || url === undefined) return textLeaves(alt, marks, container, 'image')
-  const link = marks.find((mark) => mark.type === 'link')
-  const href = link === undefined ? undefined : nodeAttrs(link)['href']
-  if (typeof href !== 'string') return linkedLeaves(alt ?? url, url, marks, container)
-  if (href === url) return textLeaves(alt ?? url, marks, container)
-  return [...textLeaves(alt ?? nonEmpty(href) ?? url, marks, container), ...imageAside((text) => linkedLeaves(text, url, marks, container))]
+function mediaLeaves(media: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+  const { after, link, text } = shownImage(media, shownLink(media)?.href)
+  const shown = link === undefined ? textLeaves(text, marks, container, referenceName(media)) : linkedLeaves(text, link, marks, container)
+  return after === undefined ? shown : [...shown, ...imageAside((word) => linkedLeaves(word, after, marks, container))]
 }
 
 function noteLeaves(name: string): AdfNode[] {
   return [textLeaf(`(${name} not included)`, [{ type: 'em' }])]
-}
-
-function noteName(value: unknown): string | undefined {
-  return nonEmpty(value) === undefined ? undefined : oneLine(String(value)).trim()
-}
-
-export function oneLine(text: string): string {
-  return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
-}
-
-function nonEmpty(value: unknown): string | undefined {
-  return typeof value === 'string' && oneLine(value).trim() !== '' ? value : undefined
-}
-
-function isoDate(timestamp: unknown): string | undefined {
-  const milliseconds = typeof timestamp === 'string' && /^-?\d+$/.test(timestamp) ? Number(timestamp) : Number.NaN
-  const date = new Date(milliseconds)
-  if (Number.isNaN(date.getTime())) return undefined
-  const iso = date.toISOString()
-  return iso.slice(0, iso.indexOf('T'))
 }
 
 function lineBreak(container: LineContainer): AdfNode {
