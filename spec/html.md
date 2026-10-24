@@ -84,8 +84,8 @@ later release writes it as its own element.
     next.
   - A hard break is `<br>`, and so is a line feed in text outside a `<div>`'s code block.
   - Text a link marks is `<a href="…" title="…">` around it, or the text alone where HTML cannot
-    hold the link's `href` or `title`. A card is a link to the target of a link marking it, else to
-    its URL.
+    hold the link's `href` or `title`; a `title` that is no string is left out. A card is a link to
+    the target of a link marking it, else to its URL.
   - An external image with no link to another target is a link to its URL. An image marked by a
     link to another target shows as portable markdown writes it inline. First comes the link,
     around the image's `alt`, else the link's target, else the image's URL. Then comes ` (image)`,

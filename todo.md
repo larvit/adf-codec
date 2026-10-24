@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 142 | 0.3.0 |  | security | **Settle in `docs/decisions.md`, weighing the pros and cons with the maintainer, whether `adfToHtml` writes a `javascript:`, `vbscript:`, `file:` or non-image `data:` URL as the ADF holds it, in a link's `href`, an image's `src` and each link the carry element shows.** | 2 | 2 | 2 | 4 | 3 | 6 by 3 | 4.5 |
 | 131 | 0.3.0 |  |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
-| 133 | 0.3.0 | 131 |  | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
+| 133 | 0.3.0 | 131 | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 140 | 0.4.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
@@ -28,8 +28,8 @@
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
-| 143 | 0.4.0 |  | defect | **Keep the link around a note in `adfToPortableMarkdown`, so a linked stored image with no alt writes its note linked.** | 1 | 1 | 2 | 2 | 2 | 7 by 1 | 8.7 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
+| 143 | 0.4.0 |  | defect | **Keep the link around a note in `adfToPortableMarkdown`, so a linked stored image with no alt writes its note linked.** | 2 | 1 | 2 | 3 | 3 | 7 by 1 | 6.5 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
@@ -93,7 +93,9 @@ takes).
 
 ### 133. Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
-A writer panel picks the elements, classes and `data-*` attributes.
+A writer panel picks the elements, classes and `data-*` attributes. Where a link marks a card, both
+the link's target and the card's URL stay in sight, a card showing only its name included
+(`docs/decisions.md` §The HTML dialect).
 
 ### 132. Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
@@ -212,18 +214,25 @@ Three tests read source text:
 Item 81 changes `result.test.ts` too. Found by the technical-principles audit of
 item 60, 2026-10-22.
 
-### 143. Keep the link around a note in `adfToPortableMarkdown`, so a linked stored image with no alt writes its note linked.
-
-`noteLeaves` (`src/markdown/portable/inline-reduction.ts`) drops the node's marks, so a stored
-image a link marks writes `_(image not included)_` without the link's target, which Goal 7 counts as
-content. `adfToHtml`'s carry element keeps it, `<a href="…"><em>(image)</em></a>`.
-
 ### 144. Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.
 
 `in_image`, `with_firefox` and `publish.sh` run `docker run` with neither `--memory` nor
 `--memory-swap`, so a runaway leg can starve the machine instead of failing alone. Some tests build
 strings near V8's longest, about 512 MB each, so measure each leg's peak before picking the limit:
 one too small fails the gate.
+
+### 143. Keep the link around a note in `adfToPortableMarkdown`, so a linked stored image with no alt writes its note linked.
+
+`noteLeaves` (`src/markdown/portable/inline-reduction.ts`) drops the node's marks, so a stored
+image a link marks writes `_(image not included)_` without the link's target, which Goal 7 counts as
+content. `adfToHtml`'s carry element keeps it, `<a href="…"><em>(image)</em></a>`.
+
+`cardLeaves`, in the same file, links a card to its own URL, so a card a link to another target
+marks writes a link to the card's URL and drops the mark's target. The carry element keeps both: it
+links the card's URL, as its text, to the mark's target (`docs/decisions.md` §The HTML dialect).
+
+Move the choice of where a card's text and a note link into `src/adf/shown-text.ts`, beside
+`shownImage`'s for an image, so both writers render one answer.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 

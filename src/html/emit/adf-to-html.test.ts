@@ -149,11 +149,12 @@ test('shows a carried node\'s content after a block it holds as a paragraph of i
   assert.equal(shown(html(adfToHtml(document({ content: [paragraph(text('a')), text('b')], type: 'panel' })))), '<p>a</p><p>b</p>')
 })
 
-test('shows text a link marks in a carried node as a link', () => {
+test('shows text a link marks in a carried node as a link, leaving out a title that is no string', () => {
   const link: AdfMark = { attrs: { href: 'https://spec.commonmark.org/', title: 'The spec' }, type: 'link' }
   const panel: AdfNode = { content: [paragraph(text('Read the '), text('CommonMark spec', link), text(' first.'))], type: 'panel' }
   assert.equal(shown(html(adfToHtml(document(panel)))), '<p>Read the <a href="https://spec.commonmark.org/" title="The spec">CommonMark spec</a> first.</p>')
   assert.equal(shown(html(adfToHtml(document(paragraph(text('x', { type: 'underline' }, link)))))), '<a href="https://spec.commonmark.org/" title="The spec">x</a>')
+  assert.equal(shown(html(adfToHtml(document(paragraph(text('x', { attrs: { href: 'https://spec.commonmark.org/', title: 5 }, type: 'link' })))))), '<a href="https://spec.commonmark.org/">x</a>')
 })
 
 test('shows a hard break, and a line feed in carried text outside a code block, as a line break', () => {
@@ -219,8 +220,11 @@ test('shows a carried image marked by a link to another target as that link, the
   assert.equal(image({ alt: 'The moon', type: 'external', url: 'https://example.com/' }), '<p><a href="https://example.com/">The moon</a></p>')
   const blank = shown(html(adfToHtml(document({ attrs: { layout: 'wide' }, content: [{ attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, marks: [{ attrs: { href: ' ' }, type: 'link' }], type: 'media' }], type: 'mediaSingle' }))))
   assert.equal(blank, '<p><a href=" ">https://example.com/moon.jpg</a> (<a href="https://example.com/moon.jpg">image</a>)</p>')
-  const inline: AdfNode = { attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, marks: [link], type: 'mediaInline' }
-  assert.equal(shown(html(adfToHtml(document(paragraph(inline))))), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
+  const texted = shown(html(adfToHtml(document({ attrs: { layout: 'wide' }, content: [{ attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, marks: [link], text: 'Moon', type: 'media' }], type: 'mediaSingle' }))))
+  assert.equal(texted, '<p><a href="https://example.com/">Moon</a> (<a href="https://example.com/moon.jpg">image</a>)</p>')
+  const inline = (mark: AdfMark): string => shown(html(adfToHtml(document(paragraph({ attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, marks: [mark], type: 'mediaInline' })))))
+  assert.equal(inline(link), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
+  assert.equal(inline({ attrs: { href: 'https://example.com/', title: 5 }, type: 'link' }), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
 })
 
 test('links a carried card a link marks to that link\'s target alone', () => {

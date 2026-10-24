@@ -435,6 +435,11 @@ is written `[alt](href) ([image](url))`), so both targets stay; Goal 7 counts th
 marking a node that shows a note goes around the note. Recorded 2026-10-24 without a panel of its
 own: it joins the second panel's `<a>` to that portable spelling.
 
+Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
+text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone,
+until `todo.md` item 133 writes inline cards as their own elements, in 0.3.0. Recorded 2026-10-24
+without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each
