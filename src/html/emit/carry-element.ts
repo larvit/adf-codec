@@ -1,6 +1,6 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { LinkAttrs } from '../../adf/mark-attributes.ts'
-import { anchorOpener, jsonValue, languageClass, shownValue } from './escaping.ts'
+import { anchorOpener, jsonValue, languageClass, shownValue } from '../escaping.ts'
 import { carriedJson } from '../../adf/carried-json.ts'
 import { largestNesting } from '../../nesting.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'

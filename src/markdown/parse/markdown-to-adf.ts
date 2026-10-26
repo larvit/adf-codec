@@ -12,6 +12,7 @@ import { failure, faulted, positioned, success, type ConvertErrorPath, type Pars
 import { flavourClaims } from '../flavour.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { notAString } from '../../not-a-string.ts'
 import { parseBlocks } from './blocks.ts'
 import { parseInlineContent } from './inline-content.ts'
 import { readBlockDirectiveNode } from '../directive/node-reading.ts'
@@ -47,7 +48,7 @@ export function readDocument(markdown: string, readAs: ReadAs): Result<AdfDocume
 }
 
 function readMarkdown(markdown: string, readAs: ReadAs): Result<AdfDocument> {
-  if (typeof markdown !== 'string') return failure('not-a-string', `markdown is a string: found ${typeName(markdown)}`, [])
+  if (typeof markdown !== 'string') return notAString(markdown, 'markdown')
   const parsed = parseBlocks(markdown, readAs.flavour)
   const [only] = parsed.blocks
   if (parsed.blocks.length === 1 && only?.kind === 'directive' && only.name === documentName) {
@@ -57,14 +58,6 @@ function readMarkdown(markdown: string, readAs: ReadAs): Result<AdfDocument> {
   const reading: Reading = { ...readAs, definitions: parsed.definitions, memo: new Map() }
   const content = readBlocks(parsed.blocks, reading, [], 0)
   return content.ok ? success({ content: content.value, type: 'doc', version: 1 }) : content
-}
-
-// `typeof` alone, since anything more throws on a revoked Proxy.
-function typeName(value: unknown): string {
-  if (value === null) return 'null'
-  const type = typeof value
-  if (type === 'undefined') return type
-  return type === 'object' ? 'an object' : `a ${type}`
 }
 
 export function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {

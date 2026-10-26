@@ -1,5 +1,5 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
-import { anchorOpener, writableValue } from './escaping.ts'
+import { anchorOpener, writableValue } from '../escaping.ts'
 import { carriedInline } from './carry-element.ts'
 import { holdsOnlyAttributes, isSpellableText, isUnmarkedSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
