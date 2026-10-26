@@ -6,6 +6,7 @@ import test from 'node:test'
 
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { isAdfDocument } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
@@ -147,6 +148,16 @@ for (const name of names(realPayloadsRoot, '.json')) {
     const parsed = losslessMarkdownToAdf(emitted.value)
     assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
     assert.deepEqual(parsed.value, payload)
+  })
+}
+
+for (const name of names(realPayloadsRoot, '.json')) {
+  test(`real-payloads/${name} writes HTML that reads back to it`, () => {
+    const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
+    assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+    const written = adfToHtml(payload)
+    assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+    assert.deepEqual(htmlToAdf(written.value), { ok: true, value: payload })
   })
 }
 

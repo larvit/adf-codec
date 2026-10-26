@@ -10,8 +10,8 @@ One directory per contract kind:
   markdown is not canonical.
 - `errors/` — `<name>.md`: markdown input that must not convert. A `<name>.error` beside it
   pins which error.
-- `real-payloads/` — `<name>.json`: ADF Atlassian's editor wrote, round-tripped ADF→markdown→ADF.
-  No expected markdown.
+- `real-payloads/` — `<name>.json`: ADF Atlassian's editor wrote, round-tripped ADF→markdown→ADF
+  and ADF→HTML→ADF. No expected markdown or HTML.
 - `commonmark-spec/` — the CommonMark suite run against `commonMarkToAdf` by three checks.
   `spec.json` is the suite; `refusals.json` pins each refusing example to its error `code`;
   `exceptions.json` pins each known divergence by `check`, `example`, `kind` and the exact

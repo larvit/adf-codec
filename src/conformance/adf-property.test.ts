@@ -7,11 +7,13 @@ import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } fro
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
+import { htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to-adf.ts'
 import { toEditorNormal } from '../markdown/portable/editor-normal.ts'
 
 const gateRuns = 1600
+const htmlPieces = fc.constantFrom('<', '>', '&', '"', '\n', '\r', '\0', '&amp;', '&quot;', '&#39;', '<p>', '</p>', '<li>', '</li>', '<ul>\n', '\n</ul>', '<br>', '<em>', '</em>', '<a href="x">', '</span>', '</div>', ' data-local-id="x"', ' start="2"', '<div class="adf-carry" data-adf="{&quot;type&quot;:&quot;x&quot;}">', '<img src="x">', 'é🎉')
 // What HTML text cannot hold (WHATWG HTML §13.1.3), and the line feed a carry element shows as a line break.
 const unshown = /\n|(?![\t\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/gu
 
@@ -83,6 +85,37 @@ test('a generated document writes HTML holding no character HTML cannot hold, an
         assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
         from = at + shown.length
       }
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('a generated document writes HTML that reads back to it', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(adfDocument, (document) => {
+      const written = adfToHtml(document)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+      const read = htmlToAdf(written.value)
+      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+      assert.deepEqual(read.value, document, `reading ${JSON.stringify(written.value)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('HTML a generated document writes, edited, reads to a result, and every document read writes HTML reading back to it', { timeout: propertyTimeout }, () => {
+  const edits = fc.array(fc.tuple(fc.nat(), fc.nat({ max: 3 }), htmlPieces), { maxLength: 4, minLength: 1 })
+  fc.assert(
+    fc.property(adfDocument, edits, (document, cuts) => {
+      const written = adfToHtml(document)
+      assert.ok(written.ok)
+      let html = written.value
+      for (const [at, removed, piece] of cuts) html = `${html.slice(0, at % (html.length + 1))}${piece}${html.slice((at % (html.length + 1)) + removed)}`
+      const read = htmlToAdf(html)
+      if (!read.ok) return
+      const rewritten = adfToHtml(read.value)
+      assert.ok(rewritten.ok, rewritten.ok ? '' : `${rewritten.error.code}: ${rewritten.error.message} — reading ${JSON.stringify(html)}`)
+      assert.deepEqual(htmlToAdf(rewritten.value), { ok: true, value: read.value }, `reading ${JSON.stringify(html)}`)
     }),
     propertyRuns(gateRuns),
   )

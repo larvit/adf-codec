@@ -1,5 +1,5 @@
 try {
-  const { adfToHtml, adfToLosslessMarkdown, isAdfDocument, losslessMarkdownToAdf } = await import('/dist/index.js')
+  const { adfToHtml, adfToLosslessMarkdown, htmlToAdf, isAdfDocument, losslessMarkdownToAdf } = await import('/dist/index.js')
   // WebDriver's JSON reads -0 back as 0, so a document crosses as JSON text with -0 tagged; run.js revives it.
   const spelled = (result) => (result.ok ? { ok: true, value: JSON.stringify(result.value, (_, value) => (Object.is(value, -0) ? '\u0000-0' : value)) } : result)
   window.convertCorpus = (corpus) => ({
@@ -8,7 +8,8 @@ try {
     realPayloads: corpus.realPayloads.map(({ json, name }) => {
       const adf = JSON.parse(json)
       const emitted = adfToLosslessMarkdown(adf)
-      return { emitted, html: adfToHtml(adf), isDocument: isAdfDocument(adf), name, parsed: emitted.ok ? spelled(losslessMarkdownToAdf(emitted.value)) : undefined }
+      const html = adfToHtml(adf)
+      return { emitted, html, htmlParsed: html.ok ? spelled(htmlToAdf(html.value)) : undefined, isDocument: isAdfDocument(adf), name, parsed: emitted.ok ? spelled(losslessMarkdownToAdf(emitted.value)) : undefined }
     }),
     roundTrip: corpus.roundTrip.map(({ json, markdown, name }) => {
       const adf = JSON.parse(json)

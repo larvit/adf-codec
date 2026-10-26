@@ -133,6 +133,8 @@ for (const [index, { json, name }] of corpus.realPayloads.entries()) {
     assert.ok(result.parsed.ok, `it did not parse back — ${refusal(result.parsed)}`)
     assert.deepEqual(revived(result.parsed.value), JSON.parse(json))
     assert.deepEqual(result.html, adfToHtml(JSON.parse(json)), 'it wrote other HTML than Node wrote')
+    assert.ok(result.htmlParsed.ok, `its HTML did not read back — ${refusal(result.htmlParsed)}`)
+    assert.deepEqual(revived(result.htmlParsed.value), JSON.parse(json))
   })
 }
 

@@ -33,7 +33,7 @@ export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocab
   return pairs
 }
 
-function vocabularyPair(key: string, value: JsonValue, kind: AttributeKind): VocabularyPair | undefined {
+export function vocabularyPair(key: string, value: JsonValue, kind: AttributeKind): VocabularyPair | undefined {
   if (kind === 'boolean') return typeof value === 'boolean' ? { key, kind, value } : undefined
   if (kind === 'number') return typeof value === 'number' ? { key, kind, value } : undefined
   if (kind === 'numbers') return isNumberList(value) ? { key, kind, value } : undefined

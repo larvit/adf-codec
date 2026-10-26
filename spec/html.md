@@ -1,8 +1,8 @@
 # The HTML dialect
 
-The HTML `adfToHtml` writes: semantic elements for the nodes and marks below, and the carry element
-for every other node (`docs/decisions.md` §The HTML dialect). The written form is contract
-(`docs/decisions.md` §The formats are API).
+The HTML `adfToHtml` writes and `htmlToAdf` reads: semantic elements for the nodes and marks below,
+and the carry element for every other node (`docs/decisions.md` §The HTML dialect). The written form
+is contract (`docs/decisions.md` §The formats are API).
 
 ## Blocks
 
@@ -116,3 +116,18 @@ later release writes it as its own element.
   - a `listItem` outside a list, an inline node in block position and a block node inline.
 - A block carry's JSON nests at most 500 levels less the depth it stands at, an inline carry's at
   most 500, as in markdown.
+
+## Reading
+
+`htmlToAdf` reads exactly the HTML above, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. A carry
+element reads from its `data-adf` alone, so editing what it shows doesn't change the document read.
+
+- Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
+  order, a block on the line of another, or no line feed at the end.
+- A `data-*` attribute naming no attribute its node holds apart from its element, or holding a value
+  outside that attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
+- A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,
+  is not compact with its keys sorted, or holds a number JSON cannot spell is
+  `unsupported-node-shape`, and so is the document's own carry element beside another block.
+- Blocks nest at most 500 levels, and a carried node's JSON at most as many as its position leaves,
+  as in writing; past that is `unsupported-nesting-depth`.
