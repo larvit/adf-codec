@@ -432,13 +432,15 @@ the shown code keeps the class its code block's own element takes.
 Inside a carry element, an image marked by a link to another target shows as portable markdown
 writes it inline (§A linked image standing inline in portable markdown, its link to another target,
 is written `[alt](href) ([image](url))`), so both targets stay; Goal 7 counts them as content. A link
-marking a node that shows a note goes around the note. Recorded 2026-10-24 without a panel of its
-own: it joins the second panel's `<a>` to that portable spelling.
+marking a node that shows a note goes around the note, and an image's own `text`, outside Atlassian's
+schema, shows first, as every carried node's does. Recorded 2026-10-24 without a panel of its own:
+it joins the second panel's `<a>` to that portable spelling.
 
 Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
-text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone,
-until `todo.md` item 133 writes inline cards as their own elements, in 0.3.0. Recorded 2026-10-24
-without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
+text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone.
+Atlassian's schema gives no card a link mark, so only a hand-built document meets this;
+`todo.md` item 133 ends it for inline cards, in 0.3.0. Recorded 2026-10-24 without a panel of its
+own: it puts the second panel's `<a>` around the text a card shows.
 
 ## No runtime dependencies
 

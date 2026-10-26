@@ -48,9 +48,9 @@ test('shows an image a link to another target marks by its alt, else the target,
   assert.deepEqual(shownImage({ attrs: { type: 'external', url: moon }, type: 'media' }, ' '), { after: moon, link: undefined, text: moon })
 })
 
-test('shows an image with no URL by its alt, else by no text, a note standing in its place', () => {
+test('shows an image with no URL by its alt, else nothing, a note standing in its place', () => {
   assert.deepEqual(shownImage({ attrs: { alt: 'The moon', type: 'file' }, type: 'media' }, target), { after: undefined, link: undefined, text: 'The moon' })
-  assert.deepEqual(shownImage({ attrs: { type: 'file' }, type: 'mediaInline' }, undefined), { after: undefined, link: undefined, text: undefined })
+  assert.equal(shownImage({ attrs: { type: 'file' }, type: 'mediaInline' }, undefined), undefined)
   assert.deepEqual(shownImage({ attrs: { alt: 'The moon', type: 'external', url: ' ' }, type: 'media' }, undefined), { after: undefined, link: undefined, text: 'The moon' })
 })
 

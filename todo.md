@@ -29,7 +29,7 @@
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
-| 143 | 0.4.0 |  | defect | **Keep the link around a note in `adfToPortableMarkdown`, so a linked stored image with no alt writes its note linked.** | 2 | 1 | 2 | 3 | 3 | 7 by 1 | 6.5 |
+| 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note and the target of a link marking a card, so a linked stored image or card writes every target.** | 2 | 1 | 2 | 3 | 3 | 7 by 1 | 6.5 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
@@ -221,7 +221,7 @@ item 60, 2026-10-22.
 strings near V8's longest, about 512 MB each, so measure each leg's peak before picking the limit:
 one too small fails the gate.
 
-### 143. Keep the link around a note in `adfToPortableMarkdown`, so a linked stored image with no alt writes its note linked.
+### 143. Keep, in `adfToPortableMarkdown`, the link around a note and the target of a link marking a card, so a linked stored image or card writes every target.
 
 `noteLeaves` (`src/markdown/portable/inline-reduction.ts`) drops the node's marks, so a stored
 image a link marks writes `_(image not included)_` without the link's target, which Goal 7 counts as
