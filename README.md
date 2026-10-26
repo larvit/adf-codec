@@ -150,7 +150,7 @@ const page: AdfDocument = {
   version: 1,
 }
 
-// URLs are written as the ADF holds them, javascript: included: sanitize HTML from an author you do not trust before showing it.
+// Sanitize HTML from an author you do not trust before showing it: URLs are written as the ADF holds them, javascript: included.
 const html = adfToHtml(page)
 if (html.ok) console.log(html.value)
 // <h2 data-local-id="a1f3">Release notes</h2>
