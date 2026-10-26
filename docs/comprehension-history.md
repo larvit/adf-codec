@@ -1140,3 +1140,34 @@ Inherited architect, decided by:
 - Locality: `src/markdown/parse/inline-content.ts:209` `directivePieces`: each slot returns its nodes and a list of (image)s still to place, tracked through eight units, and `inLink`'s narrowed meaning lives in one boolean expression
 - Locality: `src/markdown/emit/inline-line.ts:69` `tryPipeCell`: the portable flavour skips the pipe check, its safety resting on three guards elsewhere, and the comment names the wrong file for half of it
 - Locality: `src/markdown/portable/inline-reduction.ts:154` `portableLink`: reads easier; the reducer only normalizes and escaping stays in `spellTitle`
+
+## 2026-10-26T12:16:45Z, PR #86 at fa00f09e18c478f4049ce7026ebc58645da055ec, against 61a5c073e9a087fd88e58e4a2fd5de90d22a5671
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | same | same | better |
+| Inherited architect | same | better | same | same | better |
+
+Mid A, decided by:
+
+- Locality, Navigation: `src/adf/shown-text.ts:60` `shownText`: one switch per question says what each node shows, shared by the portable writer and the HTML carry, where `nodeLeaves` worked it out inline
+- Locality: `src/adf/document.ts:53` `writableContent`: every writer takes the shape, version and length checks from one function instead of repeating them
+- Navigation, Locality: `src/adf/plain-image.ts:19` `plainImage`: one named predicate answers "is this the plain image" for both formats; `tryImage` shrinks to a lookup
+- Navigation: `src/length-bound.ts:4` `longestOutput`: the file and the name now say the bound covers every writer
+- Navigation: `src/html/emit/adf-to-html.ts:21` `adfToHtml`: a cold-findable `html/emit/` of small units named for one block kind each, its contract in `spec/html.md`
+- Shape: `src/markdown/mark-spellings.ts:40` `linkMark`: seven small converters between three representations of one link; `shownLink` and `linkAttrs` differ only on a non-string title
+- Shape: `src/html/emit/carry-element.ts:13` `carriedBlock`: reuses the names `src/markdown/opaque-carry.ts` exports, with other return types
+- Shape, Self-sufficiency: `src/html/emit/carry-element.ts:30` `shownBlocks`: a stack walk with `null` sentinels and a threaded `code` field needs its comment and a second read
+
+Inherited architect, decided by:
+
+- Locality, Overall: `src/adf/shown-text.ts:60` `shownText`: what each node shows has one switch per question, shared by the portable writer and the HTML carry, where it was worked out inline in `nodeLeaves`, `cardLeaves` and `mediaLeaves`
+- Locality, Overall: `src/adf/document.ts:53` `writableContent`: every writer opens with one call instead of repeating the prologue
+- Locality: `.oxlintrc.json:6` the `src/adf/**` and `src/html/**` import bans: `adf/` importing no format, and HTML and markdown not importing each other, is now machine-checked
+- Locality: `src/markdown/parse/inline-content.ts:387` `closeBracket`: an explicit bracket stack matches CommonMark's algorithm where a backward scan and `deactivatedBefore` did
+- Shape: `src/markdown/mark-spellings.ts:40` `linkMark`: two shapes for one link with converters both ways, and `shownLink` reading a non-string title differently from `linkAttrs`
+- Shape: `src/adf/shown-text.ts:7` `isBlockNodeType`: neither it nor `oneLine` is about shown text; the renames to `longestOutput` and `plain-image.ts` balance it
+- Navigation: `src/html/emit/carry-element.ts:13` `carriedBlock`: its name, `tryImage` and `linkedText` collide with units in `src/markdown/`, so a symbol search finds two homes
+- Self-sufficiency: `src/html/emit/carry-element.ts:30` `shownBlocks`: the densest new unit, a stack with `null` block ends and an inherited `code`; its comments send a reader to the decision log where `spec/html.md` explains it
