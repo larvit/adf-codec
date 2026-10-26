@@ -1,8 +1,11 @@
+import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorCode, ConvertErrorPath, ParseError, Result, SourcePosition } from '../../result.ts'
 import { unescapedValue } from '../escaping.ts'
 
 // A node's place among its parent's content, the document's own content where `parent` is undefined; a path is built only for a refusal.
 export type Place = { index: number; parent: Place | undefined }
+
+export type ReadNode = Result<{ end: number; node: AdfNode }, ParseError>
 
 // A start tag as `adfToHtml` writes it, its attributes' values unescaped.
 export type StartTag = { attributes: (readonly [string, string])[]; end: number; name: string; start: number }

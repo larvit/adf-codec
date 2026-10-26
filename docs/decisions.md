@@ -1013,10 +1013,11 @@ consults it rather than restating it, so no fixture the emitter writes can be re
 spelling the emitter refuses gives its own error rather than a second name for it. That consulting
 is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
 
-`.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `parse/` and `emit/` from
-importing `markdown/portable/`, keeps `markdown/directive/` from importing `emit/` or `parse/`,
-keeps `markdown/` and `html/` from importing each other, and keeps `adf/` from importing either, as
-`no-restricted-imports` overrides. A later override replaces an earlier one's rule, so each
-`markdown/` subdirectory's override repeats the ban on `html/`, and `ci.sh` probes every override. They are lint rules because the technical principles refuse a
+`.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `html/parse/` from importing
+`html/emit/`, keeps `parse/` and `emit/` from importing `markdown/portable/`, keeps
+`markdown/directive/` from importing `emit/` or `parse/`, keeps `markdown/` and `html/` from
+importing each other, and keeps `adf/` from importing either, as `no-restricted-imports` overrides.
+A later override replaces an earlier one's rule, so each subdirectory's override repeats its
+format's ban on the other format, and `ci.sh` probes every override. They are lint rules because the technical principles refuse a
 test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
 double quotes and a dynamic `import()`.

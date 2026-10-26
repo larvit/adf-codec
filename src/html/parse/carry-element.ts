@@ -1,33 +1,37 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
-import type { ParseError, Result } from '../../result.ts'
+import type { ParseError, Read, Result } from '../../result.ts'
+import { carriedNesting, carriedNode, carriedValue } from '../../adf/carried-json.ts'
 import { holdableJson } from '../escaping.ts'
-import { isAdfNode } from '../../adf/document.ts'
-import { overNested } from '../../json-value.ts'
-import { parseJsonText } from '../../json-text.ts'
+import { readCarryAttributes } from '../carry-attributes.ts'
 import { refused, type Place, type StartTag } from './source.ts'
-import { serializeCanonicalJson } from '../../canonical-json.ts'
+import { spellsCanonicalJson } from '../../canonical-json.ts'
 import { success } from '../../result.ts'
 
-// The JSON a carry element holds, and the end of the element; what it shows is skipped unread (docs/decisions.md §The HTML dialect).
-export function readCarry(html: string, tag: StartTag, levels: number, place: Place): Result<{ end: number; held: JsonValue }, ParseError> {
-  const [kind, held, ...others] = tag.attributes
-  if (kind?.[0] !== 'class' || kind[1] !== 'adf-carry' || held?.[0] !== 'data-adf' || others.length > 0) {
-    return refused('unmappable-html', `a <${tag.name}> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone`, html, tag.end, place)
-  }
-  const json = held[1]
-  const parsed = parseJsonText(json)
-  if (parsed.refusal === 'syntax') return refused('unmappable-html', "a carry element's data-adf holds invalid JSON", html, tag.end, place)
-  if (parsed.refusal !== undefined) return refused('unsupported-node-shape', "a carry element's data-adf holds a number JSON cannot spell", html, tag.end, place)
-  if (overNested(parsed.value, levels)) return refused('unsupported-nesting-depth', `a carried node's JSON nests deeper than the ${levels} levels its position leaves`, html, tag.end, place)
-  if (holdableJson(serializeCanonicalJson(parsed.value, 'compact')) !== json) {
-    return refused('unsupported-node-shape', "a carry element spells its node's JSON canonically: compact, keys sorted, a character HTML cannot hold as a JSON escape", html, tag.end, place)
-  }
+const holder = "a carry element's data-adf"
+
+// The JSON a carry element holds, and the element's end; what it shows is skipped unread (docs/decisions.md §The HTML dialect).
+export function readCarry(html: string, tag: StartTag, levels: number, place: Place): Result<{ end: number; held: JsonValue; json: string }, ParseError> {
+  const json = readCarryAttributes(tag.attributes)
+  if (json === undefined) return refused('unmappable-html', `a <${tag.name}> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone`, html, tag.end, place)
+  const held = heldJson(json, levels)
+  if (held.fault !== undefined) return refused(held.fault.code, held.fault.message, html, tag.end, place)
   const closer = `</${tag.name}>`
   const end = html.indexOf(closer, tag.end)
-  return end < 0 ? refused('unmappable-html', `a carry element ends at ${closer}: found none`, html, tag.end, place) : success({ end: end + closer.length, held: parsed.value })
+  return end < 0 ? refused('unmappable-html', `a carry element ends at ${closer}: found none`, html, tag.end, place) : success({ end: end + closer.length, held: held.value, json })
+}
+
+// Short of the node, which `heldNode` reads once the element's end is found, so a carry missing its closing tag is refused for that first.
+function heldJson(json: string, levels: number): Read<JsonValue> {
+  const held = carriedValue(json, holder, { code: 'unmappable-html', message: `${holder} holds invalid JSON` })
+  if (held.fault !== undefined) return held
+  const nested = carriedNesting(held.value, levels)
+  if (nested !== undefined) return { fault: nested }
+  if (spellsCanonicalJson(held.value, 'compact', json, holdableJson)) return held
+  return { fault: { code: 'unsupported-node-shape', message: "a carry element spells its node's JSON canonically: compact, keys sorted, a character HTML cannot hold as a JSON escape" } }
 }
 
 export function heldNode(held: JsonValue, html: string, index: number, place: Place): Result<AdfNode, ParseError> {
-  return isAdfNode(held) ? success(held) : refused('unsupported-node-shape', "a carry element's data-adf holds one ADF node's JSON: this JSON is no ADF node", html, index, place)
+  const node = carriedNode(held, holder)
+  return node.fault === undefined ? success(node.value) : refused(node.fault.code, node.fault.message, html, index, place)
 }

@@ -10,10 +10,11 @@ export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling)
   return [...canonicalJsonPieces(value, spelling)].join('')
 }
 
-// Stops at the first piece that does not match `text`: re-spelled with two-space indentation, a short compact text can pass the engine's longest string.
-export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string): boolean {
+// Stops at the first piece, passed through `respell`, that does not match `text`: re-spelled with two-space indentation, a short compact text can pass the engine's longest string.
+export function spellsCanonicalJson(value: JsonValue, spelling: JsonSpelling, text: string, respell = (canonical: string): string => canonical): boolean {
   let offset = 0
-  for (const piece of canonicalJsonPieces(value, spelling)) {
+  for (const canonical of canonicalJsonPieces(value, spelling)) {
+    const piece = respell(canonical)
     if (!text.startsWith(piece, offset)) return false
     offset += piece.length
   }
