@@ -39,11 +39,11 @@ export function referenceName(node: AdfNode): string | undefined {
   }
 }
 
-// What an image shows in place of itself, `href` the target of the link marking it, if any: `text`, else a note; `link`, its URL, which `text` links to where no link marks it; `after`, its URL, shown after a link going elsewhere.
-export function shownImage(media: AdfNode, href: string | undefined): { after: string | undefined; link: string | undefined; text: string | undefined } {
+// What an image shows in place of itself, `href` the target of the link marking it, if any: `text`; `link`, its URL, which `text` links to where no link marks it; `after`, its URL, shown after a link going elsewhere. `undefined` where it shows no text, so a note stands in its place.
+export function shownImage(media: AdfNode, href: string | undefined): { after: string | undefined; link: string | undefined; text: string } | undefined {
   const alt = visibleText(nodeAttrs(media)['alt'])
   const url = shownUrl(media)
-  if (url === undefined) return { after: undefined, link: undefined, text: alt }
+  if (url === undefined) return alt === undefined ? undefined : { after: undefined, link: undefined, text: alt }
   if (href === undefined) return { after: undefined, link: url, text: alt ?? url }
   if (href === url) return { after: undefined, link: undefined, text: alt ?? url }
   return { after: url, link: undefined, text: alt ?? visibleText(href) ?? url }

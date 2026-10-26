@@ -59,14 +59,16 @@ function cardLeaves(card: AdfNode, marks: readonly AdfMark[], container: LineCon
   return linkedLeaves(shownText(card) ?? href, href, marks, container)
 }
 
-function linkedLeaves(text: string | undefined, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
+function linkedLeaves(text: string, href: string, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   return textLeaves(text, [...marks.filter((mark) => mark.type !== 'link'), { attrs: { href }, type: 'link' }], container)
 }
 
 // An image standing inline is a link to it: the reader builds no node for an inline image, reading it as its alt text linked, and inside a link as the link's text, then (image).
 function mediaLeaves(media: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
-  const { after, link, text } = shownImage(media, shownLink(media)?.href)
-  const shown = link === undefined ? textLeaves(text, marks, container, referenceName(media)) : linkedLeaves(text, link, marks, container)
+  const image = shownImage(media, shownLink(media)?.href)
+  if (image === undefined) return textLeaves(undefined, marks, container, referenceName(media))
+  const { after, link, text } = image
+  const shown = link === undefined ? textLeaves(text, marks, container) : linkedLeaves(text, link, marks, container)
   return after === undefined ? shown : [...shown, ...imageAside((word) => linkedLeaves(word, after, marks, container))]
 }
 
