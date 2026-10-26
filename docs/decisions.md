@@ -840,15 +840,19 @@ that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which co
 
 ## HTML writes a URL as the ADF holds it, whatever its scheme
 
-2026-10-23, the maintainer. Goal 1. Valid until `todo.md` item 142 weighs the alternatives.
+2026-10-23, the maintainer; weighed against a filter 2026-10-26. Goal 1. Valid until a security
+addition filters schemes.
 
 `adfToHtml` writes every URL exactly as the ADF holds it, escaped as every attribute value is,
 `javascript:`, `vbscript:`, `file:` and `data:` included. That covers a link's `href`, an image's
 `src`, and the `href` of each link the carry element shows: a carried node's link mark, a card's
-`url` or `data.url`, and an external image's `url`. Carrying such a link or image, to leave the URL
-out of the HTML as cmark does by default, was proposed and not taken; item 142 weighs it against
-writing the URL. Carrying alone would not keep the URL out, since the carry element links what it
-shows: the carry would also have to drop the shown `href`.
+`url` or `data.url`, and an external image's `url`. The markdown writers do the same.
+
+Keeping such a URL out of the visible HTML, in `data-adf` alone, as cmark does by default, was
+weighed and not taken: it would make the carry show a link without its target, make `htmlToAdf`
+restore the URL from `data-adf`, and need a scheme list the library keeps current. Sanitizing HTML
+from an author a consumer does not trust stays the consumer's, as the README says. The maintainer
+left a scheme filter for a later security addition.
 
 ## Nothing recurses unbounded
 
