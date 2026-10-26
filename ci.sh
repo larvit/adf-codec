@@ -11,6 +11,8 @@ leg "lint ($node_image)" in_image "$node_image" npm run lint
 boundary_probes="src/adf/boundary-probe.ts ../markdown/flavour.ts
 src/adf/boundary-probe-html.ts ../html/emit/adf-to-html.ts
 src/html/boundary-probe.ts ../markdown/flavour.ts
+src/html/parse/boundary-probe.ts ../emit/adf-to-html.ts
+src/html/parse/boundary-probe-markdown.ts ../../markdown/flavour.ts
 src/markdown/boundary-probe-html.ts ../html/emit/adf-to-html.ts
 src/markdown/directive/boundary-probe.ts ../parse/blocks.ts
 src/markdown/directive/boundary-probe-emit.ts ../emit/image.ts

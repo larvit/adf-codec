@@ -1,28 +1,12 @@
-import type { JsonValue } from '../json-value.ts'
-import type { LinkAttrs } from '../adf/mark-attributes.ts'
-
 const entities: ReadonlyMap<string, string> = new Map([
   ['&amp;', '&'],
   ['&gt;', '>'],
   ['&lt;', '<'],
   ['&quot;', '"'],
 ])
-const languageToken = /^[^\t\n\f\r ]+$/
 // What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): any control but a tab, line feed or form feed, a carriage return among them, since a parser reads it as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
 const unwritable = /(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u
 const unwritables = new RegExp(unwritable.source, 'gu')
-
-export function anchorOpener({ href, title }: LinkAttrs): string | undefined {
-  const url = writableValue(href)
-  const titled = optionalAttribute('title', title)
-  return url === undefined || titled === undefined ? undefined : `<a href="${url}"${titled}>`
-}
-
-// The language a `<code>`'s class names, `undefined` where `languageClass` writes no such class.
-export function classLanguage(className: string): string | undefined {
-  const language = className.startsWith('language-') ? className.slice('language-'.length) : undefined
-  return language !== undefined && languageToken.test(language) ? language : undefined
-}
 
 // The carry's JSON, which spells each character HTML cannot hold as a JSON escape reading back to the same string.
 export function holdableJson(json: string): string {
@@ -31,12 +15,6 @@ export function holdableJson(json: string): string {
 
 export function jsonValue(json: string): string {
   return escapeHtml(holdableJson(json))
-}
-
-// A code block's ` class="language-…"`, `''` where it holds no language, `undefined` where a class cannot hold the language as one token.
-export function languageClass(language: JsonValue | undefined): string | undefined {
-  if (language === undefined) return ''
-  return typeof language === 'string' && languageToken.test(language) ? optionalAttribute('class', `language-${language}`) : undefined
 }
 
 // ` name="value"`, `''` where the value is undefined, `undefined` where HTML cannot hold it.

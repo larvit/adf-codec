@@ -505,6 +505,8 @@ content. No stylesheet ships. The complete dialect:
 
 `htmlToAdf` reads exactly that HTML back, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. A carry
 element reads from its `data-adf` alone, so editing what it shows doesn't change the document read.
+The exception is an edit adding the element's own closing tag, `</div>` or `</span>`, which ends the
+element there.
 Any other HTML is refused as `unmappable-html`: another element, attribute or escape, such as `<b>`,
 `<br/>` or `&#39;`.
 

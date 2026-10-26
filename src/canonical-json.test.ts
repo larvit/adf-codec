@@ -62,3 +62,9 @@ test('holds a text to the canonical spelling, whole', () => {
   assert.ok(!spellsCanonicalJson(value, 'two-space', '{"a":[1,2]}'))
   assert.ok(!spellsCanonicalJson(1e21, 'compact', '1e21'))
 })
+
+test('holds a text to the canonical spelling with each piece respelled', () => {
+  const upper = (piece: string): string => piece.toUpperCase()
+  assert.ok(spellsCanonicalJson({ a: 'b' }, 'compact', '{"A":"B"}', upper))
+  assert.ok(!spellsCanonicalJson({ a: 'b' }, 'compact', '{"a":"b"}', upper))
+})

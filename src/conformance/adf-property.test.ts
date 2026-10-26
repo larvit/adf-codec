@@ -2,11 +2,12 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
-import type { AdfNode } from '../adf/document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
 import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
+import { centeredImage, externalMedia } from '../adf/plain-image.ts'
 import { htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to-adf.ts'
@@ -16,6 +17,73 @@ const gateRuns = 1600
 const htmlPieces = fc.constantFrom('<', '>', '&', '"', '\n', '\r', '\0', '&amp;', '&quot;', '&#39;', '<p>', '</p>', '<li>', '</li>', '<ul>\n', '\n</ul>', '<br>', '<em>', '</em>', '<a href="x">', '</span>', '</div>', ' data-local-id="x"', ' start="2"', '<div class="adf-carry" data-adf="{&quot;type&quot;:&quot;x&quot;}">', '<img src="x">', 'é🎉')
 // What HTML text cannot hold (WHATWG HTML §13.1.3), and the line feed a carry element shows as a line break.
 const unshown = /\n|(?![\t\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/gu
+
+const depthIdentifier = fc.createDepthIdentifier()
+const elementAttributes = [' alt=""', ' alt="y"', ' class="language-x"', ' data-local-id="x"', ' start="2"', ' title="t"']
+const elementInlinePieces = ['\n', '&amp;', '</p>', '<a href="x">a</a>', '<br>', '<code>c</code>', '<em>a</em>', '<img src="x">', '<p>', '<strong>b</strong>', 'a']
+const elementLines = ['<blockquote>\n<p>a</p>\n</blockquote>\n', '<hr>\n', '<li>\n<p></p>\n</li>\n', '<li>\n<p>a</p>\n</li>\n', '<li><p>a</p></li>\n', '<li>a</li>\n', '<p></p>\n', '<p><img src="x" alt=""></p>\n', '<p><img src="x"></p>\n', '<p>a</p>\n', '<pre><code>a</code></pre>\n', '<ul>\n<li>a</li>\n</ul>\n']
+const elementText = fc.string({ maxLength: 4, minLength: 1, unit: fc.constantFrom('\n', ' ', '"', '&', '<', 'a', 'é') })
+const elementInline = fc.oneof(
+  { arbitrary: fc.record({ marks: fc.subarray<AdfMark>([{ type: 'strong' }, { type: 'em' }, { type: 'code' }, { attrs: { href: 'x' }, type: 'link' }]), text: elementText }).map(({ marks, text }): AdfNode => (marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' })), weight: 4 },
+  { arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
+)
+const localId = fc.record({ localId: fc.constantFrom('a1', 'b2') }, { noNullPrototype: true, requiredKeys: [] })
+// The nodes `adfToHtml` writes as their own elements, so a document holding these alone writes no carry element, short of adjacent unmarked text.
+const { elementBlock } = fc.letrec<{ elementBlock: AdfNode }>((tie) => {
+  const blocks = fc.array(tie('elementBlock'), { depthIdentifier, maxLength: 3 })
+  const inline = fc.array(elementInline, { maxLength: 3 })
+  const items = fc.array(fc.record({ attrs: localId, content: blocks }).map(({ attrs, content }) => element('listItem', attrs, content)), { depthIdentifier, maxLength: 3 })
+  const language = fc.record({ language: fc.constantFrom('c', 'js') }, { noNullPrototype: true, requiredKeys: [] })
+  const order = fc.record({ order: fc.integer({ max: 3, min: -1 }) }, { noNullPrototype: true, requiredKeys: [] })
+  return {
+    elementBlock: fc.oneof(
+      { depthIdentifier, depthSize: 'small', maxDepth: 3 },
+      { arbitrary: fc.record({ attrs: localId, content: inline }).map(({ attrs, content }) => element('paragraph', attrs, content)), weight: 6 },
+      fc.record({ attrs: localId, content: inline, level: fc.integer({ max: 6, min: 1 }) }).map(({ attrs, content, level }) => element('heading', { ...attrs, level }, content)),
+      fc.record({ attrs: language, text: fc.option(elementText, { nil: undefined }) }).map(({ attrs, text }) => element('codeBlock', attrs, text === undefined ? [] : [{ text, type: 'text' }])),
+      localId.map((attrs) => element('rule', attrs, [])),
+      fc.record({ alt: fc.option(elementText, { nil: undefined }), linked: fc.boolean(), url: elementText }).map(({ alt, linked, url }) => centeredImage([externalMedia(alt ?? '', url, linked ? { href: 'x' } : undefined)])),
+      { arbitrary: fc.record({ attrs: localId, content: blocks }).map(({ attrs, content }) => element('blockquote', attrs, content)), weight: 2 },
+      { arbitrary: fc.record({ attrs: localId, content: items }).map(({ attrs, content }) => element('bulletList', attrs, content)), weight: 2 },
+      { arbitrary: fc.record({ attrs: order, content: items }).map(({ attrs, content }) => element('orderedList', attrs, content)), weight: 2 },
+    ),
+  }
+})
+const elementDocument = fc.array(elementBlock, { maxLength: 4 }).map((content): AdfDocument => ({ content, type: 'doc', version: 1 }))
+
+// A node holding `attrs` and `content` only where it holds any, as a node `adfToHtml` writes as its element.
+function element(type: string, attrs: AdfAttributes, content: AdfNode[]): AdfNode {
+  return { ...(Object.keys(attrs).length === 0 ? {} : { attrs }), ...(content.length === 0 ? {} : { content }), type }
+}
+
+// An attribute goes inside a start tag, a line at the start of one, and any other piece between two of the HTML's tags, text runs and line feeds, in place of up to `removed` of them.
+function edited(html: string, [at, removed, piece]: readonly [number, number, string]): string {
+  if (piece.startsWith(' ')) {
+    const tags = [...html.matchAll(/<[a-z][^>]*>/g)]
+    const tag = tags[at % Math.max(tags.length, 1)]
+    if (tag === undefined) return html
+    const end = tag.index + tag[0].length - 1
+    return `${html.slice(0, end)}${piece}${html.slice(end)}`
+  }
+  const tokens = html.split(/(<[^>]*>|\n)/).filter((token) => token !== '')
+  if (!elementLines.includes(piece)) {
+    tokens.splice(at % (tokens.length + 1), removed, piece)
+    return tokens.join('')
+  }
+  const lineStarts = [0, ...tokens.flatMap((token, index) => (token === '\n' ? [index + 1] : []))]
+  tokens.splice(lineStarts[at % lineStarts.length] ?? 0, 0, piece)
+  return tokens.join('')
+}
+
+// Without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read.
+function assertReadsBack(html: string): void {
+  const read = htmlToAdf(html)
+  if (!read.ok) return
+  const rewritten = adfToHtml(read.value)
+  assert.ok(rewritten.ok, rewritten.ok ? '' : `${rewritten.error.code}: ${rewritten.error.message} — reading ${JSON.stringify(html)}`)
+  if (!html.includes('class="adf-carry"')) assert.equal(rewritten.value, html, `reading ${JSON.stringify(html)}`)
+  assert.deepEqual(htmlToAdf(rewritten.value), { ok: true, value: read.value }, `reading ${JSON.stringify(html)}`)
+}
 
 // Every text node's text in document order.
 function documentTexts(nodes: readonly AdfNode[]): string[] {
@@ -103,7 +171,7 @@ test('a generated document writes HTML that reads back to it', { timeout: proper
   )
 })
 
-test('HTML a generated document writes, edited, reads to a result, and every document read writes HTML reading back to it', { timeout: propertyTimeout }, () => {
+test('HTML a generated document writes, edited, reads to a result, and every document read writes HTML reading back to it, the very HTML read where it holds no carry element', { timeout: propertyTimeout }, () => {
   const edits = fc.array(fc.tuple(fc.nat(), fc.nat({ max: 3 }), htmlPieces), { maxLength: 4, minLength: 1 })
   fc.assert(
     fc.property(adfDocument, edits, (document, cuts) => {
@@ -111,11 +179,19 @@ test('HTML a generated document writes, edited, reads to a result, and every doc
       assert.ok(written.ok)
       let html = written.value
       for (const [at, removed, piece] of cuts) html = `${html.slice(0, at % (html.length + 1))}${piece}${html.slice((at % (html.length + 1)) + removed)}`
-      const read = htmlToAdf(html)
-      if (!read.ok) return
-      const rewritten = adfToHtml(read.value)
-      assert.ok(rewritten.ok, rewritten.ok ? '' : `${rewritten.error.code}: ${rewritten.error.message} — reading ${JSON.stringify(html)}`)
-      assert.deepEqual(htmlToAdf(rewritten.value), { ok: true, value: read.value }, `reading ${JSON.stringify(html)}`)
+      assertReadsBack(html)
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('HTML a document of the dialect\'s own elements writes, edited between its tags, reads only as the very HTML its document read writes', { timeout: propertyTimeout }, () => {
+  const edits = fc.array(fc.tuple(fc.nat(), fc.nat({ max: 1 }), fc.constantFrom(...elementAttributes, ...elementInlinePieces, ...elementLines)), { maxLength: 2, minLength: 1 })
+  fc.assert(
+    fc.property(elementDocument, edits, (document, cuts) => {
+      const written = adfToHtml(document)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+      assertReadsBack(cuts.reduce(edited, written.value))
     }),
     propertyRuns(gateRuns),
   )

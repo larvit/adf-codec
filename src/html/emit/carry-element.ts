@@ -1,10 +1,13 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { LinkAttrs } from '../../adf/mark-attributes.ts'
-import { anchorOpener, jsonValue, languageClass, shownValue } from '../escaping.ts'
+import { anchorOpener } from '../anchor-element.ts'
 import { carriedJson } from '../../adf/carried-json.ts'
+import { carryAttributes } from '../carry-attributes.ts'
+import { languageClass } from '../language-class.ts'
 import { largestNesting } from '../../nesting.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
+import { shownValue } from '../escaping.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
 // The content a carry element shows of one block; `code` the code block holding it, if any.
@@ -23,7 +26,7 @@ export function carriedInline(node: AdfNode, path: ConvertErrorPath): Result<str
 }
 
 export function carryElement(tag: string, json: string, content: string): string {
-  return `<${tag} class="adf-carry" data-adf="${jsonValue(json)}">${content}</${tag}>`
+  return `<${tag}${carryAttributes(json)}>${content}</${tag}>`
 }
 
 // What a carry element shows, block by block, as the writer panels picked it (docs/decisions.md §The HTML dialect); a reader of the element reads its JSON alone.

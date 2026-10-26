@@ -120,7 +120,9 @@ later release writes it as its own element.
 ## Reading
 
 `htmlToAdf` reads exactly the HTML above, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. A carry
-element reads from its `data-adf` alone, so editing what it shows doesn't change the document read.
+element reads from its `data-adf` alone, and ends at the first closing tag of its own name, `</div>`
+or `</span>`. So editing what it shows doesn't change the document read, unless the edit adds that
+closing tag.
 
 - Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
   order, a block on the line of another, or no line feed at the end.

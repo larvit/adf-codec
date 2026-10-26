@@ -16,6 +16,12 @@
       }
     },
     {
+      "files": ["src/html/parse/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/markdown/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
       "files": ["src/markdown/**"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]

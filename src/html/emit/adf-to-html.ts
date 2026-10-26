@@ -1,11 +1,14 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { anchorOpener, languageClass, optionalAttribute, writableValue } from '../escaping.ts'
+import { anchorOpener } from '../anchor-element.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
 import { dataAttributes } from '../data-attributes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { firstParagraphForm } from '../first-paragraph.ts'
+import { imageElement } from '../image-element.ts'
 import { inlineHtml, writableText } from './inline.ts'
 import { isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
+import { languageClass } from '../language-class.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
 import { plainImage } from '../../adf/plain-image.ts'
@@ -99,7 +102,6 @@ function containerPieces(tag: string, attributes: string, children: Pending[] | 
   return [`<${tag}${attributes}>\n`, ...children, `\n</${tag}>`]
 }
 
-// An item's first paragraph stands on the item's line, as the writer panels picked (docs/decisions.md §The HTML dialect).
 function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
   if (node.content === undefined) return success([`<li${attributes}></li>`])
   const blocks = blockPieces(node.content, path, depth)
@@ -111,11 +113,11 @@ function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
   return success(blocks.length === 1 ? [`<li${attributes}>${line.value}</li>`] : [`<li${attributes}>${line.value}`, ...blocks.slice(1), '\n</li>'])
 }
 
-// `undefined` where the paragraph takes a line of its own: where it rides the carry, or holds neither content nor an attribute: written bare, it would read back as no paragraph.
+// `undefined` where the paragraph takes a line of its own.
 function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
-  const attributes = dataAttributes(paragraph, blockNodes.paragraph.attributes, [])
-  if (attributes !== '') return inlineElement('p', attributes, nodeContent(paragraph), path)
-  return nodeContent(paragraph).length === 0 ? undefined : inlineHtml(nodeContent(paragraph), path)
+  const form = firstParagraphForm(paragraph)
+  if (form === 'block') return undefined
+  return form === 'bare' ? inlineHtml(nodeContent(paragraph), path) : tryLeafBlock(paragraph, path)
 }
 
 function tryLeafBlock(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
@@ -146,11 +148,8 @@ function tryCodeBlock(node: AdfNode): string | undefined {
 
 function tryImage(node: AdfNode): string | undefined {
   const image = plainImage(node)
-  if (image === undefined) return undefined
-  const src = writableValue(image.url)
-  const alt = optionalAttribute('alt', image.alt)
-  if (src === undefined || alt === undefined) return undefined
-  const element = `<img src="${src}"${alt}>`
+  const element = image === undefined ? undefined : imageElement(image)
+  if (image === undefined || element === undefined) return undefined
   if (image.link === undefined) return `<p>${element}</p>`
   const anchor = anchorOpener(image.link)
   return anchor === undefined ? undefined : `<p>${anchor}${element}</a></p>`
