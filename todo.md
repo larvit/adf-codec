@@ -6,25 +6,26 @@
 
 `Bar = 0.1`
 
-`Next ID = 146`
+`Next ID = 150`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 145 | 0.3.0 |  | question | **Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
+| 140 | 0.3.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
+| 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
+| 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
+| 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
+| 145 | 0.3.0 |  |  | **Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
+| 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 131 | 0.3.0 |  |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
 | 133 | 0.3.0 | 131 | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
+| 73 | 0.3.0 | 33, 91, 95, 109, 115, 131, 132, 133, 140, 145, 146 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
-| 140 | 0.4.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
-| 95 | 0.4.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
-| 33 | 0.4.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
-| 109 | 0.4.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
-| 115 | 0.4.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
-| 91 | 0.4.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
-| 73 | 0.4.0 | 33, 91, 95, 109, 115, 140 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -33,6 +34,7 @@
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
+| 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 141 | 0.4.0 | 131 |  | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 | 131 |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 136 | 0.4.0 | 131 |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
@@ -42,6 +44,8 @@
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 72 | 0.4.0 | 45, 46, 51, 68, 75, 77, 80, 81, 107, 112, 134, 135, 136 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
+| 149 | 0.4.0 | 131 |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
 | 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 26.2 |
 | 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -65,44 +69,6 @@
 
 ## Details
 
-### 145. Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.
-
-The table lists only npm packages over 1,000 downloads a week, run in `converter-comparison/`.
-`mdast-util-from-adf` 2.3.0 passed that bar after the table's date, 2026-10-14: 1,283 downloads in
-the week to 2026-10-26. A developer choosing a converter also weighs Atlassian's own paths, the
-Rovo MCP server's markdown and HTML formats among them, and libraries in Python, Go, Rust and .NET.
-
-Open for the maintainer: the inclusion bar outside npm, since PyPI, crates.io, NuGet and Go modules
-count downloads differently or not at all; and how a row is checked where no published code can run
-here, as with a REST API or a hosted MCP server needing an Atlassian site and credentials.
-
-### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
-
-A hand-written HTML tokenizer, linear in the input, its nesting bounded (`docs/decisions.md`
-§Nothing recurses unbounded). A carry element reads from its `data-*` attribute; the text it shows
-is ignored. A property checks that `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. `htmlToAdf`
-refuses a value that is not a string as `not-a-string` (`docs/decisions.md` §Which code a cause
-takes).
-
-### 133. Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
-
-A writer panel picks the elements, classes and `data-*` attributes. Where a link marks a card, both
-the link's target and the card's URL stay in sight, a card showing only its name included
-(`docs/decisions.md` §The HTML dialect).
-
-### 132. Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
-
-Header cells as `<th>`; a cell's span, width and background in HTML attributes or `data-*`, as a
-writer panel picks.
-
-### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
-
-Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
-on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
-`markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
-`src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
-`spec/flavour.md` or `docs/decisions.md`, never from the code.
-
 ### 140. Read an inline link's target in time linear in the inline markdown, in every reader.
 
 `'[a](b'.repeat(n)` reads in time quadratic in n: each `](` after an open bracket reads its
@@ -112,14 +78,6 @@ finds no `)` and fails. `skipLinkWhitespace` also copies the rest of the text on
 cmark's pathological tests name the shape "unclosed links B". Found while shipping item 129,
 2026-10-23.
 
-### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
-
-`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
-whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
-type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
-where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
-and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
-
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
 `escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
@@ -127,6 +85,15 @@ reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text 
 text. Only the property tests catch drift between these and the reader, and it holds the project
 under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
 run it carries may differ from today's, which changes lossless output (§The formats are API).
+
+### 146. Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.
+
+Found 2026-10-28 surveying the Atlassian developer community: the most asked need is HTML or
+markdown into ADF, and most threads stall on Atlaskit needing React, not being ESM and clashing
+with Forge's bundler and `prosemirror-model` versions. The README says none of this before its
+call list. Before the change, a reader panel of the four personas in `## Audience` reads the first
+screen cold and says what the package does, which call it would take, and why over Atlaskit; fix
+what they miss. Bring the npm `description` and `keywords` and the GitHub topics in step.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
@@ -153,6 +120,18 @@ on such a document. Found while shipping item 106, 2026-10-11.
 (`src/adf/inline-nodes.ts`) restricts text only when it is marked `code`. It changes how stored
 markdown reads, so it ships in a minor. Found while building item 114, 2026-10-14.
 
+### 145. Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.
+
+The table lists only npm packages over 1,000 downloads a week, run in `converter-comparison/`.
+`mdast-util-from-adf` 2.3.0 passed that bar after the table's date, 2026-10-14: 1,283 downloads in
+the week to 2026-10-26. A developer choosing a converter also weighs Atlassian's own paths, the
+Rovo MCP server's markdown and HTML formats among them, and libraries in Python, Go, Rust and .NET.
+
+The maintainer, 2026-10-28: list every converter that is reasonably complete and works, whatever
+its downloads, and state that bar above the table in place of the 1,000-a-week one. Run what can
+run in `converter-comparison/`; describe a REST API or a hosted MCP server from Atlassian's
+documentation, saying so in its row.
+
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
 It needs item 95, which lets the joined spelling be tried and kept only where it reads back. No
@@ -164,15 +143,52 @@ mention or code spelled `!adf:text{text=" "}`. Joining the run across the break 
 `inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
 first as a set of parted breaks, then as a flag the first fallback clears.
 
+### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
+
+A hand-written HTML tokenizer, linear in the input, its nesting bounded (`docs/decisions.md`
+§Nothing recurses unbounded). A carry element reads from its `data-*` attribute; the text it shows
+is ignored. A property checks that `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. `htmlToAdf`
+refuses a value that is not a string as `not-a-string` (`docs/decisions.md` §Which code a cause
+takes).
+
+### 133. Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+A writer panel picks the elements, classes and `data-*` attributes. Where a link marks a card, both
+the link's target and the card's URL stay in sight, a card showing only its name included
+(`docs/decisions.md` §The HTML dialect).
+
+### 132. Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+Header cells as `<th>`; a cell's span, width and background in HTML attributes or `data-*`, as a
+writer panel picks.
+
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
 Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the posts announce the finished
 release. Each post links the GitHub repository, the README's comparison table and a README that opens with what the package is. Before
 posting, set `converter-comparison/run.sh`'s pins to each package's latest version,
 `@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
-its versions and its date in step with the output. We draft each post for the place it goes. The
+its versions and its date in step with the output. Venues found 2026-10-28, each a thread a reply answers today: on the developer community, topics
+96176, 99408, 82496, 100699, 101278, 86214, 96638 and 41858; on GitHub,
+`atlassian/atlassian-mcp-server` issues 60 and 161. We draft each post for the place it goes. The
 maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts announcing a release
 wait for its publish). Found while planning discoverability, 2026-10-04.
+
+### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
+
+Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
+on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
+`markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
+`src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
+`spec/flavour.md` or `docs/decisions.md`, never from the code.
+
+### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
+
+`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
+whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
+type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
+where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
+and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -250,6 +266,13 @@ document's whole tree. Give the node's path, and name its type and the attribute
 leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
 the union. Found by the technical-principles audit of item 78, 2026-10-05.
 
+### 147. Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.
+
+Asked on the Atlassian developer community for search indexing, notifications, emails and CSV
+exports, where markdown's markers are noise, and with a mention as `@Display Name` rather than an
+account id. Add the goal to the README's `## Goals` in the same change. Split into items before
+starting. The maintainer, 2026-10-28: ship what exists first, so this waits for 0.4.0.
+
 ### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 
 GFM spells `strike`, and no other HTML item writes it: `adfToHtml` writes only the marks CommonMark
@@ -324,6 +347,23 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 `.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
+
+### 148. Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.
+
+Jira's REST API v2 and its changelogs carry wiki markup, and Atlassian's
+`WikiMarkupTransformer` is the only converter; community threads report its round-trip losing
+expands, layouts and some marks. Add the goal to the README's `## Goals` in the same change. Split
+into items before starting. The maintainer, 2026-10-28: ship what exists first, so this waits for
+0.4.0.
+
+### 149. Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.
+
+`htmlToAdf` (item 131) reads only what `adfToHtml` writes. The most asked need on the Atlassian
+developer community is HTML from emails, CMSs and editors into ADF. The maintainer, 2026-10-28:
+reading foreign HTML is a separate goal, added to the README in this change. Before building, a
+panel of the developer personas picks the API among those the goals allow: a parameter on
+`htmlToAdf` or a separate call; Goal 8's "nothing to configure" and Goal 6.1's naming bear on the
+choice. Split into items once the API is picked.
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
