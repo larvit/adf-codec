@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 145`
+`Next ID = 146`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 145 | 0.3.0 |  |  | **List `mdast-util-from-adf` in the README's "Other ADF converters" table, from a `converter-comparison/` run that includes it.** | 1 | 2 | 1 | 2 | 2 | 3 by 2 | 4.2 |
 | 131 | 0.3.0 |  |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
 | 133 | 0.3.0 | 131 | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
@@ -63,6 +64,14 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 145. List `mdast-util-from-adf` in the README's "Other ADF converters" table, from a `converter-comparison/` run that includes it.
+
+The table lists every npm package that converts ADF to or from markdown with over 1,000 downloads a
+week. `mdast-util-from-adf` 2.3.0 had 515 in the week before the table's date, 2026-10-14, and
+1,283 in the week to 2026-10-26. It converts ADF to an mdast tree and throws on a node it has no
+handler for, `status` and `extension` among them. Add it to `run.sh` and `compare.mjs`, then
+write its row from the output.
 
 ### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
 
