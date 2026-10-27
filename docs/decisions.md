@@ -392,8 +392,9 @@ goal.
 
 ## The HTML dialect
 
-2026-08-23, the maintainer. Goals 6 and 8. Valid while HTML output is read by consumers styling it
-themselves.
+2026-08-23, the maintainer; Atlassian's HTML+ 2026-10-28, the maintainer. Goals 6 and 8. Valid
+while HTML output is read by consumers styling it themselves, and while Atlassian publishes no spec
+for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the goals.
 
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
