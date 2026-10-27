@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 145 | 0.3.0 |  |  | **List `mdast-util-from-adf` in the README's "Other ADF converters" table, from a `converter-comparison/` run that includes it.** | 1 | 2 | 1 | 2 | 2 | 3 by 2 | 4.2 |
+| 145 | 0.3.0 |  | question | **Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 131 | 0.3.0 |  |  | **Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.** | 4 | 1 | 2 | 5 | 7 | 3 by 3 | 0.6 |
 | 133 | 0.3.0 | 131 | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
@@ -65,13 +65,16 @@
 
 ## Details
 
-### 145. List `mdast-util-from-adf` in the README's "Other ADF converters" table, from a `converter-comparison/` run that includes it.
+### 145. Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.
 
-The table lists every npm package that converts ADF to or from markdown with over 1,000 downloads a
-week. `mdast-util-from-adf` 2.3.0 had 515 in the week before the table's date, 2026-10-14, and
-1,283 in the week to 2026-10-26. It converts ADF to an mdast tree and throws on a node it has no
-handler for, `status` and `extension` among them. Add it to `run.sh` and `compare.mjs`, then
-write its row from the output.
+The table lists only npm packages over 1,000 downloads a week, run in `converter-comparison/`.
+`mdast-util-from-adf` 2.3.0 passed that bar after the table's date, 2026-10-14: 1,283 downloads in
+the week to 2026-10-26. A developer choosing a converter also weighs Atlassian's own paths, the
+Rovo MCP server's markdown and HTML formats among them, and libraries in Python, Go, Rust and .NET.
+
+Open for the maintainer: the inclusion bar outside npm, since PyPI, crates.io, NuGet and Go modules
+count downloads differently or not at all; and how a row is checked where no published code can run
+here, as with a REST API or a hosted MCP server needing an Atlassian site and credentials.
 
 ### 131. Ship `htmlToAdf`, reading back exactly what `adfToHtml` writes and refusing any other HTML as `unmappable-html`.
 
