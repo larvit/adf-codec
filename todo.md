@@ -13,18 +13,17 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 152 | 0.3.0 |  | owner | **Mutation-test a chunk's changed lines in 15 minutes or less, with one command the README documents.** | 3 | 2 | 1 | 4 | 4 | code health by 3 | 13.1 |
-| 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 145 | 0.3.0 |  |  | **Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
-| 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
+| 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 145, 146, 150, 152 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 145, 146, 150, 152 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150, 152 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150, 152 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
@@ -81,14 +80,6 @@ Ways to get there, to measure before choosing:
 - Run the mutants on Node alone; Deno, Bun and Firefox stay in the gate.
 
 Done when a mutation run of a shipped chunk's changed lines, such as item 122's, finishes in 15 minutes or less under `~/.claude/bin/run-heavy`.
-
-### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
-
-`escapeClosedRuns` works out which backtick strings an escape leaves, `unspellableRuns` rebuilds the
-reader's emphasis and highlight pairing, and `lastLinkClose` guesses which text `[` opens link
-text. Only the property tests catch drift between these and the reader, and it holds the project
-under the comprehension floor. Reading the line back costs one parse each time a line is tried. The
-run it carries may differ from today's, which changes lossless output (§The formats are API).
 
 ### 146. Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.
 
@@ -148,7 +139,7 @@ documentation, saying so in its row.
 
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
-It needs item 95, which lets the joined spelling be tried and kept only where it reads back. No
+The writers read each line back, so a joined spelling can be kept only where it reads back. No
 reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
 typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
 withholds from them, and none gives code text a mark but a link. So `**Ping !adf:mention[@A]{id=x}
@@ -452,8 +443,8 @@ bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
-Check whether `delimiterRunToken` (`inline-tokens.ts`), `emittedRuns` and `resolveEmphasis`
-(`line-escaping.ts`) read one UTF-16 unit beside an astral symbol. A lone surrogate is neither
+Check whether `delimiterRunToken` (`inline-tokens.ts`) and `resolveEmphasis` (`line-escaping.ts`)
+read one UTF-16 unit beside an astral symbol. A lone surrogate is neither
 punctuation nor symbol, but CommonMark reads `😀` as punctuation. Where they do, read the code
 point, with a fixture per direction.
 

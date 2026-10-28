@@ -1,12 +1,14 @@
 import type { Claims, WrittenFlavour } from '../flavour.ts'
+import type { InlineReading } from '../inline-content.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
-import { delimiterFlags, isWordCharacter, matchEmphasis, runLength } from '../commonmark/emphasis-matching.ts'
-import { delimiterRunToken, highlightFlanking, inlineSource, readInlineToken } from '../inline-tokens.ts'
+import { delimiterRunToken, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims } from '../flavour.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
+import { isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
+import { readLineBack } from '../inline-content.ts'
 
 export type DelimiterRole = 'close' | 'open'
 
@@ -28,10 +30,6 @@ export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspe
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
-type EmittedDelimiter = { closes: boolean; offset: number; pair: number; width: number }
-
-type EmittedRun = { canClose: boolean; canOpen: boolean; character: string; delimiters: EmittedDelimiter[]; length: number; start: number }
-
 type Escapings = (index: number) => InlineEscaping | undefined
 
 // Where a segment's first character landed in the output.
@@ -40,18 +38,18 @@ type PlacedSegment = { segment: InlineSegment; start: number }
 // Which of a run's characters escape: every escapable one, or every one before `end`.
 type RunEscapes = { end: number; escapable: false } | { escapable: true }
 
+// Which text characters escape wherever they stand: one of them opened a construct when the line was read back.
+type TextEscapes = { backticks: boolean; brackets: boolean }
+
 type EscapeWalk = {
   readonly claims: Claims
   readonly container: LineContainer
   readonly escapings: Escapings
   readonly headingCloser: number | undefined
   readonly inline: InlineSource
-  readonly linkClose: number
 }
 
 const escapingCodes: readonly ['backslash', 'bracketed', 'bracketed-link-target', 'none'] = ['backslash', 'bracketed', 'bracketed-link-target', 'none']
-
-const followsLinkText = /[([]/
 
 const runCharacters = '*_`~'
 
@@ -101,13 +99,41 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, cl
     const code = codes[index]
     return code === undefined ? undefined : escapingCodes[code]
   }
-  const escaped = escapeClosedRuns(scan, escapings, escapeClaims(scan, escapings, container, claims))
-  const { output, placed } = backslashed(segments, scan, escaped)
-  if (container === 'paragraph' && opensLinkDefinition(output)) {
-    if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRuns: [] }
-    return { line: `\\${output}`, unspellableRuns: unspellableRuns(placed, output) }
+  const claimed = escapeClaims(scan, escapings, container, claims)
+  let escapes: TextEscapes = { backticks: false, brackets: false }
+  // Terminates because a pass whose reading asks for no kind of escape the last pass lacked returns.
+  for (;;) {
+    const { output, placed } = backslashed(segments, scan, withTextEscapes(scan, escapings, claimed, escapes))
+    const { faulted, reading } = readLineBack(output, container, claims)
+    const opened = faulted ? { backticks: true, brackets: true } : textOpeners(placed, output.length, reading)
+    const next = { backticks: escapes.backticks || opened.backticks, brackets: escapes.brackets || opened.brackets }
+    if (next.backticks === escapes.backticks && next.brackets === escapes.brackets) {
+      const unspellable = unspellableRuns(placed, reading)
+      if (container !== 'paragraph' || !opensLinkDefinition(output)) return { line: output, unspellableRuns: unspellable }
+      if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRuns: [] }
+      return { line: `\\${output}`, unspellableRuns: unspellable }
+    }
+    escapes = next
   }
-  return { line: output, unspellableRuns: unspellableRuns(placed, output) }
+}
+
+function withTextEscapes(scan: string, escapings: Escapings, claimed: Uint8Array, { backticks, brackets }: TextEscapes): Uint8Array {
+  if (!backticks && !brackets) return claimed
+  const escaped = claimed.slice()
+  for (let index = 0; index < scan.length; index += 1) {
+    const character = scan.charAt(index)
+    if (((backticks && character === '`') || (brackets && character === '[')) && isEscapable(escapings(index))) escaped[index] = 1
+  }
+  return escaped
+}
+
+// A construct the reader opened at a text character is one the line does not mean.
+function textOpeners(placed: readonly PlacedSegment[], length: number, reading: InlineReading): TextEscapes {
+  const text = new Uint8Array(length)
+  for (const [index, { segment, start }] of placed.entries()) {
+    if (isEscapable(segment.escaping)) text.fill(1, start, placed[index + 1]?.start ?? length)
+  }
+  return { backticks: reading.codeSpans.some((at) => text[at] === 1), brackets: reading.links.some((at) => text[at] === 1) }
 }
 
 function backslashed(segments: readonly InlineSegment[], scan: string, escaped: Uint8Array): { output: string; placed: PlacedSegment[] } {
@@ -146,7 +172,6 @@ function escapeClaims(scan: string, escapings: Escapings, container: LineContain
     escapings,
     headingCloser: container === 'heading' ? closingHashes(scan) : undefined,
     inline: inlineSource(scan),
-    linkClose: lastLinkClose(scan, escapings),
   }
   const escaped = new Uint8Array(scan.length)
   let line = scanLine(scan, 0)
@@ -195,7 +220,7 @@ function claimsRunRest({ claims, container, escapings, inline }: EscapeWalk, ind
   return token.kind !== 'text'
 }
 
-function claimsCharacter({ container, escapings, headingCloser, inline: { text: scan }, linkClose }: EscapeWalk, index: number, token: InlineToken, line: ScanLine): boolean {
+function claimsCharacter({ container, escapings, headingCloser, inline: { text: scan } }: EscapeWalk, index: number, token: InlineToken, line: ScanLine): boolean {
   const escaping = escapings(index)
   if (escaping === 'bracketed-link-target') return token.kind === 'directive'
   if (!isEscapable(escaping)) return false
@@ -211,8 +236,7 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
     case 'html':
       return true
     case 'bracket':
-      if (token.image) return isSyntax(escapings(index + 1))
-      return escaping === 'bracketed' || index < linkClose
+      return token.image ? isSyntax(escapings(index + 1)) : escaping === 'bracketed'
     case 'bracket-close':
       return escaping === 'bracketed'
     case 'highlight':
@@ -227,120 +251,23 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
   }
 }
 
-// CommonMark reads no escape inside a code span, so a backtick string left beside an escape still closes a span that an earlier bare run of its length opens.
-function escapeClosedRuns(scan: string, escapings: Escapings, claimed: Uint8Array): Uint8Array {
-  const escaped = claimed.slice()
-  // The lengths of the backtick strings escapes leave: a bare run of one of these lengths would open a span one of them closes, so it is escaped too.
-  const formed = new Set<number>()
-  let end = scan.length - 1
-  while (end >= 0) {
-    if (scan.charAt(end) !== '`') {
-      end -= 1
-      continue
-    }
-    let start = end
-    while (scan.charAt(start - 1) === '`') start -= 1
-    let segmentEnd = end
-    for (let index = end; index > start; index -= 1) {
-      if (claimed[index] !== 1) continue
-      formed.add(segmentEnd - index + 1)
-      segmentEnd = index - 1
-    }
-    if (segmentEnd !== end || claimed[start] === 1) formed.add(segmentEnd - start + 1)
-    else if (escapings(start) !== 'none' && formed.has(end - start + 1)) {
-      escaped.fill(1, start, end + 1)
-      // Each escaped backtick then stands alone, a string of length one.
-      formed.add(1)
-    }
-    end = start - 1
-  }
-  return escaped
-}
-
-// One emphasis run, the innermost, or every highlight run the line cannot spell.
-function unspellableRuns(placed: readonly PlacedSegment[], output: string): MarkRun[] {
-  const { nodes, runs } = emittedRuns(placed, output)
-  const pair = misflanked(runs) ?? unpaired(runs)
-  const run = pair === undefined ? undefined : nodes[pair]
-  return run === undefined ? unreadHighlights(placed, output) : [run]
-}
-
-// No `==` in text can open or close, and highlights never nest, so a pair reads back where each delimiter flanks.
-function unreadHighlights(placed: readonly PlacedSegment[], output: string): MarkRun[] {
-  const unread: MarkRun[] = []
+// The innermost emphasis run the line does not read back as written, else every highlight run it does not.
+function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading): MarkRun[] {
+  const openers: { nodes: MarkRun; start: number }[] = []
+  const unreadHighlights: MarkRun[] = []
+  let innermost: { nodes: MarkRun; start: number } | undefined
+  let highlight: { nodes: MarkRun; start: number } | undefined
   for (const { segment, start } of placed) {
-    if (segment.highlight === undefined) continue
-    const flanking = highlightFlanking(output, start)
-    const flanks = segment.highlight === 'open' ? flanking.opens : flanking.closes
-    if (!flanks && unread.at(-1) !== segment.nodes) unread.push(segment.nodes)
-  }
-  return unread
-}
-
-function misflanked(runs: readonly EmittedRun[]): number | undefined {
-  for (const run of runs) {
-    for (const delimiter of run.delimiters) {
-      if (!(delimiter.closes ? run.canClose : run.canOpen)) return delimiter.pair
+    if (segment.emphasis === 'open') openers.push({ nodes: segment.nodes, start })
+    if (segment.highlight === 'open') highlight = { nodes: segment.nodes, start }
+    if (segment.emphasis === 'close') {
+      const opener = openers.pop()
+      const read = opener === undefined ? undefined : reading.emphasis.get(opener.start)
+      if (opener !== undefined && (read?.closer !== start || read.width !== segment.text.length) && opener.start > (innermost?.start ?? -1)) innermost = opener
     }
+    if (segment.highlight === 'close' && highlight !== undefined && reading.highlights.get(highlight.start) !== start) unreadHighlights.push(highlight.nodes)
   }
-  return undefined
-}
-
-function unpaired(runs: readonly EmittedRun[]): number | undefined {
-  const matched = new Set<number>()
-  for (const pairing of matchEmphasis(runs)) {
-    const opened = delimiterAt(pairing.opener, false, pairing.openerOffset, pairing.used)
-    const closed = delimiterAt(pairing.closer, true, pairing.closerOffset, pairing.used)
-    if (opened !== undefined && closed !== undefined && opened.pair === closed.pair) matched.add(opened.pair)
-  }
-  // The last opener left unpaired is the innermost: the smallest carry that changes the line.
-  let innermost: number | undefined
-  for (const run of runs) {
-    for (const delimiter of run.delimiters) {
-      if (!delimiter.closes && !matched.has(delimiter.pair)) innermost = delimiter.pair
-    }
-  }
-  return innermost
-}
-
-function delimiterAt(run: EmittedRun, closes: boolean, offset: number, width: number): EmittedDelimiter | undefined {
-  return run.delimiters.find((delimiter) => delimiter.closes === closes && delimiter.offset === offset && delimiter.width === width)
-}
-
-function emittedRuns(placed: readonly PlacedSegment[], output: string): { nodes: MarkRun[]; runs: EmittedRun[] } {
-  const runs: EmittedRun[] = []
-  const nodes: MarkRun[] = []
-  const open: number[] = []
-  for (const { segment, start } of placed) {
-    if (segment.emphasis === undefined) continue
-    const closes = segment.emphasis === 'close'
-    const pair = closes ? (open.pop() ?? nodes.length) : nodes.length
-    if (!closes) {
-      nodes.push(segment.nodes)
-      open.push(pair)
-    }
-    const width = segment.text.length
-    const previous = runs[runs.length - 1]
-    if (previous !== undefined && previous.start + previous.length === start && previous.character === segment.text.charAt(0)) {
-      previous.delimiters.push({ closes, offset: start - previous.start, pair, width })
-      previous.length += width
-      continue
-    }
-    runs.push({
-      canClose: false,
-      canOpen: false,
-      character: segment.text.charAt(0),
-      delimiters: [{ closes, offset: 0, pair, width }],
-      length: width,
-      start,
-    })
-  }
-  for (const run of runs) {
-    const flags = delimiterFlags(run.character, output.charAt(run.start - 1), output.charAt(run.start + run.length))
-    run.canClose = flags.canClose
-    run.canOpen = flags.canOpen
-  }
-  return { nodes, runs }
+  return innermost === undefined ? unreadHighlights : [innermost.nodes]
 }
 
 function isEscapable(escaping: InlineEscaping | undefined): boolean {
@@ -369,13 +296,4 @@ function closingHashes(scan: string): number | undefined {
 function scanLine(scan: string, start: number): ScanLine {
   const end = scan.indexOf('\n', start)
   return { position: start === 0 ? 'first' : 'later', start, text: scan.slice(start, end === -1 ? undefined : end) }
-}
-
-// A `]` the emitter spelled sits inside a construct that binds before link text does.
-function lastLinkClose(scan: string, escapings: Escapings): number {
-  for (let cursor = scan.length - 1; cursor >= 0; cursor -= 1) {
-    if (scan.charAt(cursor) !== ']' || isSyntax(escapings(cursor))) continue
-    if (followsLinkText.test(scan.charAt(cursor + 1))) return cursor
-  }
-  return -1
 }

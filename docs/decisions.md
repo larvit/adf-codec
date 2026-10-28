@@ -761,40 +761,6 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
-## The project ships under the comprehension floor until item 95 lands
-
-2026-10-03, the maintainer; item 95 in place of item 61, 2026-10-09, the maintainer; item 62
-landed 2026-10-22. KISS, a technical principle, and its comprehension floor of 7.
-Valid while `todo.md` item 95 is open.
-
-A four-seat comprehension panel scored the project under the floor of 7. Its scoring run of
-2026-10-08 is the baseline.
-
-| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
-|---|---|---|---|---|---|
-| Junior | 7 | 5.5 | 6.5 | 5.5 | 6 |
-| Mid | 7 | 5.5 | 6.5 | 5.5 | 6 |
-| Senior | 7 | 5.5 | 6 | 5 | 6 |
-| Architect | 6.5 | 6 | 6 | 6.5 | 6 |
-| Mean | 6.88 | 5.63 | 6.25 | 5.63 | 6.00 |
-
-Panels on near-identical code scored overall means of 5.75 to 6.00, and a seat moves ±0.5 between
-runs. The maintainer shipped under a fall twice after three rounds: the move to GitHub, 2026-10-04,
-whose chunk changed only comments in `src/`; and item 78, 2026-10-07, whose three runs fell below
-the run before it on Navigation, Locality and Shape while the overall held. Item 94, 2026-10-10,
-also shipped after three rounds: a definitions-only paragraph leaves no block, so ending the list it
-follows takes state carried across lines, and every design read worse on Locality while the overall
-held; the scores at 6182ba6 were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean 5.63. Item
-56, still open, is to give that state one owner. Items 85 and 86, 2026-10-11, shipped after three
-rounds under a fall the seats laid on item 93's `splitPath` and `splitPlace`, which placed a refused
-block's path by replaying `splitTaskList` on stand-in nodes until item 102, 2026-10-22, removed them; both seats read the chunk's own image
-builder as a gain. The scores at be23835 were Junior 6.5, Mid 6, Senior 6 and Architect 6, mean
-6.13. Item 106, 2026-10-13, shipped
-after three rounds under a worse ruling, the maintainer's call: both paired seats read the overall
-as the same, but Locality fell to a mean of 5.13, laid on the spelling memo the chunk splits between
-the CommonMark ask, which fills it, and the walk, which drops each entry as it reads it. The overall
-scores at 1f4551a were Junior 5.5, Mid 5.5, Senior 6 and Architect 5.5, mean 5.63.
-
 ## Properties on a fixed seed
 
 2026-09-14, the maintainer. Goal 1. Valid while a red gate must reproduce.
@@ -975,6 +941,18 @@ reader's.
 Emphasis is spelled against CommonMark's matching, never flanking alone: a delimiter run in text
 escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
 only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
+
+## A line that opens a code span or a link at text escapes every text backtick or `[` in it
+
+2026-10-28, a writer panel, 3 of 3. Goals 1, 6 and 9. Valid while the writers find a construct
+by reading the escaped line back.
+
+A writer reads each escaped line back. Where a code span opens at a text backtick, every text
+backtick in the line escapes, and where a link or an image opens at a text `[`, every text `[`
+does: `[a](b) [c]` is written `\[a](b) \[c]`. A text `[` or backtick that opens nothing stays
+bare. Escaping only up to the last construct text opens read as arbitrary to the panel, and
+escaping each opener in turn costs a read per opener, against goal 9. The grammar:
+`spec/flavour.md` §Canonical form.
 
 ## Readable spellings take the `try` prefix
 
