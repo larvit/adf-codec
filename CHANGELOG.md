@@ -61,8 +61,8 @@
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` escape every text `[` in a line where one
   would open a link, and every text backtick where one would open a code span: the text
   `[a](b) [c]` is now written `\[a](b) \[c]`, where it was `\[a](b) [c]`. A text `[` that opens
-  nothing stays bare: `[a] b](c` is now written as is, where it was `\[a] b](c`. Markdown 0.2.0
-  wrote reads the same in 0.3.0.
+  nothing stays bare: `[a] b](c` is now written as is, where it was `\[a] b](c`. Markdown written
+  by 0.2.0 reads the same in 0.3.0.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 
