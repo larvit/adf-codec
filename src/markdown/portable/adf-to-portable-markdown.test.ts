@@ -397,7 +397,7 @@ test('drops the mark of the run that cannot close where it sits, and keeps the l
 test('gives up every highlight run whose own delimiter cannot flank in one fallback, so a line of them re-emits once however many it holds', () => {
   const highlight: AdfMark = { type: 'backgroundColor' }
   const line = [text('a '), text('x', highlight), text('a '), text('x', highlight), text('a '), text('x', highlight), text('a')]
-  const runs = [1, 3, 5].map((index) => ({ depth: 0, first: index, last: index }))
+  const runs = [{ depth: 0, first: 1, last: 1 }, { depth: 0, first: 3, last: 3 }, { depth: 0, first: 5, last: 5 }]
   assert.deepEqual(portableLineFallback(line, 'paragraph', []), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
