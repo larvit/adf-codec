@@ -7,6 +7,8 @@ const entities: ReadonlyMap<string, string> = new Map([
 // What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): any control but a tab, line feed or form feed, a carriage return among them, since a parser reads it as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
 const unwritable = /(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u
 const unwritables = new RegExp(unwritable.source, 'gu')
+// An `&` opening no entity, a character `escapeHtml` escapes standing raw, or one HTML cannot hold.
+const misspelling = new RegExp(`&(?!${[...entities.keys()].map((entity) => entity.slice(1)).join('|')})|[<>"]|${unwritable.source}`, 'u')
 
 // The carry's JSON, which spells each character HTML cannot hold as a JSON escape reading back to the same string.
 export function holdableJson(json: string): string {
@@ -15,6 +17,11 @@ export function holdableJson(json: string): string {
 
 export function jsonValue(json: string): string {
   return escapeHtml(holdableJson(json))
+}
+
+// The index of the first character `writableValue` would not write so, -1 where none stands in `html`.
+export function misspelledAt(html: string): number {
+  return html.search(misspelling)
 }
 
 // ` name="value"`, `''` where the value is undefined, `undefined` where HTML cannot hold it.
@@ -30,8 +37,7 @@ export function shownValue(value: string, lineFeed: string): string {
 
 // The text or attribute value escaped HTML spells, `undefined` where `writableValue` would not write it so.
 export function unescapedValue(html: string): string | undefined {
-  const value = html.replace(/&(?:amp|gt|lt|quot);/g, (entity) => entities.get(entity) ?? entity)
-  return writableValue(value) === html ? value : undefined
+  return misspelledAt(html) < 0 ? html.replace(/&(?:amp|gt|lt|quot);/g, (entity) => entities.get(entity) ?? entity) : undefined
 }
 
 // `undefined` where HTML cannot hold the value, so its node rides the carry element.

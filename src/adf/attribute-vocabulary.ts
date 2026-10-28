@@ -20,6 +20,10 @@ export function isNumberList(value: unknown): value is NumberList {
   return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === 'number')
 }
 
+export function holdsKind(value: JsonValue, kind: AttributeKind): boolean {
+  return vocabularyPair('', value, kind) !== undefined
+}
+
 export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocabulary, spelledElsewhere: readonly string[]): VocabularyPair[] | undefined {
   const pairs: VocabularyPair[] = []
   for (const [key, value] of Object.entries(attrs)) {
@@ -33,7 +37,7 @@ export function vocabularyPairs(attrs: AdfAttributes, vocabulary: AttributeVocab
   return pairs
 }
 
-export function vocabularyPair(key: string, value: JsonValue, kind: AttributeKind): VocabularyPair | undefined {
+function vocabularyPair(key: string, value: JsonValue, kind: AttributeKind): VocabularyPair | undefined {
   if (kind === 'boolean') return typeof value === 'boolean' ? { key, kind, value } : undefined
   if (kind === 'number') return typeof value === 'number' ? { key, kind, value } : undefined
   if (kind === 'numbers') return isNumberList(value) ? { key, kind, value } : undefined

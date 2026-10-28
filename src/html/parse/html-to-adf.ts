@@ -4,21 +4,22 @@ import type { FirstParagraphForm } from '../first-paragraph.ts'
 import type { ParseError, Result } from '../../result.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
+import { containerElements, headingElements, headingLevel, readListStart, type ContainerType } from '../block-elements.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
-import { foundAt, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
-import { heldNode, readCarry } from './carry-element.ts'
+import { foundAt, misread, readStartTag, refused, startTagName, type Place, type ReadNode, type StartTag } from './source.ts'
 import { largestNesting } from '../../nesting.ts'
+import { misspelledAt, unescapedValue } from '../escaping.ts'
+import { misspelledText, readInline } from './inline.ts'
 import { nodeAttrs } from '../../adf/document.ts'
 import { notAString } from '../../not-a-string.ts'
 import { positioned, success } from '../../result.ts'
 import { readAnchorAttributes } from '../anchor-element.ts'
+import { readCarry } from './carry-element.ts'
 import { readCarryAttributes } from '../carry-attributes.ts'
 import { readDataAttributes } from '../data-attributes.ts'
 import { readImageAttributes } from '../image-element.ts'
-import { readInline } from './inline.ts'
 import { readLanguageClass } from '../language-class.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
-import { unescapedValue } from '../escaping.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
 
 type BlockReader = (html: string, tag: StartTag, place: Place, open: Open) => Result<BlockStep, ParseError>
@@ -30,21 +31,17 @@ type Open = { closer: string; content: AdfNode[]; depth: number; kind: 'blocks' 
 
 // No element name opens both a block and an inline node, so the name alone tells an item's line from its next block.
 const blockReaders: ReadonlyMap<string, BlockReader> = new Map([
-  ['blockquote', readContainer],
+  [containerElements.blockquote, containerReader('blockquote')],
+  [containerElements.bulletList, containerReader('bulletList')],
+  [containerElements.orderedList, containerReader('orderedList')],
   ['div', readBlockCarry],
-  ['h1', readHeading],
-  ['h2', readHeading],
-  ['h3', readHeading],
-  ['h4', readHeading],
-  ['h5', readHeading],
-  ['h6', readHeading],
   ['hr', readRule],
-  ['ol', readContainer],
   ['p', readParagraph],
   ['pre', readCodeBlock],
-  ['ul', readContainer],
+  ...headingElements.map((name): [string, BlockReader] => [name, readHeading]),
 ])
 const codeCloser = '</code></pre>'
+const documentCarryAlone = 'a carry element holding the document stands alone, as the whole document'
 const emptyDocument = serializeCanonicalJson({ type: 'doc', version: 1 }, 'compact')
 const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
   bare: "an item's first paragraph holding content and no attribute stands bare on the item's line: <li>Bolt</li>",
@@ -63,15 +60,17 @@ export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
 function readHtml(html: string): Result<AdfDocument> {
   if (typeof html !== 'string') return notAString(html, 'HTML')
   if (html === '') return success({ content: [], type: 'doc', version: 1 })
-  return isDocumentCarry(html) ? success({ type: 'doc', version: 1 }) : readBlocks(html)
+  return readDocumentCarry(html) ?? readBlocks(html)
 }
 
-// The carry element of a document holding no content key stands alone, as the whole HTML; the walk refuses it anywhere else.
-function isDocumentCarry(html: string): boolean {
+// The carry of a document holding no content key stands alone, as the whole HTML; `undefined` where the HTML opens with no such carry.
+function readDocumentCarry(html: string): Result<AdfDocument, ParseError> | undefined {
   const tag = readStartTag(html, 0)
-  if (tag?.name !== 'div' || readCarryAttributes(tag.attributes) !== emptyDocument) return false
-  const carry = readCarry(html, tag, largestNesting, { index: 0, parent: undefined })
-  return carry.ok && carry.value.end === html.length - 1 && html.endsWith('\n')
+  if (tag?.name !== 'div' || readCarryAttributes(tag.attributes) !== emptyDocument) return undefined
+  if (!html.startsWith('</div>', tag.end)) return refused('unmappable-html', `a carry element holding the document shows nothing: ${foundAt(html, tag.end)}`, html, tag.end, undefined)
+  const end = tag.end + '</div>'.length
+  if (html.startsWith('\n', end) && isBlockStart(html, end + 1)) return refused('unsupported-node-shape', documentCarryAlone, html, 0, { index: 0, parent: undefined })
+  return end === html.length - 1 && html.endsWith('\n') ? success({ type: 'doc', version: 1 }) : partedRefusal(html, end, undefined)
 }
 
 // A stack rather than recursion: only this loop opens and closes containers.
@@ -99,16 +98,23 @@ function readBlocks(html: string): Result<AdfDocument, ParseError> {
       open.content.push(closed)
     }
     if (open === root && index === html.length - 1 && html.endsWith('\n')) return success({ content: root.content, type: 'doc', version: 1 })
-    if (!html.startsWith('\n', index)) return refused('unmappable-html', `a line feed parts each block from the next, and ends the HTML: ${foundAt(html, index)}`, html, index, open.place)
+    if (!html.startsWith('\n', index)) return partedRefusal(html, index, open.place)
     index += 1
   }
 }
 
+// Where a block ends short of the line feed parting it from the next, or a second line feed follows it.
+function partedRefusal<T>(html: string, end: number, place: Place | undefined): Result<T, ParseError> {
+  const at = html.startsWith('\n', end) ? end + 1 : end
+  return refused('unmappable-html', `a line feed parts each block from the next, and ends the HTML: ${foundAt(html, at)}`, html, at, place)
+}
+
 function readBlock(html: string, index: number, place: Place, open: Open): Result<BlockStep, ParseError> {
   const tag = readStartTag(html, index)
-  if (tag === undefined) return refused('unmappable-html', `a block element of the dialect stands here: ${foundAt(html, index)}`, html, index, place)
-  const reader = blockReaders.get(tag.name)
-  return reader === undefined ? refused('unmappable-html', `<${tag.name}> is no block element of the dialect`, html, index, place) : reader(html, tag, place, open)
+  const reader = tag === undefined ? undefined : blockReaders.get(tag.name)
+  if (tag !== undefined && reader !== undefined) return reader(html, tag, place, open)
+  const stop = misread(html, index, 'a block element of the dialect stands here', 'no block element of the dialect')
+  return refused('unmappable-html', stop.message, html, stop.at, place)
 }
 
 function asStep(read: ReadNode): Result<BlockStep, ParseError> {
@@ -116,7 +122,7 @@ function asStep(read: ReadNode): Result<BlockStep, ParseError> {
 }
 
 function readHeading(html: string, tag: StartTag, place: Place): Result<BlockStep, ParseError> {
-  return asStep(readInlineBlock(html, tag, 'heading', blockNodes.heading.attributes, { level: Number(tag.name.slice(1)) }, place))
+  return asStep(readInlineBlock(html, tag, 'heading', blockNodes.heading.attributes, { level: headingLevel(tag.name) }, place))
 }
 
 function readParagraph(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
@@ -140,7 +146,10 @@ function readInlineBlock(html: string, tag: StartTag, type: string, vocabulary: 
   if (!inline.ok) return inline
   const { end, nodes } = inline.value
   const closer = `</${tag.name}>`
-  if (!html.startsWith(closer, end)) return refused('unmappable-html', `${closer} ends the ${type}, which holds inline elements alone: ${foundAt(html, end)}`, html, end, place)
+  if (!html.startsWith(closer, end)) {
+    const stop = misread(html, end, `${closer} ends the ${type}, and its text spells < as &lt;`, 'no inline element of the dialect')
+    return refused('unmappable-html', stop.message, html, stop.at, place)
+  }
   return success({ end: end + closer.length, node: built(type, { ...own, ...data.value }, nodes) })
 }
 
@@ -148,7 +157,7 @@ function readInlineBlock(html: string, tag: StartTag, type: string, vocabulary: 
 function tryImage(html: string, index: number, place: Place): ReadNode | undefined {
   const opener = readStartTag(html, index)
   const anchor = opener?.name === 'a' ? opener : undefined
-  const image = readStartTag(html, anchor?.end ?? index)
+  const image = anchor === undefined ? opener : readStartTag(html, anchor.end)
   if (image?.name !== 'img') return undefined
   const node = imageNode(image, anchor)
   const closer = anchor === undefined ? '</p>' : '</a></p>'
@@ -170,21 +179,20 @@ function imageNode(image: StartTag, anchor: StartTag | undefined): AdfNode | und
 function readCodeBlock(html: string, tag: StartTag, place: Place): Result<BlockStep, ParseError> {
   const data = readDataAttributes(tag.attributes, 'codeBlock', blockNodes.codeBlock.attributes, ['language'])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
-  const code = readCode(html, tag.end)
-  if (code === undefined) return refused('unmappable-html', 'a code block is <pre><code class="language-…">, its text escaped, then </code></pre>', html, tag.end, place)
-  const { end, language, text } = code
-  return success({ end, kind: 'node', node: built('codeBlock', language === undefined ? data.value : { ...data.value, language }, text === '' ? [] : [{ text, type: 'text' }]) })
-}
-
-// The `<code>` at `index`, through the `</pre>` after it; `undefined` where `adfToHtml` writes no such elements.
-function readCode(html: string, index: number): { end: number; language: string | undefined; text: string } | undefined {
-  const code = readStartTag(html, index)
+  const code = readStartTag(html, tag.end)
   const named = code?.name === 'code' ? readLanguageClass(code.attributes) : undefined
-  if (code === undefined || named === undefined) return undefined
+  if (code === undefined || named === undefined) {
+    const stop = misread(html, tag.end, '<pre> holds <code>, or <code class="language-…"> naming the language', 'neither')
+    return refused('unmappable-html', stop.message, html, stop.at, place)
+  }
   const next = html.indexOf('<', code.end)
   const end = next < 0 ? html.length : next
-  const text = unescapedValue(html.slice(code.end, end))
-  return text === undefined || !html.startsWith(codeCloser, end) ? undefined : { end: end + codeCloser.length, language: named.language, text }
+  const spelled = html.slice(code.end, end)
+  const text = unescapedValue(spelled)
+  if (text === undefined) return misspelledText(html, code.end + misspelledAt(spelled), place)
+  if (!html.startsWith(codeCloser, end)) return refused('unmappable-html', `a code block's text ends at ${codeCloser}: ${foundAt(html, end)}`, html, end, place)
+  const { language } = named
+  return success({ end: end + codeCloser.length, kind: 'node', node: built('codeBlock', language === undefined ? data.value : { ...data.value, language }, text === '' ? [] : [{ text, type: 'text' }]) })
 }
 
 function readRule(html: string, tag: StartTag, place: Place): Result<BlockStep, ParseError> {
@@ -193,20 +201,20 @@ function readRule(html: string, tag: StartTag, place: Place): Result<BlockStep, 
 }
 
 function readBlockCarry(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
-  const carry = readCarry(html, tag, largestNesting - open.depth, place)
-  if (!carry.ok) return carry
-  if (carry.value.json === emptyDocument) return refused('unsupported-node-shape', 'a carry element holding the document stands alone, as the whole document', html, tag.start, place)
-  const node = heldNode(carry.value.held, html, tag.start, place)
-  return node.ok ? success({ end: carry.value.end, kind: 'node', node: node.value }) : node
+  if (readCarryAttributes(tag.attributes) === emptyDocument) return refused('unsupported-node-shape', documentCarryAlone, html, tag.start, place)
+  return asStep(readCarry(html, tag, 'div', largestNesting - open.depth, place))
+}
+
+function containerReader(type: ContainerType): BlockReader {
+  return (html, tag, place, open) => readContainer(html, tag, type, place, open)
 }
 
 // A quote's blocks, or a list's items, stand a line each between its tags; a container holding no content key holds nothing.
-function readContainer(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
-  const type = tag.name === 'blockquote' ? 'blockquote' : tag.name === 'ul' ? 'bulletList' : 'orderedList'
+function readContainer(html: string, tag: StartTag, type: ContainerType, place: Place, open: Open): Result<BlockStep, ParseError> {
   const [first, ...rest] = tag.attributes
   const start = type === 'orderedList' && first?.[0] === 'start' ? first[1] : undefined
-  const order = start === undefined ? undefined : Number(start)
-  if (order !== undefined && (!Number.isSafeInteger(order) || String(order) !== start)) {
+  const order = start === undefined ? undefined : readListStart(start)
+  if (start !== undefined && order === undefined) {
     return refused('unmappable-html', `an ordered list starts at an integer, written as JavaScript writes it: found start="${start}"`, html, tag.start, place)
   }
   const data = readDataAttributes(start === undefined ? tag.attributes : rest, type, blockNodes[type].attributes, type === 'orderedList' ? ['order'] : [])
@@ -220,7 +228,10 @@ function readContainer(html: string, tag: StartTag, place: Place, open: Open): R
 
 function readItem(html: string, index: number, place: Place, depth: number): Result<BlockStep, ParseError> {
   const tag = readStartTag(html, index)
-  if (tag?.name !== 'li') return refused('unmappable-html', `a list holds <li> items, one to a line: ${foundAt(html, index)}`, html, index, place)
+  if (tag?.name !== 'li') {
+    const stop = misread(html, index, 'a list holds <li> items, one to a line', 'no list item of the dialect')
+    return refused('unmappable-html', stop.message, html, stop.at, place)
+  }
   const data = readDataAttributes(tag.attributes, 'listItem', blockNodes.listItem.attributes, [])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const item = built('listItem', data.value, [])
@@ -253,19 +264,23 @@ function readLineParagraph(html: string, index: number, place: Place): Result<{ 
   const inline = readInline(html, index, place)
   if (!inline.ok) return inline
   const { end, nodes } = inline.value
+  const parted = partedLine(html, end, nodes)
+  return success(parted === undefined ? { end, form: 'bare', node: { content: nodes, type: 'paragraph' } } : { end: end - 1, form: 'bare', node: { content: parted, type: 'paragraph' } })
+}
+
+// Only text ends in a line feed, so the text read last holds the one parting the line from the next block; `undefined` where no block follows.
+function partedLine(html: string, end: number, nodes: AdfNode[]): AdfNode[] | undefined {
   const last = nodes[nodes.length - 1]
-  if (!isBlockStart(html, end) || !html.endsWith('\n', end) || last?.text === undefined) return success({ end, form: 'bare', node: { content: nodes, type: 'paragraph' } })
-  // Only text ends in a line feed, so the text read last holds the one parting the line from the next block.
+  if (!isBlockStart(html, end) || !html.endsWith('\n', end) || last?.text === undefined) return undefined
   const text = last.text.slice(0, -1)
-  return success({ end: end - 1, form: 'bare', node: { content: [...nodes.slice(0, -1), ...(text === '' ? [] : [{ ...last, text }])], type: 'paragraph' } })
+  return [...nodes.slice(0, -1), ...(text === '' ? [] : [{ ...last, text }])]
 }
 
 function isBlockStart(html: string, index: number): boolean {
-  const tag = readStartTag(html, index)
-  return tag !== undefined && blockReaders.has(tag.name)
+  return blockReaders.has(startTagName(html, index) ?? '')
 }
 
-// A node holding `attrs` and `content` only where it holds any, as `adfToHtml` reads an element holding none.
+// The node an element holding no attribute or content reads as: `adfToHtml` writes a node holding an empty `attrs` or `content` as a carry.
 function built(type: string, attrs: AdfAttributes, content: AdfNode[]): AdfNode {
   return { ...(Object.keys(attrs).length === 0 ? {} : { attrs }), ...(content.length === 0 ? {} : { content }), type }
 }

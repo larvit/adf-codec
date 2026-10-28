@@ -8,6 +8,9 @@ import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { joinedWithin } from '../length-bound.ts'
 import { parseJsonText } from '../json-text.ts'
 
+// JSON `carriedNesting` found within the levels its position leaves, the one value `carriedNode` reads.
+export type BoundedJson = { readonly bounded: JsonValue }
+
 // `spelled` is the node as the carry holds it, `type` dropped where the format names it apart; `levels` the nesting its position leaves.
 export function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
   const headroom = levels - nestingDepth(node)
@@ -24,12 +27,12 @@ export function carriedValue(json: string, holder: string, invalid: ConvertFault
   return { fault: parsed.refusal === 'syntax' ? invalid : { code: 'unsupported-node-shape', message: `${holder} holds a number JSON cannot spell` } }
 }
 
-export function carriedNesting(held: JsonValue, levels: number): ConvertFault | undefined {
-  return overNested(held, levels) ? nestedPast(levels) : undefined
+export function carriedNesting(held: JsonValue, levels: number): Read<BoundedJson> {
+  return overNested(held, levels) ? { fault: nestedPast(levels) } : { value: { bounded: held } }
 }
 
-export function carriedNode(held: JsonValue, holder: string): Read<AdfNode> {
-  return isAdfNode(held) ? { value: held } : { fault: { code: 'unsupported-node-shape', message: `${holder} holds one ADF node's JSON: this JSON is no ADF node` } }
+export function carriedNode({ bounded }: BoundedJson, holder: string): Read<AdfNode> {
+  return isAdfNode(bounded) ? { value: bounded } : { fault: { code: 'unsupported-node-shape', message: `${holder} holds one ADF node's JSON: this JSON is no ADF node` } }
 }
 
 function nestedPast(levels: number): ConvertFault {

@@ -4,11 +4,11 @@ import test from 'node:test'
 import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result } from '../../result.ts'
 import { adfToHtml, htmlToAdf } from '../../index.ts'
-import { largestNesting } from '../../nesting.ts'
 
 const ids = {
   item: '019ad5af-efd9-7f4e-a7c9-6aef16d4945f',
   list: '019d8e77-7df8-7a83-91ea-43a7ca2aae3b',
+  mention: '0199f4c2-8b1e-7d03-9a6f-2c5e8d71b4a0',
   paragraph: '01957ad9-e3f7-70aa-a5f3-4c013274f488',
   quote: '019d2fe4-3e67-7b76-b40a-a776a8f76aea',
 }
@@ -37,6 +37,13 @@ function refusal(result: Result<AdfDocument, ParseError>): string {
   return result.ok ? 'read' : `${result.error.code} at /${result.error.path.join('/')} line ${result.error.position.line} offset ${result.error.position.offset}`
 }
 
+function message(result: Result<AdfDocument, ParseError>): string {
+  return result.ok ? 'read' : result.error.message
+}
+
+const documentCarry = carry('div', { type: 'doc', version: 1 }, '')
+const rule = JSON.stringify({ type: 'unknownBlock' }).replaceAll('"', '&quot;')
+
 // The carry element of `node`, showing `shown`.
 function carry(tag: 'div' | 'span', node: unknown, shown: string): string {
   return `<${tag} class="adf-carry" data-adf="${JSON.stringify(node).replaceAll('"', '&quot;')}">${shown}</${tag}>`
@@ -44,7 +51,7 @@ function carry(tag: 'div' | 'span', node: unknown, shown: string): string {
 
 test('reads an empty string as a document of no blocks, and the document\'s carry as one holding no content key', () => {
   assert.deepEqual(read(htmlToAdf('')), document())
-  assert.deepEqual(read(htmlToAdf(`${carry('div', { type: 'doc', version: 1 }, '')}\n`)), { type: 'doc', version: 1 })
+  assert.deepEqual(read(htmlToAdf(`${documentCarry}\n`)), { type: 'doc', version: 1 })
 })
 
 test('reads paragraphs, headings and rules, a line feed after each', () => {
@@ -115,13 +122,20 @@ test('reads an image standing alone in a paragraph, a link around it where one m
   assert.deepEqual(read(htmlToAdf('<p><a href="https://example.com/" title="Home"><img src="https://example.com/moon.jpg"></a></p>\n')), document(linked))
 })
 
-test('reads a carry element from its data-adf alone, whatever it shows', () => {
+test('reads a carry element from its data-adf, what it shows read back as adfToHtml writes it', () => {
   const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'panel' }
-  const mention: AdfNode = { attrs: { id: '5b10a2', text: '@Mikael' }, type: 'mention' }
-  const expected = document(panel, paragraph(text('Ask '), mention))
-  assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), expected)
-  assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Edited <b>away</b> &nbsp;</p>')}\n<p>Ask ${carry('span', mention, '')}</p>\n`)), expected)
+  const mention: AdfNode = { attrs: { id: ids.mention, text: '@Mikael' }, type: 'mention' }
+  assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(panel, paragraph(text('Ask '), mention)))
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', text('a\u0085b', { type: 'underline' }), 'ab').replace('\u0085', '\\u0085')}</p>\n`)), document(paragraph(text('a\u0085b', { type: 'underline' }))))
+})
+
+test('refuses an edit to what a carry element shows, naming what it found there', () => {
+  const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'panel' }
+  const edited = htmlToAdf(`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`)
+  assert.equal(refusal(edited), 'unmappable-html at /content/1 line 2 offset 9')
+  assert.match(message(edited), /: found "<b>collation<\/b>\.<\/p><\/d"…$/)
+  const mention: AdfNode = { attrs: { id: ids.mention, text: '@Mikael' }, type: 'mention' }
+  assert.equal(refusal(htmlToAdf(`<p>Ask ${carry('span', mention, '')}</p>\n`)), 'unmappable-html at /content/0/content/1 line 1 offset 0')
 })
 
 test('reads a carry element holding a node HTML writes as its own element as that node', () => {
@@ -130,6 +144,107 @@ test('reads a carry element holding a node HTML writes as its own element as tha
   assert.deepEqual(read(htmlToAdf(`<ul>\n<li>\n${carry('div', paragraph(text('x')), '<p>x</p>')}\n</li>\n</ul>\n`)), document({ content: [item(paragraph(text('x')))], type: 'bulletList' }))
 })
 
+// Each group's cases, the HTML and its refusal.
+const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+  'refuses block shapes adfToHtml would not write': [
+    ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'unmappable-html at /content/0/content/0/content/0 line 2 offset 5'],
+    ['<ul>\n<li>\n<p>Bolt</p>\n</li>\n</ul>\n', 'unmappable-html at /content/0/content/0/content/0 line 3 offset 10'],
+    [`<ul>\n<li>\n<p data-local-id="${ids.paragraph}"></p>\n</li>\n</ul>\n`, 'unmappable-html at /content/0/content/0/content/0 line 3 offset 10'],
+    ['<ul>\n<li><hr></li>\n</ul>\n', 'unmappable-html at /content/0/content/0 line 2 offset 5'],
+    ['<ul>\n<li>a</ul>\n', 'unmappable-html at /content/0/content/0 line 2 offset 5'],
+    [`<ul>\n<li><p data-local-id="${ids.paragraph}">a</p></ul>\n`, 'unmappable-html at /content/0/content/0 line 2 offset 5'],
+    ['<ul>\n<p>a</p>\n</ul>\n', 'unmappable-html at /content/0/content/0 line 2 offset 5'],
+    ['<ul>\n</ul>\n', 'unmappable-html at /content/0/content/0 line 2 offset 5'],
+    ['<ul><li>a</li></ul>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<blockquote>\n<p>a</p></blockquote>\n', 'unmappable-html at /content/0 line 2 offset 13'],
+    ['<p>a</p><p>b</p>\n', 'unmappable-html at / line 1 offset 0'],
+    ['<ol start="03">\n<li>a</li>\n</ol>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<ol start="1.5">\n<li>a</li>\n</ol>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<ol start="-0">\n<li>a</li>\n</ol>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<ol start="">\n<li>a</li>\n</ol>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<ol start="x">\n<li>a</li>\n</ol>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<ol start="9007199254740993">\n<li>a</li>\n</ol>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<pre><code class="lang-js">x</code></pre>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<pre><code class="language-">x</code></pre>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<pre><code class="language-js" id="x">x</code></pre>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<pre>x</pre>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<pre><code>a &bogus; b</code></pre>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<pre><code>x</code></pre\n', 'unmappable-html at /content/0 line 1 offset 0'],
+  ],
+  'refuses a carry element adfToHtml would not write': [
+    [`<div data-adf="${rule}" class="adf-carry"></div>\n`, 'unmappable-html at /content/0 line 1 offset 0'],
+    [`<div class="adf-carry" data-adf="${rule}" id="x"></div>\n`, 'unmappable-html at /content/0 line 1 offset 0'],
+    [`<div class="carry" data-adf="${rule}"></div>\n`, 'unmappable-html at /content/0 line 1 offset 0'],
+    [`<div class="adf-carry" data-adf="${rule}">\n`, 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<div class="adf-carry" data-adf="{"></div>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<div class="adf-carry" data-adf="{&quot;type&quot;:1e999}"></div>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<p><span class="adf-carry" data-adf="{&quot;text&quot;:&quot;a\u0085&quot;,&quot;type&quot;:&quot;text&quot;}"></span></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><span class="adf-carry" data-adf="{&quot;type&quot;:&quot;text&quot;,&quot;text&quot;:&quot;a&quot;}"></span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<div class="adf-carry" data-adf="{&quot;type&quot;:5}"></div>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<p><span class="adf-carry" data-adf="[]"></span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><span>a</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+  ],
+  'refuses a data-* attribute out of the order adfToHtml writes as unmappable-html, and one no attribute of its node spells as unsupported-node-shape': [
+    ['<hr data-style="a" data-color="b">\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<hr data-color="a" data-color="b">\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p data-color="x">a</p>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<h1 data-level="2">a</h1>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<ol data-order="2">\n<li>a</li>\n</ol>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<pre data-language="js"><code>x</code></pre>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<p data-localid="x">a</p>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<pre data-wrap="yes"><code>x</code></pre>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<pre data-wrap=" true"><code>x</code></pre>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<pre data-wrap="1"><code>x</code></pre>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<pre data-wrap="&quot;true&quot;"><code>x</code></pre>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<hr data-weight="1.0">\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<hr data-weight="1e999">\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    ['<ul>\n<li data-x="a">a</li>\n</ul>\n', 'unsupported-node-shape at /content/0/content/0 line 2 offset 5'],
+    [`<blockquote data-local-id="${ids.quote}" data-x="b"></blockquote>\n`, 'unsupported-node-shape at /content/0 line 1 offset 0'],
+  ],
+  'refuses HTML adfToHtml does not write as unmappable-html, at the start of the line it stands on': [
+    ['<p>x</p>', 'unmappable-html at / line 1 offset 0'],
+    ['<p>x</p>X', 'unmappable-html at / line 1 offset 0'],
+    ['<p>x</p>\n\n', 'unmappable-html at /content/1 line 2 offset 9'],
+    ['\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p>a</p>\n<div>b</div>\n', 'unmappable-html at /content/1 line 2 offset 9'],
+    ['<p>a</p>\n<P>b</P>\n', 'unmappable-html at /content/1 line 2 offset 9'],
+    ['<h7>x</h7>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p class="x">a</p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p>a<b>b</b></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p>a<br/>b</p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p>it&#39;s</p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p>a > b</p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p>a\rb</p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a href="x" target="y">a</a></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><a title="t" href="x">a</a></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><a href="a"b">a</a></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p>a</p>\n<pre><code>b\nc</code></pre>\n<i>d</i>\n', 'unmappable-html at /content/2 line 4 offset 37'],
+  ],
+  'refuses an image adfToHtml would not write': [
+    ['<p><img src="a" alt=""></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><img alt="b" src="a"></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><img src="a" alt="b" title="c"></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><img src="a">b</p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><a href="x" rel="y"><img src="a"></a></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    [`<p data-local-id="${ids.paragraph}"><img src="a"></p>\n`, 'unmappable-html at /content/0 line 1 offset 0'],
+  ],
+  'refuses marks adfToHtml would not write around text': [
+    ['<p><em><em>a</em></em></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><em></em></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><em>a<strong>b</strong></em></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><em><strong>a</em></strong></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><em>a &bogus; b</em></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p>a<a href="x"><img src="y"></a></p>\n', 'unmappable-html at /content/0/content/1 line 1 offset 0'],
+    ['<p><em>a', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p>a', 'unmappable-html at /content/0 line 1 offset 0'],
+  ],
+}
+
+for (const [group, cases] of Object.entries(refusals)) {
+  for (const [html, expected] of cases) test(`${group}: ${JSON.stringify(html)}`, () => assert.equal(refusal(htmlToAdf(html)), expected))
+}
+
 test('refuses a value that is not a string as not-a-string', () => {
   for (const value of [null, 5, undefined, {}]) {
     // @ts-expect-error -- a caller without types can pass anything.
@@ -137,136 +252,54 @@ test('refuses a value that is not a string as not-a-string', () => {
   }
 })
 
-test('refuses HTML adfToHtml does not write as unmappable-html, at the start of the line it stands on', () => {
-  const refused = (html: string): string => refusal(htmlToAdf(html))
-  assert.equal(refused('<p>x</p>'), 'unmappable-html at / line 1 offset 0')
-  assert.equal(refused('<p>x</p>\n\n'), 'unmappable-html at /content/1 line 2 offset 9')
-  assert.equal(refused('\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p>a</p>\n<div>b</div>\n'), 'unmappable-html at /content/1 line 2 offset 9')
-  assert.equal(refused('<p>a</p>\n<P>b</P>\n'), 'unmappable-html at /content/1 line 2 offset 9')
-  assert.equal(refused('<h7>x</h7>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p class="x">a</p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p>a<b>b</b></p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p>a<br/>b</p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p>it&#39;s</p>\n'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<p>a > b</p>\n'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<p>a\rb</p>\n'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  const lines = `${carry('div', { type: 'unknownBlock' }, 'a\r\nb\rc')}\n<i>d</i>\n`
-  assert.equal(refused(lines), `unmappable-html at /content/1 line 4 offset ${lines.indexOf('<i>')}`)
-  assert.equal(refused('<p><a href="x" target="y">a</a></p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p><a title="t" href="x">a</a></p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p><a href="a"b">a</a></p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-})
-
-test('refuses marks adfToHtml would not write around text', () => {
-  const refused = (inline: string): string => refusal(htmlToAdf(`<p>${inline}</p>\n`))
-  assert.equal(refused('<em><em>a</em></em>'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<em></em>'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<em>a<strong>b</strong></em>'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<em><strong>a</em></strong>'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<em>a &bogus; b</em>'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('a<a href="x"><img src="y"></a>'), 'unmappable-html at /content/0/content/1 line 1 offset 0')
-  assert.equal(refusal(htmlToAdf('<p><em>a')), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-  assert.equal(refusal(htmlToAdf('<p>a')), 'unmappable-html at /content/0 line 1 offset 0')
-})
-
-test('refuses block shapes adfToHtml would not write', () => {
-  const refused = (html: string): string => refusal(htmlToAdf(html))
-  assert.equal(refused('<ul>\n<li><p>Bolt</p></li>\n</ul>\n'), 'unmappable-html at /content/0/content/0/content/0 line 2 offset 5')
-  assert.equal(refused('<ul>\n<li>\n<p>Bolt</p>\n</li>\n</ul>\n'), 'unmappable-html at /content/0/content/0/content/0 line 3 offset 10')
-  assert.equal(refused(`<ul>\n<li>\n<p data-local-id="${ids.paragraph}"></p>\n</li>\n</ul>\n`), 'unmappable-html at /content/0/content/0/content/0 line 3 offset 10')
-  assert.equal(refused('<ul>\n<li><hr></li>\n</ul>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 5')
-  assert.equal(refused('<ul>\n<li>a</ul>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 5')
-  assert.equal(refused(`<ul>\n<li><p data-local-id="${ids.paragraph}">a</p></ul>\n`), 'unmappable-html at /content/0/content/0 line 2 offset 5')
-  assert.equal(refused('<ul>\n<p>a</p>\n</ul>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 5')
-  assert.equal(refused('<ul>\n</ul>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 5')
-  assert.equal(refused('<ul><li>a</li></ul>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<blockquote>\n<p>a</p></blockquote>\n'), 'unmappable-html at /content/0 line 2 offset 13')
-  assert.equal(refused('<p>a</p><p>b</p>\n'), 'unmappable-html at / line 1 offset 0')
-  for (const start of ['03', '1.5', '-0', '', 'x', '9007199254740993']) assert.equal(refused(`<ol start="${start}">\n<li>a</li>\n</ol>\n`), 'unmappable-html at /content/0 line 1 offset 0', start)
-  assert.equal(refused('<pre><code class="lang-js">x</code></pre>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<pre><code class="language-">x</code></pre>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<pre><code class="language-js" id="x">x</code></pre>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<pre>x</pre>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<pre><code>a &bogus; b</code></pre>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<pre><code>x</code></pre\n'), 'unmappable-html at /content/0 line 1 offset 0')
-})
-
-test('refuses an image adfToHtml would not write', () => {
-  const refused = (inner: string): string => refusal(htmlToAdf(`<p>${inner}</p>\n`))
-  assert.equal(refused('<img src="a" alt="">'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<img alt="b" src="a">'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<img src="a" alt="b" title="c">'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<img src="a">b'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<a href="x" rel="y"><img src="a"></a>'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refusal(htmlToAdf('<p data-local-id="a"><img src="a"></p>\n')), 'unmappable-html at /content/0 line 1 offset 0')
-})
-
-test('refuses a data-* attribute out of the order adfToHtml writes as unmappable-html, and one no attribute of its node spells as unsupported-node-shape', () => {
-  const refused = (html: string): string => refusal(htmlToAdf(html))
-  assert.equal(refused('<hr data-style="a" data-color="b">\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<hr data-color="a" data-color="b">\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p data-color="x">a</p>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<h1 data-level="2">a</h1>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<ol data-order="2">\n<li>a</li>\n</ol>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<pre data-language="js"><code>x</code></pre>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<p data-localid="x">a</p>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  for (const wrap of ['yes', ' true', '1', '"true"']) assert.equal(refused(`<pre data-wrap="${wrap.replaceAll('"', '&quot;')}"><code>x</code></pre>\n`), 'unsupported-node-shape at /content/0 line 1 offset 0', wrap)
-  assert.equal(refused('<hr data-weight="1.0">\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<hr data-weight="1e999">\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<ul>\n<li data-x="a">a</li>\n</ul>\n'), 'unsupported-node-shape at /content/0/content/0 line 2 offset 5')
-  assert.equal(refused('<blockquote data-local-id="a" data-x="b"></blockquote>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-})
-
-test('refuses a carry element adfToHtml would not write', () => {
-  const refused = (html: string): string => refusal(htmlToAdf(html))
-  const rule = JSON.stringify({ type: 'unknownBlock' }).replaceAll('"', '&quot;')
-  assert.equal(refused(`<div data-adf="${rule}" class="adf-carry"></div>\n`), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused(`<div class="adf-carry" data-adf="${rule}" id="x"></div>\n`), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused(`<div class="carry" data-adf="${rule}"></div>\n`), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused(`<div class="adf-carry" data-adf="${rule}">\n`), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<div class="adf-carry" data-adf="{"></div>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<div class="adf-carry" data-adf="{&quot;type&quot;:1e999}"></div>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<p><span class="adf-carry" data-adf="{&quot;text&quot;:&quot;a\u0085&quot;,&quot;type&quot;:&quot;text&quot;}"></span></p>\n'), 'unmappable-html at /content/0 line 1 offset 0')
-  assert.equal(refused('<p><span class="adf-carry" data-adf="{&quot;type&quot;:&quot;text&quot;,&quot;text&quot;:&quot;a&quot;}"></span></p>\n'), 'unsupported-node-shape at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<div class="adf-carry" data-adf="{&quot;type&quot;:5}"></div>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refused('<p><span class="adf-carry" data-adf="[]"></span></p>\n'), 'unsupported-node-shape at /content/0/content/0 line 1 offset 0')
-  assert.equal(refused('<p><span>a</span></p>\n'), 'unmappable-html at /content/0/content/0 line 1 offset 0')
-})
-
-test('refuses the document\'s carry anywhere but as the whole document', () => {
-  const documentCarry = carry('div', { type: 'doc', version: 1 }, '')
+test('refuses the document\'s carry anywhere but as the whole document, a line feed ending it', () => {
+  assert.equal(refusal(htmlToAdf(documentCarry)), 'unmappable-html at / line 1 offset 0')
+  assert.equal(refusal(htmlToAdf(`${documentCarry}\n\n`)), `unmappable-html at / line 2 offset ${documentCarry.length + 1}`)
+  assert.equal(refusal(htmlToAdf(`${documentCarry.replace('></div>', '>x</div>')}\n`)), 'unmappable-html at / line 1 offset 0')
   assert.equal(refusal(htmlToAdf(`${documentCarry}\n<hr>\n`)), 'unsupported-node-shape at /content/0 line 1 offset 0')
   assert.equal(refusal(htmlToAdf(`<hr>\n${documentCarry}\n`)), 'unsupported-node-shape at /content/1 line 2 offset 5')
   assert.equal(refusal(htmlToAdf(`<blockquote>\n${documentCarry}\n</blockquote>\n`)), 'unsupported-node-shape at /content/0/content/0 line 2 offset 13')
   assert.equal(refusal(htmlToAdf(`${carry('div', { type: 'doc', version: 2 }, '')}\n`)), 'unsupported-node-shape at /content/0 line 1 offset 0')
 })
 
+test('refuses a tag of three million attributes, past what one pattern over them all holds, as a value', () => {
+  assert.equal(refusal(htmlToAdf(`<p${' a=""'.repeat(3_000_000)}>x</p>\n`)), 'unmappable-html at /content/0 line 1 offset 0')
+})
+
+test('names what it found where reading stopped, a character no one sees as its escape', () => {
+  assert.equal(message(htmlToAdf('<p>a<b>b</b></p>\n')), '<b> as written here is no inline element of the dialect: found "<b>b</b></p>\\n"')
+  assert.equal(message(htmlToAdf('<p>a > b</p>\n')), 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "> b</p>\\n"')
+  assert.equal(message(htmlToAdf('<p><a href="a"b">a</a></p>\n')), '<a> holds its attributes as name="value", each value escaped as text is, then >: found "b\\">a</a></p>\\n"')
+  assert.equal(message(htmlToAdf('<p>a&nbsp;\u00a0</p>\n')), 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "&nbsp;\\u00a0</p>\\n"')
+  assert.equal(message(htmlToAdf('<pre><code>a</code></pre\n')), 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"')
+  assert.equal(message(htmlToAdf('<ul>\n<li>a</ul>\n')), 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "</ul>\\n"')
+})
+
 test('reads blocks nested 500 levels, and refuses the next level, a list\'s items one level below it', () => {
   const quotes = (levels: number): string => `${'<blockquote>\n'.repeat(levels)}<p>x</p>${'\n</blockquote>'.repeat(levels)}\n`
-  assert.equal(refusal(htmlToAdf(quotes(largestNesting))), 'read')
-  assert.equal(refusal(htmlToAdf(quotes(largestNesting + 1))).startsWith(`unsupported-nesting-depth at /${'content/0/'.repeat(largestNesting + 1)}content/0 line ${largestNesting + 2}`), true)
+  assert.equal(refusal(htmlToAdf(quotes(500))), 'read')
+  assert.equal(refusal(htmlToAdf(quotes(501))).startsWith(`unsupported-nesting-depth at /${'content/0/'.repeat(501)}content/0 line ${502}`), true)
   const lists = (levels: number): string => `${'<ul>\n<li>x\n'.repeat(levels)}<hr>${'\n</li>\n</ul>'.repeat(levels)}\n`
-  assert.equal(refusal(htmlToAdf(lists(largestNesting))), 'read')
-  assert.equal(refusal(htmlToAdf(lists(largestNesting + 1))).startsWith('unsupported-nesting-depth'), true)
+  assert.equal(refusal(htmlToAdf(lists(500))), 'read')
+  assert.equal(refusal(htmlToAdf(lists(501))).startsWith('unsupported-nesting-depth'), true)
   assert.equal(refusal(htmlToAdf('<blockquote>\n'.repeat(1_000_000))).startsWith('unsupported-nesting-depth'), true)
 })
 
 test('refuses a carried node whose JSON nests past the levels its depth leaves, and an inline carry past 500', () => {
   let value: unknown = 1
-  for (let level = 0; level < largestNesting - 2; level += 1) value = [value]
+  for (let level = 0; level < 498; level += 1) value = [value]
   const carried = carry('div', { attrs: { a: value }, type: 'unknownBlock' }, '')
   assert.equal(refusal(htmlToAdf(`${carried}\n`)), 'read')
   assert.equal(refusal(htmlToAdf(`<blockquote>\n${carried}\n</blockquote>\n`)), 'unsupported-nesting-depth at /content/0/content/0 line 2 offset 13')
   let inline: unknown = { text: 'x', type: 'text' }
-  for (let level = 0; level < largestNesting; level += 1) inline = { content: [inline], type: 'unknownInline' }
+  for (let level = 0; level < 500; level += 1) inline = { content: [inline], type: 'unknownInline' }
   assert.equal(refusal(htmlToAdf(`<p>${carry('span', inline, '')}</p>\n`)), 'unsupported-nesting-depth at /content/0/content/0 line 1 offset 0')
 })
 
 test('reads back what adfToHtml writes for the documents its own tests write', () => {
+  const bare: AdfDocument = { type: 'doc', version: 1 }
   const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Run this:')), { attrs: { language: 'python' }, content: [text('if ready:\n    deploy()')], type: 'codeBlock' }], type: 'panel' }
-  for (const written of [document(panel), document(paragraph(text('a'), text('b'), text('c', { type: 'em' }), text('d'), text('e'))), { type: 'doc' as const, version: 1 }]) {
+  for (const written of [document(panel), document(paragraph(text('a'), text('b'), text('c', { type: 'em' }), text('d'), text('e'))), bare]) {
     const html = adfToHtml(written)
     assert.ok(html.ok)
     assert.deepEqual(read(htmlToAdf(html.value)), written)
