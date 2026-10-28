@@ -433,7 +433,7 @@ function resolveTarget(scan: Scan, start: number, index: number): InlineTarget |
   const after = index + 1
   if (scan.source.charAt(after) === '(') {
     const inline = readInlineTarget(scan.targets, scan.offset + after)
-    // A target read in the outermost content holds in a directive's content exactly when it ends inside it.
+    // The memo reads the outermost content; a target it reads holds here exactly when the target ends inside `source`.
     if (inline !== undefined && after + inline.length <= scan.source.length) return inline
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
