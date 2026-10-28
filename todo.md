@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 152`
+`Next ID = 153`
 
 ## Items
 
@@ -23,6 +23,7 @@
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 145, 146, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 152 | 0.3.0 |  | owner | **Mutation-test a chunk's changed lines in 15 minutes or less, with one command the README documents.** | 3 | 2 | 1 | 4 | 4 | code health by 3 | 13.1 |
 | 72 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 145, 146, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
@@ -169,6 +170,19 @@ We draft each post for the place it goes. Each opens with the asker's problem an
 solves it, then links the GitHub repository, the README's comparison table and the README's
 opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
 announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
+
+### 152. Mutation-test a chunk's changed lines in 15 minutes or less, with one command the README documents.
+
+Today each stability review sets Stryker up by hand, and a run takes from 25 minutes to 3 hours. In the week to 2026-10-28, the reviewers' test runs took 17 hours: more than every other test run in the project together. The gate itself is quick: `./ci.sh` takes about 1.8 minutes, and CI about 2.6.
+
+Ways to get there, to measure before choosing:
+
+- Check the Stryker config in, so no review rebuilds it.
+- Mutate only the lines the chunk changes, and run only the tests that cover each mutant (`coverageAnalysis: "perTest"`).
+- Run the property tests with fewer runs under mutation, through `PROPERTY_RUNS`.
+- Run the mutants on Node alone; Deno, Bun and Firefox stay in the gate.
+
+Done when a mutation run of a shipped chunk's changed lines, such as item 122's, finishes in 15 minutes or less under `~/.claude/bin/run-heavy`.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
