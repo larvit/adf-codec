@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { readInlineTarget, targetMemo } from './link-syntax.ts'
+import { readDestination, readInlineTarget, targetMemo } from './link-syntax.ts'
 
 // Every `](` of the text, read in order through one memo, as a reader closes its brackets.
 function targets(text: string): unknown[] {
@@ -26,6 +26,16 @@ test('targets sharing a destination end share its failure', () => {
 test('an unbracketed destination ends at its first unmatched `)`', () => {
   assert.deepEqual(targets('[a](b(c)d) [e](f)'), [{ destination: 'b(c)d', length: 7 }, { destination: 'f', length: 3 }])
   assert.deepEqual(targets('[a](b\\)c)'), [{ destination: 'b)c', length: 6 }])
+})
+
+test('a destination holding an unbalanced unescaped `(` at a space or the end reads as none', () => {
+  assert.deepEqual(targets('[a](b(c "t")'), [undefined])
+  assert.deepEqual(targets('[a](b(c "t") [d](e)'), [undefined, { destination: 'e', length: 3 }])
+  assert.deepEqual(targets('[a](b(c) "t")'), [{ destination: 'b(c)', length: 10, title: 't' }])
+  assert.deepEqual(targets('[a](b((c) "t")'), [undefined])
+  assert.equal(readDestination('b(c', 0), undefined)
+  assert.equal(readDestination('b(c d', 0), undefined)
+  assert.deepEqual(readDestination('b(c) d', 0), { length: 4, value: 'b(c)' })
 })
 
 test('a target reads whitespace and a title around its destination, bracketed, unbracketed or empty', () => {

@@ -54,6 +54,10 @@
 - Every reader leaves `[text]`, `[text][]`, `[text][label]` and a definition `[label]: url` literal
   when the label runs over 999 characters, where it read them as a link or a definition. CommonMark
   caps a label at 999 characters, an escape counting as two.
+- Every reader leaves a link or a definition literal when its unbracketed destination holds a `(`
+  that is neither escaped nor closed by a `)` before the space ending the destination, where it
+  read it as a link: `[a](b(c "t")` is now text, as in CommonMark. Markdown the writers wrote reads
+  as before, since they escape such a parenthesis.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 

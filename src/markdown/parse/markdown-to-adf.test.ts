@@ -1031,6 +1031,8 @@ test('leaves the bracket pair no link parses as the text it holds', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('a ] b\n')), [paragraph('a ] b')])
   assert.deepEqual(content(losslessMarkdownToAdf('[a](/u\n')), [paragraph('[a](/u')])
   assert.deepEqual(content(losslessMarkdownToAdf('[a](/u x)\n')), [paragraph('[a](/u x)')])
+  assert.deepEqual(content(losslessMarkdownToAdf('[a](b(c "t")\n')), [paragraph('[a](b(c "t")')])
+  assert.deepEqual(content(losslessMarkdownToAdf('[a][r]\n\n[r]: b(c "t"\n')), [paragraph('[a][r]'), paragraph('[r]: b(c "t"')])
   assert.deepEqual(content(losslessMarkdownToAdf('[a](<u\n')), [paragraph('[a](<u')])
   assert.deepEqual(content(losslessMarkdownToAdf('![a\n')), [paragraph('![a')])
   assert.deepEqual(content(losslessMarkdownToAdf('[a [b](/u) c](/v)\n')), [
