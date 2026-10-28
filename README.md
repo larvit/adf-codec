@@ -733,7 +733,8 @@ Both commands need only Docker, git and bash 5.
 
 - `./ci.sh` runs the gate: every check CI runs.
 - `./mutation-tests/run.sh [<base>]` mutation-tests the source lines changed since `<base>`,
-  `origin/main` by default, running each mutant against only the test files that reach it.
+  `origin/main` by default, running each mutant, in a 6 GB container, against only the test files
+  that reach it.
 
 ## Links
 

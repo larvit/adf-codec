@@ -487,6 +487,14 @@ hand otherwise.
 `fast-check` earns its place as a devDependency shrinking a failing generated document to the
 nodes that break it.
 
+## Stryker in its own package
+
+2026-10-28, item 152. Code health: the code is easy to change safely. Valid while the gate runs no
+mutation tests.
+
+Mutation testing with Stryker lives in `mutation-tests/`'s own package, so the gate's `npm ci` never
+installs it. CI does not run it, so Renovate does not automerge its bumps.
+
 ## Any ES2022 engine
 
 2026-09-01, the maintainer. Goal 8. Valid while ES2022 is the floor browsers and servers share.

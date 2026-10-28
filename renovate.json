@@ -52,6 +52,11 @@
   "extends": ["config:recommended"],
   "packageRules": [
     {
+      "automerge": false,
+      "description": "CI does not run Stryker, so its bumps wait for a mutation run by hand",
+      "matchFileNames": ["mutation-tests/package.json"]
+    },
+    {
       "allowedVersions": "<19",
       "description": "engines.node states >=18, so the image proving it stays on 18",
       "matchDepNames": ["node-floor"]

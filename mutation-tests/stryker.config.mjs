@@ -1,9 +1,10 @@
 export default {
-  // A test file peaks near 2.6 GB: past four workers a 6 GB container kills some, and a killed worker's mutant reads as an error, hiding a survivor.
+  // A test file peaks near 2.6 GB: past four workers run.sh's 6 GB container kills some, and a killed worker's mutant reads as a RuntimeError, which fails the run.
   concurrency: 4,
   coverageAnalysis: 'perTest',
   ignorePatterns: ['/browser-tests', '/converter-comparison', '/dist', '/mutation-tests', '/package-tests'],
-  reporters: ['clear-text', 'progress-append-only'],
+  jsonReporter: { fileName: '/tmp/mutation-report.json' },
+  reporters: ['clear-text', 'json', 'progress-append-only'],
   tap: { testFiles: ['src/**/*.test.ts'] },
   tempDirName: '/tmp/stryker',
   testRunner: 'tap',

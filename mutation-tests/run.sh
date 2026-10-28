@@ -19,4 +19,4 @@ if [ -z "$mutate" ]; then
 fi
 
 leg "install ($node_image)" in_image "$node_image" sh -c 'npm ci --no-audit --no-fund && npm ci --no-audit --no-fund --prefix mutation-tests'
-leg "mutation tests ($node_image)" in_image "$node_image" mutation-tests/node_modules/.bin/stryker run mutation-tests/stryker.config.mjs --mutate "$mutate"
+in_image_memory=6g leg "mutation tests ($node_image)" in_image "$node_image" sh -c 'mutation-tests/node_modules/.bin/stryker run mutation-tests/stryker.config.mjs --mutate "$1" && node mutation-tests/check-runtime-errors.mjs' sh "$mutate"
