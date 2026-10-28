@@ -10,8 +10,8 @@ export type LinkPart = { length: number; value: string }
 // Every destination ending at one index shares what follows it: the title and the closing `)`.
 type Tail = { end: number; title: string | undefined }
 
-// `destinationEnds[start]` is where an unbracketed destination starting there stops, for every start a target can have: the index just after a `(`, a space or a control character.
-export type TargetMemo = { destinationEnds: Int32Array; tails: Map<number, Tail | undefined> }
+// What the targets read in `text` share; `destinationEnds` is walked at the first one.
+export type TargetMemo = { destinationEnds: Int32Array | undefined; tails: Map<number, Tail | undefined>; text: string }
 
 // The lossless flavour escapes a quote alone, writing a title holding a backslash or an entity reference as a directive (spec/flavour.md, Marks); the portable flavour writes no directive, so it escapes those too, and a table cell's `|` (README, Portable markdown).
 export type TitleEscapes = 'lossless' | 'portable' | 'portable-table-cell'
@@ -47,14 +47,15 @@ export function readDestination(text: string, offset: number): LinkPart | undefi
   destinationRun.lastIndex = offset
   destinationRun.test(text)
   const run = text.slice(offset, destinationRun.lastIndex)
-  const length = targetMemo(run).destinationEnds[0] ?? 0
+  const length = destinationEnds(run)[0] ?? 0
   return length === 0 ? undefined : { length, value: decodeTextEscapes(run.slice(0, length)) }
 }
 
 // `offset` sits on the `(` a link text closes into. The definition is built only when called, so a link the reader then refuses never decodes its destination.
-export function readInlineTarget(text: string, offset: number, memo: TargetMemo): InlineTarget | undefined {
+export function readInlineTarget(memo: TargetMemo, offset: number): InlineTarget | undefined {
+  const { text } = memo
   const start = skipLinkWhitespace(text, offset + 1)
-  const end = destinationEnd(text, start, memo)
+  const end = destinationEnd(memo, start)
   if (end === undefined) return undefined
   const tail = memo.tails.has(end) ? memo.tails.get(end) : readTail(text, end)
   memo.tails.set(end, tail)
@@ -67,30 +68,36 @@ export function readInlineTarget(text: string, offset: number, memo: TargetMemo)
   return { definition, length: tail.end - offset }
 }
 
-// Every unbracketed destination's end, in one pass. Index 0 is a start too, for `readDestination`, which reads from its text's first character.
 export function targetMemo(text: string): TargetMemo {
-  const destinationEnds = new Int32Array(text.length + 1)
+  return { destinationEnds: undefined, tails: new Map(), text }
+}
+
+// Where an unbracketed destination starting at each index stops, in one pass, for every start a target can have: the index just after a `(`, a space or a control character. Index 0 is a start too, for `readDestination`, which reads from its text's first character.
+function destinationEnds(text: string): Int32Array {
+  const ends = new Int32Array(text.length + 1)
   const open = [0]
   for (let index = 0; index < text.length; index += backslashEscape(text, index) === undefined ? 1 : 2) {
     const character = text.charAt(index)
     if (character === '(') open.push(index + 1)
     const start = character === ')' ? open.pop() : undefined
-    if (start !== undefined) destinationEnds[start] = index
+    if (start !== undefined) ends[start] = index
     if (character !== ' ' && !holdsControlCharacter(character)) continue
-    for (const stopped of open.splice(0)) destinationEnds[stopped] = index
+    for (const stopped of open.splice(0)) ends[stopped] = index
     open.push(index + 1)
   }
-  for (const stopped of open) destinationEnds[stopped] = text.length
-  return { destinationEnds, tails: new Map() }
+  for (const stopped of open) ends[stopped] = text.length
+  return ends
 }
 
-function destinationEnd(text: string, start: number, memo: TargetMemo): number | undefined {
+function destinationEnd(memo: TargetMemo, start: number): number | undefined {
+  const { text } = memo
   if (text.charAt(start) === ')') return start
   if (text.charAt(start) === '<') {
     bracketedDestination.lastIndex = start
     const bracketed = bracketedDestination.exec(text)?.[0]
     return bracketed === undefined ? undefined : start + bracketed.length
   }
+  memo.destinationEnds ??= destinationEnds(text)
   const end = memo.destinationEnds[start] ?? start
   return end > start ? end : undefined
 }

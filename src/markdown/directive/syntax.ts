@@ -83,6 +83,11 @@ export function claimDirectivePrefix(text: string, index: number): ClaimedPrefix
   return claimsDirectivePrefix(text, index) ? { [claimedPrefix]: true, index } : undefined
 }
 
+// Where a span's [content] starts, counted from its `!adf:`.
+export function contentOffset(span: DirectiveSpan): number {
+  return directivePrefix.length + span.name.length + 1
+}
+
 export function holdsDirectivePrefix(text: string): boolean {
   return text.includes(directivePrefix)
 }

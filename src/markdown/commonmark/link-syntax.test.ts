@@ -8,7 +8,7 @@ function targets(text: string): unknown[] {
   const memo = targetMemo(text)
   const read: unknown[] = []
   for (let offset = text.indexOf('](') + 1; offset > 0; offset = text.indexOf('](', offset) + 1) {
-    const target = readInlineTarget(text, offset, memo)
+    const target = readInlineTarget(memo, offset)
     read.push(target === undefined ? undefined : { ...target.definition(), length: target.length })
   }
   return read
@@ -34,4 +34,5 @@ test('a target reads whitespace and a title around its destination, bracketed, u
     { destination: 'd e', length: 11, title: 'f' },
     { destination: '', length: 2 },
   ])
+  assert.deepEqual(targets('[a](<b>"t")'), [undefined])
 })

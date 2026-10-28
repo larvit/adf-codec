@@ -1038,6 +1038,13 @@ test('leaves the bracket pair no link parses as the text it holds', () => {
   ])
 })
 
+test('leaves a link literal whose target runs past the directive content holding it', () => {
+  assert.deepEqual(firstContent('!adf:underline[[a](b]c)\n'), [marked('[a](b', underline), text('c)')])
+  assert.deepEqual(firstContent('!adf:underline[[a](<b]>)\n'), [marked('[a](<b', underline), text('>)')])
+  assert.deepEqual(firstContent('!adf:underline[[a](b "t]")\n'), [marked('[a](b "t', underline), text('")')])
+  assert.deepEqual(firstContent('!adf:underline[[a](b]) [c](d)\n'), [marked('[a](b', underline), text(') '), marked('c', link('d'))])
+})
+
 test('leaves the brackets of a link whose text already holds one the text they are', () => {
   const held: AdfMark = { attrs: { collection: 'c', href: '/u' }, type: 'link' }
   assert.deepEqual(content(losslessMarkdownToAdf('[<http://x/>](/v)\n')), [
