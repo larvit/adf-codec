@@ -443,6 +443,17 @@ Atlassian's schema gives no card a link mark, so only a hand-built document meet
 `todo.md` item 133 ends it for inline cards, in 0.3.0. Recorded 2026-10-24 without a panel of its
 own: it puts the second panel's `<a>` around the text a card shows.
 
+## `htmlToAdf` also reads the dialect as a browser serializes it
+
+2026-10-28, the maintainer. Goal 6. Valid while a viewer/editor app may show `adfToHtml`'s HTML in a
+browser and post the page back. Lands with `todo.md` item 150.
+
+A browser does not write the dialect back as `adfToHtml` wrote it. `htmlToAdf` reads both spellings:
+a page's `innerHTML`, as WHATWG HTML §Serializing HTML fragments spells it, and a form post, which
+ends each line in `\r\n`. So text's raw `"` reads as `&quot;` does, `&nbsp;` as a no-break space and
+`\r\n` as a line feed, in what a carry element shows too. Every element the dialect writes reads this
+way, those later items add included. HTML no browser writes from the dialect stays refused.
+
 ## No runtime dependencies
 
 2026-08-23, the maintainer. Goal 8. Valid while ~20 lines of own code, or a vendored table, do each

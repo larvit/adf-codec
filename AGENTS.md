@@ -39,6 +39,7 @@ In `docs/decisions.md`:
 - The portable flavour's spellings
 - The portable reader refuses what GFM's reading would drop
 - The HTML dialect
+- `htmlToAdf` also reads the dialect as a browser serializes it
 - No runtime dependencies
 - Standards ship as data
 - fast-check

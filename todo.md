@@ -12,19 +12,19 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 150 | 0.3.0 |  | question | **Decide, before `adfToHtml` first ships, whether `htmlToAdf` also reads HTML as a browser serializes it — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 3 | 6 by 5 | 7.5 |
 | 140 | 0.3.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 145 | 0.3.0 |  |  | **Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 140, 145, 146 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 140, 145, 146 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 140, 145, 146, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 140, 145, 146, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
@@ -69,15 +69,6 @@
 
 ## Details
 
-### 150. Decide, before `adfToHtml` first ships, whether `htmlToAdf` also reads HTML as a browser serializes it — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
-
-`htmlToAdf` refuses all three today: `adfToHtml` escapes `"` in text, and the dialect writes no
-`&nbsp;` and only line feeds. A browser's `innerHTML` writes text's `"` raw and a no-break space as
-`&nbsp;`, and a form post turns every line feed into `\r\n`, so a viewer/editor app sending its
-page back gets `unmappable-html`. `docs/decisions.md` §The HTML dialect governs the escaping. While
-the dialect is unreleased, changing it costs no consumer anything; after the release it is
-breaking. Raised by the product-owner pass on `htmlToAdf`.
-
 ### 140. Read an inline link's target in time linear in the inline markdown, in every reader.
 
 `'[a](b'.repeat(n)` reads in time quadratic in n: each `](` after an open bracket reads its
@@ -120,6 +111,16 @@ text. `losslessMarkdownToAdf` on 3 MB of lazy lines in a list nested 490 levels 
 items of a list nested 480 levels, took 11 minutes to refuse on Node 24: a deep subtree past the
 length bound refuses only once every level below has re-indented its text. The writers do the same
 on such a document. Found while shipping item 106, 2026-10-11.
+
+### 150. Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
+
+`htmlToAdf` refuses all three today. A browser's `innerHTML` writes text's `"` raw and a no-break
+space as `&nbsp;`, and a form post turns every line feed into `\r\n`, so a viewer/editor app
+sending its page back gets `unmappable-html`. `docs/decisions.md` §`htmlToAdf` also reads the
+dialect as a browser serializes it records the maintainer's yes. Take every difference from WHATWG
+HTML §Serializing HTML fragments, not only these three, and check them against a browser's own
+`innerHTML`. README §HTML and `spec/html.md` say `\r\n` is refused; update both. The comprehension
+panel found `misspelling` in `src/html/escaping.ts` hard to read: make it easier.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
