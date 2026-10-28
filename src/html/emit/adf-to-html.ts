@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { anchorOpener } from '../anchor-element.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
+import { carryContent } from '../carry-content.ts'
 import { containerElements, headingElement, listStart } from '../block-elements.ts'
 import { dataAttributes } from '../data-attributes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -28,7 +29,7 @@ export function adfToHtml(document: AdfDocument): Result<string> {
 function writeHtml(document: AdfDocument): Result<string> {
   const content = writableContent(document)
   if (!content.ok) return content
-  if (content.value === undefined) return success(`${carryElement('div', serializeCanonicalJson(document, 'compact'), '')}\n`)
+  if (content.value === undefined) return success(`${carryElement('div', serializeCanonicalJson(document, 'compact'), carryContent(document, 'div'))}\n`)
   const pending: Pending[] = content.value.length === 0 ? [] : [...blockPieces(content.value, [], 0), '\n'].reverse()
   let html = ''
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {

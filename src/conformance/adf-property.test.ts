@@ -14,12 +14,12 @@ import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to
 import { toEditorNormal } from '../markdown/portable/editor-normal.ts'
 
 const gateRuns = 1600
-const htmlPieces = fc.constantFrom('<', '>', '&', '"', '\n', '\r', '\0', '&amp;', '&quot;', '&#39;', '<p>', '</p>', '<li>', '</li>', '<ul>\n', '\n</ul>', '<br>', '<em>', '</em>', '<a href="x">', '</span>', '</div>', ' data-local-id="x"', ' start="2"', '<div class="adf-carry" data-adf="{&quot;type&quot;:&quot;x&quot;}">', '<img src="x">', 'é🎉')
+const htmlPieces = fc.constantFrom('<', '>', '&', '"', '\n', '\r', '\0', '&amp;', '&quot;', '&#39;', '<p>', '</p>', '<li>', '</li>', '<ul>\n', '\n</ul>', '<br>', '<em>', '</em>', '<a href="x">', '</span>', '</div>', ' data-local-id="01a17eec-5ed2-75cf-904d-f4af6746ac07"', ' start="2"', '<div class="adf-carry" data-adf="{&quot;type&quot;:&quot;x&quot;}">', '<img src="x">', 'é🎉')
 // What HTML text cannot hold (WHATWG HTML §13.1.3), and the line feed a carry element shows as a line break.
 const unshown = /\n|(?![\t\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/gu
 
 const depthIdentifier = fc.createDepthIdentifier()
-const elementAttributes = [' alt=""', ' alt="y"', ' class="language-x"', ' data-local-id="x"', ' start="2"', ' title="t"']
+const elementAttributes = [' alt=""', ' alt="y"', ' class="language-x"', ' data-local-id="01a17e97-ca82-785e-9333-6e8199f3b098"', ' start="2"', ' title="t"']
 const elementInlinePieces = ['\n', '&amp;', '</p>', '<a href="x">a</a>', '<br>', '<code>c</code>', '<em>a</em>', '<img src="x">', '<p>', '<strong>b</strong>', 'a']
 const elementLines = ['<blockquote>\n<p>a</p>\n</blockquote>\n', '<hr>\n', '<li>\n<p></p>\n</li>\n', '<li>\n<p>a</p>\n</li>\n', '<li><p>a</p></li>\n', '<li>a</li>\n', '<p></p>\n', '<p><img src="x" alt=""></p>\n', '<p><img src="x"></p>\n', '<p>a</p>\n', '<pre><code>a</code></pre>\n', '<ul>\n<li>a</li>\n</ul>\n']
 const elementText = fc.string({ maxLength: 4, minLength: 1, unit: fc.constantFrom('\n', ' ', '"', '&', '<', 'a', 'é') })
@@ -27,7 +27,7 @@ const elementInline = fc.oneof(
   { arbitrary: fc.record({ marks: fc.subarray<AdfMark>([{ type: 'strong' }, { type: 'em' }, { type: 'code' }, { attrs: { href: 'x' }, type: 'link' }]), text: elementText }).map(({ marks, text }): AdfNode => (marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' })), weight: 4 },
   { arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
 )
-const localId = fc.record({ localId: fc.constantFrom('a1', 'b2') }, { noNullPrototype: true, requiredKeys: [] })
+const localId = fc.record({ localId: fc.constantFrom('01a17c28-f53a-7ae4-90e8-e3a686cc94e8', '01a17fb9-4022-7162-a34a-627985fb16cc') }, { noNullPrototype: true, requiredKeys: [] })
 // The nodes `adfToHtml` writes as their own elements, so a document holding these alone writes no carry element, short of adjacent unmarked text.
 const { elementBlock } = fc.letrec<{ elementBlock: AdfNode }>((tie) => {
   const blocks = fc.array(tie('elementBlock'), { depthIdentifier, maxLength: 3 })

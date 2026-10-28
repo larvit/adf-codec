@@ -21,6 +21,10 @@ function paragraph(...content: AdfNode[]): AdfNode {
   return content.length === 0 ? { type: 'paragraph' } : { content, type: 'paragraph' }
 }
 
+function heading(level: number, ...content: AdfNode[]): AdfNode {
+  return content.length === 0 ? { attrs: { level }, type: 'heading' } : { attrs: { level }, content, type: 'heading' }
+}
+
 function text(value: string, ...marks: AdfMark[]): AdfNode {
   return marks.length === 0 ? { text: value, type: 'text' } : { marks, text: value, type: 'text' }
 }
@@ -42,11 +46,19 @@ function message(result: Result<AdfDocument, ParseError>): string {
 }
 
 const documentCarry = carry('div', { type: 'doc', version: 1 }, '')
+const mention: AdfNode = { attrs: { id: ids.mention, text: '@Mikael' }, type: 'mention' }
+const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'panel' }
 const rule = JSON.stringify({ type: 'unknownBlock' }).replaceAll('"', '&quot;')
 
 // The carry element of `node`, showing `shown`.
 function carry(tag: 'div' | 'span', node: unknown, shown: string): string {
   return `<${tag} class="adf-carry" data-adf="${JSON.stringify(node).replaceAll('"', '&quot;')}">${shown}</${tag}>`
+}
+
+function nested(value: unknown, levels: number, wrap: (inner: unknown) => unknown): unknown {
+  let wrapped = value
+  for (let level = 0; level < levels; level += 1) wrapped = wrap(wrapped)
+  return wrapped
 }
 
 test('reads an empty string as a document of no blocks, and the document\'s carry as one holding no content key', () => {
@@ -55,7 +67,6 @@ test('reads an empty string as a document of no blocks, and the document\'s carr
 })
 
 test('reads paragraphs, headings and rules, a line feed after each', () => {
-  const heading = (level: number, ...content: AdfNode[]): AdfNode => (content.length === 0 ? { attrs: { level }, type: 'heading' } : { attrs: { level }, content, type: 'heading' })
   assert.deepEqual(read(htmlToAdf('<h1>Level 1</h1>\n<p>Read the manual.</p>\n<hr>\n<h6>Level 6</h6>\n')), document(heading(1, text('Level 1')), paragraph(text('Read the manual.')), { type: 'rule' }, heading(6, text('Level 6'))))
   assert.deepEqual(read(htmlToAdf('<p></p>\n<h2></h2>\n')), document(paragraph(), heading(2)))
 })
@@ -123,19 +134,8 @@ test('reads an image standing alone in a paragraph, a link around it where one m
 })
 
 test('reads a carry element from its data-adf, what it shows read back as adfToHtml writes it', () => {
-  const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'panel' }
-  const mention: AdfNode = { attrs: { id: ids.mention, text: '@Mikael' }, type: 'mention' }
   assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(panel, paragraph(text('Ask '), mention)))
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', text('a\u0085b', { type: 'underline' }), 'ab').replace('\u0085', '\\u0085')}</p>\n`)), document(paragraph(text('a\u0085b', { type: 'underline' }))))
-})
-
-test('refuses an edit to what a carry element shows, naming what it found there', () => {
-  const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'panel' }
-  const edited = htmlToAdf(`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`)
-  assert.equal(refusal(edited), 'unmappable-html at /content/1 line 2 offset 9')
-  assert.match(message(edited), /: found "<b>collation<\/b>\.<\/p><\/d"…$/)
-  const mention: AdfNode = { attrs: { id: ids.mention, text: '@Mikael' }, type: 'mention' }
-  assert.equal(refusal(htmlToAdf(`<p>Ask ${carry('span', mention, '')}</p>\n`)), 'unmappable-html at /content/0/content/1 line 1 offset 0')
 })
 
 test('reads a carry element holding a node HTML writes as its own element as that node', () => {
@@ -184,6 +184,21 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     ['<div class="adf-carry" data-adf="{&quot;type&quot;:5}"></div>\n', 'unsupported-node-shape at /content/0 line 1 offset 0'],
     ['<p><span class="adf-carry" data-adf="[]"></span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
     ['<p><span>a</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+  ],
+  'refuses an edit to what a carry element shows': [
+    [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'unmappable-html at /content/1 line 2 offset 9'],
+    [`<p>Ask ${carry('span', mention, '')}</p>\n`, 'unmappable-html at /content/0/content/1 line 1 offset 0'],
+  ],
+  'refuses the document\'s carry anywhere but as the whole document, a line feed ending it': [
+    [documentCarry, 'unmappable-html at / line 1 offset 0'],
+    [`${documentCarry}\n\n`, `unmappable-html at / line 2 offset ${documentCarry.length + 1}`],
+    [`${documentCarry}X`, 'unmappable-html at / line 1 offset 0'],
+    [`${documentCarry}X<hr>\n`, 'unmappable-html at / line 1 offset 0'],
+    [`${documentCarry.replace('></div>', '>x</div>')}\n`, 'unmappable-html at / line 1 offset 0'],
+    [`${documentCarry}\n<hr>\n`, 'unsupported-node-shape at /content/0 line 1 offset 0'],
+    [`<hr>\n${documentCarry}\n`, 'unsupported-node-shape at /content/1 line 2 offset 5'],
+    [`<blockquote>\n${documentCarry}\n</blockquote>\n`, 'unsupported-node-shape at /content/0/content/0 line 2 offset 13'],
+    [`${carry('div', { type: 'doc', version: 2 }, '')}\n`, 'unsupported-node-shape at /content/0 line 1 offset 0'],
   ],
   'refuses a data-* attribute out of the order adfToHtml writes as unmappable-html, and one no attribute of its node spells as unsupported-node-shape': [
     ['<hr data-style="a" data-color="b">\n', 'unmappable-html at /content/0 line 1 offset 0'],
@@ -245,35 +260,30 @@ for (const [group, cases] of Object.entries(refusals)) {
   for (const [html, expected] of cases) test(`${group}: ${JSON.stringify(html)}`, () => assert.equal(refusal(htmlToAdf(html)), expected))
 }
 
-test('refuses a value that is not a string as not-a-string', () => {
-  for (const value of [null, 5, undefined, {}]) {
+const notStrings: Readonly<Record<string, unknown>> = { null: null, number: 5, object: {}, undefined: undefined }
+
+for (const [kind, value] of Object.entries(notStrings)) {
+  test(`refuses a value that is not a string as not-a-string: ${kind}`, () => {
     // @ts-expect-error -- a caller without types can pass anything.
     assert.equal(refusal(htmlToAdf(value)), 'not-a-string at / line 1 offset 0')
-  }
-})
-
-test('refuses the document\'s carry anywhere but as the whole document, a line feed ending it', () => {
-  assert.equal(refusal(htmlToAdf(documentCarry)), 'unmappable-html at / line 1 offset 0')
-  assert.equal(refusal(htmlToAdf(`${documentCarry}\n\n`)), `unmappable-html at / line 2 offset ${documentCarry.length + 1}`)
-  assert.equal(refusal(htmlToAdf(`${documentCarry.replace('></div>', '>x</div>')}\n`)), 'unmappable-html at / line 1 offset 0')
-  assert.equal(refusal(htmlToAdf(`${documentCarry}\n<hr>\n`)), 'unsupported-node-shape at /content/0 line 1 offset 0')
-  assert.equal(refusal(htmlToAdf(`<hr>\n${documentCarry}\n`)), 'unsupported-node-shape at /content/1 line 2 offset 5')
-  assert.equal(refusal(htmlToAdf(`<blockquote>\n${documentCarry}\n</blockquote>\n`)), 'unsupported-node-shape at /content/0/content/0 line 2 offset 13')
-  assert.equal(refusal(htmlToAdf(`${carry('div', { type: 'doc', version: 2 }, '')}\n`)), 'unsupported-node-shape at /content/0 line 1 offset 0')
-})
+  })
+}
 
 test('refuses a tag of three million attributes, past what one pattern over them all holds, as a value', () => {
   assert.equal(refusal(htmlToAdf(`<p${' a=""'.repeat(3_000_000)}>x</p>\n`)), 'unmappable-html at /content/0 line 1 offset 0')
 })
 
-test('names what it found where reading stopped, a character no one sees as its escape', () => {
-  assert.equal(message(htmlToAdf('<p>a<b>b</b></p>\n')), '<b> as written here is no inline element of the dialect: found "<b>b</b></p>\\n"')
-  assert.equal(message(htmlToAdf('<p>a > b</p>\n')), 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "> b</p>\\n"')
-  assert.equal(message(htmlToAdf('<p><a href="a"b">a</a></p>\n')), '<a> holds its attributes as name="value", each value escaped as text is, then >: found "b\\">a</a></p>\\n"')
-  assert.equal(message(htmlToAdf('<p>a&nbsp;\u00a0</p>\n')), 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "&nbsp;\\u00a0</p>\\n"')
-  assert.equal(message(htmlToAdf('<pre><code>a</code></pre\n')), 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"')
-  assert.equal(message(htmlToAdf('<ul>\n<li>a</ul>\n')), 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "</ul>\\n"')
-})
+const messages: readonly (readonly [string, string])[] = [
+  ['<p>a<b>b</b></p>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></p>\\n"'],
+  ['<p>a > b</p>\n', 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "> b</p>\\n"'],
+  ['<p><a href="a"b">a</a></p>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "b\\">a</a></p>\\n"'],
+  ['<p>a&nbsp;\u00a0</p>\n', 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "&nbsp;\\u00a0</p>\\n"'],
+  ['<pre><code>a</code></pre\n', 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"'],
+  ['<ul>\n<li>a</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "</ul>\\n"'],
+  [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows its node\'s text as adfToHtml writes it, then ends at </div>; an edit to it is no edit to the node: found "<b>collation</b>.</p></d"…'],
+]
+
+for (const [html, expected] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => assert.equal(message(htmlToAdf(html)), expected))
 
 test('reads blocks nested 500 levels, and refuses the next level, a list\'s items one level below it', () => {
   const quotes = (levels: number): string => `${'<blockquote>\n'.repeat(levels)}<p>x</p>${'\n</blockquote>'.repeat(levels)}\n`
@@ -286,22 +296,24 @@ test('reads blocks nested 500 levels, and refuses the next level, a list\'s item
 })
 
 test('refuses a carried node whose JSON nests past the levels its depth leaves, and an inline carry past 500', () => {
-  let value: unknown = 1
-  for (let level = 0; level < 498; level += 1) value = [value]
-  const carried = carry('div', { attrs: { a: value }, type: 'unknownBlock' }, '')
+  const carried = carry('div', { attrs: { a: nested(1, 498, (inner) => [inner]) }, type: 'unknownBlock' }, '')
   assert.equal(refusal(htmlToAdf(`${carried}\n`)), 'read')
   assert.equal(refusal(htmlToAdf(`<blockquote>\n${carried}\n</blockquote>\n`)), 'unsupported-nesting-depth at /content/0/content/0 line 2 offset 13')
-  let inline: unknown = { text: 'x', type: 'text' }
-  for (let level = 0; level < 500; level += 1) inline = { content: [inline], type: 'unknownInline' }
+  const inline = nested({ text: 'x', type: 'text' }, 500, (inner) => ({ content: [inner], type: 'unknownInline' }))
   assert.equal(refusal(htmlToAdf(`<p>${carry('span', inline, '')}</p>\n`)), 'unsupported-nesting-depth at /content/0/content/0 line 1 offset 0')
 })
 
-test('reads back what adfToHtml writes for the documents its own tests write', () => {
-  const bare: AdfDocument = { type: 'doc', version: 1 }
-  const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Run this:')), { attrs: { language: 'python' }, content: [text('if ready:\n    deploy()')], type: 'codeBlock' }], type: 'panel' }
-  for (const written of [document(panel), document(paragraph(text('a'), text('b'), text('c', { type: 'em' }), text('d'), text('e'))), bare]) {
-    const html = adfToHtml(written)
+// The documents adfToHtml's own tests write, by what each holds.
+const written: Readonly<Record<string, AdfDocument>> = {
+  'a panel holding a code block': document({ attrs: { panelType: 'info' }, content: [paragraph(text('Run this:')), { attrs: { language: 'python' }, content: [text('if ready:\n    deploy()')], type: 'codeBlock' }], type: 'panel' }),
+  'adjacent unmarked text': document(paragraph(text('a'), text('b'), text('c', { type: 'em' }), text('d'), text('e'))),
+  'no content key': { type: 'doc', version: 1 },
+}
+
+for (const [holding, adf] of Object.entries(written)) {
+  test(`reads back what adfToHtml writes for a document holding ${holding}`, () => {
+    const html = adfToHtml(adf)
     assert.ok(html.ok)
-    assert.deepEqual(read(htmlToAdf(html.value)), written)
-  }
-})
+    assert.deepEqual(read(htmlToAdf(html.value)), adf)
+  })
+}
