@@ -41,7 +41,7 @@ type LineAttempt = { fallback: NodeRange | 'opening-link'; line?: undefined } | 
 
 type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
 
-export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
+export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; run: MarkRun }
 
 export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<string> {
   const emitted = emitLine(nodes, container, path, flavour)
@@ -136,7 +136,7 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
 function attemptLine(segments: readonly InlineSegment[], container: LineContainer, flavour: WrittenFlavour): LineAttempt {
   const verdict = lineVerdict(segments, container, flavour)
   if (verdict.kind === 'opening-link') return { fallback: 'opening-link' }
-  if (verdict.kind === 'unspellable-run') return { fallback: verdict.runs[0] }
+  if (verdict.kind === 'unspellable-run') return { fallback: verdict.run }
   return { line: verdict.text }
 }
 
@@ -144,8 +144,8 @@ function attemptLine(segments: readonly InlineSegment[], container: LineContaine
 function lineVerdict(segments: readonly InlineSegment[], container: LineContainer, flavour: WrittenFlavour): PortableLineFallback | { kind: 'line'; text: string } {
   const assembled = assembleInlineLine(segments, container, flavour)
   if (assembled.openingLinkAsDirective) return { kind: 'opening-link' }
-  const [run, ...others] = assembled.unspellableRuns
-  return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', runs: [run, ...others] }
+  const run = assembled.unspellableRun
+  return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', run }
 }
 
 // A space or tab CommonMark strips at a line edge rides !adf:text{text="…"}.

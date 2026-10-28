@@ -333,6 +333,8 @@ test('escapes only text that would otherwise open a construct', () => {
   assert.equal(emitted(':::panel info'), ':::panel info\n')
   assert.equal(emitted('10:30 tomorrow'), '10:30 tomorrow\n')
   assert.equal(emitted('[a](b)'), '\\[a](b)\n')
+  assert.equal(emitted('[a]: b'), '\\[a]: b\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document({ attrs: { level: 1 }, content: [{ text: '[a]: b', type: 'text' }], type: 'heading' }))), '# [a]: b\n')
   assert.equal(emitted('**bold**'), '\\*\\*bold\\*\\*\n')
   assert.equal(emitted('a `x` b'), 'a \\`x` b\n')
   assert.equal(emitted('~~struck~~'), '\\~~struck\\~~\n')
@@ -342,13 +344,14 @@ test('escapes only text that would otherwise open a construct', () => {
   assert.equal(emitted('x"_y"'), 'x"\\_y"\n')
 })
 
-test('escapes every text bracket in a line where one opens link text, none where none does, and every text backtick where one opens a code span', () => {
+test('escapes every text bracket in a line where one opens link text and every text backtick where one opens a code span, and none where none does', () => {
   const emitted = (text: string): string => markdown(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' }))))
   assert.equal(emitted('[a](b) [c]'), '\\[a](b) \\[c]\n')
   assert.equal(emitted('see [1] and [docs](url) [2]'), 'see \\[1] and \\[docs](url) \\[2]\n')
   assert.equal(emitted('[a] b](c'), '[a] b](c\n')
   assert.equal(emitted('[x]('), '[x](\n')
   assert.equal(emitted('Use ` or ``code`` syntax'), 'Use \\` or \\`\\`code\\`\\` syntax\n')
+  assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ marks: [{ type: 'code' }], text: 'c', type: 'text' }, { text: 'a ` b', type: 'text' })))), '`c`a ` b\n')
 })
 
 test('keeps a text backtick bare in a line where a text bracket opens a link the reader refuses', () => {
@@ -396,6 +399,15 @@ test('carries a mark spelling that cannot open or close where it sits', () => {
     'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\"a.\\",\\"type\\":\\"text\\"}"}**b**\n',
   )
   assert.equal(emitted({ text: 'x', type: 'text' }, marked('ab', em, strong), { text: 'y', type: 'text' }), 'x***ab***y\n')
+})
+
+test('carries the mark spelling that cannot close where it sits, and keeps the later one the reader would pair it with', () => {
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const emitted = (...content: AdfNode[]): string => markdown(adfToLosslessMarkdown(document(paragraph(...content))))
+  const b: AdfNode = { text: 'b', type: 'text' }
+  assert.equal(emitted(marked(':', { type: 'em' }), b, marked('c', { type: 'em' })), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\":\\",\\"type\\":\\"text\\"}"}b*c*\n')
+  assert.equal(emitted(marked(')', { type: 'strong' }), b, marked('c', { type: 'strong' })), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"text\\":\\")\\",\\"type\\":\\"text\\"}"}b**c**\n')
+  assert.equal(emitted(marked('^', { type: 'strike' }), b, marked('c', { type: 'strike' })), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strike\\"}],\\"text\\":\\"^\\",\\"type\\":\\"text\\"}"}b~~c~~\n')
 })
 
 test('refuses a node carrying one mark type twice', () => {

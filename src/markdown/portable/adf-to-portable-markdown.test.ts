@@ -384,6 +384,15 @@ test('drops the mark of a run CommonMark flanking or matching cannot spell', () 
   assert.equal(portable(paragraph(text('a'), text('b', highlight), text(' c'), text('d', highlight), text(' '), text('e', highlight))), 'ab cd ==e==\n')
 })
 
+test('drops the mark of the run that cannot close where it sits, and keeps the later run the reader would pair it with', () => {
+  const highlight: AdfMark = { type: 'backgroundColor' }
+  const strike: AdfMark = { type: 'strike' }
+  assert.equal(portable(paragraph(text(':', em), text('b'), text('c', em))), ':b*c*\n')
+  assert.equal(portable(paragraph(text(')', strong), text('b'), text('c', strong))), ')b**c**\n')
+  assert.equal(portable(paragraph(text('^', strike), text('b'), text('c', strike))), '^b~~c~~\n')
+  assert.equal(portable(paragraph(text('~', highlight), text('b'), text('日本', highlight))), '~b==日本==\n')
+})
+
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {
   assert.equal(portable(paragraph(text(' \n a \n b\n'))), 'a\\\nb\n')
   assert.equal(portable(paragraph({ type: 'hardBreak' }, text('a'), { attrs: { text: '\n' }, type: 'hardBreak' }, text('b'), { type: 'hardBreak' })), 'a\\\nb\n')
