@@ -15,7 +15,7 @@ shows, edits, exports or generates the rich text Atlassian products store as ADF
 | Markdown from a bot, a model or a person | ADF | `portableMarkdownToAdf` | reads CommonMark plus GFM's tables, task lists and alerts, `~~`, and Obsidian's callouts and `==`; `commonMarkToAdf` reads strict CommonMark alone |
 | ADF | markdown to edit, then ADF again | `adfToLosslessMarkdown`, then `losslessMarkdownToAdf` | gives back the document it started from, panels, mentions, statuses and node types this version does not know included |
 | ADF | markdown that GitHub, GitLab and Obsidian render | `adfToPortableMarkdown` | keeps the text, images by URL and link targets and drops the rest |
-| ADF | HTML | `adfToHtml` | writes the elements a browser shows; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
+| ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, code blocks, links and marks as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
 
 Every call returns a result, never a throw. A refusal carries a code from a closed list, and every
 refusal but `engine-limit` repeats on the same input ([The guarantees](#the-guarantees)).
@@ -244,8 +244,9 @@ place, and on CI failing a change that breaks a guarantee.
 
 ## Other ADF converters
 
-Serves [Goals](#goals) 3. The first table lists every npm package that converts ADF to or from
-markdown, whatever its downloads, unless its own documentation calls it experimental or incomplete.
+Serves [Goals](#goals) 3. The first table lists every npm package that runs in Node and converts
+ADF to or from markdown, whatever its downloads; a package that fails ordinary nodes stays, with how it fails. A
+wrapper or fork of a listed package is left out.
 On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each package's published code, at the version the table names, with its default options. A
 package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
@@ -256,8 +257,11 @@ holding the same marks and link.
 | --- | --- | --- | --- | --- | --- |
 | `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 |
 | `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 |
+| `@complexthings/md-to-adf` 1.0.0 | markdown to ADF; writes each list item as a list of its own | – | – | markdown | 1 |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 |
 | `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 |
+| `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; `***bold italic***` comes out as italic text holding asterisks | – | – | markdown | 2 |
+| `adf-converter` 0.1.0 | ADF to markdown | – | its text kept, with a console message | markdown | 0 |
 | `adf-md` 0.2.0 | both ways | a different document: the status without its `localId`, the marks in the other order | dropped with its text | markdown with MDX tags for panels, mentions and statuses | 6 |
 | `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 |
 | `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 |
@@ -266,14 +270,17 @@ holding the same marks and link.
 | `github-markdown-adf` 1.3.0 | both ways | a different document: the mention comes back as text, the status as inline code, the marks in the other order | dropped with its text | markdown | 3 |
 | `markdown-to-adf` 0.2.20 | markdown to ADF; writes a quote as the node type `blockQuote`, which ADF spells `blockquote` | – | – | markdown | 3 |
 | `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 |
+| `md-adf` 0.2.2 | both ways | a different document: the mention and the status come back as text, the marks in the other order, the panel as a quote | dropped with its text | markdown | 5 |
 | `md-to-adf` 0.6.4 | markdown to ADF | – | – | markdown | 2 |
-| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` writes as markdown; throws on a status | – | throws | markdown | 3 |
+| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.1 writes as markdown; throws on a status | – | throws | markdown | 3 |
 
-The next table lists converters in other ecosystems and Atlassian's own paths. They are not run
-here; each row is what the project's documentation says, on 2026-10-28.
+The next table lists converters this comparison does not run: other ecosystems' libraries,
+Atlassian's own paths, and one npm package that needs a browser. Each row is what the project's
+documentation says, on 2026-10-28.
 
 | Converter | Converts | Source |
 | --- | --- | --- |
+| `adf2md` 2.0.0, JavaScript for browsers | ADF to and from GitHub Flavored Markdown with MDX-style tags for Atlassian nodes; ships a browser bundle that needs a page, not Node | [npm](https://www.npmjs.com/package/adf2md) |
 | `marklas` 0.8.6, Python | GitHub Flavored Markdown to and from ADF | [PyPI](https://pypi.org/project/marklas/) |
 | `pyadf` 0.5.2, Python | ADF to markdown; a node it cannot render becomes an HTML element holding its attributes | [README](https://github.com/YoungseokCh/pyadf) |
 | `jc-adf` 0.2.0, Rust | markdown to and from ADF; a node type it does not know goes through an `adf:<type>` fenced block | [crates.io](https://crates.io/crates/jc-adf) |

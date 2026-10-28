@@ -1,22 +1,26 @@
 import * as adf2markdown from "adf2markdown";
 import * as adfCodec from "@larvit/adf-codec";
+import * as adfConverter from "adf-converter";
 import * as adfMd from "adf-md";
 import * as adfToMarkdown from "adf-to-markdown";
 import adfToMd from "adf-to-md";
-import { loadAdf4j } from "@nthings.dev/adf4j-wasm";
 import * as atlaskitJson from "@atlaskit/editor-json-transformer";
 import * as atlaskitMarkdown from "@atlaskit/editor-markdown-transformer";
 import { createRequire } from "node:module";
 import * as extendedParser from "extended-markdown-adf-parser";
 import * as faulander from "@faulander/md2adf";
+import { fromADF } from "mdast-util-from-adf";
 import * as githubMarkdownAdf from "github-markdown-adf";
 import { isDeepStrictEqual } from "node:util";
-import * as marklassian from "marklassian";
+import { loadAdf4j } from "@nthings.dev/adf4j-wasm";
 import * as markdownToAdf from "markdown-to-adf";
-import { fromADF } from "mdast-util-from-adf";
+import { markdownToJiraBlock } from "@wrtnlabs/markdown-to-adf";
+import * as marklassian from "marklassian";
+import * as mdAdf from "md-adf";
 import mdToAdf from "md-to-adf";
-import { readFileSync } from "node:fs";
 import { toMarkdown as mdastToMarkdown } from "mdast-util-to-markdown";
+import { readFileSync } from "node:fs";
+import translateGithubMarkdown from "@complexthings/md-to-adf";
 
 const { defaultSchema } = createRequire(import.meta.url)("@atlaskit/adf-schema/schema-default");
 
@@ -60,15 +64,18 @@ const converters = {
     toAdf: (md) => json.encode(atlaskit.parse(md)),
     toMarkdown: (doc) => atlaskit.encode(json.parse(doc)),
   },
-  "@larvit/adf-codec": {
-    toAdf: (md) => adfCodec.losslessMarkdownToAdf(md).value,
-    toMarkdown: (doc) => adfCodec.adfToLosslessMarkdown(doc).value,
-  },
+  "@complexthings/md-to-adf": { toAdf: (md) => translateGithubMarkdown(md) },
   "@faulander/md2adf": {
     toAdf: (md) => faulander.markdownToAdf(md),
     toMarkdown: (doc) => faulander.adfToMarkdown(doc),
   },
+  "@larvit/adf-codec": {
+    toAdf: (md) => adfCodec.losslessMarkdownToAdf(md).value,
+    toMarkdown: (doc) => adfCodec.adfToLosslessMarkdown(doc).value,
+  },
   "@nthings.dev/adf4j-wasm": { toMarkdown: (doc) => adf4j.convert(JSON.stringify(doc)) },
+  "@wrtnlabs/markdown-to-adf": { toAdf: (md) => markdownToJiraBlock(md) },
+  "adf-converter": { toMarkdown: (doc) => adfConverter.processADF(doc, adfConverter.markdownFormatter) },
   "adf-md": {
     toAdf: (md) => succeeded(adfMd.markdownToAdf(md)),
     toMarkdown: (doc) => succeeded(adfMd.adfToMarkdown(doc)),
@@ -76,18 +83,22 @@ const converters = {
   "adf-to-markdown": { toMarkdown: (doc) => adfToMarkdown.convertADFToMarkdown(doc) },
   "adf-to-md": { toMarkdown: (doc) => adfToMd.convert(doc).result },
   adf2markdown: { toMarkdown: (doc) => adf2markdown.adf2markdown(doc) },
+  "extended-markdown-adf-parser": {
+    toAdf: (md) => extended.markdownToAdf(md),
+    toMarkdown: (doc) => extended.adfToMarkdown(doc),
+  },
   "github-markdown-adf": {
     toAdf: (md) => githubMarkdownAdf.mdToAdf(md),
     toMarkdown: (doc) => githubMarkdownAdf.adfToMd(doc),
   },
   "markdown-to-adf": { toAdf: (md) => markdownToAdf.markdownToAdf(md) },
-  "mdast-util-from-adf": { toMarkdown: (doc) => mdastToMarkdown(fromADF(doc)) },
-  "extended-markdown-adf-parser": {
-    toAdf: (md) => extended.markdownToAdf(md),
-    toMarkdown: (doc) => extended.adfToMarkdown(doc),
-  },
   marklassian: { toAdf: (md) => marklassian.markdownToAdf(md) },
+  "md-adf": {
+    toAdf: (md) => mdAdf.markdownToAdf(md).value,
+    toMarkdown: (doc) => mdAdf.adfToMarkdown(doc).value,
+  },
   "md-to-adf": { toAdf: (md) => mdToAdf(md) },
+  "mdast-util-from-adf": { toMarkdown: (doc) => mdastToMarkdown(fromADF(doc)) },
 };
 
 const show = (label, call) => {
