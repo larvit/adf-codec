@@ -185,6 +185,10 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     ['<p><span class="adf-carry" data-adf="[]"></span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
     ['<p><span>a</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
   ],
+  'refuses a misspelled attribute value on the line of the character it names': [
+    ['<ul>\n<li>see <a href="https://x.test/?a\nb&c">x</a></li>\n</ul>\n', 'unmappable-html at /content/0/content/0 line 3 offset 40'],
+    ['<p><strong><a href="https://x.test/?a\nb&c">x</a></strong></p>\n', 'unmappable-html at /content/0/content/0 line 2 offset 38'],
+  ],
   'refuses an edit to what a carry element shows': [
     [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'unmappable-html at /content/1 line 2 offset 9'],
     [`<p>Ask ${carry('span', mention, '')}</p>\n`, 'unmappable-html at /content/0/content/1 line 1 offset 0'],
@@ -284,7 +288,10 @@ const messages: readonly (readonly [string, string])[] = [
   ['<ul>\n<li>a<b>b</b></li>\n</ul>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></li>\\n</ul>\\n"'],
   ['<ul>\n<li>if a < b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block, and its text spells < as &lt;: found "< b</li>\\n</ul>\\n"'],
   ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></li>\\n</ul>\\n"'],
-  ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect: found "<b>x</b></strong></p>\\n"'],
+  ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<strong>x</strong></li>\\n"…'],
+  ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<ul>\\n<li>a</li>\\n</ul></l"…'],
+  ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect, and a mark element holds one text, or one mark element holding it: found "<b>x</b></strong></p>\\n"'],
+  ['<p><strong><br>x</strong></p>\n', '<br> as written here is no mark element of the dialect, and a mark element holds one text, or one mark element holding it: found "<br>x</strong></p>\\n"'],
   ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></strong></p>"…'],
   [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows its node\'s text as adfToHtml writes it, then ends at </div>; an edit to it is no edit to the node: found "<b>collation</b>.</p></d"…'],
 ]

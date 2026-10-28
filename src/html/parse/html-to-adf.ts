@@ -248,7 +248,9 @@ function readItemLine(html: string, index: number, open: Open): Result<BlockStep
   if (!line.ok) return line
   const { end, node } = line.value
   if (!html.startsWith('</li>', end) && !html.startsWith('\n', end)) {
-    const stop = misread(html, end, "an item's line ends at </li>, or at a line feed before the item's next block, and its text spells < as &lt;", 'no inline element of the dialect')
+    const lineEnd = "an item's line ends at </li>, or at a line feed before the item's next block"
+    // After a line's `</p>`, or before a block, no inline element can stand.
+    const stop = line.value.form === 'bare' && !isBlockStart(html, end) ? misread(html, end, `${lineEnd}, and its text spells < as &lt;`, 'no inline element of the dialect') : { at: end, message: `${lineEnd}: ${foundAt(html, end)}` }
     return refused('unmappable-html', stop.message, html, stop.at, open.place)
   }
   const paragraph = asFirstParagraph({ end, node }, line.value.form, html, index, place)
