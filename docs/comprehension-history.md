@@ -1171,3 +1171,31 @@ Inherited architect, decided by:
 - Shape: `src/adf/shown-text.ts:7` `isBlockNodeType`: neither it nor `oneLine` is about shown text; the renames to `longestOutput` and `plain-image.ts` balance it
 - Navigation: `src/html/emit/carry-element.ts:13` `carriedBlock`: its name, `tryImage` and `linkedText` collide with units in `src/markdown/`, so a symbol search finds two homes
 - Self-sufficiency: `src/html/emit/carry-element.ts:30` `shownBlocks`: the densest new unit, a stack with `null` block ends and an inherited `code`; its comments send a reader to the decision log where `spec/html.md` explains it
+
+## 2026-10-28T10:33:35Z, PR #88 at 207bf01, against 240c39a
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | worse | same | same |
+| Inherited architect | better | worse | better | same | same |
+
+Mid A, decided by:
+
+- Locality: `src/html/block-elements.ts:27` `readListStart`: each element's spelling now sits in a small file beside its reader (`anchor-element.ts`, `image-element.ts`, `language-class.ts`), where 240c39a kept them inside the emitter, so changing one spelling no longer means hunting for its inverse
+- Locality: `src/adf/carried-json.ts:24` `carriedValue`: the markdown carry and the HTML carry share three named steps where `readCarriedJson` parsed, bounded and validated inline; `notAString` likewise leaves `markdown-to-adf.ts`
+- Shape: `src/html/parse/html-to-adf.ts:248` `readItemLine`: an item's line spreads across `readLineParagraph`, `partedLine`, `asFirstParagraph` and `formRefusals`, with a nested ternary picking the refusal, in a file importing 20 modules
+- Shape, Self-sufficiency: `src/html/escaping.ts:14` `misspelling`: four plain `replaceAll` calls became regexes built from an entity map, with a negative lookahead to rebuild in one's head
+- Self-sufficiency: `src/html/parse/carry-element.ts:14` `readCarry`: the coupling to `carryContent` is stated where it lives, so `spec/html.md` need not be open
+- Shape: `src/html/data-attributes.ts:26` `readDataAttributes`: an optional `leading` parameter and a `previous` sentinel only `nameFault`'s comment explains, and a `respell` default added to `spellsCanonicalJson`
+
+Inherited architect, decided by:
+
+- Locality: `src/html/parse/html-to-adf.ts:234` `readItem`: the writer's list-item layout is copied as string literals into the reader, to change in lockstep with `writeItem` in another directory; `readParagraph` finds an item's first paragraph by order, and line 256 is one ternary of about 300 characters
+- Navigation, Shape: `src/html/anchor-element.ts:4` `anchorOpener`: each element's spelling has a file named after the element with its inverse beside it, where 240c39a kept them in a file named for escaping
+- Shape: `src/html/emit/adf-to-html.ts:90` `listElement`: tag names and the order check come from `block-elements.ts` instead of inline literals, and `readListStart` is defined by re-running the writer
+- Locality: `src/html/carry-content.ts:13` `carryContent`: the writer and the reader's edit check share one function, its comment warning that a change breaks reading
+- Locality, Self-sufficiency: `src/html/data-attributes.ts:26` `readDataAttributes`: a `leading` parameter only `<ol start>` uses, with the hardest comments in the change to parse
+- Locality: `src/html/carry-attributes.ts:11` `carryJsonOffset`: rebuilds the writer's start-tag prefix to place an error, correct only while `carryAttributes` writes `class` first
+- Shape: `src/adf/carried-json.ts:12` `BoundedJson`: a type whose only job is to order three steps, a `respell` hook, and ten small root files in `src/html/`
