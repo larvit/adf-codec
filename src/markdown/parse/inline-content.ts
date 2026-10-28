@@ -4,7 +4,7 @@ import type { Claims, Flavour } from '../flavour.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
-import type { LinkDefinition } from '../commonmark/link-syntax.ts'
+import type { LinkDefinition, TargetMemo } from '../commonmark/link-syntax.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { commonMarkLink, linkDefinition, linkHref, linkMark, toLinkAttrs } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
@@ -15,7 +15,7 @@ import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../../a
 import { imageAside } from '../image-aside.ts'
 import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
-import { labelLimit, normalizeLabel, readInlineTarget, readLabel } from '../commonmark/link-syntax.ts'
+import { labelLimit, normalizeLabel, readInlineTarget, readLabel, targetMemo } from '../commonmark/link-syntax.ts'
 import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
 import { noSpans, readInlineDirective } from '../directive/syntax.ts'
 import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
@@ -87,6 +87,8 @@ type Scan = {
   pieces: Piece[]
   source: string
   spans: NestedSpans
+  // Built at the first inline target the scan reads.
+  targets: TargetMemo | undefined
 }
 
 // What a directive's content slot inherits from the content holding it.
@@ -117,7 +119,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
 }
 
 function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'inLink' | 'spans'>): Scan {
-  return { ...shared, ...own, brackets: [], linkOpenersFrom: 0, openingSpellableLink: false, pending: '', pieces: [], source }
+  return { ...shared, ...own, brackets: [], linkOpenersFrom: 0, openingSpellableLink: false, pending: '', pieces: [], source, targets: undefined }
 }
 
 function scanInline(scan: Scan): Result<Scanned> {
@@ -395,7 +397,7 @@ function closeBracket(scan: Scan, index: number): Result<number> {
   if (!open.image) scan.linkOpenersFrom = scan.brackets.length
   // Before `linkPieces`' own-marks guard: brackets that go literal mark nothing, so a carry inside them is no error.
   if (!open.image && holdsLink(inner)) return success(unopened(scan, open, index))
-  const closed = open.image ? imagePieces(scan, inner, target.definition) : linkPieces(scan, inner, target.definition)
+  const closed = open.image ? imagePieces(scan, inner, target.definition()) : linkPieces(scan, inner, target.definition())
   if (!closed.ok) return closed
   scan.pieces.length = open.index
   for (const piece of closed.value) scan.pieces.push(piece)
@@ -425,11 +427,12 @@ function bracketNodes(bracket: Bracket | OpenBracket): AdfNode[] {
   return [{ text: bracket.image ? '![' : '[', type: 'text' }]
 }
 
-function resolveTarget(scan: Scan, start: number, index: number): { definition: LinkDefinition; length: number } | undefined {
+function resolveTarget(scan: Scan, start: number, index: number): { definition: () => LinkDefinition; length: number } | undefined {
   const after = index + 1
   if (scan.source.charAt(after) === '(') {
-    const inline = readInlineTarget(scan.source, after)
-    if (inline !== undefined) return { definition: inline.definition, length: inline.length }
+    scan.targets ??= targetMemo(scan.source)
+    const inline = readInlineTarget(scan.source, after, scan.targets)
+    if (inline !== undefined) return inline
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
   const labelIsText = label === undefined || label.value === ''
@@ -437,7 +440,7 @@ function resolveTarget(scan: Scan, start: number, index: number): { definition: 
   const name = labelIsText ? scan.source.slice(start, index) : label.value
   const definition = scan.definitions.get(normalizeLabel(name))
   if (definition === undefined) return undefined
-  return { definition, length: label?.length ?? 0 }
+  return { definition: () => definition, length: label?.length ?? 0 }
 }
 
 // An image alone in the link text keeps its piece, so a paragraph holding nothing else builds the linked image.
