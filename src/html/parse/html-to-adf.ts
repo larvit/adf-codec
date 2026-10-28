@@ -3,6 +3,7 @@ import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
 import type { FirstParagraphForm } from '../first-paragraph.ts'
 import type { ParseError, Result } from '../../result.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
+import { carryContent } from '../carry-content.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { containerElements, headingElements, headingLevel, readListStart, type ContainerType } from '../block-elements.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
@@ -42,6 +43,7 @@ const blockReaders: ReadonlyMap<string, BlockReader> = new Map([
 ])
 const codeCloser = '</code></pre>'
 const documentCarryAlone = 'a carry element holding the document stands alone, as the whole document'
+const documentCarryEnd = `${carryContent({ type: 'doc' }, 'div')}</div>`
 const emptyDocument = serializeCanonicalJson({ type: 'doc', version: 1 }, 'compact')
 const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
   bare: "an item's first paragraph holding content and no attribute stands bare on the item's line: <li>Bolt</li>",
@@ -67,8 +69,8 @@ function readHtml(html: string): Result<AdfDocument> {
 function readDocumentCarry(html: string): Result<AdfDocument, ParseError> | undefined {
   const tag = readStartTag(html, 0)
   if (tag?.name !== 'div' || readCarryAttributes(tag.attributes) !== emptyDocument) return undefined
-  if (!html.startsWith('</div>', tag.end)) return refused('unmappable-html', `a carry element holding the document shows nothing: ${foundAt(html, tag.end)}`, html, tag.end, undefined)
-  const end = tag.end + '</div>'.length
+  if (!html.startsWith(documentCarryEnd, tag.end)) return refused('unmappable-html', `a carry element holding the document shows nothing: ${foundAt(html, tag.end)}`, html, tag.end, undefined)
+  const end = tag.end + documentCarryEnd.length
   if (html.startsWith('\n', end) && isBlockStart(html, end + 1)) return refused('unsupported-node-shape', documentCarryAlone, html, 0, { index: 0, parent: undefined })
   return end === html.length - 1 && html.endsWith('\n') ? success({ type: 'doc', version: 1 }) : partedRefusal(html, end, undefined)
 }
