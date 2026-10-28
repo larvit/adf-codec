@@ -184,7 +184,7 @@ function readCodeBlock(html: string, tag: StartTag, place: Place): Result<BlockS
   const code = readStartTag(html, tag.end)
   const named = code?.name === 'code' ? readLanguageClass(code.attributes) : undefined
   if (code === undefined || named === undefined) {
-    const stop = misread(html, tag.end, '<pre> holds <code>, or <code class="language-…"> naming the language', 'neither')
+    const stop = misread(html, tag.end, '<pre> holds <code>, or <code class="language-…"> naming the language', 'no code element of the dialect, which writes <code> or <code class="language-…">')
     return refused('unmappable-html', stop.message, html, stop.at, place)
   }
   const next = html.indexOf('<', code.end)
@@ -248,7 +248,8 @@ function readItemLine(html: string, index: number, open: Open): Result<BlockStep
   if (!line.ok) return line
   const { end, node } = line.value
   if (!html.startsWith('</li>', end) && !html.startsWith('\n', end)) {
-    return refused('unmappable-html', `an item's line ends at </li>, or at a line feed before the item's next block: ${foundAt(html, end)}`, html, end, open.place)
+    const stop = misread(html, end, "an item's line ends at </li>, or at a line feed before the item's next block, and its text spells < as &lt;", 'no inline element of the dialect')
+    return refused('unmappable-html', stop.message, html, stop.at, open.place)
   }
   const paragraph = asFirstParagraph({ end, node }, line.value.form, html, index, place)
   if (!paragraph.ok) return paragraph
