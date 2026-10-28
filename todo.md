@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 150`
+`Next ID = 151`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 150 | 0.3.0 |  | question | **Decide, before `adfToHtml` first ships, whether `htmlToAdf` also reads HTML as a browser serializes it — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 3 | 6 by 5 | 7.5 |
 | 140 | 0.3.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
@@ -67,6 +68,15 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 150. Decide, before `adfToHtml` first ships, whether `htmlToAdf` also reads HTML as a browser serializes it — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
+
+`htmlToAdf` refuses all three today: `adfToHtml` escapes `"` in text, and the dialect writes no
+`&nbsp;` and only line feeds. A browser's `innerHTML` writes text's `"` raw and a no-break space as
+`&nbsp;`, and a form post turns every line feed into `\r\n`, so a viewer/editor app sending its
+page back gets `unmappable-html`. `docs/decisions.md` §The HTML dialect governs the escaping. While
+the dialect is unreleased, changing it costs no consumer anything; after the release it is
+breaking. Raised by the product-owner pass on `htmlToAdf`.
 
 ### 140. Read an inline link's target in time linear in the inline markdown, in every reader.
 
@@ -331,7 +341,7 @@ into items before starting. The maintainer, 2026-10-28: ship what exists first, 
 
 ### 149. Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.
 
-`htmlToAdf` (item 131) reads only what `adfToHtml` writes. The most asked need on the Atlassian
+`htmlToAdf` reads only what `adfToHtml` writes. The most asked need on the Atlassian
 developer community is HTML from emails, CMSs and editors into ADF. The maintainer, 2026-10-28:
 reading foreign HTML is a separate goal, added to the README in this change. Before building, a
 panel of the developer personas picks the API among those the goals allow: a parameter on

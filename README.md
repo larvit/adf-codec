@@ -290,7 +290,7 @@ Each call's name says which format it reads or writes:
 | `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `htmlToAdf` | reads the HTML `adfToHtml` writes, a carry element from its `data-adf` alone; refuses any other HTML | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `htmlToAdf` | reads the HTML `adfToHtml` writes, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
 | `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 
@@ -504,11 +504,12 @@ content. No stylesheet ships. The complete dialect:
   instead, such as `<em>(image)</em>`; a link marking the node goes around the note.
 
 `htmlToAdf` reads exactly that HTML back, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. A carry
-element reads from its `data-adf` alone, so editing what it shows doesn't change the document read.
-The exception is an edit adding the element's own closing tag, `</div>` or `</span>`, which ends the
-element there.
-Any other HTML is refused as `unmappable-html`: another element, attribute or escape, such as `<b>`,
-`<br/>` or `&#39;`.
+element reads from its `data-adf`, and what it shows must be what `adfToHtml` shows for that node:
+an edit there would be lost, so it is refused.
+Other HTML is refused as `unmappable-html`: another element, attribute or escape, such as `<b>`,
+`<br/>` or `&#39;`, and HTML missing its final line feed or ending a line in `\r\n`. A `data-*`
+attribute or a carry's JSON that no node holds is `unsupported-node-shape`, and a carry's JSON
+nesting too deep is `unsupported-nesting-depth`.
 
 ## The errors
 
@@ -556,7 +557,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, or a delimiter or body row whose cell count differs from the header's; in `losslessMarkdownToAdf` also an alignment colon, and a header or delimiter row not opening with a pipe | add a `---` row under the header and give every row the header's cell count; for `losslessMarkdownToAdf`, also open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, write one `\|` of its delimiter row as `\\|` |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds HTML `adfToHtml` does not write | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the HTML as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it |
+| `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds HTML `adfToHtml` does not write, such as an edit to what a carry element shows | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the HTML as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it |
 
 ### Emitting
 
@@ -574,7 +575,7 @@ Every call can raise these:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `engine-limit` | in every call: a conversion that passes the longest array, `Map` or `Set` the JavaScript engine builds, or that the engine reports as out of memory; on JavaScriptCore (Bun, Safari), also one that passes its longest string, 2^31 − 1 characters | retry once; if it repeats, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the markdown, or nest its lists and quotes less deeply |
+| `engine-limit` | in every call: a conversion that passes the longest array, `Map` or `Set` the JavaScript engine builds, or that the engine reports as out of memory; on JavaScriptCore (Bun, Safari), also one that passes its longest string, 2^31 − 1 characters | retry once; if it repeats, writing: set the document aside, keeping the ADF and passing it over or showing it read-only; reading: shorten the input, or nest its lists and quotes less deeply |
 | `unsupported-nesting-depth` | blocks, marks, an attribute's JSON or a carried node's JSON nest past 500 levels | keep the ADF and pass the document over, or show it read-only; flatten the input where you are the one who wrote it |
 | `unsupported-node-shape` | each cause listed below the table | the remedy beside each cause below |
 
@@ -614,7 +615,7 @@ Every call can raise these:
   - in every call, a conversion passes V8's or SpiderMonkey's longest string.
 
   When writing, set the document aside: keep the ADF, and pass it over or show it read-only. When
-  reading, shorten the markdown, or nest its lists and quotes less deeply.
+  reading, shorten the input, or nest its lists and quotes less deeply.
 
 ## The guarantees
 
@@ -710,7 +711,7 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 | `JsonValue` | type | an attribute value |
 | `ParseError` | type | the error a markdown reader or `htmlToAdf` returns, its `position` always set |
 | `Result` | type | every call's return value |
-| `SourcePosition` | type | an error's place in the markdown |
+| `SourcePosition` | type | an error's place in the markdown or HTML read |
 | `adfToHtml` | function | ADF to HTML |
 | `adfToLosslessMarkdown` | function | ADF to the lossless flavour |
 | `adfToPortableMarkdown` | function | ADF to portable markdown, lossy |
