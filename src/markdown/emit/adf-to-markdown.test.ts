@@ -351,6 +351,11 @@ test('escapes every text bracket in a line where one opens link text, and every 
   assert.equal(emitted('Use ` or ``code`` syntax'), 'Use \\` or \\`\\`code\\`\\` syntax\n')
 })
 
+test('keeps a text backtick bare in a line where a text bracket opens a link the reader refuses', () => {
+  const refused = paragraph({ text: 'a ` [', type: 'text' }, { attrs: { id: '1' }, type: 'mention' }, { text: '](u)', type: 'text' })
+  assert.equal(markdown(adfToLosslessMarkdown(document(refused))), 'a ` \\[!adf:mention{id=1}](u)\n')
+})
+
 test('escapes a heading closing sequence', () => {
   const heading = (text: string): string => markdown(adfToLosslessMarkdown(document({ attrs: { level: 2 }, content: [{ text, type: 'text' }], type: 'heading' })))
   assert.equal(heading('done #'), '## done \\#\n')

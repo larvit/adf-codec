@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 153`
+`Next ID = 156`
 
 ## Items
 
@@ -24,8 +24,11 @@
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150, 152 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 72 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150, 152 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 154 | 0.4.0 |  |  | **Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
+| 155 | 0.4.0 |  |  | **Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -186,6 +189,14 @@ Gitea copy holds no issues or releases to move. Actions stay off on the mirror: 
 otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
 interim sentence.
 
+### 153. Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.
+
+The writers read each escaped line back through `src/markdown/inline-content.ts`'s scan. A writer
+question put back on that scan's path, such as the opening-link consult it takes as an argument
+today, would close the cycle writer → reader → writer and recurse without bound on a paragraph
+opening with a spellable `!adf:link` (§Nothing recurses unbounded). No `no-restricted-imports`
+override covers `src/markdown/*.ts`; adding one, with its `ci.sh` probe, extends the decision.
+
 ### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
 
 Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
@@ -201,6 +212,19 @@ whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fen
 type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
 where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
 and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
+
+### 154. Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.
+
+A comprehension seat found `src/markdown/inline-content.ts` `resolveNodes` / `pairedHighlights`
+hard: an empty text node stands in for each `==` until pairing, then a cursor walk overwrites it.
+The pieces now carry their offsets, so the pairing can run on them first. Make that place easier to
+read.
+
+### 155. Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.
+
+A comprehension seat found `src/markdown/inline-content.ts` `closeBracket` / `truncatePieces`
+hard: `closeBracket`, `unopened`, `literalClose` and `popBracket` each write `scan.pieces`, the
+link openers or the reading. Make that place easier to read.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
