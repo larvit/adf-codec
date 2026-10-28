@@ -83,6 +83,7 @@ In `docs/decisions.md`:
 - Readable spellings take the `try` prefix
 - The attribute vocabulary is ADF's
 - The source parts by ADF and format
+- The comparison table lists every converter that starts and converts
 
 ## 1. Nothing about any consumer
 
