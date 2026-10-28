@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 156`
+`Next ID = 157`
 
 ## Items
 
@@ -25,6 +25,7 @@
 | 73 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150, 152 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 72 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150, 152 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
+| 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 154 | 0.4.0 |  |  | **Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
@@ -52,7 +53,7 @@
 | 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 38 | 0.5.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 17.4 |
-| 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 6.5 |
@@ -197,6 +198,12 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
+
+### 156. Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.
+
+`in_image` runs `sh -c` as the container's process 1, which ignores the SIGINT `docker run`
+forwards, so the container runs to its end: a `sleep 30` outlived Ctrl-C by 30 s. `--init` would
+forward it. Found by the product-owner review of item 152, 2026-10-28.
 
 ### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
 
@@ -428,17 +435,17 @@ build leg left, so a leg run alone can pass on stale output.
 `adfToLosslessMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute
 values already escape it.
 
-### 76. State the files the package does not ship once, so the build, the lint ceiling and the coverage exclusions cannot drift apart.
+### 76. State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.
 
 Technical principle DRY: the set is written in `tsconfig.build.json`'s `exclude`, `.oxlintrc.json`'s
 `ignorePatterns` and the `test` script's two `--test-coverage-exclude` flags, and §The size ratchet
 assumes they agree. A helper added to one list lints test code under the shipped ceiling, or drops
-shipped code from coverage, silently. Derive two from the third, or assert in a test that the three
-agree. Found by the technical-principles audit, 2026-10-04.
+shipped code from coverage, silently. Derive the others from one, or assert in a test that
+they agree. Found by the technical-principles audit, 2026-10-04.
 
-`mutation-tests/run.sh`'s pathspec and `mutation-tests/stryker.config.mjs`'s `testFiles` restate
-which files are tests and test helpers, so a helper missing from them reads as survivors. Found by
-the architecture review of item 152, 2026-10-28.
+`mutation-tests/run.sh`'s pathspec restates the test files and test helpers, and
+`mutation-tests/stryker.config.mjs`'s `testFiles` the test files, so a helper missing from the
+pathspec has its mutants read as survivors. Found by the architecture review of item 152, 2026-10-28.
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
@@ -469,8 +476,8 @@ Found by the technical-principles audit of item 78, 2026-10-05.
 ### 58. Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.
 
 Technical principle "Prefer a standalone Python script over a shell script": `AGENTS.md` §3 teaches
-bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes. The port tests
-`run.sh`'s turning of diff hunks into mutated line ranges, which a wrong range would pass silently.
+bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes. A wrong line range in
+`run.sh` mutates the wrong lines without failing, so the port tests how it reads diff hunks.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
