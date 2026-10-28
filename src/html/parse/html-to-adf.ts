@@ -46,12 +46,12 @@ const documentCarryAlone = 'a carry element holding the document stands alone, a
 const documentCarryEnd = `${carryContent({ type: 'doc' }, 'div')}</div>`
 const emptyDocument = serializeCanonicalJson({ type: 'doc', version: 1 }, 'compact')
 const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
-  bare: "an item's first paragraph holding content and no attribute stands bare on the item's line: <li>Bolt</li>",
+  bare: "an item's first paragraph holding content and no attribute stands bare on the item's line, as in <li>Bolt</li>",
   block: "an item's first paragraph holding neither content nor an attribute stands on a line of its own",
   element: "an item's first paragraph holding an attribute stands as its <p> on the item's line, straight after <li>",
 }
 
-// Reads back exactly what `adfToHtml` writes. Other HTML is `unmappable-html`; a `data-*` name or value no attribute of its node spells is `unsupported-node-shape`, as a directive's attribute is (docs/decisions.md §Which code a cause takes).
+// Reads back exactly what `adfToHtml` writes.
 export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
   return positioned(
     withinEngineLimits(() => readHtml(html)),
@@ -71,7 +71,7 @@ function readDocumentCarry(html: string): Result<AdfDocument, ParseError> | unde
   if (tag?.name !== 'div' || readCarryAttributes(tag.attributes) !== emptyDocument) return undefined
   if (!html.startsWith(documentCarryEnd, tag.end)) return refused('unmappable-html', `a carry element holding the document shows nothing: ${foundAt(html, tag.end)}`, html, tag.end, undefined)
   const end = tag.end + documentCarryEnd.length
-  if (html.startsWith('\n', end) && isBlockStart(html, end + 1)) return refused('unsupported-node-shape', documentCarryAlone, html, 0, { index: 0, parent: undefined })
+  if (html.startsWith('\n', end) && isBlockStart(html, end + 1)) return refused('unsupported-node-shape', `${documentCarryAlone}: ${foundAt(html, end)}`, html, end, { index: 0, parent: undefined })
   return end === html.length - 1 && html.endsWith('\n') ? success({ type: 'doc', version: 1 }) : partedRefusal(html, end, undefined)
 }
 
@@ -83,7 +83,7 @@ function readBlocks(html: string): Result<AdfDocument, ParseError> {
   let index = 0
   for (;;) {
     const place = { index: open.content.length, parent: open.place }
-    if (open.depth > largestNesting) return refused('unsupported-nesting-depth', `the HTML nests deeper than the ${largestNesting} levels the reader carries`, html, index, place)
+    if (open.depth > largestNesting) return refused('unsupported-nesting-depth', `blocks nest deeper than ${largestNesting} levels`, html, index, place)
     const step = open.kind === 'list' ? readItem(html, index, place, open.depth) : readBlock(html, index, place, open)
     if (!step.ok) return step
     index = step.value.end
@@ -137,12 +137,12 @@ function readParagraph(html: string, tag: StartTag, place: Place, open: Open): R
 
 function asFirstParagraph(read: { end: number; node: AdfNode }, found: FirstParagraphForm, html: string, index: number, place: Place): ReadNode {
   const form = firstParagraphForm(read.node)
-  return form === found ? success(read) : refused('unmappable-html', formRefusals[form], html, index, place)
+  return form === found ? success(read) : refused('unmappable-html', `${formRefusals[form]}: ${foundAt(html, index)}`, html, index, place)
 }
 
 // `own`: the attributes the element itself writes, such as a heading's level.
 function readInlineBlock(html: string, tag: StartTag, type: string, vocabulary: AttributeVocabulary, own: AdfAttributes, place: Place): ReadNode {
-  const data = readDataAttributes(tag.attributes, type, vocabulary, Object.keys(own))
+  const data = readDataAttributes(tag.attributes, tag.name, vocabulary, Object.keys(own))
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const inline = readInline(html, tag.end, place)
   if (!inline.ok) return inline
@@ -164,7 +164,8 @@ function tryImage(html: string, index: number, place: Place): ReadNode | undefin
   const node = imageNode(image, anchor)
   const closer = anchor === undefined ? '</p>' : '</a></p>'
   if (node === undefined || !html.startsWith(closer, image.end)) {
-    return refused('unmappable-html', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it', html, image.start, place)
+    const at = node === undefined ? index : image.end
+    return refused('unmappable-html', `an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: ${foundAt(html, at)}`, html, at, place)
   }
   return success({ end: image.end + closer.length, node })
 }
@@ -179,7 +180,7 @@ function imageNode(image: StartTag, anchor: StartTag | undefined): AdfNode | und
 }
 
 function readCodeBlock(html: string, tag: StartTag, place: Place): Result<BlockStep, ParseError> {
-  const data = readDataAttributes(tag.attributes, 'codeBlock', blockNodes.codeBlock.attributes, ['language'])
+  const data = readDataAttributes(tag.attributes, tag.name, blockNodes.codeBlock.attributes, ['language'])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const code = readStartTag(html, tag.end)
   const named = code?.name === 'code' ? readLanguageClass(code.attributes) : undefined
@@ -198,12 +199,12 @@ function readCodeBlock(html: string, tag: StartTag, place: Place): Result<BlockS
 }
 
 function readRule(html: string, tag: StartTag, place: Place): Result<BlockStep, ParseError> {
-  const data = readDataAttributes(tag.attributes, 'rule', blockNodes.rule.attributes, [])
+  const data = readDataAttributes(tag.attributes, tag.name, blockNodes.rule.attributes, [])
   return data.fault === undefined ? success({ end: tag.end, kind: 'node', node: built('rule', data.value, []) }) : refused(data.fault.code, data.fault.message, html, tag.start, place)
 }
 
 function readBlockCarry(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
-  if (readCarryAttributes(tag.attributes) === emptyDocument) return refused('unsupported-node-shape', documentCarryAlone, html, tag.start, place)
+  if (readCarryAttributes(tag.attributes) === emptyDocument) return refused('unsupported-node-shape', `${documentCarryAlone}: ${foundAt(html, tag.start)}`, html, tag.start, place)
   return asStep(readCarry(html, tag, 'div', largestNesting - open.depth, place))
 }
 
@@ -213,13 +214,15 @@ function containerReader(type: ContainerType): BlockReader {
 
 // A quote's blocks, or a list's items, stand a line each between its tags; a container holding no content key holds nothing.
 function readContainer(html: string, tag: StartTag, type: ContainerType, place: Place, open: Open): Result<BlockStep, ParseError> {
-  const [first, ...rest] = tag.attributes
-  const start = type === 'orderedList' && first?.[0] === 'start' ? first[1] : undefined
+  const ordered = type === 'orderedList'
+  const [first] = tag.attributes
+  const start = ordered && first?.[0] === 'start' ? first[1] : undefined
   const order = start === undefined ? undefined : readListStart(start)
   if (start !== undefined && order === undefined) {
-    return refused('unmappable-html', `an ordered list starts at an integer, written as JavaScript writes it: found start="${start}"`, html, tag.start, place)
+    const at = tag.start + `<${tag.name} start="`.length
+    return refused('unmappable-html', `an ordered list starts at an integer, written as JavaScript writes it: ${foundAt(html, at)}`, html, at, place)
   }
-  const data = readDataAttributes(start === undefined ? tag.attributes : rest, type, blockNodes[type].attributes, type === 'orderedList' ? ['order'] : [])
+  const data = readDataAttributes(tag.attributes, tag.name, blockNodes[type].attributes, ordered ? ['order'] : [], ordered ? 'start' : undefined)
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const node = built(type, order === undefined ? data.value : { order, ...data.value }, [])
   const closer = `</${tag.name}>`
@@ -234,7 +237,7 @@ function readItem(html: string, index: number, place: Place, depth: number): Res
     const stop = misread(html, index, 'a list holds <li> items, one to a line', 'no list item of the dialect')
     return refused('unmappable-html', stop.message, html, stop.at, place)
   }
-  const data = readDataAttributes(tag.attributes, 'listItem', blockNodes.listItem.attributes, [])
+  const data = readDataAttributes(tag.attributes, tag.name, blockNodes.listItem.attributes, [])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const item = built('listItem', data.value, [])
   if (html.startsWith('</li>', tag.end)) return success({ end: tag.end + '</li>'.length, kind: 'node', node: item })

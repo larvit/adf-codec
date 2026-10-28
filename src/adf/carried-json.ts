@@ -20,7 +20,7 @@ export function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelli
   return json.ok ? success({ headroom, json: json.value }) : json
 }
 
-// The read inverse of `carriedJson` takes three steps, value, nesting and node, so each format's own refusals keep their place between them; `invalid` is the format's refusal of text that is no JSON, and `holder` names the carry in a message.
+// The read inverse of `carriedJson` takes three steps, value, nesting and node, so each format's own refusals keep their place between them.
 export function carriedValue(json: string, holder: string, invalid: ConvertFault): Read<JsonValue> {
   const parsed = parseJsonText(json)
   if (parsed.refusal === undefined) return { value: parsed.value }

@@ -47,7 +47,7 @@ function readMarked(html: string, index: number, place: Place): ReadNode {
     at = tag.end
   }
   if (at === html.length || html.startsWith('<', at)) {
-    const stop = misread(html, at, 'a mark element holds one text, or one mark element holding it', 'no mark element of the dialect, and a mark element holds one text, or one mark element holding it')
+    const stop = misread(html, at, 'a mark element holds text, or one other mark element around text', 'no mark element of the dialect, and a mark element holds text, or one other mark element around text')
     return refused('unmappable-html', stop.message, html, stop.at, place)
   }
   const text = readText(html, at, marks, place)
