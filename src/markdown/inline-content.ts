@@ -113,8 +113,8 @@ type SharedScan = Pick<Scan, 'definitions' | 'path' | 'reading' | 'targets'>
 const ownMarksInMark = 'move the opaque carry, or the node spelling marks=empty, out of the mark spelling: it holds its own marks'
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 const hreflessLink = 'the link mark spells its href: this one spells none'
-const noDefinitions: LinkDefinitions = new Map()
 const linkInLink = 'no link wraps a link: the [content] this one marks already holds one'
+const noDefinitions: LinkDefinitions = new Map()
 const unlinkable = 'the text of this link holds only nodes that take no link: write the link around text beside them'
 const spellableLink = 'link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
 const textBreak: TextBreak = { kind: 'textBreak' }

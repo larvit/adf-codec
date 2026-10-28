@@ -278,12 +278,16 @@ function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReadin
     if (segment.highlight === 'open') highlight = { nodes: segment.nodes, start }
     if (segment.emphasis === 'close') {
       const opener = openers.pop()
-      const read = opener === undefined ? undefined : reading.emphasis.get(opener.start)
-      if (opener !== undefined && (read?.closer !== start || read.width !== segment.text.length) && opener.start > (innermost?.start ?? -1)) innermost = opener
+      if (opener !== undefined && !readAsWritten(reading, opener.start, start, segment.text.length) && opener.start > (innermost?.start ?? -1)) innermost = opener
     }
     if (segment.highlight === 'close' && highlight !== undefined && reading.highlights.get(highlight.start) !== start) unreadHighlights.push(highlight.nodes)
   }
   return innermost === undefined ? unreadHighlights : [innermost.nodes]
+}
+
+function readAsWritten(reading: InlineReading, opener: number, closer: number, width: number): boolean {
+  const read = reading.emphasis.get(opener)
+  return read?.closer === closer && read.width === width
 }
 
 function isEscapable(escaping: InlineEscaping | undefined): boolean {
