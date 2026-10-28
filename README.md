@@ -194,6 +194,7 @@ Nothing throws. `code` is from a closed list, so a `switch` with no `default` co
 - [The guarantees](#the-guarantees)
 - [The package](#the-package)
 - [Everything exported](#everything-exported)
+- [Changing the source](#changing-the-source)
 - [Links](#links)
 
 ## Goals
@@ -725,6 +726,14 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 | `isAdfDocument` | function | type guard for `AdfDocument` |
 | `losslessMarkdownToAdf` | function | the lossless flavour to ADF |
 | `portableMarkdownToAdf` | function | portable markdown to ADF |
+
+## Changing the source
+
+Both commands need only Docker, git and bash 5.
+
+- `./ci.sh` runs the gate: every check CI runs.
+- `./mutation-tests/run.sh [<base>]` mutation-tests the source lines changed since `<base>`,
+  `origin/main` by default, running each mutant against only the test files that reach it.
 
 ## Links
 
