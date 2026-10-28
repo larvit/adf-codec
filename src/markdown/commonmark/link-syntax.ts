@@ -10,7 +10,7 @@ export type LinkPart = { length: number; value: string }
 // Every destination ending at one index shares what follows it: the title and the closing `)`.
 type Tail = { end: number; title: string | undefined }
 
-// What the targets read in `text` share; `destinationEnds` is walked at the first one.
+// One memo serves every target in `text`, those in a directive's content included.
 export type TargetMemo = { destinationEnds: Int32Array | undefined; tails: Map<number, Tail | undefined>; text: string }
 
 // The lossless flavour escapes a quote alone, writing a title holding a backslash or an entity reference as a directive (spec/flavour.md, Marks); the portable flavour writes no directive, so it escapes those too, and a table cell's `|` (README, Portable markdown).
@@ -72,7 +72,7 @@ export function targetMemo(text: string): TargetMemo {
   return { destinationEnds: undefined, tails: new Map(), text }
 }
 
-// Where an unbracketed destination starting at each index stops, in one pass, for every start a target can have: the index just after a `(`, a space or a control character. Index 0 is a start too, for `readDestination`, which reads from its text's first character.
+// `ends[start]` is where an unbracketed destination from `start` stops, filled in one pass for every start a target can have: just after a `(`, a space or a control character, and 0, where `readDestination`'s run begins.
 function destinationEnds(text: string): Int32Array {
   const ends = new Int32Array(text.length + 1)
   const open = [0]
