@@ -436,6 +436,10 @@ assumes they agree. A helper added to one list lints test code under the shipped
 shipped code from coverage, silently. Derive two from the third, or assert in a test that the three
 agree. Found by the technical-principles audit, 2026-10-04.
 
+`mutation-tests/run.sh`'s pathspec and `mutation-tests/stryker.config.mjs`'s `testFiles` restate
+which files are tests and test helpers, so a helper missing from them reads as survivors. Found by
+the architecture review of item 152, 2026-10-28.
+
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
 Technical principle "One owner per value": the `Walk` record passes through functions that mutate it

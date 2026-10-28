@@ -43,6 +43,7 @@ In `docs/decisions.md`:
 - No runtime dependencies
 - Standards ship as data
 - fast-check
+- Stryker in its own package
 - Any ES2022 engine
 - ESM only
 - One built entrypoint
