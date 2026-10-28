@@ -74,6 +74,8 @@
 
 On 2026-10-28 `reading-cost` printed "Rising": the last 5 chunks' median is 120318 new input tokens before the first commit, the 5 before them 90793. The tool listed no most-read files. Chunk 47b51be32176 alone read 432231 tokens; the others of the last 5 read 72781 to 306528. Find what the heavy chunks opened first, shorten or split it, and run `reading-cost --reset` in the chunk that ships this.
 
+Measured 2026-10-29 over the last 10 chunks. The tool lists no files because it knows no worktree `chunk-preflight` made; counting `adf-codec-item-N/` as the checkout, the files opened most are `todo.md` 65, `README.md` 55, `docs/decisions.md` 45 and `CHANGELOG.md` 19. Their text is about 7% of the workers' new input tokens (480k characters of 1.6M tokens); a worker's own output is a third, and 30k tokens stand before its first message. The three heavy workers (275k, 307k, 357k) wrote 107k to 138k output tokens each, on items 130, 131 and 95 (L 3, 4, 4), and item 146's chunk spent 293k of its 437k in subagents, so the rise follows the items taken, not the files' growth (`README.md` 19 to 53 kB, `docs/decisions.md` 40 to 63 kB, `todo.md` 26 to 39 kB since 2026-10-04). Cutting prose from the three files lowers a chunk by a few percent at most.
+
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
 `adfToLosslessMarkdown` spends 28 s on one paragraph of 2000 × `un` plus `**-r**`: each run its
