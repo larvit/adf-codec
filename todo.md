@@ -24,6 +24,7 @@
 | 133 | 0.3.0 | 131 | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 | 131 |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 33, 91, 95, 109, 115, 131, 132, 133, 140, 145, 146 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 33, 91, 95, 109, 115, 131, 132, 133, 140, 145, 146 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
@@ -41,11 +42,10 @@
 | 134 | 0.4.0 | 131 |  | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.8 |
 | 46 | 0.4.0 | 134, 135, 136 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
-| 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
-| 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
-| 72 | 0.4.0 | 45, 46, 51, 68, 75, 77, 80, 81, 107, 112, 134, 135, 136 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
 | 149 | 0.4.0 | 131 |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
+| 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
+| 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 26.2 |
 | 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -165,14 +165,29 @@ writer panel picks.
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
 Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the posts announce the finished
-release. Each post links the GitHub repository, the README's comparison table and a README that opens with what the package is. Before
-posting, set `converter-comparison/run.sh`'s pins to each package's latest version,
-`@larvit/adf-codec@0.3.0` included, and `--before` to today. Run it, then bring the README table,
-its versions and its date in step with the output. Venues found 2026-10-28, each a thread a reply answers today: on the developer community, topics
-96176, 99408, 82496, 100699, 101278, 86214, 96638 and 41858; on GitHub,
-`atlassian/atlassian-mcp-server` issues 60 and 161. We draft each post for the place it goes. The
-maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts announcing a release
-wait for its publish). Found while planning discoverability, 2026-10-04.
+release. Item 145 rebuilds the README's comparison table; before posting, set
+`converter-comparison/run.sh`'s pins to each package's latest version, `@larvit/adf-codec@0.3.0`
+included, and `--before` to today, run it, and bring the table's versions and date in step.
+
+Venues found 2026-10-28, each a thread a reply answers today: on the developer community, topics
+96176, 99408, 82496, 100699, 101278, 86214 and 96638; on GitHub, `atlassian/atlassian-mcp-server`
+issues 60 and 161. Finding Stack Overflow's ADF-to-markdown questions is part of this item.
+
+We draft each post for the place it goes. Each opens with the asker's problem and how the package
+solves it, then links the GitHub repository, the README's comparison table and the README's
+opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
+announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
+
+### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
+
+Blocked by every other `0.3.0` item but 73 (the maintainer, 2026-10-05; moved to `0.3.0` 2026-10-28,
+since the copy, not marked a mirror, reads as the package's origin). The maintainer does this. Gitea
+cannot convert an existing repository to a mirror, so the copy is deleted and re-created. That drops
+the copy's commit hashes from before the 2026-10-04 history rewrite, and its Actions secrets. The
+Gitea copy holds no issues or releases to move. Actions stay off on the mirror: Gitea runs
+`.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
+otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
+interim sentence.
 
 ### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
 
@@ -273,6 +288,9 @@ exports, where markdown's markers are noise, and with a mention as `@Display Nam
 account id. Add the goal to the README's `## Goals` in the same change. Split into items before
 starting. The maintainer, 2026-10-28: ship what exists first, so this waits for 0.4.0.
 
+Once it ships, answer developer-community topic 41858, which asks for ADF as plain text (the
+maintainer, 2026-10-28).
+
 ### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 
 GFM spells `strike`, and no other HTML item writes it: `adfToHtml` writes only the marks CommonMark
@@ -312,6 +330,23 @@ as data per §Standards ship as data: lowercasing and then uppercasing would als
 gains its row. Its `pending` exceptions go, and the README's guarantees drop the case-folding
 exception and count one fewer.
 
+### 148. Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.
+
+Jira's REST API v2 and its changelogs carry wiki markup, and Atlassian's
+`WikiMarkupTransformer` is the only converter; community threads report its round-trip losing
+expands, layouts and some marks. Add the goal to the README's `## Goals` in the same change. Split
+into items before starting. The maintainer, 2026-10-28: ship what exists first, so this waits for
+0.4.0.
+
+### 149. Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.
+
+`htmlToAdf` (item 131) reads only what `adfToHtml` writes. The most asked need on the Atlassian
+developer community is HTML from emails, CMSs and editors into ADF. The maintainer, 2026-10-28:
+reading foreign HTML is a separate goal, added to the README in this change. Before building, a
+panel of the developer personas picks the API among those the goals allow: a parameter on
+`htmlToAdf` or a separate call; Goal 8's "nothing to configure" and Goal 6.1's naming bear on the
+choice. Split into items once the API is picked.
+
 ### 77. Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.
 
 Lands with item 45, in one chunk: item 45's reader returns the copy. The maintainer's call,
@@ -337,33 +372,6 @@ node's JSON spells past V8's longest string, which the writers refuse as `unsupp
 the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
 spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
 are API). Found by the README-goals audit of item 83, 2026-10-11.
-
-### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
-
-Blocked by every other `0.4.0` item (the maintainer, 2026-10-05). The maintainer does this. Gitea
-cannot convert an existing repository to a mirror, so the copy is deleted and re-created. That drops
-the copy's commit hashes from before the 2026-10-04 history rewrite, and its Actions secrets. The
-Gitea copy holds no issues or releases to move. Actions stay off on the mirror: Gitea runs
-`.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
-otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
-interim sentence.
-
-### 148. Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.
-
-Jira's REST API v2 and its changelogs carry wiki markup, and Atlassian's
-`WikiMarkupTransformer` is the only converter; community threads report its round-trip losing
-expands, layouts and some marks. Add the goal to the README's `## Goals` in the same change. Split
-into items before starting. The maintainer, 2026-10-28: ship what exists first, so this waits for
-0.4.0.
-
-### 149. Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.
-
-`htmlToAdf` (item 131) reads only what `adfToHtml` writes. The most asked need on the Atlassian
-developer community is HTML from emails, CMSs and editors into ADF. The maintainer, 2026-10-28:
-reading foreign HTML is a separate goal, added to the README in this change. Before building, a
-panel of the developer personas picks the API among those the goals allow: a parameter on
-`htmlToAdf` or a separate call; Goal 8's "nothing to configure" and Goal 6.1's naming bear on the
-choice. Split into items once the API is picked.
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
