@@ -72,27 +72,20 @@ export function targetMemo(text: string): TargetMemo {
   return { destinationEnds: undefined, tails: new Map(), text }
 }
 
-// Of the starts still open at a stop, only the innermost has its parentheses balanced; the others hold a `(` nothing closed and keep no end.
-function stopAt(ends: Int32Array, open: number[], index: number): void {
-  const innermost = open.pop()
-  if (innermost !== undefined) ends[innermost] = index
-  open.length = 0
-}
-
-// `ends[start]` is where an unbracketed destination from `start` stops, filled in one pass for every start a target can have: just after a `(`, a space or a control character, and 0, where `readDestination`'s run begins.
+// `ends[start]` is where an unbracketed destination from `start` stops, filled in one pass for every start a target can have: just after a `(`, a space or a control character, and 0, where `readDestination`'s run begins. At a stop only the innermost open start has its parentheses balanced, so the starts below it keep no end.
 function destinationEnds(text: string): Int32Array {
   const ends = new Int32Array(text.length + 1)
-  const open = [0]
-  for (let index = 0; index < text.length; index += backslashEscape(text, index) === undefined ? 1 : 2) {
+  let open = [0]
+  for (let index = 0; index <= text.length; index += backslashEscape(text, index) === undefined ? 1 : 2) {
     const character = text.charAt(index)
     if (character === '(') open.push(index + 1)
     const start = character === ')' ? open.pop() : undefined
     if (start !== undefined) ends[start] = index
-    if (character !== ' ' && !holdsControlCharacter(character)) continue
-    stopAt(ends, open, index)
-    open.push(index + 1)
+    if (index < text.length && character !== ' ' && !holdsControlCharacter(character)) continue
+    const innermost = open.pop()
+    if (innermost !== undefined) ends[innermost] = index
+    open = [index + 1]
   }
-  stopAt(ends, open, text.length)
   return ends
 }
 

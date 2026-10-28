@@ -33,6 +33,7 @@ test('a destination holding an unbalanced unescaped `(` at a space or the end re
   assert.deepEqual(targets('[a](b(c "t") [d](e)'), [undefined, { destination: 'e', length: 3 }])
   assert.deepEqual(targets('[a](b(c) "t")'), [{ destination: 'b(c)', length: 10, title: 't' }])
   assert.deepEqual(targets('[a](b((c) "t")'), [undefined])
+  assert.deepEqual(targets('[a](b(c d))'), [undefined])
   assert.equal(readDestination('b(c', 0), undefined)
   assert.equal(readDestination('b(c d', 0), undefined)
   assert.deepEqual(readDestination('b(c) d', 0), { length: 4, value: 'b(c)' })
