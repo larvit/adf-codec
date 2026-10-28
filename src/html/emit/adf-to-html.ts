@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { anchorOpener } from '../anchor-element.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
+import { containerElements, headingElement, listStart } from '../block-elements.ts'
 import { dataAttributes } from '../data-attributes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
@@ -18,8 +19,6 @@ import { serializeCanonicalJson } from '../../canonical-json.ts'
 type Block = { depth: number; kind: 'block'; node: AdfNode; path: ConvertErrorPath }
 type Item = { attributes: string; depth: number; kind: 'item'; node: AdfNode; path: ConvertErrorPath }
 type Pending = Block | Item | string
-
-const headingLevels: readonly unknown[] = [1, 2, 3, 4, 5, 6]
 
 export function adfToHtml(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => writeHtml(document))
@@ -66,7 +65,7 @@ function writeBlock(block: Block): Result<Pending[]> {
 
 function quotePieces({ depth, node, path }: Block): Pending[] | undefined {
   const attributes = dataAttributes(node, blockNodes.blockquote.attributes, [])
-  return attributes === undefined ? undefined : containerPieces('blockquote', attributes, node.content === undefined ? undefined : blockPieces(node.content, path, depth + 1))
+  return attributes === undefined ? undefined : containerPieces(containerElements.blockquote, attributes, node.content === undefined ? undefined : blockPieces(node.content, path, depth + 1))
 }
 
 // `undefined` where the list, or one of its items, holds what the elements cannot, so the whole list rides the carry.
@@ -87,13 +86,12 @@ function listPieces({ depth, node, path }: Block): Pending[] | undefined {
 function listElement(node: AdfNode): { attributes: string; tag: string } | undefined {
   if (node.type === 'bulletList') {
     const attributes = dataAttributes(node, blockNodes.bulletList.attributes, [])
-    return attributes === undefined ? undefined : { attributes, tag: 'ul' }
+    return attributes === undefined ? undefined : { attributes, tag: containerElements.bulletList }
   }
   if (node.type !== 'orderedList') return undefined
-  const order = nodeAttrs(node)['order']
-  if (order !== undefined && (!Number.isSafeInteger(order) || Object.is(order, -0))) return undefined
+  const start = listStart(nodeAttrs(node)['order'])
   const attributes = dataAttributes(node, blockNodes.orderedList.attributes, ['order'])
-  return attributes === undefined ? undefined : { attributes: `${order === undefined ? '' : ` start="${order}"`}${attributes}`, tag: 'ol' }
+  return start === undefined || attributes === undefined ? undefined : { attributes: `${start}${attributes}`, tag: containerElements.orderedList }
 }
 
 // `children` undefined where the node holds no `content` key, so its element holds nothing.
@@ -122,8 +120,8 @@ function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<s
 
 function tryLeafBlock(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
   if (node.type === 'paragraph') return inlineElement('p', dataAttributes(node, blockNodes.paragraph.attributes, []), nodeContent(node), path)
-  const level = nodeAttrs(node)['level']
-  if (node.type === 'heading' && headingLevels.includes(level)) return inlineElement(`h${level}`, dataAttributes(node, blockNodes.heading.attributes, ['level']), nodeContent(node), path)
+  const heading = node.type === 'heading' ? headingElement(nodeAttrs(node)['level']) : undefined
+  if (heading !== undefined) return inlineElement(heading, dataAttributes(node, blockNodes.heading.attributes, ['level']), nodeContent(node), path)
   const html = tryCodeBlock(node) ?? tryImage(node) ?? tryRule(node)
   return html === undefined ? undefined : success(html)
 }

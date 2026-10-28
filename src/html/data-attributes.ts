@@ -5,8 +5,8 @@ import type { JsonValue } from '../json-value.ts'
 import { holdsOnlyAttributes, nodeAttrs } from '../adf/document.ts'
 import { optionalAttribute } from './escaping.ts'
 import { parseJsonText } from '../json-text.ts'
-import { serializeCanonicalJson } from '../canonical-json.ts'
-import { vocabularyPair, vocabularyPairs } from '../adf/attribute-vocabulary.ts'
+import { serializeCanonicalJson, spellsCanonicalJson } from '../canonical-json.ts'
+import { holdsKind, vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 // The attributes a node holds besides those its element writes, as `data-*` attributes sorted by key, a value that is no string as JSON; `undefined` where the node holds what no attribute writes: a mark, text, an empty key, or an attribute the vocabulary does not hold as that kind (docs/decisions.md §The HTML dialect).
 export function dataAttributes(node: AdfNode, vocabulary: AttributeVocabulary, written: readonly string[]): string | undefined {
@@ -27,7 +27,7 @@ export function readDataAttributes(pairs: readonly (readonly [string, string])[]
   const attrs: AdfAttributes = {}
   let previous = ''
   for (const [name, spelled] of pairs) {
-    const [key, kind] = Object.entries(vocabulary).find(([candidate]) => !written.includes(candidate) && dataName(candidate) === name) ?? []
+    const [key, kind] = dataKey(name, vocabulary, written) ?? []
     if (key === undefined || kind === undefined) {
       return { fault: name.startsWith('data-') ? { code: 'unsupported-node-shape', message: `${name} names no attribute ${type} holds apart from its element` } : unmappable(`${name} is no attribute the ${type} element takes`) }
     }
@@ -40,6 +40,11 @@ export function readDataAttributes(pairs: readonly (readonly [string, string])[]
   return { value: attrs }
 }
 
+// The attribute `name` spells, among those the element itself does not write.
+function dataKey(name: string, vocabulary: AttributeVocabulary, written: readonly string[]): [string, AttributeKind] | undefined {
+  return Object.entries(vocabulary).find(([candidate]) => !written.includes(candidate) && dataName(candidate) === name)
+}
+
 function dataName(key: string): string {
   return `data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`
 }
@@ -47,7 +52,7 @@ function dataName(key: string): string {
 function dataValue(spelled: string, kind: AttributeKind): JsonValue | undefined {
   if (kind === 'string') return spelled
   const { value } = parseJsonText(spelled)
-  return value !== undefined && serializeCanonicalJson(value, 'compact') === spelled && vocabularyPair('', value, kind) !== undefined ? value : undefined
+  return value !== undefined && holdsKind(value, kind) && spellsCanonicalJson(value, 'compact', spelled) ? value : undefined
 }
 
 function unmappable(message: string): ConvertFault {

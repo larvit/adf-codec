@@ -61,11 +61,11 @@ function readCarriedJson(raw: string, spelling: JsonSpelling, levels: number, ty
   const typed = type === undefined || type === '' ? { value } : typedValue(value, type)
   if (typed.fault !== undefined) return typed
   const nested = carriedNesting(typed.value, levels)
-  if (nested !== undefined) return { fault: nested }
+  if (nested.fault !== undefined) return nested
   if (!spellsCanonicalJson(value, spelling, raw)) {
     return { fault: unsupportedNodeShape(`${carryHolder} spells its node's JSON canonically: ${spelling === 'compact' ? 'compact' : 'two-space indent'}, keys sorted; ${wayOut}`) }
   }
-  const node = carriedNode(typed.value, carryHolder)
+  const node = carriedNode(nested.value, carryHolder)
   return node.fault === undefined ? node : { fault: { ...node.fault, message: `${node.fault.message}; ${wayOut}` } }
 }
 
