@@ -38,7 +38,7 @@ export function shownValue(value: string, lineFeed: string): string {
   return escapeHtml(value.replace(unwritables, '')).replaceAll('\n', lineFeed)
 }
 
-// The text or attribute value escaped HTML spells, `undefined` where `writableValue` would not write it so.
+// The value an escaped HTML text or attribute stands for, `undefined` where `writableValue` would not write it so.
 export function unescapedValue(html: string): string | undefined {
   return misspelledAt(html) < 0 ? html.replace(entity, (spelled) => entities.get(spelled) ?? spelled) : undefined
 }

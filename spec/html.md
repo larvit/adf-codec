@@ -119,14 +119,16 @@ later release writes it as its own element.
 
 ## Reading
 
-`htmlToAdf` reads exactly the HTML above, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. A carry
-element reads from its `data-adf`, and what it shows, through its closing tag, must be what
-`adfToHtml` shows for that node: an edit there would be lost, so it is `unmappable-html`.
+`htmlToAdf` reads exactly the HTML above, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. It
+reads a carry element's node from its `data-adf`, and what the element shows, through its closing
+tag, must be what `adfToHtml` shows for that node: an edit there would be lost, so it is
+`unmappable-html`.
 
 - Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
-  order, a block on the line of another, a carriage return anywhere, or no line feed at the end.
-- A `data-*` attribute naming no attribute its node holds apart from its element, or holding a value
-  outside that attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
+  order, a block on the line of another, a carriage return anywhere, or non-empty HTML not ending
+  in a line feed.
+- A `data-*` attribute that its element does not take, such as `data-level` on `<h1>`, or that holds
+  a value outside its attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
 - A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,
   is not compact with its keys sorted, or holds a number JSON cannot spell is
   `unsupported-node-shape`, and so is the document's own carry element beside another block.

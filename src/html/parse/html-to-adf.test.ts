@@ -290,10 +290,26 @@ const messages: readonly (readonly [string, string])[] = [
   ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></li>\\n</ul>\\n"'],
   ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<strong>x</strong></li>\\n"…'],
   ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<ul>\\n<li>a</li>\\n</ul></l"…'],
-  ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect, and a mark element holds one text, or one mark element holding it: found "<b>x</b></strong></p>\\n"'],
-  ['<p><strong><br>x</strong></p>\n', '<br> as written here is no mark element of the dialect, and a mark element holds one text, or one mark element holding it: found "<br>x</strong></p>\\n"'],
+  ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<b>x</b></strong></p>\\n"'],
+  ['<p><strong><br>x</strong></p>\n', '<br> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<br>x</strong></p>\\n"'],
+  ['<p><em></em></p>\n', 'a mark element holds text, or one other mark element around text: found "</em></p>\\n"'],
   ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></strong></p>"…'],
-  [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows its node\'s text as adfToHtml writes it, then ends at </div>; an edit to it is no edit to the node: found "<b>collation</b>.</p></d"…'],
+  [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows exactly what adfToHtml writes for its node, then </div>; to change the node, edit its ADF and write the HTML again: found "<b>collation</b>.</p></d"…'],
+  ['<p><span>a</span></p>\n', 'a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone: found "<span>a</span></p>\\n"'],
+  ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'a carry element spells its node\'s JSON canonically: compact, keys sorted, each character HTML cannot hold spelled as a JSON escape: found "{ &quot;type&quot;:&quot"…'],
+  [`${documentCarry}\n<hr>\n`, 'a carry element holding the document stands alone, as the whole document: found "\\n<hr>\\n"'],
+  [`<hr>\n${documentCarry}\n`, 'a carry element holding the document stands alone, as the whole document: found "<div class=\\"adf-carry\\" d"…'],
+  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'an item\'s first paragraph holding content and no attribute stands bare on the item\'s line, as in <li>Bolt</li>: found "<p>Bolt</p></li>\\n</ul>\\n"'],
+  ['<ul>\n<li><p></p></li>\n</ul>\n', 'an item\'s first paragraph holding neither content nor an attribute stands on a line of its own: found "<p></p></li>\\n</ul>\\n"'],
+  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', 'an item\'s first paragraph holding an attribute stands as its <p> on the item\'s line, straight after <li>: found "<p data-local-id=\\"x\\"></p"…'],
+  ['<p><img src="a">b</p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "b</p>\\n"'],
+  ['<p><img src="a" alt=""></p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "<img src=\\"a\\" alt=\\"\\"></p>"…'],
+  ['<ol start="03">\n<li>a</li>\n</ol>\n', 'an ordered list starts at an integer, written as JavaScript writes it: found "03\\">\\n<li>a</li>\\n</ol>\\n"'],
+  ['<p class="x">a</p>\n', '<p> takes no class attribute'],
+  ['<p data-color="x">a</p>\n', '<p> takes no data-color attribute'],
+  ['<ol data-local-id="x" start="2">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after data-local-id'],
+  ['<ol start="2" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after start'],
+  ['<pre data-wrap="yes"><code>x</code></pre>\n', 'data-wrap holds no boolean written as compact JSON'],
 ]
 
 for (const [html, expected] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => assert.equal(message(htmlToAdf(html)), expected))
@@ -302,6 +318,7 @@ test('reads blocks nested 500 levels, and refuses the next level, a list\'s item
   const quotes = (levels: number): string => `${'<blockquote>\n'.repeat(levels)}<p>x</p>${'\n</blockquote>'.repeat(levels)}\n`
   assert.equal(refusal(htmlToAdf(quotes(500))), 'read')
   assert.equal(refusal(htmlToAdf(quotes(501))).startsWith(`unsupported-nesting-depth at /${'content/0/'.repeat(501)}content/0 line ${502}`), true)
+  assert.equal(message(htmlToAdf(quotes(501))), 'blocks nest deeper than 500 levels')
   const lists = (levels: number): string => `${'<ul>\n<li>x\n'.repeat(levels)}<hr>${'\n</li>\n</ul>'.repeat(levels)}\n`
   assert.equal(refusal(htmlToAdf(lists(500))), 'read')
   assert.equal(refusal(htmlToAdf(lists(501))).startsWith('unsupported-nesting-depth'), true)

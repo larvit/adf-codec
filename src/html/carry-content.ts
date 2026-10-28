@@ -9,7 +9,7 @@ import { shownValue } from './escaping.ts'
 // The content a carry element shows of one block; `code` the code block holding it, if any.
 type ShownBlock = { code: AdfNode | undefined; html: string }
 
-// What a carry element shows of the node it holds, and all `htmlToAdf` accepts there, so a change here breaks reading stored HTML (docs/decisions.md §The formats are API): in a `<div>`, each block's content as a `<p>`, a code block's as `<pre><code>`; in a `<span>`, the blocks parted by `<br>`.
+// What a carry element shows of the node it holds, and all `htmlToAdf` accepts there, so a change here breaks reading stored HTML (docs/decisions.md §The formats are API).
 export function carryContent(node: AdfNode, tag: 'div' | 'span'): string {
   if (tag === 'span') return shownBlocks(node, '<br>').map(({ html }) => html).join('<br>')
   return shownBlocks(node, '\n').map(({ code, html }) => (code === undefined ? `<p>${html}</p>` : `<pre><code${languageClass(nodeAttrs(code)['language']) ?? ''}>${html}</code></pre>`)).join('')

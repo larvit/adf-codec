@@ -1021,7 +1021,7 @@ spelling the emitter refuses gives its own error rather than a second name for i
 is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
 
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `html/parse/` from importing
-`html/emit/`, keeps `parse/` and `emit/` from importing `markdown/portable/`, keeps
+`html/emit/`, keeps markdown's `parse/` and `emit/` from importing `portable/`, keeps
 `markdown/directive/` from importing `emit/` or `parse/`, keeps `markdown/` and `html/` from
 importing each other, and keeps `adf/` from importing either, as `no-restricted-imports` overrides.
 A later override replaces an earlier one's rule, so each subdirectory's override repeats its

@@ -56,7 +56,7 @@ function element(type: string, attrs: AdfAttributes, content: AdfNode[]): AdfNod
   return { ...(Object.keys(attrs).length === 0 ? {} : { attrs }), ...(content.length === 0 ? {} : { content }), type }
 }
 
-// An attribute goes inside a start tag, a line at the start of one, and any other piece between two of the HTML's tags, text runs and line feeds, in place of up to `removed` of them.
+// An attribute goes inside a start tag, a line at the start of any line, and any other piece between two of the HTML's tags, text runs and line feeds, in place of up to `removed` of them.
 function edited(html: string, [at, removed, piece]: readonly [number, number, string]): string {
   if (piece.startsWith(' ')) {
     const tags = [...html.matchAll(/<[a-z][^>]*>/g)]
@@ -171,7 +171,7 @@ test('a generated document writes HTML that reads back to it', { timeout: proper
   )
 })
 
-test('HTML a generated document writes, edited, reads to a result, and every document read writes HTML reading back to it, the very HTML read where it holds no carry element', { timeout: propertyTimeout }, () => {
+test('HTML edited anywhere reads, if at all, to a document whose HTML reads back to it', { timeout: propertyTimeout }, () => {
   const edits = fc.array(fc.tuple(fc.nat(), fc.nat({ max: 3 }), htmlPieces), { maxLength: 4, minLength: 1 })
   fc.assert(
     fc.property(adfDocument, edits, (document, cuts) => {
@@ -185,7 +185,7 @@ test('HTML a generated document writes, edited, reads to a result, and every doc
   )
 })
 
-test('HTML a document of the dialect\'s own elements writes, edited between its tags, reads only as the very HTML its document read writes', { timeout: propertyTimeout }, () => {
+test('HTML of the dialect\'s own elements, edited, reads only if adfToHtml writes it', { timeout: propertyTimeout }, () => {
   const edits = fc.array(fc.tuple(fc.nat(), fc.nat({ max: 1 }), fc.constantFrom(...elementAttributes, ...elementInlinePieces, ...elementLines)), { maxLength: 2, minLength: 1 })
   fc.assert(
     fc.property(elementDocument, edits, (document, cuts) => {
