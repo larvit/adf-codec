@@ -73,7 +73,8 @@ test('refuses text past V8\'s longest string', () => {
   assert.equal(pastTheBound(result), true)
 })
 
-test('escapes more characters in a line than V8\'s Set holds', () => {
+// Bun stops a test after 5 s by default, and this one writes and reads back a line of 33 million characters.
+test('escapes more characters in a line than V8\'s Set holds', { timeout: 60000 }, () => {
   const stars = '*'.repeat(2 ** 24 + 1)
   assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ text: stars, type: 'text' })))), `${'\\*'.repeat(2 ** 24 + 1)}\n`)
 })
