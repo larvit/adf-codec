@@ -2,7 +2,7 @@ import type { Claims, WrittenFlavour } from '../flavour.ts'
 import type { InlineReading } from '../inline-content.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
-import { delimiterRunToken, inlineSource, readInlineToken } from '../inline-tokens.ts'
+import { delimiterRunToken, highlightFlanking, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims } from '../flavour.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
@@ -26,7 +26,7 @@ export type InlineSegment =
   | { emphasis?: undefined; escaping: 'none'; highlight?: undefined; nodes: NodeRange; text: string }
   | { emphasis?: undefined; escaping: InlineEscaping; highlight?: undefined; nodes?: undefined; text: string }
 
-export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: MarkRun | undefined }
+export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRuns: MarkRun[] }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
@@ -91,7 +91,7 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
 
 function escape(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): AssembledLine {
   const { output, placed, reading } = readBack(segments, container, claims)
-  return { ...guardLinkDefinition(output, placed, container), unspellableRun: unspellableRun(placed, reading) }
+  return { ...guardLinkDefinition(output, placed, container), unspellableRuns: unspellableRuns(placed, reading, output) }
 }
 
 function readBack(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): ReadBack {
@@ -267,21 +267,25 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
   }
 }
 
-// Of the runs the line does not read back as written, the first emphasis run to close, else the first highlight run: one misread pair can re-pair the delimiters after it.
-function unspellableRun(placed: readonly PlacedSegment[], reading: InlineReading): MarkRun | undefined {
+// Of the runs the line does not read back as written, the first emphasis run to close, else every highlight run: one misread emphasis pair can re-pair the delimiters after it.
+function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading, output: string): MarkRun[] {
+  const misflanked: MarkRun[] = []
   const openers: { nodes: MarkRun; start: number }[] = []
-  let highlight: { nodes: MarkRun; start: number } | undefined
-  let unreadHighlight: MarkRun | undefined
   for (const { segment, start } of placed) {
     if (segment.emphasis === 'open') openers.push({ nodes: segment.nodes, start })
-    if (segment.highlight === 'open') highlight = { nodes: segment.nodes, start }
+    // No `==` in text can open or close, and highlights never nest, so a highlight run reads back where both its delimiters flank.
+    if (segment.highlight !== undefined && !highlightFlanks(output, start, segment.highlight) && misflanked.at(-1) !== segment.nodes) misflanked.push(segment.nodes)
     if (segment.emphasis === 'close') {
       const opener = openers.pop()
-      if (opener !== undefined && !readAsWritten(reading, opener.start, start, segment.text.length)) return opener.nodes
+      if (opener !== undefined && !readAsWritten(reading, opener.start, start, segment.text.length)) return [opener.nodes]
     }
-    if (segment.highlight === 'close' && highlight !== undefined && reading.highlights.get(highlight.start) !== start) unreadHighlight ??= highlight.nodes
   }
-  return unreadHighlight
+  return misflanked
+}
+
+function highlightFlanks(output: string, start: number, role: DelimiterRole): boolean {
+  const flanking = highlightFlanking(output, start)
+  return role === 'open' ? flanking.opens : flanking.closes
 }
 
 function readAsWritten(reading: InlineReading, opener: number, closer: number, width: number): boolean {

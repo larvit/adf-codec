@@ -50,17 +50,17 @@ type Nodes = { kind: 'nodes'; nodes: Inline[] }
 
 type Resolved = ImageLink | Nodes
 
-type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; offset: number; opens: boolean; position: number; stretch: number }
+type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; opens: boolean; position: number; stretch: number }
 
-type HighlightPair = { closer: number; closerOffset: number; opener: number; openerOffset: number }
+type HighlightPair = { closer: number; opener: number }
 
 // `index` is the bracket's position in `pieces`; `start` is where its text starts in `source`.
 type OpenBracket = { image: boolean; index: number; start: number }
 
 type Pairing = EmphasisPairing<Run>
 
+type HighlightPiece = { closes: boolean; kind: 'highlight'; opens: boolean }
 // `offset` is where the delimiter starts in the outermost content.
-type HighlightPiece = { closes: boolean; kind: 'highlight'; offset: number; opens: boolean }
 type RunPiece = { canClose: boolean; canOpen: boolean; character: string; kind: 'run'; length: number; offset: number }
 
 type Piece = Bracket | HighlightPiece | Image | ImageLink | Nodes | OwnMarks | RunPiece | TextBreak
@@ -73,13 +73,11 @@ export type InlineReading = {
   readonly codeSpans: number[]
   // Each emphasis pairing, keyed by where its opening delimiters start.
   readonly emphasis: Map<number, { closer: number; width: number }>
-  // Each highlight pairing: its opening `==` to its closing one.
-  readonly highlights: Map<number, number>
   // Where the `[` of each link or image stands.
   readonly links: number[]
 }
 
-type ReadingEntry = { at: number; closer: number; kind: 'emphasis'; width: number } | { at: number; closer: number; kind: 'highlights' } | { at: number; kind: 'codeSpans' | 'links' }
+type ReadingEntry = { at: number; closer: number; kind: 'emphasis'; width: number } | { at: number; kind: 'codeSpans' | 'links' }
 
 // `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 type Scan = {
@@ -137,7 +135,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
 
 // The reading of a line that faults still holds what the reader took before the fault.
 export function readLineBack(line: string, container: LineContainer, claims: Claims): { faulted: boolean; reading: InlineReading } {
-  const reading: InlineReading = { codeSpans: [], emphasis: new Map(), highlights: new Map(), links: [] }
+  const reading: InlineReading = { codeSpans: [], emphasis: new Map(), links: [] }
   const scan = freshScan(line, { definitions: noDefinitions, path: [], reading, targets: targetMemo(line) }, { claims, container, inLink: false, offset: 0, spans: noSpans })
   return { faulted: !scanInline(scan).ok, reading }
 }
@@ -145,7 +143,6 @@ export function readLineBack(line: string, container: LineContainer, claims: Cla
 function record({ reading }: SharedScan, entry: ReadingEntry): void {
   if (reading === undefined) return
   if (entry.kind === 'emphasis') reading.emphasis.set(entry.at, { closer: entry.closer, width: entry.width })
-  else if (entry.kind === 'highlights') reading.highlights.set(entry.at, entry.closer)
   else reading[entry.kind].push(entry.at)
 }
 
@@ -202,7 +199,7 @@ function readToken(scan: Scan, inline: InlineSource, index: number, token: Inlin
       return success(end)
     case 'highlight':
       flush(scan, false)
-      scan.pieces.push({ closes: token.closes, kind: 'highlight', offset: scan.offset + index, opens: token.opens })
+      scan.pieces.push({ closes: token.closes, kind: 'highlight', opens: token.opens })
       return success(end)
     case 'line-ending':
       return success(readLineEnding(scan, index))
@@ -525,7 +522,6 @@ function markedNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean):
   writeUnpaired(nodes, runs, pairings)
   if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', ownMarksInMark, scan.shared.path)
   const paired = highlights ? pairedHighlights(pieces, nodes) : []
-  for (const { closerOffset, openerOffset } of paired) record(scan.shared, { at: openerOffset, closer: closerOffset, kind: 'highlights' })
   markHighlights(pieces, nodes, paired)
   return success(nodes)
 }
@@ -634,7 +630,7 @@ function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][
     const held = adfNodes(nodes[index] ?? [])
     const [holder] = held
     if (piece.kind === 'highlight' && holder !== undefined) {
-      found.push({ closes: piece.closes, holder, index, offset: piece.offset, opens: piece.opens, position, stretch })
+      found.push({ closes: piece.closes, holder, index, opens: piece.opens, position, stretch })
       position += highlightDelimiter.length
       continue
     }
@@ -662,7 +658,7 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]):
     }
     if (candidate === undefined) break
     if (candidate.stretch !== opener.stretch || !identicalMarks(nodeMarks(opener.holder), nodeMarks(candidate.holder))) continue
-    paired.push({ closer: candidate.index, closerOffset: candidate.offset, opener: opener.index, openerOffset: opener.offset })
+    paired.push({ closer: candidate.index, opener: opener.index })
     resume = candidate.position + highlightDelimiter.length
   }
   return paired

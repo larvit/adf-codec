@@ -4,6 +4,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import { adfToPortableMarkdown, reduceToPortable } from './adf-to-portable-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
+import { portableLineFallback } from '../emit/inline-line.ts'
 import { portableMarkdownToAdf } from './portable-markdown-to-adf.ts'
 
 const code: AdfMark = { type: 'code' }
@@ -391,6 +392,13 @@ test('drops the mark of the run that cannot close where it sits, and keeps the l
   assert.equal(portable(paragraph(text(')', strong), text('b'), text('c', strong))), ')b**c**\n')
   assert.equal(portable(paragraph(text('^', strike), text('b'), text('c', strike))), '^b~~c~~\n')
   assert.equal(portable(paragraph(text('~', highlight), text('b'), text('日本', highlight))), '~b==日本==\n')
+})
+
+test('gives up every highlight run whose own delimiter cannot flank in one fallback, so a line of them re-emits once however many it holds', () => {
+  const highlight: AdfMark = { type: 'backgroundColor' }
+  const line = [text('a '), text('x', highlight), text('a '), text('x', highlight), text('a '), text('x', highlight), text('a')]
+  const runs = [1, 3, 5].map((index) => ({ depth: 0, first: index, last: index }))
+  assert.deepEqual(portableLineFallback(line, 'paragraph', []), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {

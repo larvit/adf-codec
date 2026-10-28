@@ -230,7 +230,7 @@ function spellableLine(leaves: AdfNode[], container: LineContainer, path: Conver
 }
 
 function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallback): AdfNode[] | undefined {
-  if (fallback.kind === 'unspellable-run') return withoutMark(leaves, fallback.run)
+  if (fallback.kind === 'unspellable-run') return withoutMarks(leaves, fallback.runs)
   const mark = nodeMarks(leaves[0] ?? {})[0]
   if (mark === undefined || mark.type !== 'link') return undefined
   let last = 0
@@ -240,6 +240,12 @@ function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallb
   return spans ? leaves.map((leaf, index) => (index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code')))) : undefined
 }
 
-function withoutMark(leaves: readonly AdfNode[], run: MarkRun): AdfNode[] {
-  return leaves.map((leaf, index) => (index < run.first || index > run.last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => held !== run.depth))))
+// The runs cover disjoint leaves, so one pass drops them all.
+function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
+  const depths = new Map<number, number>()
+  for (const run of runs) for (let index = run.first; index <= run.last; index += 1) depths.set(index, run.depth)
+  return leaves.map((leaf, index) => {
+    const depth = depths.get(index)
+    return depth === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => held !== depth))
+  })
 }
