@@ -6,23 +6,22 @@
 
 `Bar = 0.1`
 
-`Next ID = 157`
+`Next ID = 158`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
+| 157 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 109 | 0.3.0 |  | defect | **Spell nested lists and quotes in time linear in the markdown.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
-| 145 | 0.3.0 |  |  | **Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 33, 91, 109, 115, 132, 133, 145, 146, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 33, 91, 109, 115, 132, 133, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 33, 91, 109, 115, 132, 133, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -71,14 +70,9 @@
 
 ## Details
 
-### 146. Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.
+### 157. Lower the reading cost of the files a chunk reads most before its first commit.
 
-Found 2026-10-28 surveying the Atlassian developer community: the most asked need is HTML or
-markdown into ADF, and most threads stall on Atlaskit needing React, not being ESM and clashing
-with Forge's bundler and `prosemirror-model` versions. The README says none of this before its
-call list. Before the change, a reader panel of the four personas in `## Audience` reads the first
-screen cold and says what the package does, which call it would take, and why over Atlaskit; fix
-what they miss. Bring the npm `description` and `keywords` and the GitHub topics in step.
+On 2026-10-28 `reading-cost` printed "Rising": the last 5 chunks' median is 120318 new input tokens before the first commit, the 5 before them 90793. The tool listed no most-read files. Chunk 47b51be32176 alone read 432231 tokens; the others of the last 5 read 72781 to 306528. Find what the heavy chunks opened first, shorten or split it, and run `reading-cost --reset` in the chunk that ships this.
 
 ### 33. Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
@@ -115,18 +109,6 @@ panel found `misspelling` in `src/html/escaping.ts` hard to read: make it easier
 (`src/adf/inline-nodes.ts`) restricts text only when it is marked `code`. It changes how stored
 markdown reads, so it ships in a minor. Found while building item 114, 2026-10-14.
 
-### 145. Widen the README's "Other ADF converters" table to every ADF converter a developer might pick: npm packages, other languages' libraries, Atlassian's REST APIs and MCP servers, `mdast-util-from-adf` among them.
-
-The table lists only npm packages over 1,000 downloads a week, run in `converter-comparison/`.
-`mdast-util-from-adf` 2.3.0 passed that bar after the table's date, 2026-10-14: 1,283 downloads in
-the week to 2026-10-26. A developer choosing a converter also weighs Atlassian's own paths, the
-Rovo MCP server's markdown and HTML formats among them, and libraries in Python, Go, Rust and .NET.
-
-The maintainer, 2026-10-28: list every converter that is reasonably complete and works, whatever
-its downloads, and state that bar above the table in place of the 1,000-a-week one. Run what can
-run in `converter-comparison/`; describe a REST API or a hosted MCP server from Atlassian's
-documentation, saying so in its row.
-
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
 Reading each line back lets the writers try a joined spelling and keep it where it reads back. No
@@ -152,9 +134,9 @@ writer panel picks.
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
 Blocked by every other `0.3.0` item (the maintainer, 2026-10-14): the posts announce the finished
-release. Item 145 rebuilds the README's comparison table; before posting, set
-`converter-comparison/run.sh`'s pins to each package's latest version, `@larvit/adf-codec@0.3.0`
-included, and `--before` to today, run it, and bring the table's versions and date in step.
+release. Before posting, set `converter-comparison/run.sh`'s pins to each package's latest version,
+`@larvit/adf-codec@0.3.0` included, and `--before` to today, run it, and bring the README
+comparison table's versions and date in step.
 
 Venues found 2026-10-28, each a thread a reply answers today: on the developer community, topics
 96176, 99408, 82496, 100699, 101278, 86214 and 96638; on GitHub, `atlassian/atlassian-mcp-server`
