@@ -290,6 +290,8 @@ const messages: readonly (readonly [string, string])[] = [
   ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></li>\\n</ul>\\n"'],
   ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<strong>x</strong></li>\\n"…'],
   ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<ul>\\n<li>a</li>\\n</ul></l"…'],
+  ['<ul>\n<li>a<li>b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<li>b</li>\\n</ul>\\n"'],
+  ['<ul>\n<li>a\n<li>b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<li>b</li>\\n</ul>\\n"'],
   ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<b>x</b></strong></p>\\n"'],
   ['<p><strong><br>x</strong></p>\n', '<br> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<br>x</strong></p>\\n"'],
   ['<p><em></em></p>\n', 'a mark element holds text, or one other mark element around text: found "</em></p>\\n"'],
