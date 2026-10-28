@@ -514,3 +514,5 @@ Read most (opens and searches):
 ## Reading cost, chunk 0ef613da0cb3, finished 2026-10-28T23:04:21Z
 
 436866 new input tokens before the first commit.
+
+## Reading cost reset, 2026-10-28T23:28:20Z
