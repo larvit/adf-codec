@@ -1022,3 +1022,12 @@ A later override replaces an earlier one's rule, so each subdirectory's override
 format's ban on the other format, and `ci.sh` probes every override. They are lint rules because the technical principles refuse a
 test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
 double quotes and a dynamic `import()`.
+
+## The comparison table lists every converter that starts and converts
+
+2026-10-28, the maintainer, answering the bar for the README's "Other ADF converters" table. It
+serves goal 3: a developer choosing a converter sees every one, and what it gets wrong.
+
+A converter that starts and converts anything stays in its table, however poorly. Its row says where
+it fails ordinary input, such as a list or a quote. A converter that doesn't start, or needs a page
+rather than Node, goes in the second table. A wrapper or fork of a listed package is left out.

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Keep these versions and --before in step with the README's comparison table and the packages it leaves out.
+# Keep these versions and --before in step with the README's comparison table.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 node_image=node:26.12.1-alpine3.24
