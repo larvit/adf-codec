@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 source ./docker-runner.sh
 
 base=$(git merge-base "${1:-origin/main}" HEAD)
-# Each hunk's added lines as path:first-last, in the working tree's numbering; a hunk that only deletes has none to mutate.
+# Each hunk's added lines as path:first-last, in the working tree's numbering; Stryker keeps a mutant only wholly inside one, so a hunk that only deletes has none.
 mutate=$(git diff --no-ext-diff --no-prefix -U0 --inter-hunk-context=0 --no-color "$base" -- 'src/*.ts' ':!src/*.test.ts' ':!src/conformance/property-harness.ts' | awk '
   /^\+\+\+ / { path = $2 }
   /^@@ / {
