@@ -72,6 +72,13 @@ export function targetMemo(text: string): TargetMemo {
   return { destinationEnds: undefined, tails: new Map(), text }
 }
 
+// Of the starts still open at a stop, only the innermost has its parentheses balanced; the others hold a `(` nothing closed and keep no end.
+function stopAt(ends: Int32Array, open: number[], index: number): void {
+  const innermost = open.pop()
+  if (innermost !== undefined) ends[innermost] = index
+  open.length = 0
+}
+
 // `ends[start]` is where an unbracketed destination from `start` stops, filled in one pass for every start a target can have: just after a `(`, a space or a control character, and 0, where `readDestination`'s run begins.
 function destinationEnds(text: string): Int32Array {
   const ends = new Int32Array(text.length + 1)
@@ -82,10 +89,10 @@ function destinationEnds(text: string): Int32Array {
     const start = character === ')' ? open.pop() : undefined
     if (start !== undefined) ends[start] = index
     if (character !== ' ' && !holdsControlCharacter(character)) continue
-    for (const stopped of open.splice(0)) ends[stopped] = index
+    stopAt(ends, open, index)
     open.push(index + 1)
   }
-  for (const stopped of open) ends[stopped] = text.length
+  stopAt(ends, open, text.length)
   return ends
 }
 

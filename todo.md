@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 151 | 0.3.0 |  | defect | **Read a link destination holding an unbalanced unescaped parenthesis as no destination, in every markdown reader.** | 2 | 2 | 2 | 4 | 2 | 5 by 2 | 17.4 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
@@ -68,15 +67,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 151. Read a link destination holding an unbalanced unescaped parenthesis as no destination, in every markdown reader.
-
-CommonMark lets an unbracketed destination hold a parenthesis only escaped or in a balanced pair,
-but `[a](b(c "t")` reads as a link to `b(c` titled `t`; cmark and commonmark.js read it as text.
-`targetMemo` (`src/markdown/commonmark/link-syntax.ts`), which `readDestination` reads through,
-stops at a space with parentheses still open and keeps the destination. The writers escape an
-unbalanced parenthesis, so markdown they wrote reads the same after the fix. Found while shipping
-item 140, 2026-10-28.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
