@@ -57,7 +57,8 @@ normalizes to it through the round-trip.
   A backtick run escapes whole. The escaped line is then read back. Where it opens a code span at a
   text backtick, every text backtick in the line escapes: CommonMark reads no escape inside a code
   span, so a backtick string beside an escape can still close one. Where it opens a link or an
-  image at a text `[`, every text `[` in the line escapes.
+  image at a text `[`, every text `[` in the line escapes. A line the reader refuses without
+  showing what opened at text escapes every text backtick and `[`.
   Where a paragraph opens with what reads as a link reference definition, which resolves before
   any inline construct binds (a `]` inside a code span or `{attrs}` counts), an opening text `[`
   escapes and an opening link takes the directive link (Marks).

@@ -2,10 +2,12 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block } from '../parse/blocks.ts'
 import type { ConvertError, ConvertErrorPath, ParseError, Result, SourcePosition } from '../../result.ts'
 import type { FlavourBlockReaders, FlavourReading } from '../parse/markdown-to-adf.ts'
-import { containerNode, contentNode, listNode, parseInlineContent, readBlocks, readDocument, tooDeep } from '../parse/markdown-to-adf.ts'
+import { containerNode, contentNode, listNode, readBlocks, readDocument, tooDeep } from '../parse/markdown-to-adf.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from './conventions.ts'
 import { mintTaskIds } from './task-ids.ts'
+import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
+import { parseInlineContent } from '../inline-content.ts'
 import { pathTo, splitTaskList } from './task-list.ts'
 import { positioned, success } from '../../result.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
@@ -55,7 +57,7 @@ function quoteReader(foldedType: 'expand' | 'nestedExpand'): FlavourBlockReaders
     const { folded, panelType } = led.marker
     const { line, rest } = markerLine(led.text)
     if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...paragraphsOf(led.position, line, rest), ...body], reading, path, depth + 1))
-    const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour)
+    const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour, openingLinkTakesDirective)
     if (!title.ok) return title
     const text = titleText(title.value.nodes)
     return filledNode(text === '' ? { type: foldedType } : { attrs: { title: text }, type: foldedType }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, blocks: expandBlockReaders }, path, depth + 1))

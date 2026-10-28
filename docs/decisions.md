@@ -950,7 +950,8 @@ by reading the escaped line back.
 A writer reads each escaped line back. Where a code span opens at a text backtick, every text
 backtick in the line escapes, and where a link or an image opens at a text `[`, every text `[`
 does: `[a](b) [c]` is written `\[a](b) \[c]`. A text `[` or backtick that opens nothing stays
-bare. Escaping only up to the last construct text opens read as arbitrary to the panel, and
+bare. A line the reader refuses without showing what opened at text escapes every text backtick
+and `[`. Escaping only up to the last construct text opens read as arbitrary to the panel, and
 escaping each opener in turn costs a read per opener, against goal 9. The grammar:
 `spec/flavour.md` §Canonical form.
 

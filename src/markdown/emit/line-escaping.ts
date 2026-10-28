@@ -35,6 +35,9 @@ type Escapings = (index: number) => InlineEscaping | undefined
 // Where a segment's first character landed in the output.
 type PlacedSegment = { segment: InlineSegment; start: number }
 
+// The escaped line once reading it back asks for no further escape.
+type ReadBack = { output: string; placed: PlacedSegment[]; reading: InlineReading }
+
 // Which of a run's characters escape: every escapable one, or every one before `end`.
 type RunEscapes = { end: number; escapable: false } | { escapable: true }
 
@@ -87,6 +90,11 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
 }
 
 function escape(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): AssembledLine {
+  const { output, placed, reading } = readBack(segments, container, claims)
+  return { ...guardLinkDefinition(output, placed, container), unspellableRuns: unspellableRuns(placed, reading) }
+}
+
+function readBack(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): ReadBack {
   const scan = segments.map((segment) => segment.text).join('')
   // One byte a character, never an array element or Set entry: a line may run to hundreds of millions of characters.
   const codes = new Uint8Array(scan.length)
@@ -105,16 +113,24 @@ function escape(segments: readonly InlineSegment[], container: LineContainer, cl
   for (;;) {
     const { output, placed } = backslashed(segments, scan, withTextEscapes(scan, escapings, claimed, escapes))
     const { faulted, reading } = readLineBack(output, container, claims)
-    const opened = faulted ? { backticks: true, brackets: true } : textOpeners(placed, output.length, reading)
+    const shown = textOpeners(placed, output.length, reading)
+    // A code span a directive slot swallowed leaves no record before the directive fault.
+    const opened = faulted && !shown.backticks && !shown.brackets ? { backticks: true, brackets: true } : shown
     const next = { backticks: escapes.backticks || opened.backticks, brackets: escapes.brackets || opened.brackets }
-    if (next.backticks === escapes.backticks && next.brackets === escapes.brackets) {
-      const unspellable = unspellableRuns(placed, reading)
-      if (container !== 'paragraph' || !opensLinkDefinition(output)) return { line: output, unspellableRuns: unspellable }
-      if (segments[0]?.nodes !== undefined) return { line: output, openingLinkAsDirective: true, unspellableRuns: [] }
-      return { line: `\\${output}`, unspellableRuns: unspellable }
-    }
+    if (next.backticks === escapes.backticks && next.brackets === escapes.brackets) return { output, placed, reading }
     escapes = next
   }
+}
+
+// spec/flavour.md, Canonical form: a paragraph opening with what reads as a link reference definition escapes its `[`, or spells the emitter's opening link as a directive.
+function guardLinkDefinition(output: string, placed: readonly PlacedSegment[], container: LineContainer): { line: string; openingLinkAsDirective?: true } {
+  if (container !== 'paragraph' || !opensLinkDefinition(output)) return { line: output }
+  return opensWithLink(placed) ? { line: output, openingLinkAsDirective: true } : { line: `\\${output}` }
+}
+
+// Only the emitter's link opener is a `[` segment spelling nodes.
+function opensWithLink([first]: readonly PlacedSegment[]): boolean {
+  return first?.segment.nodes !== undefined && first.segment.text === '['
 }
 
 function withTextEscapes(scan: string, escapings: Escapings, claimed: Uint8Array, { backticks, brackets }: TextEscapes): Uint8Array {
