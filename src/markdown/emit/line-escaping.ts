@@ -26,7 +26,7 @@ export type InlineSegment =
   | { emphasis?: undefined; escaping: 'none'; highlight?: undefined; nodes: NodeRange; text: string }
   | { emphasis?: undefined; escaping: InlineEscaping; highlight?: undefined; nodes?: undefined; text: string }
 
-export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRuns: MarkRun[] }
+export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRun: MarkRun | undefined }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
@@ -91,7 +91,7 @@ function resolveEmphasis(segments: readonly InlineSegment[]): InlineSegment[] {
 
 function escape(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): AssembledLine {
   const { output, placed, reading } = readBack(segments, container, claims)
-  return { ...guardLinkDefinition(output, placed, container), unspellableRuns: unspellableRuns(placed, reading) }
+  return { ...guardLinkDefinition(output, placed, container), unspellableRun: unspellableRun(placed, reading) }
 }
 
 function readBack(segments: readonly InlineSegment[], container: LineContainer, claims: Claims): ReadBack {
@@ -109,12 +109,12 @@ function readBack(segments: readonly InlineSegment[], container: LineContainer, 
   }
   const claimed = escapeClaims(scan, escapings, container, claims)
   let escapes: TextEscapes = { backticks: false, brackets: false }
-  // Terminates because a pass whose reading asks for no kind of escape the last pass lacked returns.
+  // At most three passes: each pass that doesn't return turns on at least one more of the two escape kinds.
   for (;;) {
     const { output, placed } = backslashed(segments, scan, withTextEscapes(scan, escapings, claimed, escapes))
     const { faulted, reading } = readLineBack(output, container, claims)
     const shown = textOpeners(placed, output.length, reading)
-    // A code span a directive slot swallowed leaves no record before the directive fault.
+    // A text backtick in a directive's slot can open a code span past the slot's `]`: the directive faults before the reader records that span.
     const opened = faulted && !shown.backticks && !shown.brackets ? { backticks: true, brackets: true } : shown
     const next = { backticks: escapes.backticks || opened.backticks, brackets: escapes.brackets || opened.brackets }
     if (next.backticks === escapes.backticks && next.brackets === escapes.brackets) return { output, placed, reading }
@@ -122,7 +122,7 @@ function readBack(segments: readonly InlineSegment[], container: LineContainer, 
   }
 }
 
-// spec/flavour.md, Canonical form: a paragraph opening with what reads as a link reference definition escapes its `[`, or spells the emitter's opening link as a directive.
+// spec/flavour.md, Canonical form.
 function guardLinkDefinition(output: string, placed: readonly PlacedSegment[], container: LineContainer): { line: string; openingLinkAsDirective?: true } {
   if (container !== 'paragraph' || !opensLinkDefinition(output)) return { line: output }
   return opensWithLink(placed) ? { line: output, openingLinkAsDirective: true } : { line: `\\${output}` }
@@ -267,22 +267,21 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
   }
 }
 
-// The innermost emphasis run the line does not read back as written, else every highlight run it does not.
-function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading): MarkRun[] {
+// Of the runs the line does not read back as written, the first emphasis run to close, else the first highlight run: one misread pair can re-pair the delimiters after it.
+function unspellableRun(placed: readonly PlacedSegment[], reading: InlineReading): MarkRun | undefined {
   const openers: { nodes: MarkRun; start: number }[] = []
-  const unreadHighlights: MarkRun[] = []
-  let innermost: { nodes: MarkRun; start: number } | undefined
   let highlight: { nodes: MarkRun; start: number } | undefined
+  let unreadHighlight: MarkRun | undefined
   for (const { segment, start } of placed) {
     if (segment.emphasis === 'open') openers.push({ nodes: segment.nodes, start })
     if (segment.highlight === 'open') highlight = { nodes: segment.nodes, start }
     if (segment.emphasis === 'close') {
       const opener = openers.pop()
-      if (opener !== undefined && !readAsWritten(reading, opener.start, start, segment.text.length) && opener.start > (innermost?.start ?? -1)) innermost = opener
+      if (opener !== undefined && !readAsWritten(reading, opener.start, start, segment.text.length)) return opener.nodes
     }
-    if (segment.highlight === 'close' && highlight !== undefined && reading.highlights.get(highlight.start) !== start) unreadHighlights.push(highlight.nodes)
+    if (segment.highlight === 'close' && highlight !== undefined && reading.highlights.get(highlight.start) !== start) unreadHighlight ??= highlight.nodes
   }
-  return innermost === undefined ? unreadHighlights : [innermost.nodes]
+  return unreadHighlight
 }
 
 function readAsWritten(reading: InlineReading, opener: number, closer: number, width: number): boolean {
