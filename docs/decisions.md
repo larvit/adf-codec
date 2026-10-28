@@ -526,8 +526,9 @@ and its issues and Actions are off. Push to GitHub only.
 
 ## The formats are API
 
-2026-08-23, strict input 2026-09-01, content models 2026-09-16, the maintainer. Goal 1.
-Valid while consumers store what the library emits.
+2026-08-23, strict input 2026-09-01, content models 2026-09-16, the maintainer; what a carry
+element shows 2026-10-28, the systems-architect. Goal 1. Valid while consumers store what the
+library emits.
 
 The emitted markdown and HTML are contracts. After 1.0: previously-emitted output parsing
 differently, or not at all, is MAJOR; new syntax while old output still round-trips is MINOR.
@@ -535,6 +536,12 @@ Pre-1.0, normal 0.x rules. A spelled node's content model is part of that contra
 container is the model, not the syntax — so giving a spelled node's model content it had not, or
 taking it away, is MAJOR whatever ADF's own schema does. Input reads the canonical directive
 spelling alone — spacing, key order, each value's spelling — since loosening it later is MINOR.
+
+What an HTML carry element shows is part of that contract too. `htmlToAdf` refuses a carry element
+showing anything but what `adfToHtml` shows for its node, so an edit there is refused rather than
+lost (Goal 7). A change to what a carry element shows, in `src/html/carry-content.ts` or in the
+`src/adf/shown-text.ts` it shares with portable markdown, makes HTML an earlier release wrote
+unreadable: MAJOR after 1.0, and a `MIGRATION.md` entry before.
 
 The error surface is a contract too; `README.md` §The errors states it to the consumer, and the
 types in `src/result.ts` hold its shape.
