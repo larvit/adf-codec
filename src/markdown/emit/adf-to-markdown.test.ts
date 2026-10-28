@@ -342,6 +342,15 @@ test('escapes only text that would otherwise open a construct', () => {
   assert.equal(emitted('x"_y"'), 'x"\\_y"\n')
 })
 
+test('escapes every text bracket in a line where one opens link text, and every text backtick where one opens a code span', () => {
+  const emitted = (text: string): string => markdown(adfToLosslessMarkdown(document(paragraph({ text, type: 'text' }))))
+  assert.equal(emitted('[a](b) [c]'), '\\[a](b) \\[c]\n')
+  assert.equal(emitted('see [1] and [docs](url) [2]'), 'see \\[1] and \\[docs](url) \\[2]\n')
+  assert.equal(emitted('[a] b](c'), '[a] b](c\n')
+  assert.equal(emitted('[x]('), '[x](\n')
+  assert.equal(emitted('Use ` or ``code`` syntax'), 'Use \\` or \\`\\`code\\`\\` syntax\n')
+})
+
 test('escapes a heading closing sequence', () => {
   const heading = (text: string): string => markdown(adfToLosslessMarkdown(document({ attrs: { level: 2 }, content: [{ text, type: 'text' }], type: 'heading' })))
   assert.equal(heading('done #'), '## done \\#\n')

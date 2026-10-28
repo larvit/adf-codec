@@ -62,7 +62,6 @@ In `docs/decisions.md`:
 - Firefox reads the build
 - The coverage floors
 - The size ratchet
-- The project ships under the comprehension floor until item 95 lands
 - Properties on a fixed seed
 - The CommonMark suite checks three ways
 - The flavour spec is read as a source
@@ -79,6 +78,7 @@ In `docs/decisions.md`:
 - Cost fixes are measured, never timed
 - Only the hard break holds a raw newline
 - Emphasis follows CommonMark's matching
+- A line that opens a code span or a link at text escapes every text backtick or `[` in it
 - Readable spellings take the `try` prefix
 - The attribute vocabulary is ADF's
 - The source parts by ADF and format

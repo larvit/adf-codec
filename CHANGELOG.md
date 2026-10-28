@@ -58,6 +58,11 @@
   that is neither escaped nor closed, as CommonMark requires: `[a](b(c "t")` is now text, where it
   read as a link to `b(c`. Markdown the writers wrote reads as before, since they escape such a
   parenthesis.
+- `adfToLosslessMarkdown` and `adfToPortableMarkdown` escape every text `[` in a line where one
+  would open a link, and every text backtick where one would open a code span: the text
+  `[a](b) [c]` is now written `\[a](b) \[c]`, where the second `[` stayed bare. A text `[` that
+  opens nothing stays bare: `[a] b](c` is now written as is, where it was `\[a] b](c`. Markdown
+  either version wrote reads the same in both.
 - The README compares the package with seven other ADF converters, each checked against its
   published version.
 

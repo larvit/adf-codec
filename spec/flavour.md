@@ -54,10 +54,10 @@ normalizes to it through the round-trip.
 - Entity references in input decode to their characters; output backslash-escapes only where text
   would otherwise parse as syntax, scanning the assembled line rather than each text node: escape
   the leading delimiter of a construct that would otherwise open, re-scan from there, and repeat.
-  A backtick run escapes whole, and a bare one escapes wherever a later backtick string of its
-  length forms around an escape in the same inline content — an escaped backtick alone, one joined
-  to the bare run after it, or a bare run an escape splits off: CommonMark reads no escape inside a
-  code span, so such a string still closes one.
+  A backtick run escapes whole. The escaped line is then read back. Where it opens a code span at a
+  text backtick, every text backtick in the line escapes: CommonMark reads no escape inside a code
+  span, so a backtick string beside an escape can still close one. Where it opens a link or an
+  image at a text `[`, every text `[` in the line escapes.
   Where a paragraph opens with what reads as a link reference definition, which resolves before
   any inline construct binds (a `]` inside a code span or `{attrs}` counts), an opening text `[`
   escapes and an opening link takes the directive link (Marks).

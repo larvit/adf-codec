@@ -2,10 +2,11 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block, DirectiveBlock } from './blocks.ts'
 import type { BlockDirectiveNode } from '../directive/node-reading.ts'
 import type { ConvertFault } from '../../result.ts'
+import type { Flavour } from '../flavour.ts'
+import type { InlineContent, LinkDefinitions } from '../inline-content.ts'
 import type { LineContainer } from '../line-container.ts'
-import type { LinkDefinitions } from './inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
-import { commonMarkSpelling, type SpellingMemo } from '../emit/spelling-questions.ts'
+import { commonMarkSpelling, openingLinkTakesDirective, type SpellingMemo } from '../emit/spelling-questions.ts'
 import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
 import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result } from '../../result.ts'
@@ -14,7 +15,7 @@ import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { notAString } from '../../not-a-string.ts'
 import { parseBlocks } from './blocks.ts'
-import { parseInlineContent } from './inline-content.ts'
+import { readInlineContent, spellableLink } from '../inline-content.ts'
 import { readBlockDirectiveNode } from '../directive/node-reading.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.ts'
 import { spellsEmpty } from '../directive/empty-keys.ts'
@@ -256,4 +257,16 @@ export function contentNode(node: AdfNode, text: string, reading: Reading, path:
   const content = parseInlineContent(text, reading.definitions, path, container, reading.flavour)
   if (!content.ok) return content
   return success(withContent(node, content.value.nodes))
+}
+
+export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
+  const read = readInlineContent(source, definitions, path, container, flavour)
+  if (!read.ok) return read
+  const { image, nodes, openingSpellableLink } = read.value
+  if (openingSpellableLink) {
+    const takesDirective = openingLinkTakesDirective(nodes, path)
+    if (!takesDirective.ok) return takesDirective
+    if (!takesDirective.value) return failure('unsupported-node-shape', spellableLink, path)
+  }
+  return success(image === undefined ? { nodes } : { image, nodes })
 }
