@@ -942,18 +942,14 @@ Emphasis is spelled against CommonMark's matching, never flanking alone: a delim
 escapes wherever CommonMark could open or close with it, leaving the emitter's own delimiters the
 only ones in play, and a pair that matching hands to another delimiter rides the carry instead.
 
-## A line that opens a code span or a link at text escapes every text backtick or `[` in it
+## Where a text backtick or `[` opens a code span, a link or an image, every text backtick or `[` in its line escapes
 
 2026-10-28, a writer panel, 3 of 3. Goals 1, 6 and 9. Valid while the writers find a construct
 by reading the escaped line back.
 
-A writer reads each escaped line back. Where a code span opens at a text backtick, every text
-backtick in the line escapes, and where a link or an image opens at a text `[`, every text `[`
-does: `[a](b) [c]` is written `\[a](b) \[c]`. A text `[` or backtick that opens nothing stays
-bare. A line the reader refuses without showing what opened at text escapes every text backtick
-and `[`. Escaping only up to the last construct text opens read as arbitrary to the panel, and
-escaping each opener in turn costs a read per opener, against goal 9. The grammar:
-`spec/flavour.md` §Canonical form.
+The panel rejected escaping only the text `[`s before the last link a text `[` opens, which
+writes `[a](b) [c]` as `\[a](b) [c]`, as arbitrary. Escaping each opener in turn costs a read per
+opener, against goal 9. The rule: `spec/flavour.md` §Canonical form.
 
 ## Readable spellings take the `try` prefix
 

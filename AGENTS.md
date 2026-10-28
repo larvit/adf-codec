@@ -78,7 +78,7 @@ In `docs/decisions.md`:
 - Cost fixes are measured, never timed
 - Only the hard break holds a raw newline
 - Emphasis follows CommonMark's matching
-- A line that opens a code span or a link at text escapes every text backtick or `[` in it
+- Where a text backtick or `[` opens a code span, a link or an image, every text backtick or `[` in its line escapes
 - Readable spellings take the `try` prefix
 - The attribute vocabulary is ADF's
 - The source parts by ADF and format
