@@ -1,5 +1,6 @@
 #!/bin/sh
 # Keep these versions and --before in step with the README's comparison table.
+# The packages came from npm searches on 2026-10-28 for "adf markdown", "markdown to adf", "adf to markdown", "atlassian document format" and "adf converter".
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 node_image=node:26.12.1-alpine3.24
