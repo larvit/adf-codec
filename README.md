@@ -244,11 +244,12 @@ place, and on CI failing a change that breaks a guarantee.
 
 ## Other ADF converters
 
-Serves [Goals](#goals) 3. The first table lists every npm package that runs in Node and converts
-ADF to or from markdown, whatever its downloads and
-whatever it gets wrong, which its row says. A wrapper or fork of a listed package is left out. The
-list comes from npm searches on 2026-10-28 for "adf markdown", "markdown to adf", "adf to markdown",
-"atlassian document format" and "adf converter". On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
+Serves [Goals](#goals) 3. The first table lists every npm package that runs in Node, converts ADF to
+or from markdown and is reasonably complete and works, whatever its downloads. `markdown-to-adf`,
+`md-to-adf` and `@wrtnlabs/markdown-to-adf` are left out because they get an ordinary quote, list or
+document wrong; a wrapper or fork of a listed package is left out too. The list comes from npm
+searches on 2026-10-28 for "adf markdown", "markdown to adf", "adf to markdown", "atlassian document
+format" and "adf converter". On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each package's published code, at the version the table names, with its default options. A
 package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
@@ -260,7 +261,6 @@ holding the same marks and link.
 | `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 |
 | `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 |
-| `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; `***bold italic***` comes out as italic text holding asterisks, and a paragraph holding a hard break stands between blocks | – | – | markdown | 2 |
 | `adf-converter` 0.1.0 | ADF to markdown; writes a mention as `@@Ann` | – | its text kept, with a console message | markdown | 0 |
 | `adf-md` 0.2.0 | both ways | a different document: the status without its `localId`, the marks in the other order | dropped with its text | markdown with MDX tags for panels, mentions and statuses | 6 |
 | `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 |
@@ -268,10 +268,8 @@ holding the same marks and link.
 | `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 |
 | `extended-markdown-adf-parser` 2.4.0 | both ways | a different document: the mention comes back as linked text, the status without its `localId` | written as JSON, read back as a paragraph of that JSON's text | markdown | 9 |
 | `github-markdown-adf` 1.3.0 | both ways | a different document: the mention comes back as text, the status as inline code, the marks in the other order | dropped with its text | markdown | 3 |
-| `markdown-to-adf` 0.2.20 | markdown to ADF; writes a quote as the node type `blockQuote`, which ADF spells `blockquote` | – | – | markdown | 3 |
 | `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 |
 | `md-adf` 0.2.2 | both ways, with a warning for each fallback | a different document: the mention and the status come back as text, the marks in the other order, the panel as a quote | dropped with its text, with a warning | markdown | 5 |
-| `md-to-adf` 0.6.4 | markdown to ADF; writes each list item as a list of its own | – | – | markdown | 2 |
 | `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.1 writes as markdown; throws on a status | – | throws | markdown | 3 |
 
 The next table lists converters this comparison does not run: other ecosystems' libraries,
