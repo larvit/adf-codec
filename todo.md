@@ -218,8 +218,8 @@ and hostile. Technical principle: for pure logic over many inputs, prefer a prop
 
 A comprehension seat found `src/markdown/inline-content.ts` `resolveNodes` / `pairedHighlights`
 hard: an empty text node stands in for each `==` until pairing, then a cursor walk overwrites it.
-The pieces now carry their offsets, so the pairing can run on them first. Make that place easier to
-read.
+The pairing reads each `==`'s position, stretch and marks off the built nodes; give the pieces what
+it reads, so it can run on them first. Make that place easier to read.
 
 ### 155. Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.
 
