@@ -1,7 +1,7 @@
 {
   "name": "@larvit/adf-codec",
   "version": "0.2.0",
-  "description": "Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, to and from markdown, with a lossless round-trip, and to HTML. No React, no Atlaskit, no dependencies: runs in Node, Forge, Deno, Bun and browsers.",
+  "description": "Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, to and from markdown, with a lossless round-trip, and to HTML. No React, no Atlaskit, no runtime dependencies: runs in Node, Forge, Deno, Bun and browsers.",
   "keywords": [
     "adf",
     "adf-to-html",

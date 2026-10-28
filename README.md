@@ -6,22 +6,22 @@
 Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, to and from markdown,
 with a lossless round-trip, and to HTML.
 
-Pure functions with no React, no Atlaskit and no runtime dependencies, nothing to configure or
-connect: it runs in Node, Forge, Deno, Bun and browsers. It is for application developers whose app
-shows, edits, exports or generates the rich text Atlassian products store as ADF.
+This package is pure functions with no React, no Atlaskit and no runtime dependencies, and nothing to
+configure or connect. It runs in Node, Forge, Deno, Bun and browsers, and is for application
+developers whose app shows, edits, exports or generates the rich text Atlassian products store as ADF.
 
 | You have | You want | Take | What it does |
 | --- | --- | --- | --- |
 | Markdown from a bot, a model or a person | ADF | `portableMarkdownToAdf` | reads CommonMark plus GFM's tables, task lists and alerts, `~~`, and Obsidian's callouts and `==`; `commonMarkToAdf` reads strict CommonMark alone |
-| ADF | markdown to edit, then ADF again | `adfToLosslessMarkdown`, then `losslessMarkdownToAdf` | gives back the document it started from, panels, mentions, statuses and node types this version does not know included |
+| ADF | markdown to edit, then ADF again | `adfToLosslessMarkdown`, then `losslessMarkdownToAdf` | the pair gives back the document it started from, panels, mentions, statuses and node types this version does not know included |
 | ADF | markdown that GitHub, GitLab and Obsidian render | `adfToPortableMarkdown` | keeps the text, images by URL and link targets and drops the rest |
-| ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, code blocks, rules, breaks, links, and code, emphasis and strong text as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
+| ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, code blocks, rules, breaks, a plain external image, links, and code, emphasis and strong text as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
 
-Every call returns a result, never a throw. A refusal carries a code from a closed list, and every
-refusal but `engine-limit` repeats on the same input ([The guarantees](#the-guarantees)).
+Every call returns a result, never a throw. A refusal carries a code from a closed list, and the same input
+gets the same refusal, except for `engine-limit` ([The guarantees](#the-guarantees)).
 TypeScript types ship beside the JavaScript.
 
-Atlaskit's markdown transformer converts markdown to ADF and has no ADF to markdown.
+Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdown throws.
 [Other ADF converters](#other-adf-converters) compares this package with it and the rest.
 
 ## Install
@@ -247,7 +247,8 @@ place, and on CI failing a change that breaks a guarantee.
 Serves [Goals](#goals) 3. The first table lists every npm package that runs in Node and converts
 ADF to or from markdown, whatever its downloads and
 whatever it gets wrong, which its row says. A wrapper or fork of a listed package is left out. The
-searches are recorded in `run.sh`. On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
+list comes from npm searches on 2026-10-28 for "adf markdown", "markdown to adf", "adf to markdown",
+"atlassian document format" and "adf converter". On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each package's published code, at the version the table names, with its default options. A
 package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
@@ -279,18 +280,18 @@ documentation says, on 2026-10-28.
 
 | Converter | Converts | Source |
 | --- | --- | --- |
+| `@atlaskit/editor-wikimarkup-transformer` 12.2.3 | ADF to and from Jira wiki markup, not markdown | [npm](https://www.npmjs.com/package/@atlaskit/editor-wikimarkup-transformer) |
 | `adf2md` 2.0.0, JavaScript for browsers | ADF to and from GitHub Flavored Markdown with MDX-style tags for Atlassian nodes; ships a browser bundle that needs a page, not Node | [npm](https://www.npmjs.com/package/adf2md) |
-| `marklas` 0.8.6, Python | GitHub Flavored Markdown to and from ADF | [PyPI](https://pypi.org/project/marklas/) |
-| `pyadf` 0.5.2, Python | ADF to markdown; a node it cannot render becomes an HTML element holding its attributes | [README](https://github.com/YoungseokCh/pyadf) |
-| `jc-adf` 0.2.0, Rust | markdown to and from ADF; a node type it does not know goes through an `adf:<type>` fenced block | [crates.io](https://crates.io/crates/jc-adf) |
+| Atlassian Rovo MCP server | its sample skills read and write Confluence pages as markdown | [README](https://github.com/atlassian/atlassian-mcp-server) |
 | `atlassian-markdown-converter` 0.2.1, Rust | between markdown, GFM, Jira wiki markup, ADF and Confluence markup | [crates.io](https://crates.io/crates/atlassian-markdown-converter) |
-| `Meziantou.Framework.AtlassianDataFormat` 1.0.2, .NET | ADF to markdown | [NuGet](https://www.nuget.org/packages/Meziantou.Framework.AtlassianDataFormat) |
+| Confluence Cloud REST API | converts ADF to and from storage format, and ADF to rendered HTML views; no markdown | [OpenAPI](https://developer.atlassian.com/cloud/confluence/swagger.v3.json) |
 | `github.com/ajbeck/adf-to-markdown` 1.1.2 and `github.com/ajbeck/goldmark-adf` 2.0.2, Go | ADF to markdown; markdown to ADF through goldmark | [README](https://github.com/ajbeck/adf-to-markdown), [README](https://github.com/ajbeck/goldmark-adf) |
 | `github.com/rgonek/jira-adf-converter` 1.0.0, Go | GFM to and from ADF | [README](https://github.com/rgonek/jira-adf-converter) |
+| `jc-adf` 0.2.0, Rust | markdown to and from ADF; a node type it does not know goes through an `adf:<type>` fenced block | [crates.io](https://crates.io/crates/jc-adf) |
 | Jira Cloud REST API v3 | reads and writes ADF in comments and fields such as the description; `expand=renderedFields` returns the fields as HTML; no markdown | [OpenAPI](https://dac-static.atlassian.com/cloud/jira/platform/swagger-v3.v3.json) |
-| Confluence Cloud REST API | converts ADF to and from storage format, and ADF to rendered HTML views; no markdown | [OpenAPI](https://developer.atlassian.com/cloud/confluence/swagger.v3.json) |
-| Atlassian Rovo MCP server | its sample skills read and write Confluence pages as markdown | [README](https://github.com/atlassian/atlassian-mcp-server) |
-| `@atlaskit/editor-wikimarkup-transformer` 12.2.3 | ADF to and from Jira wiki markup, not markdown | [npm](https://www.npmjs.com/package/@atlaskit/editor-wikimarkup-transformer) |
+| `marklas` 0.8.6, Python | GitHub Flavored Markdown to and from ADF | [PyPI](https://pypi.org/project/marklas/) |
+| `Meziantou.Framework.AtlassianDataFormat` 1.0.2, .NET | ADF to markdown | [NuGet](https://www.nuget.org/packages/Meziantou.Framework.AtlassianDataFormat) |
+| `pyadf` 0.5.2, Python | ADF to markdown; a node it cannot render becomes an HTML element holding its attributes | [README](https://github.com/YoungseokCh/pyadf) |
 
 ## The calls
 
