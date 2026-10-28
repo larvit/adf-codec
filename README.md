@@ -245,9 +245,8 @@ place, and on CI failing a change that breaks a guarantee.
 ## Other ADF converters
 
 Serves [Goals](#goals) 3. The first table lists every npm package that runs in Node and converts
-ADF to or from markdown, whatever its downloads; a package that fails ordinary nodes stays, with how it fails. A
-wrapper or fork of a listed package is left out.
-On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
+ADF to or from markdown, whatever its downloads; a package that fails ordinary nodes stays, with how
+it fails. A wrapper or fork of a listed package is left out. On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each package's published code, at the version the table names, with its default options. A
 package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
