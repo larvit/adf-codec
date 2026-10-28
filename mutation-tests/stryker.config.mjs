@@ -1,6 +1,4 @@
 export default {
-  // A test file peaks near 2.6 GB: past four workers run.sh's 6 GB container kills some, and a killed worker's mutant reads as a RuntimeError, which fails the run.
-  concurrency: 4,
   coverageAnalysis: 'perTest',
   ignorePatterns: ['/browser-tests', '/converter-comparison', '/dist', '/mutation-tests', '/package-tests'],
   jsonReporter: { fileName: '/tmp/mutation-report.json' },
