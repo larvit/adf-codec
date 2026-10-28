@@ -28,7 +28,7 @@ test('an unbracketed destination ends at its first unmatched `)`', () => {
   assert.deepEqual(targets('[a](b\\)c)'), [{ destination: 'b)c', length: 6 }])
 })
 
-test('a destination holding an unbalanced unescaped `(` at a space or the end reads as none', () => {
+test('an unbracketed destination with an unescaped `(` still open where it stops reads as none', () => {
   assert.deepEqual(targets('[a](b(c "t")'), [undefined])
   assert.deepEqual(targets('[a](b(c "t") [d](e)'), [undefined, { destination: 'e', length: 3 }])
   assert.deepEqual(targets('[a](b(c) "t")'), [{ destination: 'b(c)', length: 10, title: 't' }])

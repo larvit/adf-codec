@@ -72,7 +72,7 @@ export function targetMemo(text: string): TargetMemo {
   return { destinationEnds: undefined, tails: new Map(), text }
 }
 
-// `ends[start]` is where an unbracketed destination from `start` stops, filled in one pass for every start a target can have: just after a `(`, a space or a control character, and 0, where `readDestination`'s run begins. At a stop only the innermost open start has its parentheses balanced, so the starts below it keep no end.
+// `ends[start]` is where an unbracketed destination from `start` stops, for every start a target can have: just after a `(`, a space or a control character, and 0, where `readDestination`'s run begins. A destination stops at a space, a control character or the end of the text. Of the starts on the `open` stack only the innermost has its parentheses balanced there, so every start below it keeps 0, which reads as no destination.
 function destinationEnds(text: string): Int32Array {
   const ends = new Int32Array(text.length + 1)
   let open = [0]
