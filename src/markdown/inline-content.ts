@@ -142,7 +142,7 @@ export function readLineBack(line: string, container: LineContainer, claims: Cla
   return { faulted: !scanInline(scan).ok, reading }
 }
 
-function record({ shared: { reading } }: Scan, entry: ReadingEntry): void {
+function record({ reading }: SharedScan, entry: ReadingEntry): void {
   if (reading === undefined) return
   if (entry.kind === 'emphasis') reading.emphasis.set(entry.at, { closer: entry.closer, width: entry.width })
   else if (entry.kind === 'highlights') reading.highlights.set(entry.at, entry.closer)
@@ -183,7 +183,7 @@ function readToken(scan: Scan, inline: InlineSource, index: number, token: Inlin
       return closeBracket(scan, index)
     case 'code-span':
       flush(scan, false)
-      record(scan, { at: scan.offset + index, kind: 'codeSpans' })
+      record(scan.shared, { at: scan.offset + index, kind: 'codeSpans' })
       pushNode(scan, { marks: [{ type: 'code' }], text: codeSpanText(scan.source.slice(index + token.opener, end - token.opener)), type: 'text' })
       return success(end)
     case 'delimiter-run':
@@ -429,7 +429,7 @@ function closeBracket(scan: Scan, index: number): Result<number> {
   if (!open.image) scan.linkOpenersFrom = scan.brackets.length
   // Before `linkPieces`' own-marks guard: brackets that go literal mark nothing, so a carry inside them is no error.
   if (!open.image && holdsLink(inner)) return success(unopened(scan, open, index))
-  record(scan, { at: scan.offset + open.start - 1, kind: 'links' })
+  record(scan.shared, { at: scan.offset + open.start - 1, kind: 'links' })
   const closed = open.image ? imagePieces(scan, inner, target.definition()) : linkPieces(scan, inner, target.definition())
   if (!closed.ok) return closed
   scan.pieces.length = open.index
@@ -521,11 +521,11 @@ function markedNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean):
   const nodes = pieces.map(pieceNodes)
   const runs = delimiterRuns(pieces)
   const pairings = matchEmphasis(runs)
-  for (const { closer, closerOffset, opener, openerOffset, used } of pairings) record(scan, { at: opener.offset + openerOffset, closer: closer.offset + closerOffset, kind: 'emphasis', width: used })
+  for (const { closer, closerOffset, opener, openerOffset, used } of pairings) record(scan.shared, { at: opener.offset + openerOffset, closer: closer.offset + closerOffset, kind: 'emphasis', width: used })
   writeUnpaired(nodes, runs, pairings)
   if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', ownMarksInMark, scan.shared.path)
   const paired = highlights ? pairedHighlights(pieces, nodes) : []
-  for (const { closerOffset, openerOffset } of paired) record(scan, { at: openerOffset, closer: closerOffset, kind: 'highlights' })
+  for (const { closerOffset, openerOffset } of paired) record(scan.shared, { at: openerOffset, closer: closerOffset, kind: 'highlights' })
   markHighlights(pieces, nodes, paired)
   return success(nodes)
 }
