@@ -1225,3 +1225,16 @@ Inherited architect, decided by:
 - Locality: `src/markdown/inline-content.ts:461` `resolveTarget`: one target memo keyed by outermost offsets, shared through `scan.shared`, brings offset arithmetic and a bounds check that depends on how the slot was cut
 - Self-sufficiency: `src/markdown/commonmark/link-syntax.ts:76` `destinationEnds`: the densest new code, understandable only through its five-clause comment
 - Shape: `src/markdown/inline-content.ts:768` `parseInlineContent`: takes the writer's `openingLinkTakesDirective` as a sixth parameter, and moved out of `parse/` where a reader would look for it
+
+## 2026-10-28T19:34:20Z, PR #100 at 222ad24, against 0003675
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | same | same |
+| Inherited architect | better | same | same | same | same |
+
+Inherited architect, decided by:
+
+- Navigation: `README.md:730` "Changing the source": names `./ci.sh` and `./mutation-tests/run.sh`, what they need and what fails a run, where the base's README named neither
