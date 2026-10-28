@@ -1,6 +1,6 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result } from '../../result.ts'
-import { foundAt, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
+import { foundAt, misread, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkMarkFrom } from '../../adf/mark-attributes.ts'
 import { markOfElement } from '../mark-elements.ts'
@@ -46,7 +46,10 @@ function readMarked(html: string, index: number, place: Place): ReadNode {
     closers.unshift(`</${tag.name}>`)
     at = tag.end
   }
-  if (at === html.length || html.startsWith('<', at)) return refused('unmappable-html', `a mark element holds one text, or one mark element holding it: ${foundAt(html, at)}`, html, at, place)
+  if (at === html.length || html.startsWith('<', at)) {
+    const stop = misread(html, at, 'a mark element holds one text, or one mark element holding it', 'no mark element of the dialect')
+    return refused('unmappable-html', stop.message, html, stop.at, place)
+  }
   const text = readText(html, at, marks, place)
   if (!text.ok) return text
   at = text.value.end

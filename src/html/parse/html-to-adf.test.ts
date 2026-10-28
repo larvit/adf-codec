@@ -279,7 +279,13 @@ const messages: readonly (readonly [string, string])[] = [
   ['<p><a href="a"b">a</a></p>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "b\\">a</a></p>\\n"'],
   ['<p>a&nbsp;\u00a0</p>\n', 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "&nbsp;\\u00a0</p>\\n"'],
   ['<pre><code>a</code></pre\n', 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"'],
-  ['<ul>\n<li>a</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "</ul>\\n"'],
+  ['<pre><code class="hljs language-js">x</code></pre>\n', '<code> as written here is no code element of the dialect, which writes <code> or <code class="language-…">: found "<code class=\\"hljs langua"…'],
+  ['<ul>\n<li>a</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block, and its text spells < as &lt;: found "</ul>\\n"'],
+  ['<ul>\n<li>a<b>b</b></li>\n</ul>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></li>\\n</ul>\\n"'],
+  ['<ul>\n<li>if a < b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block, and its text spells < as &lt;: found "< b</li>\\n</ul>\\n"'],
+  ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></li>\\n</ul>\\n"'],
+  ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect: found "<b>x</b></strong></p>\\n"'],
+  ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "&b=2\\">x</a></strong></p>"…'],
   [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows its node\'s text as adfToHtml writes it, then ends at </div>; an edit to it is no edit to the node: found "<b>collation</b>.</p></d"…'],
 ]
 
