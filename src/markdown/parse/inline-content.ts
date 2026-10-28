@@ -17,7 +17,7 @@ import { inlineNodeModel, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from '../adjacent-text.ts'
 import { labelLimit, normalizeLabel, readInlineTarget, readLabel, targetMemo } from '../commonmark/link-syntax.ts'
 import { matchEmphasis } from '../commonmark/emphasis-matching.ts'
-import { noSpans, readInlineDirective } from '../directive/syntax.ts'
+import { contentOffset, noSpans, readInlineDirective } from '../directive/syntax.ts'
 import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
 import { readCarriedInline } from '../opaque-carry.ts'
 import { readDirectiveMark } from '../directive/mark-reading.ts'
@@ -81,17 +81,19 @@ type Scan = {
   inLink: boolean
   // Link openers below this index of `brackets` were open when a link closed, so they stay literal: no link holds another.
   linkOpenersFrom: number
+  // Where `source` starts in the outermost content, the text `targets` reads.
+  offset: number
   openingSpellableLink: boolean
   path: ConvertErrorPath
   pending: string
   pieces: Piece[]
   source: string
   spans: NestedSpans
-  targets: TargetMemo | undefined
+  targets: TargetMemo
 }
 
 // What a directive's content slot inherits from the content holding it.
-type SharedScan = Pick<Scan, 'definitions' | 'path'>
+type SharedScan = Pick<Scan, 'definitions' | 'path' | 'targets'>
 
 const ownMarksInMark = 'move the opaque carry, or the node spelling marks=empty, out of the mark spelling: it holds its own marks'
 const editorHighlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
@@ -103,7 +105,7 @@ const textBreak: TextBreak = { kind: 'textBreak' }
 
 // The outermost content: only here does a text break see both its neighbours.
 export function parseInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
-  const scan = freshScan(source, { definitions, path }, { claims: flavourClaims[flavour], container, inLink: false, spans: noSpans })
+  const scan = freshScan(source, { definitions, path, targets: targetMemo(source) }, { claims: flavourClaims[flavour], container, inLink: false, offset: 0, spans: noSpans })
   const scanned = scanInline(scan)
   if (!scanned.ok) return scanned
   const nodes = partText(contentNodes(scanned.value.pieces), scan)
@@ -117,8 +119,8 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
   return success(image === undefined ? { nodes: nodes.value } : { image, nodes: nodes.value })
 }
 
-function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'inLink' | 'spans'>): Scan {
-  return { ...shared, ...own, brackets: [], linkOpenersFrom: 0, openingSpellableLink: false, pending: '', pieces: [], source, targets: undefined }
+function freshScan(source: string, shared: SharedScan, own: Pick<Scan, 'claims' | 'container' | 'inLink' | 'offset' | 'spans'>): Scan {
+  return { ...shared, ...own, brackets: [], linkOpenersFrom: 0, openingSpellableLink: false, pending: '', pieces: [], source }
 }
 
 function scanInline(scan: Scan): Result<Scanned> {
@@ -212,7 +214,7 @@ function directivePieces(scan: Scan, span: DirectiveSpan, index: number): Result
   if (text !== undefined) return success([{ kind: 'nodes', nodes: [{ text: text.value, type: 'text' }] }])
   const mark = readDirectiveMark(span.name, span.attributes, scan.path)
   // A node's slot is the node's own content, never the text of a link around the node.
-  const slot = slotContent(scan, span, mark !== undefined && (scan.inLink || span.name === 'link'))
+  const slot = slotContent(scan, span, index, mark !== undefined && (scan.inLink || span.name === 'link'))
   if (!slot.ok) return slot
   if (mark !== undefined) return mark.ok ? directiveMarkPieces(scan, span.name, mark.value, slot.value, index) : mark
   const content = slot.value === undefined ? undefined : contentNodes(slot.value)
@@ -251,10 +253,11 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[]
   return undefined
 }
 
-function slotContent(scan: Scan, span: DirectiveSpan, inLink: boolean): Result<Resolved[] | undefined> {
+function slotContent(scan: Scan, span: DirectiveSpan, index: number, inLink: boolean): Result<Resolved[] | undefined> {
   if (span.content === undefined) return success(undefined)
-  const { claims, definitions, path } = scan
-  const parsed = scanInline(freshScan(span.content, { definitions, path }, { claims, container: undefined, inLink, spans: span.spans }))
+  const { claims, definitions, path, targets } = scan
+  const offset = scan.offset + index + contentOffset(span)
+  const parsed = scanInline(freshScan(span.content, { definitions, path, targets }, { claims, container: undefined, inLink, offset, spans: span.spans }))
   if (!parsed.ok) return parsed
   return success(parsed.value.pieces)
 }
@@ -429,9 +432,9 @@ function bracketNodes(bracket: Bracket | OpenBracket): AdfNode[] {
 function resolveTarget(scan: Scan, start: number, index: number): InlineTarget | undefined {
   const after = index + 1
   if (scan.source.charAt(after) === '(') {
-    scan.targets ??= targetMemo(scan.source)
-    const inline = readInlineTarget(scan.source, after, scan.targets)
-    if (inline !== undefined) return inline
+    const inline = readInlineTarget(scan.targets, scan.offset + after)
+    // A target read in the outermost content holds in a directive's content exactly when it ends inside it.
+    if (inline !== undefined && after + inline.length <= scan.source.length) return inline
   }
   const label = scan.source.charAt(after) === '[' ? readLabel(scan.source, after) : undefined
   const labelIsText = label === undefined || label.value === ''
