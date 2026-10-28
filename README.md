@@ -7,8 +7,10 @@ Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, t
 with a lossless round-trip, and to HTML.
 
 This package is pure functions with no React, no Atlaskit and no runtime dependencies, and nothing to
-configure or connect. It runs in Node, Forge, Deno, Bun and browsers, and is for application
-developers whose app shows, edits, exports or generates the rich text Atlassian products store as ADF.
+configure or connect. It runs in Node, Forge, Deno, Bun and browsers.
+
+It is for application developers whose app shows, edits, exports or generates the rich text Atlassian
+products store as ADF.
 
 | You have | You want | Take | What it does |
 | --- | --- | --- | --- |
@@ -17,8 +19,8 @@ developers whose app shows, edits, exports or generates the rich text Atlassian 
 | ADF | markdown that GitHub, GitLab and Obsidian render | `adfToPortableMarkdown` | keeps the text, images by URL and link targets and drops the rest |
 | ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, code blocks, rules, breaks, a plain external image, links, and code, emphasis and strong text as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
 
-Every call returns a result, never a throw. A refusal carries a code from a closed list, and the same input
-gets the same refusal, except for `engine-limit` ([The guarantees](#the-guarantees)).
+Every call returns a result, never a throw. A refusal carries a code from a closed list, and the same input gets the same refusal, except
+for `engine-limit` ([The guarantees](#the-guarantees)).
 TypeScript types ship beside the JavaScript.
 
 Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdown throws.
@@ -249,7 +251,9 @@ or from markdown and is reasonably complete and works, whatever its downloads. `
 `md-to-adf` and `@wrtnlabs/markdown-to-adf` are left out because they get an ordinary quote, list or
 document wrong; a wrapper or fork of a listed package is left out too. The list comes from npm
 searches on 2026-10-28 for "adf markdown", "markdown to adf", "adf to markdown", "atlassian document
-format" and "adf converter". On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
+format" and "adf converter".
+
+On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each package's published code, at the version the table names, with its default options. A
 package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
