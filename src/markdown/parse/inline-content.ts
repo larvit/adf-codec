@@ -4,7 +4,7 @@ import type { Claims, Flavour } from '../flavour.ts'
 import type { EmphasisPairing } from '../commonmark/emphasis-matching.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
-import type { LinkDefinition, TargetMemo } from '../commonmark/link-syntax.ts'
+import type { InlineTarget, LinkDefinition, TargetMemo } from '../commonmark/link-syntax.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { commonMarkLink, linkDefinition, linkHref, linkMark, toLinkAttrs } from '../mark-spellings.ts'
 import { decodeTextEscapes, trimTrailingSpace } from '../commonmark/grammar.ts'
@@ -427,7 +427,7 @@ function bracketNodes(bracket: Bracket | OpenBracket): AdfNode[] {
   return [{ text: bracket.image ? '![' : '[', type: 'text' }]
 }
 
-function resolveTarget(scan: Scan, start: number, index: number): { definition: () => LinkDefinition; length: number } | undefined {
+function resolveTarget(scan: Scan, start: number, index: number): InlineTarget | undefined {
   const after = index + 1
   if (scan.source.charAt(after) === '(') {
     scan.targets ??= targetMemo(scan.source)

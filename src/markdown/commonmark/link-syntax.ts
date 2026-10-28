@@ -1,5 +1,7 @@
-import { backslashEscape, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
+import { backslashEscape, controlCharacterRange, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
 import { holdsEntityReference, readEntityReference } from './entity-references.ts'
+
+export type InlineTarget = { definition: () => LinkDefinition; length: number }
 
 export type LinkDefinition = { destination: string; title?: string }
 
@@ -15,6 +17,8 @@ export type TargetMemo = { destinationEnds: Int32Array; tails: Map<number, Tail 
 export type TitleEscapes = 'lossless' | 'portable' | 'portable-table-cell'
 
 const bracketedDestination = /<((?:[^\n<>\\]|\\[^\n])*)>/y
+// The longest text an unbracketed destination can take: it stops at a space or a control character.
+const destinationRun = new RegExp(`[^ ${controlCharacterRange}]*`, 'y')
 // CommonMark: a link label holds at most this many characters between its brackets, an escape counting as two.
 export const labelLimit = 999
 const linkLabel = new RegExp(String.raw`\[((?:[^[\]\\]|\\[\s\S]){0,${labelLimit}})\]`, 'y')
@@ -40,27 +44,15 @@ export function readDestination(text: string, offset: number): LinkPart | undefi
   const bracketed = bracketedDestination.exec(text)?.[0]
   if (bracketed !== undefined) return { length: bracketed.length, value: decodeTextEscapes(bracketed.slice(1, -1)) }
   if (text.charAt(offset) === '<') return undefined
-  let depth = 0
-  let index = offset
-  while (index < text.length) {
-    const character = text.charAt(index)
-    if (character === ' ' || holdsControlCharacter(character)) break
-    if (backslashEscape(text, index) !== undefined) {
-      index += 2
-      continue
-    }
-    if (character === '(') depth += 1
-    if (character === ')') {
-      depth -= 1
-      if (depth < 0) break
-    }
-    index += 1
-  }
-  return index <= offset ? undefined : { length: index - offset, value: decodeTextEscapes(text.slice(offset, index)) }
+  destinationRun.lastIndex = offset
+  destinationRun.test(text)
+  const run = text.slice(offset, destinationRun.lastIndex)
+  const length = targetMemo(run).destinationEnds[0] ?? 0
+  return length === 0 ? undefined : { length, value: decodeTextEscapes(run.slice(0, length)) }
 }
 
 // `offset` sits on the `(` a link text closes into. The definition is read on demand, so a target its link refuses costs no copy.
-export function readInlineTarget(text: string, offset: number, memo: TargetMemo): { definition: () => LinkDefinition; length: number } | undefined {
+export function readInlineTarget(text: string, offset: number, memo: TargetMemo): InlineTarget | undefined {
   const start = skipLinkWhitespace(text, offset + 1)
   const end = destinationEnd(text, start, memo)
   if (end === undefined) return undefined
@@ -75,7 +67,7 @@ export function readInlineTarget(text: string, offset: number, memo: TargetMemo)
   return { definition, length: tail.end - offset }
 }
 
-// `readDestination`'s loop run for every start at once, with a stack of the starts still open.
+// Every unbracketed destination's end in one pass, with a stack of the starts still open. The text's own start is one, which `readDestination` reads.
 export function targetMemo(text: string): TargetMemo {
   const destinationEnds = new Int32Array(text.length + 1)
   const open = [0]

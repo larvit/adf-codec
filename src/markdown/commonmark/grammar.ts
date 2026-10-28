@@ -16,7 +16,7 @@ const htmlConstructNames = {
   processingInstruction: 'an HTML processing instruction',
 }
 
-const controlCharacterRange = '\\u0000-\\u001f\\u007f'
+export const controlCharacterRange = '\\u0000-\\u001f\\u007f'
 const autolinkSource = `[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\\s<>${controlCharacterRange}]*`
 const nullCharacterSource = '\\u0000'
 const tagNameSource = '[A-Za-z][A-Za-z0-9-]*'
