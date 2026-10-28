@@ -7,17 +7,17 @@ export type LinkDefinition = { destination: string; title?: string }
 
 export type LinkPart = { length: number; value: string }
 
-// What follows a destination ending at an index, the same for every destination ending there: the index after the `)`, and the title.
+// Every destination ending at one index shares what follows it: the title and the closing `)`.
 type Tail = { end: number; title: string | undefined }
 
-// `destinationEnds[start]` is where an unbracketed destination starting there stops, for every start a target reads from: one after a `(`, a space or a control character.
+// `destinationEnds[start]` is where an unbracketed destination starting there stops, for every start a target can have: the index just after a `(`, a space or a control character.
 export type TargetMemo = { destinationEnds: Int32Array; tails: Map<number, Tail | undefined> }
 
 // The lossless flavour escapes a quote alone, writing a title holding a backslash or an entity reference as a directive (spec/flavour.md, Marks); the portable flavour writes no directive, so it escapes those too, and a table cell's `|` (README, Portable markdown).
 export type TitleEscapes = 'lossless' | 'portable' | 'portable-table-cell'
 
 const bracketedDestination = /<((?:[^\n<>\\]|\\[^\n])*)>/y
-// The longest text an unbracketed destination can take: it stops at a space or a control character.
+// The longest text an unbracketed destination can take.
 const destinationRun = new RegExp(`[^ ${controlCharacterRange}]*`, 'y')
 // CommonMark: a link label holds at most this many characters between its brackets, an escape counting as two.
 export const labelLimit = 999
@@ -51,7 +51,7 @@ export function readDestination(text: string, offset: number): LinkPart | undefi
   return length === 0 ? undefined : { length, value: decodeTextEscapes(run.slice(0, length)) }
 }
 
-// `offset` sits on the `(` a link text closes into. The definition is read on demand, so a target its link refuses costs no copy.
+// `offset` sits on the `(` a link text closes into. The definition is built only when called, so a link the reader then refuses never decodes its destination.
 export function readInlineTarget(text: string, offset: number, memo: TargetMemo): InlineTarget | undefined {
   const start = skipLinkWhitespace(text, offset + 1)
   const end = destinationEnd(text, start, memo)
@@ -67,7 +67,7 @@ export function readInlineTarget(text: string, offset: number, memo: TargetMemo)
   return { definition, length: tail.end - offset }
 }
 
-// Every unbracketed destination's end in one pass, with a stack of the starts still open. The text's own start is one, which `readDestination` reads.
+// Every unbracketed destination's end, in one pass. Index 0 is a start too, for `readDestination`, which reads from its text's first character.
 export function targetMemo(text: string): TargetMemo {
   const destinationEnds = new Int32Array(text.length + 1)
   const open = [0]
@@ -123,7 +123,7 @@ export function readTitle(text: string, offset: number): LinkPart | undefined {
 // The label, the destination and the title each take at most one line ending with them.
 export function skipLinkWhitespace(text: string, offset: number): number {
   linkWhitespace.lastIndex = offset
-  // The pattern matches empty, so the test always moves `lastIndex` past the whitespace.
+  // The pattern matches empty, so the test never fails, which would reset `lastIndex` to 0.
   linkWhitespace.test(text)
   return linkWhitespace.lastIndex
 }
