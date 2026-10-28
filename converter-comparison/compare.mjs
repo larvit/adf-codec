@@ -20,7 +20,6 @@ import * as mdAdf from "md-adf";
 import mdToAdf from "md-to-adf";
 import { toMarkdown as mdastToMarkdown } from "mdast-util-to-markdown";
 import { readFileSync } from "node:fs";
-import translateGithubMarkdown from "@complexthings/md-to-adf";
 
 const { defaultSchema } = createRequire(import.meta.url)("@atlaskit/adf-schema/schema-default");
 
@@ -55,6 +54,10 @@ const extended = new extendedParser.Parser();
 const json = new atlaskitJson.JSONTransformer();
 const atlaskit = new atlaskitMarkdown.MarkdownTransformer(defaultSchema);
 const adf4j = await loadAdf4j();
+const reported = (result) => {
+  for (const diagnostic of result.diagnostics) console.log("diagnostic:", JSON.stringify(diagnostic));
+  return result.value;
+};
 const succeeded = (result) => {
   if (result.type !== "Success") throw new Error(JSON.stringify(result));
   return result.value;
@@ -64,7 +67,6 @@ const converters = {
     toAdf: (md) => json.encode(atlaskit.parse(md)),
     toMarkdown: (doc) => atlaskit.encode(json.parse(doc)),
   },
-  "@complexthings/md-to-adf": { toAdf: (md) => translateGithubMarkdown(md) },
   "@faulander/md2adf": {
     toAdf: (md) => faulander.markdownToAdf(md),
     toMarkdown: (doc) => faulander.adfToMarkdown(doc),
@@ -94,8 +96,8 @@ const converters = {
   "markdown-to-adf": { toAdf: (md) => markdownToAdf.markdownToAdf(md) },
   marklassian: { toAdf: (md) => marklassian.markdownToAdf(md) },
   "md-adf": {
-    toAdf: (md) => mdAdf.markdownToAdf(md).value,
-    toMarkdown: (doc) => mdAdf.adfToMarkdown(doc).value,
+    toAdf: (md) => reported(mdAdf.markdownToAdf(md)),
+    toMarkdown: (doc) => reported(mdAdf.adfToMarkdown(doc)),
   },
   "md-to-adf": { toAdf: (md) => mdToAdf(md) },
   "mdast-util-from-adf": { toMarkdown: (doc) => mdastToMarkdown(fromADF(doc)) },

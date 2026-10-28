@@ -9,7 +9,6 @@ docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -
     npm install --before=2026-10-29 --ignore-scripts --no-audit --no-fund --silent \
       @atlaskit/editor-json-transformer@10.0.0 \
       @atlaskit/editor-markdown-transformer@6.3.1 \
-      @complexthings/md-to-adf@1.0.0 \
       @faulander/md2adf@1.0.0 \
       @larvit/adf-codec@0.2.0 \
       @nthings.dev/adf4j-wasm@1.0.2 \

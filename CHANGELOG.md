@@ -4,7 +4,7 @@
 
 - The package's description and keywords say it needs no React, Atlaskit or runtime dependency and runs
   in Node, Forge, Deno, Bun and browsers, and the README opens with the call to take for each need. Its comparison table lists every npm package
-  converting ADF to or from markdown, and other ecosystems' libraries and Atlassian's own paths.
+  running in Node that converts ADF to or from markdown, and other ecosystems' libraries and Atlassian's own paths.
 - `adfToHtml` writes ADF as HTML: paragraphs, headings, lists, quotes, code blocks, rules, hard
   breaks, a centered, uncaptioned external image holding no attribute but its URL and alt, and `em`,
   `strong`, `code` and links as their elements. A paragraph, heading, quote, list, list item, code block or
