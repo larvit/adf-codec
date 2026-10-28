@@ -87,7 +87,6 @@ type Scan = {
   pieces: Piece[]
   source: string
   spans: NestedSpans
-  // Built at the first inline target the scan reads.
   targets: TargetMemo | undefined
 }
 

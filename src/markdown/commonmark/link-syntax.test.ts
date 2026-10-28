@@ -18,7 +18,7 @@ test('a target nothing closes reads as none, at every `](`', () => {
   assert.deepEqual(targets('[a](b'.repeat(3)), [undefined, undefined, undefined])
 })
 
-test('targets sharing a destination end share its title and its failure', () => {
+test('targets sharing a destination end share its failure', () => {
   assert.deepEqual(targets('[a](b[c](d "t" x)'), [undefined, undefined])
   assert.deepEqual(targets('[a](b[c](d "t"   x'), [undefined, undefined])
 })
@@ -28,7 +28,7 @@ test('an unbracketed destination ends at its first unmatched `)`', () => {
   assert.deepEqual(targets('[a](b\\)c)'), [{ destination: 'b)c', length: 6 }])
 })
 
-test('a target reads its whitespace, a bracketed destination and a title', () => {
+test('a target reads whitespace and a title around its destination, bracketed, unbracketed or empty', () => {
   assert.deepEqual(targets('[a]( b\n "t" ) [c](<d e> \'f\') [g]()'), [
     { destination: 'b', length: 10, title: 't' },
     { destination: 'd e', length: 11, title: 'f' },

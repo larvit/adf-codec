@@ -72,10 +72,11 @@
 ### 151. Read a link destination holding an unbalanced unescaped parenthesis as no destination, in every markdown reader.
 
 CommonMark lets an unbracketed destination hold a parenthesis only escaped or in a balanced pair,
-but `[a](b(c "t")` reads as a link to `b(c` titled `t`, where cmark and commonmark.js read text.
-`readDestination` and `targetMemo` (`src/markdown/commonmark/link-syntax.ts`) stop at a space with
-parentheses still open and keep the destination. The writers escape an unbalanced parenthesis, so
-no written markdown changes. Found while shipping item 140, 2026-10-28.
+but `[a](b(c "t")` reads as a link to `b(c` titled `t`; cmark and commonmark.js read it as text.
+`targetMemo` (`src/markdown/commonmark/link-syntax.ts`), which `readDestination` reads through,
+stops at a space with parentheses still open and keeps the destination. The writers escape an
+unbalanced parenthesis, so markdown they wrote reads the same after the fix. Found while shipping
+item 140, 2026-10-28.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
