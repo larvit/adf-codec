@@ -6,13 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 151`
+`Next ID = 152`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 140 | 0.3.0 |  | defect | **Read an inline link's target in time linear in the inline markdown, in every reader.** | 3 | 1 | 2 | 4 | 3 | 9 by 3 | 19.6 |
+| 151 | 0.3.0 |  | defect | **Read a link destination holding an unbalanced unescaped parenthesis as no destination, in every markdown reader.** | 2 | 2 | 2 | 4 | 2 | 5 by 2 | 17.4 |
 | 95 | 0.3.0 |  | decision | **Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.** | 4 | 1 | 3 | 6 | 6 | code health by 7 | 10.2 |
 | 146 | 0.3.0 |  |  | **Open the README with what an app developer choosing an ADF converter needs: what the package converts, which call to take, and that it runs without React, Atlaskit or any runtime dependency, in Node, Forge, Deno, Bun and browsers.** | 2 | 2 | 1 | 3 | 3 | 3 by 6 | 9.5 |
 | 33 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
@@ -23,8 +23,8 @@
 | 91 | 0.3.0 | 95 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 140, 145, 146, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 140, 145, 146, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 145, 146, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 33, 91, 95, 109, 115, 132, 133, 145, 146, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
@@ -69,14 +69,13 @@
 
 ## Details
 
-### 140. Read an inline link's target in time linear in the inline markdown, in every reader.
+### 151. Read a link destination holding an unbalanced unescaped parenthesis as no destination, in every markdown reader.
 
-`'[a](b'.repeat(n)` reads in time quadratic in n: each `](` after an open bracket reads its
-destination to the end of the line through `readDestination` (`src/markdown/commonmark/link-syntax.ts`),
-finds no `)` and fails. `skipLinkWhitespace` also copies the rest of the text on every call.
-`losslessMarkdownToAdf` takes 1.6 s at n = 4000 and 25 s at n = 16 000 on Node 24, 4× per doubling.
-cmark's pathological tests name the shape "unclosed links B". Found while shipping item 129,
-2026-10-23.
+CommonMark lets an unbracketed destination hold a parenthesis only escaped or in a balanced pair,
+but `[a](b(c "t")` reads as a link to `b(c` titled `t`, where cmark and commonmark.js read text.
+`readDestination` and `targetMemo` (`src/markdown/commonmark/link-syntax.ts`) stop at a space with
+parentheses still open and keep the destination. The writers escape an unbalanced parenthesis, so
+no written markdown changes. Found while shipping item 140, 2026-10-28.
 
 ### 95. Find the code-span closers an escape forms, the mark runs a line cannot spell and the text `[` that opens link text by reading the line back, in place of `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose` predicting them.
 
