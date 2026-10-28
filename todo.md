@@ -142,7 +142,7 @@ documentation, saying so in its row.
 
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
-The writers read each line back, so a joined spelling can be kept only where it reads back. No
+Reading each line back lets the writers try a joined spelling and keep it where it reads back. No
 reader marks a hard break, so `*One\` then `Two*` writes back as `_One_\` then `_Two_`, and a link
 typed across a line as two links. No reader gives those other nodes a mark Atlassian's schema
 withholds from them, and none gives code text a mark but a link. So `**Ping !adf:mention[@A]{id=x}
@@ -192,10 +192,11 @@ interim sentence.
 ### 153. Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.
 
 The writers read each escaped line back through `src/markdown/inline-content.ts`'s scan. A writer
-question put back on that scan's path, such as the opening-link consult it takes as an argument
-today, would close the cycle writer → reader → writer and recurse without bound on a paragraph
-opening with a spellable `!adf:link` (§Nothing recurses unbounded). No `no-restricted-imports`
-override covers `src/markdown/*.ts`; adding one, with its `ci.sh` probe, extends the decision.
+question put back on that scan's path, such as the opening-link consult `parseInlineContent` takes
+as an argument today, would close the cycle writer → reader → writer and recurse without bound on
+a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
+`src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
+files, with its `ci.sh` probe, extends the decision.
 
 ### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
 
@@ -222,9 +223,10 @@ read.
 
 ### 155. Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.
 
-A comprehension seat found `src/markdown/inline-content.ts` `closeBracket` / `truncatePieces`
-hard: `closeBracket`, `unopened`, `literalClose` and `popBracket` each write `scan.pieces`, the
-link openers or the reading. Make that place easier to read.
+A comprehension seat found `src/markdown/inline-content.ts` `closeBracket` hard: it writes
+`scan.pieces`, the link openers and the reading, and calls `unopened`, `literalClose` and
+`popBracket`, which write `scan.pieces`, `scan.pending` and the link openers. Make that place
+easier to read.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
@@ -468,9 +470,9 @@ bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes.
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 
 Check whether `delimiterRunToken` (`inline-tokens.ts`) and `resolveEmphasis` (`line-escaping.ts`)
-read one UTF-16 unit beside an astral symbol. A lone surrogate is neither
-punctuation nor symbol, but CommonMark reads `😀` as punctuation. Where they do, read the code
-point, with a fixture per direction.
+read one UTF-16 unit beside an astral symbol. A lone surrogate is neither punctuation nor symbol,
+but CommonMark reads `😀` as punctuation. Where they do, read the code point, with a fixture per
+direction.
 
 ### 74. Keep the release path publishing after npm retires bypass-2FA tokens.
 
