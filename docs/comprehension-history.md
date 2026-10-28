@@ -1199,3 +1199,29 @@ Inherited architect, decided by:
 - Locality, Self-sufficiency: `src/html/data-attributes.ts:26` `readDataAttributes`: a `leading` parameter only `<ol start>` uses, with the hardest comments in the change to parse
 - Locality: `src/html/carry-attributes.ts:11` `carryJsonOffset`: rebuilds the writer's start-tag prefix to place an error, correct only while `carryAttributes` writes `class` first
 - Shape: `src/adf/carried-json.ts:12` `BoundedJson`: a type whose only job is to order three steps, a `respell` hook, and ten small root files in `src/html/`
+
+## 2026-10-28T18:08:02Z, PR #99 at fcc24ad, against 1530666
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | same | same | better |
+| Inherited architect | same | better | same | better | better |
+
+Mid A, decided by:
+
+- Locality, Overall: `src/markdown/emit/line-escaping.ts:97` `readBack`: the writer reads its escaped line back through the real reader instead of imitating its backtick, emphasis and bracket rules by hand in `escapeClosedRuns`, `unspellableRuns` and `lastLinkClose`
+- Locality: `src/markdown/inline-content.ts:103` `SharedScan`: what a directive's content shares with the outer content is one named object, where the base spread it through `Scan` and picked it with `Pick`
+- Locality: `src/markdown/commonmark/link-syntax.ts:55` `readInlineTarget`: a mutable memo shared by every link target, filled lazily, where the base read a target as a pure function of its arguments
+- Self-sufficiency: `src/markdown/commonmark/link-syntax.ts:76` `destinationEnds`: a stack-based table followed only through its long comment, though the base's equally opaque `escapeClosedRuns` is gone
+- Shape, Navigation: `src/markdown/inline-content.ts:121` `parseInlineContent`: moved out of `parse/` now that `emit/` uses it, and takes `openingLinkTakesDirective` as an argument every caller passes the same
+
+Inherited architect, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/emit/line-escaping.ts:97` `readBack`: the writer checks its line through `readLineBack`, so a change to the reader's matching needs no mirror in `emit/`; the `faulted` fallback still leans on its comment
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:136` `withTextEscapes`: with `textOpeners`, states the whole rule, where the base's `escapeClosedRuns` and its `formed` set needed the spec paragraph beside it
+- Locality: `src/markdown/emit/line-escaping.ts:271` `unspellableRuns`: asks the reader's emphasis pairing instead of rebuilding delimiter runs and re-running `matchEmphasis`
+- Locality: `src/markdown/inline-content.ts:461` `resolveTarget`: one target memo keyed by outermost offsets, shared through `scan.shared`, brings offset arithmetic and a bounds check that depends on how the slot was cut
+- Self-sufficiency: `src/markdown/commonmark/link-syntax.ts:76` `destinationEnds`: the densest new code, understandable only through its five-clause comment
+- Shape: `src/markdown/inline-content.ts:768` `parseInlineContent`: takes the writer's `openingLinkTakesDirective` as a sixth parameter, and moved out of `parse/` where a reader would look for it
