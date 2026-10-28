@@ -117,8 +117,6 @@ holes through each other's lines.
 generators and run parameters properties share live in `src/conformance/property-harness.ts`,
 outside the build and coverage.
 
-A review mutation-tests a chunk with `mutation-tests/run.sh` rather than setting Stryker up by hand.
-
 Each `- ` bullet in `spec/flavour.md`'s `## Block nodes`, `## Inline nodes` and `## Marks` declares
 the nodes named before its first em dash, with the attributes following `Attributes: ` — a
 parenthesized value set reading `string`; fenced examples are skipped. Keep prose out of a bullet.

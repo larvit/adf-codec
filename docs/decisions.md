@@ -489,11 +489,11 @@ nodes that break it.
 
 ## Stryker in its own package
 
-2026-10-28, item 152. Code health: the code is easy to change safely. Valid while the gate runs no
+2026-10-28, the architecture review. Code health: the code is easy to change safely. Valid while the gate runs no
 mutation tests.
 
 Mutation testing with Stryker lives in `mutation-tests/`'s own package, so the gate's `npm ci` never
-installs it. CI does not run it, so Renovate does not automerge its bumps.
+installs it.
 
 ## Any ES2022 engine
 

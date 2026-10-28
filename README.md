@@ -731,10 +731,10 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 
 Both commands need only Docker, git and bash 5.
 
-- `./ci.sh` runs the gate: every check CI runs.
-- `./mutation-tests/run.sh [<base>]` mutation-tests the source lines changed since `<base>`,
-  `origin/main` by default, running each mutant against only the test files that reach it. It lists
-  the mutants that survived, and fails only when a mutant's test run crashed.
+- `./ci.sh` runs every check CI runs.
+- `./mutation-tests/run.sh [<base>]` mutation-tests the lines changed since `<base>`, `origin/main`
+  by default, in source files git tracks. It needs 6 GB of memory for Docker, and lists the mutants
+  that survived. Survivors don't fail it; a mutant whose test run crashed does.
 
 ## Links
 

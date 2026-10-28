@@ -6,6 +6,6 @@ export default {
   tap: { testFiles: ['src/**/*.test.ts'] },
   tempDirName: '/tmp/stryker',
   testRunner: 'tap',
-  // TypeScript 7 has no JavaScript API for Stryker's tsconfig rewrite to call; a file that is not there skips it.
+  // Stryker skips its tsconfig rewrite, which calls a JavaScript API TypeScript 7 lacks, when this file is missing.
   tsconfigFile: 'no-tsconfig.json',
 }
