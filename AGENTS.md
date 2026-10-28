@@ -165,7 +165,9 @@ Per chunk:
 2. Run the larv-review flow until it passes and CI is green. A reviewer launch states the latest
    gate result (commit and outcome); a reviewer does not re-run `ci.sh` or the tests when a
    result exists for the commit under review, or when the diff since that result cannot affect
-   it (docs-only) — re-run only what its own findings or fixes invalidate.
+   it (docs-only) — re-run only what its own findings or fixes invalidate. A pass at its round
+   cap whose last round's findings are all fixed takes no further round: the chunk proceeds, and
+   the PR summary names each fix no round reviewed.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer), report, stop.
 
 A chunk reads these files in part, with `grep -n '^#'` for the headings and a ranged read for
