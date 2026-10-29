@@ -516,3 +516,20 @@ Read most (opens and searches):
 436866 new input tokens before the first commit.
 
 ## Reading cost reset, 2026-10-28T23:28:20Z
+
+## Reading cost, chunk a45f84ed8e32, finished 2026-10-29T11:27:46Z
+
+96824 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 13
+- `README.md` 4
+- `docs/decisions.md` 4
+- `docs/reading-cost.md` 4
+- `AGENTS.md` 1
+- `CHANGELOG.md` 1
+- `MIGRATION.md` 1
+- `ci.sh` 1
+- `docker-runner.sh` 1
+- `package.json` 1

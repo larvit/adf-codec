@@ -6,7 +6,7 @@ import { delimiterRunToken, highlightFlanking, inlineSource, readInlineToken } f
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims } from '../flavour.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
-import { isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
+import { delimiterFlags, isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 import { readLineBack } from '../inline-content.ts'
 
@@ -267,8 +267,9 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
   }
 }
 
-// Of the runs the line does not read back as written, the first emphasis run to close, else every highlight run: one misread emphasis pair can re-pair the delimiters after it.
+// Of the runs the line does not read back as written, the first emphasis run to close and every later one whose own delimiters cannot flank, else every highlight run: one misread emphasis pair can re-pair the delimiters after it.
 function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading, output: string): MarkRun[] {
+  const misread: MarkRun[] = []
   const misflanked: MarkRun[] = []
   const openers: { nodes: MarkRun; start: number }[] = []
   for (const { segment, start } of placed) {
@@ -277,10 +278,26 @@ function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReadin
     if (segment.highlight !== undefined && !highlightFlanks(output, start, segment.highlight) && misflanked.at(-1) !== segment.nodes) misflanked.push(segment.nodes)
     if (segment.emphasis === 'close') {
       const opener = openers.pop()
-      if (opener !== undefined && !readAsWritten(reading, opener.start, start, segment.text.length)) return [opener.nodes]
+      if (opener === undefined) continue
+      const latest = misread.at(-1)
+      if (latest === undefined ? !readAsWritten(reading, opener.start, start, segment.text.length) : givesUpWith(latest, opener.nodes, output, opener.start, start, segment.text)) misread.push(opener.nodes)
     }
   }
-  return misflanked
+  return misread.length > 0 ? misread : misflanked
+}
+
+// A later run gives up with the earlier ones where it holds none of them, so their fallbacks leave its range, and a delimiter of it no other delimiter character touches fails to flank, beside text or its own hard break, which their fallbacks leave too. Runs close in order, so a run holding any earlier one holds the latest.
+function givesUpWith(latest: MarkRun, run: MarkRun, output: string, opener: number, closer: number, delimiter: string): boolean {
+  if (run.first <= latest.first && latest.last <= run.last) return false
+  const flanks = (start: number, role: DelimiterRole): boolean => {
+    const before = output.charAt(start - 1)
+    const after = output.charAt(start + delimiter.length)
+    const character = delimiter.charAt(0)
+    if (before === character || after === character) return true
+    const flags = delimiterFlags(character, before, after)
+    return role === 'open' ? flags.canOpen : flags.canClose
+  }
+  return !flanks(opener, 'open') || !flanks(closer, 'close')
 }
 
 function highlightFlanks(output: string, start: number, role: DelimiterRole): boolean {
