@@ -72,7 +72,7 @@ export function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, de
   for (const [index, node] of nodes.entries()) {
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
-    // Refused here, so an engine holding longer strings stops at the block where V8 throws.
+    // Refused on the measure, before any text is written, so every engine stops at the first block past the bound.
     const fits = withinLongest(block.value.text.length, block.value)
     if (!fits.ok) return fits
     headroom = Math.min(headroom, block.value.headroom)
