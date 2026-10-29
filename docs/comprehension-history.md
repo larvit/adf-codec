@@ -1238,3 +1238,31 @@ Ruling: same
 Inherited architect, decided by:
 
 - Navigation: `README.md:730` "Changing the source": names `./ci.sh` and `./mutation-tests/run.sh`, what they need and what fails a run, where the base's README named neither
+
+## 2026-10-29T15:41:57Z, PR #106 at 4246600, against c7bbb04
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | worse | worse | worse |
+| Inherited architect | same | worse | worse | same | worse |
+
+Mid A, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/emit/block-text.ts:56` `writtenText`: prefixes recorded in a tree and applied later by a stack walk over `open`, `quotes`, `started` and `'leave'` sentinels, where the base's `quoted` and `tryListItemLines` applied them in place with split, map and join
+- Locality, Shape: `src/markdown/emit/block-text.ts:12` `Shape`: eight cached measures kept in step by hand across four constructors, their arithmetic shown equal to the written text only in a test
+- Locality: `src/markdown/commonmark/grammar.ts:207` `holdsOnlyRuleCharacters`: a grammar helper carries a contract owned by BlockText, standing in front of `isThematicBreak`
+- Locality: `src/markdown/portable/block-spelling.ts:15` `claimsItem`: a `markerOpening` fast path that must agree with two regexes, only a comment saying so
+- Shape, Locality: `src/markdown/emit/inline-line.ts:31` `FallbacksPerPass`: a switch whose only second user is a test, threaded through five production functions and changing `droppedRuns`
+- Self-sufficiency, Shape: `src/markdown/emit/line-escaping.ts:274` `unspellableRuns`: the cascade through `givesUp` and `mayFlank` needs CommonMark's flanking rules open beside it, where the base returned the first misread pair
+- Shape: `src/markdown/emit/inline-line.ts:94` `emitLine`: `linePass`, `takenThisPass` and `checkedCarry` add two concepts to the fallback loop
+
+Inherited architect, decided by:
+
+- Locality, Shape: `src/markdown/emit/block-text.ts:56` `writtenText`: a stack walk with a `'leave'` sentinel and eight hand-kept counters replaces string operations readable where they stood; `prefixedText` with an empty indent stretches its name
+- Locality: `src/markdown/portable/inline-reduction.ts:254` `droppedRuns`: which runs drop in one pass is decided twice, by `givesUp` in line-escaping and again by `dropsAlone`, in the code the 3am question lands in
+- Shape: `src/markdown/emit/inline-line.ts:31` `FallbacksPerPass`: a test-only mode threaded through production signatures, its `'first'` reading not holding in inline-reduction's highlight drops; `checkedCarry` adds an ordering rule
+- Locality: `src/markdown/emit/adf-to-markdown.ts:310` `tryListItemLines`: reads four measures defined in `block-text.ts` where the base checked strings in place
+- Locality: `src/markdown/commonmark/grammar.ts:206` `holdsOnlyRuleCharacters`: the grammar module holds a rule that exists only for the emitter's BlockText
+- Locality: `src/markdown/portable/conventions.ts:5` `markerOpening`: repeats the `[` the marker regexes encode
