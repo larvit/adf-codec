@@ -56,6 +56,12 @@
   closing brackets follow a link: 8000 links inside 8000 `*` took two seconds, now about 100 ms.
 - Every reader takes time linear in the inline markdown when it holds many `](` that open no link,
   as in `[a](b` repeated: 16000 of them took 25 seconds, now 80 ms.
+- `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in a line's marks when many
+  of its runs need a carry or lose their mark, as in `un**-r**` repeated: 1000 of them took 10
+  seconds, now 150 ms.
+- `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in the markdown when lists
+  and quotes nest deeply, and so does `losslessMarkdownToAdf`, which spells what it reads: a list
+  nested 480 levels around 64 KB of paragraphs took 2 seconds to write, now 100 ms.
 - Every reader leaves `[text]`, `[text][]`, `[text][label]` and a definition `[label]: url` literal
   when the label runs over 999 characters, where it read them as a link or a definition. CommonMark
   caps a label at 999 characters, an escape counting as two.

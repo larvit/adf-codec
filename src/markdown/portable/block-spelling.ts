@@ -2,6 +2,7 @@ import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath, Result } from '../../result.ts'
 import type { EmittedBlock, FlavourBlockWriters, PlacedBlock, PlacedBlocks, Writing, WrittenAs } from '../emit/adf-to-markdown.ts'
 import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from './conventions.ts'
+import { blockText, emptyLine, joinedText, opening, prefixedText, type BlockText } from '../emit/block-text.ts'
 import { emitBlock, joinBlocks, quotedBlocks, spelledList, walkBlocks } from '../emit/adf-to-markdown.ts'
 import { emitInlineLine } from '../emit/inline-line.ts'
 import { failure, success } from '../../result.ts'
@@ -11,8 +12,8 @@ import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 
 const portableBlockWriters: FlavourBlockWriters = {
   // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
-  claimsItem: (text) => leadingMarker(text, readTaskMarker) !== undefined,
-  claimsQuote: (text) => leadingMarker(text, readAlertMarker) !== undefined,
+  claimsItem: (text) => text.firstCharacter === '[' && leadingMarker(opening(text), readTaskMarker) !== undefined,
+  claimsQuote: (text) => text.firstCharacter === '[' && leadingMarker(opening(text), readAlertMarker) !== undefined,
   spell: spellPortableBlock,
 }
 
@@ -29,8 +30,8 @@ function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   return line.ok ? quotedBlocks(node, path, depth, writing, headed(`${foldedAlertMarker} ${line.value}`)) : line
 }
 
-function headed(head: string): (body: string) => string {
-  return (body) => (body === '' ? head : `${head}\n\n${body}`)
+function headed(head: string): (body: BlockText) => BlockText {
+  return (body) => (body.length === 0 ? blockText(head) : joinedText([blockText(head), emptyLine, body]))
 }
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
@@ -59,16 +60,16 @@ function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writi
 // The marker leads the first paragraph, or stands as one where the blocks open with another.
 function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   const marker = taskMarker(nodeAttrs(task)['state'])
-  const markerBlock: PlacedBlock = { node: { type: 'paragraph' }, spelling: 'commonmark', text: marker }
+  const markerBlock: PlacedBlock = { node: { type: 'paragraph' }, spelling: 'commonmark', text: blockText(marker) }
   if (task.type === 'taskItem') {
     const content = nodeContent(task)
     const line = content.length === 0 ? success('') : emitInlineLine(content, 'paragraph', path, writing.flavour)
     if (!line.ok) return line
-    return success({ blocks: [{ ...markerBlock, text: line.value === '' ? marker : `${marker} ${line.value}` }], headroom: Number.POSITIVE_INFINITY })
+    return success({ blocks: [{ ...markerBlock, text: blockText(line.value === '' ? marker : `${marker} ${line.value}`) }], headroom: Number.POSITIVE_INFINITY })
   }
   const walk = walkBlocks(nodeContent(task), path, depth, writing)
   if (!walk.ok) return walk
   const [first, ...rest] = walk.value.blocks
-  const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: `${marker} ${first.text}` }, ...rest] : [markerBlock, ...walk.value.blocks]
+  const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: prefixedText(`${marker} `, '', first.text) }, ...rest] : [markerBlock, ...walk.value.blocks]
   return success({ blocks, headroom: walk.value.headroom })
 }
