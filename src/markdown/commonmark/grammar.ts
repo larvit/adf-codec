@@ -203,7 +203,7 @@ export function holdsThematicBreak(tail: ThematicBreakTail | undefined, text: st
   return text.length >= tail.shortest && text.length <= tail.longest && text.charAt(0) === tail.marker
 }
 
-// True of every line isThematicBreak takes, and kept for a prefixed line from its parts without reading it.
+// Every line isThematicBreak accepts passes this, and a joined line passes exactly when each part does, so BlockText derives it from a prefix and its body.
 export function holdsOnlyRuleCharacters(text: string): boolean {
   for (let index = 0; index < text.length; index += 1) {
     const character = text.charAt(index)

@@ -27,7 +27,7 @@ type Emission = { carries: [NodeRange, ...NodeRange[]]; segments?: undefined } |
 
 type Fallback = [NodeRange, ...NodeRange[]] | 'opening-link'
 
-// How many of a pass's fallbacks it takes: `every`, or the `first` alone, which a property holds to the same line.
+// How many fallbacks one pass applies: `every`, or the `first` alone; a property checks that both write the same line.
 export type FallbacksPerPass = 'every' | 'first'
 
 type InlineContext = {

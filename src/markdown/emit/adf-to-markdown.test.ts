@@ -76,7 +76,7 @@ test('refuses a quote whose prefixed lines would pass V8\'s longest string', () 
   assert.equal(pastTheBound(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), true)
 })
 
-// A code block spelled in 55 characters around its text; the blocks between them take a blank line, and the markdown a closing line break.
+// A code block written as its text plus 53 characters; a blank line parts two blocks, and the markdown ends with a line break.
 function codeBlockOf(textLength: number): AdfNode {
   return { attrs: {}, content: [{ text: `${'a'.repeat(textLength - 1)}\n`, type: 'text' }], type: 'codeBlock' }
 }
