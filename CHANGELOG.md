@@ -56,10 +56,10 @@
   closing brackets follow a link: 8000 links inside 8000 `*` took two seconds, now about 100 ms.
 - Every reader takes time linear in the inline markdown when it holds many `](` that open no link,
   as in `[a](b` repeated: 16000 of them took 25 seconds, now 80 ms.
-- `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in a line's marks when many
-  of its marked texts or inline nodes need a carry or lose their mark, as in text `un` beside strong
-  `-r`, repeated: 1000 of them took 10 seconds, now 150 ms. Such a line whose texts each hold two
-  or more of em, strong and strike still takes time quadratic in its length.
+- `adfToLosslessMarkdown` and `adfToPortableMarkdown` write faster a line of many marked texts or
+  inline nodes that need a carry or lose their mark, as in text `un` beside strong `-r`, repeated:
+  1000 of them took 10 seconds, now 150 ms. A line mixing em, strike and strong can still take time
+  quadratic in its length, as in text `un` beside `-r` marked em and strong, repeated.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in the markdown when lists
   and quotes nest deeply, and so does `losslessMarkdownToAdf`: a list nested 480 levels around
   64 KB of paragraphs took 2 seconds to write, now 100 ms. A `!adf:blockquote` holding 2 MB of lines
