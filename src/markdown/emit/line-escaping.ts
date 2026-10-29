@@ -270,7 +270,7 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
   }
 }
 
-// Of the runs the line does not read back as written, the first emphasis run to close and every later one that gives up with it, else every highlight run: one misread emphasis pair can re-pair the delimiters after it.
+// The runs the line does not read back as written: the first emphasis run to close and each later one that gives up with it, else every misflanked highlight run. One misread emphasis pair can re-pair the delimiters after it.
 function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading, output: string): MarkRun[] {
   const misread: MarkRun[] = []
   const misflanked: MarkRun[] = []
@@ -287,7 +287,7 @@ function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReadin
   return misread.length > 0 ? misread : misflanked
 }
 
-// The first run gives up where the reading pairs its delimiters otherwise; a later one, with the earlier ones, where it holds none of them, so their fallbacks leave its range, and a delimiter of it cannot flank.
+// The first run gives up where the reading pairs its delimiters otherwise. A later run gives up where it holds none of the earlier runs, so dropping them leaves its range alone, and one of its delimiters cannot flank.
 function givesUp(pair: EmphasisPair, latest: MarkRun | undefined, reading: InlineReading, output: string): boolean {
   if (latest === undefined) return !readAsWritten(reading, pair.opener, pair.closer, pair.delimiter.length)
   // Runs close in order, so a run holding any earlier one holds the latest.
@@ -295,7 +295,7 @@ function givesUp(pair: EmphasisPair, latest: MarkRun | undefined, reading: Inlin
   return !mayFlank(output, pair.opener, pair.delimiter, 'open') || !mayFlank(output, pair.closer, pair.delimiter, 'close')
 }
 
-// Whether the delimiter flanks once earlier runs fall back: a delimiter character beside it may fall back, while text or its own hard break stays.
+// Whether the delimiter flanks once earlier runs fall back: a delimiter character beside it may fall back, while text or the run's own hard break stays.
 function mayFlank(output: string, start: number, delimiter: string, role: DelimiterRole): boolean {
   const before = output.charAt(start - 1)
   const after = output.charAt(start + delimiter.length)

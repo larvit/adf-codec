@@ -8,7 +8,7 @@ type Lines =
   | { kind: 'joined'; parts: readonly BlockText[] }
   | { kind: 'text'; lines: readonly string[] }
 type Prefix = Lines & { kind: 'prefixed' | 'quoted' }
-// The written text's measures; the flags answer for the first line unread, since reading a concatenated string copies it whole, at every level it nests.
+// Measures of the written text. The flags describe `first` so no caller reads it: reading a concatenated string copies it whole, once per nesting level.
 type Shape = { blankRest: number; emptyRest: number; first: string; firstBlank: boolean; firstCharacter: string; firstRuleCharacters: boolean; length: number; lineCount: number }
 
 export const emptyLine = blockText('')
@@ -20,7 +20,6 @@ export function blockText(text: string): BlockText {
   return { ...firstShape, blankRest, emptyRest: rest.filter((line) => line === '').length, kind: 'text', length: text.length, lineCount: rest.length + 1, lines: [first, ...rest] }
 }
 
-// The parts' lines one after another.
 export function joinedText(parts: readonly BlockText[]): BlockText {
   const [first, ...others] = parts
   if (first === undefined) return emptyLine
@@ -35,7 +34,7 @@ export function joinedText(parts: readonly BlockText[]): BlockText {
   return { blankRest, emptyRest, first: first.first, firstBlank, firstCharacter, firstRuleCharacters, kind: 'joined', length, lineCount, parts }
 }
 
-// head, never blank, leads the first line, and indent, spaces alone, every later line holding text.
+// head, never blank, leads the first line; indent, spaces alone, leads every later line holding text.
 export function prefixedText(head: string, indent: string, body: BlockText): BlockText {
   const first = `${head}${body.first}`
   const length = body.length + head.length + indent.length * (body.lineCount - 1 - body.emptyRest)

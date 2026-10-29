@@ -250,7 +250,7 @@ function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): Adf
   })
 }
 
-// Every misflanked highlight drops with the first run; taking `every`, so does a later emphasis run whose drop merges no run and moves no edge.
+// Every misflanked highlight drops with the first run; with `every`, so does a later emphasis run whose drop merges no run and moves no edge.
 function droppedRuns(leaves: readonly AdfNode[], [first, ...others]: readonly [MarkRun, ...MarkRun[]], perPass: FallbacksPerPass): MarkRun[] {
   return [first, ...others.filter((run) => nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === highlight || (perPass === 'every' && dropsAlone(leaves, run)))]
 }

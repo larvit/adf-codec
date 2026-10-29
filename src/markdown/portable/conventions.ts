@@ -1,7 +1,7 @@
 type AlertMarker = { folded: boolean; length: number; panelType: string }
 
 export const foldedAlertMarker = '[!NOTE]-'
-// Task and alert markers open with it, so a writer tests a block's first character before reading its first line, which flattens that line at every level it nests.
+// Task and alert markers open with it, so a block whose first character differs holds neither.
 export const markerOpening = '['
 
 const alertWords: Readonly<Record<string, string>> = {
