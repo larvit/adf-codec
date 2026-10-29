@@ -61,8 +61,10 @@
   `-r`, repeated: 1000 of them took 10 seconds, now 150 ms. Such a line whose texts each hold two
   or more of em, strong and strike still takes time quadratic in its length.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in the markdown when lists
-  and quotes nest deeply, and so does `losslessMarkdownToAdf`, which spells what it reads: a list
-  nested 480 levels around 64 KB of paragraphs took 2 seconds to write, now 100 ms.
+  and quotes nest deeply, and so does `losslessMarkdownToAdf`: a list nested 480 levels around
+  64 KB of paragraphs took 2 seconds to write, now 100 ms. A `!adf:blockquote` holding 2 MB of lines
+  in a list nested 480 levels is still refused as `unsupported-node-shape`, now after 0.8 seconds
+  where it took 2.6.
 - Every reader leaves `[text]`, `[text][]`, `[text][label]` and a definition `[label]: url` literal
   when the label runs over 999 characters, where it read them as a link or a definition. CommonMark
   caps a label at 999 characters, an escape counting as two.
