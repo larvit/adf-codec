@@ -1,15 +1,13 @@
 import { holdsOnlyRuleCharacters, isBlankLine } from '../commonmark/grammar.ts'
 
 // A block's markdown, its prefixes applied only when written out, so a nesting level costs its own blocks rather than the text below it.
-export type BlockText = Lines & Shape
+export type BlockText = Readonly<Lines & Shape>
 type Lines =
   | { body: BlockText; head: string; indent: string; kind: 'prefixed' }
   | { body: BlockText; kind: 'quoted' }
   | { kind: 'joined'; parts: readonly BlockText[] }
   | { kind: 'text'; lines: readonly string[] }
 type Prefix = Lines & { kind: 'prefixed' | 'quoted' }
-// The open prefixes, outermost first, and where the quotes stand among them; a line starts every open prefix, so the unstarted ones are the innermost.
-type Prefixes = { open: Prefix[]; quotes: number[]; started: number }
 // The written text's measures; the flags answer for the first line unread, since reading a concatenated string copies it whole, at every level it nests.
 type Shape = { blankRest: number; emptyRest: number; first: string; firstBlank: boolean; firstCharacter: string; firstRuleCharacters: boolean; length: number; lineCount: number }
 
@@ -58,32 +56,35 @@ export function opening(text: BlockText): string {
 
 export function writtenText(text: BlockText): string {
   const lines: string[] = []
-  const prefixes: Prefixes = { open: [], quotes: [], started: 0 }
+  // The open prefixes, outermost first, and where the quotes stand among them.
+  const open: Prefix[] = []
+  const quotes: number[] = []
+  // A line starts every open prefix, so the unstarted ones are the innermost.
+  let started = 0
   const pending: (BlockText | 'leave')[] = [text]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
-    if (next === 'leave') leavePrefix(prefixes)
-    else if (next.kind === 'text') for (const line of next.lines) lines.push(prefixedLine(line, prefixes))
-    else if (next.kind === 'joined') for (const part of next.parts.slice().reverse()) pending.push(part)
+    if (next === 'leave') {
+      if (open.pop()?.kind === 'quoted') quotes.pop()
+      started = Math.min(started, open.length)
+    } else if (next.kind === 'text') {
+      for (const line of next.lines) {
+        lines.push(prefixedLine(line, open, quotes.at(-1), started))
+        started = open.length
+      }
+    } else if (next.kind === 'joined') for (const part of next.parts.slice().reverse()) pending.push(part)
     else {
-      if (next.kind === 'quoted') prefixes.quotes.push(prefixes.open.length)
-      prefixes.open.push(next)
+      if (next.kind === 'quoted') quotes.push(open.length)
+      open.push(next)
       pending.push('leave', next.body)
     }
   }
   return lines.join('\n')
 }
 
-function leavePrefix(prefixes: Prefixes): void {
-  if (prefixes.open.pop()?.kind === 'quoted') prefixes.quotes.pop()
-  prefixes.started = Math.min(prefixes.started, prefixes.open.length)
-}
-
 // Innermost first: whether a line is empty when an outer prefix meets it depends on the prefixes inside.
-function prefixedLine(line: string, prefixes: Prefixes): string {
-  const { open, quotes, started } = prefixes
-  prefixes.started = open.length
+function prefixedLine(line: string, open: readonly Prefix[], innermostQuote: number | undefined, started: number): string {
   // Started prefixes inside the innermost quote leave an empty line empty, so its walk begins at that quote.
-  const walked = line === '' && started === open.length ? open.slice(0, (quotes.at(-1) ?? -1) + 1) : open
+  const walked = line === '' && started === open.length ? open.slice(0, (innermostQuote ?? -1) + 1) : open
   return walked.reduceRight((written, prefix, depth) => {
     if (prefix.kind === 'quoted') return written === '' ? '>' : `> ${written}`
     if (depth >= started) return `${prefix.head}${written}`
