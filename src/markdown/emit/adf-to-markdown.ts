@@ -13,7 +13,7 @@ import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '
 import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
-import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
+import { withinEngineLimits, withinLongest } from '../../length-bound.ts'
 import { spellBlockDirectiveOpener } from '../directive/block-spelling.ts'
 import { spellDirectiveCloser, spellDirectiveOpener } from '../directive/syntax.ts'
 import { tryImage } from './image.ts'
@@ -55,10 +55,14 @@ export function writeMarkdown(document: AdfDocument, writtenAs: WrittenAs): Resu
   if (!content.ok) return content
   if (content.value === undefined) return success(`${documentSpelling}\n`)
   const walk = walkBlocks(content.value, [], 0, { ...writtenAs, memo: undefined })
-  if (!walk.ok) return walk
-  const text = joinBlocks(walk.value.blocks, 'document')
-  if (text.length + 1 > longestOutput) return tooLong()
-  return success(text.length === 0 ? '' : `${writtenText(text)}\n`)
+  return walk.ok ? writtenDocument(joinBlocks(walk.value.blocks, 'document')) : walk
+}
+
+// Every line of a document's markdown ends with a line break, its last included.
+function writtenDocument(text: BlockText): Result<string> {
+  if (text.length === 0) return success('')
+  const fits = withinLongest(text.length + 1, text)
+  return fits.ok ? success(`${writtenText(fits.value)}\n`) : fits
 }
 
 export function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
@@ -69,16 +73,12 @@ export function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, de
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
     // Refused here, so an engine holding longer strings stops at the block where V8 throws.
-    const fits = withinLongest(block.value)
+    const fits = withinLongest(block.value.text.length, block.value)
     if (!fits.ok) return fits
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
   }
   return success({ blocks, headroom })
-}
-
-function withinLongest(block: EmittedBlock): Result<EmittedBlock> {
-  return block.text.length > longestOutput ? tooLong() : success(block)
 }
 
 function tooDeep(path: ConvertErrorPath): Result<never> {
@@ -120,7 +120,7 @@ export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth:
   const readable = readableBlock(node, path, depth, writing, 'asked')
   if (readable === undefined) return success(false)
   if (!readable.ok) return readable
-  const fits = withinLongest(readable.value)
+  const fits = withinLongest(readable.value.text.length, readable.value)
   if (!fits.ok) return fits
   return success(readable.value.spelling !== 'directive')
 }

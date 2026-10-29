@@ -30,6 +30,9 @@ export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspe
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
+// An emphasis run's delimiters, written alike, and where each landed in the output.
+type EmphasisPair = { closer: number; delimiter: string; nodes: MarkRun; opener: number }
+
 type Escapings = (index: number) => InlineEscaping | undefined
 
 // Where a segment's first character landed in the output.
@@ -267,7 +270,7 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
   }
 }
 
-// Of the runs the line does not read back as written, the first emphasis run to close and every later one whose own delimiters cannot flank, else every highlight run: one misread emphasis pair can re-pair the delimiters after it.
+// Of the runs the line does not read back as written, the first emphasis run to close and every later one that gives up with it, else every highlight run: one misread emphasis pair can re-pair the delimiters after it.
 function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading, output: string): MarkRun[] {
   const misread: MarkRun[] = []
   const misflanked: MarkRun[] = []
@@ -276,28 +279,30 @@ function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReadin
     if (segment.emphasis === 'open') openers.push({ nodes: segment.nodes, start })
     // No `==` in text can open or close, and highlights never nest, so a highlight run reads back where both its delimiters flank.
     if (segment.highlight !== undefined && !highlightFlanks(output, start, segment.highlight) && misflanked.at(-1) !== segment.nodes) misflanked.push(segment.nodes)
-    if (segment.emphasis === 'close') {
-      const opener = openers.pop()
-      if (opener === undefined) continue
-      const latest = misread.at(-1)
-      if (latest === undefined ? !readAsWritten(reading, opener.start, start, segment.text.length) : givesUpWith(latest, opener.nodes, output, opener.start, start, segment.text)) misread.push(opener.nodes)
-    }
+    const opener = segment.emphasis === 'close' ? openers.pop() : undefined
+    if (opener === undefined) continue
+    const pair: EmphasisPair = { closer: start, delimiter: segment.text, nodes: opener.nodes, opener: opener.start }
+    if (givesUp(pair, misread.at(-1), reading, output)) misread.push(pair.nodes)
   }
   return misread.length > 0 ? misread : misflanked
 }
 
-// A later run gives up with the earlier ones where it holds none of them, so their fallbacks leave its range, and a delimiter of it no other delimiter character touches fails to flank, beside text or its own hard break, which their fallbacks leave too. Runs close in order, so a run holding any earlier one holds the latest.
-function givesUpWith(latest: MarkRun, run: MarkRun, output: string, opener: number, closer: number, delimiter: string): boolean {
-  if (run.first <= latest.first && latest.last <= run.last) return false
-  const flanks = (start: number, role: DelimiterRole): boolean => {
-    const before = output.charAt(start - 1)
-    const after = output.charAt(start + delimiter.length)
-    const character = delimiter.charAt(0)
-    if (before === character || after === character) return true
-    const flags = delimiterFlags(character, before, after)
-    return role === 'open' ? flags.canOpen : flags.canClose
-  }
-  return !flanks(opener, 'open') || !flanks(closer, 'close')
+// The first run gives up where the reading pairs its delimiters otherwise; a later one, with the earlier ones, where it holds none of them, so their fallbacks leave its range, and a delimiter of it cannot flank.
+function givesUp(pair: EmphasisPair, latest: MarkRun | undefined, reading: InlineReading, output: string): boolean {
+  if (latest === undefined) return !readAsWritten(reading, pair.opener, pair.closer, pair.delimiter.length)
+  // Runs close in order, so a run holding any earlier one holds the latest.
+  if (pair.nodes.first <= latest.first && latest.last <= pair.nodes.last) return false
+  return !mayFlank(output, pair.opener, pair.delimiter, 'open') || !mayFlank(output, pair.closer, pair.delimiter, 'close')
+}
+
+// Whether the delimiter flanks once earlier runs fall back: a delimiter character beside it may fall back, while text or its own hard break stays.
+function mayFlank(output: string, start: number, delimiter: string, role: DelimiterRole): boolean {
+  const before = output.charAt(start - 1)
+  const after = output.charAt(start + delimiter.length)
+  const character = delimiter.charAt(0)
+  if (before === character || after === character) return true
+  const flags = delimiterFlags(character, before, after)
+  return role === 'open' ? flags.canOpen : flags.canClose
 }
 
 function highlightFlanks(output: string, start: number, role: DelimiterRole): boolean {

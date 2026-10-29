@@ -1,7 +1,7 @@
 import type { AdfNode } from '../../adf/document.ts'
 import type { ConvertErrorPath, Result } from '../../result.ts'
 import type { EmittedBlock, FlavourBlockWriters, PlacedBlock, PlacedBlocks, Writing, WrittenAs } from '../emit/adf-to-markdown.ts'
-import { alertMarker, foldedAlertMarker, leadingMarker, readAlertMarker, readTaskMarker, taskMarker } from './conventions.ts'
+import { alertMarker, foldedAlertMarker, leadingMarker, markerOpening, readAlertMarker, readTaskMarker, taskMarker } from './conventions.ts'
 import { blockText, emptyLine, joinedText, opening, prefixedText, type BlockText } from '../emit/block-text.ts'
 import { emitBlock, joinBlocks, quotedBlocks, spelledList, walkBlocks } from '../emit/adf-to-markdown.ts'
 import { emitInlineLine } from '../emit/inline-line.ts'
@@ -12,8 +12,8 @@ import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 
 const portableBlockWriters: FlavourBlockWriters = {
   // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
-  claimsItem: (text) => text.firstCharacter === '[' && leadingMarker(opening(text), readTaskMarker) !== undefined,
-  claimsQuote: (text) => text.firstCharacter === '[' && leadingMarker(opening(text), readAlertMarker) !== undefined,
+  claimsItem: (text) => text.firstCharacter === markerOpening && leadingMarker(opening(text), readTaskMarker) !== undefined,
+  claimsQuote: (text) => text.firstCharacter === markerOpening && leadingMarker(opening(text), readAlertMarker) !== undefined,
   spell: spellPortableBlock,
 }
 

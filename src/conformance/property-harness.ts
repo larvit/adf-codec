@@ -6,6 +6,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode, EmptyKey } from '../
 import type { Arbitrary } from 'fast-check'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { JsonValue } from '../json-value.ts'
+import type { LineContainer } from '../markdown/line-container.ts'
 import type { LinkDefinition } from '../markdown/commonmark/link-syntax.ts'
 import { blockArgument } from '../markdown/directive/block.ts'
 import { blockMarkAttributes, markAttributes } from '../adf/mark-attributes.ts'
@@ -203,6 +204,17 @@ const positions = fc.letrec<Positions>((tie) => {
     ),
   }
 })
+
+// Short texts under a few marks beside nodes only the carry spells: the lines where one misread or carried run sits beside another.
+const lineMark = fc.constantFrom<AdfMark>({ type: 'backgroundColor' }, { type: 'code' }, { type: 'em' }, { attrs: { href: 'u' }, type: 'link' }, { type: 'link' }, { type: 'odd' }, { type: 'strike' }, { type: 'strong' })
+const lineMarks = fc.uniqueArray(lineMark, { maxLength: 3, selector: (held) => held.type })
+const lineLeaf = fc.oneof(
+  { arbitrary: fc.record({ marks: lineMarks, text: fc.string({ maxLength: 3, minLength: 1, unit: fc.constantFrom(' ', '*', '-', '.', '0', '=', '[', '_', '`', 'a', 'un') }) }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 8 },
+  { arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
+  { arbitrary: fc.record({ attrs: fc.constantFrom({ id: 'a' }, { id: 'a', odd: 'b' }), marks: lineMarks }).map((held): AdfNode => ({ ...held, type: 'mention' })), weight: 1 },
+)
+export const lineContainer = fc.constantFrom<LineContainer>('heading', 'paragraph', 'table-cell')
+export const markedLine = fc.array(lineLeaf, { maxLength: 10, minLength: 1 })
 
 export const adfDocument = fc.oneof(
   { arbitrary: fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => ({ content, type: 'doc', version: 1 })), weight: 30 },

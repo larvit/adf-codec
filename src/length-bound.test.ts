@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { Result } from './result.ts'
-import { joinedWithin, withinEngineLimits, withinLongest } from './length-bound.ts'
+import { joinedWithin, longestOutput, withinEngineLimits, withinLongest } from './length-bound.ts'
 import { success } from './result.ts'
 
 // The code at the document's path, and the bound the message names.
@@ -24,8 +24,9 @@ test('joins pieces up to the bound, and builds nothing past it', () => {
   assert.equal(pastTheBound(joinedWithin([half, half])), true)
 })
 
-test('passes a text within the bound', () => {
-  assert.deepEqual(withinLongest('x'), success('x'))
+test('passes a value whose length is within the bound, and refuses one past it', () => {
+  assert.deepEqual(withinLongest(longestOutput, 'x'), success('x'))
+  assert.equal(pastTheBound(withinLongest(longestOutput + 1, 'x')), true)
 })
 
 test('refuses a string past the bound as too long on every engine, and any other engine limit as engine-limit', () => {
