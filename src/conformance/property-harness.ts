@@ -206,10 +206,13 @@ const positions = fc.letrec<Positions>((tie) => {
 })
 
 // Short texts under a few marks beside nodes only the carry spells: the lines where one misread or carried run sits beside another.
+const emphasisStack = fc.uniqueArray(fc.constantFrom<AdfMark>({ type: 'em' }, { type: 'strike' }, { type: 'strong' }), { maxLength: 3, minLength: 2, selector: (held) => held.type })
 const lineMark = fc.constantFrom<AdfMark>({ type: 'backgroundColor' }, { type: 'code' }, { type: 'em' }, { attrs: { href: 'u' }, type: 'link' }, { type: 'link' }, { type: 'odd' }, { type: 'strike' }, { type: 'strong' })
 const lineMarks = fc.uniqueArray(lineMark, { maxLength: 3, selector: (held) => held.type })
+const lineText = fc.string({ maxLength: 3, minLength: 1, unit: fc.constantFrom(' ', '(', '*', '-', '.', '0', '=', '[', '_', '`', 'a', 'un') })
 const lineLeaf = fc.oneof(
-  { arbitrary: fc.record({ marks: lineMarks, text: fc.string({ maxLength: 3, minLength: 1, unit: fc.constantFrom(' ', '*', '-', '.', '0', '=', '[', '_', '`', 'a', 'un') }) }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 8 },
+  { arbitrary: fc.record({ marks: emphasisStack, text: lineText }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 4 },
+  { arbitrary: fc.record({ marks: lineMarks, text: lineText }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 8 },
   { arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
   { arbitrary: fc.record({ attrs: fc.constantFrom({ id: 'a' }, { id: 'a', odd: 'b' }), marks: lineMarks }).map((held): AdfNode => ({ ...held, type: 'mention' })), weight: 1 },
 )

@@ -6,19 +6,20 @@
 
 `Bar = 0.1`
 
-`Next ID = 158`
+`Next ID = 160`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 158 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs when its texts each hold two or more of em, strong and strike, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 91, 115, 132, 133, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 91, 115, 132, 133, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 91, 115, 132, 133, 150, 158 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 91, 115, 132, 133, 150, 158 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -28,6 +29,7 @@
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
+| 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
 | 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note and the target of a link marking a card, so a linked stored image or card writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
@@ -66,6 +68,21 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 158. Emit a line in time linear in its mark runs when its texts each hold two or more of em, strong and strike, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
+
+Item 33 batched a line's fallbacks, but two guards keep nested emphasis at one run per pass. A
+paragraph repeating text `un` beside `-r` marked em and strong takes 13 seconds at 1000 repeats in
+either writer. `(` marked em, strike and strong beside a mention takes 27 seconds in the portable
+one. `mayFlank`'s same-character guard (`line-escaping.ts`) is needed: without it
+`[{em,'-'},{'0'},{em+strong,'un'},{'0'}]` writes other markdown. `dropsAlone`'s innermost-mark
+requirement (`inline-reduction.ts`) has no known counterexample, but relaxing it alone leaves
+lossless, the three-mark line and the chain below quadratic. A chain of `z` then strike `(b` beside
+em `(b`, repeated, needs one pass per run, since each run's drop decides whether the next run's
+delimiter flanks: linear there needs a reading that settles runs left to right in one pass. The
+every-against-first properties in `inline-line.test.ts` and `inline-reduction.test.ts` pin every
+other guard. The seats find `emitLine` and `unspellableRuns` hard: make both easier to read.
+Found by the stability review of item 33, 2026-10-29.
 
 ### 150. Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
 
@@ -211,6 +228,13 @@ Three tests read source text:
 
 Item 81 changes `result.test.ts` too. Found by the technical-principles audit of
 item 60, 2026-10-22.
+
+### 159. Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.
+
+`taskBlocks` (`portable/block-spelling.ts`) writes the marker as a paragraph of its own where a
+block task item's content opens with another block. Mutation testing finds that branch unreached:
+a block task item is left only when it holds two or more paragraphs. Found by the stability review
+of item 33, 2026-10-29.
 
 ### 144. Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.
 

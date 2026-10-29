@@ -10,6 +10,14 @@ test('spells a line alike taking every fallback a pass finds or the first alone'
     fc.property(markedLine, lineContainer, (nodes, container) => {
       assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), emitInlineLine(nodes, container, [], 'lossless', 'first'))
     }),
-    propertyRuns(3000),
+    // Lines where carrying one run lets a neighbour read as written, which the seed's runs rarely reach.
+    {
+      ...propertyRuns(3000),
+      examples: [
+        [[{ marks: [{ type: 'em' }], text: '-', type: 'text' }, { text: '0', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: 'un', type: 'text' }, { text: '0', type: 'text' }], 'paragraph'],
+        [[{ marks: [{ type: 'em' }, { type: 'strike' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }, { marks: [{ type: 'strong' }, { type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'strong' }], text: 'a', type: 'text' }], 'paragraph'],
+        [[{ marks: [{ type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strike' }, { type: 'strong' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }], 'paragraph'],
+      ],
+    },
   )
 })

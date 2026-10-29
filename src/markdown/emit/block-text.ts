@@ -83,11 +83,10 @@ export function writtenText(text: BlockText): string {
 
 // Innermost first: whether a line is empty when an outer prefix meets it depends on the prefixes inside.
 function prefixedLine(line: string, open: readonly Prefix[], innermostQuote: number | undefined, started: number): string {
-  // Started prefixes inside the innermost quote leave an empty line empty, so its walk begins at that quote.
+  // An empty line takes no indent, so where every prefix has started its walk begins at the innermost quote.
   const walked = line === '' && started === open.length ? open.slice(0, (innermostQuote ?? -1) + 1) : open
   return walked.reduceRight((written, prefix, depth) => {
     if (prefix.kind === 'quoted') return written === '' ? '>' : `> ${written}`
-    if (depth >= started) return `${prefix.head}${written}`
-    return written === '' ? '' : `${prefix.indent}${written}`
+    return depth >= started ? `${prefix.head}${written}` : `${prefix.indent}${written}`
   }, line)
 }
