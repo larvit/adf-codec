@@ -278,8 +278,19 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   if (model === undefined) return success(emitText(node, context, index))
   const held = heldContentOrText(node)
   if (held !== undefined) return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text: this one holds ${held}`, nodePath(context, index))
-  if (node.type === 'hardBreak') return success(emitHardBreak(node, model, context, index))
-  return success(emitInlineDirective(node, model, index))
+  const emission = node.type === 'hardBreak' ? emitHardBreak(node, model, context, index) : emitInlineDirective(node, model, index)
+  return checkedCarry(emission, [node], context)
+}
+
+// Builds a carry's JSON where the walk finds it, so its refusal comes ahead of any later node's.
+function checkedCarry(emission: Emission, nodes: readonly AdfNode[], context: InlineContext): Result<Emission> {
+  const range = emission.carries?.[0]
+  if (range === undefined) return success(emission)
+  for (const [offset, node] of nodes.entries()) {
+    const carried = carriedInline(node, nodePath(context, range.first + offset))
+    if (!carried.ok) return carried
+  }
+  return success(emission)
 }
 
 function emitHardBreak(node: AdfNode, model: InlineNodeModel, context: InlineContext, index: number): Emission {
@@ -311,10 +322,9 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   const range: NodeRange = { first: index, last: index + nodes.length - 1 }
   if (mark.type === 'backgroundColor' && flavourClaims[context.flavour].highlights) return emitHighlight(nodes, depth, range, context)
   const spelling = markSpelling(mark.type)
-  if (spelling === undefined) return success({ carries: [range] })
-  const attributes = spellMarkAttributes(mark, spelling)
-  if (attributes === undefined) return success({ carries: [range] })
-  if (spelling.kind === 'code') return success(emitCodeSpan(nodes, depth, range))
+  const attributes = spelling === undefined ? undefined : spellMarkAttributes(mark, spelling)
+  if (spelling === undefined || attributes === undefined) return checkedCarry({ carries: [range] }, nodes, context)
+  if (spelling.kind === 'code') return checkedCarry(emitCodeSpan(nodes, depth, range), nodes, context)
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
   const link = spelling.kind === 'link' ? tryLink(nodes, mark, depth, range, context) : undefined
   if (link !== undefined) return link
@@ -366,7 +376,7 @@ function needsPadding(text: string): boolean {
 
 function tryLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext): Result<Emission> | undefined {
   const href = linkHref(nodeAttrs(mark))
-  if (href === undefined) return success({ carries: [range] })
+  if (href === undefined) return checkedCarry({ carries: [range] }, nodes, context)
   const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective
   const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes, depth + 1, context.bracketed, titleEscapes(context.flavour, context.container))
   if (commonMark === undefined) return undefined

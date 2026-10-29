@@ -57,8 +57,9 @@
 - Every reader takes time linear in the inline markdown when it holds many `](` that open no link,
   as in `[a](b` repeated: 16000 of them took 25 seconds, now 80 ms.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in a line's marks when many
-  of its runs need a carry or lose their mark, as in `un**-r**` repeated: 1000 of them took 10
-  seconds, now 150 ms.
+  of its marked texts or inline nodes need a carry or lose their mark, as in text `un` beside strong
+  `-r`, repeated: 1000 of them took 10 seconds, now 150 ms. Such a line whose texts each hold two
+  or more of em, strong and strike still takes time quadratic in its length.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in the markdown when lists
   and quotes nest deeply, and so does `losslessMarkdownToAdf`, which spells what it reads: a list
   nested 480 levels around 64 KB of paragraphs took 2 seconds to write, now 100 ms.

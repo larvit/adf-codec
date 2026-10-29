@@ -40,6 +40,15 @@ test('names the node a refusal came from, and no source the emitter never read',
   assert.equal(position(adfToLosslessMarkdown(document(paragraph({ text: 'x', type: 'text' }), list))), undefined)
 })
 
+test('refuses a node whose carry nests too deep ahead of a later node in its line', () => {
+  let id: JsonValue = 'a'
+  for (let depth = 0; depth < largestNesting; depth += 1) id = { id }
+  const twiceStrong: AdfNode = { marks: [{ type: 'strong' }, { type: 'strong' }], text: 'x', type: 'text' }
+  const refused = adfToLosslessMarkdown(document(paragraph({ attrs: { id }, type: 'mention' }, twiceStrong)))
+  assert.equal(code(refused), 'unsupported-nesting-depth')
+  assert.deepEqual(path(refused), ['content', 0, 'content', 0])
+})
+
 test('refuses a value that is not an ADF document, naming the check it failed', () => {
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })

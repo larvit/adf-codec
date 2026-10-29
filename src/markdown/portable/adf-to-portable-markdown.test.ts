@@ -146,6 +146,8 @@ test('spells a task list as a bullet list whose items lead with their state', ()
   const blockTask = node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.'))
   const codeTask = node('blockTaskItem', { state: 'TODO' }, { content: [text('x')], type: 'codeBlock' })
   assert.equal(portable(node('taskList', {}, blockTask, codeTask)), '- [x] First.\n\n  Second.\n- [ ]\n\n```\nx\n```\n')
+  const brokenTask = node('blockTaskItem', { state: 'TODO' }, paragraph(text('a'), { type: 'hardBreak' }, text('b')), said('c'))
+  assert.equal(portable(node('taskList', {}, brokenTask)), '- [ ] a\\\n  b\n\n  c\n')
   const parent = node('blockTaskItem', { state: 'TODO' }, said('q'), said('q2'))
   assert.equal(portable(node('taskList', {}, parent, node('taskList', {}, task('DONE', 'n')), task('DONE', 'B'))), '- [ ] q\n\n  q2\n  - [x] n\n- [x] B\n')
   const holding = node('blockTaskItem', { state: 'TODO' }, said('A'), node('taskList', {}, task('TODO', 'c')))
@@ -177,6 +179,9 @@ test('escapes text a renderer would take as a flavour marker, and only there', (
   assert.equal(portable({ content: [said('[!NOTE] x'), said('[!TIP]')], type: 'blockquote' }), '> \\[!NOTE] x\n>\n> [!TIP]\n')
   assert.equal(portable({ content: [said('[!NOTE]x')], type: 'blockquote' }, said('[!NOTE]')), '> [!NOTE]x\n\n[!NOTE]\n')
   assert.equal(portable(bulletList(item(said('[x] a')), item(said('[ ]')))), '- \\[x] a\n- \\[ ]\n')
+  const broken = (value: string): AdfNode => paragraph(text(value), { type: 'hardBreak' }, text('a'))
+  assert.equal(portable(bulletList(item(broken('[x]')), item(said('[x]\\')))), '- \\[x]\\\n  a\n- [x]\\\n')
+  assert.equal(portable({ content: [broken('[!NOTE]')], type: 'blockquote' }), '> \\[!NOTE]\\\n> a\n')
   assert.equal(portable(bulletList(item(said('[x] a')), item(said('b'))), node('orderedList', { order: 1 }, item(said('[x] c')))), '- \\[x] a\n- b\n\n1. \\[x] c\n')
   const task = (state: string, value: string): AdfNode => node('taskItem', { state }, text(value))
   assert.equal(portable(node('taskList', {}, task('DONE', '[x] a'), task('TODO', '==b=='))), '- [x] [x] a\n- [ ] \\==b\\==\n')
@@ -401,6 +406,11 @@ test('gives up every highlight run whose own delimiter cannot flank in one fallb
   const line = [text('a '), text('x', highlight), text('a '), text('x', highlight), text('a '), text('x', highlight), text('a')]
   const runs = [{ depth: 0, first: 1, last: 1 }, { depth: 0, first: 3, last: 3 }, { depth: 0, first: 5, last: 5 }]
   assert.deepEqual(portableLineFallback(line, 'paragraph', []), { ok: true, value: { kind: 'unspellable-run', runs } })
+})
+
+test('refuses a portable line holding a node only the carry spells, at the line', () => {
+  const refused = portableLineFallback([text('x', { type: 'odd' })], 'paragraph', ['content', 0])
+  assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
 })
 
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {
