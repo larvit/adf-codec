@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 158 | 0.3.0 |  | defect | **Emit a line mixing em, strike and strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 158 | 0.3.0 |  | defect | **Emit a line mixing em, strike and strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 1 | 2 | 5 | 5 | 9 by 3 | 7.8 |
 | 160 | 0.3.0 | 158 |  | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, with no switch only tests use in production signatures and one rule for which runs lose their mark.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
