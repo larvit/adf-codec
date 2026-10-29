@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 158 | 0.3.0 |  | defect | **Emit a line in time linear in its mark runs when its texts each hold two or more of em, strong and strike, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
+| 158 | 0.3.0 |  | defect | **Emit a line mixing em, strike and strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 3 | 1 | 2 | 4 | 5 | 9 by 3 | 7.8 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
@@ -69,7 +69,7 @@
 
 ## Details
 
-### 158. Emit a line in time linear in its mark runs when its texts each hold two or more of em, strong and strike, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
+### 158. Emit a line mixing em, strike and strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
 
 Item 33 batched a line's fallbacks, but two guards keep nested emphasis at one run per pass. A
 paragraph repeating text `un` beside `-r` marked em and strong takes 13 seconds at 1000 repeats in
