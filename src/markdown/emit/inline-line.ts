@@ -3,7 +3,7 @@ import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition, TitleEscapes } from '../commonmark/link-syntax.ts'
 import type { WrittenFlavour } from '../flavour.ts'
-import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
+import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange, type RunFallback } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
@@ -43,11 +43,9 @@ type InlineContext = {
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
 
-type LineAttempt = { fallback: Fallback; line?: undefined } | { fallback?: undefined; line: string }
+type LineAttempt = { fallback: Fallback; line?: undefined } | { fallback?: undefined; line: string; segments: InlineSegment[] }
 
 type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
-
-type LinePass = { fallback: Fallback; line?: undefined; segments?: undefined } | { fallback?: undefined; line: string; segments: InlineSegment[] }
 
 export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
@@ -63,11 +61,11 @@ export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: Conve
   return success(emitted.value.openingLinkAsDirective)
 }
 
-export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<PortableLineFallback | undefined> {
+export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, alone: (run: MarkRun) => boolean): Result<PortableLineFallback | undefined> {
   const emission = lineSegments(nodes, container, path, withheldMarkFallbacks(nodes, 'portable'))
   if (!emission.ok) return emission
   if (emission.value.carries !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
-  const verdict = lineVerdict(emission.value.segments, container, 'portable')
+  const verdict = lineVerdict(emission.value.segments, container, 'portable', { alone, kind: 'drop' })
   return success(verdict.kind === 'line' ? undefined : verdict)
 }
 
@@ -95,21 +93,14 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
   const fallbacks = withheldMarkFallbacks(nodes, flavour)
   // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {
-    const pass = linePass(nodes, container, path, fallbacks)
-    if (!pass.ok) return pass
-    const { fallback, line, segments } = pass.value
-    if (fallback === undefined) return success({ line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments })
-    const taken = takeFallback(fallbacks, takenThisPass(fallback, perPass), path)
+    const emission = lineSegments(nodes, container, path, fallbacks)
+    if (!emission.ok) return emission
+    const { carries, segments } = emission.value
+    const attempt = segments === undefined ? { fallback: carries } : attemptLine(segments, container, flavour)
+    if (attempt.fallback === undefined) return success({ line: attempt.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: attempt.segments })
+    const taken = takeFallback(fallbacks, takenThisPass(attempt.fallback, perPass), path)
     if (!taken.ok) return taken
   }
-}
-
-function linePass(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<LinePass> {
-  const emission = lineSegments(nodes, container, path, fallbacks)
-  if (!emission.ok) return emission
-  if (emission.value.carries !== undefined) return success({ fallback: emission.value.carries })
-  const attempt = attemptLine(emission.value.segments, container, fallbacks.flavour)
-  return success(attempt.line === undefined ? { fallback: attempt.fallback } : { line: attempt.line, segments: emission.value.segments })
 }
 
 function takenThisPass(fallback: Fallback, perPass: FallbacksPerPass): Fallback {
@@ -146,16 +137,16 @@ function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path:
   return success({ segments: spellEdgeWhitespace(emission.value.segments) })
 }
 
-function attemptLine(segments: readonly InlineSegment[], container: LineContainer, flavour: WrittenFlavour): LineAttempt {
-  const verdict = lineVerdict(segments, container, flavour)
+function attemptLine(segments: InlineSegment[], container: LineContainer, flavour: WrittenFlavour): LineAttempt {
+  const verdict = lineVerdict(segments, container, flavour, { kind: 'carry' })
   if (verdict.kind === 'opening-link') return { fallback: 'opening-link' }
   if (verdict.kind === 'unspellable-run') return { fallback: verdict.runs }
-  return { line: verdict.text }
+  return { line: verdict.text, segments }
 }
 
 // The fallbacks in the order a line takes them, or the line where it takes none.
-function lineVerdict(segments: readonly InlineSegment[], container: LineContainer, flavour: WrittenFlavour): PortableLineFallback | { kind: 'line'; text: string } {
-  const assembled = assembleInlineLine(segments, container, flavour)
+function lineVerdict(segments: readonly InlineSegment[], container: LineContainer, flavour: WrittenFlavour, fallback: RunFallback): PortableLineFallback | { kind: 'line'; text: string } {
+  const assembled = assembleInlineLine(segments, container, flavour, fallback)
   if (assembled.openingLinkAsDirective) return { kind: 'opening-link' }
   const [run, ...others] = assembled.unspellableRuns
   return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', runs: [run, ...others] }
