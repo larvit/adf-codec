@@ -3,20 +3,21 @@ import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { blockDirectiveForm, documentSpelling } from '../directive/block.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
+import { blockText, emptyLine, joinedText, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
-import { holdsNullCharacter, isBlankLine, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
+import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
 import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
+import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
 import { spellBlockDirectiveOpener } from '../directive/block-spelling.ts'
 import { spellDirectiveCloser, spellDirectiveOpener } from '../directive/syntax.ts'
 import { tryImage } from './image.ts'
 import { tryPipeTable } from './pipe-table.ts'
-import { withinEngineLimits, withinLongest } from '../../length-bound.ts'
 
 type BlockContainer = 'directive' | 'document' | 'list-item'
 type Delimiters = readonly [string, string]
@@ -24,15 +25,15 @@ type Delimiters = readonly [string, string]
 export type EmittedBlock = SpelledBlock & { headroom: number }
 // spell: the flavour's own blocks, tried before CommonMark's; claimsItem, claimsQuote: whether a list item's or quote's text opens with a marker the flavour's reader would take, so the writer escapes it.
 export type FlavourBlockWriters = {
-  claimsItem: (text: string) => boolean
-  claimsQuote: (text: string) => boolean
+  claimsItem: (text: BlockText) => boolean
+  claimsQuote: (text: BlockText) => boolean
   spell: (node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing) => Result<EmittedBlock> | undefined
 }
 type KeptSpelling = { block: EmittedBlock | undefined; depth: number }
 export type PlacedBlock = SpelledBlock & { node: AdfNode }
 export type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
-type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: string } | { alternateText: string; interruptsParagraph: boolean; ordered: boolean; spelling: 'list'; text: string }
+type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: BlockText } | { alternateText: BlockText; interruptsParagraph: boolean; ordered: boolean; spelling: 'list'; text: BlockText }
 // Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
 export type SpellingMemo = Map<AdfNode, KeptSpelling>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
@@ -56,7 +57,8 @@ export function writeMarkdown(document: AdfDocument, writtenAs: WrittenAs): Resu
   const walk = walkBlocks(content.value, [], 0, { ...writtenAs, memo: undefined })
   if (!walk.ok) return walk
   const text = joinBlocks(walk.value.blocks, 'document')
-  return withinLongest(text === '' ? '' : `${text}\n`)
+  if (text.length + 1 > longestOutput) return tooLong()
+  return success(text.length === 0 ? '' : `${writtenText(text)}\n`)
 }
 
 export function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
@@ -67,7 +69,7 @@ export function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, de
     const block = emitBlock(node, [...path, 'content', index], depth, writing)
     if (!block.ok) return block
     // Refused here, so an engine holding longer strings stops at the block where V8 throws.
-    const fits = withinLongest(block.value.text)
+    const fits = withinLongest(block.value)
     if (!fits.ok) return fits
     headroom = Math.min(headroom, block.value.headroom)
     blocks.push({ ...block.value, node })
@@ -75,30 +77,34 @@ export function walkBlocks(nodes: readonly AdfNode[], path: ConvertErrorPath, de
   return success({ blocks, headroom })
 }
 
+function withinLongest(block: EmittedBlock): Result<EmittedBlock> {
+  return block.text.length > longestOutput ? tooLong() : success(block)
+}
+
 function tooDeep(path: ConvertErrorPath): Result<never> {
   return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
 }
 
-export function joinBlocks(blocks: readonly PlacedBlock[], container: BlockContainer): string {
-  let text = ''
+export function joinBlocks(blocks: readonly PlacedBlock[], container: BlockContainer): BlockText {
+  const parts: BlockText[] = []
   let alternated = false
   for (const [index, block] of blocks.entries()) {
     const previous = blocks[index - 1]
-    if (previous !== undefined) text += separationBetween(previous, block, container)
+    if (previous !== undefined && blankLineBetween(previous, block, container)) parts.push(emptyLine)
     alternated = !alternated && previous !== undefined && sharesMarker(previous, block)
-    text += alternated && block.spelling === 'list' ? block.alternateText : block.text
+    parts.push(alternated && block.spelling === 'list' ? block.alternateText : block.text)
   }
-  return text
+  return joinedText(parts)
 }
 
 function sharesMarker(previous: PlacedBlock, next: PlacedBlock): boolean {
   return previous.spelling === 'list' && next.spelling === 'list' && previous.ordered === next.ordered
 }
 
-function separationBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): string {
+function blankLineBetween(previous: PlacedBlock, next: PlacedBlock, container: BlockContainer): boolean {
   const bothCommonMark = previous.spelling !== 'directive' && next.spelling !== 'directive'
-  if (bothCommonMark && next.spelling === 'list' && container === 'list-item') return next.interruptsParagraph ? '\n' : '\n\n'
-  return container === 'directive' && !bothCommonMark ? '\n' : '\n\n'
+  if (bothCommonMark && next.spelling === 'list' && container === 'list-item') return !next.interruptsParagraph
+  return container !== 'directive' || bothCommonMark
 }
 
 export function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
@@ -114,7 +120,7 @@ export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth:
   const readable = readableBlock(node, path, depth, writing, 'asked')
   if (readable === undefined) return success(false)
   if (!readable.ok) return readable
-  const fits = withinLongest(readable.value.text)
+  const fits = withinLongest(readable.value)
   if (!fits.ok) return fits
   return success(readable.value.spelling !== 'directive')
 }
@@ -149,28 +155,22 @@ function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   return undefined
 }
 
-function quoted(text: string): string {
-  return text
-    .split('\n')
-    .map((line) => (line === '' ? '>' : `> ${line}`))
-    .join('\n')
-}
-
 function readableText(text: string | undefined): Result<EmittedBlock> | undefined {
-  return text === undefined ? undefined : success(commonMarkText(text))
+  return text === undefined ? undefined : success(commonMarkText(blockText(text)))
 }
 
 function carriedFence(carried: Result<{ headroom: number; text: string }>): Result<EmittedBlock> {
   if (!carried.ok) return carried
-  return success({ ...carried.value, spelling: 'commonmark' })
+  return success(commonMarkText(blockText(carried.value.text), carried.value.headroom))
 }
 
-function commonMarkText(text: string, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
+function commonMarkText(text: BlockText, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
   return { headroom, spelling: 'commonmark', text }
 }
 
-function directivePair(node: AdfNode, opener: string, body: string, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
-  return { headroom, spelling: 'directive', text: `${opener}\n${body === '' ? '' : `${body}\n`}${spellDirectiveCloser(node.type)}` }
+function directivePair(node: AdfNode, opener: string, body: BlockText, headroom: number = Number.POSITIVE_INFINITY): EmittedBlock {
+  const closer = blockText(spellDirectiveCloser(node.type))
+  return { headroom, spelling: 'directive', text: joinedText(body.length === 0 ? [blockText(opener), closer] : [blockText(opener), body, closer]) }
 }
 
 function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number, walkBody: () => Result<PlacedBlocks>): Result<EmittedBlock> {
@@ -184,26 +184,26 @@ function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertE
 }
 
 function emitDirectiveBody(node: AdfNode, model: BlockNodeModel, opener: string, path: ConvertErrorPath, walkBody: () => Result<PlacedBlocks>): Result<EmittedBlock> {
-  if (blockDirectiveForm(node.type) === 'leaf') return success({ headroom: Number.POSITIVE_INFINITY, spelling: 'directive', text: opener })
+  if (blockDirectiveForm(node.type) === 'leaf') return success({ headroom: Number.POSITIVE_INFINITY, spelling: 'directive', text: blockText(opener) })
   if (model.contentModel === 'inline') {
     const line = emitInlineLine(nodeContent(node), 'paragraph', path, 'lossless')
     if (!line.ok) return line
-    return success(directivePair(node, opener, line.value))
+    return success(directivePair(node, opener, blockText(line.value)))
   }
   const walk = walkBody()
   if (!walk.ok) return walk
   return success(directivePair(node, opener, joinBlocks(walk.value.blocks, 'directive'), walk.value.headroom))
 }
 
-function alertEscaped(body: string, writing: Writing): string {
-  return writing.flavour === 'portable' && writing.blocks.claimsQuote(body) ? `\\${body}` : body
+function alertEscaped(body: BlockText, writing: Writing): BlockText {
+  return writing.flavour === 'portable' && writing.blocks.claimsQuote(body) ? prefixedText('\\', '', body) : body
 }
 
 // Quote spellers call this directly, never through a wrapper: each frame a quote level adds lowers the depth the stack holds (docs/decisions.md §Nothing recurses unbounded).
-export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, bodyText: (body: string) => string): Result<EmittedBlock> {
+export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, bodyText: (body: BlockText) => BlockText): Result<EmittedBlock> {
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
-  return success(commonMarkText(quoted(bodyText(joinBlocks(inner.value.blocks, 'document'))), inner.value.headroom))
+  return success(commonMarkText(quotedText(bodyText(joinBlocks(inner.value.blocks, 'document'))), inner.value.headroom))
 }
 
 function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): string | undefined {
@@ -224,7 +224,7 @@ function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertEr
   if (opener === undefined) return carriedFence(carriedBlock(node, path, depth))
   if (!opener.ok) return opener
   const info = slot.kind === 'fence' ? slot.info : ''
-  return success(directivePair(node, opener.value, texts.map((text) => fencedCodeBlock(info, text)).join('\n')))
+  return success(directivePair(node, opener.value, blockText(texts.map((text) => fencedCodeBlock(info, text)).join('\n'))))
 }
 
 // The text of each fence, or `undefined` where a child holds what no fence keeps, so the block carry takes the node.
@@ -244,10 +244,10 @@ function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavo
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
   const hashes = '#'.repeat(level)
   const content = nodeContent(node)
-  if (content.length === 0) return success(commonMarkText(hashes))
+  if (content.length === 0) return success(commonMarkText(blockText(hashes)))
   const line = emitInlineLine(content, 'heading', path, flavour)
   if (!line.ok) return line
-  return success(commonMarkText(`${hashes} ${line.value}`))
+  return success(commonMarkText(blockText(`${hashes} ${line.value}`)))
 }
 
 function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
@@ -267,7 +267,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   }
   const inners = walked.map((item) => {
     const inner = joinBlocks(item.walk.blocks, 'list-item')
-    return writing.flavour === 'portable' && writing.blocks.claimsItem(inner) ? `\\${inner}` : inner
+    return writing.flavour === 'portable' && writing.blocks.claimsItem(inner) ? prefixedText('\\', '', inner) : inner
   })
   const list = spelledList(inners, ordered ? start : undefined, headroom)
   if (list !== undefined) return success(list)
@@ -277,23 +277,23 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
 }
 
 // start: an ordered list's first number, undefined for a bullet list.
-export function spelledList(inners: readonly string[], start: number | undefined, headroom: number): EmittedBlock | undefined {
+export function spelledList(inners: readonly BlockText[], start: number | undefined, headroom: number): EmittedBlock | undefined {
   const [usual, alternate] = start === undefined ? bulletDelimiters : orderedDelimiters
   const number = (offset: number): string => (start === undefined ? '' : `${start + offset}`)
   const text = listLines(inners, number, usual)
   const alternateText = listLines(inners, number, alternate)
   if (text === undefined || alternateText === undefined) return undefined
-  return { alternateText, headroom, interruptsParagraph: markerInterruptsParagraph(start, inners[0] === ''), ordered: start !== undefined, spelling: 'list', text }
+  return { alternateText, headroom, interruptsParagraph: markerInterruptsParagraph(start, inners[0]?.length === 0), ordered: start !== undefined, spelling: 'list', text }
 }
 
-function listLines(inners: readonly string[], number: (offset: number) => string, delimiter: string): string | undefined {
-  const lines: string[] = []
+function listLines(inners: readonly BlockText[], number: (offset: number) => string, delimiter: string): BlockText | undefined {
+  const lines: BlockText[] = []
   for (const [offset, inner] of inners.entries()) {
     const line = tryListItemLines(inner, `${number(offset)}${delimiter} `)
     if (line === undefined) return undefined
     lines.push(line)
   }
-  return lines.join('\n')
+  return joinedText(lines)
 }
 
 function directiveItems(items: readonly WalkedItem[]): PlacedBlock[] {
@@ -307,16 +307,14 @@ function listStart(node: AdfNode, items: number): number | undefined {
   return start + items - 1 > largestListMarker ? undefined : start
 }
 
-function tryListItemLines(inner: string, marker: string): string | undefined {
-  if (inner === '') return marker.trimEnd()
-  const body = inner.split('\n')
-  if (body.some((line) => line !== '' && isBlankLine(line))) return undefined
+function tryListItemLines(inner: BlockText, marker: string): BlockText | undefined {
+  if (inner.length === 0) return blockText(marker.trimEnd())
+  if (inner.firstBlank || inner.blankRest > 0) return undefined
   const indent = ' '.repeat(marker.length)
-  const lines = body.map((line, index) => (index === 0 ? `${marker}${line}` : line === '' ? '' : `${indent}${line}`))
-  const first = lines[0] ?? ''
-  if (!isThematicBreak(first)) return lines.join('\n')
+  const lines = prefixedText(marker, indent, inner)
+  if (!lines.firstRuleCharacters || !isThematicBreak(lines.first)) return lines
   // An item opens with `*` only as text, a list there taking `- ` and a rule `---`; a backslash keeps a first line reading as a rule text.
-  return inner.startsWith('*') ? [`${marker}\\${first.slice(marker.length)}`, ...lines.slice(1)].join('\n') : undefined
+  return inner.firstCharacter === '*' ? prefixedText(`${marker}\\`, indent, inner) : undefined
 }
 
 function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
@@ -324,7 +322,7 @@ function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFla
   if (content.length === 0 || !holdsOnlyAttributes(node, [])) return undefined
   const line = emitInlineLine(content, 'paragraph', path, flavour)
   if (!line.ok) return line
-  return success(commonMarkText(line.value))
+  return success(commonMarkText(blockText(line.value)))
 }
 
 function tryRule(node: AdfNode): string | undefined {
