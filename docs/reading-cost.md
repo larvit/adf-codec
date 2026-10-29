@@ -533,3 +533,20 @@ Read most (opens and searches):
 - `ci.sh` 1
 - `docker-runner.sh` 1
 - `package.json` 1
+
+## Reading cost, chunk 185f67f88d4c, finished 2026-10-29T16:30:12Z
+
+224367 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/adf-to-markdown.test.ts` 6
+- `todo.md` 6
+- `docs/decisions.md` 4
+- `package.json` 3
+- `spec/flavour.md` 3
+- `src/markdown/emit/adf-to-markdown.ts` 3
+- `src/markdown/inline-tokens.ts` 3
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 3
+- `README.md` 2
+- `ci.sh` 2
