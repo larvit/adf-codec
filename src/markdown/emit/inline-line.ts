@@ -25,6 +25,11 @@ type EmittedLine = { line: string; openingLinkAsDirective: boolean; segments: In
 // Every carry one walk finds, taken together: carrying a node changes no other carry's range.
 type Emission = { carries: [NodeRange, ...NodeRange[]]; segments?: undefined } | { carries?: undefined; segments: InlineSegment[] }
 
+type Fallback = [NodeRange, ...NodeRange[]] | 'opening-link'
+
+// How many of a pass's fallbacks it takes: `every`, or the `first` alone, which a property holds to the same line.
+export type FallbacksPerPass = 'every' | 'first'
+
 type InlineContext = {
   atBlockEnd: boolean
   bracketed: boolean
@@ -38,20 +43,22 @@ type InlineContext = {
 
 type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[] } | { index: number; kind: 'plain'; node: AdfNode }
 
-type LineAttempt = { fallback: readonly NodeRange[] | 'opening-link'; line?: undefined } | { fallback?: undefined; line: string }
+type LineAttempt = { fallback: Fallback; line?: undefined } | { fallback?: undefined; line: string }
 
 type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
 
+type LinePass = { fallback: Fallback; line?: undefined; segments?: undefined } | { fallback?: undefined; line: string; segments: InlineSegment[] }
+
 export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
-export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<string> {
-  const emitted = emitLine(nodes, container, path, flavour)
+export function emitInlineLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour, perPass: FallbacksPerPass = 'every'): Result<string> {
+  const emitted = emitLine(nodes, container, path, flavour, perPass)
   if (!emitted.ok) return emitted
   return success(emitted.value.line)
 }
 
 export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<boolean> {
-  const emitted = emitLine(nodes, 'paragraph', path, 'lossless')
+  const emitted = emitLine(nodes, 'paragraph', path, 'lossless', 'every')
   if (!emitted.ok) return emitted
   return success(emitted.value.openingLinkAsDirective)
 }
@@ -65,7 +72,7 @@ export function portableLineFallback(nodes: readonly AdfNode[], container: LineC
 }
 
 export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, flavour: WrittenFlavour): string | undefined {
-  const emitted = emitLine(nodes, 'table-cell', path, flavour)
+  const emitted = emitLine(nodes, 'table-cell', path, flavour, 'every')
   if (!emitted.ok) return undefined
   // spec/flavour.md, Tables; the portable reduction leaves a `|` in syntax only escaped, in a link title.
   if (flavour === 'lossless' && emitted.value.segments.some((segment) => isSyntax(segment.escaping) && segment.text.includes('|'))) return undefined
@@ -84,24 +91,29 @@ export function tryImageLine(alt: string | undefined, url: string, flavour: Writ
   return attemptLine([syntax('[!['), ...description, syntax(']('), bracketedLinkTarget(destination), syntax(`)](${target})`)], 'paragraph', 'lossless').line
 }
 
-function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
+function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour, perPass: FallbacksPerPass): Result<EmittedLine> {
   const fallbacks = withheldMarkFallbacks(nodes, flavour)
   // Terminates because takeFallback refuses a pass that took no new fallback.
   for (;;) {
-    const emission = lineSegments(nodes, container, path, fallbacks)
-    if (!emission.ok) return emission
-    if (emission.value.carries !== undefined) {
-      const taken = takeFallback(fallbacks, emission.value.carries, path)
-      if (!taken.ok) return taken
-      continue
-    }
-    const attempt = attemptLine(emission.value.segments, container, flavour)
-    if (attempt.line !== undefined) {
-      return success({ line: attempt.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: emission.value.segments })
-    }
-    const taken = takeFallback(fallbacks, attempt.fallback, path)
+    const pass = linePass(nodes, container, path, fallbacks)
+    if (!pass.ok) return pass
+    const { fallback, line, segments } = pass.value
+    if (fallback === undefined) return success({ line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments })
+    const taken = takeFallback(fallbacks, takenThisPass(fallback, perPass), path)
     if (!taken.ok) return taken
   }
+}
+
+function linePass(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<LinePass> {
+  const emission = lineSegments(nodes, container, path, fallbacks)
+  if (!emission.ok) return emission
+  if (emission.value.carries !== undefined) return success({ fallback: emission.value.carries })
+  const attempt = attemptLine(emission.value.segments, container, fallbacks.flavour)
+  return success(attempt.line === undefined ? { fallback: attempt.fallback } : { line: attempt.line, segments: emission.value.segments })
+}
+
+function takenThisPass(fallback: Fallback, perPass: FallbacksPerPass): Fallback {
+  return fallback === 'opening-link' || perPass === 'every' ? fallback : [fallback[0]]
 }
 
 // Seeds the withheld-mark carries once per line, so the run at each mark depth does not rescan every node's marks.
@@ -114,7 +126,7 @@ function withheldMarkFallbacks(nodes: readonly AdfNode[], flavour: WrittenFlavou
   return { carried, flavour, openingLinkAsDirective: false }
 }
 
-function takeFallback(fallbacks: LineFallbacks, fallback: readonly NodeRange[] | 'opening-link', path: ConvertErrorPath): Result<null> {
+function takeFallback(fallbacks: LineFallbacks, fallback: Fallback, path: ConvertErrorPath): Result<null> {
   if (fallback === 'opening-link') {
     if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)
     fallbacks.openingLinkAsDirective = true

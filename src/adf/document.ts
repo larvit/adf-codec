@@ -1,7 +1,7 @@
 import { failure, faulted, success, type ConvertFault, type Result } from '../result.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
-import { longestOutput, tooLong } from '../length-bound.ts'
+import { withinLongest } from '../length-bound.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
@@ -56,7 +56,7 @@ export function writableContent(document: AdfDocument): Result<readonly AdfNode[
   if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(undefined)
   // Text alone past the bound is refused before anything is written (docs/decisions.md §Output past V8's longest string is refused on every engine).
-  return heldTextLength(document.content) > longestOutput ? tooLong() : success(document.content)
+  return withinLongest(heldTextLength(document.content), document.content)
 }
 
 export function attributeNestingMessage(key: string, type: string): string {

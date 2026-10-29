@@ -66,6 +66,7 @@ const emailNameSource = "[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+"
 const emailLabelSource = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
 const emailAutolink = new RegExp(`<${emailNameSource}@${emailLabelSource}(?:\\.${emailLabelSource})*>`, 'y')
 const orderedListOpener = /^(\d{1,9})([.)])(?:[ \t]|$)/
+const ruleCharacters = /^[-*_ \t]*$/
 const setextUnderline = /^(=+|-+)[ \t]*$/
 const unicodeWhitespace = /[\t\n\f\r \p{Zs}]/u
 
@@ -201,6 +202,11 @@ export function thematicBreakTail(text: string): ThematicBreakTail | undefined {
 export function holdsThematicBreak(tail: ThematicBreakTail | undefined, text: string): boolean {
   if (tail === undefined) return false
   return text.length >= tail.shortest && text.length <= tail.longest && text.charAt(0) === tail.marker
+}
+
+// True of every line isThematicBreak takes, and kept for a prefixed line from its parts without reading it.
+export function holdsOnlyRuleCharacters(text: string): boolean {
+  return ruleCharacters.test(text)
 }
 
 export function isUnicodeWhitespace(character: string): boolean {

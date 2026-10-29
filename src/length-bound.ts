@@ -18,8 +18,8 @@ export function tooLong<T>(): Result<T> {
   return failure('unsupported-node-shape', `this conversion would build text longer than ${longestOutput} characters, the longest this library writes`, [])
 }
 
-export function withinLongest(text: string): Result<string> {
-  return text.length > longestOutput ? tooLong() : success(text)
+export function withinLongest<T>(length: number, value: T): Result<T> {
+  return length > longestOutput ? tooLong() : success(value)
 }
 
 export function joinedWithin(pieces: Iterable<string>): Result<string> {
