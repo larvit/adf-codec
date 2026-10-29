@@ -220,7 +220,7 @@ function sameMarkAt(marks: readonly AdfMark[], others: readonly AdfMark[], index
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath, perPass: FallbacksPerPass): Result<AdfNode[]> {
   for (let current = leaves; ; ) {
-    const fallback = portableLineFallback(current, container, path)
+    const fallback = portableLineFallback(current, container, path, (run) => dropsAlone(current, run))
     if (!fallback.ok) return fallback
     if (fallback.value === undefined) return success(current)
     const fixed = withoutFallback(current, fallback.value, perPass)
@@ -240,23 +240,35 @@ function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallb
   return spans ? leaves.map((leaf, index) => (index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code')))) : undefined
 }
 
-// The runs cover disjoint leaves, so one pass drops them all.
+// The runs may nest, so a leaf drops the mark at every depth a run holds it.
 function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
-  const depths = new Map<number, number>()
-  for (const run of runs) for (let index = run.first; index <= run.last; index += 1) depths.set(index, run.depth)
+  const depths = new Map<number, number[]>()
+  for (const run of runs) {
+    for (let index = run.first; index <= run.last; index += 1) {
+      const held = depths.get(index)
+      if (held === undefined) depths.set(index, [run.depth])
+      else held.push(run.depth)
+    }
+  }
   return leaves.map((leaf, index) => {
-    const depth = depths.get(index)
-    return depth === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => held !== depth))
+    const dropped = depths.get(index)
+    return dropped === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => !dropped.includes(held)))
   })
 }
 
-// Every misflanked highlight drops with the first run; with `every`, so does a later emphasis run whose drop merges no run and moves no edge.
-function droppedRuns(leaves: readonly AdfNode[], [first, ...others]: readonly [MarkRun, ...MarkRun[]], perPass: FallbacksPerPass): MarkRun[] {
-  return [first, ...others.filter((run) => nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === highlight || (perPass === 'every' && dropsAlone(leaves, run)))]
+// Every misflanked highlight drops with the first run; with `every`, so does every emphasis run that falls with it.
+function droppedRuns(leaves: readonly AdfNode[], runs: readonly [MarkRun, ...MarkRun[]], perPass: FallbacksPerPass): readonly MarkRun[] {
+  return perPass === 'every' ? runs : runs.filter((run, index) => index === 0 || nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === highlight)
 }
 
-// Its mark is its leaves' innermost, and no leaf beside it holds a mark that deep.
+// Dropping the run merges no runs and moves no edge, whatever else drops: at each end, the leaf beside holds no mark type the edge leaf holds inside the run's mark.
 function dropsAlone(leaves: readonly AdfNode[], run: MarkRun): boolean {
-  const beside = [leaves[run.first - 1], leaves[run.last + 1]].every((leaf) => leaf === undefined || nodeMarks(leaf).length <= run.depth)
-  return beside && leaves.slice(run.first, run.last + 1).every((leaf) => nodeMarks(leaf).length === run.depth + 1)
+  return endsAlone(leaves[run.first], leaves[run.first - 1], run.depth) && endsAlone(leaves[run.last], leaves[run.last + 1], run.depth)
+}
+
+function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, depth: number): boolean {
+  const besideTypes = new Set(nodeMarks(beside ?? {}).map((mark) => mark.type))
+  return nodeMarks(edge ?? {})
+    .slice(depth + 1)
+    .every((mark) => !besideTypes.has(mark.type))
 }

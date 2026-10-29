@@ -405,11 +405,11 @@ test('gives up every highlight run whose own delimiter cannot flank in one fallb
   const highlight: AdfMark = { type: 'backgroundColor' }
   const line = [text('a '), text('x', highlight), text('a '), text('x', highlight), text('a '), text('x', highlight), text('a')]
   const runs = [{ depth: 0, first: 1, last: 1 }, { depth: 0, first: 3, last: 3 }, { depth: 0, first: 5, last: 5 }]
-  assert.deepEqual(portableLineFallback(line, 'paragraph', []), { ok: true, value: { kind: 'unspellable-run', runs } })
+  assert.deepEqual(portableLineFallback(line, 'paragraph', [], () => false), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
 test('refuses a portable line holding a node only the carry spells, at the line', () => {
-  const refused = portableLineFallback([text('x', { type: 'odd' })], 'paragraph', ['content', 0])
+  const refused = portableLineFallback([text('x', { type: 'odd' })], 'paragraph', ['content', 0], () => false)
   assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
 })
 
