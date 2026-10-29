@@ -379,6 +379,8 @@ test('percent-encodes a link href no CommonMark escape writes until one does', (
 
 test('drops the mark of a run CommonMark flanking or matching cannot spell', () => {
   assert.equal(portable(paragraph(text('un'), text('-real', strong), text('istic'))), 'un-realistic\n')
+  assert.equal(portable(paragraph(text('un'), text('-r', strong), text('un'), text('-r', strong), text('un'))), 'un-run-run\n')
+  assert.equal(portable(paragraph(text('0'), text('a', { type: 'strike' }, strong), text('-', strong), text('0'))), '0a-0\n')
   assert.equal(portable(paragraph(text('a', em), text('b', strong), text('c', em))), '_a_**b**_c_\n')
   assert.equal(portable(paragraph(text('x'), text('*', em), text('y'))), 'x\\*y\n')
   const highlight: AdfMark = { type: 'backgroundColor' }

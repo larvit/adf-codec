@@ -241,11 +241,18 @@ function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallb
 }
 
 // The runs cover disjoint leaves, so one pass drops them all.
-function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
+function withoutMarks(leaves: readonly AdfNode[], [first, ...others]: readonly [MarkRun, ...MarkRun[]]): AdfNode[] {
   const depths = new Map<number, number>()
-  for (const run of runs) for (let index = run.first; index <= run.last; index += 1) depths.set(index, run.depth)
+  for (const run of [first, ...others.filter((run) => dropsWithFirst(leaves, run))]) for (let index = run.first; index <= run.last; index += 1) depths.set(index, run.depth)
   return leaves.map((leaf, index) => {
     const depth = depths.get(index)
     return depth === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => held !== depth))
   })
+}
+
+// Every misflanked highlight drops at once, a later emphasis run only where dropping its mark merges no run and moves no edge: its mark is its leaves' innermost and no leaf beside it holds a mark that deep.
+function dropsWithFirst(leaves: readonly AdfNode[], run: MarkRun): boolean {
+  if (nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === highlight) return true
+  const beside = [leaves[run.first - 1], leaves[run.last + 1]].every((leaf) => leaf === undefined || nodeMarks(leaf).length <= run.depth)
+  return beside && leaves.slice(run.first, run.last + 1).every((leaf) => nodeMarks(leaf).length === run.depth + 1)
 }

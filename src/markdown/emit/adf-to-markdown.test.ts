@@ -289,6 +289,16 @@ test('carries a code mark over anything but text', () => {
   )
 })
 
+test('carries every inline node of a line that only the carry spells', () => {
+  const odd: AdfNode = { attrs: { id: 'a', odd: 'b' }, type: 'mention' }
+  const carriedOdd = '!adf:carry{json="{\\"attrs\\":{\\"id\\":\\"a\\",\\"odd\\":\\"b\\"},\\"type\\":\\"mention\\"}"}'
+  const unlinked = '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"link\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}'
+  assert.equal(
+    markdown(adfToLosslessMarkdown(document(paragraph(odd, { text: ' ', type: 'text' }, { marks: [{ type: 'link' }], text: 'x', type: 'text' }, { text: ' ', type: 'text' }, odd)))),
+    `${carriedOdd} ${unlinked} ${carriedOdd}\n`,
+  )
+})
+
 test('carries an inline node holding a mark Atlassian\'s schema withholds from it', () => {
   const carried = (node: AdfNode): string => markdown(adfToLosslessMarkdown(document(paragraph(node))))
   assert.equal(carried({ attrs: { id: 'b1c2', text: '@A' }, marks: [{ type: 'strong' }], type: 'mention' }), '!adf:carry{json="{\\"attrs\\":{\\"id\\":\\"b1c2\\",\\"text\\":\\"@A\\"},\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"type\\":\\"mention\\"}"}\n')
@@ -392,6 +402,12 @@ test('carries a mark spelling that cannot open or close where it sits', () => {
     'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"text\\":\\".a\\",\\"type\\":\\"text\\"}"}\n',
   )
   assert.equal(emitted({ text: 'un ', type: 'text' }, marked('-real', strong), { text: ' istic', type: 'text' }), 'un **-real** istic\n')
+  const carriedR = '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"text\\":\\"-r\\",\\"type\\":\\"text\\"}"}'
+  assert.equal(emitted({ text: 'un', type: 'text' }, marked('-r', strong), { text: 'un', type: 'text' }, marked('-r', strong), { text: 'un', type: 'text' }), `un${carriedR}un${carriedR}un\n`)
+  assert.equal(
+    emitted({ text: 'x', type: 'text' }, marked('[', { type: 'em' }, { type: 'strike' }), marked('a', { type: 'em' })),
+    'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"},{\\"type\\":\\"strike\\"}],\\"text\\":\\"[\\",\\"type\\":\\"text\\"}"}_a_\n',
+  )
   assert.equal(emitted(marked('a.', strong)), '**a.**\n')
   assert.equal(emitted({ text: 'x', type: 'text' }, marked('a', strong), { text: 'y', type: 'text' }), 'x**a**y\n')
   const em: AdfMark = { type: 'em' }
