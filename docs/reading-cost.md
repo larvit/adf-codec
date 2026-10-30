@@ -565,3 +565,20 @@ Read most (opens and searches):
 - `docs/score-anchors.md` 1
 - `src/markdown/emit/inline-line.test.ts` 1
 - `src/markdown/portable/inline-reduction.test.ts` 1
+
+## Reading cost, chunk 49f80f73a5d7, finished 2026-10-30T20:14:59Z
+
+400106 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 16
+- `src/markdown/emit/adf-to-markdown.test.ts` 8
+- `docs/decisions.md` 6
+- `spec/flavour.md` 5
+- `src/markdown/portable/inline-reduction.ts` 5
+- `src/markdown/emit/inline-line.ts` 4
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 4
+- `CHANGELOG.md` 3
+- `package.json` 3
+- `src/markdown/mark-spellings.ts` 3
