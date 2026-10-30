@@ -5,7 +5,7 @@ import type { LinkDefinition, TitleEscapes } from '../commonmark/link-syntax.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange, type RunFallback } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
-import { commonMarkLink, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
+import { commonMarkLink, isEmphasis, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
@@ -46,6 +46,9 @@ type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: AdfNode[
 type LineAttempt = { fallback: Fallback; line?: undefined } | { fallback?: undefined; line: string; segments: InlineSegment[] }
 
 type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
+
+// docs/decisions.md §A line reads back at most 32 times, then takes back every emphasis run.
+export const readBackPasses = 32
 
 export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
@@ -92,7 +95,7 @@ export function tryImageLine(alt: string | undefined, url: string, flavour: Writ
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour, perPass: FallbacksPerPass): Result<EmittedLine> {
   const fallbacks = withheldMarkFallbacks(nodes, flavour)
   // Terminates because takeFallback refuses a pass that took no new fallback.
-  for (;;) {
+  for (let pass = 1; ; pass += 1) {
     const emission = lineSegments(nodes, container, path, fallbacks)
     if (!emission.ok) return emission
     const { carries, segments } = emission.value
@@ -100,6 +103,7 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     if (attempt.fallback === undefined) return success({ line: attempt.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: attempt.segments })
     const taken = takeFallback(fallbacks, takenThisPass(attempt.fallback, perPass), path)
     if (!taken.ok) return taken
+    if (pass === readBackPasses) for (const [index, node] of nodes.entries()) if (nodeMarks(node).some(isEmphasis)) fallbacks.carried.add(index)
   }
 }
 

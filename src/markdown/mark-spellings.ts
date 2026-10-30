@@ -37,6 +37,10 @@ export function markSpelling(type: string): MarkSpelling | undefined {
   return { attributes, kind: spelling.kind }
 }
 
+export function isEmphasis(mark: AdfMark): boolean {
+  return markSpelling(mark.type)?.kind === 'emphasis'
+}
+
 export function linkMark(definition: LinkDefinition): AdfMark {
   return linkMarkFrom(toLinkAttrs(definition))
 }

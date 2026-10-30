@@ -4,11 +4,12 @@ import type { MarkRun } from '../emit/line-escaping.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { imageAside } from '../image-aside.ts'
+import { isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
-import { portableLineFallback, type FallbacksPerPass, type PortableLineFallback } from '../emit/inline-line.ts'
+import { portableLineFallback, readBackPasses, type FallbacksPerPass, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
@@ -219,13 +220,13 @@ function sameMarkAt(marks: readonly AdfMark[], others: readonly AdfMark[], index
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath, perPass: FallbacksPerPass): Result<AdfNode[]> {
-  for (let current = leaves; ; ) {
+  for (let current = leaves, pass = 1; ; pass += 1) {
     const fallback = portableLineFallback(current, container, path, (run) => dropsAlone(current, run))
     if (!fallback.ok) return fallback
     if (fallback.value === undefined) return success(current)
     const fixed = withoutFallback(current, fallback.value, perPass)
     if (fixed === undefined) return failure('unsupported-node-shape', 'a portable line keeps a spelling that dropping a mark does not change', path)
-    current = trimmedEdges(fixed)
+    current = trimmedEdges(pass === readBackPasses ? fixed.map((leaf) => withMarks(leaf, nodeMarks(leaf).filter((mark) => !isEmphasis(mark)))) : fixed)
   }
 }
 

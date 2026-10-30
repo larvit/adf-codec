@@ -550,3 +550,18 @@ Read most (opens and searches):
 - `src/markdown/portable/adf-to-portable-markdown.test.ts` 3
 - `README.md` 2
 - `ci.sh` 2
+
+## Reading cost, chunk 13332c44ccd0, finished 2026-10-30T15:27:59Z
+
+132270 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 10
+- `src/markdown/emit/inline-line.ts` 4
+- `src/markdown/emit/line-escaping.ts` 4
+- `src/markdown/portable/inline-reduction.ts` 4
+- `CHANGELOG.md` 2
+- `docs/score-anchors.md` 1
+- `src/markdown/emit/inline-line.test.ts` 1
+- `src/markdown/portable/inline-reduction.test.ts` 1

@@ -75,6 +75,7 @@ In `docs/decisions.md`:
 - No value `JSON.parse` or `structuredClone` builds loops a call
 - Nothing spreads an unbounded array
 - A retry loop checks its own termination
+- A line reads back at most 32 times, then takes back every emphasis run
 - Readers scan by index
 - The spelling memo
 - Cost fixes are measured, never timed
