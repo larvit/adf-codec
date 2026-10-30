@@ -9,7 +9,7 @@ import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
-import { portableLineFallback, readBackPasses, type FallbacksPerPass, type PortableLineFallback } from '../emit/inline-line.ts'
+import { portableLineFallback, readBackPasses, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
@@ -17,10 +17,16 @@ const highlightMark: AdfMark = { type: highlight }
 const edgeStrippingMarks: readonly string[] = [highlight, 'em', 'strike', 'strong']
 const keptMarks: readonly string[] = [...edgeStrippingMarks, 'code', 'link']
 
-export function reduceInline(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number, perPass: FallbacksPerPass = 'every'): Result<AdfNode[]> {
+export function reduceInline(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+  const leaves = portableLeaves(nodes, container, path, depth)
+  if (!leaves.ok) return leaves
+  return spellableLine(leaves.value, container, path)
+}
+
+export function portableLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodes, container, path, depth)
   if (!leaves.ok) return leaves
-  return spellableLine(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))), container, path, perPass)
+  return success(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))))
 }
 
 export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
@@ -155,7 +161,7 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
   return marks.length === 0 ? unmarked : { ...unmarked, marks: [...marks] }
 }
 
-function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
+export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
     let changed = false
@@ -219,19 +225,23 @@ function sameMarkAt(marks: readonly AdfMark[], others: readonly AdfMark[], index
   return mark !== undefined && other !== undefined && sameMarkWhenEditorNormal(mark, other)
 }
 
-function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath, perPass: FallbacksPerPass): Result<AdfNode[]> {
+function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
   for (let current = leaves, pass = 1; ; pass += 1) {
-    const fallback = portableLineFallback(current, container, path, (run) => dropsAlone(current, run))
+    const fallback = portableLineFallback(current, container, path)
     if (!fallback.ok) return fallback
     if (fallback.value === undefined) return success(current)
-    const fixed = withoutFallback(current, fallback.value, perPass)
-    if (fixed === undefined) return failure('unsupported-node-shape', 'a portable line keeps a spelling that dropping a mark does not change', path)
-    current = trimmedEdges(perPass === 'every' && pass === readBackPasses ? withoutEmphasis(fixed) : fixed)
+    const fixed = withoutFallback(current, fallback.value, path)
+    if (!fixed.ok) return fixed
+    current = trimmedEdges(pass === readBackPasses ? withoutEmphasis(fixed.value) : fixed.value)
   }
 }
 
-function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallback, perPass: FallbacksPerPass): AdfNode[] | undefined {
-  if (fallback.kind === 'unspellable-run') return withoutMarks(leaves, droppedRuns(leaves, fallback.runs, perPass))
+export function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallback, path: ConvertErrorPath): Result<AdfNode[]> {
+  const fixed = fallback.kind === 'unspellable-run' ? withoutMarks(leaves, fallback.runs) : withoutOpeningLinkCode(leaves)
+  return fixed === undefined ? failure('unsupported-node-shape', 'a portable line keeps a spelling that dropping a mark does not change', path) : success(fixed)
+}
+
+function withoutOpeningLinkCode(leaves: readonly AdfNode[]): AdfNode[] | undefined {
   const mark = nodeMarks(leaves[0] ?? {})[0]
   if (mark === undefined || mark.type !== 'link') return undefined
   let last = 0
@@ -245,7 +255,7 @@ function withoutEmphasis(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.map((leaf) => withMarks(leaf, nodeMarks(leaf).filter((mark) => !isEmphasis(mark))))
 }
 
-// The runs may nest, so a leaf drops the mark at every depth a run holds it.
+// Pairs that fall together may hold one another, so a leaf drops its mark at each depth a run over it names.
 function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
   const depths = new Map<number, number[]>()
   for (const run of runs) {
@@ -259,21 +269,4 @@ function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): Adf
     const dropped = depths.get(index)
     return dropped === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => !dropped.includes(held)))
   })
-}
-
-// Every misflanked highlight drops with the first run; with `every`, so does every emphasis run that falls with it.
-function droppedRuns(leaves: readonly AdfNode[], runs: readonly [MarkRun, ...MarkRun[]], perPass: FallbacksPerPass): readonly MarkRun[] {
-  return perPass === 'every' ? runs : runs.filter((run, index) => index === 0 || nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === highlight)
-}
-
-// Dropping the run merges no runs and moves no run's end, whatever else drops: at each end, the leaf outside holds no mark type the end leaf holds inside the run's mark.
-function dropsAlone(leaves: readonly AdfNode[], run: MarkRun): boolean {
-  return endsAlone(leaves[run.first], leaves[run.first - 1], run.depth) && endsAlone(leaves[run.last], leaves[run.last + 1], run.depth)
-}
-
-function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, depth: number): boolean {
-  const besideTypes = new Set(nodeMarks(beside ?? {}).map((mark) => mark.type))
-  return nodeMarks(edge ?? {})
-    .slice(depth + 1)
-    .every((mark) => !besideTypes.has(mark.type))
 }

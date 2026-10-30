@@ -2,13 +2,19 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
+import type { AdfNode } from '../../adf/document.ts'
+import type { LineContainer } from '../line-container.ts'
+import type { PortableLineFallback } from '../emit/inline-line.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
-import { reduceInline } from './inline-reduction.ts'
+import { nodeMarks } from '../../adf/document.ts'
+import { portableLeaves, reduceInline, trimmedEdges, withoutFallback } from './inline-reduction.ts'
+import { portableLineFallback } from '../emit/inline-line.ts'
+import { success, type Result } from '../../result.ts'
 
 test('reduces a line alike dropping every run a pass may or the first alone', () => {
   fc.assert(
     fc.property(markedLine, lineContainer, (nodes, container) => {
-      assert.deepEqual(reduceInline(nodes, container, [], 0), reduceInline(nodes, container, [], 0, 'first'))
+      assert.deepEqual(reduceInline(nodes, container, [], 0), firstRunLine(nodes, container))
     }),
     // Lines the fixed seed rarely generates: a later run must not drop with the first, or one pass drops every copy of a repeated mark run.
     {
@@ -29,3 +35,23 @@ test('reduces a line alike dropping every run a pass may or the first alone', ()
     },
   )
 })
+
+// Drops the first run a pass finds alone, with every misflanked highlight, and takes no cap.
+function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Result<AdfNode[]> {
+  const leaves = portableLeaves(nodes, container, [], 0)
+  if (!leaves.ok) return leaves
+  for (let current = leaves.value; ; ) {
+    const fallback = portableLineFallback(current, container, [])
+    if (!fallback.ok) return fallback
+    if (fallback.value === undefined) return success(current)
+    const fixed = withoutFallback(current, firstRun(current, fallback.value), [])
+    if (!fixed.ok) return fixed
+    current = trimmedEdges(fixed.value)
+  }
+}
+
+function firstRun(leaves: readonly AdfNode[], fallback: PortableLineFallback): PortableLineFallback {
+  if (fallback.kind === 'opening-link') return fallback
+  const [first, ...others] = fallback.runs
+  return { kind: 'unspellable-run', runs: [first, ...others.filter((run) => nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === 'backgroundColor')] }
+}

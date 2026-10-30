@@ -1,12 +1,14 @@
+import type { AdfNode } from '../../adf/document.ts'
 import type { Claims, WrittenFlavour } from '../flavour.ts'
 import type { InlineReading } from '../inline-content.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
+import { delimiterFlags, isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
 import { delimiterRunToken, highlightFlanking, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims } from '../flavour.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
-import { delimiterFlags, isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
+import { nodeMarks } from '../../adf/document.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 import { readLineBack } from '../inline-content.ts'
 
@@ -28,8 +30,8 @@ export type InlineSegment =
 
 export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRuns: MarkRun[] }
 
-// How the caller takes a run back: a carry swaps its nodes for one carry directive, splitting every run holding it; a drop removes its mark, moving no other delimiter where `alone` holds.
-export type RunFallback = { kind: 'carry' } | { alone: (run: MarkRun) => boolean; kind: 'drop' }
+// How the caller takes a run back: a carry swaps its nodes for one carry directive, splitting every run holding it; a drop removes its mark from the line's `nodes`.
+export type RunFallback = { kind: 'carry' } | { kind: 'drop'; nodes: readonly AdfNode[] }
 
 type ScanLine = { position: LinePosition; start: number; text: string }
 
@@ -297,7 +299,7 @@ function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReadin
   const firstPair = pairs[first]
   if (firstPair === undefined) return misflankedHighlights(placed, output)
   const merging = new Set<number>()
-  if (fallback.kind === 'drop') for (const { nodes } of pairs) if (!fallback.alone(nodes)) merging.add(nodes.first).add(nodes.last + 1)
+  if (fallback.kind === 'drop') for (const { nodes } of pairs) if (!dropsAlone(fallback.nodes, nodes)) merging.add(nodes.first).add(nodes.last + 1)
   const sweep: PairSweep = { fallback, fallen: new Uint8Array(pairs.length), first, merging, output, pairAt, pairs, placed }
   sweep.fallen[first] = 1
   // Each verdict reads the verdicts settled before it, so the sweep settles outward from the first pair.
@@ -306,6 +308,18 @@ function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReadin
   const runs = [firstPair.nodes]
   for (const [index, pair] of pairs.entries()) if (index !== first && sweep.fallen[index] === 1) runs.push(pair.nodes)
   return runs
+}
+
+// Dropping the run merges no runs and moves no run's end, whatever else drops: at each end, the node outside holds no mark type the end node holds inside the run's mark.
+function dropsAlone(nodes: readonly AdfNode[], run: MarkRun): boolean {
+  return endsAlone(nodes[run.first], nodes[run.first - 1], run.depth) && endsAlone(nodes[run.last], nodes[run.last + 1], run.depth)
+}
+
+function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, depth: number): boolean {
+  const besideTypes = new Set(nodeMarks(beside ?? {}).map((mark) => mark.type))
+  return nodeMarks(edge ?? {})
+    .slice(depth + 1)
+    .every((mark) => !besideTypes.has(mark.type))
 }
 
 // The pairs in closing order.
