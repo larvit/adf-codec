@@ -13,7 +13,7 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 161 | 0.3.0 |  | defect | **Write a line where em shares a delimiter run with strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 1 | 2 | 5 | 5 | 9 by 3 | 7.8 |
-| 160 | 0.3.0 | 161 |  | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, and keep every switch only tests use out of production signatures.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 160 | 0.3.0 | 161 | decision | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.** | 3 | 1 | 2 | 4 | 6 | code health by 6 | 8.7 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
@@ -87,7 +87,7 @@ kept strong on every `(`. `unspellableRuns` judges pair by pair, so it cannot pr
 without CommonMark's delimiter stack across passes. Dropping a doomed em before the strongs it holds
 may be linear and keep more marks, but it changes what the portable writer keeps: ask first.
 
-### 160. Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, and keep every switch only tests use out of production signatures.
+### 160. Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.
 
 PR #106's paired ruling read worse than c7bbb04: both seats ruled Locality and Shape worse, the
 maintainer chose to merge it and file this. Make each place they named easier to read:
@@ -96,8 +96,20 @@ maintainer chose to merge it and file this. Make each place they named easier to
 `unspellableRuns`'s pair sweep in `line-escaping.ts`, which needs CommonMark's flanking rules open
 beside it, `takenThisPass` and `checkedCarry` in `inline-line.ts`, `tryListItemLines` reading
 `block-text.ts`'s measures, `holdsOnlyRuleCharacters` holding BlockText's rule in the grammar, and
-`markerOpening` repeating the marker regexes' `[`. No output may change, and the timings the cost
-entries under `CHANGELOG.md` → `## Unreleased` give for both writers must hold.
+`markerOpening` repeating the marker regexes' `[`.
+
+PR #107's paired ruling read worse than 41fd106: both seats ruled Locality, Shape and
+Self-sufficiency worse. The maintainer merged it only because this item fixes exactly the places
+they named (`docs/decisions.md` §A chunk ruled worse merges): in `line-escaping.ts`,
+`unspellableRuns`'s sweep over `PairSweep.fallen`, where each verdict reads those settled before
+it; `fallsWithFirst`, whose calls run five levels deep, need CommonMark's delimiter-run rules beside
+them, and rest on a property test for their rule; and `holdsAlike`, `holdsEarlier`, `spansAlike`
+and `Standing`, defined only by comments. In `inline-reduction.ts` they named `spellableLine`,
+which passes `dropsAlone` through four functions into the escaper's `RunFallback` and `merging`,
+and `withoutMarks`, whose runs nest for a reason that lives in the sweep.
+
+No output may change, and the timings the cost entries under `CHANGELOG.md` → `## Unreleased` give
+for both writers must hold.
 
 ### 150. Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
 
