@@ -217,7 +217,11 @@ const lineLeaf = fc.oneof(
   { arbitrary: fc.record({ attrs: fc.constantFrom({ id: 'a' }, { id: 'a', odd: 'b' }), marks: lineMarks }).map((held): AdfNode => ({ ...held, type: 'mention' })), weight: 1 },
 )
 export const lineContainer = fc.constantFrom<LineContainer>('heading', 'paragraph', 'table-cell')
-export const markedLine = fc.array(lineLeaf, { maxLength: 10, minLength: 1 })
+// A unit repeated is the line where one misread run re-pairs every copy after it.
+const repeatedUnit = fc
+  .tuple(fc.array(lineLeaf, { maxLength: 2 }), fc.array(lineLeaf, { maxLength: 3, minLength: 1 }), fc.integer({ max: 5, min: 2 }), fc.array(lineLeaf, { maxLength: 2 }))
+  .map(([head, unit, repeats, tail]) => [...head, ...Array.from({ length: repeats }, () => unit.map((node) => ({ ...node }))).flat(), ...tail])
+export const markedLine = fc.oneof(fc.array(lineLeaf, { maxLength: 10, minLength: 1 }), repeatedUnit)
 
 export const adfDocument = fc.oneof(
   { arbitrary: fc.array(positions.block, { depthIdentifier, maxLength: 4, minLength: 1 }).map((content): AdfDocument => ({ content, type: 'doc', version: 1 })), weight: 30 },

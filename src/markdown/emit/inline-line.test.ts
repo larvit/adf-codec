@@ -19,6 +19,8 @@ test('spells a line alike taking every fallback a pass finds or the first alone'
         [[{ marks: [{ type: 'em' }], text: 'a', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strike' }, { type: 'strong' }], text: 'a', type: 'text' }, { text: 'a', type: 'text' }], 'paragraph'],
         [[1, 2, 3].flatMap(() => [{ text: 'un', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }]), 'paragraph'],
         [[{ text: 'un', type: 'text' }, { marks: [{ type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }, { marks: [{ type: 'strike' }], text: 'un', type: 'text' }, { marks: [{ type: 'strike' }, { type: 'em' }, { type: 'strong' }], text: '-r', type: 'text' }, { text: 'z', type: 'text' }], 'paragraph'],
+        [[{ marks: [{ type: 'strike' }], text: ' b', type: 'text' }, { marks: [{ type: 'em' }], text: '!-', type: 'text' }], 'paragraph'],
+        [[{ marks: [{ type: 'strike' }], text: 'r', type: 'text' }, { marks: [{ type: 'strike' }, { type: 'strong' }, { type: 'em' }], text: '[ ', type: 'text' }, ...[1, 2, 3, 4, 5].map(() => ({ marks: [{ type: 'strike' }], text: ' ', type: 'text' }))], 'heading'],
       ],
     },
   )

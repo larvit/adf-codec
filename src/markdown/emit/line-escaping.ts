@@ -333,11 +333,22 @@ function misflankedHighlights(placed: readonly PlacedSegment[], output: string):
   return misflanked
 }
 
-// A pair falls with the first where one run per pass would take it back too: one of its delimiters cannot flank however the unsettled pairs fall, and taking it back moves no delimiter another verdict reads.
+// A pair falls with the first where one run per pass would take it back too: one of its delimiters cannot flank however the unsettled pairs fall.
 function fallsWithFirst(sweep: PairSweep, judged: number): boolean {
   if (!fallsCleanly(sweep, judged)) return false
   const spellings = pairSpellings(sweep, judged, judged)
-  return spellings !== undefined && spellings.every((character) => !mayFlank(sweep, judged, character, 'opener') || !mayFlank(sweep, judged, character, 'closer'))
+  return spellings !== undefined && spellings.every((character) => !mayFlank(sweep, judged, character, 'opener') || (!mayFlank(sweep, judged, character, 'closer') && !holdsAlike(sweep, judged, character)))
+}
+
+// An opener that may open can pair with a delimiter of its own character inside, so one run per pass may take back a pair standing there first.
+function holdsAlike({ fallen, pairs }: PairSweep, judged: number, character: string): boolean {
+  const pair = pairs[judged]
+  for (let held = judged - 1; pair !== undefined && held >= 0; held -= 1) {
+    const inner = pairs[held]
+    if (inner === undefined || inner.closer < pair.opener) return false
+    if (fallen[held] === 0 && (inner.delimiter.length === 1 ? character !== '~' : inner.delimiter.startsWith(character))) return true
+  }
+  return false
 }
 
 // A carry splits every pair holding it, so a carried pair holds no pair that may fall first; a dropped pair keeps its leaves where no run merges at its ends.
