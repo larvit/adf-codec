@@ -12,8 +12,8 @@ import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 
 const portableBlockWriters: FlavourBlockWriters = {
   // GitHub reads a task marker opening any item's first paragraph as a checkbox, whatever its siblings hold.
-  claimsItem: (text) => text.firstCharacter === markerOpening && leadingMarker(opening(text), readTaskMarker) !== undefined,
-  claimsQuote: (text) => text.firstCharacter === markerOpening && leadingMarker(opening(text), readAlertMarker) !== undefined,
+  claimsItem: (text) => leadsWithMarker(text, readTaskMarker),
+  claimsQuote: (text) => leadsWithMarker(text, readAlertMarker),
   spell: spellPortableBlock,
 }
 
@@ -28,6 +28,11 @@ function spellPortableBlock(node: AdfNode, path: ConvertErrorPath, depth: number
   if (typeof title !== 'string') return quotedBlocks(node, path, depth, writing, headed(foldedAlertMarker))
   const line = emitInlineLine([{ text: title, type: 'text' }], 'paragraph', path, writing.flavour)
   return line.ok ? quotedBlocks(node, path, depth, writing, headed(`${foldedAlertMarker} ${line.value}`)) : line
+}
+
+// Reading a concatenated line copies it whole, so the first character is checked before the line is read.
+function leadsWithMarker(text: BlockText, read: (text: string) => { length: number } | undefined): boolean {
+  return text.first.character === markerOpening && leadingMarker(opening(text), read) !== undefined
 }
 
 function headed(head: string): (body: BlockText) => BlockText {

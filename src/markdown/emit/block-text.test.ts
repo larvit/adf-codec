@@ -2,8 +2,8 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
-import { blockText, joinedText, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
-import { holdsOnlyRuleCharacters, isBlankLine } from '../commonmark/grammar.ts'
+import { blockText, holdsBlankLine, joinedText, opensWithThematicBreak, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
+import { holdsOnlyRuleCharacters, isBlankLine, isThematicBreak } from '../commonmark/grammar.ts'
 import { propertyRuns } from '../../conformance/property-harness.ts'
 
 const { tree } = fc.letrec<{ tree: BlockText }>((tie) => ({
@@ -20,15 +20,13 @@ test('measures a block text as the text it writes', () => {
   fc.assert(
     fc.property(tree, (text) => {
       const written = writtenText(text)
-      const [first = '', ...rest] = written.split('\n')
+      const [first = '', ...later] = written.split('\n')
+      const blank = (line: string): boolean => line !== '' && isBlankLine(line)
       assert.equal(text.length, written.length)
-      assert.equal(text.lineCount, rest.length + 1)
-      assert.equal(text.first, first)
-      assert.equal(text.firstCharacter, first.charAt(0))
-      assert.equal(text.firstBlank, first !== '' && isBlankLine(first))
-      assert.equal(text.firstRuleCharacters, holdsOnlyRuleCharacters(first))
-      assert.equal(text.blankRest, rest.filter((line) => line !== '' && isBlankLine(line)).length)
-      assert.equal(text.emptyRest, rest.filter((line) => line === '').length)
+      assert.deepEqual(text.first, { blank: blank(first), character: first.charAt(0), ruleCharacters: holdsOnlyRuleCharacters(first), text: first })
+      assert.deepEqual(text.later, { blank: later.filter(blank).length, empty: later.filter((line) => line === '').length, written: later.filter((line) => line !== '').length })
+      assert.equal(holdsBlankLine(text), [first, ...later].some(blank))
+      assert.equal(opensWithThematicBreak(text), isThematicBreak(first))
     }),
     propertyRuns(2000),
   )
