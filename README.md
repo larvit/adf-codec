@@ -479,7 +479,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
   its key, `_(jira-issues-table not included)_`, or `_(extension not included)_` without one, and
   `_(synced block not included)_` for a `syncBlock`.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
-  keeping its text, and so does a mark the flavour cannot spell where it stands. Code text keeps
+  keeping its text, and so does a mark the flavour cannot spell where it stands. A line still
+  read back wrong after 32 tries drops every `em`, `strike` and `strong` at once. Code text keeps
   no mark but `code` and `link`.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
   link or code span is trimmed, carriage returns and null characters are removed, and an empty
