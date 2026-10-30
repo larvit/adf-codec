@@ -12,14 +12,13 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 160 | 0.3.0 |  | decision | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.** | 4 | 1 | 2 | 5 | 6 | code health by 6 | 8.7 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 91, 115, 132, 133, 150, 160 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 91, 115, 132, 133, 150, 160 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 91, 115, 132, 133, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 91, 115, 132, 133, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -68,30 +67,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 160. Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.
-
-PR #106's paired ruling read worse than c7bbb04: both seats ruled Locality and Shape worse, the
-maintainer chose to merge it and file this. Make each place they named easier to read:
-`writtenText` and `Shape` in `block-text.ts` (a stack walk and eight hand-kept measures),
-`FallbacksPerPass` threaded through `emitInlineLine` and `reduceInline` only for two properties,
-`unspellableRuns`'s pair sweep in `line-escaping.ts`, which needs CommonMark's flanking rules open
-beside it, `takenThisPass` and `checkedCarry` in `inline-line.ts`, `tryListItemLines` reading
-`block-text.ts`'s measures, `holdsOnlyRuleCharacters` holding BlockText's rule in the grammar, and
-`markerOpening` repeating the marker regexes' `[`.
-
-PR #107's paired ruling read worse than 41fd106: both seats ruled Locality, Shape and
-Self-sufficiency worse. The maintainer merged it only because this item fixes exactly the places
-they named (`docs/decisions.md` §A chunk ruled worse merges): in `line-escaping.ts`,
-`unspellableRuns`'s sweep over `PairSweep.fallen`, where each verdict reads those settled before
-it; `fallsWithFirst`, whose calls run five levels deep, need CommonMark's delimiter-run rules beside
-them, and rest on a property test for their rule; and `holdsAlike`, `holdsEarlier`, `spansAlike`
-and `Standing`, defined only by comments. In `inline-reduction.ts` they named `spellableLine`,
-which passes `dropsAlone` through four functions into the escaper's `RunFallback` and `merging`,
-and `withoutMarks`, whose runs nest for a reason that lives in the sweep.
-
-No output may change, and the timings the cost entries under `CHANGELOG.md` → `## Unreleased` give
-for both writers must hold.
 
 ### 150. Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
 

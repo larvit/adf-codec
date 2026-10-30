@@ -255,7 +255,7 @@ function withoutEmphasis(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.map((leaf) => withMarks(leaf, nodeMarks(leaf).filter((mark) => !isEmphasis(mark))))
 }
 
-// Pairs that fall together may hold one another, so a leaf drops its mark at each depth a run over it names.
+// The runs one pass takes back may nest, so a leaf drops its mark at each depth a run over it names.
 function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
   const depths = new Map<number, number[]>()
   for (const run of runs) {

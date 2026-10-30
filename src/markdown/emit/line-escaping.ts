@@ -1,16 +1,16 @@
-import type { AdfNode } from '../../adf/document.ts'
 import type { Claims, WrittenFlavour } from '../flavour.ts'
 import type { InlineReading } from '../inline-content.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
 import type { LineContainer } from '../line-container.ts'
-import { delimiterFlags, isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
-import { delimiterRunToken, highlightFlanking, inlineSource, readInlineToken } from '../inline-tokens.ts'
+import type { RunFallback } from './unspellable-runs.ts'
+import { delimiterRunToken, inlineSource, readInlineToken } from '../inline-tokens.ts'
 import { escapesLineClaim, type LinePosition } from '../commonmark/grammar.ts'
 import { flavourClaims } from '../flavour.ts'
 import { isBareDelimiterRow } from '../pipe-table-syntax.ts'
-import { nodeMarks } from '../../adf/document.ts'
+import { isWordCharacter, runLength } from '../commonmark/emphasis-matching.ts'
 import { opensLinkDefinition } from '../commonmark/link-reference-definitions.ts'
 import { readLineBack } from '../inline-content.ts'
+import { unspellableRuns } from './unspellable-runs.ts'
 
 export type DelimiterRole = 'close' | 'open'
 
@@ -30,41 +30,18 @@ export type InlineSegment =
 
 export type AssembledLine = { line: string; openingLinkAsDirective?: true; unspellableRuns: MarkRun[] }
 
-// How the caller takes a run back: a carry swaps its nodes for one carry directive, splitting every run holding it; a drop removes its mark from the line's `nodes`.
-export type RunFallback = { kind: 'carry' } | { kind: 'drop'; nodes: readonly AdfNode[] }
-
 type ScanLine = { position: LinePosition; start: number; text: string }
-
-// An emphasis run's delimiters, written alike, by index into the placed segments.
-type EmphasisPair = { closer: number; delimiter: string; nodes: MarkRun; opener: number }
 
 type Escapings = (index: number) => InlineEscaping | undefined
 
-// Which emphasis pairs fall: go back in this pass with the first misread one. `fallen` flags each pair settled to fall.
-type PairSweep = {
-  readonly fallback: RunFallback
-  readonly fallen: Uint8Array
-  readonly first: number
-  // The ends of every run whose drop is not alone: dropping it can merge the runs meeting there.
-  readonly merging: ReadonlySet<number>
-  readonly output: string
-  // The pair each placed segment delimits, -1 where it delimits none.
-  readonly pairAt: Int32Array
-  readonly pairs: readonly EmphasisPair[]
-  readonly placed: readonly PlacedSegment[]
-}
-
 // Where a segment's first character landed in the output.
-type PlacedSegment = { segment: InlineSegment; start: number }
+export type PlacedSegment = { segment: InlineSegment; start: number }
 
 // The escaped line once reading it back asks for no further escape.
 type ReadBack = { output: string; placed: PlacedSegment[]; reading: InlineReading }
 
 // Which of a run's characters escape: every escapable one, or every one before `end`.
 type RunEscapes = { end: number; escapable: false } | { escapable: true }
-
-// How a pair stands while another falls: `either` where it may fall before the judged one.
-type Standing = 'either' | 'gone' | 'there'
 
 // Which text characters escape wherever they stand: one of them opened a construct when the line was read back.
 type TextEscapes = { backticks: boolean; brackets: boolean }
@@ -290,199 +267,6 @@ function claimsCharacter({ container, escapings, headingCloser, inline: { text: 
       return character === '{' && scan.charAt(index - 1) === ']' && isSyntax(escapings(index - 1))
     }
   }
-}
-
-// The runs this pass takes back: the first emphasis run the line misreads and every run that falls with it, else every misflanked highlight run. One misread emphasis pair can re-pair the delimiters after it.
-function unspellableRuns(placed: readonly PlacedSegment[], reading: InlineReading, output: string, fallback: RunFallback): MarkRun[] {
-  const { pairAt, pairs } = emphasisPairs(placed)
-  const first = pairs.findIndex((pair) => !readAsWritten(reading, placed, pair))
-  const firstPair = pairs[first]
-  if (firstPair === undefined) return misflankedHighlights(placed, output)
-  const merging = new Set<number>()
-  if (fallback.kind === 'drop') for (const { nodes } of pairs) if (!dropsAlone(fallback.nodes, nodes)) merging.add(nodes.first).add(nodes.last + 1)
-  const sweep: PairSweep = { fallback, fallen: new Uint8Array(pairs.length), first, merging, output, pairAt, pairs, placed }
-  sweep.fallen[first] = 1
-  // Each verdict reads the verdicts settled before it, so the sweep settles outward from the first pair.
-  for (let judged = first + 1; judged < pairs.length; judged += 1) if (fallsWithFirst(sweep, judged)) sweep.fallen[judged] = 1
-  for (let judged = first - 1; judged >= 0; judged -= 1) if (fallsWithFirst(sweep, judged)) sweep.fallen[judged] = 1
-  const runs = [firstPair.nodes]
-  for (const [index, pair] of pairs.entries()) if (index !== first && sweep.fallen[index] === 1) runs.push(pair.nodes)
-  return runs
-}
-
-// Dropping the run merges no runs and moves no run's end, whatever else drops: at each end, the node outside holds no mark type the end node holds inside the run's mark.
-function dropsAlone(nodes: readonly AdfNode[], run: MarkRun): boolean {
-  return endsAlone(nodes[run.first], nodes[run.first - 1], run.depth) && endsAlone(nodes[run.last], nodes[run.last + 1], run.depth)
-}
-
-function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, depth: number): boolean {
-  const besideTypes = new Set(nodeMarks(beside ?? {}).map((mark) => mark.type))
-  return nodeMarks(edge ?? {})
-    .slice(depth + 1)
-    .every((mark) => !besideTypes.has(mark.type))
-}
-
-// The pairs in closing order.
-function emphasisPairs(placed: readonly PlacedSegment[]): { pairAt: Int32Array; pairs: EmphasisPair[] } {
-  const pairAt = new Int32Array(placed.length).fill(-1)
-  const pairs: EmphasisPair[] = []
-  const openers: { at: number; nodes: MarkRun }[] = []
-  for (const [at, { segment }] of placed.entries()) {
-    if (segment.emphasis === 'open') openers.push({ at, nodes: segment.nodes })
-    const opener = segment.emphasis === 'close' ? openers.pop() : undefined
-    if (opener === undefined) continue
-    pairAt[opener.at] = pairs.length
-    pairAt[at] = pairs.length
-    pairs.push({ closer: at, delimiter: segment.text, nodes: opener.nodes, opener: opener.at })
-  }
-  return { pairAt, pairs }
-}
-
-// No `==` in text can open or close, and highlights never nest, so a highlight run reads back where both its delimiters flank.
-function misflankedHighlights(placed: readonly PlacedSegment[], output: string): MarkRun[] {
-  const misflanked: MarkRun[] = []
-  for (const { segment, start } of placed) {
-    if (segment.highlight !== undefined && !highlightFlanks(output, start, segment.highlight) && misflanked.at(-1) !== segment.nodes) misflanked.push(segment.nodes)
-  }
-  return misflanked
-}
-
-// A pair falls with the first where one run per pass would take it back too: one of its delimiters cannot flank however the unsettled pairs fall.
-function fallsWithFirst(sweep: PairSweep, judged: number): boolean {
-  if (!fallsCleanly(sweep, judged)) return false
-  const spellings = pairSpellings(sweep, judged, judged)
-  return spellings !== undefined && spellings.every((character) => !mayFlank(sweep, judged, character, 'opener') || (!mayFlank(sweep, judged, character, 'closer') && !holdsAlike(sweep, judged, character)))
-}
-
-// An opener that may open can pair with a delimiter of its own character inside, so one run per pass may take back a pair standing there first.
-function holdsAlike({ fallen, pairs }: PairSweep, judged: number, character: string): boolean {
-  const pair = pairs[judged]
-  for (let held = judged - 1; pair !== undefined && held >= 0; held -= 1) {
-    const inner = pairs[held]
-    if (inner === undefined || inner.closer < pair.opener) return false
-    if (fallen[held] === 0 && (inner.delimiter.length === 1 ? character !== '~' : inner.delimiter.startsWith(character))) return true
-  }
-  return false
-}
-
-// A carry splits every pair holding it, so a pair falls cleanly under a carry only where it holds no pair spanning fewer nodes, and under a drop only where no run merges at its ends.
-function fallsCleanly({ fallback, merging, pairs }: PairSweep, judged: number): boolean {
-  const pair = pairs[judged]
-  if (pair === undefined) return false
-  return fallback.kind === 'drop' ? !mergesAt(merging, pair) : !holdsEarlier(pairs, judged, pair)
-}
-
-function mergesAt(merging: ReadonlySet<number>, { nodes }: EmphasisPair): boolean {
-  return merging.has(nodes.first) || merging.has(nodes.last + 1)
-}
-
-// CommonMark judges a delimiter by the characters either side of its whole run of `character`.
-function mayFlank(sweep: PairSweep, judged: number, character: string, end: 'closer' | 'opener'): boolean {
-  const at = sweep.pairs[judged]?.[end] ?? -1
-  const before = runEdge(sweep, judged, at, -1, character)
-  const after = runEdge(sweep, judged, at, 1, character)
-  if (before === undefined || after === undefined) return true
-  return before.some((left) =>
-    after.some((right) => {
-      const flags = delimiterFlags(character, left, right)
-      return end === 'opener' ? flags.canOpen : flags.canClose
-    }),
-  )
-}
-
-// The characters that may stand past the run of `character` holding the delimiter at `from`; `undefined` where a pair beside may move.
-function runEdge(sweep: PairSweep, judged: number, from: number, step: -1 | 1, character: string): string[] | undefined {
-  const found: string[] = []
-  // Past the run stands the character after its last delimiter: a backslash where the text beside is escaped, which the next segment's start skips.
-  let edge = delimiterEdge(sweep.placed, from, step)
-  for (let at = from + step; ; at += step) {
-    const segment = sweep.placed[at]?.segment
-    const other = sweep.pairAt[at] ?? -1
-    if (segment === undefined || (other === -1 && segment.text !== '')) break
-    if (other === -1) continue
-    const standing = pairStanding(sweep, judged, other)
-    const spellings = standing === 'gone' ? [] : pairSpellings(sweep, judged, other)
-    if (standing === undefined || spellings === undefined) return undefined
-    for (const spelling of spellings) if (spelling !== character) found.push(spelling)
-    if (standing === 'there' && !spellings.includes(character)) return found
-    edge = delimiterEdge(sweep.placed, at, step)
-  }
-  found.push(sweep.output.charAt(step === 1 ? edge : edge - 1))
-  return found
-}
-
-function delimiterEdge(placed: readonly PlacedSegment[], at: number, step: -1 | 1): number {
-  const delimiter = placed[at]
-  if (delimiter === undefined) return 0
-  return step === 1 ? delimiter.start + delimiter.segment.text.length : delimiter.start
-}
-
-// How the other pair stands when the judged one falls. Where the judged pair closes after the first, every pair closing after it still stands, since the judged pair is then the first that cannot read as written; `undefined` where a carry or a merge may move the other's delimiters.
-function pairStanding({ fallback, fallen, first, merging, pairs }: PairSweep, judged: number, other: number): Standing | undefined {
-  const pair = pairs[other]
-  if (other === judged) return 'there'
-  if (pair === undefined || mergesAt(merging, pair)) return undefined
-  if (other > judged && judged > first) return 'there'
-  // Under a carry, pairs spanning the same nodes stand and fall together.
-  if (fallback.kind === 'carry') return spansAlike(pair, pairs[judged]) ? 'there' : undefined
-  return fallen[other] === 1 ? 'gone' : 'either'
-}
-
-// The characters the other pair may be written with when the judged one falls: em takes `_`, turning `*` beside a word character.
-function pairSpellings(sweep: PairSweep, judged: number, other: number): string[] | undefined {
-  const pair = sweep.pairs[other]
-  if (pair === undefined) return undefined
-  if (pair.delimiter.length > 1) return [pair.delimiter.charAt(0)]
-  // The carry's punctuation stands where the split pair meets it.
-  if (sweep.fallback.kind === 'carry' && other !== judged && holdsEarlier(sweep.pairs, judged, pair)) return ['*', '_']
-  const before = wordBeside(sweep, judged, pair.opener, -1)
-  const after = wordBeside(sweep, judged, pair.closer, 1)
-  if (before === undefined || after === undefined) return undefined
-  const spellings: string[] = []
-  if (before.includes(true) || after.includes(true)) spellings.push('*')
-  if (before.includes(false) && after.includes(false)) spellings.push('_')
-  return spellings
-}
-
-// Whether a word character may stand beside the delimiter at `from` as resolveEmphasis reads the line, for each way the unsettled pairs fall.
-function wordBeside(sweep: PairSweep, judged: number, from: number, step: -1 | 1): boolean[] | undefined {
-  const found: boolean[] = []
-  for (let at = from + step; ; at += step) {
-    const segment = sweep.placed[at]?.segment
-    const other = sweep.pairAt[at] ?? -1
-    if (segment !== undefined && segment.text === '') continue
-    if (segment === undefined || other === -1) {
-      found.push(segment !== undefined && isWordCharacter(segment.text.charAt(step === 1 ? 0 : segment.text.length - 1)))
-      return found
-    }
-    const standing = pairStanding(sweep, judged, other)
-    if (standing === undefined) return undefined
-    if (standing === 'gone') continue
-    found.push(false)
-    if (standing === 'there') return found
-  }
-}
-
-// Whether the pair holds one a carry may take before the judged one. Pairs close in order, so the judged pair, or one holding it, holds such a pair only where it holds the last of them to close.
-function holdsEarlier(pairs: readonly EmphasisPair[], judged: number, pair: EmphasisPair): boolean {
-  let earlier = judged - 1
-  while (spansAlike(pairs[earlier], pairs[judged])) earlier -= 1
-  const held = pairs[earlier]
-  return held !== undefined && pair.nodes.first <= held.nodes.first && held.nodes.last <= pair.nodes.last
-}
-
-function spansAlike(pair: EmphasisPair | undefined, other: EmphasisPair | undefined): boolean {
-  return pair !== undefined && other !== undefined && pair.nodes.first === other.nodes.first && pair.nodes.last === other.nodes.last
-}
-
-function highlightFlanks(output: string, start: number, role: DelimiterRole): boolean {
-  const flanking = highlightFlanking(output, start)
-  return role === 'open' ? flanking.opens : flanking.closes
-}
-
-function readAsWritten(reading: InlineReading, placed: readonly PlacedSegment[], pair: EmphasisPair): boolean {
-  const read = reading.emphasis.get(placed[pair.opener]?.start ?? -1)
-  return read !== undefined && read.closer === placed[pair.closer]?.start && read.width === pair.delimiter.length
 }
 
 function isEscapable(escaping: InlineEscaping | undefined): boolean {
