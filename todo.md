@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 160 | 0.3.0 |  | decision | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.** | 3 | 1 | 2 | 4 | 6 | code health by 6 | 8.7 |
+| 160 | 0.3.0 |  | decision | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.** | 4 | 1 | 2 | 5 | 6 | code health by 6 | 8.7 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
