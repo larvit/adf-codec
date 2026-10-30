@@ -3,13 +3,13 @@ import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { blockDirectiveForm, documentSpelling } from '../directive/block.ts'
 import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
-import { blockText, emptyLine, joinedText, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
+import { blockText, emptyLine, holdsBlankLine, joinedText, opensWithThematicBreak, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
-import { holdsNullCharacter, isThematicBreak, markerInterruptsParagraph } from '../commonmark/grammar.ts'
+import { holdsNullCharacter, markerInterruptsParagraph } from '../commonmark/grammar.ts'
 import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -309,12 +309,12 @@ function listStart(node: AdfNode, items: number): number | undefined {
 
 function tryListItemLines(inner: BlockText, marker: string): BlockText | undefined {
   if (inner.length === 0) return blockText(marker.trimEnd())
-  if (inner.firstBlank || inner.blankRest > 0) return undefined
+  if (holdsBlankLine(inner)) return undefined
   const indent = ' '.repeat(marker.length)
   const lines = prefixedText(marker, indent, inner)
-  if (!lines.firstRuleCharacters || !isThematicBreak(lines.first)) return lines
+  if (!opensWithThematicBreak(lines)) return lines
   // An item opens with `*` only as text, a list there taking `- ` and a rule `---`; a backslash keeps a first line reading as a rule text.
-  return inner.firstCharacter === '*' ? prefixedText(`${marker}\\`, indent, inner) : undefined
+  return inner.first.character === '*' ? prefixedText(`${marker}\\`, indent, inner) : undefined
 }
 
 function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
