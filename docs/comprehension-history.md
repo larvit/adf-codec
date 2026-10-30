@@ -1266,3 +1266,27 @@ Inherited architect, decided by:
 - Locality: `src/markdown/emit/adf-to-markdown.ts:310` `tryListItemLines`: reads four measures defined in `block-text.ts` where the base checked strings in place
 - Locality: `src/markdown/commonmark/grammar.ts:206` `holdsOnlyRuleCharacters`: the grammar module holds a rule that exists only for the emitter's BlockText
 - Locality: `src/markdown/portable/conventions.ts:5` `markerOpening`: repeats the `[` the marker regexes encode
+
+## 2026-10-30T11:10:42Z, PR #107 at 430310d, against 41fd106
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | worse | worse | worse |
+| Inherited architect | same | worse | worse | worse | worse |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/markdown/emit/line-escaping.ts:294` `unspellableRuns`: a sweep over the shared `PairSweep.fallen`, each verdict reading those settled before it, through helpers that call each other in a web, where the base's one loop called `givesUp`
+- Locality: `src/markdown/emit/line-escaping.ts:32` `RunFallback`: the escaper models how each caller takes a run back, the portable reducer's `dropsAlone` reaching it as the `alone` callback, where the base's reducer chose its drops beside its leaves
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:344` `holdsAlike`: its delimiter condition needs the delimiters' spellings known, and the sweep's rule rests on matching one run per pass, which only a property test shows
+- Shape: `src/markdown/emit/line-escaping.ts:65` `Standing`: `fallen`, `merging`, `pairAt` and `either` are defined only by one-line comments that use further new terms
+
+Inherited architect, decided by:
+
+- Locality, Shape: `src/markdown/emit/line-escaping.ts:294` `unspellableRuns`: settles pairs outward from the first misread pair, each verdict reading the `fallen` flags settled before it, so one pair's verdict needs the whole sweep's state, where the base's rule was one loop plus `givesUp` and a four-line `mayFlank`
+- Shape, Locality: `src/markdown/emit/line-escaping.ts:337` `fallsWithFirst`: calls run about five levels deep through `mayFlank`, `runEdge`, `pairSpellings`, `wordBeside` and `pairStanding`, each taking the whole sweep; `holdsAlike`, `holdsEarlier`, `spansAlike` and `Standing` need their comments, and `pairStanding`'s rule is asserted with no derivation
+- Locality: `src/markdown/portable/inline-reduction.ts:223` `spellableLine`: passes `dropsAlone` as a callback through four functions into the escaper's `merging`, splitting one contract across two files
+- Locality: `src/markdown/portable/inline-reduction.ts:244` `withoutMarks`: runs may now nest, for a reason that lives in the escaper's sweep
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:336` `fallsWithFirst`: its rule is equivalence to the `'first'` mode, checked only by a property test, and `runEdge` and `wordBeside` need CommonMark's delimiter-run rules beside the code
