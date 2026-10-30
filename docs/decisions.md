@@ -692,16 +692,14 @@ Drafts describe the finished release, so they wait for every item in it. Valid w
 
 ## A chunk ruled worse merges where a plan item of its release already restores that code's reading, and that item takes the ruling's places
 
-2026-10-30, the maintainer, merging PR #107 only because `todo.md` item 160 fixes exactly the
-places its paired ruling voted worse. Serves code health. Valid while the comprehension check runs
-once per chunk.
+2026-10-30, the maintainer, merging PR #107 only because a plan item of its release would fix
+exactly the places its paired ruling voted worse. Serves code health. Valid while the comprehension
+check runs once per chunk.
 
 The comprehension check runs once per chunk, after review. A restructure made after it goes
 unmeasured, and past a pass's round cap it goes unreviewed. Where an item of the same release
 reworks that code again, restructuring it inside the chunk does the work twice. Before the chunk
-merges, that item's detail names every place the ruling voted worse. Until item 160 ships, the
-places PR #106's and PR #107's rulings named read worse than their bases, so this entry works
-against code health, and item 160 ends it.
+merges, that item's detail names every place the ruling voted worse.
 
 ## No schema validation
 
@@ -922,7 +920,47 @@ and a line repeating such a pattern 1000 times took 33 seconds lossless and 39 p
 passes, both writers fall back on every em, strike and strong run at once. Such a line keeps fewer
 marks than one strong per pass would leave, and takes time linear in its length. 32 clears the
 most passes any line in the suite needs, 22 portable and 5 lossless, with room to spare. The
-`first` mode, which only a property uses, takes no cap.
+properties' reference, which takes back one run per pass, takes no cap.
+
+## Beside the first misread emphasis run, a pass takes back only runs one run per pass would take back too
+
+2026-10-29, the maintainer. Goals 9 and 6. Valid while a writer finds a misread run only by reading
+the line back.
+
+Taking back one misread run per pass costs a pass per run. So with the first misread run, a pass
+takes back every run `unspellableRuns` proves one run per pass would take back later. The proof is
+sound, not complete: a run it misses costs one more pass, but a run it wrongly takes back loses a
+spelling the line could keep. The properties beside `inline-line.ts` and `inline-reduction.ts`
+check that every line comes out as one run per pass writes it.
+
+The sweep reads each run as a pair, its opener and its closer, and orders the pairs by where they
+close. A pair falls with the first misread pair where both hold:
+
+- **It falls cleanly.** Under a drop, no run merges at its ends. Under a carry, it holds no pair
+  closing before it over fewer nodes, whose carry would split it.
+- **It cannot read, however it is written.** CommonMark judges a delimiter by the characters either
+  side of its whole delimiter run. Either the opener cannot open, or the closer cannot close and the
+  pair holds no pair, other than those settled to fall, that may be written with its character. An
+  opener that may open can pair with such a delimiter inside, and one run per pass would take that
+  inner pair back first.
+
+Em has no fixed character: `resolveEmphasis` writes `_`, and `*` beside a word character. So a
+verdict tries every character the pairs beside it leave possible. It reads each other pair as that
+pair stands when one run per pass reaches the judged one:
+
+- **A pair whose ends a drop may merge proves nothing**, since the merge may move its delimiters.
+- **Past a judged pair closing after the first, every pair stands.** One run per pass takes back
+  the first misread pair in closing order. While a pair settled to fall before the judged one
+  stands, it or one before it is misread, and once they are gone the judged pair is. So no pair
+  closing after the judged one goes first.
+- **Under a carry, a pair over the judged pair's nodes stands**, carried with it. Any other proves
+  nothing, since a carry may split it.
+- **Under a drop, a pair settled to fall is gone.** One run per pass takes it back, so the judged
+  pair need only fail to read once every such pair is gone. Any other pair may stand or be gone,
+  and the verdict must hold both ways.
+
+Each verdict reads the verdicts settled before it, so the sweep settles forward from the first
+pair, then back.
 
 ## Readers scan by index
 
