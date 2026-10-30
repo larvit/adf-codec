@@ -401,11 +401,11 @@ test('drops the mark of the run that cannot close where it sits, and keeps the l
   assert.equal(portable(paragraph(text('~', highlight), text('b'), text('日本', highlight))), '~b==日本==\n')
 })
 
-test('drops every em, strong and strike mark in a line still misread after 32 passes', () => {
+test('drops every em, strike and strong mark, and keeps every other, in a line still misread after 32 passes', () => {
   const strike: AdfMark = { type: 'strike' }
   const repeat = [text(' ~~ ', em, strong), text(')', em, strike, strong), text('a'), text('.unun', strike, strong)]
-  const line = Array.from({ length: 40 }, () => repeat).flat()
-  assert.equal(portable(paragraph(...line)), `${Array.from({ length: 40 }, () => '~~ )a.unun').join(' ')}\n`)
+  const line = [...Array.from({ length: 40 }, () => repeat).flat(), text(' '), text('b', { attrs: { href: 'u' }, type: 'link' }), text(' '), text('c', { type: 'backgroundColor' })]
+  assert.equal(portable(paragraph(...line)), `${Array.from({ length: 40 }, () => '~~ )a.unun').join(' ')} [b](u) ==c==\n`)
 })
 
 test('gives up every highlight run whose own delimiter cannot flank in one fallback, so a line of them re-emits once however many it holds', () => {

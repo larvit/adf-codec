@@ -452,12 +452,13 @@ test('carries the mark spelling that cannot close where it sits, and keeps the l
   assert.equal(emitted(marked('^', { type: 'strike' }), b, marked('c', { type: 'strike' })), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strike\\"}],\\"text\\":\\"^\\",\\"type\\":\\"text\\"}"}b~~c~~\n')
 })
 
-test('carries every node holding em, strong or strike in a line still misread after 32 passes', () => {
+test('carries every node holding em, strike or strong, and no other, in a line still misread after 32 passes', () => {
   const marked = (text: string, ...types: string[]): AdfNode => ({ marks: types.map((type) => ({ type })), text, type: 'text' })
   const carry = (node: AdfNode): string => `!adf:carry{json="${JSON.stringify(node).replaceAll('"', '\\"')}"}`
   const repeat = [marked(' ~~ ', 'em', 'strong'), marked(')', 'em', 'strike', 'strong'), { text: 'a', type: 'text' }, marked('.unun', 'strike', 'strong')]
   const written = repeat.map((node) => (node.marks === undefined ? 'a' : carry(node))).join('')
-  assert.equal(markdown(adfToLosslessMarkdown(document(paragraph(...Array.from({ length: 40 }, () => repeat).flat())))), `${written.repeat(40)}\n`)
+  const line = [...Array.from({ length: 40 }, () => repeat).flat(), { text: ' ', type: 'text' }, { marks: [{ attrs: { href: 'u' }, type: 'link' }], text: 'b', type: 'text' }]
+  assert.equal(markdown(adfToLosslessMarkdown(document(paragraph(...line)))), `${written.repeat(40)} [b](u)\n`)
 })
 
 test('refuses a node carrying one mark type twice', () => {
