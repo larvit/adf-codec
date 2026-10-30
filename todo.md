@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 160 | 0.3.0 |  |  | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, with no switch only tests use in production signatures.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 160 | 0.3.0 |  |  | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, and keep every switch only tests use out of production signatures.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
@@ -69,14 +69,17 @@
 
 ## Details
 
-### 160. Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, with no switch only tests use in production signatures.
+### 160. Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33 and 109, and keep every switch only tests use out of production signatures.
 
 PR #106's paired ruling read worse than c7bbb04: both seats ruled Locality and Shape worse, the
 maintainer chose to merge it and file this. Make each place they named easier to read:
 `writtenText` and `Shape` in `block-text.ts` (a stack walk and eight hand-kept measures),
 `FallbacksPerPass` threaded through `emitInlineLine` and `reduceInline` only for two properties,
-`holdsOnlyRuleCharacters` holding BlockText's rule in the grammar, and `markerOpening` repeating
-the marker regexes' `[`. No output may change, and the timings of items 33, 109 and 158 must hold.
+`unspellableRuns`'s pair sweep in `line-escaping.ts`, which needs CommonMark's flanking rules open
+beside it, `takenThisPass` and `checkedCarry` in `inline-line.ts`, `tryListItemLines` reading
+`block-text.ts`'s measures, `holdsOnlyRuleCharacters` holding BlockText's rule in the grammar, and
+`markerOpening` repeating the marker regexes' `[`. No output may change, and the timings the cost
+entries under `CHANGELOG.md` → `## Unreleased` give for both writers must hold.
 
 ### 150. Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
 
