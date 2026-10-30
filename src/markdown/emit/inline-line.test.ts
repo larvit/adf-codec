@@ -2,13 +2,16 @@ import assert from 'node:assert/strict'
 import fc from 'fast-check'
 import test from 'node:test'
 
-import { emitInlineLine } from './inline-line.ts'
+import type { AdfNode } from '../../adf/document.ts'
+import type { LineContainer } from '../line-container.ts'
+import { emitInlineLine, linePass, takeFallback, withheldMarkFallbacks } from './inline-line.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
+import { success, type Result } from '../../result.ts'
 
 test('spells a line alike taking every fallback a pass finds or the first alone', () => {
   fc.assert(
     fc.property(markedLine, lineContainer, (nodes, container) => {
-      assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), emitInlineLine(nodes, container, [], 'lossless', 'first'))
+      assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), firstFallbackLine(nodes, container))
     }),
     // Lines the fixed seed rarely generates: carrying one run lets a neighbour or its holder read as written, or one pass carries every copy of a repeated mark run.
     {
@@ -27,3 +30,16 @@ test('spells a line alike taking every fallback a pass finds or the first alone'
     },
   )
 })
+
+// Takes the first fallback a pass finds alone, and no cap.
+function firstFallbackLine(nodes: readonly AdfNode[], container: LineContainer): Result<string> {
+  const fallbacks = withheldMarkFallbacks(nodes, 'lossless')
+  for (;;) {
+    const attempt = linePass(nodes, container, [], fallbacks)
+    if (!attempt.ok) return attempt
+    const { fallback } = attempt.value
+    if (fallback === undefined) return success(attempt.value.line)
+    const taken = takeFallback(fallbacks, fallback === 'opening-link' ? fallback : [fallback[0]], [])
+    if (!taken.ok) return taken
+  }
+}
