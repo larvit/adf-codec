@@ -273,47 +273,44 @@ function emitLeaf(node: AdfNode, context: InlineContext, index: number): Result<
   const types = nodeMarks(node).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, nodePath(context, index))
   const model = inlineNodeModel(node.type)
-  if (model === undefined) return success(emitText(node, context, index))
-  const held = heldContentOrText(node)
+  const held = model === undefined ? undefined : heldContentOrText(node)
   if (held !== undefined) return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text: this one holds ${held}`, nodePath(context, index))
-  const emission = node.type === 'hardBreak' ? emitHardBreak(node, model, context, index) : emitInlineDirective(node, model, index)
-  return checkedCarry(emission, [node], context)
+  const segments = model === undefined ? textSegments(node, context) : node.type === 'hardBreak' ? hardBreakSegments(node, model, context) : inlineDirectiveSegments(node, model)
+  return segments === undefined ? carriedRun([node], { first: index, last: index }, context) : success({ segments })
 }
 
-// Builds a carry's JSON where the walk finds it, so its refusal comes ahead of any later node's.
-function checkedCarry(emission: Emission, nodes: readonly AdfNode[], context: InlineContext): Result<Emission> {
-  const range = emission.carries?.[0]
-  if (range === undefined) return success(emission)
+// Builds the carry's JSON where the walk makes the carry, so its refusal comes ahead of any later node's.
+function carriedRun(nodes: readonly AdfNode[], range: NodeRange, context: InlineContext): Result<Emission> {
   for (const [offset, node] of nodes.entries()) {
     const carried = carriedInline(node, nodePath(context, range.first + offset))
     if (!carried.ok) return carried
   }
-  return success(emission)
+  return success({ carries: [range] })
 }
 
-function emitHardBreak(node: AdfNode, model: InlineNodeModel, context: InlineContext, index: number): Emission {
+function hardBreakSegments(node: AdfNode, model: InlineNodeModel, context: InlineContext): InlineSegment[] | undefined {
   const attributes = spellInlineNodeAttributes(node, model)
-  if (attributes === undefined) return { carries: [{ first: index, last: index }] }
-  if (attributes === '' && context.spansLines && !context.atBlockEnd) return { segments: [syntax('\\\n')] }
-  return { segments: [syntax(spellInlineLeafDirective('hardBreak', attributes))] }
+  if (attributes === undefined) return undefined
+  if (attributes === '' && context.spansLines && !context.atBlockEnd) return [syntax('\\\n')]
+  return [syntax(spellInlineLeafDirective('hardBreak', attributes))]
 }
 
-function emitInlineDirective(node: AdfNode, model: InlineNodeModel, index: number): Emission {
+function inlineDirectiveSegments(node: AdfNode, model: InlineNodeModel): InlineSegment[] | undefined {
   const attributes = spellInlineNodeAttributes(node, model)
-  if (attributes === undefined) return { carries: [{ first: index, last: index }] }
+  if (attributes === undefined) return undefined
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
-  if (slot === undefined) return { segments: [syntax(spellInlineLeafDirective(node.type, attributes))] }
-  if (typeof slot !== 'string' || slotFault(node.type, slot) !== undefined) return { carries: [{ first: index, last: index }] }
+  if (slot === undefined) return [syntax(spellInlineLeafDirective(node.type, attributes))]
+  if (typeof slot !== 'string' || slotFault(node.type, slot) !== undefined) return undefined
   const content: InlineSegment[] = slot === '' ? [] : [{ escaping: 'bracketed', text: slot }]
-  return { segments: [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)] }
+  return [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)]
 }
 
 // CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, so neither is written raw.
-function emitText(node: AdfNode, context: InlineContext, index: number): Emission {
-  if (!isSpellableText(node) || typeof node.text !== 'string' || node.text === '') return { carries: [{ first: index, last: index }] }
+function textSegments(node: AdfNode, context: InlineContext): InlineSegment[] | undefined {
+  if (!isSpellableText(node) || typeof node.text !== 'string' || node.text === '') return undefined
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
   const parts = node.text.split(/(\n+|\0+|\r)/).filter((part) => part !== '')
-  return { segments: parts.map((part) => (part === '\r' ? syntax('&#13;') : /^[\n\0]/.test(part) ? textDirectiveSegment(part) : { escaping, text: part })) }
+  return parts.map((part) => (part === '\r' ? syntax('&#13;') : /^[\n\0]/.test(part) ? textDirectiveSegment(part) : { escaping, text: part }))
 }
 
 function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {
@@ -321,8 +318,11 @@ function emitMarkedRun(nodes: readonly AdfNode[], mark: AdfMark, depth: number, 
   if (mark.type === 'backgroundColor' && flavourClaims[context.flavour].highlights) return emitHighlight(nodes, depth, range, context)
   const spelling = markSpelling(mark.type)
   const attributes = spelling === undefined ? undefined : spellMarkAttributes(mark, spelling)
-  if (spelling === undefined || attributes === undefined) return checkedCarry({ carries: [range] }, nodes, context)
-  if (spelling.kind === 'code') return checkedCarry(emitCodeSpan(nodes, depth, range), nodes, context)
+  if (spelling === undefined || attributes === undefined) return carriedRun(nodes, range, context)
+  if (spelling.kind === 'code') {
+    const spans = codeSpans(nodes, depth)
+    return spans === undefined ? carriedRun(nodes, range, context) : success({ segments: [syntax(spans)] })
+  }
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
   const link = spelling.kind === 'link' ? tryLink(nodes, mark, depth, range, context) : undefined
   if (link !== undefined) return link
@@ -356,15 +356,15 @@ function emitHighlight(nodes: readonly AdfNode[], depth: number, range: NodeRang
 }
 
 // Each node its own span: CommonMark reads two adjacent text nodes in one span back as one.
-function emitCodeSpan(nodes: readonly AdfNode[], depth: number, range: NodeRange): Emission {
+function codeSpans(nodes: readonly AdfNode[], depth: number): string | undefined {
   const spans: string[] = []
   for (const node of nodes) {
     const { text } = node
-    if (!isSpellableText(node) || nodeMarks(node).length !== depth + 1 || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return { carries: [range] }
+    if (!isSpellableText(node) || nodeMarks(node).length !== depth + 1 || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return undefined
     const fence = '`'.repeat(longestBacktickRun(text) + 1)
     spans.push(`${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}`)
   }
-  return { segments: [syntax(spans.join(textBreakSpelling))] }
+  return spans.join(textBreakSpelling)
 }
 
 function needsPadding(text: string): boolean {
@@ -374,7 +374,7 @@ function needsPadding(text: string): boolean {
 
 function tryLink(nodes: readonly AdfNode[], mark: AdfMark, depth: number, range: NodeRange, context: InlineContext): Result<Emission> | undefined {
   const href = linkHref(nodeAttrs(mark))
-  if (href === undefined) return checkedCarry({ carries: [range] }, nodes, context)
+  if (href === undefined) return carriedRun(nodes, range, context)
   const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective
   const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes, depth + 1, context.bracketed, titleEscapes(context.flavour, context.container))
   if (commonMark === undefined) return undefined
