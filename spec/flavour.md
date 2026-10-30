@@ -573,7 +573,8 @@ putting a code span outside another mark, `code` over anything but a text node h
 text holding a line ending or a null character, or a spelling CommonMark's flanking rules cannot
 open or close where the run sits (`un**-real**istic`), or one CommonMark's matching pairs elsewhere
 — the intra-word `*` runs together with a neighbouring `**`, and the multiple-of-3 rule can leave
-the merged run's pairing to another delimiter — rides the inline carry whole. An opaque carry inside
+the merged run's pairing to another delimiter — rides the inline carry whole. So does every node
+holding `em`, `strike` or `strong` in a line still read back wrong after 32 tries. An opaque carry inside
 a mark spelling is a named error in input: the carry restores its node exactly, marks included
 (`docs/decisions.md` §Unknown nodes ride the carry).
 
