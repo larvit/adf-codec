@@ -62,10 +62,10 @@
   strong: text `un` beside `-r` marked em and strong, repeated 1000 times, took up to 9 seconds,
   now under 170 ms, and `(` marked em, strike and strong beside a mention, repeated 1000 times,
   took 18 seconds in `adfToPortableMarkdown`, now 150 ms. A line where em shares a delimiter run
-  with strong takes time linear in its length: ` ~~ ` marked em and strong, `)` marked em, strike
-  and strong, `a`, then `.unun` marked strike and strong, repeated 1000 times, took 33 seconds in
-  `adfToLosslessMarkdown` and 39 in `adfToPortableMarkdown`, now 2.6 and 1.5 seconds. A line whose
-  emphasis still reads back wrong after 32 tries is written with every node holding em, strike or
+  with strong takes time linear in its length: `~~` between spaces marked em and strong, `)` marked
+  em, strike and strong, `a`, then `.unun` marked strike and strong, repeated 1000 times, took 56
+  seconds in `adfToLosslessMarkdown` and 130 in `adfToPortableMarkdown`, now 2.6 and 1.5 seconds. A
+  line still read back wrong after 32 tries is written with every node holding em, strike or
   strong as `!adf:carry{json="…"}` in `adfToLosslessMarkdown`, and without those marks in
   `adfToPortableMarkdown`.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in the markdown when lists

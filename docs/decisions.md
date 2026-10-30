@@ -908,17 +908,21 @@ fine.
 A loop retrying an input until a fallback spells it refuses the pass taking no fallback, so its
 termination is the loop's own check.
 
-## A line reads back at most 32 times, then takes back every emphasis run
+## After 32 passes, a line carries or drops every em, strike and strong mark
 
 2026-10-30, the maintainer. Goals 9 and 1. Valid while a writer finds a misread run only by reading
 the line back.
 
-The lossless and portable writers read a line back after each fallback, and the sweep takes back
-the misread pairs it can prove fall together. Where a strong opener captures the `*` em leaves over,
-the sweep can't predict it, so one pass took back one strong, and a line of 1000 such repeats took
-33 seconds. After 32 passes the line takes back every em, strong and strike run at once: the
-lossless writer carries every node holding one, and the portable writer drops those marks. That
-line keeps fewer marks than the pass-by-pass result would, in exchange for time linear in the line.
+Each pass, the lossless and portable writers spell the line, read it back, and fall back on the
+first misread emphasis run and on every run `unspellableRuns` proves falls with it: the lossless
+writer carries the run's nodes, and the portable writer drops its mark. When em and strong share a
+delimiter run, as in `***`, and the strong closes first, the next strong opener can pair with em's
+leftover `*`. `unspellableRuns` can't foresee that pairing, so each pass falls back on one strong,
+and a line repeating such a pattern 1000 times took 33 seconds lossless and 39 portable. After 32
+passes, both writers fall back on every em, strike and strong run at once. Such a line keeps fewer
+marks than one strong per pass would leave, and takes time linear in its length. 32 clears the
+most passes any line in the suite needs, 22 portable and 5 lossless, with room to spare. The
+`first` mode, which only a property uses, takes no cap.
 
 ## Readers scan by index
 
