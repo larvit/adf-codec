@@ -226,7 +226,7 @@ function spellableLine(leaves: AdfNode[], container: LineContainer, path: Conver
     if (fallback.value === undefined) return success(current)
     const fixed = withoutFallback(current, fallback.value, perPass)
     if (fixed === undefined) return failure('unsupported-node-shape', 'a portable line keeps a spelling that dropping a mark does not change', path)
-    current = trimmedEdges(pass === readBackPasses ? fixed.map((leaf) => withMarks(leaf, nodeMarks(leaf).filter((mark) => !isEmphasis(mark)))) : fixed)
+    current = trimmedEdges(perPass === 'every' && pass === readBackPasses ? withoutEmphasis(fixed) : fixed)
   }
 }
 
@@ -239,6 +239,10 @@ function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallb
   // A code span is what binds the `]` a link definition reads, and dropping it keeps the link target.
   const spans = leaves.slice(0, last + 1).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
   return spans ? leaves.map((leaf, index) => (index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code')))) : undefined
+}
+
+function withoutEmphasis(leaves: readonly AdfNode[]): AdfNode[] {
+  return leaves.map((leaf) => withMarks(leaf, nodeMarks(leaf).filter((mark) => !isEmphasis(mark))))
 }
 
 // The runs may nest, so a leaf drops the mark at every depth a run holds it.

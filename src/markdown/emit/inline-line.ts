@@ -27,7 +27,7 @@ type Emission = { carries: [NodeRange, ...NodeRange[]]; segments?: undefined } |
 
 type Fallback = [NodeRange, ...NodeRange[]] | 'opening-link'
 
-// How many fallbacks one pass applies: `every`, or the `first` alone; a property checks that both write the same line.
+// How many fallbacks one pass applies: `every`, or the `first` alone and with no cap; a property checks that both write the same line.
 export type FallbacksPerPass = 'every' | 'first'
 
 type InlineContext = {
@@ -47,7 +47,7 @@ type LineAttempt = { fallback: Fallback; line?: undefined } | { fallback?: undef
 
 type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
 
-// docs/decisions.md §A line reads back at most 32 times, then takes back every emphasis run.
+// docs/decisions.md §After 32 passes, a line carries or drops every em, strike and strong mark.
 export const readBackPasses = 32
 
 export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
@@ -103,8 +103,12 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     if (attempt.fallback === undefined) return success({ line: attempt.line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments: attempt.segments })
     const taken = takeFallback(fallbacks, takenThisPass(attempt.fallback, perPass), path)
     if (!taken.ok) return taken
-    if (pass === readBackPasses) for (const [index, node] of nodes.entries()) if (nodeMarks(node).some(isEmphasis)) fallbacks.carried.add(index)
+    if (perPass === 'every' && pass === readBackPasses) carryEveryEmphasis(fallbacks, nodes)
   }
+}
+
+function carryEveryEmphasis(fallbacks: LineFallbacks, nodes: readonly AdfNode[]): void {
+  for (const [index, node] of nodes.entries()) if (nodeMarks(node).some(isEmphasis)) fallbacks.carried.add(index)
 }
 
 function takenThisPass(fallback: Fallback, perPass: FallbacksPerPass): Fallback {
