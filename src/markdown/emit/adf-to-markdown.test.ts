@@ -452,6 +452,14 @@ test('carries the mark spelling that cannot close where it sits, and keeps the l
   assert.equal(emitted(marked('^', { type: 'strike' }), b, marked('c', { type: 'strike' })), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strike\\"}],\\"text\\":\\"^\\",\\"type\\":\\"text\\"}"}b~~c~~\n')
 })
 
+test('carries every node holding em, strong or strike in a line still misread after 32 passes', () => {
+  const marked = (text: string, ...types: string[]): AdfNode => ({ marks: types.map((type) => ({ type })), text, type: 'text' })
+  const carry = (node: AdfNode): string => `!adf:carry{json="${JSON.stringify(node).replaceAll('"', '\\"')}"}`
+  const repeat = [marked(' ~~ ', 'em', 'strong'), marked(')', 'em', 'strike', 'strong'), { text: 'a', type: 'text' }, marked('.unun', 'strike', 'strong')]
+  const written = repeat.map((node) => (node.marks === undefined ? 'a' : carry(node))).join('')
+  assert.equal(markdown(adfToLosslessMarkdown(document(paragraph(...Array.from({ length: 40 }, () => repeat).flat())))), `${written.repeat(40)}\n`)
+})
+
 test('refuses a node carrying one mark type twice', () => {
   const em: AdfMark = { type: 'em' }
   assert.equal(code(adfToLosslessMarkdown(document(paragraph({ marks: [em, em], text: 'x', type: 'text' })))), 'unsupported-node-shape')

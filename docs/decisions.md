@@ -908,6 +908,18 @@ fine.
 A loop retrying an input until a fallback spells it refuses the pass taking no fallback, so its
 termination is the loop's own check.
 
+## A line reads back at most 32 times, then takes back every emphasis run
+
+2026-10-30, the maintainer. Goals 9 and 1. Valid while a writer finds a misread run only by reading
+the line back.
+
+The lossless and portable writers read a line back after each fallback, and the sweep takes back
+the misread pairs it can prove fall together. Where a strong opener captures the `*` em leaves over,
+the sweep can't predict it, so one pass took back one strong, and a line of 1000 such repeats took
+33 seconds. After 32 passes the line takes back every em, strong and strike run at once: the
+lossless writer carries every node holding one, and the portable writer drops those marks. That
+line keeps fewer marks than the pass-by-pass result would, in exchange for time linear in the line.
+
 ## Readers scan by index
 
 2026-08-30, the kept scan 2026-09-18, the maintainer. Goal 9. Valid while the pipeline persona

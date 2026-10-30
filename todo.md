@@ -12,8 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 161 | 0.3.0 |  | defect | **Write a line where em shares a delimiter run with strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.** | 4 | 1 | 2 | 5 | 5 | 9 by 3 | 7.8 |
-| 160 | 0.3.0 | 161 | decision | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.** | 3 | 1 | 2 | 4 | 6 | code health by 6 | 8.7 |
+| 160 | 0.3.0 |  | decision | **Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.** | 3 | 1 | 2 | 4 | 6 | code health by 6 | 8.7 |
 | 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
@@ -69,23 +68,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 161. Write a line where em shares a delimiter run with strong in time linear in its mark runs, in `adfToLosslessMarkdown` and `adfToPortableMarkdown`.
-
-The stability review of item 158 found it, on main before item 158 as well. Em's `*` and strong's
-`**` form one delimiter run, so once that strong closes, the next strong opener that can close
-captures the `*` left over. One run per pass then takes back one strong per pass, and every pass
-must write the same. At 1000 repeats:
-
-- `(` marked em and strong beside `(` marked em, then `a`: 7.4 s in `adfToPortableMarkdown`;
-- `~** ` marked em and strong beside `- _` marked em, then `r`: 8.6 s in `adfToPortableMarkdown`;
-- ` ~~ ` marked em and strong beside `)` marked em, strike and strong, then `a` and `.unun` marked
-  strike and strong: 33 s in `adfToLosslessMarkdown`, 39 s in `adfToPortableMarkdown`.
-
-v0.2.0 wrote each in under 100 ms at 400 repeats: lossless carried the whole line, and portable
-kept strong on every `(`. `unspellableRuns` judges pair by pair, so it cannot predict these captures
-without CommonMark's delimiter stack across passes. Dropping a doomed em before the strongs it holds
-may be linear and keep more marks, but it changes what the portable writer keeps: ask first.
 
 ### 160. Make the block-text tree and the batched mark fallbacks read as easily as the code before items 33, 109 and 158, and keep every switch only tests use out of production signatures.
 
