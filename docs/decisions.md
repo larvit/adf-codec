@@ -690,6 +690,19 @@ They then open issues saying a call did something else, which Goal 3 counts as a
 Drafts describe the finished release, so they wait for every item in it. Valid while a version bump on
 `main` publishes (§Publish on a version bump).
 
+## A chunk ruled worse merges where a plan item of its release already restores that code's reading, and that item takes the ruling's places
+
+2026-10-30, the maintainer, merging PR #107 only because `todo.md` item 160 fixes exactly the
+places its paired ruling voted worse. Serves code health. Valid while the comprehension check runs
+once per chunk.
+
+The comprehension check runs once per chunk, after review. A restructure made after it goes
+unmeasured, and past a pass's round cap it goes unreviewed. Where an item of the same release
+reworks that code again, restructuring it inside the chunk does the work twice. Before the chunk
+merges, that item's detail names every place the ruling voted worse. Until item 160 ships, the
+places PR #106's and PR #107's rulings named read worse than their bases, so this entry works
+against code health, and item 160 ends it.
+
 ## No schema validation
 
 2026-08-23, the mark refusal 2026-08-25, the maintainer. Goal 1. Valid while the site a document

@@ -57,6 +57,7 @@ In `docs/decisions.md`:
 - Docs describe the release being built
 - Plan items rank by `rank_todo.py`'s goal weights, code health first
 - Posts announcing a release wait for its publish, and their drafts wait for the finished release
+- A chunk ruled worse merges where a plan item of its release already restores that code's reading, and that item takes the ruling's places
 - No schema validation
 - The gate runs on Deno and Bun
 - The gate installs the tarball
