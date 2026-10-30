@@ -351,7 +351,7 @@ function holdsAlike({ fallen, pairs }: PairSweep, judged: number, character: str
   return false
 }
 
-// A carry splits every pair holding it, so a pair falls cleanly under a carry only where it holds no pair closing before it, and under a drop only where no run merges at its ends.
+// A carry splits every pair holding it, so a pair falls cleanly under a carry only where it holds no pair spanning fewer nodes, and under a drop only where no run merges at its ends.
 function fallsCleanly({ fallback, merging, pairs }: PairSweep, judged: number): boolean {
   const pair = pairs[judged]
   if (pair === undefined) return false
@@ -409,7 +409,8 @@ function pairStanding({ fallback, fallen, first, merging, pairs }: PairSweep, ju
   if (other === judged) return 'there'
   if (pair === undefined || mergesAt(merging, pair)) return undefined
   if (other > judged && judged > first) return 'there'
-  if (fallback.kind === 'carry') return undefined
+  // Under a carry, pairs spanning the same nodes stand and fall together.
+  if (fallback.kind === 'carry') return spansAlike(pair, pairs[judged]) ? 'there' : undefined
   return fallen[other] === 1 ? 'gone' : 'either'
 }
 
@@ -448,10 +449,16 @@ function wordBeside(sweep: PairSweep, judged: number, from: number, step: -1 | 1
   }
 }
 
-// Pairs close in order, so a pair holding any pair that closes before the judged one holds the one just before it.
+// Whether the pair holds one a carry may take before the judged one. Pairs close in order, so the judged pair, or one holding it, holds such a pair only where it holds the last of them to close.
 function holdsEarlier(pairs: readonly EmphasisPair[], judged: number, pair: EmphasisPair): boolean {
-  const earlier = pairs[judged - 1]
-  return earlier !== undefined && pair.nodes.first <= earlier.nodes.first && earlier.nodes.last <= pair.nodes.last
+  let earlier = judged - 1
+  while (spansAlike(pairs[earlier], pairs[judged])) earlier -= 1
+  const held = pairs[earlier]
+  return held !== undefined && pair.nodes.first <= held.nodes.first && held.nodes.last <= pair.nodes.last
+}
+
+function spansAlike(pair: EmphasisPair | undefined, other: EmphasisPair | undefined): boolean {
+  return pair !== undefined && other !== undefined && pair.nodes.first === other.nodes.first && pair.nodes.last === other.nodes.last
 }
 
 function highlightFlanks(output: string, start: number, role: DelimiterRole): boolean {
