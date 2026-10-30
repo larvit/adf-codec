@@ -10,7 +10,7 @@ test('spells a line alike taking every fallback a pass finds or the first alone'
     fc.property(markedLine, lineContainer, (nodes, container) => {
       assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), emitInlineLine(nodes, container, [], 'lossless', 'first'))
     }),
-    // Lines the seed's runs rarely reach: carrying one run lets a neighbour read as written, or one pass carries a repeated run's every copy.
+    // Lines the fixed seed rarely generates: carrying one run lets a neighbour read as written, or one pass carries every copy of a repeated mark run.
     {
       ...propertyRuns(3000),
       examples: [

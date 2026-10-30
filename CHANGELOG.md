@@ -58,9 +58,10 @@
   as in `[a](b` repeated: 16000 of them took 25 seconds, now 80 ms.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` write faster a line of many marked texts or
   inline nodes that need a carry or lose their mark, as in text `un` beside strong `-r`, repeated:
-  1000 of them took 10 seconds, now 150 ms. So does a line mixing em, strike and strong: 1000
-  `un` beside `-r` marked em and strong took 9 seconds, now 140 ms, and 1000 `(` marked em, strike
-  and strong beside a mention took 18 seconds in `adfToPortableMarkdown`, now 110 ms.
+  1000 of them took 10 seconds, now 150 ms. They also write faster a line mixing em, strike and
+  strong: text `un` beside `-r` marked em and strong, repeated 1000 times, took up to 9 seconds,
+  now under 170 ms, and `(` marked em, strike and strong beside a mention, repeated 1000 times,
+  took 18 seconds in `adfToPortableMarkdown`, now 150 ms.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` take time linear in the markdown when lists
   and quotes nest deeply, and so does `losslessMarkdownToAdf`: a list nested 480 levels around
   64 KB of paragraphs took 2 seconds to write, now 100 ms. A `!adf:blockquote` holding 2 MB of lines

@@ -261,7 +261,7 @@ function droppedRuns(leaves: readonly AdfNode[], runs: readonly [MarkRun, ...Mar
   return perPass === 'every' ? runs : runs.filter((run, index) => index === 0 || nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === highlight)
 }
 
-// Dropping the run merges no runs and moves no edge, whatever else drops: at each end, the leaf beside holds no mark type the edge leaf holds inside the run's mark.
+// Dropping the run merges no runs and moves no run's end, whatever else drops: at each end, the leaf outside holds no mark type the end leaf holds inside the run's mark.
 function dropsAlone(leaves: readonly AdfNode[], run: MarkRun): boolean {
   return endsAlone(leaves[run.first], leaves[run.first - 1], run.depth) && endsAlone(leaves[run.last], leaves[run.last + 1], run.depth)
 }

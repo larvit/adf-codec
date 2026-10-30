@@ -10,7 +10,7 @@ test('reduces a line alike dropping every run a pass may or the first alone', ()
     fc.property(markedLine, lineContainer, (nodes, container) => {
       assert.deepEqual(reduceInline(nodes, container, [], 0), reduceInline(nodes, container, [], 0, 'first'))
     }),
-    // Lines the seed's runs rarely reach: a later run must not drop with the first, or one pass drops a repeated run's every copy.
+    // Lines the fixed seed rarely generates: a later run must not drop with the first, or one pass drops every copy of a repeated mark run.
     {
       ...propertyRuns(3000),
       examples: [
