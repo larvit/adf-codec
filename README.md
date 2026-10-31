@@ -368,7 +368,7 @@ document normalizes to it through the round-trip.
 | `blockquote` | `> ` |
 | `bulletList`, `listItem` | `- ` items; adjacent lists of a kind alternate `- ` and `* ` |
 | `codeBlock` | a fenced code block, the language as info string, the fence longer than any backtick run inside; several text nodes are `!adf:codeBlock` holding one fence per node |
-| `hardBreak` | a backslash at the end of the line; `!adf:hardBreak{}` where no backslash can stand: a block's end, inside a heading, or a break carrying an attribute |
+| `hardBreak` | a backslash at the end of the line; `!adf:hardBreak{}` where no backslash can stand: a block's end, inside a heading, a pipe table cell or a directive's content, or a break carrying an attribute |
 | `heading` | `#` to `######` |
 | `link` | `[text](url "title")`; `<url>` where the text is the destination and the destination is an absolute URI |
 | `mediaSingle` holding an external `media`, centered, uncaptioned | `![alt](url)`; `[![alt](url)](href)` where a link marks the image |
