@@ -9,8 +9,7 @@ import { insideRun, isEmphasis, type RunNode } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
-import { portableLineFallback, readBackPasses, type PortableLineFallback } from '../emit/inline-line.ts'
-import { spanSkippedNodes } from '../emit/skipped-nodes.ts'
+import { portableLineFallback, readBackPasses, spannedNodes, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
@@ -166,8 +165,8 @@ export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    // Whitespace beside a code span inside a run keeps the run's mark, since the writer spans the run across the code.
-    const spanned = spanSkippedNodes(merged, () => false)
+    // Judged beside the spanned line's nodes, so whitespace beside a code span inside a run keeps the run's mark.
+    const spanned = spannedNodes(merged, new Set()) ?? merged
     let changed = false
     const trimmed: AdfNode[] = []
     for (const [index, leaf] of merged.entries()) {
