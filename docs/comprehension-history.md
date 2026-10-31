@@ -1319,3 +1319,22 @@ Inherited architect, decided by:
 - Shape: `src/markdown/emit/block-text.ts:13` `FirstLine`: eight flat fields became two grouped records with named predicates
 - Self-sufficiency: `src/markdown/emit/unspellable-runs.ts:208` `pairStanding`: five branches whose proof now lives in the decision log
 - Self-sufficiency, Locality: `src/markdown/emit/inline-line.ts:48` `readBackPasses`: a magic cap of 32 shared by two retry loops that must agree on giving up
+
+## 2026-10-31T02:06:38Z, PR #111 at b067b88, against de0033c
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | same | better | better |
+| Inherited architect | same | same | better | same | better |
+
+Mid A, decided by:
+
+- Self-sufficiency, Overall: `src/adf/inline-nodes.ts:42` `takenMarkTypes`: text takes a named list, so the marks it takes read without the schema open
+- Locality: `src/markdown/emit/inline-line.ts:65` `portableLineFallback`: one guard covers both the seeded carries and the emission's
+
+Inherited architect, decided by:
+
+- Shape, Overall: `src/adf/inline-nodes.ts:42` `takenMarkTypes`: `undefined` now means only a node type outside the tables
+- Shape: `src/markdown/inline-content.ts:261` `directiveMarkPieces`: this caller overrides `marksItem`'s rule that a non-node is markable, with nothing at the call site saying why
