@@ -556,7 +556,7 @@ A block's `marks` key also holds these, which no inline spelling wraps:
 - `indentation` — Attributes: `level` (number, 1–6).
 
 A spelling adds its mark to every inline node it wraps that Atlassian's schema gives the mark. Text
-takes every mark but `border`, and text marked `code` takes no other spelled mark but `link`:
+takes every mark but `border`. Text marked `code` takes no other spelled mark but `link`:
 ``**`npm ci`**`` reads as plain code. Of the marks a spelling makes, `date`, `emoji`, `hardBreak`, `inlineCard`, `mention`
 and `status` take none, and `mediaInline` takes only `border` and `link`. Nesting is the
 marks array in order, outermost first: `_!adf:underline[x]_` gives marks `[em, underline]`,
