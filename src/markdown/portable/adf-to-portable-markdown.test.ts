@@ -427,6 +427,8 @@ test('spells an emphasis once across the code spans and hard breaks between two 
   assert.equal(portable(paragraph(text('One', em), { type: 'hardBreak' }, text('Two', em))), '_One\\\nTwo_\n')
   assert.equal(portable(paragraph(text('a', link('/u')), { type: 'hardBreak' }, text('b', link('/u')))), '[a\\\nb](/u)\n')
   assert.equal(portable(paragraph(text('Ping ', strong), { attrs: { id: 'x', text: '@A' }, type: 'mention' }, text(' now', strong))), '**Ping** @A **now**\n')
+  assert.equal(portable(paragraph(text('a', link('/u')), { type: 'hardBreak' }, text(' b', link('/u')))), '[a](/u)\\\n[ b](/u)\n')
+  assert.equal(portable(paragraph(text('a\n b', link('/u')))), '[a](/u)\\\n[ b](/u)\n')
 })
 
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {
