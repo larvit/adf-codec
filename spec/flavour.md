@@ -566,7 +566,7 @@ carrying an identical mark, attributes included, at that depth: `attrs: {}` diff
 and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
 emitted carry sits inside a mark spelling. An `em`, `strike`, `strong` or `link` run also spans a
 node between two of its nodes when that node cannot hold the run's mark. It does so only where the
-spanned line reads back to the same marks; otherwise the run breaks there. So `_One\` then `Two_`
+spanned line reads back to the same nodes; otherwise the run breaks there. So `_One\` then `Two_`
 is one `em` run over two texts, the hard break between them unmarked, and
 ``**Run `npm ci` first**`` is one `strong` run around unmarked code. `adfToPortableMarkdown` spans
 hard breaks and code spans the same way.

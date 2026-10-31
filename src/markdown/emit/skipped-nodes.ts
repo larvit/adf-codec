@@ -47,7 +47,12 @@ function heldMark(spanned: readonly AdfNode[], index: number, depth: number, car
 function skipsMark(spanned: readonly AdfNode[], index: number, mark: AdfMark, carries: Carries): boolean {
   const node = spanned[index]
   const kind = markSpelling(mark.type)?.kind
-  return node !== undefined && (kind === 'emphasis' || kind === 'link') && !carries(node, index) && !takesMark(node, mark.type)
+  return node !== undefined && (kind === 'emphasis' || kind === 'link') && !carries(node, index) && !takesMark(node, mark.type) && !holdsEmptyMarks(node)
+}
+
+// An empty marks array is spelled `marks=empty`, which a lent mark would erase.
+function holdsEmptyMarks(node: AdfNode): boolean {
+  return Array.isArray(node.marks) && node.marks.length === 0
 }
 
 function withMark(node: AdfNode, mark: AdfMark, depth: number): AdfNode {
