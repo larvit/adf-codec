@@ -582,3 +582,20 @@ Read most (opens and searches):
 - `CHANGELOG.md` 3
 - `package.json` 3
 - `src/markdown/mark-spellings.ts` 3
+
+## Reading cost, chunk f5ce60ad75f9, finished 2026-10-31T00:38:23Z
+
+147097 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 11
+- `src/markdown/commonmark/grammar.ts` 3
+- `CHANGELOG.md` 2
+- `src/markdown/emit/adf-to-markdown.ts` 2
+- `src/markdown/emit/block-text.ts` 2
+- `src/markdown/emit/inline-line.ts` 2
+- `src/markdown/emit/line-escaping.ts` 2
+- `src/markdown/portable/block-spelling.ts` 2
+- `src/markdown/portable/conventions.ts` 2
+- `src/markdown/portable/inline-reduction.ts` 1
