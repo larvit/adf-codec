@@ -931,6 +931,7 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.equal(read('!adf:border[a]{color="#091e42" size=2}\n'), unborderable)
   assert.equal(read('_!adf:border[a]{color="#091e42" size=2}_\n'), unborderable)
   assert.equal(read('!adf:underline[!adf:border[a]{color="#091e42" size=2}]\n'), unborderable)
+  assert.equal(read('!adf:border[a!adf:textBreak{}b]{color="#091e42" size=2}\n'), unborderable)
   assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
   assert.equal(read('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
   assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark: write the link mark around text beside them')
