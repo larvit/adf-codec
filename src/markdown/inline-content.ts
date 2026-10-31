@@ -258,7 +258,7 @@ function directiveMarkPieces(scan: Scan, name: string, mark: AdfMark, slot: read
     return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps none`, scan.shared.path)
   }
   if (nodes.some(holdsOwnMarks)) return failure('unsupported-node-shape', ownMarksInMark, scan.shared.path)
-  if (!nodes.some((node) => marksItem(node, mark.type))) {
+  if (!nodes.some((node) => isNode(node) && marksItem(node, mark.type))) {
     const fix = mark.type === 'border' ? 'only a mediaInline takes border: delete the border spelling' : `write the ${name} mark around text beside them`
     return failure('unsupported-node-shape', `the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark: ${fix}`, scan.shared.path)
   }
