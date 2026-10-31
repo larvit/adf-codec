@@ -1290,3 +1290,32 @@ Inherited architect, decided by:
 - Locality: `src/markdown/portable/inline-reduction.ts:223` `spellableLine`: passes `dropsAlone` as a callback through four functions into the escaper's `merging`, splitting one contract across two files
 - Locality: `src/markdown/portable/inline-reduction.ts:244` `withoutMarks`: runs may now nest, for a reason that lives in the escaper's sweep
 - Self-sufficiency: `src/markdown/emit/line-escaping.ts:336` `fallsWithFirst`: its rule is equivalence to the `'first'` mode, checked only by a property test, and `runEdge` and `wordBeside` need CommonMark's delimiter-run rules beside the code
+
+## 2026-10-31T01:31:04Z, PR #110 at ceebcfb, against e743868
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | worse | better |
+| Inherited architect | better | better | better | worse | better |
+
+Mid A, decided by:
+
+- Navigation, Shape: `src/markdown/emit/unspellable-runs.ts:33` `unspellableRuns`: the emphasis-run sweep has its own file; line-escaping.ts holds only escaping
+- Locality, Shape: `src/markdown/emit/unspellable-runs.ts:9` `RunFallback`: the drop fallback carries nodes, and dropsAlone sits beside its only consumer
+- Shape: `src/markdown/emit/unspellable-runs.ts:30` `Standing`: four named states and shared `touching` replace a bare undefined and two hand-rolled walks
+- Locality, Shape: `src/markdown/emit/inline-line.ts:268` `emitLeaf`: leaf spellers return segments, and one place builds and checks every carry
+- Locality: `src/markdown/emit/block-text.ts:58` `holdsBlankLine`: callers ask BlockText instead of combining flat fields
+- Self-sufficiency: `src/markdown/emit/unspellable-runs.ts:208` `pairStanding`: the reasoning moved to the decision log, so its branches cannot be checked without it open
+- Self-sufficiency: `src/markdown/emit/inline-line.ts:48` `readBackPasses`: the 32-pass cap and its carry-all fallback are justified only by a pointer to the decision log
+
+Inherited architect, decided by:
+
+- Navigation, Shape: `src/markdown/emit/unspellable-runs.ts:33` `unspellableRuns`: a mark gone after a round trip now leads to a file whose name says so
+- Locality: `src/markdown/portable/inline-reduction.ts:228` `spellableLine`: no closure into the portable reducer's dropsAlone from deep in the emitter
+- Locality, Shape: `src/markdown/emit/inline-line.ts:53` `emitInlineLine`: the test-only perPass knob is gone from production signatures, at the price of exports only a test uses
+- Shape: `src/markdown/emit/unspellable-runs.ts:191` `touching`: one shared walk, and truer names such as holdsPairBefore and mergingEnds
+- Shape: `src/markdown/emit/block-text.ts:13` `FirstLine`: eight flat fields became two grouped records with named predicates
+- Self-sufficiency: `src/markdown/emit/unspellable-runs.ts:208` `pairStanding`: five branches whose proof now lives in the decision log
+- Self-sufficiency, Locality: `src/markdown/emit/inline-line.ts:48` `readBackPasses`: a magic cap of 32 shared by two retry loops that must agree on giving up
