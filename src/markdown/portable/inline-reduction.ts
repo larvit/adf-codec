@@ -165,7 +165,7 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    // Whitespace beside a code span a run spans keeps the run's mark, where the line written spanned reads it.
+    // Whitespace beside a code span inside a run keeps the run's mark, since the writer spans the run across the code.
     const spanned = spanSkippedNodes(merged, () => false)
     let changed = false
     const trimmed: AdfNode[] = []
