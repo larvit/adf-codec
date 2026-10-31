@@ -38,7 +38,7 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
   return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }
 
-// Undefined means every mark: the table lists only types the schema restricts. Text is code text, or formatted text, which withholds `border`.
+// Undefined means every mark: a node type outside this module's tables, which the schema restricts nowhere.
 export function takenMarkTypes(node: AdfNode): readonly string[] | undefined {
   if (node.type === 'text') return nodeMarks(node).some((mark) => mark.type === 'code') ? codeTextMarkTypes : formattedTextMarkTypes
   return inlineNodeModel(node.type)?.markTypes

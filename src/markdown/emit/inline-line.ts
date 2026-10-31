@@ -63,9 +63,10 @@ export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: Conve
 }
 
 export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<PortableLineFallback | undefined> {
-  const emission = lineSegments(nodes, container, path, withheldMarkFallbacks(nodes, 'portable'))
+  const fallbacks = withheldMarkFallbacks(nodes, 'portable')
+  const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
-  if (emission.value.carries !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
+  if (fallbacks.carried.size > 0 || emission.value.carries !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
   const verdict = lineVerdict(emission.value.segments, container, 'portable', { kind: 'drop', nodes })
   return success(verdict.kind === 'line' ? undefined : verdict)
 }
