@@ -166,7 +166,7 @@ export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    // Whitespace beside a code span a run spans keeps the run's mark, where the line written spanned reads it.
+    // Whitespace beside a code span inside a run keeps the run's mark, since the writer spans the run across the code.
     const spanned = spanSkippedNodes(merged, () => false)
     let changed = false
     const trimmed: AdfNode[] = []
