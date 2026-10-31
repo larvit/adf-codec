@@ -6,13 +6,13 @@ import { takesMark } from '../../adf/inline-nodes.ts'
 
 type Carries = (node: AdfNode, index: number) => boolean
 
-// The nodes, each that an emphasis or link run skips between two nodes it marks holding the run's mark at the run's depth, or `nodes` itself where no run skips one.
+// Lends each emphasis or link run's mark to the nodes inside the run that cannot hold it; returns `nodes` itself where no run skips a node.
 export function spanSkippedNodes(nodes: readonly AdfNode[], carries: Carries): readonly AdfNode[] {
   const spanned = [...nodes]
   return spanRuns(spanned, 0, spanned.length, 0, carries) ? spanned : nodes
 }
 
-// Groups the runs as `inlineRuns` does, then lends each run's mark to the nodes it skips; returns whether it lent any.
+// Groups the runs as `inlineRuns` does.
 function spanRuns(spanned: AdfNode[], first: number, end: number, depth: number, carries: Carries): boolean {
   if (depth > largestNesting) return false
   let lent = false
