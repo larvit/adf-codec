@@ -920,47 +920,55 @@ and a line repeating such a pattern 1000 times took 33 seconds lossless and 39 p
 passes, both writers fall back on every em, strike and strong run at once. Such a line keeps fewer
 marks than one strong per pass would leave, and takes time linear in its length. 32 clears the
 most passes any line in the suite needs, 22 portable and 5 lossless, with room to spare. The
-properties' reference, which takes back one run per pass, takes no cap.
+properties' reference, which falls back on only the first misread emphasis run each pass, takes no
+cap.
 
-## Beside the first misread emphasis run, a pass takes back only runs one run per pass would take back too
+## With the first misread emphasis run, `unspellableRuns` returns only runs that, taken back early, leave the line as the one-run-per-pass reference writes it
 
 2026-10-29, the maintainer. Goals 9 and 6. Valid while a writer finds a misread run only by reading
 the line back.
 
-Taking back one misread run per pass costs a pass per run. So with the first misread run, a pass
-takes back every run `unspellableRuns` proves one run per pass would take back later. The proof is
-sound, not complete: a run it misses costs one more pass, but a run it wrongly takes back loses a
-spelling the line could keep. The properties beside `inline-line.ts` and `inline-reduction.ts`
-check that every line comes out as one run per pass writes it.
+A writer takes a run back by carrying its nodes, lossless, or by dropping its mark, portable. The
+one-run-per-pass reference takes back only the first misread emphasis run each read-back pass, so
+it spends a pass per run. To spend fewer, `unspellableRuns` returns, with the first misread run,
+every run it proves can go back early and still leave the line as the reference writes it. A run
+the proof misses costs one more pass. The properties beside `inline-line.ts` and
+`inline-reduction.ts` define the reference, and check that every line the 32-pass cap (§After 32
+passes) doesn't reach comes out as the reference writes it.
 
-The sweep reads each run as a pair, its opener and its closer, and orders the pairs by where they
-close. A pair falls with the first misread pair where both hold:
+`unspellableRuns` reads each emphasis run as a pair, its opener and its closer, and orders the
+pairs by where they close. Its sweep judges the pairs closing after the first misread pair, nearest
+first, then those closing before it, nearest first, and each verdict reads the verdicts made before
+it. A judged pair is settled to fall, and goes back with the first, where both hold:
 
-- **It falls cleanly.** Under a drop, no run merges at its ends. Under a carry, it holds no pair
-  closing before it over fewer nodes, whose carry would split it.
-- **It cannot read, however it is written.** CommonMark judges a delimiter by the characters either
-  side of its whole delimiter run. Either the opener cannot open, or the closer cannot close and the
-  pair holds no pair, other than those settled to fall, that may be written with its character. An
-  opener that may open can pair with such a delimiter inside, and one run per pass would take that
-  inner pair back first.
+- **It falls cleanly.** Under a drop, no drop may merge runs at either of its ends, so no delimiter
+  there moves. Under a carry, it holds no pair closing before it over fewer nodes, which the
+  reference may carry first, splitting it.
+- **It cannot read, whichever character it is written with.** Either its opener cannot open, or
+  both of these hold: its closer cannot close, and it holds no pair, other than those settled to
+  fall, that may be written with the same character. An opener that may open can pair with such an
+  inner pair's closer. The reference may then take the inner pair back first, while taking the
+  judged pair back early may let the inner pair read as written.
 
-Em has no fixed character: `resolveEmphasis` writes `_`, and `*` beside a word character. So a
-verdict tries every character the pairs beside it leave possible. It reads each other pair as that
-pair stands when one run per pass reaches the judged one:
+Em has no fixed character: `resolveEmphasis` writes `_`, and `*` beside a word character.
+CommonMark judges a delimiter by the characters either side of its whole delimiter run. So whether
+a pair can read depends on the pairs whose delimiters touch its own, and a verdict tries every
+character they leave possible. A verdict reads each such pair as that pair stands when the
+reference reaches the judged pair. `pairStanding` returns the first of these cases that fits:
 
-- **A pair whose ends a drop may merge proves nothing**, since the merge may move its delimiters.
-- **Past a judged pair closing after the first, every pair stands.** One run per pass takes back
-  the first misread pair in closing order. While a pair settled to fall before the judged one
-  stands, it or one before it is misread, and once they are gone the judged pair is. So no pair
-  closing after the judged one goes first.
-- **Under a carry, a pair over the judged pair's nodes stands**, carried with it. Any other proves
-  nothing, since a carry may split it.
-- **Under a drop, a pair settled to fall is gone.** One run per pass takes it back, so the judged
-  pair need only fail to read once every such pair is gone. Any other pair may stand or be gone,
-  and the verdict must hold both ways.
-
-Each verdict reads the verdicts settled before it, so the sweep settles forward from the first
-pair, then back.
+- **`stands`: the judged pair itself.**
+- **`moves`: a pair at whose ends a drop may merge runs.** The merge may move its delimiters, so
+  the verdict can't rely on it.
+- **`stands`: a pair closing after the judged one, where the judged one closes after the first.**
+  The reference takes back the first misread pair in closing order. Each pair settled to fall that
+  closes before the judged one is misread once those settled before it are gone, and the judged
+  pair is misread once all of them are gone. So the reference reaches the judged pair before any
+  pair closing after it.
+- **Under a carry, `stands` for a pair over exactly the judged pair's nodes, else `moves`.** One
+  carry takes both back at once, and any other may be carried or split first.
+- **Under a drop, `fallen` for a pair settled to fall, else `unsettled`.** The reference takes back
+  every pair settled to fall, so the judged pair need only fail to read once they are gone. An
+  `unsettled` pair may stand or have fallen, so the verdict must hold both ways.
 
 ## Readers scan by index
 

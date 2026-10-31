@@ -76,7 +76,7 @@ In `docs/decisions.md`:
 - Nothing spreads an unbounded array
 - A retry loop checks its own termination
 - After 32 passes, a line carries or drops every em, strike and strong mark
-- Beside the first misread emphasis run, a pass takes back only runs one run per pass would take back too
+- With the first misread emphasis run, `unspellableRuns` returns only runs that, taken back early, leave the line as the one-run-per-pass reference writes it
 - Readers scan by index
 - The spelling memo
 - Cost fixes are measured, never timed
