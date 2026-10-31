@@ -1338,3 +1338,26 @@ Inherited architect, decided by:
 
 - Shape, Overall: `src/adf/inline-nodes.ts:42` `takenMarkTypes`: `undefined` now means only a node type outside the tables
 - Shape: `src/markdown/inline-content.ts:261` `directiveMarkPieces`: this caller overrides `marksItem`'s rule that a non-node is markable, with nothing at the call site saying why
+
+## 2026-10-31T03:20:46Z, PR #112 at 66ad0be, against 8bcf4a5
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | same | same | worse |
+| Inherited architect | same | worse | same | same | worse |
+
+Mid A, decided by:
+
+- Locality: `src/markdown/emit/skipped-nodes.ts:15` `spanRuns`: a second copy of `inlineRuns`' run grouping, kept in step only by a comment, editing `spanned` in place while it recurses
+- Locality: `src/markdown/portable/inline-reduction.ts:169` `trimmedEdges`: reads each leaf's neighbours from a parallel spanned array, so the portable edge rule depends on the writer's spanning
+- Locality: `src/markdown/emit/inline-line.ts:119` `spannedLine`: every pass emits a second, spanned line first and throws it away on a fallback or a portable `!adf:`
+- Locality: `src/markdown/emit/skipped-nodes.ts:54` `holdsEmptyMarks`: a one-line exception at the end of a predicate decides whether a node is lent a mark
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/emit/skipped-nodes.ts:16` `spanRuns`: run grouping in two places that must agree, linked only by a comment naming `inlineRuns`
+- Locality: `src/markdown/portable/inline-reduction.ts:169` `trimmedEdges`: models the writer as always spanning, which `spannedLine` does only where the line reads back
+- Locality: `src/markdown/emit/inline-line.ts:119` `spannedLine`: refuses a portable span by the `!adf:` prefix of a segment's text, and turns every emission failure into the parted line
+- Locality: `src/markdown/emit/skipped-nodes.ts:11` `spanSkippedNodes`: signals nothing spanned by returning the same array, and hides the empty-marks exception from the caller
