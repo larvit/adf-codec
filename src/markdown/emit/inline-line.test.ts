@@ -31,7 +31,7 @@ test('spells a line alike taking every fallback a pass finds or the first alone'
   )
 })
 
-// Takes the first fallback a pass finds alone, and no cap.
+// Takes only the first fallback each pass finds, with no cap.
 function firstFallbackLine(nodes: readonly AdfNode[], container: LineContainer): Result<string> {
   const fallbacks = withheldMarkFallbacks(nodes, 'lossless')
   for (;;) {

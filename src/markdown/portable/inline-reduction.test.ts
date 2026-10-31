@@ -36,7 +36,7 @@ test('reduces a line alike dropping every run a pass may or the first alone', ()
   )
 })
 
-// Drops the first run a pass finds alone, with every misflanked highlight, and takes no cap.
+// Drops only the first run each pass finds, with every misflanked highlight, and takes no cap.
 function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Result<AdfNode[]> {
   const leaves = portableLeaves(nodes, container, [], 0)
   if (!leaves.ok) return leaves
