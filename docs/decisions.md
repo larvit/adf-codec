@@ -707,6 +707,16 @@ unmeasured, and past a pass's round cap it goes unreviewed. Where an item of the
 reworks that code again, restructuring it inside the chunk does the work twice. Before the chunk
 merges, that item's detail names every place the ruling voted worse.
 
+## A chunk ruled worse that restructures the places takes a second paired ruling against the same base, and merges where it is not worse
+
+2026-10-31, the maintainer, on PR #112: its ruling voted Locality worse, no plan item of its release
+reworked that code, and a restructure after the ruling addressed most of its places. Serves code
+health. Valid while the comprehension check runs once per chunk.
+
+The second ruling reads the restructured head against the first ruling's base, with the same seats,
+and both rulings stay in the history. A restructure past a pass's round cap still goes unreviewed,
+so the PR summary names it.
+
 ## No schema validation
 
 2026-08-23, the mark refusal 2026-08-25, the maintainer. Goal 1. Valid while the site a document
