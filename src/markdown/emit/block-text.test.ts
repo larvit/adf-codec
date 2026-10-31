@@ -31,3 +31,23 @@ test('measures a block text as the text it writes', () => {
     propertyRuns(2000),
   )
 })
+
+test('writes an empty line without reading the started prefixes inside its innermost quote', () => {
+  const reads = (emptyLines: number): number => {
+    let count = 0
+    let body = blockText(`a${'\n'.repeat(emptyLines)}`)
+    for (let depth = 0; depth < 3; depth += 1) {
+      body = new Proxy(prefixedText('- ', '  ', body), {
+        get(target, key, receiver) {
+          count += 1
+          return Reflect.get(target, key, receiver)
+        },
+      })
+    }
+    const text = quotedText(body)
+    count = 0
+    writtenText(text)
+    return count
+  }
+  assert.equal(reads(1000), reads(1))
+})

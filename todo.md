@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 162`
+`Next ID = 163`
 
 ## Items
 
@@ -25,6 +25,7 @@
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 154 | 0.4.0 |  |  | **Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 155 | 0.4.0 |  |  | **Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
+| 162 | 0.4.0 |  |  | **Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -179,6 +180,20 @@ A comprehension seat found `src/markdown/inline-content.ts` `closeBracket` hard:
 `scan.pieces`, the link openers and the reading, and calls `unopened`, `literalClose` and
 `popBracket`, which write `scan.pieces`, `scan.pending` and the link openers. Make that place
 easier to read.
+
+### 162. Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.
+
+About 20 mutants of `src/markdown/emit/unspellable-runs.ts` survive the gate. Each lets a pair fall
+with the first where the one-run-per-pass reference keeps it, so the line comes out other than the
+reference writes it, against `docs/decisions.md` §With the first misread emphasis run,
+`unspellableRuns` returns only runs that, taken back early, leave the line as the one-run-per-pass
+reference writes it. They sit in `endsAlone`'s mark check, `holdsAlike`'s `held >= 0`,
+`mayBeWrittenWith`, the `'moves'` give-ups in `runEdge`, `wordBeside` and `pairStanding`,
+`pairSpellings`' carry-split rule and `holdsPairBefore`'s `<=`. The properties beside
+`inline-line.ts` and `inline-reduction.ts` miss them; the `runEdge` one survived 20000 runs on a
+random seed. Write one line per rule of that entry, its expected markdown worked from the entry,
+never from the code, then run Stryker on the file. A mutant that only takes fewer runs back costs a
+pass and may survive.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
