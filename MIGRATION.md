@@ -14,9 +14,7 @@ also skips every other node Atlassian's schema withholds the mark from:
 
 `0.3.0`'s `adfToLosslessMarkdown` writes a node holding a withheld mark as `!adf:carry{json="…"}`,
 where `0.2.0` wrote these spellings. `0.3.0` reads markdown stored from such a document without the
-mark, and refuses it where the mark wrapped only those nodes. Written back, a space beside the node
-inside the mark's spelling becomes `!adf:text{text=" "}`: ``**Run `npm ci` first**`` writes back as
-``**Run!adf:text{text=" "}**`npm ci`**!adf:text{text=" "}first**``. Keep the mark only in markdown
+mark, and refuses it where the mark wrapped only those nodes. Keep the mark only in markdown
 written from ADF that held it: Atlassian's schema withholds it, so a site may refuse the document.
 To keep it, read the markdown with `0.2.0` and write it with `0.3.0`, installed side by side:
 

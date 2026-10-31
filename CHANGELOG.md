@@ -33,6 +33,12 @@
   `!adf:border[x]{color="#091e42" size=2}` is `unsupported-node-shape`, and only a
   `mediaInline` takes `border`. `adfToLosslessMarkdown` writes text holding `border` as `!adf:carry{json="…"}`.
   `MIGRATION.md` says how to convert stored markdown.
+- `adfToLosslessMarkdown` and `adfToPortableMarkdown` write an emphasis or a link once across the
+  hard breaks between two texts it marks: `_One\` then `Two_`, where they wrote `_One_\` then
+  `_Two_`. They write an emphasis once across code spans, as ``**Run `npm ci` first**``, and
+  `adfToLosslessMarkdown` also across mentions, emoji, dates, statuses, inline cards and inline
+  media, as `**Ping !adf:mention[@A]{id=x} now**`, and a link across those but inline media. Each
+  reads back as before; a line that would read back otherwise is written as before.
 - Every reader keeps the URL and title of an image inside a link's text, where it dropped them:
   after the link comes `(image)`, which links to the image, so
   `[look at ![the moon](moon.png "Full") tonight](/moon)` reads as

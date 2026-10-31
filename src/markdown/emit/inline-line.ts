@@ -18,6 +18,7 @@ import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
 import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
+import { spanSkippedNodes } from './skipped-nodes.ts'
 import { spellInlineNodeAttributes } from '../directive/inline-spelling.ts'
 import { spellTextDirective } from '../directive/text.ts'
 
@@ -67,6 +68,7 @@ export function portableLineFallback(nodes: readonly AdfNode[], container: LineC
   const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
   if (fallbacks.carried.size > 0 || emission.value.carries !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
+  if (spannedLine(nodes, container, path, fallbacks) !== undefined) return success(undefined)
   const verdict = lineVerdict(emission.value.segments, container, 'portable', { kind: 'drop', nodes })
   return success(verdict.kind === 'line' ? undefined : verdict)
 }
@@ -106,10 +108,22 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
 }
 
 export function linePass(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<LineAttempt> {
+  const spanned = spannedLine(nodes, container, path, fallbacks)
+  if (spanned !== undefined) return success(spanned)
   const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
   const { carries, segments } = emission.value
   return success(segments === undefined ? { fallback: carries } : attemptLine(segments, container, fallbacks.flavour))
+}
+
+// spec/flavour.md, Marks: a run spans the nodes its mark skips where the line reads back so; the line parted at them is the one whose fallbacks a pass takes.
+function spannedLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): LineAttempt | undefined {
+  const spanned = spanSkippedNodes(nodes, (node, index) => carries(node, fallbacks.carried, index))
+  if (spanned === nodes) return undefined
+  const emission = lineSegments(spanned, container, path, fallbacks)
+  if (!emission.ok || emission.value.segments === undefined) return undefined
+  const attempt = attemptLine(emission.value.segments, container, fallbacks.flavour)
+  return attempt.fallback === undefined ? attempt : undefined
 }
 
 function carryEveryEmphasis(fallbacks: LineFallbacks, nodes: readonly AdfNode[]): void {

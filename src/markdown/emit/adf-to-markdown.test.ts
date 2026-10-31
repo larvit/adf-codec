@@ -897,19 +897,39 @@ test('spells the directive marks around the longest run they cover', () => {
   assert.equal(emitted(marked('a', underline), { type: 'hardBreak' }, marked('b', underline)), '!adf:underline[a]\\\n!adf:underline[b]\n')
 })
 
-test('closes a mark run at the hard break between two nodes holding the mark', () => {
+test('spells an emphasis or link run once across the hard breaks between two nodes holding the mark', () => {
   const em: AdfMark = { type: 'em' }
   const link: AdfMark = { attrs: { href: '/u' }, type: 'link' }
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const hardBreak: AdfNode = { type: 'hardBreak' }
-  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, marked('b', em)))), '_a_\\\n_b_\n')
-  assert.equal(readsBack(document(paragraph(marked('a', link), hardBreak, marked('b', link)))), '[a](/u)\\\n[b](/u)\n')
-  assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)_\\\n_b_\n')
-  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a_\\\n\\\n_b_\n')
+  assert.equal(readsBack(document(paragraph(marked('One', em), hardBreak, marked('Two', em)))), '_One\\\nTwo_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', link), hardBreak, marked('b', link)))), '[a\\\nb](/u)\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)\\\nb_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, hardBreak, marked('b', em)))), '_a\\\n\\\nb_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em), hardBreak, { text: 'b', type: 'text' }))), '_a_\\\nb\n')
   const directive: AdfMark = { attrs: { href: '/u', id: 'x' }, type: 'link' }
-  assert.equal(readsBack(document(paragraph(marked('a', directive), hardBreak, marked('b', directive)))), '!adf:link[a]{href="/u" id=x}\\\n!adf:link[b]{href="/u" id=x}\n')
+  assert.equal(readsBack(document(paragraph(marked('a', directive), hardBreak, marked('b', directive)))), '!adf:link[a!adf:hardBreak{}b]{href="/u" id=x}\n')
   readsBack(document(paragraph(marked(']: /x', link, { type: 'code' }), hardBreak, marked('b', link))))
   assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
+})
+
+test('spells an emphasis run once across the code spans, inline nodes and inline media between two nodes holding the mark', () => {
+  const strong: AdfMark = { type: 'strong' }
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  const mention: AdfNode = { attrs: { id: 'x', text: '@A' }, type: 'mention' }
+  assert.equal(readsBack(document(paragraph(marked('Ping ', strong), mention, marked(' now', strong)))), '**Ping !adf:mention[@A]{id=x} now**\n')
+  assert.equal(readsBack(document(paragraph(marked('Run ', strong), marked('npm ci', { type: 'code' }), marked(' first', strong)))), '**Run `npm ci` first**\n')
+  assert.equal(readsBack(document(paragraph(marked('a ', strong), { attrs: { timestamp: '0' }, type: 'date' }, marked(' b', strong)))), '**a !adf:date{timestamp=0} b**\n')
+  assert.equal(readsBack(document(paragraph(marked('a ', strong), { attrs: { id: 'm' }, type: 'mediaInline' }, marked(' b', strong)))), '**a !adf:mediaInline{id=m} b**\n')
+  assert.equal(readsBack(document(paragraph(marked('a ', strong), marked('c', { type: 'code' }), mention, { type: 'hardBreak' }, marked(' b', strong)))), '**a `c`!adf:mention[@A]{id=x}\\\n!adf:text{text=" "}b**\n')
+})
+
+test('spells a link run once across the inline nodes between two nodes holding it, and parts it at code and inline media', () => {
+  const link: AdfMark = { attrs: { href: '/u' }, type: 'link' }
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  assert.equal(readsBack(document(paragraph(marked('a ', link), { attrs: { id: 'x', text: '@A' }, type: 'mention' }, marked(' b', link)))), '[a !adf:mention[@A]{id=x} b](/u)\n')
+  assert.equal(readsBack(document(paragraph(marked('a', link), { attrs: { url: 'https://c/' }, type: 'inlineCard' }, marked('b', link)))), '[a!adf:inlineCard{url="https://c/"}b](/u)\n')
+  assert.equal(readsBack(document(paragraph(marked('a', link), marked('c', { type: 'code' }), marked('b', link)))), '[a](/u)`c`[b](/u)\n')
 })
 
 test('carries a hard break holding marks, which Atlassian\'s schema withholds', () => {
