@@ -8,7 +8,7 @@ import test from 'node:test'
 import type { AttributeKind, AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import { blockArgument } from '../markdown/directive/block.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
-import { codeTextMarkTypes, inlineNodes } from '../adf/inline-nodes.ts'
+import { codeTextMarkTypes, formattedTextMarkTypes, inlineNodes } from '../adf/inline-nodes.ts'
 import { markVocabularies } from '../adf/mark-attributes.ts'
 
 type Held = Map<string, Set<AttributeKind>>
@@ -89,6 +89,16 @@ test('code text takes exactly the mark types the ADF JSON Schemas give a code_in
     // allOf narrows text_node's marks, which hold every mark type, to the ones code text takes.
     const narrowed = marks.map((schema) => heldMarkTypes(schema, definitions, `${where}.marks`)).filter((types) => !types.includes('every mark type'))
     assert.deepEqual(narrowed.flat().sort(), codeTextMarkTypes, file)
+  }
+})
+
+test('formatted text takes exactly the mark types the ADF JSON Schemas give a formatted_text_inline_node', () => {
+  for (const file of schemaFiles) {
+    const definitions = schemaObject(schemaObject(JSON.parse(readFileSync(join(root, file), 'utf8')), file)['definitions'], `${file} definitions`)
+    const where = `${file} formatted_text_inline_node`
+    const marks = alternatives(schemaObject(definitions['formatted_text_inline_node'], where), definitions, where).flatMap((properties) => properties.get('marks') ?? [])
+    const narrowed = marks.map((schema) => heldMarkTypes(schema, definitions, `${where}.marks`)).filter((types) => !types.includes('every mark type'))
+    assert.deepEqual(narrowed.flat().sort(), formattedTextMarkTypes, file)
   }
 })
 

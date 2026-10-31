@@ -3,13 +3,14 @@
 ## From `0.2.0` to `0.3.0`
 
 Every reader skips code text when it spells a mark other than a link, and `losslessMarkdownToAdf`
-also skips every other node Atlassian's schema withholds the mark from:
+also skips every other node Atlassian's schema withholds the mark from, text included for `border`:
 
 | Input | `0.2.0` | `0.3.0` |
 | --- | --- | --- |
 | a `date`, `emoji`, `inlineCard`, `mention`, `status` or `mediaInline` inside a mark's spelling (`**!adf:mention[@A]{id=x}**`) | the node holds the mark | the node holds only marks its type takes; text beside it keeps the mark |
 | a link around only nodes that cannot take it, hard breaks aside, or a directive mark around only such nodes or code spans (`[!adf:status[Done]{color=green}](/u)`) | the nodes hold the mark | `unsupported-node-shape`; write the mark around text beside them |
 | a code span inside any mark's spelling but a link's (``**`npm ci`**``) | the code text holds the mark | the code text holds only `code`, and a link where one wraps it |
+| text inside `!adf:border[…]` (`!adf:border[x]{color="#091e42" size=2}`) | the text holds `border` | `unsupported-node-shape` where the mark wraps only text, else the text holds no `border`; `border` marks a `mediaInline` alone |
 
 `0.3.0`'s `adfToLosslessMarkdown` writes a node holding a withheld mark as `!adf:carry{json="…"}`,
 where `0.2.0` wrote these spellings. `0.3.0` reads markdown stored from such a document without the

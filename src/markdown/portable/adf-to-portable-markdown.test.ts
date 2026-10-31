@@ -416,7 +416,7 @@ test('gives up every highlight run whose own delimiter cannot flank in one fallb
 })
 
 test('refuses a portable line holding a node only the carry spells, at the line', () => {
-  const refused = portableLineFallback([text('x', { type: 'odd' })], 'paragraph', ['content', 0])
+  const refused = portableLineFallback([text('x', { attrs: { a: 1 }, type: 'em' })], 'paragraph', ['content', 0])
   assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
 })
 

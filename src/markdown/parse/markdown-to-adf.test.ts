@@ -926,6 +926,11 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
   assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
   assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
+  assert.deepEqual(read('!adf:border[a !adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ text: 'a ', type: 'text' }, { ...media, marks: [border] }], type: 'paragraph' }])
+  const unborderable = 'unsupported-node-shape: the border mark wraps the [content] it marks: this one wraps only nodes that take no border mark: write the border mark around text beside them'
+  assert.equal(read('!adf:border[a]{color="#091e42" size=2}\n'), unborderable)
+  assert.equal(read('_!adf:border[a]{color="#091e42" size=2}_\n'), unborderable)
+  assert.equal(read('!adf:underline[!adf:border[a]{color="#091e42" size=2}]\n'), unborderable)
   assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
   assert.equal(read('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
   assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark: write the link mark around text beside them')
@@ -1289,7 +1294,6 @@ test('reads the directive marks, the nesting outermost first', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[!adf:underline[a]]\n')), wrapped(underline))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:textColor[a]{color="#ae2e24"}\n')), wrapped({ attrs: { color: '#ae2e24' }, type: 'textColor' }))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:subsup[a]{type=sub}\n')), wrapped({ attrs: { type: 'sub' }, type: 'subsup' }))
-  assert.deepEqual(content(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=2}\n')), wrapped({ attrs: { color: '#091e42', size: 2 }, type: 'border' }))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:date{timestamp=1}]\n')), [
     { content: [marked('a', underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
   ])

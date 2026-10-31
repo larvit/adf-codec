@@ -29,6 +29,10 @@
   schema requires: ``**`npm ci`**`` now reads as plain code, and a directive mark other than a link
   around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
   holding another mark as `!adf:carry{json="…"}`, and `adfToPortableMarkdown` drops that mark.
+- **Breaking:** `losslessMarkdownToAdf` gives text no `border` mark, as Atlassian's schema requires:
+  `!adf:border[x]{color="#091e42" size=2}` is `unsupported-node-shape`, and `border` marks a
+  `mediaInline` alone. `adfToLosslessMarkdown` writes text holding `border` as `!adf:carry{json="…"}`.
+  `MIGRATION.md` says how to convert stored markdown.
 - Every reader keeps the URL and title of an image inside a link's text, where it dropped them:
   after the link comes `(image)`, which links to the image, so
   `[look at ![the moon](moon.png "Full") tonight](/moon)` reads as

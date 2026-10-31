@@ -335,6 +335,10 @@ test('carries an inline node holding a mark Atlassian\'s schema withholds from i
   assert.equal(carried({ attrs: { id: 'm1' }, marks: [{ attrs: { href: '/u' }, type: 'link' }], type: 'mediaInline' }), '[!adf:mediaInline{id=m1}](/u)\n')
   assert.equal(carried({ marks: [{ type: 'strong' }, { type: 'code' }], text: 'x', type: 'text' }), '!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strong\\"},{\\"type\\":\\"code\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}\n')
   assert.equal(carried({ marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: 'x', type: 'text' }), '[`x`](/u)\n')
+  const border: AdfMark = { attrs: { color: '#091e42', size: 2 }, type: 'border' }
+  const bordered = '!adf:carry{json="{\\"marks\\":[{\\"attrs\\":{\\"color\\":\\"#091e42\\",\\"size\\":2},\\"type\\":\\"border\\"}],\\"text\\":\\"x\\",\\"type\\":\\"text\\"}"}'
+  assert.equal(carried({ marks: [border], text: 'x', type: 'text' }), `${bordered}\n`)
+  assert.equal(markdown(adfToLosslessMarkdown(document(paragraph({ marks: [{ type: 'em' }], text: 'a', type: 'text' }, { marks: [border], text: 'x', type: 'text' })))), `_a_${bordered}\n`)
 })
 
 test('spells a heading level no ATX heading fits as a directive', () => {
@@ -888,7 +892,6 @@ test('spells the directive marks around the longest run they cover', () => {
   assert.equal(emitted(marked('a', { attrs: {}, type: 'underline' }), marked('b', underline)), '!adf:underline[a]{attrs=empty}!adf:underline[b]\n')
   assert.equal(emitted(marked('x', { attrs: { type: 'sub' }, type: 'subsup' })), '!adf:subsup[x]{type=sub}\n')
   assert.equal(emitted(marked('x', { attrs: { color: '#ae2e24' }, type: 'textColor' })), '!adf:textColor[x]{color="#ae2e24"}\n')
-  assert.equal(emitted(marked('x', { attrs: { color: '#091e42', size: 2 }, type: 'border' })), '!adf:border[x]{color="#091e42" size=2}\n')
   assert.equal(emitted(marked('x', { type: 'em' }, underline)), '_!adf:underline[x]_\n')
   assert.equal(emitted(marked('x', underline, { type: 'em' })), '!adf:underline[_x_]\n')
   assert.equal(emitted(marked('a', underline), { type: 'hardBreak' }, marked('b', underline)), '!adf:underline[a]\\\n!adf:underline[b]\n')
