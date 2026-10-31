@@ -4,7 +4,7 @@ import { carriedNesting, carriedNode, carriedValue } from '../../adf/carried-jso
 import { carryContent } from '../carry-content.ts'
 import { carryJsonOffset, readCarryAttributes } from '../carry-attributes.ts'
 import { foundAt, refused, type Place, type ReadNode, type StartTag } from './source.ts'
-import { holdableJson } from '../escaping.ts'
+import { holdableJson, readsAsShown } from '../escaping.ts'
 import { spellsCanonicalJson } from '../../canonical-json.ts'
 import { success } from '../../result.ts'
 
@@ -18,10 +18,9 @@ export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', 
   const node = heldNode(json, levels, html, jsonAt)
   if (node.fault !== undefined) return refused(node.fault.code, node.fault.message, html, jsonAt, place)
   const shown = `${carryContent(node.value, element)}</${element}>`
-  if (html.startsWith(shown, tag.end)) return success({ end: tag.end + shown.length, node: node.value })
-  let at = tag.end
-  while (html[at] === shown[at - tag.end]) at += 1
-  return refused('unmappable-html', `a carry element shows exactly what adfToHtml writes for its node, then </${element}>; to change the node, edit its ADF and write the HTML again: ${foundAt(html, at)}`, html, at, place)
+  const read = readsAsShown(html, tag.end, shown)
+  if (read.whole) return success({ end: read.at, node: node.value })
+  return refused('unmappable-html', `a carry element shows exactly what adfToHtml writes for its node, then </${element}>; to change the node, edit its ADF and write the HTML again: ${foundAt(html, read.at)}`, html, read.at, place)
 }
 
 function heldNode(json: string, levels: number, html: string, jsonAt: number): Read<AdfNode> {

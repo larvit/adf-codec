@@ -446,13 +446,17 @@ own: it puts the second panel's `<a>` around the text a card shows.
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
 2026-10-28, the maintainer. Goal 6. Valid while a viewer/editor app may show `adfToHtml`'s HTML in a
-browser and post the page back. Lands with `todo.md` item 150.
+browser and post the page back.
 
 A browser does not write the dialect back as `adfToHtml` wrote it. `htmlToAdf` reads both spellings:
 a page's `innerHTML`, as WHATWG HTML §Serializing HTML fragments spells it, and a form post, which
 ends each line in `\r\n`. So text's raw `"` reads as `&quot;` does, `&nbsp;` as a no-break space and
-`\r\n` as a line feed, in what a carry element shows too. Every element the dialect writes reads this
-way, those later items add included. HTML no browser writes from the dialect stays refused.
+`\r\n` as a line feed, in what a carry element shows too. An attribute value's raw `<` and `>` read as
+`&lt;` and `&gt;` do: the serialization algorithm escapes them now, and a browser from before that
+writes them raw. These are every difference §Serializing HTML fragments leaves between a browser's
+text and `adfToHtml`'s, checked against Firefox's own `innerHTML` in the browser leg. Every element
+the dialect writes reads this way, those later items add included. HTML no browser writes from the
+dialect stays refused, a lone `\r` among it. A refusal's position counts the HTML as handed in.
 
 ## No runtime dependencies
 
@@ -740,7 +744,8 @@ resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` s
 SpiderMonkey.
 
 A headless Firefox loads `dist/index.js` over HTTP and converts the round-trip, normalization and
-error fixtures and the real payloads — the `commonmark-spec` sort is the Node suite's to check —
+error fixtures and the real payloads, and reads the HTML its own `innerHTML` writes back from
+`adfToHtml`'s — the `commonmark-spec` sort is the Node suite's to check —
 which is the browser half of §Any ES2022 engine and the only SpiderMonkey there is — the gate's
 other engines are two V8s and a JavaScriptCore that is not Safari's. A WebDriver session is what
 carries a verdict back out, the driver and the page's server sharing one network namespace so each

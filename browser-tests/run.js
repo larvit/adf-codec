@@ -70,7 +70,25 @@ async function whenDriverAnswers() {
   }
 }
 
+// Text the browser's innerHTML spells other than adfToHtml does (WHATWG HTML §13.3): a raw ", &nbsp;, and in an attribute < and > escaped or not by version.
+const text = (value, ...marks) => (marks.length === 0 ? { text: value, type: 'text' } : { marks, text: value, type: 'text' })
+const browserDocuments = [
+  {
+    json: JSON.stringify({
+      content: [
+        { content: [text('Say "hi"\u00a0now & <then>'), text(' link', { attrs: { href: 'https://example.com/?a<b>c&d="e"', title: 'A "title"\u00a0<here>' }, type: 'link' })], type: 'paragraph' },
+        { attrs: { language: 'js' }, content: [text('if (a < b) say("x\u00a0y")\n  done()')], type: 'codeBlock' },
+        { content: [{ attrs: { id: '0199f4c2-8b1e-7d03-9a6f-2c5e8d71b4a0', text: 'Say "hi"\u00a0now' }, type: 'mention' }], type: 'paragraph' },
+        { attrs: { panelType: 'info' }, content: [{ content: [text('A "quote"\u00a0here', { type: 'underline' }, { attrs: { href: 'https://example.com/?a<b>', title: 'T"\u00a0' }, type: 'link' })], type: 'paragraph' }], type: 'panel' },
+      ],
+      type: 'doc',
+      version: 1,
+    }),
+    name: 'quotes, no-break spaces and angle brackets',
+  },
+]
 const corpus = {
+  browserDocuments,
   errors: fixtureNames('errors', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
   normalization: fixtureNames('normalization', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
   realPayloads: fixtureNames('real-payloads', '.json').map((name) => ({ json: fixture(name, '.json'), name })),
@@ -135,6 +153,16 @@ for (const [index, { json, name }] of corpus.realPayloads.entries()) {
     assert.deepEqual(result.html, adfToHtml(JSON.parse(json)), 'it wrote other HTML than Node wrote')
     assert.ok(result.htmlParsed.ok, `its HTML did not read back — ${refusal(result.htmlParsed)}`)
     assert.deepEqual(revived(result.htmlParsed.value), JSON.parse(json))
+    assert.ok(result.innerHtml.parsed.ok, `its innerHTML did not read back — ${refusal(result.innerHtml.parsed)}`)
+    assert.deepEqual(revived(result.innerHtml.parsed.value), JSON.parse(json))
+  })
+}
+
+for (const [index, { json, name }] of corpus.browserDocuments.entries()) {
+  const result = results.browserDocuments[index]
+  checking(name, result, () => {
+    assert.ok(result.parsed.ok, `its innerHTML did not read back — ${refusal(result.parsed)}`)
+    assert.deepEqual(revived(result.parsed.value), JSON.parse(json))
   })
 }
 
@@ -147,5 +175,5 @@ for (const [index, { name }] of corpus.errors.entries()) {
 }
 
 console.log(
-  `Firefox ${session.capabilities.browserVersion} converted ${corpus.roundTrip.length} round-trip, ${corpus.normalization.length} normalization and ${corpus.errors.length} error fixtures and ${corpus.realPayloads.length} real payloads`,
+  `Firefox ${session.capabilities.browserVersion} converted ${corpus.roundTrip.length} round-trip, ${corpus.normalization.length} normalization and ${corpus.errors.length} error fixtures, ${corpus.realPayloads.length} real payloads and ${corpus.browserDocuments.length} documents through innerHTML`,
 )

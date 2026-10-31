@@ -12,13 +12,12 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 150 | 0.3.0 |  | decision | **Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.** | 2 | 2 | 2 | 4 | 4 | 6 by 5 | 5.0 |
 | 115 | 0.3.0 |  | defect | **Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.** | 2 | 1 | 2 | 3 | 3 | 4 by 3 | 4.6 |
 | 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 91, 115, 132, 133, 150 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 91, 115, 132, 133, 150 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 91, 115, 132, 133 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 91, 115, 132, 133 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -68,16 +67,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 150. Read `adfToHtml`'s HTML in `htmlToAdf` as a browser serializes it too — a raw `"` in text, `&nbsp;`, `\r\n` line endings — so a page's `innerHTML` or a form post reads back.
-
-`htmlToAdf` refuses all three today. A browser's `innerHTML` writes text's `"` raw and a no-break
-space as `&nbsp;`, and a form post turns every line feed into `\r\n`, so a viewer/editor app
-sending its page back gets `unmappable-html`. `docs/decisions.md` §`htmlToAdf` also reads the
-dialect as a browser serializes it records the maintainer's yes. Take every difference from WHATWG
-HTML §Serializing HTML fragments, not only these three, and check them against a browser's own
-`innerHTML`. README §HTML and `spec/html.md` say `\r\n` is refused; update both. The comprehension
-panel found `misspelling` in `src/html/escaping.ts` hard to read: make it easier.
 
 ### 115. Build text holding no `border` mark in `losslessMarkdownToAdf`, and have `adfToLosslessMarkdown` carry text holding one.
 
