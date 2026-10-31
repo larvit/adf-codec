@@ -1,14 +1,5 @@
 export type Spelling = 'attribute' | 'text'
 
-const escapable = /[&<>"]/g
-const escapes: ReadonlyMap<string, string> = new Map([
-  ['"', '&quot;'],
-  ['&', '&amp;'],
-  ['<', '&lt;'],
-  ['>', '&gt;'],
-])
-const writtenEntities = [...escapes.values()]
-const entity = /&(?:amp|gt|lt|nbsp|quot);/g
 const entityValues: ReadonlyMap<string, string> = new Map([
   ['&amp;', '&'],
   ['&gt;', '>'],
@@ -16,16 +7,22 @@ const entityValues: ReadonlyMap<string, string> = new Map([
   ['&nbsp;', '\u00a0'],
   ['&quot;', '"'],
 ])
+const entityNames = [...entityValues.keys()].map((spelled) => spelled.slice(1, -1)).join('|')
+const entity = new RegExp(`&(?:${entityNames});`, 'g')
+// `adfToHtml` writes every character of `entityValues` as its entity but the no-break space.
+const escapes: ReadonlyMap<string, string> = new Map([...entityValues].filter(([, character]) => character !== '\u00a0').map(([spelled, character]): [string, string] => [character, spelled]))
+const escapable = new RegExp(`[${[...escapes.keys()].join('')}]`, 'g')
+const writtenEntities = [...escapes.values()]
 // What HTML text and attribute values cannot hold (WHATWG HTML §13.1.3): any control but a tab, line feed or form feed, a carriage return among them, since a parser reads it as a line feed; a noncharacter; and a lone surrogate, which UTF-8 cannot encode.
 const unwritable = /(?![\t\n\f ])[\p{Cc}\p{Cs}\p{Noncharacter_Code_Point}]/u
 const unwritables = new RegExp(unwritable.source, 'gu')
-const strayAmpersand = '&(?!(?:amp|gt|lt|nbsp|quot);)'
-// What reads wrongly in a value: `&` outside an entity, a character HTML cannot hold, and in text a `<` or `>`. An attribute value may hold `<` and `>` raw, as older browsers write it, and text may hold `"`.
+const strayAmpersand = `&(?!(?:${entityNames});)`
+// An attribute value may hold a raw `<` or `>`, as older browsers write them; text may hold a raw `"`.
 const misspellings: Readonly<Record<Spelling, RegExp>> = {
   attribute: new RegExp(`${strayAmpersand}|${unwritable.source}`, 'u'),
   text: new RegExp(`${strayAmpersand}|[<>]|${unwritable.source}`, 'u'),
 }
-// What `adfToHtml` spells with an entity, a browser (WHATWG HTML §13.3) spells raw in text, or in an attribute; a no-break space it spells `&nbsp;` in both.
+// For each spelling, the other way a browser writes what `adfToHtml` writes as the key (WHATWG HTML §13.3).
 const browserSpellings: Readonly<Record<Spelling, ReadonlyMap<string, string>>> = {
   attribute: new Map([['&gt;', '>'], ['&lt;', '<'], ['\u00a0', '&nbsp;']]),
   text: new Map([['&quot;', '"'], ['\u00a0', '&nbsp;']]),
@@ -56,14 +53,14 @@ export function shownValue(value: string, lineFeed: string): string {
   return escapeHtml(value.replace(unwritables, '')).replaceAll('\n', lineFeed)
 }
 
-// Where `html` reads as `shown` from `index`: `whole`, and the index after it, or where it first reads otherwise. `shown` is spelled as `adfToHtml` writes it, `html` as a browser may too.
+// Whether `html` holds `shown` from `index` (`whole`), and the index where the match ends or first fails. `shown` is as `adfToHtml` writes it; `html` may spell it as a browser does.
 export function readsAsShown(html: string, index: number, shown: string): { at: number; whole: boolean } {
   if (html.startsWith(shown, index)) return { at: index + shown.length, whole: true }
   let at = index
   let spelling: Spelling = 'text'
   for (let next = 0; next < shown.length; ) {
     const token = writtenEntities.find((spelled) => shown.startsWith(spelled, next)) ?? shown.charAt(next)
-    // Only a tag holds a raw `<` or `>`, and only its attribute values an escape.
+    // A shown `<` opens a tag, whose attribute values may spell `<` and `>` raw; a shown `>` ends it.
     if (token === '<') spelling = 'attribute'
     if (token === '>') spelling = 'text'
     const read = [token, browserSpellings[spelling].get(token)].find((spelled) => spelled !== undefined && html.startsWith(spelled, at))
