@@ -10,6 +10,7 @@ import { joinsWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, readBackPasses, type PortableLineFallback } from '../emit/inline-line.ts'
+import { spanSkippedNodes } from '../emit/skipped-nodes.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
@@ -165,10 +166,12 @@ export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
+    // Whitespace beside a code span a run spans keeps the run's mark, where the line written spanned reads it.
+    const spanned = spanSkippedNodes(merged, () => false)
     let changed = false
     const trimmed: AdfNode[] = []
     for (const [index, leaf] of merged.entries()) {
-      const edges = leafEdges(leaf, merged[index - 1], merged[index + 1])
+      const edges = leafEdges(leaf, spanned[index - 1], spanned[index + 1])
       if (edges === undefined) {
         trimmed.push(leaf)
         continue
