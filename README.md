@@ -412,7 +412,6 @@ Ping !adf:mention[@Mikael]{id=5b10a2} â€” !adf:status[In review]{color=yellow} â
 | --- | --- |
 | `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` carrying `localId`, marks or a value CommonMark cannot spell | the same node in directive form, `!adf:paragraph {localId=â€¦}` |
 | `border` | an inline directive mark around a `mediaInline`, the one inline node that takes it |
-| `subsup`, `textColor`, `underline` | inline directive marks around their text, `!adf:textColor[**Overdue**]{color="#ae2e24"}` |
 | `caption`, `media`, `mediaGroup`, `mediaSingle` | the media family; an image CommonMark cannot spell, a stored file, a caption |
 | `date`, `emoji`, `inlineCard`, `mediaInline`, `mention`, `status` | inline leaves; `emoji`, `mention` and `status` spell their `text` in the `[content]` slot |
 | `decisionList`, `decisionItem` | containers |
@@ -421,6 +420,7 @@ Ping !adf:mention[@Mikael]{id=5b10a2} â€” !adf:status[In review]{color=yellow} â
 | `layoutSection`, `layoutColumn` | containers |
 | `link` with an attribute besides `href` and `title`, or a target CommonMark cannot spell | `!adf:link[text]{attrs}` |
 | `panel` | a container, the type its argument: `!adf:panel info` |
+| `subsup`, `textColor`, `underline` | inline directive marks around their text, `!adf:textColor[**Overdue**]{color="#ae2e24"}` |
 | `syncBlock`, `bodiedSyncBlock` | a leaf and a container |
 | `table`, `tableRow`, `tableCell`, `tableHeader` richer than a pipe table | containers nesting block content |
 | `taskList`, `taskItem`, `blockTaskItem` | containers, the state an argument: `!adf:taskItem DONE` |
@@ -625,7 +625,7 @@ Every call can raise these:
   - puts a line ending or a null character in an `emoji`, `mention` or `status` content slot:
     replace a line ending with a space, or, for either, write the node as `!adf:carry`;
   - wraps a directive mark around nothing, or only around nodes that take no such mark, such as a
-    hard break, a mention or a code span;
+    hard break, a mention, a code span or, for `border`, text;
   - writes a link whose text holds something besides hard breaks, but no node that takes a link,
     such as `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
   - writes as a directive a node or mark the lossless flavour spells as CommonMark;
