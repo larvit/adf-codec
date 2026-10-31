@@ -411,7 +411,8 @@ Ping !adf:mention[@Mikael]{id=5b10a2} — !adf:status[In review]{color=yellow} �
 | ADF | Directive |
 | --- | --- |
 | `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` carrying `localId`, marks or a value CommonMark cannot spell | the same node in directive form, `!adf:paragraph {localId=…}` |
-| `border`, `subsup`, `textColor`, `underline` | inline directive marks around their text, `!adf:textColor[**Overdue**]{color="#ae2e24"}` |
+| `border` | an inline directive mark around a `mediaInline`, the one inline node that takes it |
+| `subsup`, `textColor`, `underline` | inline directive marks around their text, `!adf:textColor[**Overdue**]{color="#ae2e24"}` |
 | `caption`, `media`, `mediaGroup`, `mediaSingle` | the media family; an image CommonMark cannot spell, a stored file, a caption |
 | `date`, `emoji`, `inlineCard`, `mediaInline`, `mention`, `status` | inline leaves; `emoji`, `mention` and `status` spell their `text` in the `[content]` slot |
 | `decisionList`, `decisionItem` | containers |

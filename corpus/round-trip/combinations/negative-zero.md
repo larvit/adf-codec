@@ -10,7 +10,7 @@ Title
 
 !adf:extension {extensionKey=toc extensionType="com.atlassian.confluence.macro.core" parameters="{\"maxLevel\":-0}"}
 
-!adf:inlineCard{data="[-0]" url="https://example.com/"}!adf:border[x]{color="#000000" size=-0}
+!adf:inlineCard{data="[-0]" url="https://example.com/"}!adf:border[!adf:mediaInline{id=m1}]{color="#000000" size=-0}
 
 ```adf:blockCard
 {

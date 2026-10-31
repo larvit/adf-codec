@@ -3,6 +3,7 @@ import type { AttributeVocabulary } from './attribute-vocabulary.ts'
 import { nodeMarks } from './document.ts'
 
 export const codeTextMarkTypes: readonly string[] = ['annotation', 'code', 'link']
+export const formattedTextMarkTypes: readonly string[] = ['annotation', 'backgroundColor', 'em', 'link', 'strike', 'strong', 'subsup', 'textColor', 'underline']
 
 export type InlineNodeModel = {
   attributes: AttributeVocabulary
@@ -37,9 +38,9 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
   return Object.hasOwn(inlineNodes, type) ? inlineNodes[type] : undefined
 }
 
-// Undefined means every mark: the table lists only types the schema restricts, and it restricts text only when marked code.
+// Undefined means every mark: the table lists only types the schema restricts. Text is code text, or formatted text, which withholds `border`.
 export function takenMarkTypes(node: AdfNode): readonly string[] | undefined {
-  if (node.type === 'text') return nodeMarks(node).some((mark) => mark.type === 'code') ? codeTextMarkTypes : undefined
+  if (node.type === 'text') return nodeMarks(node).some((mark) => mark.type === 'code') ? codeTextMarkTypes : formattedTextMarkTypes
   return inlineNodeModel(node.type)?.markTypes
 }
 

@@ -56,6 +56,9 @@
           "type": "inlineCard"
         },
         {
+          "attrs": {
+            "id": "m1"
+          },
           "marks": [
             {
               "attrs": {
@@ -65,8 +68,7 @@
               "type": "border"
             }
           ],
-          "text": "x",
-          "type": "text"
+          "type": "mediaInline"
         }
       ],
       "type": "paragraph"

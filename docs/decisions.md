@@ -284,13 +284,15 @@ content (`README.md` `## Goals`, Goal 7).
 2026-10-14, two reader panels of the viewer/editor app, the LLM pipeline and a support agent, 3 of 3
 each. Goals 1, 4 and 6. Valid while Atlassian's schema withholds marks from inline nodes. Extended
 to code text under this rule, without a panel, 2026-10-14; retitled by the maintainer the same day,
-keeping the directive-mark refusal the old title held.
+keeping the directive-mark refusal the old title held. Extended to `border` on text, which the
+schema withholds from formatted text, 2026-10-31, without a panel.
 
 A mark spelling skips a node that takes none of its type, code text included, which takes only
-`code`, `link` and `annotation`. So `**Ping !adf:mention[@A]{id=x} now**` reads as bold text around
-a plain mention, and ``**`npm ci`**`` as plain code. A directive mark wrapping only nodes that take
-none of its type is `unsupported-node-shape` in `losslessMarkdownToAdf`. So is a link whose text
-holds something besides hard breaks but no node that takes a link: the panel refused to have
+`code`, `link` and `annotation`, and text of any kind, which takes no `border`. So
+`**Ping !adf:mention[@A]{id=x} now**` reads as bold text around a plain mention, and
+``**`npm ci`**`` as plain code. A directive mark wrapping only nodes that take none of its type
+is `unsupported-node-shape` in `losslessMarkdownToAdf`. So is a link whose text holds something
+besides hard breaks but no node that takes a link: the panel refused to have
 `[!adf:status[Done]{color=green}](/u)` read as `/u` linked beside the status. A link text of hard
 breaks alone still reads as its destination, then the breaks (§An image reads as an image only alone
 in its paragraph). `adfToLosslessMarkdown` writes a node holding a mark its type does not take as
