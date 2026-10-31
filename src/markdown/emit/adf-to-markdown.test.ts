@@ -492,6 +492,8 @@ test('parts a nested list the tight spelling would swallow from the block above 
 test('refuses marks and attributes nested deeper than the emitter carries', () => {
   const marks: AdfMark[] = Array.from({ length: 600 }, (_, index) => ({ type: index % 2 === 0 ? 'em' : 'strong' }))
   assert.equal(code(adfToLosslessMarkdown(document(paragraph({ marks, text: 'x', type: 'text' })))), 'unsupported-nesting-depth')
+  const deepest: AdfMark[] = Array.from({ length: 20_000 }, (_, index) => ({ type: index % 2 === 0 ? 'em' : 'strong' }))
+  assert.equal(code(adfToLosslessMarkdown(document(paragraph({ marks: deepest, text: 'x', type: 'text' }, { type: 'hardBreak' }, { marks: deepest, text: 'y', type: 'text' })))), 'unsupported-nesting-depth')
   let attrs: AdfMark['attrs'] = { depth: 'x' }
   for (let depth = 0; depth < 600; depth += 1) attrs = { depth: attrs }
   const deeper = (key: string, type: string): string =>
@@ -913,7 +915,7 @@ test('spells an emphasis or link run once across the hard breaks between two nod
   assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
 })
 
-test('spells an emphasis run once across the code spans, inline nodes and inline media between two nodes holding the mark', () => {
+test('spells an emphasis run once across the code spans, mentions, dates and inline media between two nodes holding the mark', () => {
   const strong: AdfMark = { type: 'strong' }
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const mention: AdfNode = { attrs: { id: 'x', text: '@A' }, type: 'mention' }
@@ -924,12 +926,13 @@ test('spells an emphasis run once across the code spans, inline nodes and inline
   assert.equal(readsBack(document(paragraph(marked('a ', strong), marked('c', { type: 'code' }), mention, { type: 'hardBreak' }, marked(' b', strong)))), '**a `c`!adf:mention[@A]{id=x}\\\n!adf:text{text=" "}b**\n')
 })
 
-test('spells a link run once across the inline nodes between two nodes holding it, and parts it at code and inline media', () => {
+test('spells a link run once across the mentions and inline cards between two nodes holding it, and parts it at code and inline media that do not hold it', () => {
   const link: AdfMark = { attrs: { href: '/u' }, type: 'link' }
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   assert.equal(readsBack(document(paragraph(marked('a ', link), { attrs: { id: 'x', text: '@A' }, type: 'mention' }, marked(' b', link)))), '[a !adf:mention[@A]{id=x} b](/u)\n')
   assert.equal(readsBack(document(paragraph(marked('a', link), { attrs: { url: 'https://c/' }, type: 'inlineCard' }, marked('b', link)))), '[a!adf:inlineCard{url="https://c/"}b](/u)\n')
   assert.equal(readsBack(document(paragraph(marked('a', link), marked('c', { type: 'code' }), marked('b', link)))), '[a](/u)`c`[b](/u)\n')
+  assert.equal(readsBack(document(paragraph(marked('a', link), { attrs: { id: 'm' }, type: 'mediaInline' }, marked('b', link)))), '[a](/u)!adf:mediaInline{id=m}[b](/u)\n')
 })
 
 test('carries a hard break holding marks, which Atlassian\'s schema withholds', () => {

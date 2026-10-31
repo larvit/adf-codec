@@ -68,7 +68,6 @@ export function portableLineFallback(nodes: readonly AdfNode[], container: LineC
   const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
   if (fallbacks.carried.size > 0 || emission.value.carries !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
-  if (spannedLine(nodes, container, path, fallbacks) !== undefined) return success(undefined)
   const verdict = lineVerdict(emission.value.segments, container, 'portable', { kind: 'drop', nodes })
   return success(verdict.kind === 'line' ? undefined : verdict)
 }
@@ -116,12 +115,14 @@ export function linePass(nodes: readonly AdfNode[], container: LineContainer, pa
   return success(segments === undefined ? { fallback: carries } : attemptLine(segments, container, fallbacks.flavour))
 }
 
-// spec/flavour.md, Marks: a run spans the nodes its mark skips where the line reads back so; the line parted at them is the one whose fallbacks a pass takes.
+// spec/flavour.md, Marks: a pass keeps the spanned line only where it needs no fallback; otherwise it writes the parted line and takes that line's fallbacks.
 function spannedLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): LineAttempt | undefined {
   const spanned = spanSkippedNodes(nodes, (node, index) => carries(node, fallbacks.carried, index))
   if (spanned === nodes) return undefined
   const emission = lineSegments(spanned, container, path, fallbacks)
   if (!emission.ok || emission.value.segments === undefined) return undefined
+  // A span that leaves whitespace at a line edge spells it `!adf:text`, which portable markdown lacks.
+  if (fallbacks.flavour === 'portable' && emission.value.segments.some((segment) => segment.escaping === 'none' && segment.text.startsWith('!adf:'))) return undefined
   const attempt = attemptLine(emission.value.segments, container, fallbacks.flavour)
   return attempt.fallback === undefined ? attempt : undefined
 }
