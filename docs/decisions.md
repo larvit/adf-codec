@@ -450,13 +450,13 @@ browser and post the page back.
 
 A browser does not write the dialect back as `adfToHtml` wrote it. `htmlToAdf` reads both spellings:
 a page's `innerHTML`, as WHATWG HTML §Serializing HTML fragments spells it, and a form post, which
-ends each line in `\r\n`. So text's raw `"` reads as `&quot;` does, `&nbsp;` as a no-break space and
-`\r\n` as a line feed, in what a carry element shows too. An attribute value's raw `<` and `>` read as
-`&lt;` and `&gt;` do: the serialization algorithm escapes them now, and a browser from before that
-writes them raw. These are every difference §Serializing HTML fragments leaves between a browser's
-text and `adfToHtml`'s, checked against Firefox's own `innerHTML` in the browser leg. Every element
-the dialect writes reads this way, those later items add included. HTML no browser writes from the
-dialect stays refused, a lone `\r` among it. A refusal's position counts the HTML as handed in.
+ends each line in `\r\n`. In text, a raw `"` reads as `&quot;` does; in an attribute value, a raw `<`
+or `>` reads as `&lt;` or `&gt;` (a browser from before the algorithm escaped them writes them raw);
+in both, `&nbsp;` reads as a no-break space; and `\r\n` reads as a line feed. All of it holds in what
+a carry element shows too. These are every difference the algorithm leaves between a browser's HTML
+and `adfToHtml`'s, checked against Firefox's own `innerHTML` in the browser leg, and they hold for
+every element the dialect writes, later ones included. Other HTML stays refused, a lone `\r` among
+it. A refusal's position counts the HTML as handed in.
 
 ## No runtime dependencies
 
@@ -744,10 +744,11 @@ resolver maps them, under `NodeNext` alone; a `.d.ts` reader that is not `tsc` s
 SpiderMonkey.
 
 A headless Firefox loads `dist/index.js` over HTTP and converts the round-trip, normalization and
-error fixtures and the real payloads, and reads the HTML its own `innerHTML` writes back from
-`adfToHtml`'s — the `commonmark-spec` sort is the Node suite's to check —
+error fixtures and the real payloads — the `commonmark-spec` sort is the Node suite's to check —
 which is the browser half of §Any ES2022 engine and the only SpiderMonkey there is — the gate's
-other engines are two V8s and a JavaScriptCore that is not Safari's. A WebDriver session is what
+other engines are two V8s and a JavaScriptCore that is not Safari's. It also sets `adfToHtml`'s HTML
+into the page and reads the page's own `innerHTML` back through `htmlToAdf` (§`htmlToAdf` also
+reads the dialect as a browser serializes it). A WebDriver session is what
 carries a verdict back out, the driver and the page's server sharing one network namespace so each
 is the other's `127.0.0.1`; `--headless --screenshot` has no such channel, and loading
 `dist/index.js` in a globals-stripped realm buys one by not running a browser. The leg re-checks
