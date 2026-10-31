@@ -904,6 +904,8 @@ test('spells an emphasis or link run once across the hard breaks between two nod
   const link: AdfMark = { attrs: { href: '/u' }, type: 'link' }
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
   const hardBreak: AdfNode = { type: 'hardBreak' }
+  assert.equal(readsBack(document(paragraph(marked('a', em), { marks: [], type: 'hardBreak' }, marked('b', em)))), '_a_!adf:hardBreak{marks=empty}_b_\n')
+  assert.equal(readsBack(document(paragraph(marked('a', em), { attrs: { id: 'x', text: '@A' }, marks: [], type: 'mention' }, marked('b', em)))), '_a_!adf:mention[@A]{id=x marks=empty}_b_\n')
   assert.equal(readsBack(document(paragraph(marked('One', em), hardBreak, marked('Two', em)))), '_One\\\nTwo_\n')
   assert.equal(readsBack(document(paragraph(marked('a', link), hardBreak, marked('b', link)))), '[a\\\nb](/u)\n')
   assert.equal(readsBack(document(paragraph(marked('a', em, link), hardBreak, marked('b', em)))), '_[a](/u)\\\nb_\n')
