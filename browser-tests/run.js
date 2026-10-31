@@ -70,7 +70,7 @@ async function whenDriverAnswers() {
   }
 }
 
-// Text the browser's innerHTML spells other than adfToHtml does (WHATWG HTML §13.3): a raw ", &nbsp;, and in an attribute < and > escaped or not by version.
+// Documents holding what a browser's innerHTML spells other than adfToHtml does (WHATWG HTML §13.3): a raw ", &nbsp;, and in an attribute value < and > escaped or not, by version.
 const text = (value, ...marks) => (marks.length === 0 ? { text: value, type: 'text' } : { marks, text: value, type: 'text' })
 const browserDocuments = [
   {
@@ -175,5 +175,5 @@ for (const [index, { name }] of corpus.errors.entries()) {
 }
 
 console.log(
-  `Firefox ${session.capabilities.browserVersion} converted ${corpus.roundTrip.length} round-trip, ${corpus.normalization.length} normalization and ${corpus.errors.length} error fixtures, ${corpus.realPayloads.length} real payloads and ${corpus.browserDocuments.length} documents through innerHTML`,
+  `Firefox ${session.capabilities.browserVersion} converted ${corpus.roundTrip.length} round-trip, ${corpus.normalization.length} normalization and ${corpus.errors.length} error fixtures, ${corpus.realPayloads.length} real payloads, and read the real payloads and ${corpus.browserDocuments.length} hand-built document(s) back through innerHTML`,
 )

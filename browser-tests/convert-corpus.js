@@ -2,7 +2,7 @@ try {
   const { adfToHtml, adfToLosslessMarkdown, htmlToAdf, isAdfDocument, losslessMarkdownToAdf } = await import('/dist/index.js')
   // WebDriver's JSON reads -0 back as 0, so a document crosses as JSON text with -0 tagged; run.js revives it.
   const spelled = (result) => (result.ok ? { ok: true, value: JSON.stringify(result.value, (_, value) => (Object.is(value, -0) ? '\u0000-0' : value)) } : result)
-  // The page's own innerHTML is what a viewer/editor app posts back, so htmlToAdf reads what the browser writes.
+  // A viewer/editor app posts the page's innerHTML back, so htmlToAdf must read what the browser writes.
   const throughInnerHtml = (adf) => {
     const html = adfToHtml(adf)
     if (!html.ok) return { parsed: html }

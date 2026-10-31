@@ -119,20 +119,21 @@ later release writes it as its own element.
 
 ## Reading
 
-`htmlToAdf` reads exactly the HTML above, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. It also
-reads the HTML above as a browser serializes it (WHATWG HTML §13.3) and as a form post sends it,
-anywhere the HTML above has the character, a carry element's `data-adf` and what it shows included:
+`htmlToAdf` reads the HTML above, so `htmlToAdf(adfToHtml(doc))` deep-equals `doc`. Wherever the HTML
+above holds a spelling in the table's left column, `htmlToAdf` also reads the right one, as a browser
+serializes HTML (WHATWG HTML §13.3) or a form post sends it, in a carry element's `data-adf` and in
+what it shows too:
 
 | The HTML above writes | Also read |
 | --- | --- |
 | `&quot;` in text | a raw `"` |
 | a no-break space | `&nbsp;` |
 | `&lt;` and `&gt;` in an attribute value | a raw `<` and `>`, as older browsers write them |
-| a line feed | `\r\n`; a refusal's position counts the HTML as handed in |
+| a line feed | `\r\n` |
 
-It reads a carry element's node from its `data-adf`, and what the element shows, through its
-closing tag, must be what `adfToHtml` shows for that node: an edit there would be lost, so it is
-`unmappable-html`.
+A refusal's position counts the HTML as handed in. `htmlToAdf` reads a carry element's node from its
+`data-adf`, and what the element shows, through its closing tag, must be what `adfToHtml` shows for
+that node in either spelling: an edit there would be lost, so it is `unmappable-html`.
 
 - Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
   order, a block on the line of another, a carriage return not followed by a line feed, or

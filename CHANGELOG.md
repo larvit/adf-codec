@@ -15,10 +15,10 @@
   content, links included. Every URL is written as the ADF holds it,
   `javascript:` included: sanitize HTML from an author you do not trust before showing it.
 - `htmlToAdf` reads `adfToHtml`'s HTML back to the document it came from, a carry element from its
-  `data-adf`, also as a browser's `innerHTML` writes it (a raw `"` in text, `&nbsp;`, a raw `<` or
-  `>` in an attribute value) and as a form post sends it (`\r\n` for each line feed). It refuses
-  any other HTML, including an edit to what a carry element shows, with the codes README §The calls
-  lists.
+  `data-adf`. It reads that HTML as a browser's `innerHTML` writes it too (a raw `"` in text,
+  `&nbsp;`, a raw `<` or `>` in an attribute value) and as a form post sends it (`\r\n` for each
+  line feed). It refuses any other HTML, including an edit to what a carry element shows, with the
+  codes README §The calls lists.
 - **Breaking:** `losslessMarkdownToAdf` gives a `date`, `emoji`, `inlineCard`, `mention`, `status`
   or `mediaInline` only the marks Atlassian's schema lets it hold: `**!adf:mention[@A]{id=…}**` now
   reads as a plain mention. A link or directive mark around only nodes that cannot take it is

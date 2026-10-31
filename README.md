@@ -324,7 +324,7 @@ Each call's name says which format it reads or writes:
 | `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `htmlToAdf` | reads the HTML `adfToHtml` writes, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
 | `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 
@@ -538,10 +538,9 @@ content. No stylesheet ships. The complete dialect:
   target shows that link, then `(image)` linking to the image. A node it cannot show leaves a note
   instead, such as `<em>(image)</em>`; a link marking the node goes around the note.
 
-`htmlToAdf` reads exactly that HTML back. It reads a carry element's node from its `data-adf`, and
-what the element shows must be what `adfToHtml` shows for that node: an edit there would be lost, so
-it is refused. It also reads the HTML as a browser's `innerHTML` writes it back and as a form post
-sends it: a raw `"` in text, `&nbsp;` for a no-break space, a raw `<` or `>` in an attribute value,
+`htmlToAdf` reads that HTML back. It reads a carry element's node from its `data-adf`, and what the
+element shows must be what `adfToHtml` shows for that node: an edit there would be lost, so it is
+refused. It reads the HTML as a browser's `innerHTML` writes it too, and as a form post sends it: a raw `"` in text, `&nbsp;` for a no-break space, a raw `<` or `>` in an attribute value,
 and `\r\n` for a line feed. Other HTML is refused as `unmappable-html`: another element, attribute or
 escape, such as `<b>`, `<br/>` or `&#39;`, a lone `\r`, and HTML missing its final line feed.
 A few causes, such as a `data-*` attribute its element does not take, are `unsupported-node-shape`
@@ -595,7 +594,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, or a delimiter or body row whose cell count differs from the header's; in `losslessMarkdownToAdf` also an alignment colon, and a header or delimiter row not opening with a pipe | add a `---` row under the header and give every row the header's cell count; for `losslessMarkdownToAdf`, also open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, write one `\|` of its delimiter row as `\\|` |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds HTML `adfToHtml` does not write, such as an edit to what a carry element shows, unless a code under [Either direction](#either-direction) names the cause | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the HTML as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it |
+| `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds HTML `adfToHtml` does not write, in a browser's spelling or its own, such as an edit to what a carry element shows, unless a code under [Either direction](#either-direction) names the cause | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the HTML as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it |
 
 ### Emitting
 
