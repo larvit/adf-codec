@@ -599,3 +599,20 @@ Read most (opens and searches):
 - `src/markdown/portable/block-spelling.ts` 2
 - `src/markdown/portable/conventions.ts` 2
 - `src/markdown/portable/inline-reduction.ts` 1
+
+## Reading cost, chunk 38e3041e8214, finished 2026-10-31T01:35:10Z
+
+215876 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 9
+- `docs/decisions.md` 7
+- `README.md` 6
+- `spec/html.md` 5
+- `ci.sh` 4
+- `src/html/parse/html-to-adf.test.ts` 4
+- `src/html/parse/source.ts` 4
+- `docker-runner.sh` 3
+- `src/html/escaping.ts` 3
+- `CHANGELOG.md` 2
