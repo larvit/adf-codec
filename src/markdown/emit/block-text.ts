@@ -8,9 +8,10 @@ type Lines =
   | { kind: 'joined'; parts: readonly BlockText[] }
   | { kind: 'text'; lines: readonly string[] }
 type Prefix = Lines & { kind: 'prefixed' | 'quoted' }
-// The written first line. The flags describe `text` so no caller reads it: reading a concatenated string copies it whole, once per nesting level.
+type OpenPrefix = { innermostQuote: number; prefix: Prefix }
+// The written first line. A caller tests `character` or a flag before it reads the characters of `text`: reading a concatenated string copies it whole, once per nesting level.
 type FirstLine = Readonly<{ blank: boolean; character: string; ruleCharacters: boolean; text: string }>
-// How many written lines after the first are blank, empty, or hold text, blank ones included.
+// Counts of the lines after the first: `blank` ones hold only spaces or tabs, `empty` ones nothing, and `written` ones at least one character, `blank` ones included.
 type LaterLines = Readonly<{ blank: number; empty: number; written: number }>
 
 export const emptyLine = blockText('')
@@ -70,7 +71,7 @@ export function opening(text: BlockText): string {
 export function writtenText(text: BlockText): string {
   const lines: string[] = []
   // The open prefixes, outermost first. A line starts every open prefix, so the unstarted ones are the innermost.
-  const open: Prefix[] = []
+  const open: OpenPrefix[] = []
   let started = 0
   // Each pending text with how many prefixes stay open around it.
   const pending: { text: BlockText; within: number }[] = [{ text, within: 0 }]
@@ -85,18 +86,19 @@ export function writtenText(text: BlockText): string {
       }
     } else if (current.kind === 'joined') for (const part of current.parts.slice().reverse()) pending.push({ text: part, within: open.length })
     else {
-      open.push(current)
+      open.push({ innermostQuote: current.kind === 'quoted' ? open.length : (open.at(-1)?.innermostQuote ?? -1), prefix: current })
       pending.push({ text: current.body, within: open.length })
     }
   }
   return lines.join('\n')
 }
 
-// Innermost first, since an empty line takes no indent and a quote turns it into `>`.
-function prefixedLine(line: string, open: readonly Prefix[], started: number): string {
-  return open.reduceRight((written, prefix, depth) => {
+// Innermost first: whether a line is empty when an outer prefix meets it depends on the prefixes inside.
+function prefixedLine(line: string, open: readonly OpenPrefix[], started: number): string {
+  // An empty line takes no indent, so where every prefix has started its walk begins at the innermost quote.
+  const walked = line === '' && started === open.length ? open.slice(0, (open.at(-1)?.innermostQuote ?? -1) + 1) : open
+  return walked.reduceRight((written, { prefix }, depth) => {
     if (prefix.kind === 'quoted') return written === '' ? '>' : `> ${written}`
-    if (depth >= started) return `${prefix.head}${written}`
-    return written === '' ? '' : `${prefix.indent}${written}`
+    return depth >= started ? `${prefix.head}${written}` : `${prefix.indent}${written}`
   }, line)
 }

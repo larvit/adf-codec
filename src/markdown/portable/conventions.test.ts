@@ -7,7 +7,7 @@ import { propertyRuns } from '../../conformance/property-harness.ts'
 
 test('reads a task or alert marker only where the text opens with the marker opening', () => {
   fc.assert(
-    fc.property(fc.string({ maxLength: 8, unit: fc.constantFrom(' ', '!', '+', '-', 'N', 'x', '[', '\\', ']') }), (text) => {
+    fc.property(fc.array(fc.constantFrom(' ', '!', '+', '-', 'N', 'x', '[', '\\', ']', '[ ] ', '[x]', '[!NOTE]'), { maxLength: 4 }).map((pieces) => pieces.join('')), (text) => {
       if (readTaskMarker(text) !== undefined || readAlertMarker(text) !== undefined) assert.equal(text.charAt(0), markerOpening)
     }),
     propertyRuns(2000),

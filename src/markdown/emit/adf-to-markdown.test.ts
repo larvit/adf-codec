@@ -322,6 +322,10 @@ test('carries every inline node of a line that only the carry spells', () => {
     markdown(adfToLosslessMarkdown(document(paragraph(odd, { text: ' ', type: 'text' }, { marks: [{ type: 'link' }], text: 'x', type: 'text' }, { text: ' ', type: 'text' }, odd)))),
     `${carriedOdd} ${unlinked} ${carriedOdd}\n`,
   )
+  assert.equal(
+    markdown(adfToLosslessMarkdown(document(paragraph({ text: 'a', type: 'text' }, { attrs: { foo: 1 }, type: 'hardBreak' }, { text: 'b', type: 'text' })))),
+    'a!adf:carry{json="{\\"attrs\\":{\\"foo\\":1},\\"type\\":\\"hardBreak\\"}"}b\n',
+  )
 })
 
 test('carries an inline node holding a mark Atlassian\'s schema withholds from it', () => {
