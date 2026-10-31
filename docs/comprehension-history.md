@@ -1361,3 +1361,28 @@ Inherited architect, decided by:
 - Locality: `src/markdown/portable/inline-reduction.ts:169` `trimmedEdges`: models the writer as always spanning, which `spannedLine` does only where the line reads back
 - Locality: `src/markdown/emit/inline-line.ts:119` `spannedLine`: refuses a portable span by the `!adf:` prefix of a segment's text, and turns every emission failure into the parted line
 - Locality: `src/markdown/emit/skipped-nodes.ts:11` `spanSkippedNodes`: signals nothing spanned by returning the same array, and hides the empty-marks exception from the caller
+
+## 2026-10-31T07:18:17Z, PR #112 at d554e22, against 8bcf4a5
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | worse | same | worse |
+| Inherited architect | same | worse | worse | same | worse |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/markdown/emit/inline-line.ts:246` `inlineRuns`: a `spans` flag switches it between two modes, and a mutable `spanEnd` set by `spannedTo` lets one iteration steer later ones
+- Shape: `src/markdown/emit/inline-line.ts:230` `emitRun`: picks the behaviour with a bare positional `false`, as `lendMarks` does with `true`
+- Locality: `src/markdown/emit/inline-line.ts:291` `spannedNodes`: decides whether anything spanned by object identity, which holds only because `lendMarks` pushes originals and only `withMark` copies
+- Locality: `src/markdown/emit/inline-line.ts:108` `linePass`: tries the spanned line first and falls back to the parted line, and `spannedLine` turns every refusal into a quiet `undefined`
+- Locality: `src/markdown/portable/inline-reduction.ts:168` `trimmedEdges`: judges edge whitespace against the emitter's `spannedNodes`, so the portable trimming depends on the writer's span rule
+- Shape: `src/markdown/emit/inline-line.ts:270` `spannedTo`: one of four new units in a file grown from 390 to 451 lines
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/emit/inline-line.ts:108` `linePass`: each pass emits two candidate lines, and nothing records which one was written
+- Locality: `src/markdown/portable/inline-reduction.ts:168` `trimmedEdges`: imports the emitter's `spannedNodes` with a fresh carried set, so its verdict and the written line can be judged on different node lists
+- Shape: `src/markdown/emit/inline-line.ts:246` `inlineRuns`: one function serves two callers through a boolean that `emitRun` always passes as `false`, plus a lookahead cursor
+- Shape: `src/markdown/emit/inline-line.ts:271` `spannedTo`: returns `start` to mean "spans nothing", a sentinel its name does not state, beside `spansNode`'s five-condition expression
