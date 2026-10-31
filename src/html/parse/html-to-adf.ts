@@ -7,7 +7,7 @@ import { carryContent } from '../carry-content.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { containerElements, headingElements, headingLevel, readListStart, type ContainerType } from '../block-elements.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
-import { foundAt, misread, readStartTag, refused, startTagName, type Place, type ReadNode, type StartTag } from './source.ts'
+import { foundAt, misread, positionIn, readStartTag, refused, startTagName, type Place, type ReadNode, type StartTag } from './source.ts'
 import { largestNesting } from '../../nesting.ts'
 import { misspelledAt, unescapedValue } from '../escaping.ts'
 import { misspelledText, readInline } from './inline.ts'
@@ -59,8 +59,15 @@ export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
   )
 }
 
+// A form post ends each line in `\r\n`, which reads as the line feed `adfToHtml` writes; a refusal's position still counts the HTML as handed in.
 function readHtml(html: string): Result<AdfDocument> {
   if (typeof html !== 'string') return notAString(html, 'HTML')
+  const read = readLineFeeds(html.replaceAll('\r\n', '\n'))
+  if (read.ok || read.error.position === undefined) return read
+  return { error: { ...read.error, position: positionIn(html, read.error.position) }, ok: false }
+}
+
+function readLineFeeds(html: string): Result<AdfDocument> {
   if (html === '') return success({ content: [], type: 'doc', version: 1 })
   return readDocumentCarry(html) ?? readBlocks(html)
 }
@@ -191,8 +198,8 @@ function readCodeBlock(html: string, tag: StartTag, place: Place): Result<BlockS
   const next = html.indexOf('<', code.end)
   const end = next < 0 ? html.length : next
   const spelled = html.slice(code.end, end)
-  const text = unescapedValue(spelled)
-  if (text === undefined) return misspelledText(html, code.end + misspelledAt(spelled), place)
+  const text = unescapedValue(spelled, 'text')
+  if (text === undefined) return misspelledText(html, code.end + misspelledAt(spelled, 'text'), place)
   if (!html.startsWith(codeCloser, end)) return refused('unmappable-html', `a code block's text ends at ${codeCloser}: ${foundAt(html, end)}`, html, end, place)
   const { language } = named
   return success({ end: end + codeCloser.length, kind: 'node', node: built('codeBlock', language === undefined ? data.value : { ...data.value, language }, text === '' ? [] : [{ text, type: 'text' }]) })

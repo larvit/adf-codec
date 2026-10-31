@@ -540,8 +540,10 @@ content. No stylesheet ships. The complete dialect:
 
 `htmlToAdf` reads exactly that HTML back. It reads a carry element's node from its `data-adf`, and
 what the element shows must be what `adfToHtml` shows for that node: an edit there would be lost, so
-it is refused. Other HTML is refused as `unmappable-html`: another element, attribute or escape,
-such as `<b>`, `<br/>` or `&#39;`, and HTML missing its final line feed or ending a line in `\r\n`.
+it is refused. It also reads the HTML as a browser's `innerHTML` writes it back and as a form post
+sends it: a raw `"` in text, `&nbsp;` for a no-break space, a raw `<` or `>` in an attribute value,
+and `\r\n` for a line feed. Other HTML is refused as `unmappable-html`: another element, attribute or
+escape, such as `<b>`, `<br/>` or `&#39;`, a lone `\r`, and HTML missing its final line feed.
 A few causes, such as a `data-*` attribute its element does not take, are `unsupported-node-shape`
 instead, and nesting past 500 levels is `unsupported-nesting-depth`. [Either
 direction](#either-direction) lists every cause of both.

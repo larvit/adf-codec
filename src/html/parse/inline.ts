@@ -63,13 +63,14 @@ function readMarked(html: string, index: number, place: Place): ReadNode {
 function readText(html: string, index: number, marks: AdfMark[], place: Place): ReadNode {
   const next = html.indexOf('<', index)
   const end = next < 0 ? html.length : next
-  const text = unescapedValue(html.slice(index, end))
-  if (text === undefined) return misspelledText(html, index + misspelledAt(html.slice(index, end)), place)
+  const spelled = html.slice(index, end)
+  const text = unescapedValue(spelled, 'text')
+  if (text === undefined) return misspelledText(html, index + misspelledAt(spelled, 'text'), place)
   return success({ end, node: marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' } })
 }
 
 export function misspelledText<T>(html: string, index: number, place: Place): Result<T, ParseError> {
-  return refused('unmappable-html', `text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: ${foundAt(html, index)}`, html, index, place)
+  return refused('unmappable-html', `text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: ${foundAt(html, index)}`, html, index, place)
 }
 
 function markOf(tag: StartTag): AdfMark | undefined {

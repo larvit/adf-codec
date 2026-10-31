@@ -52,7 +52,7 @@ const rule = JSON.stringify({ type: 'unknownBlock' }).replaceAll('"', '&quot;')
 
 // The carry element of `node`, showing `shown`.
 function carry(tag: 'div' | 'span', node: unknown, shown: string): string {
-  return `<${tag} class="adf-carry" data-adf="${JSON.stringify(node).replaceAll('"', '&quot;')}">${shown}</${tag}>`
+  return `<${tag} class="adf-carry" data-adf="${JSON.stringify(node).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')}">${shown}</${tag}>`
 }
 
 function nested(value: unknown, levels: number, wrap: (inner: unknown) => unknown): unknown {
@@ -81,6 +81,53 @@ test('reads text\'s marks from its elements, the outermost first, and each run o
 
 test('reads escaped text, and keeps tabs, line feeds and form feeds', () => {
   assert.deepEqual(read(htmlToAdf('<p>a &lt; b &amp;&amp; c &gt; &quot;d&quot; \'e\'\tf\ng\fh &amp;lt;</p>\n')), document(paragraph(text('a < b && c > "d" \'e\'\tf\ng\fh &lt;'))))
+})
+
+test('reads text as a browser\'s innerHTML spells it: a raw ", &nbsp; for a no-break space, and in an attribute a raw < or >', () => {
+  assert.deepEqual(read(htmlToAdf('<p>a "b" &quot;c&quot;&nbsp;d e</p>\n')), document(paragraph(text('a "b" "c" d e'))))
+  assert.deepEqual(read(htmlToAdf('<pre><code>say "a"&nbsp;b</code></pre>\n')), document({ content: [text('say "a" b')], type: 'codeBlock' }))
+  const link: AdfMark = { attrs: { href: 'https://x.test/?a<b>c&d', title: 'a b' }, type: 'link' }
+  assert.deepEqual(read(htmlToAdf('<p><a href="https://x.test/?a<b>c&amp;d" title="a&nbsp;b">x</a></p>\n')), document(paragraph(text('x', link))))
+  assert.deepEqual(read(htmlToAdf('<p><a href="https://x.test/?a&lt;b&gt;c&amp;d" title="a&nbsp;b">x</a></p>\n')), document(paragraph(text('x', link))))
+  assert.deepEqual(read(htmlToAdf('<hr data-style="a&nbsp;&quot;b">\n')), document({ attrs: { style: 'a "b' }, type: 'rule' }))
+})
+
+test('reads a line ending of CRLF as a line feed wherever the dialect has one, and keeps a lone carriage return refused', () => {
+  const crlf = (html: string): string => html.replaceAll('\n', '\r\n')
+  assert.deepEqual(read(htmlToAdf(crlf('<p>a\nb</p>\n<hr>\n<pre><code>c\n  d</code></pre>\n'))), document(paragraph(text('a\nb')), { type: 'rule' }, { content: [text('c\n  d')], type: 'codeBlock' }))
+  assert.deepEqual(read(htmlToAdf(crlf('<blockquote>\n<ul>\n<li>Bolt\n<p>b</p>\n</li>\n</ul>\n</blockquote>\n'))), document({ content: [{ content: [item(paragraph(text('Bolt')), paragraph(text('b')))], type: 'bulletList' }], type: 'blockquote' }))
+  assert.deepEqual(read(htmlToAdf(crlf(`${carry('div', panel, '<p>Check the collation.</p>')}\n`))), document(panel))
+  assert.deepEqual(read(htmlToAdf(crlf(`${documentCarry}\n`))), { type: 'doc', version: 1 })
+  assert.deepEqual(read(htmlToAdf('<hr data-style="a\r\nb">\n')), document({ attrs: { style: 'a\nb' }, type: 'rule' }))
+  for (const html of ['<p>a\r</p>\n', '<p>a</p>\r', '<p>a</p>\r\r\n', '<p>a\r\r\nb</p>\n']) assert.equal(refusal(htmlToAdf(html)).startsWith('unmappable-html'), true, JSON.stringify(html))
+})
+
+test('places a refusal in HTML ending its lines in CRLF at the start of the line it stands on, counted in the HTML handed in', () => {
+  assert.equal(refusal(htmlToAdf('<p>a</p>\r\n<b>x</b>\r\n')), 'unmappable-html at /content/1 line 2 offset 10')
+  assert.equal(refusal(htmlToAdf('<p>a</p>\r\n<p>b</p>\r\n<p>c<b>d</b></p>\r\n')), 'unmappable-html at /content/2 line 3 offset 20')
+  assert.equal(refusal(htmlToAdf('<p>a</p>\r\n<p>b</p>')), 'unmappable-html at / line 2 offset 10')
+})
+
+test('reads a carry element showing what a browser spells it as, in any mix with the spelling adfToHtml writes', () => {
+  const said: AdfNode = { attrs: { id: ids.mention, text: 'Say "hi" now' }, type: 'mention' }
+  for (const shown of ['Say &quot;hi&quot; now', 'Say "hi"&nbsp;now', 'Say "hi" now', 'Say &quot;hi&quot;&nbsp;now']) {
+    assert.deepEqual(read(htmlToAdf(`<p>${carry('span', said, shown)}</p>\n`)), document(paragraph(said)), shown)
+  }
+  const underlined: AdfNode = text('a<b', { type: 'underline' }, { attrs: { href: 'https://x.test/?a<b&c>d', title: 'T" ' }, type: 'link' })
+  for (const opener of ['<a href="https://x.test/?a&lt;b&amp;c&gt;d" title="T&quot; ">', '<a href="https://x.test/?a<b&amp;c>d" title="T&quot;&nbsp;">']) {
+    assert.deepEqual(read(htmlToAdf(`<p>${carry('span', underlined, `${opener}a&lt;b</a>`)}</p>\n`)), document(paragraph(underlined)), opener)
+  }
+  const block: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('A "quote" here'))], type: 'panel' }
+  assert.deepEqual(read(htmlToAdf(`${carry('div', block, '<p>A "quote"&nbsp;here</p>')}\r\n`)), document(block))
+})
+
+test('refuses an edit to what a carry element shows even where a browser would spell the same text so', () => {
+  const said: AdfNode = { attrs: { id: ids.mention, text: 'Say "hi"' }, type: 'mention' }
+  const underlined: AdfNode = text('a', { type: 'underline' }, { attrs: { href: 'x', title: 'T"' }, type: 'link' })
+  assert.equal(refusal(htmlToAdf(`<p>${carry('span', said, 'Say "hi')}</p>\n`)), 'unmappable-html at /content/0/content/0 line 1 offset 0')
+  assert.equal(refusal(htmlToAdf(`<p>${carry('span', said, 'Say &amp;quot;hi&amp;quot;')}</p>\n`)), 'unmappable-html at /content/0/content/0 line 1 offset 0')
+  assert.equal(refusal(htmlToAdf(`<p>${carry('span', underlined, '<a href="x" title="T"">a</a>')}</p>\n`)), 'unmappable-html at /content/0/content/0 line 1 offset 0')
+  assert.equal(refusal(htmlToAdf(`<p>${carry('span', underlined, '<a href="x" title="T&quot;">a</a>')}</p>\n`)), 'read')
 })
 
 test('reads lists, an item\'s first paragraph on its line and its other blocks a line each', () => {
@@ -279,9 +326,9 @@ test('refuses a tag of three million attributes, past what one pattern over them
 
 const messages: readonly (readonly [string, string])[] = [
   ['<p>a<b>b</b></p>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></p>\\n"'],
-  ['<p>a > b</p>\n', 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "> b</p>\\n"'],
+  ['<p>a > b</p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "> b</p>\\n"'],
   ['<p><a href="a"b">a</a></p>\n', '<a> holds its attributes as name="value", each value escaped as text is, then >: found "b\\">a</a></p>\\n"'],
-  ['<p>a&nbsp;\u00a0</p>\n', 'text escapes &, <, > and " as &amp;, &lt;, &gt; and &quot;, and holds no character HTML cannot hold: found "&nbsp;\\u00a0</p>\\n"'],
+  ['<p>a&nbsp</p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&nbsp</p>\\n"'],
   ['<pre><code>a</code></pre\n', 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"'],
   ['<pre><code class="hljs language-js">x</code></pre>\n', '<code> as written here is no code element of the dialect, which writes <code> or <code class="language-…">: found "<code class=\\"hljs langua"…'],
   ['<ul>\n<li>a</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block, and its text spells < as &lt;: found "</ul>\\n"'],

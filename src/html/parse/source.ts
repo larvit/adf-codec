@@ -45,6 +45,13 @@ export function foundAt(html: string, index: number): string {
   return `found ${spelled}${index + found.length < html.length ? '…' : ''}`
 }
 
+// The start of the same line in `html`, where the position was counted after its `\r\n` became line feeds.
+export function positionIn(html: string, { line }: SourcePosition): SourcePosition {
+  let offset = 0
+  for (let passed = 1; passed < line; passed += 1) offset = html.indexOf('\n', offset) + 1
+  return { line, offset }
+}
+
 // At the start of the line `index` stands on.
 export function refused<T>(code: ConvertErrorCode, message: string, html: string, index: number, place: Place | undefined): Result<T, ParseError> {
   return { error: { code, message, path: pathOf(place), position: lineStart(html, index) }, ok: false }
@@ -61,14 +68,14 @@ function scanStartTag(html: string, index: number): CutTag | StartTag | undefine
     const match = attribute.exec(html)
     if (match === null) return html.startsWith('>', at) ? { attributes, end: at + 1, name, start: index } : { name, stopped: at }
     const [whole, key = '', spelled = ''] = match
-    const value = unescapedValue(spelled)
-    if (value === undefined) return { name, stopped: at + whole.length - 1 - spelled.length + misspelledAt(spelled) }
+    const value = unescapedValue(spelled, 'attribute')
+    if (value === undefined) return { name, stopped: at + whole.length - 1 - spelled.length + misspelledAt(spelled, 'attribute') }
     attributes.push([key, value])
     at += whole.length
   }
 }
 
-// Only a line feed ends a line: the reader refuses a carriage return wherever it stands.
+// Only a line feed ends a line: readHtml has made each \r\n one, and a lone carriage return is refused.
 function lineStart(html: string, index: number): SourcePosition {
   let line = 1
   let offset = 0
