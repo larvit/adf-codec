@@ -564,7 +564,12 @@ marks array in order, outermost first: `_!adf:underline[x]_` gives marks `[em, u
 the array, not a set — and opens each spelling once over the longest run of adjacent inline nodes
 carrying an identical mark, attributes included, at that depth: `attrs: {}` differs from no `attrs`,
 and a directive spells it `{attrs=empty}`. A run breaks at every node the emitter carries, so no
-emitted carry sits inside a mark spelling.
+emitted carry sits inside a mark spelling. An `em`, `strike`, `strong` or `link` run also spans a
+node between two of its nodes when that node cannot hold the run's mark. It does so only where the
+spanned line reads back to the same nodes; otherwise the run breaks there. So `_One\` then `Two_`
+is one `em` run over two texts, the hard break between them unmarked, and
+``**Run `npm ci` first**`` is one `strong` run around unmarked code. `adfToPortableMarkdown` spans
+hard breaks and code spans the same way.
 
 An inline node whose marks no nesting spells — a node holding a mark Atlassian's schema withholds
 from it, a mark type the first list above does not hold, an attrs key its spelling does not list, a value that is not the

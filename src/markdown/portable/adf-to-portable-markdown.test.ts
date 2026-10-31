@@ -422,11 +422,20 @@ test('refuses a portable line holding a node only the carry spells, at the line'
   }
 })
 
+test('spells an emphasis once across the code spans and hard breaks between two leaves holding it, and a link across the hard breaks', () => {
+  assert.equal(portable(paragraph(text('Run ', strong), text('npm ci', code), text(' first', strong))), '**Run `npm ci` first**\n')
+  assert.equal(portable(paragraph(text('One', em), { type: 'hardBreak' }, text('Two', em))), '_One\\\nTwo_\n')
+  assert.equal(portable(paragraph(text('a', link('/u')), { type: 'hardBreak' }, text('b', link('/u')))), '[a\\\nb](/u)\n')
+  assert.equal(portable(paragraph(text('Ping ', strong), { attrs: { id: 'x', text: '@A' }, type: 'mention' }, text(' now', strong))), '**Ping** @A **now**\n')
+  assert.equal(portable(paragraph(text('a', link('/u')), { type: 'hardBreak' }, text(' b', link('/u')))), '[a](/u)\\\n[ b](/u)\n')
+  assert.equal(portable(paragraph(text('a\n b', link('/u')))), '[a](/u)\\\n[ b](/u)\n')
+})
+
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {
   assert.equal(portable(paragraph(text(' \n a \n b\n'))), 'a\\\nb\n')
   assert.equal(portable(paragraph({ type: 'hardBreak' }, text('a'), { attrs: { text: '\n' }, type: 'hardBreak' }, text('b'), { type: 'hardBreak' })), 'a\\\nb\n')
   assert.equal(portable(paragraph(text('a'), text(' b ', strong), text('c'))), 'a **b** c\n')
-  assert.equal(portable(paragraph(text(' '), text('b', strong), text(' \n'), text('c', strong), text(' '))), '**b**\\\n**c**\n')
+  assert.equal(portable(paragraph(text(' '), text('b', strong), text(' \n'), text('c', strong), text(' '))), '**b\\\nc**\n')
   assert.equal(portable(paragraph(text('x'), text('.', em), { type: 'hardBreak' }, text('b', em))), 'x.\\\n_b_\n')
   assert.equal(portable(paragraph(text('a'), text(' b ', em, strong), text(' ', em), text('c', em))), 'a _**b**  c_\n')
   assert.equal(portable(paragraph(text(' x ', code))), '`  x  `\n')

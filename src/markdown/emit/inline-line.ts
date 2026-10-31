@@ -7,17 +7,17 @@ import type { WrittenFlavour } from '../flavour.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
 import { commonMarkLink, isEmphasis, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
+import { directivePrefix, slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
 import { highlightDelimiter } from '../inline-tokens.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { identicalMark, isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
-import { inlineNodeModel, takenMarkTypes } from '../../adf/inline-nodes.ts'
+import { inlineNodeModel, takenMarkTypes, takesMark } from '../../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
-import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
 import { spellInlineNodeAttributes } from '../directive/inline-spelling.ts'
 import { spellTextDirective } from '../directive/text.ts'
 
@@ -106,10 +106,24 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
 }
 
 export function linePass(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<LineAttempt> {
+  const spanned = spannedLine(nodes, container, path, fallbacks)
+  if (spanned !== undefined) return success(spanned)
   const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
   const { carries, segments } = emission.value
   return success(segments === undefined ? { fallback: carries } : attemptLine(segments, container, fallbacks.flavour))
+}
+
+// spec/flavour.md, Marks: a pass keeps the spanned line only where it needs no fallback; otherwise it writes the parted line and takes that line's fallbacks.
+function spannedLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): LineAttempt | undefined {
+  const spanned = spannedNodes(nodes, fallbacks.carried)
+  if (spanned === undefined) return undefined
+  const emission = lineSegments(spanned, container, path, fallbacks)
+  if (!emission.ok || emission.value.segments === undefined) return undefined
+  // A span can leave whitespace at a line edge, which only `!adf:text` spells.
+  if (!flavourClaims[fallbacks.flavour].directives && emission.value.segments.some((segment) => segment.escaping === 'none' && segment.text.startsWith(directivePrefix))) return undefined
+  const attempt = attemptLine(emission.value.segments, container, fallbacks.flavour)
+  return attempt.fallback === undefined ? attempt : undefined
 }
 
 function carryEveryEmphasis(fallbacks: LineFallbacks, nodes: readonly AdfNode[]): void {
@@ -213,7 +227,7 @@ function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, c
   if (depth > largestNesting) {
     return failure('unsupported-nesting-depth', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
   }
-  const runs = inlineRuns(nodes, depth, firstIndex, context.carried)
+  const runs = inlineRuns(nodes, depth, firstIndex, context.carried, false)
   const carries: NodeRange[] = []
   const segments: InlineSegment[] = []
   for (const [offset, run] of runs.entries()) {
@@ -228,21 +242,68 @@ function emitRun(nodes: readonly AdfNode[], depth: number, firstIndex: number, c
   return success(carry === undefined ? { segments } : { carries: [carry, ...others] })
 }
 
-function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number, carried: ReadonlySet<number>): InlineRun[] {
+// Where `spans`, an emphasis or link run also takes in the nodes between two of its own that cannot hold its mark, lending them the mark.
+function inlineRuns(nodes: readonly AdfNode[], depth: number, firstIndex: number, carried: ReadonlySet<number>, spans: boolean): InlineRun[] {
   const runs: InlineRun[] = []
+  let spanEnd = 0
   for (const [offset, node] of nodes.entries()) {
     const index = firstIndex + offset
-    // `depth` indexes each node's marks, outermost first; a carried node spells its marks inside the carry.
-    const mark = carries(node, carried, index) ? undefined : nodeMarks(node)[depth]
-    if (mark === undefined) {
-      runs.push({ index, kind: 'plain', node })
+    const previous = runs[runs.length - 1]
+    if (offset < spanEnd && previous?.kind === 'marked') {
+      previous.nodes.push(withMark(node, previous.mark, depth))
       continue
     }
-    const previous = runs[runs.length - 1]
-    if (previous?.kind === 'marked' && identicalMark(previous.mark, mark)) previous.nodes.push(node)
+    const mark = heldMark(node, index, depth, carried)
+    if (mark === undefined) runs.push({ index, kind: 'plain', node })
+    else if (previous?.kind === 'marked' && identicalMark(previous.mark, mark)) previous.nodes.push(node)
     else runs.push({ index, kind: 'marked', mark, nodes: [node] })
+    if (spans && mark !== undefined) spanEnd = spannedTo(nodes, offset + 1, firstIndex, depth, mark, carried)
   }
   return runs
+}
+
+// `depth` indexes each node's marks, outermost first; a carried node spells its marks inside the carry.
+function heldMark(node: AdfNode, index: number, depth: number, carried: ReadonlySet<number>): AdfMark | undefined {
+  return carries(node, carried, index) ? undefined : nodeMarks(node)[depth]
+}
+
+// The offset where the nodes from `start` that a run of `mark` spans end: `start` itself unless a node holding the mark follows them.
+function spannedTo(nodes: readonly AdfNode[], start: number, firstIndex: number, depth: number, mark: AdfMark, carried: ReadonlySet<number>): number {
+  let end = start
+  while (spansNode(nodes[end], firstIndex + end, mark, carried)) end += 1
+  const next = nodes[end]
+  const held = next === undefined ? undefined : heldMark(next, firstIndex + end, depth, carried)
+  return held !== undefined && identicalMark(held, mark) ? end : start
+}
+
+// spec/flavour.md, Marks: the readers give no node a mark Atlassian's schema withholds from it, and a lent mark would erase the `marks=empty` of an empty marks array.
+function spansNode(node: AdfNode | undefined, index: number, mark: AdfMark, carried: ReadonlySet<number>): boolean {
+  const kind = markSpelling(mark.type)?.kind
+  return node !== undefined && (kind === 'emphasis' || kind === 'link') && !carries(node, carried, index) && !takesMark(node, mark.type) && node.marks?.length !== 0
+}
+
+function withMark(node: AdfNode, mark: AdfMark, depth: number): AdfNode {
+  const marks = nodeMarks(node)
+  return { ...node, marks: [...marks.slice(0, depth), mark, ...marks.slice(depth)] }
+}
+
+// The nodes as the spanned line writes them, `undefined` where no run spans a node.
+export function spannedNodes(nodes: readonly AdfNode[], carried: ReadonlySet<number>): AdfNode[] | undefined {
+  const spanned: AdfNode[] = []
+  lendMarks(nodes, 0, 0, carried, spanned)
+  return spanned.some((node, index) => node !== nodes[index]) ? spanned : undefined
+}
+
+function lendMarks(nodes: readonly AdfNode[], depth: number, firstIndex: number, carried: ReadonlySet<number>, spanned: AdfNode[]): void {
+  // Past this depth the spanned line is refused as the parted one is.
+  if (depth > largestNesting) {
+    for (const node of nodes) spanned.push(node)
+    return
+  }
+  for (const run of inlineRuns(nodes, depth, firstIndex, carried, true)) {
+    if (run.kind === 'plain') spanned.push(run.node)
+    else lendMarks(run.nodes, depth + 1, run.index, carried, spanned)
+  }
 }
 
 function takesTextBreak(previous: InlineRun | undefined, run: InlineRun, carried: ReadonlySet<number>): boolean {
