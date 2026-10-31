@@ -20,7 +20,7 @@ export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', 
   const shown = `${carryContent(node.value, element)}</${element}>`
   const read = readsAsShown(html, tag.end, shown)
   if (read.whole) return success({ end: read.at, node: node.value })
-  return refused('unmappable-html', `a carry element shows exactly what adfToHtml writes for its node, then </${element}>; to change the node, edit its ADF and write the HTML again: ${foundAt(html, read.at)}`, html, read.at, place)
+  return refused('unmappable-html', `a carry element shows what adfToHtml writes for its node, as it or a browser spells it, then </${element}>; to change the node, edit its ADF and write the HTML again: ${foundAt(html, read.at)}`, html, read.at, place)
 }
 
 function heldNode(json: string, levels: number, html: string, jsonAt: number): Read<AdfNode> {

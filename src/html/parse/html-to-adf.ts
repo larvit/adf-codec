@@ -51,7 +51,7 @@ const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
   element: "an item's first paragraph holding an attribute stands as its <p> on the item's line, straight after <li>",
 }
 
-// Reads back exactly what `adfToHtml` writes.
+// Reads back what `adfToHtml` writes, as it or a browser spells it.
 export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
   return positioned(
     withinEngineLimits(() => readHtml(html)),
@@ -59,15 +59,14 @@ export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
   )
 }
 
-// A form post ends each line in `\r\n`, which reads as the line feed `adfToHtml` writes; a refusal's position still counts the HTML as handed in.
+// A form post ends each line in `\r\n`, which reads as the line feed `adfToHtml` writes.
 function readHtml(html: string): Result<AdfDocument> {
   if (typeof html !== 'string') return notAString(html, 'HTML')
   const read = readLineFeeds(html.replaceAll('\r\n', '\n'))
-  if (read.ok || read.error.position === undefined) return read
-  return { error: { ...read.error, position: positionIn(html, read.error.position) }, ok: false }
+  return read.ok ? read : { error: { ...read.error, position: positionIn(html, read.error.position) }, ok: false }
 }
 
-function readLineFeeds(html: string): Result<AdfDocument> {
+function readLineFeeds(html: string): Result<AdfDocument, ParseError> {
   if (html === '') return success({ content: [], type: 'doc', version: 1 })
   return readDocumentCarry(html) ?? readBlocks(html)
 }

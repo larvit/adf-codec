@@ -7,7 +7,7 @@ export type Place = { index: number; parent: Place | undefined }
 
 export type ReadNode = Result<{ end: number; node: AdfNode }, ParseError>
 
-// A start tag as `adfToHtml` writes it, its attributes' values unescaped.
+// A start tag as `adfToHtml` or a browser writes it, its attributes' values unescaped.
 export type StartTag = { attributes: (readonly [string, string])[]; end: number; name: string; start: number }
 
 // A tag whose name reads, its attributes or its `>` not: `stopped` is where reading them stopped.
@@ -34,7 +34,7 @@ export function misread(html: string, index: number, expected: string, unexpecte
   const tag = scanStartTag(html, index)
   if (tag === undefined) return { at: index, message: `${expected}: ${foundAt(html, index)}` }
   if ('end' in tag) return { at: index, message: `<${tag.name}> as written here is ${unexpected}: ${foundAt(html, index)}` }
-  return { at: tag.stopped, message: `<${tag.name}> holds its attributes as name="value", each value escaped as text is, then >: ${foundAt(html, tag.stopped)}` }
+  return { at: tag.stopped, message: `<${tag.name}> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: ${foundAt(html, tag.stopped)}` }
 }
 
 // What stands at `index`, for a refusal's message, a character no one sees spelled as its escape.
@@ -45,7 +45,7 @@ export function foundAt(html: string, index: number): string {
   return `found ${spelled}${index + found.length < html.length ? '…' : ''}`
 }
 
-// The start of the same line in `html`, where the position was counted after its `\r\n` became line feeds.
+// The position of the start of `line` in `html` as handed in, for a line counted after each `\r\n` became a line feed.
 export function positionIn(html: string, { line }: SourcePosition): SourcePosition {
   let offset = 0
   for (let passed = 1; passed < line; passed += 1) offset = html.indexOf('\n', offset) + 1
