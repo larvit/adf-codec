@@ -936,6 +936,7 @@ test('spells an emphasis run once across the code spans, mentions, dates and inl
   assert.equal(readsBack(document(paragraph(marked('a ', strong), { attrs: { timestamp: '0' }, type: 'date' }, marked(' b', strong)))), '**a !adf:date{timestamp=0} b**\n')
   assert.equal(readsBack(document(paragraph(marked('a ', strong), { attrs: { id: 'm' }, type: 'mediaInline' }, marked(' b', strong)))), '**a !adf:mediaInline{id=m} b**\n')
   assert.equal(readsBack(document(paragraph(marked('a ', strong), marked('c', { type: 'code' }), mention, { type: 'hardBreak' }, marked(' b', strong)))), '**a `c`!adf:mention[@A]{id=x}\\\n!adf:text{text=" "}b**\n')
+  assert.equal(readsBack(document(paragraph(marked('a', strong), marked('https://x/', { attrs: { href: 'https://x/' }, type: 'link' }, { type: 'code' }), marked('b', strong)))), '**a[`https://x/`](https://x/)b**\n')
 })
 
 test('spells a link run once across the mentions and inline cards between two nodes holding it, and parts it at code and inline media that do not hold it', () => {

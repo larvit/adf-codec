@@ -19,7 +19,7 @@ export type InlineEscaping = (typeof escapingCodes)[number]
 
 export type NodeRange = { first: number; last: number }
 
-// `depth` is the index into each node's marks array that the run spells.
+// `depth` is the run's nesting level. On a parted line, the only line a fallback reads, that is the index into each node's marks array that the run spells.
 export type MarkRun = NodeRange & { depth: number }
 
 export type InlineSegment =
