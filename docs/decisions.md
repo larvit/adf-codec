@@ -719,10 +719,11 @@ and every ruling stays in the history. Each restructure runs one rung higher; pa
 the maintainer decides. A ruling judges the code, never the behaviour: item 91's spanning stays, since the
 paragraphs it spells, such as bold around a code span, occur in documents all the time
 (2026-11-03). The maintainer's call on how: refactor first, ruled alone (item 166), then make spanning part of
-grouping, with the span rule in one home: a node that can't hold the run's em, strike, strong or link mark is one more
-case of `insideRun`, and whether it stands between two holders is asked where `inlineRuns` closes a run and where
-`sharedRuns` and `withoutOpeningLinkCode` look past a neighbour. A restructure past a pass's round cap still goes unreviewed,
-so the PR summary names it.
+grouping, with the span rule in one home. `runSpans`, beside `insideRun`, says which node a run passes. `inlineRuns` ends
+a run at its last holder, and the reducer asks that same grouping through `runsSharedWithNext`. `withoutOpeningLinkCode`
+stays on `insideRun` alone, since it answers the parted line. A refactor that merges as its own chunk took its own ruling,
+so the chunk's later rulings read against that merge, the commit `larv-review ruling-base` prints. A restructure past a
+pass's round cap still goes unreviewed, so the PR summary names it.
 
 ## No schema validation
 

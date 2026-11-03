@@ -9,6 +9,7 @@ import { holdsEntityReference } from './commonmark/entity-references.ts'
 import { isAutolink } from './commonmark/grammar.ts'
 import { isMarkType, linkAttrs, linkMarkFrom, markAttributes, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { spellEmptyKeys } from './directive/empty-keys.ts'
+import { takesMark } from '../adf/inline-nodes.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | { kind: 'emphasis'; spelling: string }
@@ -44,10 +45,16 @@ export function isEmphasis(mark: AdfMark): boolean {
   return markSpelling(mark.type)?.kind === 'emphasis'
 }
 
-// spec/flavour.md, Marks. The portable reducer must ask this too, or it trims edge whitespace by runs the writers do not spell.
+// spec/flavour.md, Marks.
 export function insideRun({ node, outer }: RunNode, mark: AdfMark): RunNode | undefined {
   const held = nodeMarks(node)[outer]
   return held !== undefined && identicalMark(held, mark) ? { node, outer: outer + 1 } : undefined
+}
+
+// spec/flavour.md, Marks. The readers refuse `marks=empty` inside a mark's spelling.
+export function runSpans(node: AdfNode, mark: AdfMark): boolean {
+  const kind = markSpelling(mark.type)?.kind
+  return (kind === 'emphasis' || kind === 'link') && !takesMark(node, mark.type) && node.marks?.length !== 0
 }
 
 export function linkMark(definition: LinkDefinition): AdfMark {
@@ -72,7 +79,7 @@ export function linkHref(attrs: AdfAttributes): string | undefined {
   return typeof href === 'string' ? href : undefined
 }
 
-// spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's depth + 1, the parser's 0.
+// spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's `outer`, the parser's 0.
 export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], marksInside: number, bracketed: boolean, escapes: TitleEscapes): CommonMarkLink | undefined {
   if (Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   const title = attrs['title']

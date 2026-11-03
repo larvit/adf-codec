@@ -5,11 +5,11 @@ import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { imageAside } from '../image-aside.ts'
-import { insideRun, isEmphasis, type RunNode } from '../mark-spellings.ts'
+import { insideRun, isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
-import { portableLineFallback, readBackPasses, spannedNodes, type PortableLineFallback } from '../emit/inline-line.ts'
+import { portableLineFallback, readBackPasses, runsSharedWithNext, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 const highlight = 'backgroundColor'
@@ -165,12 +165,11 @@ export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    // Judged beside the nodes as the spanned line writes them, a portable line carrying none, so whitespace beside a code span inside a run keeps the run's mark.
-    const spanned = spannedNodes(merged, new Set()).nodes
+    const shared = runsSharedWithNext(merged)
     let changed = false
     const trimmed: AdfNode[] = []
     for (const [index, leaf] of merged.entries()) {
-      const edges = leafEdges(leaf, spanned[index - 1], spanned[index + 1])
+      const edges = leafEdges(leaf, runsBeside(merged[index - 1], shared[index - 1]), runsBeside(merged[index + 1], shared[index]))
       if (edges === undefined) {
         trimmed.push(leaf)
         continue
@@ -191,15 +190,20 @@ function withoutEdgeBreaks(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.slice(first, last + 1)
 }
 
+// How many runs a leaf shares with its neighbour, `undefined` at a line edge.
+function runsBeside(neighbour: AdfNode | undefined, shared: number | undefined): number | undefined {
+  return neighbour === undefined || neighbour.type === 'hardBreak' ? undefined : shared
+}
+
 // spec/flavour.md, Inline nodes: edge whitespace leaves every stripping mark opening or closing beside it, and goes at a line edge.
-function leafEdges(leaf: AdfNode, previous: AdfNode | undefined, next: AdfNode | undefined): AdfNode[] | undefined {
+function leafEdges(leaf: AdfNode, runsBefore: number | undefined, runsAfter: number | undefined): AdfNode[] | undefined {
   const marks = nodeMarks(leaf)
   const text = leaf.text
   if (text === undefined || marks.some((mark) => mark.type === 'code')) return undefined
   const lead = text.slice(0, text.search(/[^ \t]|$/))
   const trail = text.slice(text.search(/[ \t]*$/))
-  const leadDepth = edgeDepth(marks, previous, lead)
-  const trailDepth = edgeDepth(marks, next, trail)
+  const leadDepth = edgeDepth(marks, runsBefore, lead)
+  const trailDepth = edgeDepth(marks, runsAfter, trail)
   if (leadDepth === marks.length && trailDepth === marks.length) return undefined
   if (lead === text) return leadDepth === undefined || trailDepth === undefined ? [] : [textLeaf(text, marks.slice(0, Math.min(leadDepth, trailDepth)))]
   const edges: AdfNode[] = []
@@ -211,22 +215,11 @@ function leafEdges(leaf: AdfNode, previous: AdfNode | undefined, next: AdfNode |
 }
 
 // How many of the leaf's marks the edge whitespace keeps, `undefined` where it drops at a line edge.
-function edgeDepth(marks: readonly AdfMark[], neighbour: AdfNode | undefined, whitespace: string): number | undefined {
+function edgeDepth(marks: readonly AdfMark[], runsBeside: number | undefined, whitespace: string): number | undefined {
   if (whitespace === '') return marks.length
-  const lineEdge = neighbour === undefined || neighbour.type === 'hardBreak'
-  const shared = lineEdge ? 0 : sharedRuns(marks, neighbour)
-  const stripping = marks.findIndex((mark, index) => index >= shared && edgeStrippingMarks.includes(mark.type))
+  const stripping = marks.findIndex((mark, index) => index >= (runsBeside ?? 0) && edgeStrippingMarks.includes(mark.type))
   const kept = stripping === -1 ? marks.length : stripping
-  return kept === 0 && lineEdge ? undefined : kept
-}
-
-function sharedRuns(marks: readonly AdfMark[], neighbour: AdfNode): number {
-  let inside: RunNode | undefined = { node: neighbour, outer: 0 }
-  for (const [depth, mark] of marks.entries()) {
-    inside = insideRun(inside, mark)
-    if (inside === undefined) return depth
-  }
-  return marks.length
+  return kept === 0 && runsBeside === undefined ? undefined : kept
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
