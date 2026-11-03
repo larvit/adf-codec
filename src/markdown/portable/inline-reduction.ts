@@ -215,11 +215,11 @@ function leafEdges(leaf: AdfNode, runsBefore: number | undefined, runsAfter: num
 }
 
 // How many of the leaf's marks the edge whitespace keeps, `undefined` where it drops at a line edge.
-function edgeDepth(marks: readonly AdfMark[], runsBeside: number | undefined, whitespace: string): number | undefined {
+function edgeDepth(marks: readonly AdfMark[], sharedRuns: number | undefined, whitespace: string): number | undefined {
   if (whitespace === '') return marks.length
-  const stripping = marks.findIndex((mark, index) => index >= (runsBeside ?? 0) && edgeStrippingMarks.includes(mark.type))
+  const stripping = marks.findIndex((mark, index) => index >= (sharedRuns ?? 0) && edgeStrippingMarks.includes(mark.type))
   const kept = stripping === -1 ? marks.length : stripping
-  return kept === 0 && runsBeside === undefined ? undefined : kept
+  return kept === 0 && sharedRuns === undefined ? undefined : kept
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
