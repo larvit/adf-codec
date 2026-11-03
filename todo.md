@@ -12,8 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 166 | 0.3.0 |  |  | **Group an inline line's nodes into mark runs by one rule that answers whether a node belongs to a run of a mark, asked by both writers and the portable reducer.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
-| 91 | 0.3.0 | 166 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
+| 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 91, 132, 133 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
@@ -70,14 +69,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 166. Group an inline line's nodes into mark runs by one rule that answers whether a node belongs to a run of a mark, asked by both writers and the portable reducer.
-
-A refactor that changes no output, so item 91 adds spanning as one more case of the rule rather than as a second path. The maintainer chose it on 2026-11-03, after three paired rulings on PR #112 judged item 91's code worse against 8bcf4a5. This item gets its own ruling, and item 91 then lands on top of it.
-
-- Today `inlineRuns` groups by `nodeMarks(node)[depth]`, so a node joins a run only by holding the mark at that index. Group instead by asking whether a node belongs to a run of a mark, so a run's nodes stay the input nodes and nothing builds a rewritten copy of the line.
-- `trimmedEdges` in `inline-reduction.ts` judges a leaf's edge whitespace by its neighbours' marks. Have it ask the same rule, so changing the rule changes both writers and the reducer at one place.
-- The seats' places this must leave easier to read, or no harder: `src/markdown/emit/inline-line.ts` `linePass` and `inlineRuns`, and `src/markdown/portable/inline-reduction.ts:194` `trimmedEdges`, whose two fixpoint loops have no termination argument.
 
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
