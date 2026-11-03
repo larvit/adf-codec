@@ -234,13 +234,15 @@ function inlineRuns(nodes: readonly RunNode[], firstIndex: number, carried: Read
   for (const [offset, runNode] of nodes.entries()) {
     const index = firstIndex + offset
     const { node, outer } = runNode
-    const previous = runs[runs.length - 1]
     // A carried node spells its marks inside the carry.
-    const carriedNode = carries(node, carried, index)
-    const inside = carriedNode || previous?.kind !== 'marked' ? undefined : insideRun(runNode, previous.mark)
-    const mark = carriedNode ? undefined : nodeMarks(node)[outer]
+    const mark = carries(node, carried, index) ? undefined : nodeMarks(node)[outer]
+    if (mark === undefined) {
+      runs.push({ index, kind: 'plain', node })
+      continue
+    }
+    const previous = runs[runs.length - 1]
+    const inside = previous?.kind === 'marked' ? insideRun(runNode, previous.mark) : undefined
     if (previous?.kind === 'marked' && inside !== undefined) previous.nodes.push(inside)
-    else if (mark === undefined) runs.push({ index, kind: 'plain', node })
     else runs.push({ index, kind: 'marked', mark, nodes: [{ node, outer: outer + 1 }] })
   }
   return runs

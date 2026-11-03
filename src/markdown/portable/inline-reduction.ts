@@ -3,11 +3,11 @@ import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { imageAside } from '../image-aside.ts'
 import { insideRun, isEmphasis, type RunNode } from '../mark-spellings.ts'
-import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
+import { joinsWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
-import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, readBackPasses, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
@@ -145,11 +145,11 @@ function highlightsInsideSharedMarks(leaves: readonly AdfNode[]): AdfNode[] {
     const marks = nodeMarks(leaf)
     if (marks[0]?.type === highlight) {
       const held = marks.slice(1)
-      shared = run.length === 0 ? held : shared.filter((mark) => held.some((other) => sameMarkWhenEditorNormal(other, mark)))
+      shared = run.length === 0 ? held : shared.filter((mark) => held.some((other) => identicalMark(other, mark)))
       run.push(leaf)
       continue
     }
-    for (const held of run) spelled.push(withMarks(held, [...shared, highlightMark, ...nodeMarks(held).slice(1).filter((mark) => !shared.some((other) => sameMarkWhenEditorNormal(other, mark)))]))
+    for (const held of run) spelled.push(withMarks(held, [...shared, highlightMark, ...nodeMarks(held).slice(1).filter((mark) => !shared.some((other) => identicalMark(other, mark)))]))
     run = []
     spelled.push(leaf)
   }
@@ -229,7 +229,7 @@ function sharedRuns(marks: readonly AdfMark[], neighbour: AdfNode): number {
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
-  // Terminates: each fallback takes a mark off some leaf, and trimmedEdges adds none to any character.
+  // Terminates: withoutFallback refuses a pass that takes no mark, and trimmedEdges adds none to any character.
   for (let current = leaves, pass = 1; ; pass += 1) {
     const fallback = portableLineFallback(current, container, path)
     if (!fallback.ok) return fallback
@@ -260,7 +260,7 @@ function withoutEmphasis(leaves: readonly AdfNode[]): AdfNode[] {
 }
 
 // The runs one pass takes back may nest, so a leaf drops its mark at each depth a run over it names.
-function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] {
+function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] | undefined {
   const depths = new Map<number, number[]>()
   for (const run of runs) {
     for (let index = run.first; index <= run.last; index += 1) {
@@ -269,8 +269,13 @@ function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): Adf
       else held.push(run.depth)
     }
   }
-  return leaves.map((leaf, index) => {
+  const kept = leaves.map((leaf, index) => {
     const dropped = depths.get(index)
     return dropped === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => !dropped.includes(held)))
   })
+  return markCount(kept) < markCount(leaves) ? kept : undefined
+}
+
+function markCount(leaves: readonly AdfNode[]): number {
+  return leaves.reduce((count, leaf) => count + nodeMarks(leaf).length, 0)
 }

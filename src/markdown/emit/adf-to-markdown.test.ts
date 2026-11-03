@@ -49,6 +49,16 @@ test('refuses a node whose carry nests too deep ahead of a later node in its lin
   assert.deepEqual(path(refused), ['content', 0, 'content', 0])
 })
 
+test('refuses a carried run at the node whose carry nests too deep, among the run\'s own nodes', () => {
+  let deep: JsonValue = 'a'
+  for (let depth = 0; depth < largestNesting - 1; depth += 1) deep = { deep }
+  const carriedEm: AdfNode = { marks: [{ attrs: { deep }, type: 'em' }], text: 'x', type: 'text' }
+  const twiceStrong: AdfNode = { marks: [{ type: 'strong' }, { type: 'strong' }], text: 'y', type: 'text' }
+  const refused = adfToLosslessMarkdown(document(paragraph({ text: 'ok', type: 'text' }, carriedEm, twiceStrong)))
+  assert.equal(code(refused), 'unsupported-nesting-depth')
+  assert.deepEqual(path(refused), ['content', 0, 'content', 1])
+})
+
 test('refuses a value that is not an ADF document, naming the check it failed', () => {
   assert.equal(markdown(adfToLosslessMarkdown({ type: 'doc', version: Number.NaN })), 'not-an-adf-document: an ADF document holds a version number: found NaN')
 })

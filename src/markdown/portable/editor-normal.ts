@@ -1,6 +1,6 @@
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
-import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { joinsWhenRead } from '../adjacent-text.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
@@ -11,10 +11,6 @@ type NodeHolder = { content?: AdfNode[] }
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
   if (previous.type !== 'text' || node.type !== 'text') return false
   return joinsWhenRead(normalNode(previous), normalNode(node))
-}
-
-export function sameMarkWhenEditorNormal(left: AdfMark, right: AdfMark): boolean {
-  return identicalMark(normalMark(left), normalMark(right))
 }
 
 export function toEditorNormal(document: AdfDocument): AdfDocument {
