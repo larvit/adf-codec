@@ -37,6 +37,30 @@ test('reduces a line alike dropping every run a pass may or the first alone', ()
 })
 
 // Drops only the first run each pass finds, with every misflanked highlight, and takes no cap.
+test('refuses an opening-link fallback whose link run holds no code span', () => {
+  const link = { attrs: { href: 'u' }, type: 'link' }
+  const lines: AdfNode[][] = [
+    [{ marks: [link], text: 'a', type: 'text' }],
+    [{ marks: [link, { type: 'em' }], text: 'a', type: 'text' }],
+    [{ marks: [link], text: 'a', type: 'text' }, { marks: [{ type: 'code' }], text: 'c', type: 'text' }],
+  ]
+  for (const line of lines) {
+    const refused = withoutFallback(line, { kind: 'opening-link' }, [])
+    assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
+  }
+})
+
+test('takes code off every node of an opening link\'s run that an opening-link fallback names', () => {
+  const link = { attrs: { href: 'u' }, type: 'link' }
+  const line: AdfNode[] = [{ marks: [link, { type: 'code' }], text: 'a', type: 'text' }, { marks: [link], text: 'b', type: 'text' }]
+  assert.deepEqual(withoutFallback(line, { kind: 'opening-link' }, []), success([{ marks: [link], text: 'a', type: 'text' }, { marks: [link], text: 'b', type: 'text' }]))
+})
+
+test('refuses an unspellable-run fallback that takes no mark', () => {
+  const refused = withoutFallback([{ marks: [{ type: 'em' }], text: 'a', type: 'text' }], { kind: 'unspellable-run', runs: [{ depth: 1, first: 0, last: 0 }] }, [])
+  assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
+})
+
 function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Result<AdfNode[]> {
   const leaves = portableLeaves(nodes, container, [], 0)
   if (!leaves.ok) return leaves

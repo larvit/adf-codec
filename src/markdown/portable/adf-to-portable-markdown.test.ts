@@ -465,6 +465,11 @@ test('writes what the editor-normal form of the document writes', () => {
   assert.equal(portable(paragraph({ marks: [{ attrs: {}, type: 'code' }], text: 'a', type: 'text' }, { marks: [{ type: 'code' }], text: '|b', type: 'text' })), '`a|b`\n')
 })
 
+test('keeps the code mark of a node past an opening link when the fallback drops the link\'s own', () => {
+  const link: AdfMark = { attrs: { href: 'u' }, type: 'link' }
+  assert.equal(portable(paragraph(text('x]: y', link, code), text('z', code))), '[x\\]: y](u)`z`\n')
+})
+
 test('writes a text node holding content the same in either order beside its neighbour', () => {
   const holding: AdfNode = { content: [text('inner')], text: 'a', type: 'text' }
   assert.equal(portable(paragraph(holding, text('b'))), 'ab\n')

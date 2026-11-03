@@ -81,6 +81,8 @@ mention or code spelled `!adf:text{text=" "}`. Joining the run across the break 
 `inline-line.ts` ruled worse with two comprehension panels (PR #22): a joined run that cannot be spelled needs its own fallback,
 first as a set of parted breaks, then as a flag the first fallback clears.
 
+Once a run spans a node that doesn't hold its mark, `outer` and `depth` differ. Settle which one `tryLink`'s `depth + 1` and `MarkRun.depth` mean, and keep `MarkRun.depth`'s comment true.
+
 ### 133. Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
 A writer panel picks the elements, classes and `data-*` attributes. Where a link marks a card, both
