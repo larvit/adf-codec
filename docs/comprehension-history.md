@@ -1338,3 +1338,36 @@ Inherited architect, decided by:
 
 - Shape, Overall: `src/adf/inline-nodes.ts:42` `takenMarkTypes`: `undefined` now means only a node type outside the tables
 - Shape: `src/markdown/inline-content.ts:261` `directiveMarkPieces`: this caller overrides `marksItem`'s rule that a non-node is markable, with nothing at the call site saying why
+
+## 2026-11-03T21:09:33Z, PR #116 at 9e8df99, against 8bcf4a5
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | worse | better | better |
+| Inherited architect | same | better | worse | better | better |
+
+Mid A, decided by:
+
+- Locality, Overall: `src/markdown/mark-spellings.ts:48` `insideRun`. What counts as "in the same run" is now one function, used by the emitter and the reducer, and its comment names the footgun; at the base the two compared marks separately and nothing said they had to agree.
+- Locality: `src/markdown/portable/inline-reduction.ts:221` `sharedRuns`. The reducer no longer depends on a comparator exported from the editor-normal module, which made a reader check whether normalization mattered here.
+- Self-sufficiency, Overall: `src/markdown/portable/inline-reduction.ts:231` `spellableLine` and `src/markdown/portable/inline-reduction.ts:165` `trimmedEdges`. Both loops now state in one line why they terminate.
+- Self-sufficiency: `src/markdown/portable/inline-reduction.ts:262` `withoutMarks` with `markCount`. A pass that takes no mark returns `undefined` and `withoutFallback` refuses it, so the argument is enforced in the code.
+- Shape: `src/markdown/mark-spellings.ts:21` `RunNode`, threaded through `src/markdown/emit/inline-line.ts:213` `emitRun` and `src/markdown/emit/inline-line.ts:232` `inlineRuns`. `outer` and `depth` always hold the same value, and a reader has to trace the recursion to answer why both exist.
+- Shape: `src/markdown/emit/inline-line.ts:384` `tryLink` against `src/markdown/emit/inline-line.ts:364` `codeSpans`. The same count is spelled two ways a few lines apart.
+- Shape: `src/markdown/emit/inline-line.ts:288` `carriedRun` with `lineNodes` in `InlineContext`. Nodes and range can no longer disagree, but the context gains a field only this function uses.
+- Locality: `src/markdown/portable/inline-reduction.ts:250` `withoutOpeningLinkCode`. A `findIndex` over the run says what it means, where the base wrapped one mark in an array to reuse a helper.
+
+Inherited architect, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/portable/inline-reduction.ts:262` `withoutMarks`, with `markCount` at `:278` and the comment at `:231` in `spellableLine`. A pass that takes no mark returns `undefined` and `withoutFallback` refuses it, so the termination claim can be checked in this file.
+- Locality: `src/markdown/mark-spellings.ts:48` `insideRun`. The rule for what stays in a run has one home, used by the writer's `inlineRuns` and by the reducer, where the base left a reader to prove two comparators agreed on reduced marks.
+- Shape, Locality: `src/markdown/portable/editor-normal.ts:11` `joinsWhenEditorNormal`. `sameMarkWhenEditorNormal` is gone, so the file now only answers what the editor joins and normalizes.
+- Shape: `src/markdown/emit/inline-line.ts:213` `emitRun`. It carries `depth` and a per-node `RunNode.outer` that are always equal, and a reader has to trace every path to learn that, because nothing in this version needs a per-node count.
+- Shape: `src/markdown/emit/inline-line.ts:384` `tryLink`, against `:368` in `codeSpans`. Two sources for one number sit in the same file, where the base used `depth + 1` in both.
+- Locality: `src/markdown/emit/inline-line.ts:288` `carriedRun`, with `lineNodes` at `:37`. The nodes are sliced from a new context field by `range`, so `range` must be line-absolute; a small cost against the Locality gains.
+- Shape: `src/markdown/portable/inline-reduction.ts:247` `withoutOpeningLinkCode`. `findIndex` with `insideRun` and an `end` bound reads directly as the opening link's run; a real gain, smaller than the `depth` and `outer` cost.
+- Shape: `src/markdown/portable/inline-reduction.ts:221` `sharedRuns`. A seven-line walk threads a `RunNode` where the depth is already the loop index, replacing a two-line `while`; it uses the shared rule but reads no easier.
+- Self-sufficiency: `src/markdown/portable/inline-reduction.ts:165` `trimmedEdges`. The new comment names the termination measure: whitespace or marks per character, which merging never adds.
+- Self-sufficiency: `src/markdown/mark-spellings.ts:20` `RunNode` and `:47` `insideRun`. The comments pay for the file's extra concept, though `nodeMarks(node)[outer]` at `inline-line.ts:238` now needs a jump to another file, and `src/markdown/portable/inline-reduction.test.ts:39` has a stray comment above an unrelated test.
