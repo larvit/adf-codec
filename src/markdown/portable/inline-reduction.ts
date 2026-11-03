@@ -1,16 +1,24 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
+import type { RunGrouping, RunNode } from '../emit/inline-runs.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { imageAside } from '../image-aside.ts'
-import { insideRun, isEmphasis } from '../mark-spellings.ts'
+import { inlineRuns, insideRun, partedLine, spannedLine } from '../emit/inline-runs.ts'
+import { isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
-import { portableLineFallback, readBackPasses, runsSharedWithNext, type PortableLineFallback } from '../emit/inline-line.ts'
+import { portableLineFallback, readBackPasses, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
+
+// What stands beside a leaf's edge: whether a line edge does, and how many runs hold the leaf and its neighbour both.
+type Beside = { lineEdge: boolean; sharedRuns: number }
+
+// `leaves` is the line `fallback` was judged on.
+type JudgedLine = { fallback: PortableLineFallback | undefined; leaves: AdfNode[] }
 
 const highlight = 'backgroundColor'
 const highlightMark: AdfMark = { type: highlight }
@@ -26,7 +34,7 @@ export function reduceInline(nodes: readonly AdfNode[], container: LineContainer
 export function portableLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodes, container, path, depth)
   if (!leaves.ok) return leaves
-  return success(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value))))
+  return success(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value, spannedLine)), spannedLine))
 }
 
 export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
@@ -161,15 +169,15 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
   return marks.length === 0 ? unmarked : { ...unmarked, marks: [...marks] }
 }
 
-export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
+export function trimmedEdges(leaves: readonly AdfNode[], grouping: RunGrouping): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    const shared = runsSharedWithNext(merged)
+    const shared = runsSharedWithNext(merged, grouping)
     let changed = false
     const trimmed: AdfNode[] = []
     for (const [index, leaf] of merged.entries()) {
-      const edges = leafEdges(leaf, runsBeside(merged[index - 1], shared[index - 1]), runsBeside(merged[index + 1], shared[index]))
+      const edges = leafEdges(leaf, beside(merged[index - 1], shared[index - 1]), beside(merged[index + 1], shared[index]))
       if (edges === undefined) {
         trimmed.push(leaf)
         continue
@@ -190,20 +198,35 @@ function withoutEdgeBreaks(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.slice(first, last + 1)
 }
 
-// How many runs a leaf shares with its neighbour, `undefined` at a line edge.
-function runsBeside(neighbour: AdfNode | undefined, shared: number | undefined): number | undefined {
-  return neighbour === undefined || neighbour.type === 'hardBreak' ? undefined : shared
+// For each leaf but the last, how many runs of the line hold both it and the next leaf.
+function runsSharedWithNext(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
+  const shared = leaves.map(() => 0)
+  countSharedRuns(leaves.map((node) => ({ node, outer: 0 })), 0, grouping, shared)
+  return shared
+}
+
+// Recurses once per mark, and a portable leaf holds one mark of each kept type.
+function countSharedRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping, shared: number[]): void {
+  for (const run of inlineRuns(nodes, firstIndex, grouping)) {
+    if (run.kind === 'plain') continue
+    for (let index = run.index; index < run.index + run.nodes.length - 1; index += 1) shared[index] = (shared[index] ?? 0) + 1
+    countSharedRuns(run.nodes, run.index, grouping, shared)
+  }
+}
+
+function beside(neighbour: AdfNode | undefined, sharedRuns = 0): Beside {
+  return { lineEdge: neighbour === undefined || neighbour.type === 'hardBreak', sharedRuns }
 }
 
 // spec/flavour.md, Inline nodes: edge whitespace leaves every stripping mark opening or closing beside it, and goes at a line edge.
-function leafEdges(leaf: AdfNode, runsBefore: number | undefined, runsAfter: number | undefined): AdfNode[] | undefined {
+function leafEdges(leaf: AdfNode, before: Beside, after: Beside): AdfNode[] | undefined {
   const marks = nodeMarks(leaf)
   const text = leaf.text
   if (text === undefined || marks.some((mark) => mark.type === 'code')) return undefined
   const lead = text.slice(0, text.search(/[^ \t]|$/))
   const trail = text.slice(text.search(/[ \t]*$/))
-  const leadDepth = edgeDepth(marks, runsBefore, lead)
-  const trailDepth = edgeDepth(marks, runsAfter, trail)
+  const leadDepth = edgeDepth(marks, before, lead)
+  const trailDepth = edgeDepth(marks, after, trail)
   if (leadDepth === marks.length && trailDepth === marks.length) return undefined
   if (lead === text) return leadDepth === undefined || trailDepth === undefined ? [] : [textLeaf(text, marks.slice(0, Math.min(leadDepth, trailDepth)))]
   const edges: AdfNode[] = []
@@ -214,24 +237,38 @@ function leafEdges(leaf: AdfNode, runsBefore: number | undefined, runsAfter: num
   return edges
 }
 
-// How many of the leaf's marks the edge whitespace keeps, `undefined` where it drops at a line edge.
-function edgeDepth(marks: readonly AdfMark[], sharedRuns: number | undefined, whitespace: string): number | undefined {
+// How many of the leaf's marks the edge whitespace keeps, `undefined` where it drops at a line edge. Text not marked `code` holds every run over it, so the runs it shares are its outermost marks.
+function edgeDepth(marks: readonly AdfMark[], { lineEdge, sharedRuns }: Beside, whitespace: string): number | undefined {
   if (whitespace === '') return marks.length
-  const stripping = marks.findIndex((mark, index) => index >= (sharedRuns ?? 0) && edgeStrippingMarks.includes(mark.type))
+  // A run crossing a hard break holds this whitespace at the edge of a line, where CommonMark strips it.
+  if (lineEdge && sharedRuns > 0) return undefined
+  const stripping = marks.findIndex((mark, index) => index >= sharedRuns && edgeStrippingMarks.includes(mark.type))
   const kept = stripping === -1 ? marks.length : stripping
-  return kept === 0 && sharedRuns === undefined ? undefined : kept
+  return kept === 0 && lineEdge ? undefined : kept
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
   // Terminates: withoutFallback refuses a pass that takes no mark, and trimmedEdges adds none to any character.
   for (let current = leaves, pass = 1; ; pass += 1) {
-    const fallback = portableLineFallback(current, container, path)
-    if (!fallback.ok) return fallback
-    if (fallback.value === undefined) return success(current)
-    const fixed = withoutFallback(current, fallback.value, path)
+    const judged = judgedLine(current, container, path)
+    if (!judged.ok) return judged
+    const { fallback, leaves: line } = judged.value
+    if (fallback === undefined) return success(line)
+    const fixed = withoutFallback(line, fallback, path)
     if (!fixed.ok) return fixed
-    current = trimmedEdges(pass === readBackPasses ? withoutEmphasis(fixed.value) : fixed.value)
+    current = trimmedEdges(pass === readBackPasses ? withoutEmphasis(fixed.value) : fixed.value, spannedLine)
   }
+}
+
+// spec/flavour.md, Marks: the lines in the order the writer tries them, each trimmed by its own runs.
+export function judgedLine(spanned: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<JudgedLine> {
+  const spannedFallback = portableLineFallback(spanned, container, path, spannedLine)
+  if (!spannedFallback.ok) return spannedFallback
+  if (spannedFallback.value === undefined) return success({ fallback: undefined, leaves: [...spanned] })
+  const parted = trimmedEdges(spanned, partedLine)
+  const partedFallback = portableLineFallback(parted, container, path, partedLine)
+  if (!partedFallback.ok) return partedFallback
+  return success({ fallback: partedFallback.value, leaves: parted })
 }
 
 export function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallback, path: ConvertErrorPath): Result<AdfNode[]> {
@@ -253,19 +290,19 @@ function withoutEmphasis(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.map((leaf) => withMarks(leaf, nodeMarks(leaf).filter((mark) => !isEmphasis(mark))))
 }
 
-// The runs one pass takes back may nest, so a leaf drops its mark at each depth a run over it names.
+// The runs one pass takes back may nest, so a leaf drops the mark of each run over it.
 function withoutMarks(leaves: readonly AdfNode[], runs: readonly MarkRun[]): AdfNode[] | undefined {
-  const depths = new Map<number, number[]>()
+  const droppedAt = new Map<number, AdfMark[]>()
   for (const run of runs) {
     for (let index = run.first; index <= run.last; index += 1) {
-      const held = depths.get(index)
-      if (held === undefined) depths.set(index, [run.depth])
-      else held.push(run.depth)
+      const dropped = droppedAt.get(index)
+      if (dropped === undefined) droppedAt.set(index, [run.mark])
+      else dropped.push(run.mark)
     }
   }
   const kept = leaves.map((leaf, index) => {
-    const dropped = depths.get(index)
-    return dropped === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((_, held) => !dropped.includes(held)))
+    const dropped = droppedAt.get(index)
+    return dropped === undefined ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => !dropped.some((mark) => identicalMark(held, mark))))
   })
   return markCount(kept) < markCount(leaves) ? kept : undefined
 }

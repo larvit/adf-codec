@@ -39,8 +39,9 @@
   span: ``**Run `npm ci` first**``. `adfToLosslessMarkdown` also writes those three once across
   mentions, emoji, dates, statuses, inline cards and inline media, as
   `**Ping !adf:mention[@A]{id=x} now**`, and a link once across mentions, emoji, dates, statuses
-  and inline cards. The markdown reads back to the same ADF as before. Where the joined line would
-  not, the writers write the line as before.
+  and inline cards. The markdown reads back to the same ADF as before, except that
+  `adfToPortableMarkdown` drops whitespace beside a hard break a mark crosses, where CommonMark
+  strips it. Where the joined line would not read back, the writers write the line as before.
 - Every reader keeps the URL and title of an image inside a link's text, where it dropped them:
   after the link comes `(image)`, which links to the image, so
   `[look at ![the moon](moon.png "Full") tonight](/moon)` reads as

@@ -1,13 +1,14 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { InlineNodeModel } from '../../adf/inline-nodes.ts'
+import type { InlineRun, RunGrouping, RunNode } from './inline-runs.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinition, TitleEscapes } from '../commonmark/link-syntax.ts'
 import type { RunFallback } from './unspellable-runs.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { assembleInlineLine, isSyntax, type InlineEscaping, type InlineSegment, type MarkRun, type NodeRange } from './line-escaping.ts'
 import { carriedInline } from '../opaque-carry.ts'
-import { commonMarkLink, insideRun, isEmphasis, linkHref, markSpelling, runSpans, spellMarkAttributes, type RunNode } from '../mark-spellings.ts'
-import { directivePrefix, slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
+import { carries, inlineRuns } from './inline-runs.ts'
+import { commonMarkLink, isEmphasis, linkHref, markSpelling, spellMarkAttributes } from '../mark-spellings.ts'
 import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonmark/link-syntax.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
@@ -18,6 +19,7 @@ import { isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/do
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
+import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
 import { spellInlineNodeAttributes } from '../directive/inline-spelling.ts'
 import { spellTextDirective } from '../directive/text.ts'
 
@@ -28,26 +30,20 @@ type Emission = { carries: [NodeRange, ...NodeRange[]]; segments?: undefined } |
 
 type Fallback = [NodeRange, ...NodeRange[]] | 'opening-link'
 
-type InlineContext = {
+type InlineContext = RunGrouping & {
   atBlockEnd: boolean
   bracketed: boolean
-  carried: ReadonlySet<number>
   container: LineContainer
   flavour: WrittenFlavour
   lineNodes: readonly AdfNode[]
   openingLinkAsDirective: boolean
   path: ConvertErrorPath
-  spans: boolean
   spansLines: boolean
 }
 
-type InlineRun = { index: number; kind: 'marked'; mark: AdfMark; nodes: RunNode[] } | { index: number; kind: 'plain'; node: AdfNode }
-
 type LineAttempt = { fallback: Fallback; line?: undefined; segments?: undefined } | { fallback?: undefined; line: string; segments: InlineSegment[] }
 
-type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
-
-type RunGrouping = { carried: ReadonlySet<number>; spans: boolean }
+type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean; parted: boolean }
 
 // docs/decisions.md §After 32 passes, a line carries or drops every em, strike and strong mark.
 export const readBackPasses = 32
@@ -66,9 +62,9 @@ export function openingLinkTakesDirective(nodes: readonly AdfNode[], path: Conve
   return success(emitted.value.openingLinkAsDirective)
 }
 
-export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<PortableLineFallback | undefined> {
-  const fallbacks = withheldMarkFallbacks(nodes, 'portable')
-  const emission = lineSegments(nodes, container, path, fallbacks, false)
+export function portableLineFallback(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, { parted }: Pick<RunGrouping, 'parted'>): Result<PortableLineFallback | undefined> {
+  const fallbacks = { ...withheldMarkFallbacks(nodes, 'portable'), parted }
+  const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
   if (fallbacks.carried.size > 0 || emission.value.carries !== undefined) return failure('unsupported-node-shape', 'an inline node on a portable line has no spelling but the carry', path)
   const verdict = lineVerdict(emission.value.segments, container, 'portable', { kind: 'drop', nodes })
@@ -97,8 +93,8 @@ export function tryImageLine(alt: string | undefined, url: string, flavour: Writ
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
   const fallbacks = withheldMarkFallbacks(nodes, flavour)
-  // Terminates because takeFallback refuses a pass that took no new fallback.
-  for (let pass = 1; ; pass += 1) {
+  // Terminates because takeFallback refuses a pass that took no new fallback. Pass 0 only parts the line, so `readBackPasses` counts what a parted line takes.
+  for (let pass = 0; ; pass += 1) {
     const attempt = linePass(nodes, container, path, fallbacks)
     if (!attempt.ok) return attempt
     const { fallback, line, segments } = attempt.value
@@ -109,20 +105,8 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
   }
 }
 
-// spec/flavour.md, Marks: a pass writes the spanned line where it needs no fallback; otherwise it writes the parted line and takes that line's fallbacks.
 export function linePass(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<LineAttempt> {
-  const spanned = lineAttempt(nodes, container, path, fallbacks, true)
-  return spanned.ok && writesSpanned(spanned.value, fallbacks.flavour) ? spanned : lineAttempt(nodes, container, path, fallbacks, false)
-}
-
-function writesSpanned({ fallback, segments }: LineAttempt, flavour: WrittenFlavour): boolean {
-  if (fallback !== undefined) return false
-  // A span can leave whitespace at a line edge, which only `!adf:text` spells.
-  return flavourClaims[flavour].directives || !segments.some((segment) => segment.escaping === 'none' && segment.text.startsWith(directivePrefix))
-}
-
-function lineAttempt(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks, spans: boolean): Result<LineAttempt> {
-  const emission = lineSegments(nodes, container, path, fallbacks, spans)
+  const emission = lineSegments(nodes, container, path, fallbacks)
   if (!emission.ok) return emission
   const { carries, segments } = emission.value
   return success(segments === undefined ? { fallback: carries } : attemptLine(segments, container, fallbacks.flavour))
@@ -139,10 +123,15 @@ export function withheldMarkFallbacks(nodes: readonly AdfNode[], flavour: Writte
     const taken = takenMarkTypes(node)
     if (taken !== undefined && nodeMarks(node).some((mark) => !taken.includes(mark.type))) carried.add(index)
   }
-  return { carried, flavour, openingLinkAsDirective: false }
+  return { carried, flavour, openingLinkAsDirective: false, parted: false }
 }
 
 export function takeFallback(fallbacks: LineFallbacks, fallback: Fallback, path: ConvertErrorPath): Result<null> {
+  // spec/flavour.md, Marks: a line needing a fallback first parts its runs, and takes what the parted line still needs.
+  if (!fallbacks.parted) {
+    fallbacks.parted = true
+    return success(null)
+  }
   if (fallback === 'opening-link') {
     if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)
     fallbacks.openingLinkAsDirective = true
@@ -154,12 +143,12 @@ export function takeFallback(fallbacks: LineFallbacks, fallback: Fallback, path:
   return success(null)
 }
 
-function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks, spans: boolean): Result<Emission> {
-  const context: InlineContext = { atBlockEnd: true, bracketed: false, ...fallbacks, container, lineNodes: nodes, path, spans, spansLines: container === 'paragraph' }
+function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<Emission> {
+  const context: InlineContext = { atBlockEnd: true, bracketed: false, ...fallbacks, container, lineNodes: nodes, path, spansLines: container === 'paragraph' }
   const emission = emitRun(nodes.map((node) => ({ node, outer: 0 })), 0, 0, context)
   if (!emission.ok) return emission
   if (emission.value.carries !== undefined) return emission
-  return success({ segments: spellEdgeWhitespace(emission.value.segments) })
+  return success({ segments: spellEdgeWhitespace(emission.value.segments, fallbacks.flavour) })
 }
 
 function attemptLine(segments: InlineSegment[], container: LineContainer, flavour: WrittenFlavour): LineAttempt {
@@ -177,8 +166,9 @@ function lineVerdict(segments: readonly InlineSegment[], container: LineContaine
   return run === undefined ? { kind: 'line', text: assembled.line } : { kind: 'unspellable-run', runs: [run, ...others] }
 }
 
-// A space or tab CommonMark strips at a line edge rides !adf:text{text="…"}.
-function spellEdgeWhitespace(segments: readonly InlineSegment[]): InlineSegment[] {
+// A space or tab CommonMark strips at a line edge rides !adf:text{text="…"}. A flavour without directives leaves it raw, since the reducer trims each line by its own runs.
+function spellEdgeWhitespace(segments: InlineSegment[], flavour: WrittenFlavour): InlineSegment[] {
+  if (!flavourClaims[flavour].directives) return segments
   const spelled: InlineSegment[] = []
   for (const [index, segment] of segments.entries()) {
     const previous = segments[index - 1]
@@ -244,56 +234,6 @@ function emitRun(nodes: readonly RunNode[], depth: number, firstIndex: number, c
   return success(carry === undefined ? { segments } : { carries: [carry, ...others] })
 }
 
-function inlineRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping): InlineRun[] {
-  const runs: InlineRun[] = []
-  let next = 0
-  for (const [offset, { node, outer }] of nodes.entries()) {
-    if (offset < next) continue
-    const index = firstIndex + offset
-    // A carried node spells its marks inside the carry.
-    const mark = carries(node, grouping.carried, index) ? undefined : nodeMarks(node)[outer]
-    if (mark === undefined) {
-      runs.push({ index, kind: 'plain', node })
-      continue
-    }
-    const inside = nodesInRun(nodes, offset, mark, firstIndex, grouping)
-    runs.push({ index, kind: 'marked', mark, nodes: inside })
-    next = offset + inside.length
-  }
-  return runs
-}
-
-// The run of `mark` opening at `first` ends at the last node holding the mark, so the nodes it spans past that one stay outside.
-function nodesInRun(nodes: readonly RunNode[], first: number, mark: AdfMark, firstIndex: number, { carried, spans }: RunGrouping): RunNode[] {
-  const inside: RunNode[] = []
-  let holders = 0
-  for (let offset = first; offset < nodes.length; offset += 1) {
-    const runNode = nodes[offset]
-    if (runNode === undefined || carries(runNode.node, carried, firstIndex + offset)) break
-    const held = insideRun(runNode, mark)
-    if (held === undefined && !(spans && runSpans(runNode.node, mark))) break
-    inside.push(held ?? runNode)
-    if (held !== undefined) holders = inside.length
-  }
-  return inside.slice(0, holders)
-}
-
-// For each leaf but the last, how many runs of the spanned line hold both it and the next leaf.
-export function runsSharedWithNext(leaves: readonly AdfNode[]): number[] {
-  const shared = leaves.map(() => 0)
-  countSharedRuns(leaves.map((node) => ({ node, outer: 0 })), 0, 0, shared)
-  return shared
-}
-
-function countSharedRuns(nodes: readonly RunNode[], depth: number, firstIndex: number, shared: number[]): void {
-  if (depth > largestNesting) return
-  for (const run of inlineRuns(nodes, firstIndex, { carried: new Set(), spans: true })) {
-    if (run.kind === 'plain') continue
-    for (let index = run.index; index < run.index + run.nodes.length - 1; index += 1) shared[index] = (shared[index] ?? 0) + 1
-    countSharedRuns(run.nodes, depth + 1, run.index, shared)
-  }
-}
-
 function takesTextBreak(previous: InlineRun | undefined, run: InlineRun, carried: ReadonlySet<number>): boolean {
   if (previous?.kind !== 'plain' || run.kind !== 'plain') return false
   if (carries(previous.node, carried, previous.index) || carries(run.node, carried, run.index)) return false
@@ -302,16 +242,6 @@ function takesTextBreak(previous: InlineRun | undefined, run: InlineRun, carried
 
 function nodePath(context: InlineContext, index: number): ConvertErrorPath {
   return [...context.path, 'content', index]
-}
-
-// Decides the text-node and slot-fault carries up front, `withheldMarkFallbacks` the withheld-mark ones, so a line holding many of them is emitted once.
-function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): boolean {
-  if (carried.has(index)) return true
-  if (node.type === 'text') return !isSpellableText(node) || typeof node.text !== 'string' || node.text === ''
-  const model = inlineNodeModel(node.type)
-  if (model === undefined) return true
-  const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
-  return typeof slot === 'string' && slotFault(node.type, slot) !== undefined && nodeContent(node).length === 0 && node.text === undefined
 }
 
 // Builds the node's path only to refuse it: a path copies every level above, and a line may hold a million leaves.
@@ -366,7 +296,7 @@ function textSegments(node: AdfNode, context: InlineContext): InlineSegment[] | 
 
 function emitMarkedRun(nodes: readonly RunNode[], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {
   const range: NodeRange = { first: index, last: index + nodes.length - 1 }
-  if (mark.type === 'backgroundColor' && flavourClaims[context.flavour].highlights) return emitHighlight(nodes, depth, range, context)
+  if (mark.type === 'backgroundColor' && flavourClaims[context.flavour].highlights) return emitHighlight(nodes, depth, { ...range, mark }, context)
   const spelling = markSpelling(mark.type)
   const attributes = spelling === undefined ? undefined : spellMarkAttributes(mark, spelling)
   if (spelling === undefined || attributes === undefined) return carriedRun(range, context)
@@ -374,7 +304,7 @@ function emitMarkedRun(nodes: readonly RunNode[], mark: AdfMark, depth: number, 
     const spans = codeSpans(nodes)
     return spans === undefined ? carriedRun(range, context) : success({ segments: [syntax(spans)] })
   }
-  if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, range, context)
+  if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, { ...range, mark }, context)
   const link = spelling.kind === 'link' ? tryLink(nodes, mark, depth, range, context) : undefined
   if (link !== undefined) return link
   const inner = emitRun(nodes, depth + 1, index, { ...context, bracketed: true, spansLines: false })
@@ -383,24 +313,19 @@ function emitMarkedRun(nodes: readonly RunNode[], mark: AdfMark, depth: number, 
   return success({ segments: [syntax(spellInlineDirectiveOpener(mark.type)), ...inner.value.segments, syntax(`]${attributes}`)] })
 }
 
-function emitEmphasis(nodes: readonly RunNode[], spelling: string, depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
-  const inner = emitRun(nodes, depth + 1, range.first, context)
+function emitEmphasis(nodes: readonly RunNode[], spelling: string, depth: number, run: MarkRun, context: InlineContext): Result<Emission> {
+  const inner = emitRun(nodes, depth + 1, run.first, context)
   if (!inner.ok) return inner
   if (inner.value.carries !== undefined) return inner
-  const spelled = spellEdgeWhitespace(inner.value.segments)
+  const spelled = spellEdgeWhitespace(inner.value.segments, context.flavour)
   return success({
-    segments: [
-      { emphasis: 'open', escaping: 'none', nodes: { ...range, depth }, text: spelling },
-      ...spelled,
-      { emphasis: 'close', escaping: 'none', nodes: { ...range, depth }, text: spelling },
-    ],
+    segments: [{ emphasis: 'open', escaping: 'none', nodes: run, text: spelling }, ...spelled, { emphasis: 'close', escaping: 'none', nodes: run, text: spelling }],
   })
 }
 
-function emitHighlight(nodes: readonly RunNode[], depth: number, range: NodeRange, context: InlineContext): Result<Emission> {
-  const inner = emitRun(nodes, depth + 1, range.first, context)
+function emitHighlight(nodes: readonly RunNode[], depth: number, run: MarkRun, context: InlineContext): Result<Emission> {
+  const inner = emitRun(nodes, depth + 1, run.first, context)
   if (!inner.ok || inner.value.carries !== undefined) return inner
-  const run = { ...range, depth }
   return success({
     segments: [{ escaping: 'none', highlight: 'open', nodes: run, text: highlightDelimiter }, ...inner.value.segments, { escaping: 'none', highlight: 'close', nodes: run, text: highlightDelimiter }],
   })

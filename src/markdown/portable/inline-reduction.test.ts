@@ -6,9 +6,8 @@ import type { AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { PortableLineFallback } from '../emit/inline-line.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
-import { nodeMarks } from '../../adf/document.ts'
-import { portableLeaves, reduceInline, trimmedEdges, withoutFallback } from './inline-reduction.ts'
-import { portableLineFallback } from '../emit/inline-line.ts'
+import { judgedLine, portableLeaves, reduceInline, trimmedEdges, withoutFallback } from './inline-reduction.ts'
+import { spannedLine } from '../emit/inline-runs.ts'
 import { success, type Result } from '../../result.ts'
 
 test('reduces a line alike dropping every run a pass may or the first alone', () => {
@@ -56,7 +55,7 @@ test('takes code off every node of an opening link\'s run that an opening-link f
 })
 
 test('refuses an unspellable-run fallback that takes no mark', () => {
-  const refused = withoutFallback([{ marks: [{ type: 'em' }], text: 'a', type: 'text' }], { kind: 'unspellable-run', runs: [{ depth: 1, first: 0, last: 0 }] }, [])
+  const refused = withoutFallback([{ marks: [{ type: 'em' }], text: 'a', type: 'text' }], { kind: 'unspellable-run', runs: [{ first: 0, last: 0, mark: { type: 'strike' } }] }, [])
   assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
 })
 
@@ -65,17 +64,18 @@ function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Resu
   const leaves = portableLeaves(nodes, container, [], 0)
   if (!leaves.ok) return leaves
   for (let current = leaves.value; ; ) {
-    const fallback = portableLineFallback(current, container, [])
-    if (!fallback.ok) return fallback
-    if (fallback.value === undefined) return success(current)
-    const fixed = withoutFallback(current, firstRun(current, fallback.value), [])
+    const judged = judgedLine(current, container, [])
+    if (!judged.ok) return judged
+    const { fallback, leaves: line } = judged.value
+    if (fallback === undefined) return success(line)
+    const fixed = withoutFallback(line, firstRun(fallback), [])
     if (!fixed.ok) return fixed
-    current = trimmedEdges(fixed.value)
+    current = trimmedEdges(fixed.value, spannedLine)
   }
 }
 
-function firstRun(leaves: readonly AdfNode[], fallback: PortableLineFallback): PortableLineFallback {
+function firstRun(fallback: PortableLineFallback): PortableLineFallback {
   if (fallback.kind === 'opening-link') return fallback
   const [first, ...others] = fallback.runs
-  return { kind: 'unspellable-run', runs: [first, ...others.filter((run) => nodeMarks(leaves[run.first] ?? {})[run.depth]?.type === 'backgroundColor')] }
+  return { kind: 'unspellable-run', runs: [first, ...others.filter((run) => run.mark.type === 'backgroundColor')] }
 }
