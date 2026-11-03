@@ -927,6 +927,15 @@ test('spells an emphasis or link run once across the hard breaks between two nod
   assert.equal(readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', em), hardBreak, marked('b', em)))), 'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"em\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}\\\n_b_\n')
 })
 
+test('parts every run on a line that needs a fallback, whichever run needs it', () => {
+  const em: AdfMark = { type: 'em' }
+  const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })
+  assert.equal(
+    readsBack(document(paragraph({ text: 'x', type: 'text' }, marked('.', { type: 'strong' }), { text: 'y ', type: 'text' }, marked('a', em), { type: 'hardBreak' }, marked('b', em)))),
+    'x!adf:carry{json="{\\"marks\\":[{\\"type\\":\\"strong\\"}],\\"text\\":\\".\\",\\"type\\":\\"text\\"}"}y _a_\\\n_b_\n',
+  )
+})
+
 test('spells an emphasis run once across the code spans, mentions, dates and inline media between two nodes holding the mark', () => {
   const strong: AdfMark = { type: 'strong' }
   const marked = (text: string, ...marks: AdfMark[]): AdfNode => ({ marks, text, type: 'text' })

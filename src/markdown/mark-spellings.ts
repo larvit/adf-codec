@@ -2,14 +2,13 @@ import type { AdfAttributes, AdfMark, AdfNode } from '../adf/document.ts'
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import type { LinkDefinition, TitleEscapes } from './commonmark/link-syntax.ts'
 import type { MarkType } from '../adf/mark-attributes.ts'
-import { emptyKeys, identicalMark, nodeAttrs, nodeMarks } from '../adf/document.ts'
+import { emptyKeys, nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { escapeUnbalanced, spellLinkTarget } from './commonmark/link-syntax.ts'
 import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './directive/syntax.ts'
 import { holdsEntityReference } from './commonmark/entity-references.ts'
 import { isAutolink } from './commonmark/grammar.ts'
 import { isMarkType, linkAttrs, linkMarkFrom, markAttributes, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { spellEmptyKeys } from './directive/empty-keys.ts'
-import { takesMark } from '../adf/inline-nodes.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
 
 type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | { kind: 'emphasis'; spelling: string }
@@ -17,9 +16,6 @@ type Spelling = { kind: 'code' | 'directive' | 'link'; spelling?: undefined } | 
 export type MarkSpelling = Spelling & { attributes: AttributeVocabulary }
 
 export type CommonMarkLink = { form: 'autolink'; target?: undefined } | { form: 'inline'; target: string }
-
-// An inline node inside the runs of its first `outer` marks.
-export type RunNode = { node: AdfNode; outer: number }
 
 const markSpellings: Readonly<Record<MarkType, Spelling>> = {
   border: { kind: 'directive' },
@@ -43,18 +39,6 @@ export function markSpelling(type: string): MarkSpelling | undefined {
 
 export function isEmphasis(mark: AdfMark): boolean {
   return markSpelling(mark.type)?.kind === 'emphasis'
-}
-
-// spec/flavour.md, Marks.
-export function insideRun({ node, outer }: RunNode, mark: AdfMark): RunNode | undefined {
-  const held = nodeMarks(node)[outer]
-  return held !== undefined && identicalMark(held, mark) ? { node, outer: outer + 1 } : undefined
-}
-
-// spec/flavour.md, Marks. The readers refuse `marks=empty` inside a mark's spelling.
-export function runSpans(node: AdfNode, mark: AdfMark): boolean {
-  const kind = markSpelling(mark.type)?.kind
-  return (kind === 'emphasis' || kind === 'link') && !takesMark(node, mark.type) && node.marks?.length !== 0
 }
 
 export function linkMark(definition: LinkDefinition): AdfMark {

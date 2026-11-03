@@ -5,6 +5,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/doc
 import { adfToPortableMarkdown, reduceToPortable } from './adf-to-portable-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
 import { portableLineFallback } from '../emit/inline-line.ts'
+import { spannedLine } from '../emit/inline-runs.ts'
 import { portableMarkdownToAdf } from './portable-markdown-to-adf.ts'
 
 const code: AdfMark = { type: 'code' }
@@ -411,13 +412,13 @@ test('drops every em, strike and strong mark, and keeps every other, in a line s
 test('gives up every highlight run whose own delimiter cannot flank in one fallback, so a line of them re-emits once however many it holds', () => {
   const highlight: AdfMark = { type: 'backgroundColor' }
   const line = [text('a '), text('x', highlight), text('a '), text('x', highlight), text('a '), text('x', highlight), text('a')]
-  const runs = [{ depth: 0, first: 1, last: 1 }, { depth: 0, first: 3, last: 3 }, { depth: 0, first: 5, last: 5 }]
-  assert.deepEqual(portableLineFallback(line, 'paragraph', []), { ok: true, value: { kind: 'unspellable-run', runs } })
+  const runs = [{ first: 1, last: 1, mark: highlight }, { first: 3, last: 3, mark: highlight }, { first: 5, last: 5, mark: highlight }]
+  assert.deepEqual(portableLineFallback(line, 'paragraph', [], spannedLine), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
 test('refuses a portable line holding a node only the carry spells, at the line', () => {
   for (const mark of [{ attrs: { a: 1 }, type: 'em' }, { type: 'odd' }]) {
-    const refused = portableLineFallback([text('x', mark)], 'paragraph', ['content', 0])
+    const refused = portableLineFallback([text('x', mark)], 'paragraph', ['content', 0], spannedLine)
     assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
   }
 })
@@ -427,8 +428,15 @@ test('spells an emphasis once across the code spans and hard breaks between two 
   assert.equal(portable(paragraph(text('One', em), { type: 'hardBreak' }, text('Two', em))), '_One\\\nTwo_\n')
   assert.equal(portable(paragraph(text('a', link('/u')), { type: 'hardBreak' }, text('b', link('/u')))), '[a\\\nb](/u)\n')
   assert.equal(portable(paragraph(text('Ping ', strong), { attrs: { id: 'x', text: '@A' }, type: 'mention' }, text(' now', strong))), '**Ping** @A **now**\n')
-  assert.equal(portable(paragraph(text('a', link('/u')), { type: 'hardBreak' }, text(' b', link('/u')))), '[a](/u)\\\n[ b](/u)\n')
-  assert.equal(portable(paragraph(text('a\n b', link('/u')))), '[a](/u)\\\n[ b](/u)\n')
+  assert.equal(portable(paragraph(text('a ', link('/u')), { type: 'hardBreak' }, text(' b', link('/u')))), '[a\\\nb](/u)\n')
+  assert.equal(portable(paragraph(text('a\n b', link('/u')))), '[a\\\nb](/u)\n')
+  assert.equal(portable(paragraph(text('a ', link('/u')), { type: 'hardBreak' }, text('b'))), '[a ](/u)\\\nb\n')
+})
+
+test('writes a line whose spanned spelling misreads as the parted line, whitespace outside its runs and no directive', () => {
+  assert.equal(portable(paragraph(text('a', strong), text('b ', em, strong), text('a', code), text('a', em), text('a'))), '**a**_**b**_ `a`*a*a\n')
+  const strike: AdfMark = { type: 'strike' }
+  assert.equal(portable(paragraph(text('a', strong, strike), text('a', code), text(' c', strong, strike), text('b '))), '**~~a~~**`a` ~~c~~b\n')
 })
 
 test('breaks a line at a newline and trims whitespace at every edge CommonMark strips', () => {

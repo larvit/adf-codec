@@ -1,3 +1,4 @@
+import type { AdfMark } from '../../adf/document.ts'
 import type { Claims, WrittenFlavour } from '../flavour.ts'
 import type { InlineReading } from '../inline-content.ts'
 import type { InlineSource, InlineToken } from '../inline-tokens.ts'
@@ -19,8 +20,7 @@ export type InlineEscaping = (typeof escapingCodes)[number]
 
 export type NodeRange = { first: number; last: number }
 
-// `depth` is the run's nesting level. On a parted line, the only line a fallback reads, that is the index into each node's marks array that the run spells.
-export type MarkRun = NodeRange & { depth: number }
+export type MarkRun = NodeRange & { mark: AdfMark }
 
 export type InlineSegment =
   | { emphasis: DelimiterRole; escaping: 'none'; highlight?: undefined; nodes: MarkRun; text: string }

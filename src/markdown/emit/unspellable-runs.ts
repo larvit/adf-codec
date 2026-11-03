@@ -1,9 +1,9 @@
-import type { AdfNode } from '../../adf/document.ts'
+import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { DelimiterRole, MarkRun, PlacedSegment } from './line-escaping.ts'
 import type { InlineReading } from '../inline-content.ts'
 import { delimiterFlags, isWordCharacter } from '../commonmark/emphasis-matching.ts'
 import { highlightFlanking } from '../inline-tokens.ts'
-import { nodeMarks } from '../../adf/document.ts'
+import { identicalMark, nodeMarks } from '../../adf/document.ts'
 
 // How the caller takes a run back: a carry swaps its nodes for one carry directive, splitting every run holding it; a drop removes its mark from the line's `nodes`.
 export type RunFallback = { kind: 'carry' } | { kind: 'drop'; nodes: readonly AdfNode[] }
@@ -88,14 +88,13 @@ function mergingEnds(pairs: readonly EmphasisPair[], fallback: RunFallback): Set
 
 // Dropping the run merges no runs and moves no run's end, whatever else drops: at each end, the node outside holds no mark type the end node holds inside the run's mark.
 function dropsAlone(nodes: readonly AdfNode[], run: MarkRun): boolean {
-  return endsAlone(nodes[run.first], nodes[run.first - 1], run.depth) && endsAlone(nodes[run.last], nodes[run.last + 1], run.depth)
+  return endsAlone(nodes[run.first], nodes[run.first - 1], run.mark) && endsAlone(nodes[run.last], nodes[run.last + 1], run.mark)
 }
 
-function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, depth: number): boolean {
-  const besideTypes = new Set(nodeMarks(beside ?? {}).map((mark) => mark.type))
-  return nodeMarks(edge ?? {})
-    .slice(depth + 1)
-    .every((mark) => !besideTypes.has(mark.type))
+function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, mark: AdfMark): boolean {
+  const besideTypes = new Set(nodeMarks(beside ?? {}).map((held) => held.type))
+  const marks = nodeMarks(edge ?? {})
+  return marks.slice(marks.findIndex((held) => identicalMark(held, mark)) + 1).every((held) => !besideTypes.has(held.type))
 }
 
 // A pair falls with the first only where that leaves the line as the one-run-per-pass reference writes it: it falls cleanly, and cannot read whichever character it is written with.
