@@ -716,7 +716,9 @@ chunk.
 
 Each later ruling reads the restructured head against the first ruling's base, with the same seats,
 and every ruling stays in the history. Each restructure runs one rung higher; past the top rung,
-the maintainer decides. A restructure past a pass's round cap still goes unreviewed,
+the maintainer decides. A ruling judges the code, never the behaviour: item 91's spanning stays, since the
+paragraphs it spells, such as bold around a code span, occur in documents all the time
+(2026-11-03). A restructure past a pass's round cap still goes unreviewed,
 so the PR summary names it.
 
 ## No schema validation
