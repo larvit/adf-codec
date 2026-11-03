@@ -36,7 +36,6 @@ test('reduces a line alike dropping every run a pass may or the first alone', ()
   )
 })
 
-// Drops only the first run each pass finds, with every misflanked highlight, and takes no cap.
 test('refuses an opening-link fallback whose link run holds no code span', () => {
   const link = { attrs: { href: 'u' }, type: 'link' }
   const lines: AdfNode[][] = [
@@ -61,6 +60,7 @@ test('refuses an unspellable-run fallback that takes no mark', () => {
   assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
 })
 
+// Drops only the first run each pass finds, with every misflanked highlight, and takes no cap.
 function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Result<AdfNode[]> {
   const leaves = portableLeaves(nodes, container, [], 0)
   if (!leaves.ok) return leaves
