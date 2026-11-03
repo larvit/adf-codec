@@ -44,7 +44,7 @@ export function isEmphasis(mark: AdfMark): boolean {
   return markSpelling(mark.type)?.kind === 'emphasis'
 }
 
-// spec/flavour.md, Marks. The writers and the portable reducer group runs alike only while both ask this.
+// spec/flavour.md, Marks. The portable reducer must ask this too, or it trims edge whitespace by runs the writers do not spell.
 export function insideRun({ node, outer }: RunNode, mark: AdfMark): RunNode | undefined {
   const held = nodeMarks(node)[outer]
   return held !== undefined && identicalMark(held, mark) ? { node, outer: outer + 1 } : undefined
