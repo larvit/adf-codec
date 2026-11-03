@@ -1386,3 +1386,25 @@ Inherited architect, decided by:
 - Locality: `src/markdown/portable/inline-reduction.ts:168` `trimmedEdges`: imports the emitter's `spannedNodes` with a fresh carried set, so its verdict and the written line can be judged on different node lists
 - Shape: `src/markdown/emit/inline-line.ts:246` `inlineRuns`: one function serves two callers through a boolean that `emitRun` always passes as `false`, plus a lookahead cursor
 - Shape: `src/markdown/emit/inline-line.ts:271` `spannedTo`: returns `start` to mean "spans nothing", a sentinel its name does not state, beside `spansNode`'s five-condition expression
+
+## 2026-11-03T14:18:32Z, PR #112 at 63e3eb2, against 8bcf4a5
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | worse | worse | worse |
+| Inherited architect | same | worse | same | same | worse |
+
+Mid A, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/portable/inline-reduction.ts:164` `trimmedEdges`: indexes the emitter's spanned nodes beside `merged`, relying on one output node per input in order, and on the emitter writing the spanned line
+- Locality, Shape: `src/markdown/emit/inline-line.ts:288` `spannedRuns`: reports a span through the mutable `spanned.spans`, set deep in the recursion, while splicing and rewriting `open.nodes` in place
+- Shape, Locality: `src/markdown/emit/inline-line.ts:113` `linePass`: tries the spanned line then the parted one, and `spannedLineRefusal`'s reasons are a distinction its caller never uses
+- Self-sufficiency: `src/markdown/emit/inline-line.ts:315` `spansNode`: maps onto `takesMark` only after a hop to `takenMarkTypes`
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/portable/inline-reduction.ts:168` `trimmedEdges`: reads `spanned[index ± 1]` beside `merged[index]`, a same-length contract neither end states
+- Locality: `src/markdown/emit/inline-line.ts:69` `portableLineFallback`: the reducer judges the parted line while `linePass` writes the spanned one, so the line judged is no longer the line written
+- Locality: `src/markdown/emit/inline-line.ts:113` `linePass`: each pass builds, emits and may discard a rewritten node list, a second path to suspect for a mark gone
