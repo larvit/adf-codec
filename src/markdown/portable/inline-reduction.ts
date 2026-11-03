@@ -162,7 +162,7 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 }
 
 export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
-  // Terminates: a pass that changes a leaf drops its edge whitespace or takes a mark off that whitespace, and merging adds neither.
+  // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
     let changed = false
@@ -218,7 +218,6 @@ function edgeDepth(marks: readonly AdfMark[], neighbour: AdfNode | undefined, wh
   return kept === 0 && lineEdge ? undefined : kept
 }
 
-// How many of the runs around a leaf holding `marks`, outermost first, hold `neighbour` too.
 function sharedRuns(marks: readonly AdfMark[], neighbour: AdfNode): number {
   let inside: RunNode | undefined = { node: neighbour, outer: 0 }
   for (const [depth, mark] of marks.entries()) {
