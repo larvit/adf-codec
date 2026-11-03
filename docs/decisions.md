@@ -718,7 +718,10 @@ Each later ruling reads the restructured head against the first ruling's base, w
 and every ruling stays in the history. Each restructure runs one rung higher; past the top rung,
 the maintainer decides. A ruling judges the code, never the behaviour: item 91's spanning stays, since the
 paragraphs it spells, such as bold around a code span, occur in documents all the time
-(2026-11-03). A restructure past a pass's round cap still goes unreviewed,
+(2026-11-03). The maintainer's call on how: refactor first, ruled alone (item 166), then make spanning part of
+grouping, with the span rule in one home: a node that can't hold the run's em, strike, strong or link mark is one more
+case of `insideRun`, and whether it stands between two holders is asked where `inlineRuns` closes a run and where
+`sharedRuns` and `withoutOpeningLinkCode` look past a neighbour. A restructure past a pass's round cap still goes unreviewed,
 so the PR summary names it.
 
 ## No schema validation
