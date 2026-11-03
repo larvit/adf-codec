@@ -6,17 +6,18 @@
 
 `Bar = 0.1`
 
-`Next ID = 166`
+`Next ID = 167`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 163 | 0.3.0 |  | question | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
-| 91 | 0.3.0 |  |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
+| 166 | 0.3.0 |  |  | **Group an inline line's nodes into mark runs by one rule that answers whether a node belongs to a run of a mark, asked by both writers and the portable reducer.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 91 | 0.3.0 | 166 |  | **Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.** | 3 | 2 | 2 | 5 | 5 | 6 by 6 | 3.6 |
 | 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 91, 132, 133 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 163 | 0.3.0 |  |  | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
 | 164 | 0.3.0 | 163 |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
 | 72 | 0.3.0 | 91, 132, 133 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
@@ -70,14 +71,13 @@
 
 ## Details
 
-### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
+### 166. Group an inline line's nodes into mark runs by one rule that answers whether a node belongs to a run of a mark, asked by both writers and the portable reducer.
 
-The maintainer asked for it on 2026-11-03: paragraphs such as bold around a code span or italics over a line break occur all the time, and the project holds no evidence of what real documents contain. Find public sites that serve ADF without an account, such as Jira Cloud issues on public projects through the REST v3 API, and fetch enough documents to cover the node and mark types the flavour spells.
+A refactor that changes no output, so item 91 adds spanning as one more case of the rule rather than as a second path. The maintainer chose it on 2026-11-03, after three paired rulings on PR #112 judged item 91's code worse against 8bcf4a5. This item gets its own ruling, and item 91 then lands on top of it.
 
-Open, for the maintainer:
-
-- AGENTS.md §1 forbids a Jira client, HTTP and any named consumer in the repo. Does a fetch script count, or does it live outside the repo, with only the documents committed?
-- An issue's text belongs to its author, and it names people in mentions and bylines. May the repo publish the documents, and which licence lets it? If not, does the corpus stay outside the repo, or go in with names, ids, URLs and text replaced while the structure is kept?
+- Today `inlineRuns` groups by `nodeMarks(node)[depth]`, so a node joins a run only by holding the mark at that index. Group instead by asking whether a node belongs to a run of a mark, so a run's nodes stay the input nodes and nothing builds a rewritten copy of the line.
+- `trimmedEdges` in `inline-reduction.ts` judges a leaf's edge whitespace by its neighbours' marks. Have it ask the same rule, so changing the rule changes both writers and the reducer at one place.
+- The seats' places this must leave easier to read, or no harder: `src/markdown/emit/inline-line.ts` `linePass` and `inlineRuns`, and `src/markdown/portable/inline-reduction.ts:194` `trimmedEdges`, whose two fixpoint loops have no termination argument.
 
 ### 91. Spell an emphasis once across the code spans, an emphasis or link once across the hard breaks, dates, emoji, inline cards, mentions and statuses between two nodes it marks, and an emphasis across inline media, in both writers.
 
@@ -116,6 +116,15 @@ We draft each post for the place it goes. Each opens with the asker's problem an
 solves it, then links the GitHub repository, the README's comparison table and the README's
 opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
 announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
+
+### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
+
+The maintainer asked for it on 2026-11-03: paragraphs such as bold around a code span or italics over a line break occur all the time, and the project holds no evidence of what real documents contain. Find public sites that serve ADF without an account, such as Jira Cloud issues on public projects through the REST v3 API, and fetch enough documents to cover the node and mark types the flavour spells.
+
+The maintainer's answers, 2026-11-03:
+
+- AGENTS.md §1 meant the shipped library, which goal 8 keeps free of anything to connect: it never banned tooling that fetches. This chunk rewrites §1 to say so, and its fetch script lives outside the build.
+- Each document is anonymized before it is committed, keeping its exact format: every node, mark, attribute key and the shape of each value stay, while text, names, ids and URLs are replaced. Anonymize with fejkdata (`gitea.larvit.se/larvit/fejkdata`, a fake-data tool also in development), as a dev-only tool through its image or npm package, never a dependency of the package. This also tests whether fejkdata has what such a job needs. The chunk's PR summary and its report to the maintainer end with a `fejkdata feedback` section: each change, feature or fix that would make fejkdata a better fit for this job, with the corpus case that needed it.
 
 ### 164. Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.
 
