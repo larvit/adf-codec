@@ -714,6 +714,7 @@ Locality worse, no plan item of its release reworked that code, and a restructur
 addressed most of its places. Serves code health. Valid while the comprehension check runs once per
 chunk.
 
+Where a plan item of the release already restores that code, the entry above holds instead, and the chunk restructures nothing.
 Each later ruling reads the restructured head against the first ruling's base, with the same seats,
 and every ruling stays in the history. Each restructure runs one rung higher; past the top rung,
 the maintainer decides. A ruling judges the code, never the behaviour: item 91's spanning stays, since the
