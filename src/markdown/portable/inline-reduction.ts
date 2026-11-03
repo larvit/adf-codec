@@ -4,7 +4,7 @@ import type { MarkRun } from '../emit/line-escaping.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { imageAside } from '../image-aside.ts'
-import { isEmphasis } from '../mark-spellings.ts'
+import { insideRun, isEmphasis, type RunNode } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal, sameMarkWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
@@ -162,6 +162,7 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 }
 
 export function trimmedEdges(leaves: readonly AdfNode[]): AdfNode[] {
+  // Terminates: a pass that changes a leaf drops its edge whitespace or takes a mark off that whitespace, and merging adds neither.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
     let changed = false
@@ -211,21 +212,24 @@ function leafEdges(leaf: AdfNode, previous: AdfNode | undefined, next: AdfNode |
 function edgeDepth(marks: readonly AdfMark[], neighbour: AdfNode | undefined, whitespace: string): number | undefined {
   if (whitespace === '') return marks.length
   const lineEdge = neighbour === undefined || neighbour.type === 'hardBreak'
-  const neighbourMarks = lineEdge ? [] : nodeMarks(neighbour)
-  let shared = 0
-  while (shared < marks.length && sameMarkAt(marks, neighbourMarks, shared)) shared += 1
+  const shared = lineEdge ? 0 : sharedRuns(marks, neighbour)
   const stripping = marks.findIndex((mark, index) => index >= shared && edgeStrippingMarks.includes(mark.type))
   const kept = stripping === -1 ? marks.length : stripping
   return kept === 0 && lineEdge ? undefined : kept
 }
 
-function sameMarkAt(marks: readonly AdfMark[], others: readonly AdfMark[], index: number): boolean {
-  const mark = marks[index]
-  const other = others[index]
-  return mark !== undefined && other !== undefined && sameMarkWhenEditorNormal(mark, other)
+// How many of the runs around a leaf holding `marks`, outermost first, hold `neighbour` too.
+function sharedRuns(marks: readonly AdfMark[], neighbour: AdfNode): number {
+  let inside: RunNode | undefined = { node: neighbour, outer: 0 }
+  for (const [depth, mark] of marks.entries()) {
+    inside = insideRun(inside, mark)
+    if (inside === undefined) return depth
+  }
+  return marks.length
 }
 
 function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
+  // Terminates: each fallback takes a mark off some leaf, and trimmedEdges adds none to any character.
   for (let current = leaves, pass = 1; ; pass += 1) {
     const fallback = portableLineFallback(current, container, path)
     if (!fallback.ok) return fallback
@@ -244,11 +248,11 @@ export function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLi
 function withoutOpeningLinkCode(leaves: readonly AdfNode[]): AdfNode[] | undefined {
   const mark = nodeMarks(leaves[0] ?? {})[0]
   if (mark === undefined || mark.type !== 'link') return undefined
-  let last = 0
-  while (sameMarkAt(nodeMarks(leaves[last + 1] ?? {}), [mark], 0)) last += 1
+  const past = leaves.findIndex((leaf) => insideRun({ node: leaf, outer: 0 }, mark) === undefined)
+  const end = past === -1 ? leaves.length : past
   // A code span is what binds the `]` a link definition reads, and dropping it keeps the link target.
-  const spans = leaves.slice(0, last + 1).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
-  return spans ? leaves.map((leaf, index) => (index > last ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code')))) : undefined
+  const spans = leaves.slice(0, end).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')
+  return spans ? leaves.map((leaf, index) => (index >= end ? leaf : withMarks(leaf, nodeMarks(leaf).filter((held) => held.type !== 'code')))) : undefined
 }
 
 function withoutEmphasis(leaves: readonly AdfNode[]): AdfNode[] {
