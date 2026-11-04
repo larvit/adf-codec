@@ -180,6 +180,13 @@ test('reads an image standing alone in a paragraph, a link around it where one m
   assert.deepEqual(read(htmlToAdf('<p><a href="https://example.com/" title="Home"><img src="https://example.com/moon.jpg"></a></p>\n')), document(linked))
 })
 
+test('refuses a carry element holding an inline card a link marks, at any depth in the node it carries', () => {
+  const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
+  for (const html of [`<p>${carry('span', card, '')}</p>\n`, `${carry('div', { content: [{ content: [card], type: 'futureNode' }], type: 'futureBlock' }, '')}\n`]) {
+    assert.match(message(htmlToAdf(html)), /^a carry element's data-adf holds a node every writer refuses: an inlineCard takes no link mark/)
+  }
+})
+
 test('reads a carry element from its data-adf, what it shows read back as adfToHtml writes it', () => {
   assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(panel, paragraph(text('Ask '), mention)))
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', text('a\u0085b', { type: 'underline' }), 'ab').replace('\u0085', '\\u0085')}</p>\n`)), document(paragraph(text('a\u0085b', { type: 'underline' }))))
