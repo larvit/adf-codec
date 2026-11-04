@@ -13,7 +13,7 @@ export function inlineHtml(nodes: readonly AdfNode[], path: ConvertErrorPath): R
   let afterPlainText = false
   for (const [index, node] of nodes.entries()) {
     if (node.type === 'inlineCard' && nodeMarks(node).some(({ type }) => type === 'link')) {
-      return failure('unsupported-node-shape', 'An inlineCard takes no link mark in ADF.', [...path, 'content', index])
+      return failure('unsupported-node-shape', 'an inlineCard takes no link mark: this one holds one', [...path, 'content', index])
     }
     // Two unmarked text nodes side by side read back as one, so the second rides the carry.
     const written: string | undefined = afterPlainText && isUnmarkedSpellableText(node) ? undefined : tryInlineNode(node)
