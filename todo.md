@@ -30,7 +30,7 @@
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
-| 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note and the target of a link marking a card, so a linked stored image or card writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
+| 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
@@ -223,18 +223,14 @@ of item 33, 2026-10-29.
 strings near V8's longest, about 512 MB each, so measure each leg's peak before picking the limit:
 one too small fails the gate.
 
-### 143. Keep, in `adfToPortableMarkdown`, the link around a note and the target of a link marking a card, so a linked stored image or card writes every target.
+### 143. Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.
 
 `noteLeaves` (`src/markdown/portable/inline-reduction.ts`) drops the node's marks, so a stored
 image a link marks writes `_(image not included)_` without the link's target, which Goal 7 counts as
 content. `adfToHtml`'s carry element keeps it, `<a href="…"><em>(image)</em></a>`.
 
-`cardLeaves`, in the same file, links a card to its own URL, so a card a link to another target
-marks writes a link to the card's URL and drops the mark's target. The carry element keeps both: it
-links the card's URL, as its text, to the mark's target (`docs/decisions.md` §The HTML dialect).
-
-Move the choice of where a card's text and a note link into `src/adf/shown-text.ts`, beside
-`shownImage`'s for an image, so both writers render one answer.
+Move the choice of where a note's link goes into `src/adf/shown-text.ts`, beside `shownImage`'s for
+an image, so both writers render one answer.
 
 Leave what an HTML carry element shows unchanged, or ship the change as a breaking HTML change with
 a `MIGRATION.md` entry: `htmlToAdf` refuses any other content, so HTML stored by an earlier release

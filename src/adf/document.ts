@@ -55,6 +55,8 @@ export function writableContent(document: AdfDocument): Result<readonly AdfNode[
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(undefined)
+  const refused = refusedShape(document.content)
+  if (refused !== undefined) return refused
   // Text alone past the bound is refused before anything is written (docs/decisions.md §Output past V8's longest string is refused on every engine).
   return withinLongest(heldTextLength(document.content), document.content)
 }
@@ -143,6 +145,25 @@ export function nodeContent(node: { content?: AdfNode[] }): readonly AdfNode[] {
 
 export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
   return node.marks ?? []
+}
+
+// The writers' refusals of what Atlassian's schema forbids, in document order, at any depth and inside nodes no writer reads. Each rule stands on the schema alone.
+function refusedShape(content: readonly AdfNode[]): Result<never> | undefined {
+  type Step = { index: number; node: AdfNode; parent: Step | undefined }
+  const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()
+  for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
+    if (step.node.type === 'inlineCard' && nodeMarks(step.node).some(({ type }) => type === 'link')) {
+      const path: (number | string)[] = []
+      for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.unshift('content', up.index)
+      return failure('unsupported-node-shape', 'an inlineCard takes no link mark: this one holds one', path)
+    }
+    const children = nodeContent(step.node)
+    for (let index = children.length - 1; index >= 0; index -= 1) {
+      const node = children[index]
+      if (node !== undefined) pending.push({ index, node, parent: step })
+    }
+  }
+  return undefined
 }
 
 // Tracks ancestors alone: a tree may share an object, but an object holding itself walks the guards forever.

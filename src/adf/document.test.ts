@@ -4,6 +4,7 @@ import vm from 'node:vm'
 
 import type { AdfDocument } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
+import { adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown } from '../index.ts'
 import { adfDocumentFault, isAdfDocument, writableContent } from './document.ts'
 import { largestNesting } from '../nesting.ts'
 
@@ -128,4 +129,32 @@ test('opens every writer with the same checks: a document, version 1, and no mor
   const long = 'a'.repeat(2 ** 28)
   const text = { content: [{ text: long, type: 'text' }, { text: long, type: 'text' }, { text: long, type: 'text' }], type: 'paragraph' }
   assert.equal(checked({ content: [text], type: 'doc', version: 1 }), 'unsupported-node-shape')
+})
+
+test('refuses an inline card a link marks, wherever the document holds it and whichever call writes it', () => {
+  const card = { attrs: { url: 'https://example.com/roadmap' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
+  const paragraph = { content: [{ text: 'See ', type: 'text' }, card], type: 'paragraph' }
+  const holders = [
+    { holder: paragraph, path: ['content', 0, 'content', 1] },
+    { holder: { content: [{ content: [paragraph], type: 'listItem' }], type: 'bulletList' }, path: ['content', 0, 'content', 0, 'content', 0, 'content', 1] },
+    { holder: { content: [paragraph], type: 'panel' }, path: ['content', 0, 'content', 0, 'content', 1] },
+    { holder: { content: [card, { text: 'x', type: 'text' }], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }, path: ['content', 0, 'content', 0] },
+    { holder: { content: [{ content: [card], type: 'futureNode' }], type: 'futureBlock' }, path: ['content', 0, 'content', 0, 'content', 0] },
+  ]
+  const writers = [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]
+  for (const { holder, path } of holders) {
+    for (const write of writers) {
+      const refused = write({ content: [holder], type: 'doc', version: 1 })
+      assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
+      assert.deepEqual(!refused.ok && refused.error.path, path)
+      assert.match(!refused.ok ? refused.error.message : '', /inlineCard.*link/)
+    }
+  }
+})
+
+test('writes a card holding no link mark, and a node type it does not know holding one', () => {
+  const comment = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
+  const link = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  const marked = { content: [{ attrs: { url: 'https://example.com/roadmap' }, marks: [comment], type: 'inlineCard' }, { marks: [link], type: 'futureInline' }], type: 'paragraph' }
+  for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) assert.equal(write({ content: [marked], type: 'doc', version: 1 }).ok, true)
 })

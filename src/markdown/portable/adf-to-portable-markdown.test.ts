@@ -230,7 +230,6 @@ test('spells an inline node as its text', () => {
 
 test('spells a card as a link to its url, or to its data url named by its data name, else a note', () => {
   assert.equal(portable(paragraph(node('inlineCard', { url: 'https://example.com' }))), '<https://example.com>\n')
-  assert.equal(portable(paragraph({ ...node('inlineCard', { url: 'https://example.com' }), marks: [strong, link('https://other.com')] })), '**<https://example.com>**\n')
   assert.equal(portable(paragraph(text('see '), node('inlineCard', { data: {} }))), 'see _(link card not included)_\n')
   assert.equal(portable(paragraph(node('inlineCard', { data: { name: 'Spec', url: 'https://e.com/s' } }), text(' '), node('inlineCard', { data: { url: 'https://e.com/u' } }))), '[Spec](https://e.com/s) <https://e.com/u>\n')
   assert.equal(portable(paragraph(node('inlineCard', { data: { name: 'Spec' } }), text(' '), node('inlineCard', { data: ['x'] }))), 'Spec _(link card not included)_\n')

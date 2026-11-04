@@ -12,6 +12,11 @@ also skips every other node Atlassian's schema withholds the mark from:
 | a code span inside any mark's spelling but a link's (``**`npm ci`**``) | the code text holds the mark | the code text holds only `code`, and a link where one wraps it |
 | text inside `!adf:border[…]` (`!adf:border[x]{color="#091e42" size=2}`) | the text holds `border` | the text holds none, and where nothing the spelling wraps takes `border`, `unsupported-node-shape`: delete the spelling and keep its text. Only a `mediaInline` takes `border` |
 
+`adfToLosslessMarkdown` and `adfToPortableMarkdown` no longer write an `inlineCard` a link marks:
+`0.3.0` refuses it as `unsupported-node-shape` at the card's path, as does `adfToHtml`, since
+Atlassian's schema gives a card no link mark. Remove the link mark from the card, or wrap the card's
+text in the link yourself.
+
 `0.3.0`'s `adfToLosslessMarkdown` writes a node holding a withheld mark as `!adf:carry{json="…"}`,
 where `0.2.0` wrote these spellings. `0.3.0` reads markdown stored from such a document without the
 mark, and refuses it where the mark wrapped only those nodes. Keep the mark only in markdown

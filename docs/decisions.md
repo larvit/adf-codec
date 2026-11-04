@@ -439,17 +439,11 @@ marking a node that shows a note goes around the note, and an image's own `text`
 schema, shows first, as every carried node's does. Recorded 2026-10-24 without a panel of its own:
 it joins the second panel's `<a>` to that portable spelling.
 
-Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
-text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone.
-Recorded 2026-10-24 without a panel of its own: it puts the second panel's `<a>` around the text a
-card shows.
-
-Atlassian's schema gives no card a link mark, so only a hand-built document holds one. HTML nests no
-`<a>` in an `<a>`, so no element can hold both the link's target and the card's URL: `adfToHtml`
-refuses such a card as `unsupported-node-shape` wherever it writes the card as its own element. The
-maintainer chose this on 2026-11-04 over a new spelling. Inside a carry element the card shows as
-above, since `adfToHtml` checks no carried node's JSON against the schema, and `htmlToAdf` still
-reads a carry element holding one for the same reason.
+Atlassian's schema gives no card a link mark, so only a hand-built document holds one, and no
+element can hold both the link's target and the card's URL. Every writer refuses such a card
+(§Writers refuse the shapes on a short list drawn from Atlassian's schema, before they write). The
+maintainer chose this on 2026-11-04 over a new spelling. `htmlToAdf` still reads a carry element
+holding one, since it checks no carried node's JSON against the schema.
 
 A fifth panel (2026-11-04, three readers in the same roles, then four more for what the first three
 split on) was asked how to write a mention, emoji, status, date and inline card, which until then
@@ -756,14 +750,24 @@ stays on `insideRun` alone, since it answers the parted line. A refactor that me
 so the chunk's later rulings read against that merge, the commit `larv-review ruling-base` prints. A restructure past a
 pass's round cap still goes unreviewed, so the PR summary names it.
 
-## No schema validation
+## Writers refuse the shapes on a short list drawn from Atlassian's schema, before they write
 
-2026-08-23, the mark refusal 2026-08-25, the maintainer. Goal 1. Valid while the site a document
-is saved to validates it.
+2026-11-04, replacing §No schema validation of 2026-08-23, the maintainer. Goals 1 and 6. Valid
+while Atlassian's schema forbids each shape on the list.
 
-No ADF schema validation or exported validator. A refusal that keeps the round-trip is not schema
-validation, so the one a spelled node carrying the same mark type twice earns stays, and input
-nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
+Every writer opens by refusing a document holding a listed shape, as `unsupported-node-shape` at
+the node's path, wherever the node stands: in a node a writer carries, or under a type the library
+does not know. The list is one shape, an `inlineCard` holding a `link` mark, since the schema
+gives a card the `annotation` mark alone (§The node tables answer to Atlassian's schema). A shape
+joins only where the schema forbids it and no format can spell it, so a node type, mark or
+attribute the schema does not name passes and rides the carry. There is no full schema validation
+and no exported validator: `isAdfDocument` checks the document's shape alone. A refusal that keeps
+the round-trip is not on the list: a spelled node carrying the same mark type twice earns its own,
+and input nesting a spelling inside its own kind (`*(*a*)*`) names that mark once.
+
+The earlier entry premised that the site a document is saved to validates it. A refusal before the
+save is what the viewer/editor persona relies on, and a hand-built document is the one place the
+site has not yet seen.
 
 ## The gate runs on Deno and Bun
 
