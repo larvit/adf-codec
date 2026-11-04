@@ -153,7 +153,7 @@ test('writes an emoji, mention, status, date and card as their elements, their a
   assert.equal(inline({ attrs: { data: { url: 'https://example.com/plan' } }, type: 'inlineCard' }), '<p>See <a class="adf-inline-card" href="https://example.com/plan" data-data="{&quot;url&quot;:&quot;https://example.com/plan&quot;}">https://example.com/plan</a></p>\n')
 })
 
-test('carries a node its element cannot hold', () => {
+test('carries an emoji, mention, status, date or card holding what its element cannot write', () => {
   const carried = (node: AdfNode): boolean => html(adfToHtml(document(paragraph(node)))).includes('adf-carry')
   const comment: AdfMark = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
   assert.equal(carried({ attrs: { text: '🎉' }, marks: [comment], type: 'emoji' }), true)
@@ -177,6 +177,8 @@ test('carries a node its element cannot hold', () => {
   assert.equal(carried({ attrs: { url: 'https://example.com/\u0001' }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap', url: 'https://example.com/' } }, marks: [comment], type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { url: 'https://example.com/\u0001' } }, type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { data: { name: 'Roadmap', url: 'https://example.com/\u0001' } }, type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { url: 7 }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap', url: ' ' } }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: 'https://example.com/' }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: {} }, type: 'inlineCard' }), true)
@@ -186,6 +188,7 @@ test('carries a node its element cannot hold', () => {
   assert.equal(carried({ attrs: { id: '5b10a2', text: '@Mikael' }, content: [text('x')], type: 'mention' }), true)
   assert.equal(carried({ attrs: { id: '5b10a2', text: '@Mikael' }, marks: [comment], type: 'mention' }), true)
   assert.equal(carried({ attrs: { id: 7, text: '@Mikael' }, type: 'mention' }), true)
+  assert.equal(carried({ attrs: { id: '5b10a2', text: 7 }, type: 'mention' }), true)
 })
 
 test('shows each block a carried node holds as a paragraph in a div', () => {
