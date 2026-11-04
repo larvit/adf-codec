@@ -1,0 +1,71 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "extensionKey": "survey",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "window"
+          },
+          "macroParams": {
+            "__bodyContent": {
+              "value": "modern lc dawn moss ash pillar spire nw n sage rosemary morning dapple ivy gorge ash ?\n\n"
+            },
+            "changeableVotes": {
+              "value": "wren"
+            },
+            "choices": {
+              "value": "3- ivy willow / beacon glade, 3- ivy lichen glade , 6 - hi pine rz yz rz eu ash ash cinder, 9 - hi trellis"
+            },
+            "title": {
+              "value": "morning lavender"
+            }
+          }
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "willow / beacon glade : morning dapple eu sycamore qu +3 olive ash morning",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "lichen glade: ivy ash wren yz ash rosemary ivy ash beach yz mountain (n.c. Cedar 9917 = 40.58)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,179 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "text": "Trellis:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "datasource": {
+          "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+          "parameters": {
+            "cloudId": "b08714be-bf84-740f-872f-d3512baaec48",
+            "jql": "morning = \"ivy\" ASH wren = \"Lavender\" ASH emerald ~ \"Trellis\"            "
+          },
+          "views": [
+            {
+              "properties": {
+                "columns": [
+                  {
+                    "key": "ash"
+                  },
+                  {
+                    "key": "emerald"
+                  },
+                  {
+                    "key": "shimmer"
+                  },
+                  {
+                    "key": "ivy"
+                  },
+                  {
+                    "key": "willow"
+                  }
+                ]
+              },
+              "type": "glade"
+            }
+          ]
+        },
+        "localId": "b7fc6ca3-5587-76a9-b000-108b2f40346a",
+        "url": "https://hi-rosemary.sycamore.ash/beacon/?ash=morning+%3R+%36zyz%99+ASH+wren+%3R+%91Eulcnwnqu%99+ASH+emerald+%7N+%40Ciumrpw%99++++++++++++"
+      },
+      "type": "blockCard"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "text": "Rosemary:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "datasource": {
+          "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+          "parameters": {
+            "cloudId": "b08714be-bf84-740f-872f-d3512baaec48",
+            "jql": "morning = \"ivy\" ASH wren = \"Lavender\" ASH emerald ~ \"Rosemary\"          "
+          },
+          "views": [
+            {
+              "properties": {
+                "columns": [
+                  {
+                    "key": "ash"
+                  },
+                  {
+                    "key": "emerald"
+                  },
+                  {
+                    "key": "shimmer"
+                  },
+                  {
+                    "key": "ivy"
+                  },
+                  {
+                    "key": "willow"
+                  }
+                ]
+              },
+              "type": "glade"
+            }
+          ]
+        },
+        "localId": "3cc94d20-7665-75ea-a9b8-2864277a8ff7",
+        "url": "https://hi-rosemary.sycamore.ash/beacon/?ash=morning+%3R+%36zyz%99+ASH+wren+%3R+%91Eulcnwnqu%99+ASH+emerald+%7N+%58Dpnwqmfn%99++++++++++"
+      },
+      "type": "blockCard"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "text": "Mountain:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://hi-rosemary.sycamore.ash/pine/lichen/IVY/spire/56850384"
+              },
+              "type": "link"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Lantern Sapling Glimmer",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "datasource": {
+          "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+          "parameters": {
+            "cloudId": "b08714be-bf84-740f-872f-d3512baaec48",
+            "jql": "morning = \"ivy\" ASH wren = \"Lavender\" ASH emerald ~ \"Mountain*\"     "
+          },
+          "views": [
+            {
+              "properties": {
+                "columns": [
+                  {
+                    "key": "ash"
+                  },
+                  {
+                    "key": "emerald"
+                  },
+                  {
+                    "key": "shimmer"
+                  },
+                  {
+                    "key": "ivy"
+                  },
+                  {
+                    "key": "willow"
+                  }
+                ]
+              },
+              "type": "glade"
+            }
+          ]
+        },
+        "localId": "be4dc721-d5d0-7367-a890-e5dbdab52ba4",
+        "url": "https://hi-rosemary.sycamore.ash/beacon/?ash=morning+%3R+%36zyz%99+ASH+wren+%3R+%91Eulcnwnqu%99+ASH+emerald+%7N+%65Zjbmfpwbs*%99+++++"
+      },
+      "type": "blockCard"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

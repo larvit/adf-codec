@@ -1,0 +1,76 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "H Lavender Willow ir Beacon Glade",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Ivy wren rosemary spire gorge ash pine sycamore zy ash trellis ir ash IVY rosemary. Mountain ze ul dawn moss fountain cn Beacon. Olive mountain wn ash sage zy wren beach ze.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "language": "java"
+      },
+      "content": [
+        {
+          "text": "lichen cedar Sterling {\n    morning Cinder emerald;\n    morning Cinder splendid;\n    morning Cinder fountain;\n\tmorning dusk mountain;\n     \n    // shimmer ash lantern ivy rosemary ash sapling\n    ...\n}",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Brook stork sycamore gorge ivy able dawn ash rosemary. Pine ivy modern lavender dawn ash splendid glimmer ash ash ash qu lavender juniper zy reef sleet cn jasmine.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "language": "java"
+      },
+      "content": [
+        {
+          "text": "harvest onyx.ivy.fern\npillar ash.fern.tarn.juniper.tranquil;\n \n// Brook stork ash twilight sterling dawn cn ash tranquil quiet:\n// woodland   fountain\n// 3369                ASH_lavender\n// 9917                ASH_rosemary\n// 405856              ASH_fountain\n// 850384              ASH_mountain\n \n// ash dapple ir ash vine\nvine \"Glacier_Tranquil_Gull\"  \nwoodland 658\nnc-tarn cove\n\tteak\n\t\t$teak : Sterling(  \t\t\t\t\t\t\t\t\t\n\t\t\t$splendid: splendid, splendid != sage && !splendid.window(\"\"),\n\t\t\tfountain cn ( \"ASH_fountain(405856)\", \"ASH_mountain(850384)\" ),\n\t\t\t$emerald: emerald)\t\t\t\t\t\t\t\t\t\n\t\t$coral : Sterling( emerald != $emerald, \n\t\t\tSterling.splendid().splendid(splendid, $splendid),\n\t\t\tfountain cn (\"ASH_lavender(3369)\",\"ASH_rosemary(9917)\"),\n\t\t\table slope [-15i, 15i] $teak)\t\t\t\t    \t\n\tlily\t\t\t\t\t\n\t\tFountain.fountain(...);\t\t\nash",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

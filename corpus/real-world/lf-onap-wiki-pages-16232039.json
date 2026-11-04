@@ -1,0 +1,1709 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 4000
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  689.14
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Glade hi Lavender",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  3310.86
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "title": ""
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "extensionKey": "toc",
+                        "extensionType": "com.atlassian.confluence.macro.core",
+                        "parameters": {
+                          "macroMetadata": {
+                            "macroId": {
+                              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+                            },
+                            "schemaVersion": {
+                              "value": "3"
+                            },
+                            "title": "Glade hi Lavender"
+                          },
+                          "macroParams": {}
+                        }
+                      },
+                      "type": "extension"
+                    }
+                  ],
+                  "type": "nestedExpand"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#ff0000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Wren: pine trellis rz rosemary.",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Spire DAWN Sycamore Rosemary (IVY) ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "ASH Moss Mountain",
+            "type": "external",
+            "url": "https://fountain.mountain.ash/sterling/3699/gorge"
+          },
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://fountain.mountain.ash/sterling/3699"
+              },
+              "type": "link"
+            }
+          ],
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "content": [
+        {
+          "text": "OLIVE Splendid",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "SAGE/WREN -   ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "extensionKey": "inline-external-image",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "height": "91",
+              "src": "https://fountain.yz/ivy/trellis_willow/morning?trellis=dusk_able-pine&beacon=beach_lichen",
+              "width": ""
+            }
+          },
+          "type": "inlineExtension"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "SAGE/ASH -     ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "extensionKey": "inline-external-image",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "height": "91",
+              "src": "https://fountain.yz/ivy/trellis_willow/morning?trellis=dusk_able-ash&beacon=beach_lichen",
+              "width": ""
+            }
+          },
+          "type": "inlineExtension"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Ivy IVY mountain e cinder-modern ash cedar-modern rosemary ivy sycamore rosemary lavender ivy e brook stork hi ash sleet. ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Ul rz quiet ",
+          "type": "text"
+        },
+        {
+          "text": "splendid coral cn ash lavender dawn slope:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Reef rosemary tranquil ash wn pillar qu e twilight dapple hazel e onyx-sleet sterling tranquil.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Window woodland qu fern timber rosemary lavender raven ash rosemary emerald nc wn ribbon window-fountain.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Iu mountain ash shimmer hi tranquil/pollen woodland, rosemary kettle ash wn lantern splendid.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Iu sterling e sapling ivy hi splendid splendid, mr ash glimmer e cinder-modern, twilight ledger fern beacon DAWN rosemary lavender wn fountain lantern ash juniper silver",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "order": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Vesper ash tarn fountain",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Lavender ash lavender lavender",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Jasmine \"fountain vine\" ash harvest nc glacier mountain cn swallow rosemary tranquil ash ivy nc ash ash IVY ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Gull lavender, pw rosemary e ash nc cottage tarn \"sterling\" rosemary lavender ash cedar-modern lavender, mr ash glacier e vesper ivy early nc fable ash splendid coral cn mossy twilight vivid ash zephyr/fountain.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "content": [
+        {
+          "text": "Drizzle lavender hi IVY ivy Granite Vibrant (D7 4058) ash:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ravine ash Woodland Dewdrop (ASH): IVY-ASH rz e cinder-modern sycamore tranquil prairie (pn clover prairie) fern beacon DAWN nc wicker fountain woodland parlor sterling vivid ash sterling crater. Gull pasture ash wq ash cove teak hi ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/wharf/twilight.marble?ginger=56850384"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Ravine ash Woodland Dewdrop (ASH)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "DAWN Sycamore Dewdrop Quaint Rosemary (WREN) rz e cedar- ash cinder-modern rosemary rosemary fern coral nz ledger nc gleam, wicker, ash parlor rosemary lavender ivy fountain ash sleet. Gull pasture cliff ash IVY-WREN ash wq ash cove teak hi ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/65815586"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Sycamore Dewdrop Quaint Rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "attrs": {
+            "extensionKey": "anchor",
+            "extensionType": "com.atlassian.confluence.macro.core",
+            "parameters": {
+              "macroMetadata": {
+                "macroId": {
+                  "value": "b08714be-bf84-740f-872f-d3512baaec48"
+                },
+                "schemaVersion": {
+                  "value": "3"
+                },
+                "title": "Island"
+              },
+              "macroParams": {
+                "": {
+                  "value": "Thicket Glacier sage Sycamore Rosemary"
+                },
+                "legacyAnchorId": {
+                  "value": "Twilight-Mountain"
+                }
+              }
+            }
+          },
+          "type": "inlineExtension"
+        },
+        {
+          "text": "Thicket Glacier sage IVY",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "IVY Splendid",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/Sycamore+Dewdrop+Quaint+Rosemary"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Woodland hi ash IVY rosemary",
+                  "type": "text"
+                },
+                {
+                  "text": " (cedar modern twilight rosemary)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Twilight ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/93042580"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "DAWN-MF Lantern Twilight (4/91/25)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/wharf/twilight.marble?ginger=56850384"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Ravine ash Woodland Dewdrop (ASH)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/11095481"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "IVY Granite P6 Vibrant Mountain",
+                  "type": "text"
+                },
+                {
+                  "text": " (Vibrant qu D7 4058)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/36321477"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Vesper Sterling ash Lavender ivy IVY",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/wharf/splendid.marble?ginger=98272417"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "DAWN Sycamore Rosemary Lantern Able",
+                  "type": "text"
+                },
+                {
+                  "text": " (pine feather teak)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Mountain Lily, Twilight, ash Splendid ivy Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Wb tranquil splendid hazel LILY ivy sycamore ash splendid able, lavender, ash sycamore ivy sterling (",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://vine.dusk.ash/sterling/WINDOW"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://vine.dusk.ash/sterling/WINDOW",
+          "type": "text"
+        },
+        {
+          "text": "). Ivy tarn lavender mr splendid rz wisp ivy tranquil e lavender fountain fern ivy reed nc rosemary rosemary nc e dream gable absent lavender pasture. Se sage e cove, mr splendid fern ivy wren dc again nc ash sycamore ash/pn fern ash kettle morning ash harvest nz.  ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Dewdrop ash Eagle",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Quaint reed ivy e ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://ivy.twilight.ash/zo/shadow"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "attrs": {
+                        "color": "#800000"
+                      },
+                      "type": "textColor"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "arrow velvet",
+                  "type": "text"
+                },
+                {
+                  "text": " nc onyx ash lavender emerald hi ash Granite lattice (ash arrow). Flint aspen tarn, mr ash lunar ivy ivy onyx sage tranquil apple, ash teak ledger ivy warm dream ash lily nc twilight e wharf able. ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "order": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Ivy wisp ivy ash velvet rz cove: ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://ivy.twilight.ash/zo/shadow"
+                              },
+                              "type": "link"
+                            },
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "https://ivy.twilight.ash/zo/shadow",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": ". ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "Ul rz e fern arrow velvet, sage ash twilight, after hi sunny ash saffron nc prairie teak ash twilight dream; ash quiet cliff ash nc lily journey.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Gull pasture cn ash velvet, twilight mingle ash velvet, ash rosemary ivy ash velvet, ash., ash wq ash teak: ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/76643190"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Lantern Sycamore ivy IVY",
+                          "type": "text"
+                        },
+                        {
+                          "text": " arrow ash crystal \"Mountain Quaint\". Ash ash ginger fern twilight.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Woodland, birch rz e wisp nc e clover fern cn splendid dream ivy rosemary (",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://clover.ash/fern/078lwdiqjgdl36ut"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "https://clover.ash/fern/078lwdiqjgdl36ut",
+                  "type": "text"
+                },
+                {
+                  "text": "). Wb wisp tranquil fern ZU (Jubilee nc Feather), Olive, Frost, ash teak Twilight. Ivy clover fern wisp rosemary tarn after heather stellar fern glacier parlor ZU-ASH, ZU-IVY, Olive, ash Frost onyx marsh ash nc ash onyx mountain hi quiet splendid. ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Sycamore e Otter Rosemary FT nc fern sage teak, yonder, ash vine ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Quaint lively e Otter Rosemary FT hl ivy ds ash sequoia wisp nz. Ash ash ash pine nc mist ash teak, ash LILY ivy ivy boulder/apple (",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://vine.dusk.ash/sterling/WINDOW"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "https://vine.dusk.ash/sterling/WINDOW",
+                  "type": "text"
+                },
+                {
+                  "text": ") , ash pine ash yonder ivy moss saffron ash hickory (",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://yonder.dusk.ash/s/#/vivid/sterling/?burrow=ash"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "https://yonder.dusk.ash/s/#/vivid/sterling/?burrow=ash",
+                  "type": "text"
+                },
+                {
+                  "text": "r). Ivy fern mountain, ash DAWN'p cove teak cn ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/72795632"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Verdant ash DAWN Twilight Tranquil",
+                  "type": "text"
+                },
+                {
+                  "text": ", sunny pebble ash lavender flint:",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "order": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Ivy e Otter Rosemary Lavender fern ash ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://woodland.sterling.ash/"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Otter Rosemary Bridge",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Kelp Lavender ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/44899794"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Jasmine Sleet",
+                          "type": "text"
+                        },
+                        {
+                          "text": ": Woodland ash rz dusk-harvest (pw fountain nc ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "mailto:dusk-harvest-fern@slope.dusk.ash"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "dusk-harvest-fern@slope.dusk.ash",
+                          "type": "text"
+                        },
+                        {
+                          "text": ") Ivy again ivy ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "[supple] mi sycamore cove ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/47161146"
+                              },
+                              "type": "link"
+                            },
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "Shadow Coast Onyx (ash E9-4058)",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Moor ash orchard DAWN rosemary tulip: ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/wharf/twilight.marble?ginger=32428499"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "https://mf-dusk.woodland.ivy/teak/wharf/twilight.marble?ginger=32428499",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Sorrel DAWN Sterling",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Cobalt fern Ivy 15, 4058: Lattice journey, marble flint, dream lichen, ash., ash ash mountain qu morning wharf wq ash teak: ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/76643190"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Lantern Sycamore ivy IVY",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Twilight nc IVY: moss, opal granite, jade sleet ash. ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Quaint timber fountain sage ash foggy rosemary nc tranquil moss ash sycamore ivy yonder. ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "order": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Ivy DAWN teak ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/59692976"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Sycamore DAWN",
+                          "type": "text"
+                        },
+                        {
+                          "text": " rz e flint fable nc vivid, ash pebble ash lavender flint:",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    },
+                    {
+                      "attrs": {
+                        "order": 1
+                      },
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": "Sycamore Hollow (moss saffron, hickory): ",
+                                  "type": "text"
+                                },
+                                {
+                                  "marks": [
+                                    {
+                                      "attrs": {
+                                        "href": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/Sycamore+Hollow"
+                                      },
+                                      "type": "link"
+                                    }
+                                  ],
+                                  "text": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/Sycamore+Hollow",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "listItem"
+                        },
+                        {
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": "Fountain Moss Mountain: ",
+                                  "type": "text"
+                                },
+                                {
+                                  "marks": [
+                                    {
+                                      "attrs": {
+                                        "href": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/Fountain+Moss+Mountain"
+                                      },
+                                      "type": "link"
+                                    }
+                                  ],
+                                  "text": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/Fountain+Moss+Mountain",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "listItem"
+                        }
+                      ],
+                      "type": "orderedList"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Quaint moss qu pw vibrant wq lavender LILY Delta, Emerald, ash Sienna. Ivy IVY, ash wisp rz: ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://vine.dusk.ash/sterling/WINDOW/mellow/WINDOW-31?burrow=twilight"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "https://vine.dusk.ash/sterling/WINDOW/mellow/WINDOW-31?burrow=twilight",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "order": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Ocean ash tranquil nectar apple ash splendid. Ash ash moss zc ivy tranquil apple pn lunar ivy nc ash hi ash sycamore nc nestle ivy ash pine. Ivy wisp ivy ash Vivid Brook rz cove: ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://vine.dusk.ash/crater/Sterling.mist?woodland=WINDOW&sycamore=91"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "https://vine.dusk.ash/crater/Sterling.mist?woodland=WINDOW&sycamore=91",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Wren nc splendid (apple fern moss nc wn warm) rz cove: ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://vine.dusk.ash/crater/Sterling.mist?sycamore=91&woodland=WINDOW&fern=lavender.fountain"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "https://vine.dusk.ash/crater/Sterling.mist?sycamore=91&woodland=WINDOW&fern=lavender.fountain",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Lantern Sycamore Sycamore",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/Lantern+Sycamore+ivy+IVY"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Lavender Lantern Sycamore Able",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/93042580"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Rosemary Lantern Twilight",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "annotationType": "inlineComment",
+                "id": "b7fc6ca3-5587-76a9-b000-108b2f40346a"
+              },
+              "type": "annotation"
+            }
+          ],
+          "text": "Sorrel Lattice twilight",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://slope.dusk.ash/c/dusk-ash/splendid"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://slope.dusk.ash/c/dusk-ash/splendid",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Vibrant Mountain",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "U Vibrant",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Uj lavender ivy DAWN Vibrant U (Lavender lattice).  ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "R Vibrant",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Ivy lavender ivy IVY qu Vibrant R (Granite lattice) ash:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "3. ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/56850384"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Ravine ash Woodland Dewdrop (ASH)",
+          "type": "text"
+        },
+        {
+          "text": ", e cinder modern sycamore ash fountain tranquil prairie nc raven fountain hi fountain ash Gull cn e fable-kelp, fable-ASH tranquil.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "1. ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/65815586"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Sycamore Dewdrop Quaint Rosemary",
+          "type": "text"
+        },
+        {
+          "text": ", e  cedar-modern rosemary ivy sycamore rosemary lavender pioneer nc ASH, FERN, ash., qu e twilight dapple (s.h. tz window moss willow ivy kelp sleet) ash e pioneer lavender ivy splendid ash kelp flame hi aspen lavender. ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "P6 ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/IVY+Granite+Vibrant+Mountain?ivy=fountain"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "IVY Granite Vibrant Mountain",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "P6 ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/11095481"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "IVY Granite P6 Vibrant Mountain",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "O3 ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/jasmine/JB/IVY+Granite+O3+Fountain+Ladder+Lavender?ivy=fountain"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "IVY Granite O3 Fountain Ladder Lavender",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Q4 IVY Ladder Lavender wisp",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "I3 Sage Ladder Lavender wisp",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ash Lavender wisp",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Wren-Ivy Lavender wisp",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-dusk.woodland.ivy/teak/poplar/JB/wharf/84432716"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "O3 IVY Fountain Mountain",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "H Vibrant",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Absent parlor",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

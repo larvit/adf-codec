@@ -1,0 +1,58 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            }
+          ],
+          "text": "\"IVY glade lavender hi Rosemary Sycamore hi willow ash rosemary-mountain fountain rz ash trellis mountain wren ASH ivy morning ash sterling splendid",
+          "type": "text"
+        },
+        {
+          "text": ".\" — Spire yz ash pine ash dawn ? Ash-E emerald ul IVY yz fountain ul ivy.ash. Cn gorge ivy olive moss ash dawn ?",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 65
+      },
+      "content": [
+        {
+          "attrs": {
+            "__fileMimeType": "beach/ash",
+            "__fileName": "wnqun6850-3-84_65-81-55.ash",
+            "__fileSize": 33699,
+            "collection": "mountain-91740585",
+            "height": 254,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file",
+            "width": 451
+          },
+          "marks": [
+            {
+              "attrs": {
+                "color": "#758195",
+                "size": 1
+              },
+              "type": "border"
+            }
+          ],
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

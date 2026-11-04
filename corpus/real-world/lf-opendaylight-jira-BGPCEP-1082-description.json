@@ -1,0 +1,228 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Lavender:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Trellis rosemary hi glade ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ],
+                  "text": "morning:emerald ivy-sycamore-spire ivy-rosemary-ash ivy-rosemary-rz-yzeulcn33 ivy-willow-ash ivy-willow-ash-beacon-shimmer",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Gorge ash wren olive",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "content": [
+        {
+          "text": "pine -w -N IVY -q beach:beach \\\n  -U \"Lantern-Dawn: mountain/ash\" \\\n  -n '<fountain cedar=\"ash:mountain:lichen:ash:ci:moss:ash:sterling-splendid\"><fountain-sapling>699.9.9.1</fountain-sapling><beacon><wren-olive>mountain-brook</wren-olive></beacon></fountain>' \\\n  \"http://699.9.9.1:7405/rosemary/beacon/sterling-glimmer-fountain:glimmer-mountain/glimmer-fountain/cinder-ash/sterling-glimmer-fountain:rosemary/sycamore/sterling-modern-stork:IVY/shimmer-ash-ash/ash/rosemary/fountain/699.9.9.1\"",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "order": 3
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Gorge 85 IVY lavender ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "pine -w -N IVY -q beach:beach \\\n  -U \"Lantern-Dawn: mountain/ash\" \\\n  -n @splendid_brook.ash \\\n  \"http://699.9.9.1:7405/rosemary/beacon/sterling-glimmer-fountain:glimmer-mountain/glimmer-fountain/cinder-ash/sterling-glimmer-fountain:rosemary/sycamore/sterling-modern-stork:IVY/shimmer-ash-ash/ash/rosemary\"",
+                  "type": "text"
+                }
+              ],
+              "type": "codeBlock"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Sleet quiet lavender ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ],
+                  "text": "ivy pillar.ash.sage=6850 pillar --coral ash/ash-u3mrp-wdp8-tranquil.ash",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Slope dapple nw qm twilight ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ],
+                  "text": "ivy -q beach:beach http://699.9.9.1:7405/rosemary/sterling/ash-ash:ash-ash/ash/shimmer-ash-ash/ivy-ash/window/ash-stork:wdp8-sapling-timber/ash-stork:wren-juniper-ash-tranquil-sapling-timber/ | fn . ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Dusk lavender",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Slope able ash pine jasmine ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ],
+                  "text": "ivy -q beach:beach http://699.9.9.1:7405/rosemary/sterling/ash-ash:ash-ash/ash/shimmer-ash-ash/ivy-ash/window/ash-stork:wdp8-sapling-timber/ash-stork:wren-juniper-ash-tranquil-sapling-timber/ | fn . ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "content": [
+        {
+          "text": "Woodland dapple ash ivy pine jasmine.",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "collection": "",
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": "  ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "collection": "",
+            "id": "b08714be-bf84-740f-872f-d3512baaec48",
+            "type": "file"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "collection": "",
+            "id": "b7fc6ca3-5587-76a9-b000-108b2f40346a",
+            "type": "file"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

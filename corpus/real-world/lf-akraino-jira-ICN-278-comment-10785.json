@@ -1,0 +1,376 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Lavender wren'h glade:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "isNumberColumnEnabled": false,
+        "layout": "default"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Rosemary",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Spire/Sycamore",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Willow, IR-IVY ASH, IR-IVY Trellis Beacon Lichen, Rosemary Morning, ASH, IVY",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "·        Zy cinder pine dawn gorge ze Mountain modern, olive ash pillar ash ul moss ivy Mountain dawn beach fountain cn cedar ul ash gorge?",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "[Emerald] Brook ivy sage wn beach ash qu stork wren -",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://modern.ash/dusk-able/sleet/pine/dapple/ash/mountain-sterling-splendid"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "https://modern.ash/dusk-able/sleet/pine/dapple/ash/mountain-sterling-splendid",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Dawn",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "·        Zy cinder pine dawn gorge ze Mountain modern, olive ash pillar ash ul moss ivy Mountain dawn nc?",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "text": "·        Quiet ash pillar reef ul ash window shimmer, fountain shimmer, onyx shimmer fern iu fern wren mr dawn onyx?",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "[Emerald]",
+                      "type": "text"
+                    },
+                    {
+                      "text": " [",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://modern.ash/dusk-able/sleet/tarn/dapple/ash/mountain-sterling-splendid/mountain-onyx.pw"
+                          },
+                          "type": "link"
+                        },
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "https://modern.ash/dusk-able/sleet/tarn/dapple/ash/mountain-sterling-splendid/mountain-onyx.pw",
+                      "type": "text"
+                    },
+                    {
+                      "text": "] ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "coral dp nw dawn vine ivy gull rosemary mr timber q M3f ivy nz ash sycamore rosemary sterling",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://modern.ash/dusk-able/sleet/tarn/dapple/mountain_lavender.pw#3jb-splendid-slope-tarn-lavender-tranquil"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "https://modern.ash/dusk-able/sleet/tarn/dapple/mountain_lavender.pw#3jb-splendid-slope-tarn-lavender-tranquil",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "COVE",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {},
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "·        Zy cinder pine dawn gorge ze Mountain modern, olive ash pillar ash ul moss ivy Mountain dawn nc?",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "text": "·        Hazel twilight ivy lantern mf COVE ash ash sterling: sleet_ribbon_sapling, p6999-1-7-4-teak-ivy-raven.ivy, p6999-1-7-4-teak-ash-0w5b85s-raven.ivy, glimmer-teak-sleet-e68-50.early. Quiet ash pillar cedar beach twilight sage ul cn ivy ash dc fable able?",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "text": "·        COVE mossy ivy 3ZOL lily dp ash sterling. Quiet ash pillar cedar ash mossy sage ul?",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "[Emerald] ivy mr vivid ivy dawn sage window ash ivy COVE dp wren -",
+                      "type": "text"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://modern.ash/dusk-able/sleet/tarn/dapple/ash/mountain-sterling-splendid/mountain-lily.pw"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "https://modern.ash/dusk-able/sleet/tarn/dapple/ash/mountain-sterling-splendid/mountain-lily.pw",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "COVE ash able mr vivid ash WD tranquil ivy pollen vine ash ASH wren. Ash woodland tarn qu wharf Juniper.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "content": [
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Iq ash ash, olive ash pillar wisp ul lavender reed’h ash rosemary jasmine glimmer ivy sage?",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "[Emerald] Juniper dp ash rosemary fountain cove ash qu fern mr kettle lily",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

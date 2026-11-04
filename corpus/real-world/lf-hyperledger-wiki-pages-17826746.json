@@ -1,0 +1,134 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://hi-lavender.rosemary.ivy/wren/trellis/ASH/Glade+Sycamore+Pine+ash"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Glade /",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://hi-lavender.rosemary.ivy/wren/trellis/IVY/Morning"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": " ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://hi-lavender.rosemary.ivy/wren/trellis/IVY/Morning"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Willow ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://hi-lavender.rosemary.ivy/wren/trellis/ASH/ASH+beacon"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ASH",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://hi-lavender.rosemary.ivy/wren/trellis/ASH/Emerald+Rosemary+Gorge+Spire"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Spire  ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": ": ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Spire : ash ivy olive rz Mountain 33:69 ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

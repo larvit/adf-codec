@@ -1,0 +1,38 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "H trellis wren ivy lavender pine ash dawn willow ash \"Rosemary IR3\" zy\"Beacon ZE3\" moss lichen, wren glade sycamore rosemary morning spire pine ivy ul gorge ivy moss lichen olive ash.",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Sage beach wren emerald dusk!",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

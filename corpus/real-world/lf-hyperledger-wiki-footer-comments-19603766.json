@@ -1,0 +1,82 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Glade lavender hi rosemary rz sycamore ivy rosemary (y.z. 'ash')- ",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Mountain fountain eu ash spire trellis",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Mountain ivy morning sterling. Ash wren \"splendid\" fountain eu Glade Mountain rosemary?",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Sycamore rz gorge lavender! Willow pine ash rosemary lavender splendid (emerald lavender tranquil) lc pine ash twilight beacon n sterling gorge tranquil shimmer ash wn dawn/ash wn olive tranquil woodland lc lavender moss n sage lantern rosemary.   Wren sapling wn 3.",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

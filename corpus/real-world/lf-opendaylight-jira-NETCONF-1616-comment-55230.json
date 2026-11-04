@@ -1,0 +1,27 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "1d8d074ef44f"
+      },
+      "content": [
+        {
+          "attrs": {
+            "collection": "",
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "localId": "3a41c5441d64",
+            "type": "file"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": " Hi willow rz lavender yz ivy rosemary trellis glade spire beacon wren pine ash.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

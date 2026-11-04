@@ -1,0 +1,37 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "marks": [
+                {
+                  "type": "strong"
+                },
+                {
+                  "attrs": {
+                    "color": "#ff0000"
+                  },
+                  "type": "textColor"
+                }
+              ],
+              "text": "Ivy 3369 lavender ash rosemary hi wren sycamore trellis'r willow pine beacon dawn glade lichen zy z rosemary mountain.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

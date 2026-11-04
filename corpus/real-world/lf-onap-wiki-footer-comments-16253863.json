@@ -1,0 +1,51 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Hi willow Glade lavender beacon rosemary sycamore rz WREN, ivy ash rosemary yz trellis/mountain lichen yz Glade morning cinder.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+        "title": "trellis spire"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "PINE http://{dawn_gorge_eu_lc}:3369/lichen/{dawn_olive}\n\n\n{\n\"spire\": {\n    \"fountain\": {\n        \"mountain\": 9917405856850384,\n        \"sterling\": \"Beach NW MOSS - Nq Splendid fountain\",\n        \"emerald\": \"65\",\n        \"mountain\": \"Nq MOSS fountain\",\n        \"rosemary\": {\n            \"sycamore\": \"Ash, 81 55 8642 59:30:42 IVY\"\n            },\n        \"rosemary\": \"SAGE shimmer wren\",\n        \"lavender\": \"Modern\",\n        \"lantern\": 5.8,\n        \"splendid\": \"dusk\",\n        \"lavender\": 65,\n        \"pillar\": \"tranquil\",\n        \"twilight\": 1611095481363214,\n        \"sterling\": \"tranquil\",\n        \"woodland\": \"Beach NW able - Nq Splendid fountain\"\n        },\n    \"lavender\": {\n        \"rosemary\": [{\n            \"fountain\": 7,\n            \"mountain\": \"unc7\",\n            \"sapling\": 982,\n            \"tranquil\": 7,\n            \"woodland\": 7\n            }],\n        \"sterling\": 72,\n        \"splendid\": 4177,\n        \"splendid\": [{\n            \"fountain\": 6643,\n            \"fountain\": 190,\n            \"lavender\": \"ium0\",\n            \"lavender\": \"pine\",\n            \"lavender\": 78,\n            \"fountain\": 3672\n            }],\n        \"mountain\": 8.5\n        }\n    }\n}",
+              "type": "text"
+            }
+          ],
+          "type": "codeBlock"
+        }
+      ],
+      "type": "expand"
+    },
+    {
+      "attrs": {
+        "localId": "b08714be-bf84-740f-872f-d3512baaec48",
+        "title": "mountain spire"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "ASH http://{dawn_gorge_eu_lc}:3369/lichen/{dawn_olive}/r7/3a",
+              "type": "text"
+            }
+          ],
+          "type": "codeBlock"
+        }
+      ],
+      "type": "expand"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,60 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "id": "33699:3a41c544-1d64-9174-1d8d-074ef44f7f31",
+            "text": "@Heidi Finnegan"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " hi ivy lavender ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            }
+          ],
+          "text": "\"Wren ash ivy Trellis pine rosemary willow (Glade-Dawn)?\" ",
+          "type": "text"
+        },
+        {
+          "text": "R zy ash ivy ash pine ze Trellis ul",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://morning.moss.ash/sage/emerald/"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://morning.moss.ash/sage/emerald/",
+          "type": "text"
+        },
+        {
+          "text": "/ Spire?",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

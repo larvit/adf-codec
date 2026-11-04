@@ -91,7 +91,7 @@ const corpus = {
   browserDocuments,
   errors: fixtureNames('errors', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
   normalization: fixtureNames('normalization', '.md').map((name) => ({ markdown: fixture(name, '.md'), name })),
-  realPayloads: fixtureNames('real-payloads', '.json').map((name) => ({ json: fixture(name, '.json'), name })),
+  realPayloads: [...fixtureNames('real-payloads', '.json'), ...fixtureNames('real-world', '.json')].map((name) => ({ json: fixture(name, '.json'), name })),
   roundTrip: fixtureNames('round-trip', '.json').map((name) => ({ json: fixture(name, '.json'), markdown: fixture(name, '.md'), name })),
 }
 assert.deepEqual(
@@ -100,7 +100,7 @@ assert.deepEqual(
     .map((entry) => entry.name)
     .filter((name) => name !== 'commonmark-spec')
     .sort(),
-  ['errors', 'normalization', 'real-payloads', 'round-trip'],
+  ['errors', 'normalization', 'real-payloads', 'real-world', 'round-trip'],
   'a corpus kind the browser leg does not convert',
 )
 for (const [kind, fixtures] of Object.entries(corpus)) assert.ok(fixtures.length > 0, `the browser leg found no ${kind} fixture to convert`)

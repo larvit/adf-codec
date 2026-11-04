@@ -1,0 +1,35 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Lavender rosemary ivy glade willow rosemary hi ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "BEACON-336",
+          "type": "text"
+        },
+        {
+          "text": " - ash lichen sycamore.",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

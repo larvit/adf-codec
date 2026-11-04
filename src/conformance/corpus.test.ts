@@ -7,17 +7,22 @@ import test from 'node:test'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { htmlToAdf } from '../html/parse/html-to-adf.ts'
+import { blockNodes } from '../adf/block-nodes.ts'
+import { inlineNodes } from '../adf/inline-nodes.ts'
 import { isAdfDocument } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
+import { markVocabularies } from '../adf/mark-attributes.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 const corpusRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus')
 const errorsRoot = join(corpusRoot, 'errors')
 const normalizationRoot = join(corpusRoot, 'normalization')
 const realPayloadsRoot = join(corpusRoot, 'real-payloads')
+const realWorldRoot = join(corpusRoot, 'real-world')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 
+const typesNoFetchedDocumentHolds = ['bodiedSyncBlock', 'decisionItem', 'decisionList', 'extensionFrame', 'fragment', 'multiBodiedExtension', 'syncBlock']
 const roundTripDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
 
 function directoryNames(root: string): string[] {
@@ -62,7 +67,7 @@ function corpusJsonPaths(): string[] {
 }
 
 test('every corpus directory is a kind the runner reads', () => {
-  assert.deepEqual(directoryNames(corpusRoot), ['commonmark-spec', 'errors', 'normalization', 'real-payloads', 'round-trip'])
+  assert.deepEqual(directoryNames(corpusRoot), ['commonmark-spec', 'errors', 'normalization', 'real-payloads', 'real-world', 'round-trip'])
 })
 
 test('every round-trip directory is a kind the runner reads', () => {
@@ -135,34 +140,36 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
   })
 }
 
-test('real-payloads holds payloads', () => {
-  assert.ok(names(realPayloadsRoot, '.json').length > 0)
-})
-
-for (const name of names(realPayloadsRoot, '.json')) {
-  test(`real-payloads/${name} emits markdown that reads back to it`, () => {
-    const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
-    assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
-    const emitted = adfToLosslessMarkdown(payload)
-    assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
-    const parsed = losslessMarkdownToAdf(emitted.value)
-    assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
-    assert.deepEqual(parsed.value, payload)
-  })
-}
-
-for (const name of names(realPayloadsRoot, '.json')) {
-  test(`real-payloads/${name} writes HTML that reads back to it`, () => {
-    const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
-    assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
-    const written = adfToHtml(payload)
-    assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
-    assert.deepEqual(htmlToAdf(written.value), { ok: true, value: payload })
-  })
-}
-
 // The opening tag of each block type whose only attributes are `localId`, `level` and `order`, as the editor writes them.
 const blockElements: Readonly<Record<string, string>> = { blockquote: '<blockquote', bulletList: '<ul', heading: '<h', orderedList: '<ol', paragraph: '<p', rule: '<hr' }
+
+for (const root of [realPayloadsRoot, realWorldRoot]) {
+  const kind = basename(root)
+
+  test(`${kind} holds payloads`, () => {
+    assert.ok(names(root, '.json').length > 0)
+  })
+
+  for (const name of names(root, '.json')) {
+    test(`${kind}/${name} emits markdown that reads back to it`, () => {
+      const payload: unknown = JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8'))
+      assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+      const emitted = adfToLosslessMarkdown(payload)
+      assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
+      const parsed = losslessMarkdownToAdf(emitted.value)
+      assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message}`)
+      assert.deepEqual(parsed.value, payload)
+    })
+
+    test(`${kind}/${name} writes HTML that reads back to it`, () => {
+      const payload: unknown = JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8'))
+      assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+      const written = adfToHtml(payload)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+      assert.deepEqual(htmlToAdf(written.value), { ok: true, value: payload })
+    })
+  }
+}
 
 for (const name of names(realPayloadsRoot, '.json')) {
   test(`real-payloads/${name} writes each block holding only its id as its element`, () => {
@@ -177,6 +184,41 @@ for (const name of names(realPayloadsRoot, '.json')) {
     }
   })
 }
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function typesHeld(value: unknown, found: Set<string>): void {
+  if (Array.isArray(value)) {
+    for (const item of value) typesHeld(item, found)
+  } else if (isRecord(value)) {
+    if (typeof value['type'] === 'string') found.add(value['type'])
+    typesHeld(value['content'], found)
+    typesHeld(value['marks'], found)
+  }
+}
+
+test('real-world holds every type the flavour spells but the ones no fetched document holds', () => {
+  const found = new Set<string>()
+  for (const name of names(realWorldRoot, '.json')) typesHeld(JSON.parse(readFileSync(join(realWorldRoot, `${name}.json`), 'utf8')), found)
+  const spelled = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...markVocabularies.keys()]
+  assert.deepEqual(spelled.filter((type) => !found.has(type)).sort(), [...typesNoFetchedDocumentHolds].sort())
+})
+
+test('real-world-sources.json records where each real-world document came from and its licence', () => {
+  const sources: unknown = JSON.parse(readFileSync(join(corpusRoot, 'real-world-sources.json'), 'utf8'))
+  assert.ok(isRecord(sources))
+  assert.deepEqual(Object.keys(sources).sort(), names(realWorldRoot, '.json'))
+  for (const [name, source] of Object.entries(sources)) {
+    assert.ok(isRecord(source), name)
+    assert.deepEqual(Object.keys(source).sort(), ['licence', 'licenceSource', 'retrieved', 'url'], name)
+    assert.match(String(source['licence']), /^CC-BY(-SA)?-\d\.\d$/, name)
+    assert.match(String(source['licenceSource']), /^https:\/\//, name)
+    assert.match(String(source['retrieved']), /^\d{4}-\d{2}-\d{2}$/, name)
+    assert.match(String(source['url']), /^https:\/\/[a-z-]+\.atlassian\.net\//, name)
+  }
+})
 
 // The position the input itself gives an offset, recomputed rather than trusted from the parser.
 function lineStarting(markdown: string, offset: number): { line: number; offset: number } | undefined {

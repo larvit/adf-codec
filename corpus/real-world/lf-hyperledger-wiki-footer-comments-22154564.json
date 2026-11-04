@@ -1,0 +1,28 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Hi wren lavender rz ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            }
+          ],
+          "text": "pine",
+          "type": "text"
+        },
+        {
+          "text": " willow dawn trellis yz morning?",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

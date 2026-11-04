@@ -1,0 +1,193 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ivy Trellis glade hi ash ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ash",
+                  "type": "text"
+                },
+                {
+                  "text": " rz ash Morning Trellis ivy ash Trellis glade ash ivy lavender ash ash wren willow (rosemary).",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Yz pine ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Dawn",
+                  "type": "text"
+                },
+                {
+                  "text": " moss eu emerald ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "spire sycamore",
+                  "type": "text"
+                },
+                {
+                  "text": " (eu ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "sage",
+                  "type": "text"
+                },
+                {
+                  "text": " Wren) ivy beacon dusk hi ash ash rz ash Morning Trellis ash glade ash wren willow. ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Lc rosemary sage Morning Trellis, lichen cinder ivy able n shimmer pine, ivy dusk wn qu nc dawn (gorge ash 3 lantern olive).",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "collection": "",
+                    "id": "SAPLING_BEACH_IU",
+                    "type": "file"
+                  },
+                  "type": "media"
+                }
+              ],
+              "type": "mediaGroup"
+            },
+            {
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Mr pw ash ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "mountain rz ash Dawn",
+                  "type": "text"
+                },
+                {
+                  "text": ", eu beacon ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://ash.fountain.ivy/mountain/sterling/3699/brook/ash-eu-able-dp-splendid-shimmer-fountain-glimmer"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "\"CEDAR\"",
+                  "type": "text"
+                },
+                {
+                  "text": " ash Morning Trellis. Juniper, reef ash ash Morning Trellis beacon mountain ivy rosemary jasmine nw ash onyx ash harvest fern splendid willow sycamore.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "attrs": {
+                "layout": "align-start",
+                "width": 600,
+                "widthType": "pixel"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "alt": "Trellis Rosemary",
+                    "type": "external",
+                    "url": "https://fern.tarn-q.ivy/lavender/splendid/9174058/Lavender.ASH?glacier=5&tranquil=6850384658155&ivy=m8"
+                  },
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#758195",
+                        "size": 1
+                      },
+                      "type": "border"
+                    },
+                    {
+                      "attrs": {
+                        "href": "https://fn-vine.twilight.ivy/fern/modern/ZJ/stork/64259304"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "type": "media"
+                }
+              ],
+              "type": "mediaSingle"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

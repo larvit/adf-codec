@@ -1,0 +1,439 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 100
+          },
+          "content": [
+            {
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "Trellis/Glade",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Trellis Lavender: ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#172b4d"
+                      },
+                      "type": "textColor"
+                    }
+                  ],
+                  "text": "Morning ivy willow rosemary sycamore hi rosemary ash mountain fountain spire mountain beacon, sterling, splendid fountain ash gorge rz emerald shimmer mountain lichen, wren rosemary, ash sycamore. ",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Glade:  ",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Cinder rosemary pine fountain mountain beacon, sterling, gorge, ash fountain. Dawn modern lavender splendid pillar ivy lantern moss lavender ASH-tranquil twilight, olive sterling, tranquil woodland, moss lavender pine twilight. Ivy beach yz ivy lantern lavender ash eu ash sapling rz:",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "(l)",
+                  "type": "text"
+                },
+                {
+                  "text": " ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "Rosemary dapple fountain rz cedar cn fountain brook, mountain ash tranquil ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "annotationType": "inlineComment",
+                        "id": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+                      },
+                      "type": "annotation"
+                    },
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "woodland ash woodland ivy spire-stork rosemary mountain ash sterling",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": " ",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "(w)  Splendid pine modern ash pine splendid fountain nq ivy fountain,",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "(u) Fountain nc lavender, window, ash lavender pine lavender fountain mountain (tranquil lavender rz fountain), sage gorge yz ash ivy timber ash wren mountain glimmer tranquil,",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "(i) Juniper timber l splendid lavender ash rosemary fountain,",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "(u) Sterling rz ash twilight mountain tranquil fountain ivy fountain mountain,",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "(m) Lavender ash pine modern woodland pillar ivy fountain mountain sleet ribbon,",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "(r) Splendid jasmine sycamore tranquil ash fountain woodland sterling rz window woodland twilight harvest.",
+                  "type": "text"
+                }
+              ],
+              "marks": [
+                {
+                  "attrs": {
+                    "level": 1
+                  },
+                  "type": "indentation"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 100
+          },
+          "content": [
+            {
+              "type": "rule"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 100
+          },
+          "content": [
+            {
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "Glacier",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://pollen.pw/dp-swallow/cottage/quiet/336/9991/74/pollen_drizzle_n0.ash"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Cinder Glacier",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            },
+            {
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "Cinder ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "annotationType": "inlineComment",
+                        "id": "b08714be-bf84-740f-872f-d3512baaec48"
+                      },
+                      "type": "annotation"
+                    }
+                  ],
+                  "text": "Kettle",
+                  "type": "text"
+                },
+                {
+                  "text": " ",
+                  "type": "text"
+                },
+                {
+                  "attrs": {
+                    "timestamp": "5856850384658"
+                  },
+                  "type": "date"
+                },
+                {
+                  "text": " ",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://pollen.pw/dp-swallow/cottage/quiet/336/1558/64/Cinder-Fountain-Dusk-Granite-259304.ash?ash_twilight=WQ%25Mfnzjbmfpw&ash_beacon=coral&_able=806110954&_slope=b8SEdcz-1OLwdIQjgDlutzUFthld36sSRp3mIeZCCUuJ2r-1sHTzO4qIHl_k7VX7x98sX2m7ZmtE2rCekrJG4KGw1k7xyaoNYryf&ash_swallow=806110954&ash_modern=yu_coral"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Ledger ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -88,11 +88,13 @@ In `docs/decisions.md`:
 - The attribute vocabulary is ADF's
 - The source parts by ADF and format
 - The comparison table lists every converter that starts and converts
+- The real-world corpus holds anonymized documents from sites whose licence it records
 
-## 1. Nothing about any consumer
+## 1. Nothing about any consumer in the library
 
-No Jira client, no HTTP, no REST shapes, no issue keys, no actual consumer named anywhere. Design
-against the README's personas.
+The shipped library holds no Jira client, no HTTP, no REST shapes, no issue keys and no actual
+consumer's name. Design against the README's personas. Tooling outside the build may fetch from
+public sites and name them, as `corpus-gathering/` does.
 
 ## 2. Release automation
 

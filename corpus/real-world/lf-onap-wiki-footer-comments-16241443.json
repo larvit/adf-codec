@@ -1,0 +1,71 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Ivy lavender h willow glade \"beacon\" wren lichen ir http:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "ash willow ash beacon ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://SPIRE"
+              },
+              "type": "link"
+            },
+            {
+              "type": "code"
+            }
+          ],
+          "text": "https://",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "mailto:ASH@beacon.pine.ivy"
+              },
+              "type": "link"
+            },
+            {
+              "type": "code"
+            }
+          ],
+          "text": "beacon.pine.ivy",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "/z/y/<ROSEMARY>.ash",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

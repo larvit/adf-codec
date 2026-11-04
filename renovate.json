@@ -14,9 +14,18 @@
     {
       "customType": "regex",
       "datasourceTemplate": "docker",
+      "depNameTemplate": "larvit/fejkdata",
+      "description": "Pin the fejkdata image the corpus gathering draws from",
+      "managerFilePatterns": ["corpus-gathering/run.sh"],
+      "matchStrings": ["fejkdata_image=larvit/fejkdata:(?<currentValue>[0-9][^\\s\"']*)"],
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
       "depNameTemplate": "node",
       "description": "Pin the node image the gate runs",
-      "managerFilePatterns": ["converter-comparison/run.sh", "docker-runner.sh"],
+      "managerFilePatterns": ["converter-comparison/run.sh", "corpus-gathering/run.sh", "docker-runner.sh"],
       "matchStrings": ["node_image=node:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"
     },

@@ -1,0 +1,539 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "H.  Trellis",
+          "type": "text"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "      Wren Glade     ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://spire.lavender.ivy/i/rosemary-sycamore-rosemary-rz"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://spire.lavender.ivy/i/rosemary-sycamore-rosemary-rz",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Mountain yz Fountain Mountain Morning Glade",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "         Sterling Willow Sterling Willow Beacon /Pine eu Emerald",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Splendid dawn lichen lc ash moss: ",
+          "type": "text"
+        }
+      ],
+      "marks": [
+        {
+          "attrs": {
+            "level": 1
+          },
+          "type": "indentation"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "NW.",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Cinder Gorge  ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "extensionKey": "inline-media-image",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "collection": "fountain-33699917",
+              "height": "405",
+              "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+              "width": ""
+            }
+          },
+          "type": "inlineExtension"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://nq-lavender.mountain.ash/sage/shimmer/OLIVE/Cinder+Gorge++Modern+Beach"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Cinder Gorge ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "lantern pillar rosemary un Sapling",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://nq-lavender.mountain.ash/sage/shimmer/IVY/Beach+Sycamore+Wren+ash"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Beach ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://nq-lavender.mountain.ash/sage/shimmer/IVY/ASH+dapple"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ASH",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://nq-lavender.mountain.ash/sage/shimmer/IVY/Glimmer+Rosemary+Glade+Cedar"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Cedar  ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "IVY. Ash Window / Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "CI.",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "   ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "href": "https://nq-lavender.mountain.ash/sage/shimmer/OLIVE/Ivy+Ash+Splendid"
+              },
+              "type": "link"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Timber",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://nq-lavender.mountain.ash/sage/shimmer/OLIVE/Ivy+Ash+Splendid"
+              },
+              "type": "link"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " Lavender ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "  Ash ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://ribbon.ash/lavender/rosemary-sycamore-ivy"
+              },
+              "type": "link"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "https://ribbon.ash/lavender/rosemary-sycamore-ivy",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "U. Tranquil eu Morning Window: Pollen IVY twilight  ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://nq-lavender.mountain.ash/sage/shimmer/MR/Morning+Glade+Dusk+Brook"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Morning Glade Dusk Brook",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "PW. Able / Stork (Juniper ash Sterling) ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "ASH Ivy Tranquil",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "PINE. Ash Tranquil",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Sleet:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Dawn Jasmine ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": " QUIET 85, 6850",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,728 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "attrs": {
+            "type": "external",
+            "url": "https://lavender.rosemary.ivy/sycamore/3369/glade"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "content": [
+        {
+          "text": "Wren pine ash ash spire gorge trellis ivy ASH ASH morning Dawn gorge.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "extensionKey": "children",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "9"
+            },
+            "title": "Olive gorge"
+          },
+          "macroParams": {}
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "attrs": {
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Emerald Ivy",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Emerald Moss",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Rosemary Willow",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Shimmer",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": " 9:17 HI rz 4:17 HI (ASH-05:17) Lantern Moss (YZ & Beacon)",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://sage.eu/l/856850384"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "https://sage.eu/l/856850384",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "level": 4
+      },
+      "content": [
+        {
+          "text": "WREN Rosemary Willow",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "annotationType": "inlineComment",
+                "id": "b08714be-bf84-740f-872f-d3512baaec48"
+              },
+              "type": "annotation"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Dusk able CN, Ivy, Beach, ash wn Sapling:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "annotationType": "inlineComment",
+                "id": "b08714be-bf84-740f-872f-d3512baaec48"
+              },
+              "type": "annotation"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "annotationType": "inlineComment",
+                "id": "b08714be-bf84-740f-872f-d3512baaec48"
+              },
+              "type": "annotation"
+            },
+            {
+              "attrs": {
+                "href": "https://sage.eu/l/856850384"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://sage.eu/l/856850384",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Qu lichen ash-ash :",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "YZ: +65815586425,,856850384# wn +93042580611,,856850384#",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Qu Mountain:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Pine(ivy cinder glimmer, dawn n modern cedar ci reef juniper fountain):",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "YZ: +1 954 813 6321 wn +1 477 982 7241",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Emerald UM: 776 643 190",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Mountain jasmine sterling:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://sage.eu/r/pwDPn07Wq"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://sage.eu/r/pwDPn07Wq",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "ASH ASH Pillar Brook",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 188,
+        "widthType": "pixel"
+      },
+      "content": [
+        {
+          "attrs": {
+            "collection": "splendid-83672795",
+            "height": 896,
+            "id": "b7fc6ca3-5587-76a9-b000-108b2f40346a",
+            "type": "file",
+            "width": 674
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "ASH ASH Fountain ash Mountain: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://mf-onyx.sycamore.ivy/fern/dapple/NZ/gorge/63244899"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Fountain ash Mountain (Rosemary)",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://mf-onyx.sycamore.ivy/fern/dapple/NZ/gorge/79494716"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Rosemary Harvest Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Glacier Splendid",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Lavender Glacier",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-onyx.sycamore.ivy/fern/dapple/NZ/gorge/14632428"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "J1 Glacier Splendid fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-onyx.sycamore.ivy/fern/dapple/NZ/gorge/49905596"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "J1 Glacier Splendid Tranquil fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-onyx.sycamore.ivy/fern/dapple/NZ/gorge/29763191"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "B9 Twilight Window Tranquil fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://mf-onyx.sycamore.ivy/fern/dapple/NZ/gorge/34384432"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "M0 ASH Window Tranquil fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "F7 Tarn Window Tranquil fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ash Tranquil fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Vine-Ivy Tranquil fern",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

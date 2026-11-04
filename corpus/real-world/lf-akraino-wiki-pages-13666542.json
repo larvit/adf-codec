@@ -1,0 +1,144 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Ivy willow ash Ivy HI Wren: Lavender RZ Trellis 3 Rosemary:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://ul-morning.mountain.ivy/dawn/emerald/CN/Lavender+RZ+sycamore+yz+pine+E3+ASH+Rosemary"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "attrs": {
+                        "color": "#707070"
+                      },
+                      "type": "textColor"
+                    },
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "Lavender RZ sycamore yz pine E3 ASH Rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://ul-morning.mountain.ivy/dawn/emerald/CN/Lavender+RZ+sycamore+yz+pine+E3+Fountain+Rosemary"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "attrs": {
+                        "color": "#707070"
+                      },
+                      "type": "textColor"
+                    },
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "Lavender RZ sycamore yz pine E3 Fountain Rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://ul-morning.mountain.ivy/dawn/emerald/CN/Lavender+RZ+sycamore+yz+pine+E3+Mountain+Rosemary"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "attrs": {
+                        "color": "#707070"
+                      },
+                      "type": "textColor"
+                    },
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "Lavender RZ sycamore yz pine E3 Mountain Rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://ul-morning.mountain.ivy/dawn/emerald/CN/Lavender+RZ+sycamore+yz+pine+E3+Moss+Rosemary"
+                      },
+                      "type": "link"
+                    },
+                    {
+                      "attrs": {
+                        "color": "#707070"
+                      },
+                      "type": "textColor"
+                    },
+                    {
+                      "type": "em"
+                    }
+                  ],
+                  "text": "Lavender RZ sycamore yz pine E3 Moss Rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

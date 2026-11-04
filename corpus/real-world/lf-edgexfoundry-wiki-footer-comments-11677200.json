@@ -1,0 +1,75 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Wren ivy lavender hi ash ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            },
+            {
+              "type": "strong"
+            },
+            {
+              "type": "em"
+            }
+          ],
+          "text": "willow rz beacon rosemary ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "yz ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            },
+            {
+              "type": "strong"
+            },
+            {
+              "type": "em"
+            }
+          ],
+          "text": "pine lichen",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ash eu trellis dawn ivy ivy pine eu ivy sycamore. ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
