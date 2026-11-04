@@ -775,6 +775,10 @@ and no spelling holds; nesting depth; output length; what a portable line can sp
 reader's refusal of markdown or HTML it cannot read. A schema refusal a converter gains later is
 made in the first step too.
 
+The maintainer's reason (2026-11-04): the library's behaviour in and out stays as it is; the
+checks run at the first step and answer the same whatever format the ADF converts to. The rule adds
+no refusal for a shape no writer refuses today.
+
 The earlier entries premised that the site a document is saved to validates the rest. A
 hand-built document has not reached the site yet, and the viewer/editor persona relies on a
 refusal arriving before the save.
