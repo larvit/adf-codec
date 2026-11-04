@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 133 | 0.3.0 |  | question | **Write mentions, and inline cards holding `data` or a link mark, as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
+| 133 | 0.3.0 |  | question | **Write an inline card a link marks as semantic HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 163 | 0.3.0 |  |  | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
 | 164 | 0.3.0 | 163 |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
@@ -69,23 +69,18 @@
 
 ## Details
 
-### 133. Write mentions, and inline cards holding `data` or a link mark, as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+### 133. Write an inline card a link marks as semantic HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 
-The fifth writer panel (`docs/decisions.md` §The HTML dialect) did not reach 5 of 7 on two
-spellings, so mentions and cards holding `data` ride the carry until the maintainer settles them.
-Class: the HTML dialect's spellings. Earlier entries: `data-*` named as HTML's `dataset` names it,
-`data-local-id` over `data-adf-local-id`. Candidates, each following those entries:
+Mentions and cards holding `data` are elements since the maintainer took the fifth writer panel's
+leading spellings (`docs/decisions.md` §The HTML dialect). A card a link marks still rides the carry,
+which shows the link's target as the link and the card's URL as its text, so both stay in sight.
+Atlassian's schema gives no card a link mark, so only a hand-built document meets this.
 
-- a mention as `<span class="adf-mention" data-access-level="CONTAINER" data-id="5b10a2" data-user-type="DEFAULT">@Mikael</span>` (4 of 7; `data-mention-id` drew 2);
-- a card holding `data` and no URL as `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`, `href` the URL its `data` holds (3 of 7; `data-card` drew 2, a `<span>` without `href` 2).
-
-Where a link marks a card, both the link's target and the card's URL stay in sight, a card showing
-only its name included.
-
-Candidate entry for §The HTML dialect, if the leading spellings stand: "A mention is
-`<span class="adf-mention" data-access-level data-id data-user-type>` showing its text. A card
-holding `data` and no URL is `<a class="adf-inline-card" href data-data>`, `href` the URL its `data`
-holds, showing its name." The instance it yields for the example above: `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`.
+Class: the HTML dialect's spellings. Earlier entries: a card is `<a class="adf-inline-card" href …>`,
+and HTML nests no `<a>` in an `<a>`, so the card's element has no room for the link beside it. The
+nearest candidate keeps the carry: "A card a link marks rides the carry, which keeps both targets in
+sight; no document Atlassian's editor writes holds one." Its instance is today's output, so the
+choice is the maintainer's: this item ends with that entry, or with a spelling the maintainer names.
 
 ### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
 
