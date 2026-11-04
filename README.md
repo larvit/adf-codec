@@ -525,11 +525,11 @@ content. No stylesheet ships. The complete dialect:
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
-| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block or rule | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
+| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block, rule, emoji, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
-- Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, and a
-  card's or a carried link's in the carry element. Sanitize the HTML before showing a document from
+- Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a
+  card's, and a carried link's in the carry element. Sanitize the HTML before showing a document from
   an author you do not trust.
 - Text and attribute values are escaped: `&`, `<`, `>` and `"`. A node holding what HTML cannot
   hold, such as a carriage return or a control character, rides the carry element.

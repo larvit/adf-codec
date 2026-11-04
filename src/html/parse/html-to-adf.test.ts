@@ -191,7 +191,7 @@ test('reads a carry element holding a node HTML writes as its own element as tha
   assert.deepEqual(read(htmlToAdf(`<ul>\n<li>\n${carry('div', paragraph(text('x')), '<p>x</p>')}\n</li>\n</ul>\n`)), document({ content: [item(paragraph(text('x')))], type: 'bulletList' }))
 })
 
-test('reads an emoji, status, date and URL card from their elements', () => {
+test('reads an emoji, status, date and card holding a URL from their elements', () => {
   const inline = (node: AdfNode): AdfDocument | string => read(htmlToAdf(adfToHtmlText(document(paragraph(text('See '), node)))))
   const nodes: AdfNode[] = [
     { attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' },
@@ -204,7 +204,7 @@ test('reads an emoji, status, date and URL card from their elements', () => {
   assert.deepEqual(read(htmlToAdf('<p><span class="adf-emoji">a&nbsp;&quot;b</span></p>\n')), document(paragraph({ attrs: { text: 'a\u00a0"b' }, type: 'emoji' })))
 })
 
-test('reads a carry element holding an emoji, status, date or URL card as that node', () => {
+test('reads a carry element holding an emoji, status, date or card holding a URL as that node', () => {
   const emoji: AdfNode = { attrs: { text: '🎉' }, type: 'emoji' }
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', emoji, '🎉')}</p>\n`)), document(paragraph(emoji)))
 })
@@ -263,7 +263,7 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'unmappable-html at /content/1 line 2 offset 9'],
     [`<p>Ask ${carry('span', mention, '')}</p>\n`, 'unmappable-html at /content/0/content/1 line 1 offset 0'],
   ],
-  'refuses an emoji, status, date or URL card element that is not as adfToHtml writes it': [
+  'refuses an emoji, status, date or card holding a URL element that is not as adfToHtml writes it': [
     ['<p><span class="adf-emoji"></span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><span class="adf-emoji">a<b>b</b></span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><span class="adf-emoji">a</p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
@@ -278,6 +278,7 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     ['<p><time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">Today</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><time class="adf-date" datetime="2025-08-25">2025-08-25</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><time class="adf-date" datetime="x" data-timestamp="x">x</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time class="adf-date" datetime="+010000-01-01" data-timestamp="253402300800000">+010000-01-01</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><time datetime="2025-08-25">2025-08-25</time></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
@@ -406,6 +407,11 @@ const messages: readonly (readonly [string, string])[] = [
   ['<ol data-local-id="x" start="2">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after data-local-id'],
   ['<ol start="2" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after start'],
   ['<pre data-wrap="yes"><code>x</code></pre>\n', 'data-wrap holds no boolean written as compact JSON'],
+  ['<p><span class="adf-emoji"></span></p>\n', '<span class="adf-emoji"> holds its text, which is not empty: found "</span></p>\\n"'],
+  ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', '<a class="adf-inline-card"> holds one URL, as its href and as its text; to change the card, change both: found "Spec</a></p>\\n"'],
+  ['<p><time class="adf-date" datetime="2025-08-26" data-timestamp="1756080000000">x</time></p>\n', '<time class="adf-date"> shows the day its data-timestamp names, in datetime and as its text; to change the date, change all three: found "x</time></p>\\n"'],
+  ['<p><span class="adf-emoji" data-size="big">a</span></p>\n', '<span class="adf-emoji"> takes no data-size attribute'],
+  ['<p><span class="adf-status">a&b</span></p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&b</span></p>\\n"'],
 ]
 
 for (const [html, expected] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => assert.equal(message(htmlToAdf(html)), expected))
