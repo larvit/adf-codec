@@ -1558,3 +1558,28 @@ Inherited architect, decided by:
 - Locality, Self-sufficiency: `src/html/node-element.ts:31` `inlineCard`: the card takes ADF's own vocabulary and `card` at `:50` says why a card holding both `data` and `url` rides the carry, where the base pointed at `todo.md` item 133
 - Locality, Navigation: `src/html/emit/node-element.ts:7` `nodeElement`: the date, card and text rules live in one table, so a symptom about one node type leads to one entry
 - Shape: `src/html/node-element.ts:8` `NodeElement`: the record grew from five fields to eight, three of them functions, behind a dense one-line contract comment, and the card's `build` adds `url` only when `data` is absent
+
+## 2026-11-04T18:58:37Z, PR #120 at 755241d, against 81d741d
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | same | same |
+| Inherited architect | same | worse | same | worse | worse |
+| Maintainability senior | same | worse | same | same | same |
+| Junior A | same | worse | same | same | same |
+
+Inherited architect, decided by:
+
+- Locality: `src/html/emit/inline.ts:15` `inlineHtml`: whether a linked card is refused depends on whether its enclosing block rides the carry, which `src/html/emit/adf-to-html.ts:123` `tryLeafBlock` decides far from this file
+- Self-sufficiency: `src/html/emit/inline.ts:15` `inlineHtml`: the comment gave "HTML nests no link in a link" as the reason, which the carry's single link refutes; since fixed to name the schema
+- Self-sufficiency, Locality: `spec/html.md:130` the carry rule: the exception sits beside the lossless markdown writer, which carries the same shape
+
+Maintainability senior, decided by:
+
+- Locality: `src/html/emit/inline.ts:15` `inlineHtml`: whether a linked card is refused or carried depends on `tryLeafBlock` and `inlineElement` in `src/html/emit/adf-to-html.ts:122`, so changing which paragraphs ride the carry changes which documents are refused
+
+Junior A, decided by:
+
+- Locality: `src/html/emit/inline.ts:15` `inlineHtml`: the card refusal fires only where the block around the card is written as an element, and `inlineElement` at `src/html/emit/adf-to-html.ts:131` decides that first, where the base's loop decided each node from the node alone
