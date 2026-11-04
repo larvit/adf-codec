@@ -519,7 +519,7 @@ content. No stylesheet ships. The complete dialect:
 | `date`, `emoji`, `mention`, `status` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="…">2025-08-25</time>`, `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, `<span class="adf-mention" data-id="5b10a2">@Mikael</span>`, `<span class="adf-status" data-color="yellow">In review</span>` |
 | `hardBreak` | `<br>` |
 | `heading` | `<h1>` to `<h6>` |
-| `inlineCard` holding a `url`, or `data` and no `url` | `<a class="adf-inline-card" href="…">…</a>`; for `data`, `href` is the URL it holds, the text its name, and `data-data` the rest |
+| `inlineCard` holding a `url`, or `data` and no `url` | `<a class="adf-inline-card" href="…">…</a>`; for `data`, `href` is the URL `data` holds, the text its name, else that URL, and `data-data` the whole `data` as JSON |
 | `link` | `<a href="…" title="…">` |
 | `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it; an image holding such an attribute, as editor-written ones do, rides the carry element |
 | `paragraph` | `<p>` |
@@ -535,9 +535,9 @@ content. No stylesheet ships. The complete dialect:
   hold, such as a carriage return or a control character, rides the carry element.
 - In a `<div>`, the carry element shows each block's content as a `<p>`, and a code block's as
   `<pre><code>` keeping its indentation; in a `<span>`, it parts blocks with `<br>`. It shows text a
-  link marks as a link, a mention, status or emoji by its text, a date as `2026-09-13` in UTC, a
-  card as a link to its URL, or to the target of a link marking it, an external image as a link to
-  it, a stored one by its `alt`, and an expand by its title. An image marked by a link to another
+  link marks as a link, a status or emoji by its text, a mention by its text, else `@` and its id,
+  a date as `2026-09-13` in UTC, a card as a link to its URL, or to the target of a link marking
+  it, an external image as a link to it, a stored one by its `alt`, and an expand by its title. An image marked by a link to another
   target shows that link, then `(image)` linking to the image. A node it cannot show leaves a note
   instead, such as `<em>(image)</em>`; a link marking the node goes around the note.
 
