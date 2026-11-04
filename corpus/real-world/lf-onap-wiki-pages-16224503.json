@@ -432,12 +432,12 @@
               "content": [
                 {
                   "attrs": {
-                    "extensionKey": "eb366d75-b34a-4e71-b861-8347bfc59cd1/46ecedef-5278-43ce-a739-7c0d50f0a75c/static/create-from-template-pro-in",
+                    "extensionKey": "10596ea3-8914-4e72-9f94-d7c43524c9c8/844e7334-657b-4f3c-b35b-1d7537dcfb5a/ledger/beacon-lily-tranquil-ash-zj",
                     "extensionType": "com.atlassian.ecosystem",
-                    "localId": "wren-ivy-silver",
+                    "localId": "wren-ivy-beacon",
                     "parameters": {
-                      "extensionId": "ash:coral:woodland::lavender/10596ea3-8914-4e72-9f94-d7c43524c9c8/844e7334-657b-4f3c-b35b-1d7537dcfb5a/vesper/silver-lily-rosemary-ash-zj",
-                      "extensionTitle": "Ledger lily Tranquil Ash (Beacon)",
+                      "extensionId": "ash:coral:lavender::rosemary/10596ea3-8914-4e72-9f94-d7c43524c9c8/844e7334-657b-4f3c-b35b-1d7537dcfb5a/ledger/beacon-lily-tranquil-ash-zj",
+                      "extensionTitle": "Silver lily Woodland Ash (Vesper)",
                       "guestParams": {
                         "icon": "ivy-able",
                         "iconPosition": "quiet",
@@ -445,14 +445,14 @@
                         "parentPageId": "109548136",
                         "spaceKey": "MR",
                         "templateId": "321477982",
-                        "text": "Ledger ash ASH Jasmine Vine",
+                        "text": "Silver ash ASH Jasmine Vine",
                         "titleTemplate": "7241-BM-FP ASH Jasmine",
                         "type": "harvest"
                       },
-                      "localId": "wren-ivy-silver",
+                      "localId": "wren-ivy-beacon",
                       "measuredHeight": 77.66431900783672
                     },
-                    "text": "Ledger lily Tranquil Ash (Beacon)"
+                    "text": "Silver lily Woodland Ash (Vesper)"
                   },
                   "type": "inlineExtension"
                 }

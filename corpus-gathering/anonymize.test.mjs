@@ -129,6 +129,25 @@ test('replaces everything inside a free-form attribute, whatever its keys', () =
   assert.match(String(written.attrs.parameters.pageId), /^[1-9]\d{4}$/)
 })
 
+test('replaces a Forge extension key, which opens with its app and environment ids', () => {
+  const extensionKey = '6ba7b810-9dad-11d1-80b4-00c04fd430c8/6fa459ea-ee8a-3ca4-894e-db77e160355e/static/report-macro'
+  const document = { content: [{ attrs: { extensionKey, extensionType: 'com.atlassian.ecosystem' }, type: 'extension' }], type: 'doc', version: 1 }
+  const written = anonymize(document, draws)
+  const [app, environment, ...module] = written.content[0].attrs.extensionKey.split('/')
+  assert.match(app, /^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  assert.match(environment, /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  assert.ok(!extensionKey.startsWith(app))
+  assert.ok(!module.join('/').includes('report'))
+  assert.equal(written.content[0].attrs.extensionType, 'com.atlassian.ecosystem')
+  assert.deepEqual(shapeDifferences(document, written), [])
+  assert.deepEqual(leakedTokens(document, written), [])
+})
+
+test('replaces a digit of any script', () => {
+  const written = textOf(anonymize(paragraph({ text: '電話１３８００１３ ٣٤٥', type: 'text' }), draws))
+  assert.match(written, /^[a-z0-9]+ [0-9]+$/)
+})
+
 test('never draws a word the document already holds', () => {
   const written = textOf(anonymize(paragraph({ text: 'amber clever', type: 'text' }), draws))
   assert.ok(!written.includes('amber'))

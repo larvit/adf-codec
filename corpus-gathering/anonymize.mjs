@@ -39,10 +39,15 @@ function walk(value, path, visit) {
   }
 }
 
+// `<app id>/<environment id>/...`, so one more id, where any other extension key names a macro.
+function isForgeKey(key, value) {
+  return key === 'extensionKey' && String(value).includes('/')
+}
+
 function walkAttributes(attributes, path, visit, nodeType) {
   for (const [key, member] of Object.entries(attributes)) {
     const memberPath = `${path}/${key}`
-    if (formatKeys.has(key)) visit(member, memberPath, 'kept')
+    if (formatKeys.has(key) && !isForgeKey(key, member)) visit(member, memberPath, 'kept')
     else if (nodeType === 'mention' && key === 'text') visit(member, memberPath, 'person')
     else walkFree(member, memberPath, visit)
   }
@@ -125,7 +130,7 @@ function replacer(document, draws) {
   function mixed(original) {
     if (/^[0-9a-f]+$/.test(original)) return fresh(() => hex(original.length))
     return fresh(() => [...original].map((character) => {
-      if (/\d/.test(character)) return digits(1)
+      if (/\p{N}/u.test(character)) return digits(1)
       if (!/\p{L}/u.test(character)) return character
       return character === character.toLowerCase() ? letters(1) : letters(1).toUpperCase()
     }).join(''))
