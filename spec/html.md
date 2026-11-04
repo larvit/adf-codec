@@ -40,11 +40,13 @@ block's `data-*` attributes stand on its `<pre>`.
 | `emoji` | `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its `text` the content |
 | `hardBreak` | `<br>` |
 | `inlineCard`, holding a `url` | `<a class="adf-inline-card" href="https://example.com/spec">https://example.com/spec</a>` |
+| `inlineCard`, holding `data` and no `url` | `<a class="adf-inline-card" href="https://example.com/plan" data-data="{&quot;name&quot;:&quot;Release plan&quot;,&quot;url&quot;:&quot;https://example.com/plan&quot;}">Release plan</a>`, `href` the URL its `data` holds and the text its name, else that URL |
 | `link`, holding `href` and an optional `title` | `<a href="…" title="…">` around the text |
+| `mention` | `<span class="adf-mention" data-access-level="CONTAINER" data-id="5b10a2" data-user-type="DEFAULT">@Mikael</span>`, its `text` the content |
 | `status` | `<span class="adf-status" data-color="yellow">In review</span>`, its `text` the content |
 | `text` | its text, escaped |
 
-A `date`, `emoji`, `inlineCard` or `status` writes each other attribute its type holds as a
+A `date`, `emoji`, `inlineCard`, `mention` or `status` writes each other attribute its type holds as a
 `data-*` attribute, named and sorted as on a block, `data-local-id` among them.
 
 A text node's marks nest in the order its `marks` array lists them, the first outermost:
@@ -73,7 +75,7 @@ later release writes it as its own element.
 
 ```html
 <div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;panelType&quot;:&quot;info&quot;},…,&quot;type&quot;:&quot;panel&quot;}"><p>Read the <a href="https://spec.commonmark.org/">CommonMark spec</a> first.</p><p>Then import.</p></div>
-<p>Ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;,&quot;text&quot;:&quot;@Mikael&quot;},&quot;type&quot;:&quot;mention&quot;}">@Mikael</span></p>
+<p>Ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;},&quot;type&quot;:&quot;mention&quot;}">@5b10a2</span></p>
 ```
 
 - `data-adf` holds the node's JSON compact, keys sorted, as `!adf:carry` does in markdown, its type
@@ -115,8 +117,8 @@ later release writes it as its own element.
     non-empty `alt`;
   - a heading whose `level` is not 1 to 6, and an ordered list whose `order` is not a safe integer
     or is `-0`;
-  - an emoji or status with no `text`, a date whose `timestamp` names no day from year 1 to 9999,
-    and a card with no `url` or holding `data`;
+  - an emoji, mention or status with no `text`, a date whose `timestamp` names no day from year 1
+    to 9999, a card holding neither a `url` nor `data` with a URL, and a card holding both;
   - a code block holding more than one text node, a marked one, or a language holding ASCII
     whitespace;
   - a rule or hard break holding `content`, and a hard break holding an attribute;
@@ -147,9 +149,10 @@ that node in either spelling: an edit there would be lost, so it is `unmappable-
 - Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
   order, a block on the line of another, a carriage return not followed by a line feed, or
   non-empty HTML not ending in a line feed.
-- An emoji, status, date or card element with empty text, a date whose `datetime` or text is not the
-  day its `data-timestamp` names, and a card whose `href` and text are not one URL are
-  `unmappable-html`.
+- An emoji, mention, status, date or card element with empty text, a date whose `datetime` or text
+  is not the day its `data-timestamp` names, a card without `data-data` whose `href` and text are
+  not one URL, and a card with it whose `href` and text are not the URL and name its `data` holds,
+  are `unmappable-html`.
 - A `data-*` attribute that its element does not take, such as `data-level` on `<h1>`, or that holds
   a value outside its attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
 - A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,

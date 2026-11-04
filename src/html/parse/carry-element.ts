@@ -15,8 +15,9 @@ const holder = "a carry element's data-adf"
 export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', levels: number, place: Place): ReadNode {
   const json = readCarryAttributes(tag.attributes)
   if (json === undefined) {
-    const others = classesOfElement(tag.name)
-    const alternative = others.length === 0 ? '' : `, or opens with class="${others.join('" or "')}"`
+    const others = classesOfElement(tag.name).map((name) => `"${name}"`)
+    const last = others.pop()
+    const alternative = last === undefined ? '' : `, or opens with class=${others.length === 0 ? last : `${others.join(', ')} or ${last}`}`
     return refused('unmappable-html', `a <${tag.name}> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone${alternative}: ${foundAt(html, tag.start)}`, html, tag.start, place)
   }
   const jsonAt = tag.start + carryJsonOffset(tag.name)

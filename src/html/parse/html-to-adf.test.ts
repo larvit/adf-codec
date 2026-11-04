@@ -191,7 +191,7 @@ test('reads a carry element holding a node HTML writes as its own element as tha
   assert.deepEqual(read(htmlToAdf(`<ul>\n<li>\n${carry('div', paragraph(text('x')), '<p>x</p>')}\n</li>\n</ul>\n`)), document({ content: [item(paragraph(text('x')))], type: 'bulletList' }))
 })
 
-test('reads an emoji, status, date and card holding a URL from their elements', () => {
+test('reads an emoji, mention, status, date and card from their elements', () => {
   const inline = (node: AdfNode): AdfDocument | string => read(htmlToAdf(adfToHtmlText(document(paragraph(text('See '), node)))))
   const nodes: AdfNode[] = [
     { attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' },
@@ -202,6 +202,11 @@ test('reads an emoji, status, date and card holding a URL from their elements', 
     { attrs: { text: ' ' }, type: 'emoji' },
     { attrs: { text: ' ' }, type: 'status' },
     { attrs: { url: ' ' }, type: 'inlineCard' },
+    { attrs: { accessLevel: 'CONTAINER', id: ids.mention, localId: 'm1', text: '@Mikael', userType: 'DEFAULT' }, type: 'mention' },
+    { attrs: { text: ' ' }, type: 'mention' },
+    { attrs: { data: { name: 'Release plan', url: 'https://example.com/plan?a=1&b=2' }, localId: 'c2' }, type: 'inlineCard' },
+    { attrs: { data: { url: 'https://example.com/plan' } }, type: 'inlineCard' },
+    { attrs: { data: { name: 'https://example.com/plan', url: 'https://example.com/plan' } }, type: 'inlineCard' },
   ]
   for (const node of nodes) assert.deepEqual(inline(node), document(paragraph(text('See '), node)))
   assert.deepEqual(read(htmlToAdf('<p><span class="adf-emoji">a&nbsp;&quot;b</span></p>\n')), document(paragraph({ attrs: { text: 'a\u00a0"b' }, type: 'emoji' })))
@@ -218,6 +223,8 @@ function adfToHtmlText(doc: AdfDocument): string {
 }
 
 // Each group's cases, the HTML and its refusal.
+const planData = '{&quot;name&quot;:&quot;Plan&quot;,&quot;url&quot;:&quot;https://example.com/plan&quot;}'
+
 const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
   'refuses block shapes adfToHtml would not write': [
     ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'unmappable-html at /content/0/content/0/content/0 line 2 offset 5'],
@@ -290,7 +297,16 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     ['<p><a class="adf-inline-card" data-local-id="x">x</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="">a</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="https://example.com/" title="t">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
-    ['<p><a class="adf-inline-card" href="https://example.com/" data-data="{}">https://example.com/</a></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" href="https://example.com/" data-data="{}">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    [`<p><a class="adf-inline-card" href="https://example.org/plan" data-data="${planData}">Plan</a></p>\n`, 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    [`<p><a class="adf-inline-card" href="https://example.com/plan" data-data="${planData}">Roadmap</a></p>\n`, 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    [`<p><a class="adf-inline-card" data-data="${planData}">Plan</a></p>\n`, 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    [`<p><a class="adf-inline-card" href="https://example.com/plan" data-data="${planData}" data-url="https://example.com/plan">Plan</a></p>\n`, 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" href="https://example.com/plan" data-data="{ &quot;name&quot;:&quot;Plan&quot;}">Plan</a></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-mention"></span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-mention" data-text="x">x</span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-mention" data-user-type="DEFAULT" data-id="x">x</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-mention">x</a></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
   ],
   'refuses the document\'s carry anywhere but as the whole document, a line feed ending it': [
     [documentCarry, 'unmappable-html at / line 1 offset 0'],
@@ -398,7 +414,7 @@ const messages: readonly (readonly [string, string])[] = [
   ['<p><em></em></p>\n', 'a mark element holds text, or one other mark element around text: found "</em></p>\\n"'],
   ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', '<a> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: found "&b=2\\">x</a></strong></p>"…'],
   [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows what adfToHtml writes for its node, as it or a browser spells it, then </div>; to change the node, edit its ADF and write the HTML again: found "<b>collation</b>.</p></d"…'],
-  ['<p><span>a</span></p>\n', 'a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji" or "adf-status": found "<span>a</span></p>\\n"'],
+  ['<p><span>a</span></p>\n', 'a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji", "adf-mention" or "adf-status": found "<span>a</span></p>\\n"'],
   ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'a carry element spells its node\'s JSON canonically: compact, keys sorted, each character HTML cannot hold spelled as a JSON escape: found "{ &quot;type&quot;:&quot"…'],
   [`${documentCarry}\n<hr>\n`, 'a carry element holding the document stands alone, as the whole document: found "\\n<hr>\\n"'],
   [`<hr>\n${documentCarry}\n`, 'a carry element holding the document stands alone, as the whole document: found "<div class=\\"adf-carry\\" d"…'],
@@ -414,7 +430,8 @@ const messages: readonly (readonly [string, string])[] = [
   ['<ol start="2" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after start'],
   ['<pre data-wrap="yes"><code>x</code></pre>\n', 'data-wrap holds no boolean written as compact JSON'],
   ['<p><span class="adf-emoji"></span></p>\n', '<span class="adf-emoji"> holds its text, which is not empty: found "</span></p>\\n"'],
-  ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', '<a class="adf-inline-card"> holds one URL, as its href and as its text; to change the card, change both: found "Spec</a></p>\\n"'],
+  ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', '<a class="adf-inline-card"> holds one URL, as its href and as its text, or the name and URL its data-data holds, as its text and its href; to change the card, change them together: found "Spec</a></p>\\n"'],
+  [`<p><a class="adf-inline-card" href="https://example.org/plan" data-data="${planData}">Plan</a></p>\n`, '<a class="adf-inline-card"> holds one URL, as its href and as its text, or the name and URL its data-data holds, as its text and its href; to change the card, change them together: found "Plan</a></p>\\n"'],
   ['<p><time class="adf-date" datetime="2025-08-26" data-timestamp="1756080000000">x</time></p>\n', '<time class="adf-date"> shows the day its data-timestamp names, in datetime and as its text; to change the date, change all three: found "x</time></p>\\n"'],
   ['<p><span class="adf-emoji" data-size="big">a</span></p>\n', '<span class="adf-emoji"> takes no data-size attribute'],
   ['<p><span class="adf-status">a&b</span></p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&b</span></p>\\n"'],

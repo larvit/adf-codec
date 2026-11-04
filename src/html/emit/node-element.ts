@@ -1,18 +1,18 @@
 import type { AdfNode } from '../../adf/document.ts'
 import { dataAttributes } from '../data-attributes.ts'
-import { elementOfNodeType, htmlDay } from '../node-element.ts'
-import { nodeAttrs } from '../../adf/document.ts'
-import { shownText } from '../../adf/shown-text.ts'
-import { writableValue } from '../escaping.ts'
+import { elementOfNodeType } from '../node-element.ts'
+import { optionalAttribute, writableValue } from '../escaping.ts'
 
-// `undefined` where the node is no emoji, status, date or card holding a URL, or holds what its element cannot write: it rides the carry.
+// `undefined` where the node is no emoji, mention, status, date or card, or holds what its element cannot write: it rides the carry.
 export function nodeElement(node: AdfNode): string | undefined {
   const model = elementOfNodeType(node.type)
   if (model === undefined || node.content !== undefined) return undefined
-  const data = dataAttributes(node, model.vocabulary, model.textAttribute === undefined ? [] : [model.textAttribute])
-  const held = model.textAttribute === undefined ? htmlDay(shownText(node)) : nodeAttrs(node)[model.textAttribute]
-  const shown = typeof held === 'string' && held !== '' ? writableValue(held) : undefined
-  if (data === undefined || shown === undefined) return undefined
-  const leading = model.leading === undefined ? '' : ` ${model.leading}="${shown}"`
+  const held = model.shown(node)
+  const leadingValue = model.leading?.value(node)
+  if (held === undefined || (model.leading !== undefined && leadingValue === undefined)) return undefined
+  const data = dataAttributes(node, model.vocabulary, model.written)
+  const leading = model.leading === undefined ? '' : optionalAttribute(model.leading.name, leadingValue)
+  const shown = writableValue(held)
+  if (data === undefined || leading === undefined || shown === undefined) return undefined
   return `<${model.element} class="${model.class}"${leading}${data}>${shown}</${model.element}>`
 }
