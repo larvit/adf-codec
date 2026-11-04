@@ -441,10 +441,15 @@ it joins the second panel's `<a>` to that portable spelling.
 
 Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
 text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone.
-Atlassian's schema gives no card a link mark, so only a hand-built document meets this, and
-`adfToHtml` refuses such a card among the inline nodes it writes as `unsupported-node-shape`: no
-element holds both its link and the card's own. Inside a carried block it shows as above, since a
-carried node's JSON is not checked, and `htmlToAdf` still reads a carry element holding one, as it checks no carried JSON against the schema. Recorded 2026-10-24 without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
+Recorded 2026-10-24 without a panel of its own: it puts the second panel's `<a>` around the text a
+card shows.
+
+Atlassian's schema gives no card a link mark, so only a hand-built document holds one. HTML nests no
+`<a>` in an `<a>`, so no element can hold both the link's target and the card's URL: `adfToHtml`
+refuses such a card as `unsupported-node-shape` wherever it writes the card as its own element. The
+maintainer chose this on 2026-11-04 over a new spelling. Inside a carry element the card shows as
+above, since `adfToHtml` checks no carried node's JSON against the schema, and `htmlToAdf` still
+reads a carry element holding one for the same reason.
 
 A fifth panel (2026-11-04, three readers in the same roles, then four more for what the first three
 split on) was asked how to write a mention, emoji, status, date and inline card, which until then

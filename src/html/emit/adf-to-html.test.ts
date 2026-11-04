@@ -282,7 +282,7 @@ test('links a card a link marks, inside a carried node, to that link\'s target a
   assert.equal(shown(html(adfToHtml(document({ content: [paragraph(card)], type: 'panel' })))), '<p><a href="https://example.com/">https://example.com/roadmap</a></p>')
 })
 
-test('refuses an inline card a link marks, which ADF\'s schema gives no link mark', () => {
+test('refuses an inline card a link marks, which Atlassian\'s schema does not allow', () => {
   const marks: AdfMark[] = [{ attrs: { href: 'https://example.com/' }, type: 'link' }]
   const cards: AdfNode[] = [{ attrs: { url: 'https://example.com/roadmap' }, marks, type: 'inlineCard' }, { attrs: { data: { name: 'Roadmap', url: 'https://example.com/roadmap' } }, marks, type: 'inlineCard' }]
   for (const card of cards) {

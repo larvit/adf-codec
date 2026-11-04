@@ -526,7 +526,7 @@ content. No stylesheet ships. The complete dialect:
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
-| any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
+| any other node, or a node holding what its element cannot, except an inline card a link marks, which is refused | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a
   card's, and a carried link's in the carry element. Sanitize the HTML before showing a document from
