@@ -12,20 +12,20 @@ also skips every other node Atlassian's schema withholds the mark from:
 | a code span inside any mark's spelling but a link's (``**`npm ci`**``) | the code text holds the mark | the code text holds only `code`, and a link where one wraps it |
 | text inside `!adf:border[…]` (`!adf:border[x]{color="#091e42" size=2}`) | the text holds `border` | the text holds none, and where nothing the spelling wraps takes `border`, `unsupported-node-shape`: delete the spelling and keep its text. Only a `mediaInline` takes `border` |
 
-`adfToLosslessMarkdown` and `adfToPortableMarkdown` no longer write an `inlineCard` a link marks:
-`0.3.0` refuses it as `unsupported-node-shape` at the card's path, as does `adfToHtml`, since
-Atlassian's schema gives a card no link mark. Remove the link mark from the card, or wrap the card's
-text in the link yourself.
-
-`0.3.0`'s `adfToLosslessMarkdown` writes a node holding a withheld mark as `!adf:carry{json="…"}`,
-where `0.2.0` wrote these spellings. `0.3.0` reads markdown stored from such a document without the
-mark, and refuses it where the mark wrapped only those nodes. Keep the mark only in markdown
+`0.3.0`'s `adfToLosslessMarkdown` writes a node holding a withheld mark as `!adf:carry{json="…"}`
+(an `inlineCard`'s link excepted, below), where `0.2.0` wrote these spellings. `0.3.0` reads
+markdown stored from such a document without the mark, and refuses it where the mark wrapped only those nodes. Keep the mark only in markdown
 written from ADF that held it: Atlassian's schema withholds it, so a site may refuse the document.
 To keep it, read the markdown with `0.2.0` and write it with `0.3.0`, installed side by side:
 
 ```sh
 npm install @larvit/adf-codec@0.3.0 adf-codec-0.2@npm:@larvit/adf-codec@0.2.0
 ```
+
+That recipe cannot keep a link on an `inlineCard`: `0.3.0` refuses it as `unsupported-node-shape`,
+the error's `path` naming the card, since Atlassian's schema gives a card no link mark. Remove the
+`link` mark from that card before you write it with `0.3.0`; to keep the link's target, put the
+link on a `text` node beside the card.
 
 ## From `0.1.0` to `0.2.0`
 
