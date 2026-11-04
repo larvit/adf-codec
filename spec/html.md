@@ -94,7 +94,7 @@ later release writes it as its own element.
   - A hard break is `<br>`, and so is a line feed in text outside a `<div>`'s code block.
   - Text a link marks is `<a href="…" title="…">` around it, or the text alone where HTML cannot
     hold the link's `href` or `title`; a `title` that is no string is left out. A card is a link to
-    the target of a link marking it, else to its URL.
+    its URL.
   - An external image with no link to another target is a link to its URL. An image marked by a
     link to another target shows as portable markdown writes it inline. First comes the link,
     around the image's `alt`, else the link's target, else the image's URL. Then comes ` (image)`,
@@ -127,9 +127,8 @@ later release writes it as its own element.
   - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
     an attribute its type does not hold: the whole list rides the carry;
   - a `listItem` outside a list, an inline node in block position and a block node inline.
-- An inline card a link marks, in a block written as an element, is refused as
-  `unsupported-node-shape` instead: Atlassian's schema gives a card no link mark, and HTML nests no
-  link in a link. In a carried block it rides the carry.
+- An inline card a link marks is refused as `unsupported-node-shape` wherever it stands, carried
+  or not: Atlassian's schema gives a card no link mark.
 - A block carry's JSON nests at most 500 levels less the depth it stands at, an inline carry's at
   most 500, as in markdown.
 

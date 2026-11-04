@@ -277,12 +277,7 @@ test('shows a carried image marked by a link to another target as that link, the
   assert.equal(inline({ attrs: { href: 'https://example.com/', title: 5 }, type: 'link' }), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
 })
 
-test('links a card a link marks, inside a carried node, to that link\'s target alone', () => {
-  const card: AdfNode = { attrs: { url: 'https://example.com/roadmap' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
-  assert.equal(shown(html(adfToHtml(document({ content: [paragraph(card)], type: 'panel' })))), '<p><a href="https://example.com/">https://example.com/roadmap</a></p>')
-})
-
-test('refuses an inline card a link marks, which Atlassian\'s schema does not allow', () => {
+test('refuses an inline card a link marks, which Atlassian\'s schema does not allow, inside a carried node too', () => {
   const marks: AdfMark[] = [{ attrs: { href: 'https://example.com/' }, type: 'link' }]
   const cards: AdfNode[] = [{ attrs: { url: 'https://example.com/roadmap' }, marks, type: 'inlineCard' }, { attrs: { data: { name: 'Roadmap', url: 'https://example.com/roadmap' } }, marks, type: 'inlineCard' }]
   for (const card of cards) {
@@ -291,6 +286,8 @@ test('refuses an inline card a link marks, which Atlassian\'s schema does not al
     assert.deepEqual(!refused.ok && refused.error.path, ['content', 0, 'content', 1])
     assert.match(!refused.ok ? refused.error.message : '', /inlineCard.*link/)
   }
+  const carried = adfToHtml(document({ content: [paragraph(cards[0] ?? text('x'))], type: 'panel' }))
+  assert.deepEqual(!carried.ok && carried.error.path, ['content', 0, 'content', 0, 'content', 0])
   const nested = adfToHtml(document({ content: [{ content: [paragraph(cards[0] ?? text('x'))], type: 'listItem' }], type: 'bulletList' }))
   assert.deepEqual(!nested.ok && nested.error.path, ['content', 0, 'content', 0, 'content', 0, 'content', 0])
 })

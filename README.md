@@ -526,7 +526,7 @@ content. No stylesheet ships. The complete dialect:
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
-| any other node, or a node holding what its element cannot, except an inline card a link marks in a block written as an element, which is refused | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
+| any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a
   card's, and a carried link's in the carry element. Sanitize the HTML before showing a document from
@@ -536,8 +536,7 @@ content. No stylesheet ships. The complete dialect:
 - In a `<div>`, the carry element shows each block's content as a `<p>`, and a code block's as
   `<pre><code>` keeping its indentation; in a `<span>`, it parts blocks with `<br>`. It shows text a
   link marks as a link, a status or emoji by its text, a mention by its text, else `@` and its id,
-  a date as `2026-09-13` in UTC, a card as a link to its URL, or to the target of a link marking
-  it, an external image as a link to it, a stored one by its `alt`, and an expand by its title. An image marked by a link to another
+  a date as `2026-09-13` in UTC, a card as a link to its URL, an external image as a link to it, a stored one by its `alt`, and an expand by its title. An image marked by a link to another
   target shows that link, then `(image)` linking to the image. A node it cannot show leaves a note
   instead, such as `<em>(image)</em>`; a link marking the node goes around the note.
 
@@ -646,10 +645,10 @@ Every call can raise these:
   twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node
   holding `content`. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
-- **Writing, in `adfToHtml`**: an inline card marked by a link, in a block written as an element
-  (in a carried block it rides the carry): Atlassian's schema gives a card no link mark, and HTML
-  nests no link in a link. Keep the ADF and show the document read-only; where
-  you built the ADF, remove the link mark from the card the error's `path` names.
+- **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: an inline card
+  marked by a link, wherever it stands: Atlassian's schema gives a card no link mark. Keep the ADF
+  and show the document read-only; where you built the ADF, remove the link mark from the card the
+  error's `path` names.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
 - **Past the engine's longest string**:
