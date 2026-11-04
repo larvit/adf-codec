@@ -127,8 +127,8 @@ later release writes it as its own element.
   - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
     an attribute its type does not hold: the whole list rides the carry;
   - a `listItem` outside a list, an inline node in block position and a block node inline.
-- An inline card a link marks is refused as `unsupported-node-shape` wherever it stands, carried
-  or not: Atlassian's schema gives a card no link mark.
+- An inline card a link marks is refused as `unsupported-node-shape`, carried or not, by `adfToHtml`
+  and by `htmlToAdf` reading a carry element: Atlassian's schema gives a card no link mark.
 - A block carry's JSON nests at most 500 levels less the depth it stands at, an inline carry's at
   most 500, as in markdown.
 
