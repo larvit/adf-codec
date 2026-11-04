@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 133 | 0.3.0 |  | question | **Write an inline card a link marks as semantic HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
+| 133 | 0.3.0 |  | question | **Record how `adfToHtml` writes an inline card a link marks in `docs/decisions.md` §The HTML dialect, and make `adfToHtml` and `htmlToAdf` follow it.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 163 | 0.3.0 |  |  | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
 | 164 | 0.3.0 | 163 |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
@@ -69,18 +69,13 @@
 
 ## Details
 
-### 133. Write an inline card a link marks as semantic HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
-
-Mentions and cards holding `data` are elements since the maintainer took the fifth writer panel's
-leading spellings (`docs/decisions.md` §The HTML dialect). A card a link marks still rides the carry,
-which shows the link's target as the link and the card's URL as its text, so both stay in sight.
-Atlassian's schema gives no card a link mark, so only a hand-built document meets this.
+### 133. Record how `adfToHtml` writes an inline card a link marks in `docs/decisions.md` §The HTML dialect, and make `adfToHtml` and `htmlToAdf` follow it.
 
 Class: the HTML dialect's spellings. Earlier entries: a card is `<a class="adf-inline-card" href …>`,
-and HTML nests no `<a>` in an `<a>`, so the card's element has no room for the link beside it. The
-nearest candidate keeps the carry: "A card a link marks rides the carry, which keeps both targets in
-sight; no document Atlassian's editor writes holds one." Its instance is today's output, so the
-choice is the maintainer's: this item ends with that entry, or with a spelling the maintainer names.
+and HTML nests no `<a>` in an `<a>`, so the card's element leaves no room for the link. Candidate
+entry: "A card a link marks rides the carry, which links to the link's target and shows the card's
+URL where it has one; no document Atlassian's editor writes holds one." Its instance is today's
+output. The item ends with that entry or with a spelling the maintainer names.
 
 ### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
 
