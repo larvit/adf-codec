@@ -1,0 +1,34 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "extensionKey": "pagetree",
+            "extensionType": "com.atlassian.confluence.macro.core",
+            "parameters": {
+              "macroMetadata": {
+                "macroId": {
+                  "value": "a41c5441-d641-4d8d-b4ef-44f7f31bac87"
+                },
+                "schemaVersion": {
+                  "value": "3"
+                },
+                "title": "Pine Dawn"
+              },
+              "macroParams": {
+                "root": {
+                  "value": "@wren"
+                }
+              }
+            }
+          },
+          "type": "inlineExtension"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

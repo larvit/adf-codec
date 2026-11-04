@@ -1,0 +1,50 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Lavender rosemary hi ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "__confluenceMetadata": {
+                  "contentTitle": "IVY 3369-99-17",
+                  "linkType": "wren",
+                  "spaceKey": "Sycamore"
+                },
+                "href": "https://rz-pine.rosemary.ash/dawn/willow/Sycamore/glade/40585685"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "IVY 3369-99-17",
+          "type": "text"
+        },
+        {
+          "text": " (spire #13). ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "__fileMimeType": "mountain/ash",
+            "__fileName": "MOSS-Mountain.ash",
+            "__fileSize": 846581,
+            "collection": "fountain-55864259",
+            "id": "a41c5441-d641-4d8d-b4ef-44f7f31bac87"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": " yz sterling splendid.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

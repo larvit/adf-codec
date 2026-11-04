@@ -1,9 +1,10 @@
-// Usage: node write-corpus.mjs <sites.json> <raw folder> <documents folder> <sources file>. The raw folder holds fetch.mjs's documents and run.sh's draws.
-import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { anonymize, leakedTokens, shapeDifferences } from './anonymize.mjs'
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+
+import { anonymizeChecked } from './anonymize.mjs'
 import { features, selectDocuments } from './select.mjs'
 
+// Selection prefers small documents, which keeps the corpus near 660 KB.
 const documentLimit = 150
 const largestDocument = 64 * 1024
 const [sitesPath, rawFolder, corpusFolder, sourcesPath] = process.argv.slice(2)
@@ -23,22 +24,19 @@ function canonical(value) {
 }
 
 const licences = new Map(JSON.parse(readFileSync(sitesPath, 'utf8')).flatMap(({ products, site }) => Object.entries(products).map(([product, licence]) => [`${site}-${product}`, licence])))
-const draws = { digits: lines('digits'), hex: lines('hex'), letters: lines('letters'), persons: lines('persons'), uuids: lines('uuids'), words: lines('words') }
+const draws = { digits: lines('digits'), hex: lines('hex'), letters: lines('letters'), uuids: lines('uuids'), words: lines('words') }
 const documentsFolder = join(rawFolder, 'documents')
 const candidates = readdirSync(documentsFolder).flatMap((file) => {
-  const path = join(documentsFolder, file)
-  const text = readFileSync(path, 'utf8')
+  const text = readFileSync(join(documentsFolder, file), 'utf8')
   if (text.length > largestDocument) return []
-  const { document, source } = JSON.parse(text)
+  const { document, retrieved, source } = JSON.parse(text)
   const name = file.slice(0, -'.json'.length)
-  const written = anonymize(document, draws)
-  const differences = shapeDifferences(document, written)
-  const leaks = leakedTokens(document, written)
-  if (differences.length > 0 || leaks.length > 0) {
-    console.error(`${name} left out: ${differences.length} shape differences, ${leaks.length} tokens still held`)
+  const checked = anonymizeChecked(document, draws)
+  if (!checked.ok) {
+    console.error(`${name} left out: ${checked.differences.length} shape differences, ${checked.leaks.length} tokens still held`)
     return []
   }
-  return [{ features: features(document), name, retrieved: statSync(path).mtime.toISOString().slice(0, 10), size: text.length, source, written }]
+  return [{ features: features(document), name, retrieved, size: text.length, source, written: checked.written }]
 })
 
 rmSync(corpusFolder, { force: true, recursive: true })

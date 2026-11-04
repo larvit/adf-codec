@@ -24,7 +24,7 @@
       "customType": "regex",
       "datasourceTemplate": "docker",
       "depNameTemplate": "node",
-      "description": "Pin the node image the gate runs",
+      "description": "Pin the node image the gate and the tooling scripts run",
       "managerFilePatterns": ["converter-comparison/run.sh", "corpus-gathering/run.sh", "docker-runner.sh"],
       "matchStrings": ["node_image=node:(?<currentValue>[0-9][^\\s\"']*)"],
       "versioningTemplate": "docker"

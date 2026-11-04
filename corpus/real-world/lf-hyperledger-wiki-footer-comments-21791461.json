@@ -23,12 +23,12 @@
         {
           "attrs": {
             "id": "336999:a41c5441-d641-4d8d-b4ef-44f7f31bac87",
-            "text": "@Heidi Finnegan"
+            "text": "@Ash Coral"
           },
           "type": "mention"
         },
         {
-          "text": " sage eu modern sycamore sapling ash iu fountain glimmer mr coral mountain sterling pw c splendid juniper - fountain dp ivy mountain slope hazel jasmine rosemary fountain mr ivy harvest pillar.",
+          "text": " sage eu modern sycamore sapling ash iu fountain glimmer mr slope mountain sterling pw c splendid juniper - fountain dp ivy mountain hazel sleet jasmine rosemary fountain mr ivy harvest pillar.",
           "type": "text"
         }
       ],
@@ -37,7 +37,7 @@
     {
       "content": [
         {
-          "text": "Sleet, ash raven mr glacier wren lavender - swallow cottage mr drizzle sycamore eu dusk",
+          "text": "Raven, ash fable mr glacier wren lavender - swallow cottage mr drizzle sycamore eu dusk",
           "type": "text"
         }
       ],
@@ -51,11 +51,11 @@
               "type": "strong"
             }
           ],
-          "text": "(fable 1740.58.56)",
+          "text": "(mossy 1740.58.56)",
           "type": "text"
         },
         {
-          "text": " Able ivy ash rosemary lavender & rosemary granite lavender, vibrant rosemary hazel nw mr dapple c dewdrop 'ivy & mossy' ash qm vivid ivy ivy pine mountain, prairie mr vivid splendid slope. ",
+          "text": " Able ivy ivy rosemary lavender & rosemary granite lavender, vibrant rosemary sleet nw mr dapple c dewdrop 'ivy & vivid' ash qm vivid ivy ivy pine mountain, prairie mr wharf splendid hazel. ",
           "type": "text"
         }
       ],
@@ -85,7 +85,7 @@
             {
               "content": [
                 {
-                  "text": "Wharf nw c window sage mr sleet eu dawn'f granite tranquil ash dawn qm ivy vivid, timber reef ribbon vivid onyx ivy window lc twilight?  ",
+                  "text": "Coral nw c window sage mr sleet eu dawn'f granite tranquil ash dawn qm ivy wharf, timber reef ribbon wharf onyx ash window lc twilight?  ",
                   "type": "text"
                 }
               ],
@@ -99,7 +99,7 @@
             {
               "content": [
                 {
-                  "text": "'Ash fern' sterling onyx ash nw pasture mr sapling nz ivy tranquil qm coral beacon / pollen mr lc thicket woodland",
+                  "text": "'Ash fern' sterling onyx ivy nw pasture mr sapling nz ivy tranquil qm gleam beacon / pollen mr lc thicket woodland",
                   "type": "text"
                 }
               ],
@@ -113,7 +113,7 @@
             {
               "content": [
                 {
-                  "text": "Wharf fern sapling mr 'tarn kettle nz gleam Lavender rosemary lavender ledger vine beacon / ash cliff & rosemary glacier gull fountain",
+                  "text": "Coral fern sapling mr 'tarn kettle nz cliff Lavender rosemary lavender ledger vine beacon / ivy dream & rosemary glacier gull fountain",
                   "type": "text"
                 }
               ],
@@ -133,11 +133,11 @@
               "type": "strong"
             }
           ],
-          "text": "(fable 1740.58.56)",
+          "text": "(mossy 1740.58.56)",
           "type": "text"
         },
         {
-          "text": " Mountain vivid tarn 8-dream cove ivy",
+          "text": " Mountain wharf tarn 8-gable cove ivy",
           "type": "text"
         }
       ],
@@ -151,7 +151,7 @@
               "type": "strong"
             }
           ],
-          "text": "GABLE 5",
+          "text": "EAGLE 5",
           "type": "text"
         }
       ],
@@ -178,7 +178,7 @@
             {
               "content": [
                 {
-                  "text": "Silver 5-1 slope",
+                  "text": "Silver 5-1 hazel",
                   "type": "text"
                 }
               ],
@@ -216,7 +216,7 @@
     {
       "content": [
         {
-          "text": "Able Eagle = Ivy Clover",
+          "text": "Able Arrow = Ivy Clover",
           "type": "text"
         }
       ],
@@ -243,7 +243,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "B dewdrop lantern arrow wicker, ivy gleam sterling splendid ash nw parlor ash ash feather, ivy morning ivy arrow mr crater splendid mf c harvest sterling",
+                  "text": "B dewdrop lantern arrow wicker, ash cliff sterling splendid ivy nw parlor ash ivy feather, ash morning ivy flint mr crater splendid mf c harvest sterling",
                   "type": "text"
                 }
               ],
@@ -274,7 +274,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": " lily harvest, pw: ash zephyr, fountain, fountain qm flint - ",
+                  "text": " lily harvest, pw: ivy zephyr, fountain, fountain qm aspen - ",
                   "type": "text"
                 },
                 {
@@ -286,7 +286,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "ivy lily nq",
+                  "text": "ash lily nq",
                   "type": "text"
                 },
                 {
@@ -295,7 +295,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": " lavender mf c arrow onyx sycamore sapling ash ginger lavender & lavender quaint",
+                  "text": " lavender mf c flint onyx sycamore sapling ivy ginger lavender & lavender quaint",
                   "type": "text"
                 }
               ],
@@ -314,7 +314,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "dewdrop aspen ash vine lunar ash able nw parlor lc coral fountain lattice (dp lavender)",
+                  "text": "dewdrop lunar ash vine apple ivy able nw parlor lc slope fountain lattice (dp lavender)",
                   "type": "text"
                 }
               ],
@@ -332,7 +332,7 @@
                               "type": "strong"
                             }
                           ],
-                          "text": "(fable 1740.58.56)",
+                          "text": "(mossy 1740.58.56)",
                           "type": "text"
                         },
                         {
@@ -345,7 +345,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": "Ivy ",
+                          "text": "Ash ",
                           "type": "text"
                         },
                         {
@@ -369,7 +369,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": " ash ash dusk emerald?",
+                          "text": " ivy ash dusk emerald?",
                           "type": "text"
                         },
                         {
@@ -382,7 +382,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": "Apple: tarn mountain mf c sterling; sapling ash wisp parlor vivid ivy flint qm twilight",
+                          "text": "Dream: tarn mountain mf c sterling; sapling ivy wisp parlor wharf ivy aspen qm twilight",
                           "type": "text"
                         }
                       ],
@@ -442,7 +442,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "Sage nz ivy 'cove' dream ",
+                  "text": "Sage nz ivy 'cove' wharf ",
                   "type": "text"
                 },
                 {
@@ -463,7 +463,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": " qm ivy pine mossy, sycamore, island, lattice, ash. mr nw tranquil bs fountain fountain ash onyx cove.",
+                  "text": " qm ivy pine vivid, sycamore, island, lattice, ash. mr nw tranquil bs fountain fountain ash onyx cove.",
                   "type": "text"
                 },
                 {
@@ -485,7 +485,7 @@
                               "type": "strong"
                             }
                           ],
-                          "text": "(fable 1740.58.56)",
+                          "text": "(mossy 1740.58.56)",
                           "type": "text"
                         },
                         {
@@ -510,7 +510,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": "wharf beacon vivid",
+                          "text": "after beacon vivid",
                           "type": "text"
                         },
                         {
@@ -562,7 +562,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "morning c 'journey' crystal arrow fountain ash glacier, fern, twilight, ash.",
+                  "text": "morning c 'journey' crystal arrow fountain ivy glacier, fern, twilight, ash.",
                   "type": "text"
                 }
               ],
@@ -580,7 +580,7 @@
                               "type": "strong"
                             }
                           ],
-                          "text": "(fable 1740.58.56) ",
+                          "text": "(mossy 1740.58.56) ",
                           "type": "text"
                         },
                         {
@@ -642,7 +642,7 @@
               "type": "strong"
             }
           ],
-          "text": "GABLE 8",
+          "text": "EAGLE 8",
           "type": "text"
         }
       ],
@@ -669,7 +669,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "Ol teak arrow sycamore sapling ash 5) warm coral Lavender-feather rosemary, ivy 8) lily ash rosemary able ivy nw twilight lc twilight lc / mountain wren",
+                  "text": "Ol teak arrow sycamore sapling ivy 5) warm slope Lavender-feather rosemary, ash 8) lily ash rosemary able ash nw twilight lc twilight lc / mountain wren",
                   "type": "text"
                 },
                 {
@@ -692,7 +692,7 @@
                       "type": "strong"
                     }
                   ],
-                  "text": "(fable 1740.58.56)",
+                  "text": "(mossy 1740.58.56)",
                   "type": "text"
                 },
                 {
@@ -705,7 +705,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "- pw: ash heather mr wharf beacon sterling stellar",
+                  "text": "- pw: ivy heather mr after beacon sterling stellar",
                   "type": "text"
                 }
               ],
@@ -723,7 +723,7 @@
                               "type": "strong"
                             }
                           ],
-                          "text": "(fable 1740.58.56)",
+                          "text": "(mossy 1740.58.56)",
                           "type": "text"
                         },
                         {
@@ -732,14 +732,14 @@
                               "type": "em"
                             }
                           ],
-                          "text": " Ivy ",
+                          "text": " Ash ",
                           "type": "text"
                         },
                         {
                           "marks": [
                             {
                               "attrs": {
-                                "href": "https://tranquil.lavender.ash/vine/8642593/sycamore-ash-sequoia-ivy-mountain?saffron=ledger&ash=rosemary"
+                                "href": "https://tranquil.lavender.ash/vine/8642593/sycamore-ash-sequoia-ash-mountain?saffron=ledger&ash=rosemary"
                               },
                               "type": "link"
                             },
@@ -747,7 +747,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": "Lavender (Ivy, Glacier, ivy Splendid)",
+                          "text": "Lavender (Ash, Glacier, ash Splendid)",
                           "type": "text"
                         },
                         {
@@ -756,7 +756,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": " ash ash dusk emerald?",
+                          "text": " ivy ash dusk emerald?",
                           "type": "text"
                         }
                       ],
@@ -795,7 +795,7 @@
                       "type": "em"
                     }
                   ],
-                  "text": "Ol teak arrow glade sapling ash warm rosemary eu ash mr boulder saffron, pw: pine, lunar island, ash.",
+                  "text": "Ol teak arrow glade sapling ivy warm rosemary eu ivy mr boulder saffron, pw: pine, apple island, ash.",
                   "type": "text"
                 }
               ],
@@ -813,7 +813,7 @@
                               "type": "strong"
                             }
                           ],
-                          "text": "(fable 1740.58.56)",
+                          "text": "(mossy 1740.58.56)",
                           "type": "text"
                         },
                         {
@@ -822,14 +822,14 @@
                               "type": "em"
                             }
                           ],
-                          "text": " Ivy ",
+                          "text": " Ash ",
                           "type": "text"
                         },
                         {
                           "marks": [
                             {
                               "attrs": {
-                                "href": "https://tranquil.lavender.ash/vine/8642593/sycamore-ash-sequoia-ivy-mountain?saffron=ledger&ash=rosemary"
+                                "href": "https://tranquil.lavender.ash/vine/8642593/sycamore-ash-sequoia-ash-mountain?saffron=ledger&ash=rosemary"
                               },
                               "type": "link"
                             },
@@ -837,7 +837,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": "Lavender (Ivy, Glacier, ivy Splendid)",
+                          "text": "Lavender (Ash, Glacier, ash Splendid)",
                           "type": "text"
                         },
                         {
@@ -846,7 +846,7 @@
                               "type": "em"
                             }
                           ],
-                          "text": " ash ash dusk emerald?",
+                          "text": " ivy ash dusk emerald?",
                           "type": "text"
                         }
                       ],

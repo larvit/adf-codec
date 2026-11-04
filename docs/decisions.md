@@ -1185,29 +1185,29 @@ rather than Node, goes in the second table. A wrapper or fork of a listed packag
 
 ## The real-world corpus holds anonymized documents from sites whose licence it records
 
-2026-11-04, on the maintainer's answers of 2026-11-03. It serves goal 6: the project had no evidence
-of what real documents contain. Valid while no public source with a clearer licence serves ADF.
+2026-11-04, on the maintainer's answers of 2026-11-03. It serves goal 6: real documents show what
+ordinary input must convert without surprise. Valid while no public source with a clearer licence
+serves ADF.
 
-Each document keeps its exact format: every node, mark, attribute key and the shape of each value.
-Its text, names, ids and URLs are replaced with fejkdata's draws, and a document that fails the
-shape or leak check stays out. A uuid, whether a whole value or inside one, keeps its version digit
-and case: the 22,769 hold v1, v3 and v4 uuids. `formatKeys` in `corpus-gathering/anonymize.mjs` lists the attributes
-kept because they name a format or a layout. The fetched originals are never committed.
+Each document keeps every node, mark and attribute key. Its words, names, ids and URLs are replaced
+with values drawn from fejkdata, a fake-data tool run from its image. Replaced text keeps its
+punctuation and case, and a number keeps its digit count. A document stays out if its structure
+changed or its output still holds an original token. The fetched originals are never committed:
+`corpus-gathering/run.sh` refuses a raw folder inside the repo.
 
-A site joins only with a published licence. All six are hosted by the Linux Foundation:
+`corpus/real-world-sources.json` links each document to its original page, because the licences ask
+for credit and naming a creator in the document would undo the anonymizing.
 
-- The ONAP wiki's own pages disagree. A 2017 page says CC-BY-SA-4.0 and a 2019 page says CC-BY-4.0,
-  so its documents record CC-BY-SA-4.0, which satisfies both.
-- Every other document rests on the foundation's terms of use, which put wikis and other
-  non-code submissions under CC-BY-3.0. They don't name issue trackers or `*.atlassian.net`, so
-  their reach to these sites' Jira documents and wikis is an inference. A site's own stated licence
-  replaces it in `corpus-gathering/sites.json`.
+A site joins only with a published licence, its own or its host's. All six sites in
+`corpus-gathering/sites.json` are hosted by the Linux Foundation:
 
-The tool stops at 20 result pages of 100 per source, one request a second as the sites' robots.txt
-asks, and 150 documents of at most 64 KiB. Those numbers keep a fetch to minutes and the corpus
-under 1 MB. Selection takes new node and mark types first, then the most new features per byte.
+- The foundation's terms of use put wikis and other non-code submissions under CC-BY-3.0. Those
+  terms don't name issue trackers or `*.atlassian.net`, so applying them to these sites is an
+  inference, which `corpus/README.md` tells the reader. When a site states its own licence, that
+  licence replaces them in `sites.json`.
+- The ONAP wiki states its own, but its pages disagree: a 2017 page says CC-BY-SA-4.0 and a 2019
+  page says CC-BY-4.0. Its documents record CC-BY-SA-4.0, which satisfies both.
 
-22,769 fetched documents hold no `bodiedSyncBlock`, `decisionItem`, `decisionList`,
-`extensionFrame`, `fragment`, `multiBodiedExtension` or `syncBlock`, and neither did the sites'
-decision-titled pages. `corpus.test.ts` pins that list, so a regenerated corpus holding one of them
-has to shrink it.
+None of the 22,773 fetched documents holds a type in `typesNoFetchedDocumentHolds`
+(`src/conformance/corpus.test.ts`), and neither did up to 40 pages per site with "decision" in the
+title. A regenerated corpus holding one of those types fails that test until the type leaves the list.

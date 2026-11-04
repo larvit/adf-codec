@@ -10,7 +10,7 @@
           "attrs": {
             "accessLevel": "",
             "id": "33699:a41c5441-d641-4d8d-b4ef-44f7f31bac87",
-            "text": "@Heidi Finnegan"
+            "text": "@Lavender Rosemary"
           },
           "type": "mention"
         },
@@ -25,16 +25,16 @@
           "marks": [
             {
               "attrs": {
-                "href": "http://lavender.spire.ash/rosemary/pine/sycamore/gorge.dawn"
+                "href": "http://sycamore.spire.ash/rosemary/pine/mountain/gorge.dawn"
               },
               "type": "link"
             }
           ],
-          "text": "http://lavender.spire.ash/rosemary/pine/sycamore/gorge.dawn",
+          "text": "http://sycamore.spire.ash/rosemary/pine/mountain/gorge.dawn",
           "type": "text"
         },
         {
-          "text": " olive moss lichen trellis ivy cinder rosemary",
+          "text": " olive moss lichen trellis ivy cinder fountain",
           "type": "text"
         }
       ],

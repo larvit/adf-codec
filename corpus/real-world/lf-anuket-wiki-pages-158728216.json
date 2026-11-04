@@ -14,7 +14,7 @@
           "type": "emoji"
         },
         {
-          "text": " EU",
+          "text": " eu",
           "type": "text"
         }
       ],
@@ -24,7 +24,7 @@
       "content": [
         {
           "attrs": {
-            "text": "LAVENDER。LC“//”TRELLIS，LC“/NW”ROSEMARY。"
+            "text": "lavender。lc“//”trellis，lc“/nw”rosemary。"
           },
           "type": "placeholder"
         }
@@ -55,14 +55,14 @@
     },
     {
       "attrs": {
-        "title": "NQ WREN"
+        "title": "nq wren"
       },
       "content": [
         {
           "content": [
             {
               "attrs": {
-                "text": "SYCAMORE。"
+                "text": "sycamore。"
               },
               "type": "placeholder"
             }
@@ -89,7 +89,7 @@
           "type": "emoji"
         },
         {
-          "text": " WILLOW",
+          "text": " willow",
           "type": "text"
         }
       ],
@@ -119,14 +119,14 @@
     },
     {
       "attrs": {
-        "title": "NQ WREN"
+        "title": "nq wren"
       },
       "content": [
         {
           "content": [
             {
               "attrs": {
-                "text": "MOUNTAIN。"
+                "text": "mountain。"
               },
               "type": "placeholder"
             }
@@ -153,7 +153,7 @@
           "type": "emoji"
         },
         {
-          "text": " MORNING",
+          "text": " morning",
           "type": "text"
         }
       ],
@@ -165,7 +165,7 @@
       },
       "content": [
         {
-          "text": "UN 3",
+          "text": "un 3",
           "type": "text"
         }
       ],
@@ -195,7 +195,7 @@
       },
       "content": [
         {
-          "text": "UN 6",
+          "text": "un 6",
           "type": "text"
         }
       ],
