@@ -12,13 +12,12 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 133 | 0.3.0 |  | question | **Record how `adfToHtml` writes an inline card a link marks in `docs/decisions.md` §The HTML dialect, and make `adfToHtml` and `htmlToAdf` follow it.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 163 | 0.3.0 |  |  | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
 | 164 | 0.3.0 | 163 |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 132, 133, 163, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 132, 133 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 | 132, 163, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 | 132 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -68,14 +67,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 133. Record how `adfToHtml` writes an inline card a link marks in `docs/decisions.md` §The HTML dialect, and make `adfToHtml` and `htmlToAdf` follow it.
-
-Class: the HTML dialect's spellings. Earlier entries: a card is `<a class="adf-inline-card" href …>`,
-and HTML nests no `<a>` in an `<a>`, so the card's element leaves no room for the link. Candidate
-entry: "A card a link marks rides the carry, which links to the link's target and shows the card's
-URL where it has one; no document Atlassian's editor writes holds one." Its instance is today's
-output. The item ends with that entry or with a spelling the maintainer names.
 
 ### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
 
