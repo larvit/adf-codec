@@ -401,8 +401,8 @@ for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the g
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
-The spellings, `spec/html.md`, are four writer panels' (2026-10-23 and -24), each of a product
-manager, an engineer and a support agent. The first picked each of these 3 of 3:
+The spellings, `spec/html.md`, are five writer panels' (2026-10-23, -24 and 2026-11-04), each of a
+product manager, an engineer and a support agent. The first picked each of these 3 of 3:
 
 - an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
 - a list item's first paragraph bare, `<li>Bolt</li>`, over `<li><p>Bolt</p></li>`;
@@ -442,12 +442,12 @@ it joins the second panel's `<a>` to that portable spelling.
 Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
 text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone.
 Atlassian's schema gives no card a link mark, so only a hand-built document meets this;
-`todo.md` item 133 ends it for a card holding `data` or a link mark, in 0.3.0. Recorded 2026-10-24
+`todo.md` item 133 ends both, in 0.3.0, by writing such cards as their own element. Recorded 2026-10-24
 without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
 
 A fifth panel (2026-11-04, three readers in the same roles, then four more for what the first three
-split on) picked how an emoji, status, date and inline card are written, the nodes the carry held.
-The first three picked each of these 3 of 3:
+split on) was asked how to write a mention, emoji, status, date and inline card, which until then
+rode the carry. The first three picked each of these 3 of 3:
 
 - an emoji as `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its text
   the content, over an `<img>`;
@@ -457,11 +457,12 @@ The first three picked each of these 3 of 3:
 
 Seven readers picked a date as
 `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`,
-5 of 7: the day for people, the exact timestamp for scripts. Two splits stay open and ride the carry,
-`todo.md` item 133: a mention's `data-id`, `data-access-level` and `data-user-type` drew 4 of 7, over
+5 of 7: the day for people, the exact timestamp for scripts. Two questions stayed split, so a
+mention and a card holding `data` ride the carry until the maintainer settles them, `todo.md` item
+133: a mention's `data-id`, `data-access-level` and `data-user-type` drew 4 of 7, over
 `data-mention-id` 2 and `data-user-id` 1; a card holding `data` and no URL drew `<a … href data-data>`
-3, `<a … data-card>` 2 and `<span … data-data>` 2. The link-marked card's spelling hangs on that
-one. So a card holding `data` or a mark rides the carry too.
+3, `<a … data-card>` 2 and `<span … data-data>` 2. A card a link marks waits on the second answer,
+since its name-only form is that card, so it rides the carry too.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
@@ -898,7 +899,7 @@ adds scheme filtering.
 
 `adfToHtml` writes every URL exactly as the ADF holds it, escaped as every attribute value is,
 `javascript:`, `vbscript:`, `file:` and `data:` included. That covers a link's `href`, an image's
-`src`, and the `href` of each link the carry element shows: a carried node's link mark, a card's
+`src`, a card's `href`, and the `href` of each link the carry element shows: a carried node's link mark, a card's
 `url` or `data.url`, and an external image's `url`. The markdown writers don't filter schemes
 either.
 
