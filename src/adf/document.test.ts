@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import vm from 'node:vm'
 
-import type { AdfDocument } from './document.ts'
+import type { AdfDocument, AdfNode } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
 import { adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown } from '../index.ts'
 import { adfDocumentFault, isAdfDocument, writableContent } from './document.ts'
@@ -157,4 +157,13 @@ test('writes a card holding no link mark, and a node type it does not know holdi
   const link = { attrs: { href: 'https://example.com/' }, type: 'link' }
   const marked = { content: [{ attrs: { url: 'https://example.com/roadmap' }, marks: [comment], type: 'inlineCard' }, { marks: [link], type: 'futureInline' }], type: 'paragraph' }
   for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) assert.equal(write({ content: [marked], type: 'doc', version: 1 }).ok, true)
+})
+
+test('names a link-marked card at any depth by its path alone, in time linear in the depth', () => {
+  const depth = 100_000
+  let node: AdfNode = { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
+  for (let level = 0; level < depth; level += 1) node = { content: [node], type: 'panel' }
+  const refused = writableContent({ content: [node], type: 'doc', version: 1 })
+  assert.equal(!refused.ok && refused.error.path.length, 2 * (depth + 1))
+  assert.deepEqual(!refused.ok && refused.error.path.slice(0, 4), ['content', 0, 'content', 0])
 })
