@@ -117,8 +117,10 @@ later release writes it as its own element.
     non-empty `alt`;
   - a heading whose `level` is not 1 to 6, and an ordered list whose `order` is not a safe integer
     or is `-0`;
-  - an emoji, mention or status with no `text`, a date whose `timestamp` names no day from year 1
-    to 9999, a card holding neither a `url` nor `data` with a URL, and a card holding both;
+  - an emoji, mention or status with no `text`, and a date whose `timestamp` names no day from year
+    1 to 9999;
+  - a card holding an empty `url`, both a `url` and `data`, or neither, and one holding `data`
+    alone whose `url` is missing or holds only whitespace;
   - a code block holding more than one text node, a marked one, or a language holding ASCII
     whitespace;
   - a rule or hard break holding `content`, and a hard break holding an attribute;
@@ -151,8 +153,8 @@ that node in either spelling: an edit there would be lost, so it is `unmappable-
   non-empty HTML not ending in a line feed.
 - An emoji, mention, status, date or card element with empty text, a date whose `datetime` or text
   is not the day its `data-timestamp` names, a card without `data-data` whose `href` and text are
-  not one URL, and a card with it whose `href` and text are not the URL and name its `data` holds,
-  are `unmappable-html`.
+  not one URL, and a card with `data-data` whose `href` is not the URL its `data` holds or whose
+  text is not its name, else that URL, are `unmappable-html`.
 - A `data-*` attribute that its element does not take, such as `data-level` on `<h1>`, or that holds
   a value outside its attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
 - A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,
