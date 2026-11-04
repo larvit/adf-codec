@@ -297,7 +297,7 @@ besides hard breaks but no node that takes a link: the panel refused to have
 breaks alone still reads as its destination, then the breaks (§An image reads as an image only alone
 in its paragraph). `adfToLosslessMarkdown` writes a node holding a mark its type does not take as
 `!adf:carry`, so the round-trip holds, except an inline card a link marks, which is refused
-(§Writers and carry readers refuse an inline card a link marks).
+(§The first step checks the schema, and no converter does).
 
 ## A linked image is written `[![alt](url)](href)`, a captioned image as its directive
 
@@ -442,7 +442,7 @@ it joins the second panel's `<a>` to that portable spelling.
 
 HTML nests no `<a>` in an `<a>`, so no element can hold both a card's URL and the target of a link
 marking it. Every writer refuses such a card, and a carry element holding one, as the maintainer
-chose on 2026-11-04 over a new spelling (§Writers and carry readers refuse an inline card a link marks).
+chose on 2026-11-04 over a new spelling (§The first step checks the schema, and no converter does).
 
 A fifth panel (2026-11-04, three readers in the same roles, then four more for what the first three
 split on) was asked how to write a mention, emoji, status, date and inline card, which until then
@@ -749,27 +749,31 @@ stays on `insideRun` alone, since it answers the parted line. A refactor that me
 so the chunk's later rulings read against that merge, the commit `larv-review ruling-base` prints. A restructure past a
 pass's round cap still goes unreviewed, so the PR summary names it.
 
-## Writers and carry readers refuse an inline card a link marks
+## The first step checks the schema, and no converter does
 
-2026-11-04, replacing §No schema validation of 2026-08-23 (its mark refusal 2026-08-25), the
-maintainer. Goal 1. Valid while Atlassian's schema gives a card no link mark.
+2026-11-04, the maintainer. Goal 1 and code health. Valid while Atlassian's schema forbids shapes
+a converter would otherwise meet.
 
-Every writer refuses a document holding an `inlineCard` with a `link` mark, as
-`unsupported-node-shape` at the card's path, wherever the card stands: in a node a writer carries,
-or under a type the library does not know. Every carry reader, `losslessMarkdownToAdf` and
-`htmlToAdf`, refuses a carried node holding one, so no reader builds a document a writer refuses.
-The schema gives a card the `annotation` mark alone (§The node tables answer to Atlassian's
-schema), and spelling the pair would take a new spelling in each format; HTML nests no `<a>` in an
-`<a>`. Another shape joins this entry only at the maintainer's word, once the schema forbids it and every format would
-need a spelling for it. A node type, mark or attribute the schema does not name still rides the
-carry. There is no full schema validation and no exported validator: `isAdfDocument` checks the
-document's shape alone. A refusal that keeps the round-trip is no schema check and stays: a spelled
-node carrying the same mark type twice is refused on its own terms, and input nesting a spelling
-inside its own kind (`*(*a*)*`) names that mark once.
+An Atlassian-schema rule the library applies is checked once, in the first step every call opens
+with: `writableContent` for the writers, `carriedNode` for the carry readers `losslessMarkdownToAdf`
+and `htmlToAdf`. A converter checks none, so a document one call refuses every call refuses, at
+the same path, and what a converter holds is valid ADF. An `inlineCard` with a `link` mark is
+refused there today, as `unsupported-node-shape` at the card's path, wherever it stands, since the
+schema gives a card the `annotation` mark alone (§The node tables answer to Atlassian's schema)
+and HTML nests no `<a>` in an `<a>`. `todo.md` item 167 moves the other refusals a writer makes on a schema
+rule: a node holding a mark type twice, a node holding `text`, or `content` where it takes none,
+and an inline node holding neither.
 
-The earlier entry premised that the site a document is saved to validates it. A hand-built
-document has not reached the site yet, and the viewer/editor persona relies on a refusal arriving
-before the save.
+A rule joins the first step as a refusal only where no format can spell the node whole. A node type,
+mark or attribute the schema does not name, a known node where no section spells it
+(§Unknown nodes ride the carry), and a mark a node cannot hold (§A mark skips a node that cannot
+hold it) ride the carry, which keeps the round-trip. A limit of the engine or the flavour is no
+schema rule and stays where it is met: nesting depth, output length and what a portable line can
+spell. A reader refusing markdown or HTML it cannot read is no check of ADF and stays in the reader.
+
+The earlier entry kept the card refusal alone, premising that the site a document is saved to
+validates the rest. A hand-built document has not reached the site yet, and the viewer/editor
+persona relies on a refusal arriving before the save.
 
 ## The gate runs on Deno and Bun
 

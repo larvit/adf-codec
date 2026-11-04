@@ -147,7 +147,7 @@ export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
   return node.marks ?? []
 }
 
-// Walks every node, carried or of an unknown type, so a link-marked card is refused wherever it stands (docs/decisions.md §Writers and carry readers refuse an inline card a link marks).
+// Walks every node, carried or of an unknown type, so a link-marked card is refused wherever it stands (docs/decisions.md §The first step checks the schema, and no converter does).
 export function refusedShape(content: readonly AdfNode[]): ConvertError | undefined {
   type Step = { index: number; node: AdfNode; parent: Step | undefined }
   const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()

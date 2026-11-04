@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 167`
+`Next ID = 168`
 
 ## Items
 
@@ -17,6 +17,7 @@
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 132, 163, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 167 | 0.3.0 |  | decision | **Check every Atlassian-schema rule a writer refuses today in `writableContent`, and drop it from the writers.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 72 | 0.3.0 | 132 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
@@ -26,7 +27,6 @@
 | 155 | 0.4.0 |  |  | **Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 162 | 0.4.0 |  |  | **Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
-| 68 | 0.4.0 |  | defect | **Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.** | 2 | 1 | 2 | 3 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
@@ -106,6 +106,30 @@ solves it, then links the GitHub repository, the README's comparison table and t
 opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
 announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
 
+### 167. Check every Atlassian-schema rule a writer refuses today in `writableContent`, and drop it from the writers.
+
+The maintainer's call, 2026-11-04 (`docs/decisions.md` §The first step checks the schema, and no
+converter does): the first step holds every schema check, "moved there from wherever else in the
+code they are". It replaces item 68, which would have carried these shapes: a schema-forbidden
+shape is refused once, with its path, in every writer. Move into `refusedShape`:
+
+- `emitLeaf` in `emit/inline-line.ts`: a node holding one mark type twice, and an inline node
+  holding neither `content` nor `text`.
+- `emitDirectiveBlock` in `emit/adf-to-markdown.ts`: a node holding `text`, and a leaf block holding
+  `content`.
+- The HTML and portable writers, which today write the first two without refusing: they refuse them
+  too, which is breaking for a document holding either (`CHANGELOG.md`, `MIGRATION.md`).
+- Check `src/html/` and `src/markdown/portable/` for a refusal of this kind the grep of
+  `unsupported-node-shape` missed, and `carriedNode` for a rule the readers still build.
+
+Stays where it is: a limit of the engine or the flavour (nesting depth, output length, a portable
+task list holding what no list item spells) and a reader's refusal of markdown or HTML it cannot
+read. A node type, mark or attribute the schema does not name, a known node out of place and a mark
+a node cannot hold keep riding the carry. Drop the refused shapes from the README's
+`unsupported-node-shape` causes under writing and from `spec/flavour.md`; the property generators
+build none of them. Lands with items 45, 77 and 80 where it can, since their reader walks every
+node too, but needs none.
+
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
 Blocked by every other `0.3.0` item but 73 (the maintainer, 2026-10-05; moved to `0.3.0` 2026-10-28,
@@ -182,14 +206,6 @@ Lands with item 77: the reader returns item 77's copy. Goal 1 has every call ret
 boolean guard is the one export that does not, and it cannot say which branch refused, where
 `not-an-adf-document`'s message already does. Breaking: `MIGRATION.md` shows the guard's
 replacement.
-
-### 68. Carry a non-text inline node holding `content` or `text`, a block holding `text`, and a leaf block holding `content`.
-
-`emitLeaf` (`emit/inline-line.ts`) and `emitDirectiveBlock` (`emit/adf-to-markdown.ts`)
-refuse these with `unsupported-node-shape`, though `isAdfDocument` accepts them and the carry
-round-trips them; `docs/decisions.md` §The code list gives a cause the carry answers no code. Drop
-them from the README's `unsupported-node-shape` cause "Writing, in `adfToLosslessMarkdown`". Found by the README-goals
-audit, 2026-10-04.
 
 ### 127. Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.
 
