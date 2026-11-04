@@ -526,7 +526,7 @@ content. No stylesheet ships. The complete dialect:
 | `rule` | `<hr>` |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
-| any other node, or a node holding what its element cannot | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
+| any other node, or a node holding what its element cannot, except an inline card a link marks, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a
   card's, and a carried link's in the carry element. Sanitize the HTML before showing a document from
@@ -631,7 +631,8 @@ Every call can raise these:
     such as `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
   - writes as a directive a node or mark the lossless flavour spells as CommonMark;
   - puts `!adf:textBreak{}` where it parts nothing, or `!adf:doc` anywhere but as the whole
-    document.
+    document;
+  - carries an inline card a link marks, as the writers' cause below says.
 - **Reading, in `htmlToAdf`.** Fix what the message names;
   [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) lists each element's
   attributes. The HTML:
@@ -640,15 +641,16 @@ Every call can raise these:
     `data-wrap="yes"`;
   - holds a carry element whose `data-adf` holds JSON that is no ADF node, is not written compact
     with its keys sorted, or holds a number JSON cannot spell;
+  - holds a carry element carrying an inline card a link marks, as the writers' cause below says;
   - holds the document's own carry element beside another block.
 - **Writing, in `adfToLosslessMarkdown`**: a node not riding the carry that carries one mark type
   twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node
   holding `content`. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
 - **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: an inline card
-  marked by a link, wherever it stands: Atlassian's schema gives a card no link mark. Keep the ADF
-  and show the document read-only; where you built the ADF, remove the link mark from the card the
-  error's `path` names.
+  marked by a link, even inside a node that rides the carry: Atlassian's schema gives a card no link
+  mark. Keep the ADF and pass the document over or show it read-only; where you built the ADF,
+  remove the link mark from the card the error's `path` names.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
 - **Past the engine's longest string**:

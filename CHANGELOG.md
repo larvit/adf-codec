@@ -17,9 +17,7 @@
   `localId` as `data-local-id`. Every other node is an element of class `adf-carry` holding the
   node's JSON in `data-adf` and showing its content, links included. Every URL is written as the
   ADF holds it, `javascript:` included: sanitize HTML from an author you do not trust before
-  showing it. **Breaking:** `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse an
-  inline card a link marks, wherever it stands, as `unsupported-node-shape` at the card's path, before
-  they write: Atlassian's schema gives a card no link mark.
+  showing it.
 - `htmlToAdf` reads `adfToHtml`'s HTML back to the document it came from, a carry element from its
   `data-adf`. It reads that HTML as a browser's `innerHTML` writes it too (a raw `"` in text,
   `&nbsp;`, a raw `<` or `>` in an attribute value) and as a form post sends it (`\r\n` for each
@@ -31,7 +29,12 @@
   reads as a plain mention. A link or directive mark around only nodes that cannot take it is
   `unsupported-node-shape`, even in markdown `adfToLosslessMarkdown` wrote. A link around hard
   breaks alone still reads as before. `adfToLosslessMarkdown` writes a node holding a mark its type
-  cannot take as `!adf:carry{json="…"}`. `MIGRATION.md` says how to convert stored markdown.
+  cannot take as `!adf:carry{json="…"}`, except an inline card a link marks, which it refuses.
+  `MIGRATION.md` says how to convert stored markdown.
+- **Breaking:** `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse an inline card a link marks
+  as `unsupported-node-shape` at the card's path, and `losslessMarkdownToAdf` refuses a carry
+  holding one, since Atlassian's schema gives a card no link mark. `adfToHtml` and `htmlToAdf` do
+  the same. `MIGRATION.md` says what to do.
 - **Breaking:** every reader gives code text no mark but `link` and `annotation`, as Atlassian's
   schema requires: ``**`npm ci`**`` now reads as plain code, and a directive mark other than a link
   around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
