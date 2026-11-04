@@ -758,12 +758,13 @@ while Atlassian's schema forbids shapes a converter would otherwise meet.
 A shape Atlassian's schema forbids, and the library refuses, is refused in the first step, where
 the document is checked once: `writableContent` opens every writer, and `carriedNode` opens every
 carry reader's node. No converter refuses one. A document one call refuses on a schema rule every
-call refuses alike, with one code, message and path, wherever the shape stands, in a carried node
-too. The first step refuses an `inlineCard` with a `link` mark as `unsupported-node-shape`: the
+writer refuses alike, with one code, message and path, wherever the shape stands, in a carried node
+too, and a carry reader refuses it with the same code and the writers' message after its holder's
+name. The first step refuses an `inlineCard` with a `link` mark as `unsupported-node-shape`: the
 schema gives a card the `annotation` mark alone (§The node tables answer to Atlassian's schema),
 and HTML nests no `<a>` in an `<a>`. `adfToLosslessMarkdown` still refuses two more, on a node not
 riding the carry: a block or non-text inline node holding `text`, and a leaf block or non-text
-inline node holding `content`. `todo.md` item 167 moves them, and until it ships this entry does
+inline node holding a non-empty `content`. `todo.md` item 167 moves them, and until it ships this entry does
 not hold for them.
 
 Nothing else joins the first step. Nothing refuses a node type, mark or attribute the schema does

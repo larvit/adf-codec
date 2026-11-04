@@ -118,7 +118,9 @@ are". It replaces item 68, which would have carried these shapes. Move into `ref
 
 Atlassian's schema gives each such node no `text` or `content` (`additionalProperties` is false).
 Breaking: `adfToHtml` and `adfToPortableMarkdown` refuse these shapes too, and so does
-`adfToLosslessMarkdown` inside a node that rides the carry, where it writes them today. Say so in
+`adfToLosslessMarkdown` inside a node that rides the carry, where it writes them today. Both carry
+readers refuse them too, so a stored markdown or HTML document whose carry holds one stops
+reading; `MIGRATION.md` says to convert it once with the last version that reads it. Say so in
 `CHANGELOG.md` and `MIGRATION.md`. Search the writers for any other refusal of a shape the schema
 forbids, and `carriedNode` for one the readers still build.
 
