@@ -17,7 +17,7 @@
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 132, 163, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 167 | 0.3.0 |  | decision | **Check every Atlassian-schema rule a writer refuses today in `writableContent`, and drop it from the writers.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
+| 167 | 0.3.0 |  | decision | **Refuse in `refusedShape` the schema-forbidden shapes `adfToLosslessMarkdown` refuses in its walk, and drop them from that writer.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 72 | 0.3.0 | 132 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
@@ -106,29 +106,29 @@ solves it, then links the GitHub repository, the README's comparison table and t
 opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
 announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
 
-### 167. Check every Atlassian-schema rule a writer refuses today in `writableContent`, and drop it from the writers.
+### 167. Refuse in `refusedShape` the schema-forbidden shapes `adfToLosslessMarkdown` refuses in its walk, and drop them from that writer.
 
-The maintainer's call, 2026-11-04 (`docs/decisions.md` §The first step checks the schema, and no
-converter does): the first step holds every schema check, "moved there from wherever else in the
-code they are". It replaces item 68, which would have carried these shapes: a schema-forbidden
-shape is refused once, with its path, in every writer. Move into `refusedShape`:
+The maintainer's call, 2026-11-04 (`docs/decisions.md` §Schema refusals are made in the first step
+alone): the first step holds every schema check, "moved there from wherever else in the code they
+are". It replaces item 68, which would have carried these shapes. Move into `refusedShape`:
 
-- `emitLeaf` in `emit/inline-line.ts`: a node holding one mark type twice, and an inline node
-  holding neither `content` nor `text`.
-- `emitDirectiveBlock` in `emit/adf-to-markdown.ts`: a node holding `text`, and a leaf block holding
-  `content`.
-- The HTML and portable writers, which today write the first two without refusing: they refuse them
-  too, which is breaking for a document holding either (`CHANGELOG.md`, `MIGRATION.md`).
-- Check `src/html/` and `src/markdown/portable/` for a refusal of this kind the grep of
-  `unsupported-node-shape` missed, and `carriedNode` for a rule the readers still build.
+- `emitDirectiveBlock` in `emit/adf-to-markdown.ts`: a block holding `text`, and a leaf block
+  holding `content`.
+- `emitLeaf` in `emit/inline-line.ts`: a non-text inline node holding `content` or `text`.
 
-Stays where it is: a limit of the engine or the flavour (nesting depth, output length, a portable
-task list holding what no list item spells) and a reader's refusal of markdown or HTML it cannot
-read. A node type, mark or attribute the schema does not name, a known node out of place and a mark
-a node cannot hold keep riding the carry. Drop the refused shapes from the README's
-`unsupported-node-shape` causes under writing and from `spec/flavour.md`; the property generators
-build none of them. Lands with items 45, 77 and 80 where it can, since their reader walks every
-node too, but needs none.
+Atlassian's schema gives each such node no `text` or `content` (`additionalProperties` is false).
+Breaking: `adfToHtml` and `adfToPortableMarkdown` refuse these shapes too, and so does
+`adfToLosslessMarkdown` inside a node that rides the carry, where it writes them today. Say so in
+`CHANGELOG.md` and `MIGRATION.md`. Search the writers for any other refusal of a shape the schema
+forbids, and `carriedNode` for one the readers still build.
+
+Stays where it is: a node holding one mark type twice (the schema allows it, no spelling holds it),
+nesting depth, output length, a portable task list holding what no list item spells, and a
+reader's refusal of markdown or HTML it cannot read. A node type, mark or attribute the schema does
+not name, a known node out of place and a mark a node cannot hold keep riding the carry. Drop the
+refused shapes from the README's `unsupported-node-shape` cause under writing in
+`adfToLosslessMarkdown` and add them to the cause common to the writers, and from `spec/flavour.md`;
+the property generators build none of them.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 

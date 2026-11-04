@@ -59,7 +59,7 @@ In `docs/decisions.md`:
 - Posts announcing a release wait for its publish, and their drafts wait for the finished release
 - A chunk ruled worse merges where a plan item of its release already restores that code's reading, and that item takes the ruling's places
 - A chunk ruled worse that restructures the places takes a paired ruling after each restructure, against the same base, and merges once one is not worse
-- The first step checks the schema, and no converter does
+- Schema refusals are made in the first step alone
 - The gate runs on Deno and Bun
 - The gate installs the tarball
 - Firefox reads the build
