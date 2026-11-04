@@ -1205,7 +1205,7 @@ A site joins only with a published licence. All six are hosted by the Linux Foun
 
 The tool stops at 20 result pages of 100 per source, one request a second as the sites' robots.txt
 asks, and 150 documents of at most 64 KiB. Those numbers keep a fetch to minutes and the corpus
-near 1 MB. Selection takes new node and mark types first, then the most new features per byte.
+under 1 MB. Selection takes new node and mark types first, then the most new features per byte.
 
 22,769 fetched documents hold no `bodiedSyncBlock`, `decisionItem`, `decisionList`,
 `extensionFrame`, `fragment`, `multiBodiedExtension` or `syncBlock`, and neither did the sites'
