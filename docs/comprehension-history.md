@@ -1534,3 +1534,27 @@ Inherited architect, decided by:
 
 - Shape: `src/html/node-element.ts:9` `NodeElement.textAttribute`. Leaving it `undefined` marks the row as a date, which the type doesn't say; emit and parse both read `undefined` as "derive the text from `timestamp`", and the four rows are built three ways.
 - Shape: `src/html/parse/node-element.ts:36` `mismatch`. It picks its message from `model.leading` (`datetime` for a date, `href` for a card) in place of the node type, and `readNodeElement` checks all four kinds in one condition, so a reader works out which checks apply to which kind.
+
+## 2026-11-04T15:59:34Z, PR #119 at 65f1c2a, against 13a2689
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | same | better | better |
+| Inherited architect | better | better | same | better | better |
+
+Mid A, decided by:
+
+- Locality: `src/html/node-element.ts:19` `nodeElements`: each inline node's element, shown text, leading attribute and mismatch message sit in one entry, where the base spread the date, text and card cases over three places
+- Locality: `src/html/parse/node-element.ts:24` `readNodeElement`: one generic check runs the writer's own `shown` and `leading.value` over the node it built, where the base special-cased the date and branched on the leading name for its message
+- Self-sufficiency: `src/html/node-element.ts:7` `NodeElement`: the type's comment states the contract, so a cold reader sees why the reader is safe without opening the spec
+- Shape: `src/html/node-element.ts:50` `card`: dense early returns, `href` is undefined exactly when a card holds both `data` and `url`; the type grew from five fields to eight
+- Shape: `src/html/node-element.ts:62` `textElement`: hardcodes `'text'` while `inlineNodes` in `src/adf/inline-nodes.ts:16` still declares `textAttribute: 'text'`, a second source for one fact
+
+Inherited architect, decided by:
+
+- Locality, Navigation: `src/html/parse/node-element.ts:24` `readNodeElement`: one check built on `model.build`, `model.shown` and `model.leading.value` holds for every node type, where the base's `mismatch` switched on the leading attribute's kind
+- Locality, Self-sufficiency: `src/html/node-element.ts:31` `inlineCard`: the card takes ADF's own vocabulary and `card` at `:50` says why a card holding both `data` and `url` rides the carry, where the base pointed at `todo.md` item 133
+- Locality, Navigation: `src/html/emit/node-element.ts:7` `nodeElement`: the date, card and text rules live in one table, so a symptom about one node type leads to one entry
+- Shape: `src/html/node-element.ts:8` `NodeElement`: the record grew from five fields to eight, three of them functions, behind a dense one-line contract comment, and the card's `build` adds `url` only when `data` is absent
