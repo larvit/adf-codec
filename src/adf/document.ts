@@ -157,11 +157,7 @@ function refusedShape(content: readonly AdfNode[]): Result<never> | undefined {
       for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.unshift('content', up.index)
       return failure('unsupported-node-shape', 'an inlineCard takes no link mark: this one holds one', path)
     }
-    const children = nodeContent(step.node)
-    for (let index = children.length - 1; index >= 0; index -= 1) {
-      const node = children[index]
-      if (node !== undefined) pending.push({ index, node, parent: step })
-    }
+    for (const child of nodeContent(step.node).map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
   }
   return undefined
 }
