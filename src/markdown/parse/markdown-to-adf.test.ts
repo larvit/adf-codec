@@ -489,6 +489,14 @@ test('names the node JSON an opaque carry restores alone', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n')), `${node}\\!adf: keeps the prefix literal`)
 })
 
+test('refuses a carry holding an inline card a link marks, whether it stands alone, in a block or in a fence', () => {
+  const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
+  const json = JSON.stringify(card).replaceAll('"', '\\"')
+  for (const markdown of [`!adf:carry{json="${json}"}\n`, `\`\`\`adf:futureBlock\n${JSON.stringify({ content: [card] }, null, 2)}\n\`\`\`\n`]) {
+    assert.match(String(content(losslessMarkdownToAdf(markdown))), /^unsupported-node-shape: the opaque carry holds a node every writer refuses: an inlineCard takes no link mark/)
+  }
+})
+
 test('names the shape the inline carry reads alone', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:carry[x]{json="{}"}\n')), 'unsupported-node-shape: carry takes no content: this one holds some')
   assert.equal(content(losslessMarkdownToAdf('!adf:carry{}\n')), 'unsupported-node-shape: carry holds one json attribute alone: this one does not')

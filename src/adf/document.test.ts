@@ -152,6 +152,13 @@ test('refuses an inline card a link marks, wherever the document holds it and wh
   }
 })
 
+test('names the first link-marked card in document order', () => {
+  const card = (url: string): AdfNode => ({ attrs: { url }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })
+  const content = [{ content: [card('https://a.example/'), card('https://b.example/')], type: 'paragraph' }, { content: [card('https://c.example/')], type: 'paragraph' }]
+  const refused = writableContent({ content, type: 'doc', version: 1 })
+  assert.deepEqual(!refused.ok && refused.error.path, ['content', 0, 'content', 0])
+})
+
 test('writes a card holding no link mark, and a node type it does not know holding one', () => {
   const comment = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
   const link = { attrs: { href: 'https://example.com/' }, type: 'link' }
@@ -159,7 +166,7 @@ test('writes a card holding no link mark, and a node type it does not know holdi
   for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) assert.equal(write({ content: [marked], type: 'doc', version: 1 }).ok, true)
 })
 
-test('names a link-marked card at any depth by its path alone, in time linear in the depth', () => {
+test('names a link-marked card at any depth by its path alone, with no step quadratic in the depth', () => {
   const depth = 100_000
   let node: AdfNode = { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
   for (let level = 0; level < depth; level += 1) node = { content: [node], type: 'panel' }

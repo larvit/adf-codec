@@ -1,4 +1,4 @@
-import { failure, faulted, success, type ConvertFault, type Result } from '../result.ts'
+import { failure, faulted, success, type ConvertError, type ConvertFault, type Result } from '../result.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { withinLongest } from '../length-bound.ts'
@@ -56,7 +56,7 @@ export function writableContent(document: AdfDocument): Result<readonly AdfNode[
   if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(undefined)
   const refused = refusedShape(document.content)
-  if (refused !== undefined) return refused
+  if (refused !== undefined) return { error: refused, ok: false }
   // Text alone past the bound is refused before anything is written (docs/decisions.md §Output past V8's longest string is refused on every engine).
   return withinLongest(heldTextLength(document.content), document.content)
 }
@@ -147,8 +147,8 @@ export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
   return node.marks ?? []
 }
 
-// The writers' refusals of what Atlassian's schema forbids, in document order, at any depth and inside nodes no writer reads. Each rule stands on the schema alone.
-function refusedShape(content: readonly AdfNode[]): Result<never> | undefined {
+// Walks every node, carried or of an unknown type, so a link-marked card is refused wherever it stands (docs/decisions.md §Writers and carry readers refuse an inline card a link marks).
+export function refusedShape(content: readonly AdfNode[]): ConvertError | undefined {
   type Step = { index: number; node: AdfNode; parent: Step | undefined }
   const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()
   for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
@@ -156,7 +156,7 @@ function refusedShape(content: readonly AdfNode[]): Result<never> | undefined {
       const path: (number | string)[] = []
       for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.push(up.index, 'content')
       path.reverse()
-      return failure('unsupported-node-shape', 'an inlineCard takes no link mark: this one holds one', path)
+      return { code: 'unsupported-node-shape', message: 'an inlineCard takes no link mark: this one holds one', path }
     }
     for (const child of nodeContent(step.node).map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
   }

@@ -3,7 +3,7 @@ import type { JsonSpelling } from '../canonical-json.ts'
 import type { JsonValue } from '../json-value.ts'
 import { canonicalJsonPieces } from '../canonical-json.ts'
 import { faulted, success, type ConvertErrorPath, type ConvertFault, type Read, type Result } from '../result.ts'
-import { isAdfNode } from './document.ts'
+import { isAdfNode, refusedShape } from './document.ts'
 import { isJsonValue, nestingDepth, overNested } from '../json-value.ts'
 import { joinedWithin } from '../length-bound.ts'
 import { parseJsonText } from '../json-text.ts'
@@ -32,7 +32,9 @@ export function carriedNesting(held: JsonValue, levels: number): Read<BoundedJso
 }
 
 export function carriedNode({ bounded }: BoundedJson, holder: string): Read<AdfNode> {
-  return isAdfNode(bounded) ? { value: bounded } : { fault: { code: 'unsupported-node-shape', message: `${holder} holds one ADF node's JSON: this JSON is no ADF node` } }
+  if (!isAdfNode(bounded)) return { fault: { code: 'unsupported-node-shape', message: `${holder} holds one ADF node's JSON: this JSON is no ADF node` } }
+  const refused = refusedShape([bounded])
+  return refused === undefined ? { value: bounded } : { fault: { code: refused.code, message: `${holder} holds a node every writer refuses: ${refused.message}` } }
 }
 
 function nestedPast(levels: number): ConvertFault {
