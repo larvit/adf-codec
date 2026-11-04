@@ -1583,3 +1583,22 @@ Maintainability senior, decided by:
 Junior A, decided by:
 
 - Locality: `src/html/emit/inline.ts:15` `inlineHtml`: the card refusal fires only where the block around the card is written as an element, and `inlineElement` at `src/html/emit/adf-to-html.ts:131` decides that first, where the base's loop decided each node from the node alone
+
+## 2026-11-04T19:35:07Z, PR #121 at 78ca66b, against 30f45b7
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | same | same | better |
+| Inherited architect | same | better | same | same | better |
+
+Mid A, decided by:
+
+- Locality: `src/adf/document.ts:151` `refusedShape`: one walk refuses the card for every writer and, through `carriedNode`, both carry readers, where the base held the rule in the HTML emitter alone
+- Locality: `src/html/emit/inline.ts:11` `inlineHtml`: its loop no longer opens with a check whose comment relied on which callers reach it
+
+Inherited architect, decided by:
+
+- Locality: `src/adf/document.ts:151` `refusedShape`: the rule against a link-marked card lives in one walk that every writer and both carry readers pass through
+- Locality: `src/html/emit/inline.ts:15` `inlineHtml`: the base held the check at the top of the HTML writer's inline loop, with a comment about callers elsewhere
