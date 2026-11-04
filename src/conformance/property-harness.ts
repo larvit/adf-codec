@@ -123,8 +123,11 @@ const autolinkTextNode = fc
   .record({ href: fc.tuple(fc.constantFrom('ab:', 'http://'), textOf(0)).map(([scheme, rest]) => `${scheme}${rest}`), marks })
   .map(({ href, marks: held }): AdfNode => ({ marks: [...held.filter((outer) => outer.type !== 'link'), { attrs: { href }, type: 'link' }], text: href, type: 'text' }))
 
+// Atlassian's schema gives a card no link mark, which every writer refuses.
+const cardMarks = marks.map((held) => held.filter(({ type }) => type !== 'link'))
+
 const inlineArbitraries = Object.entries(inlineNodes).map(([type, model]) =>
-  occasionallyEmpty(fc.record({ attrs: attributes(model.attributes), marks }).map((held): AdfNode => ({ ...held, type }))),
+  occasionallyEmpty(fc.record({ attrs: attributes(model.attributes), marks: type === 'inlineCard' ? cardMarks : marks }).map((held): AdfNode => ({ ...held, type }))),
 )
 
 function weighted(arbitraries: readonly Arbitrary<AdfNode>[], weight: number): { arbitrary: Arbitrary<AdfNode>; weight: number }[] {
