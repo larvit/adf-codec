@@ -1,12 +1,13 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result } from '../../result.ts'
-import { foundAt, misread, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
+import { foundAt, misread, misspelledText, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkMarkFrom } from '../../adf/mark-attributes.ts'
 import { markOfElement } from '../mark-elements.ts'
 import { misspelledAt, unescapedValue } from '../escaping.ts'
 import { readAnchorAttributes } from '../anchor-element.ts'
 import { readCarry } from './carry-element.ts'
+import { readNodeElement } from './node-element.ts'
 import { success } from '../../result.ts'
 
 // The inline nodes from `index` up to the first tag opening none, which the caller reads.
@@ -28,6 +29,8 @@ export function readInline(html: string, index: number, place: Place): Result<{ 
 function readTagged(html: string, index: number, place: Place): ReadNode | undefined {
   const tag = readStartTag(html, index)
   if (tag?.name === 'br' && tag.attributes.length === 0) return success({ end: tag.end, node: { type: 'hardBreak' } })
+  const element = tag === undefined ? undefined : readNodeElement(html, tag, place)
+  if (element !== undefined) return element
   if (tag?.name === 'span') return readCarry(html, tag, 'span', largestNesting, place)
   return tag !== undefined && markOf(tag) !== undefined ? readMarked(html, index, place) : undefined
 }
@@ -67,10 +70,6 @@ function readText(html: string, index: number, marks: AdfMark[], place: Place): 
   const text = unescapedValue(spelled, 'text')
   if (text === undefined) return misspelledText(html, index + misspelledAt(spelled, 'text'), place)
   return success({ end, node: marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' } })
-}
-
-export function misspelledText<T>(html: string, index: number, place: Place): Result<T, ParseError> {
-  return refused('unmappable-html', `text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: ${foundAt(html, index)}`, html, index, place)
 }
 
 function markOf(tag: StartTag): AdfMark | undefined {

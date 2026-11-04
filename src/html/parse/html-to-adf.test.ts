@@ -191,6 +191,29 @@ test('reads a carry element holding a node HTML writes as its own element as tha
   assert.deepEqual(read(htmlToAdf(`<ul>\n<li>\n${carry('div', paragraph(text('x')), '<p>x</p>')}\n</li>\n</ul>\n`)), document({ content: [item(paragraph(text('x')))], type: 'bulletList' }))
 })
 
+test('reads an emoji, status, date and URL card from their elements', () => {
+  const inline = (node: AdfNode): AdfDocument | string => read(htmlToAdf(adfToHtmlText(document(paragraph(text('See '), node)))))
+  const nodes: AdfNode[] = [
+    { attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' },
+    { attrs: { text: '<3 &' }, type: 'emoji' },
+    { attrs: { color: 'yellow', localId: 's1', style: 'bold', text: 'In "review"' }, type: 'status' },
+    { attrs: { localId: 'd1', timestamp: '1756080000000' }, type: 'date' },
+    { attrs: { localId: 'c1', url: 'https://example.com/spec?a=1&b=2' }, type: 'inlineCard' },
+  ]
+  for (const node of nodes) assert.deepEqual(inline(node), document(paragraph(text('See '), node)))
+  assert.deepEqual(read(htmlToAdf('<p><span class="adf-emoji">a&nbsp;&quot;b</span></p>\n')), document(paragraph({ attrs: { text: 'a\u00a0"b' }, type: 'emoji' })))
+})
+
+test('reads a carry element holding an emoji, status, date or URL card as that node', () => {
+  const emoji: AdfNode = { attrs: { text: '🎉' }, type: 'emoji' }
+  assert.deepEqual(read(htmlToAdf(`<p>${carry('span', emoji, '🎉')}</p>\n`)), document(paragraph(emoji)))
+})
+
+function adfToHtmlText(doc: AdfDocument): string {
+  const written = adfToHtml(doc)
+  return written.ok ? written.value : written.error.message
+}
+
 // Each group's cases, the HTML and its refusal.
 const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
   'refuses block shapes adfToHtml would not write': [
@@ -239,6 +262,28 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
   'refuses an edit to what a carry element shows': [
     [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'unmappable-html at /content/1 line 2 offset 9'],
     [`<p>Ask ${carry('span', mention, '')}</p>\n`, 'unmappable-html at /content/0/content/1 line 1 offset 0'],
+  ],
+  'refuses an emoji, status, date or URL card element that is not as adfToHtml writes it': [
+    ['<p><span class="adf-emoji"></span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji">a<b>b</b></span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji">a</p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji">a&b</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji" data-short-name=":a:" data-id="1">a</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji" data-size="big">a</span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji" data-text="a">a</span></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-emoji" id="x">a</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><span class="adf-status" class="adf-status">a</span></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time class="adf-date" data-timestamp="1756080000000">2025-08-25</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time class="adf-date" datetime="2025-08-26" data-timestamp="1756080000000">2025-08-26</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">Today</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time class="adf-date" datetime="2025-08-25">2025-08-25</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time class="adf-date" datetime="x" data-timestamp="x">x</time></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><time datetime="2025-08-25">2025-08-25</time></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" href="">a</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" href="https://example.com/" title="t">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" href="https://example.com/" data-data="{}">https://example.com/</a></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
   ],
   'refuses the document\'s carry anywhere but as the whole document, a line feed ending it': [
     [documentCarry, 'unmappable-html at / line 1 offset 0'],

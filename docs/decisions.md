@@ -442,8 +442,26 @@ it joins the second panel's `<a>` to that portable spelling.
 Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
 text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone.
 Atlassian's schema gives no card a link mark, so only a hand-built document meets this;
-`todo.md` item 133 ends it for inline cards, in 0.3.0. Recorded 2026-10-24 without a panel of its
-own: it puts the second panel's `<a>` around the text a card shows.
+`todo.md` item 133 ends it for a card holding `data` or a link mark, in 0.3.0. Recorded 2026-10-24
+without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
+
+A fifth panel (2026-11-04, three readers in the same roles, then four more for what the first three
+split on) picked how an emoji, status, date and inline card are written, the nodes the carry held.
+The first three picked each of these 3 of 3:
+
+- an emoji as `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its text
+  the content, over an `<img>`;
+- a status as `<span class="adf-status" data-color="yellow">In review</span>`;
+- a card holding a URL as `<a class="adf-inline-card" href="https://example.com/spec">https://example.com/spec</a>`,
+  over a `data-url` beside the `href`.
+
+Seven readers picked a date as
+`<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`,
+5 of 7: the day for people, the exact timestamp for scripts. Two splits stay open and ride the carry,
+`todo.md` item 133: a mention's `data-id`, `data-access-level` and `data-user-type` drew 4 of 7, over
+`data-mention-id` 2 and `data-user-id` 1; a card holding `data` and no URL drew `<a … href data-data>`
+3, `<a … data-card>` 2 and `<span … data-data>` 2. The link-marked card's spelling hangs on that
+one. So a card holding `data` or a mark rides the carry too.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 

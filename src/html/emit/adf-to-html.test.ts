@@ -140,6 +140,37 @@ test('carries every other node in an adf-carry element holding its JSON', () => 
   assert.equal(html(adfToHtml(document(paragraph(text('Ask '), mention)))), '<p>Ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;,&quot;text&quot;:&quot;@Mikael&quot;},&quot;type&quot;:&quot;mention&quot;}">@Mikael</span></p>\n')
 })
 
+test('writes an emoji, status, date and URL card as their elements, their attributes data-* sorted by name', () => {
+  const inline = (node: AdfNode): string => html(adfToHtml(document(paragraph(text('See '), node))))
+  assert.equal(inline({ attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' }), '<p>See <span class="adf-emoji" data-id="1f389" data-local-id="e1" data-short-name=":tada:">🎉</span></p>\n')
+  assert.equal(inline({ attrs: { text: '<3' }, type: 'emoji' }), '<p>See <span class="adf-emoji">&lt;3</span></p>\n')
+  assert.equal(inline({ attrs: { color: 'yellow', localId: 's1', style: 'bold', text: 'In review' }, type: 'status' }), '<p>See <span class="adf-status" data-color="yellow" data-local-id="s1" data-style="bold">In review</span></p>\n')
+  assert.equal(inline({ attrs: { localId: 'd1', timestamp: '1756080000000' }, type: 'date' }), '<p>See <time class="adf-date" datetime="2025-08-25" data-local-id="d1" data-timestamp="1756080000000">2025-08-25</time></p>\n')
+  assert.equal(inline({ attrs: { localId: 'c1', url: 'https://example.com/spec?a=1&b=2' }, type: 'inlineCard' }), '<p>See <a class="adf-inline-card" href="https://example.com/spec?a=1&amp;b=2" data-local-id="c1">https://example.com/spec?a=1&amp;b=2</a></p>\n')
+})
+
+test('carries an emoji, status, date or URL card the element cannot hold', () => {
+  const carried = (node: AdfNode): boolean => html(adfToHtml(document(paragraph(node)))).includes('adf-carry')
+  const comment: AdfMark = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
+  assert.equal(carried({ attrs: { text: '🎉' }, marks: [comment], type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { shortName: ':tada:' }, type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { text: '' }, type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { text: 'a\u0001' }, type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { size: 'big', text: '🎉' }, type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { id: 5, text: '🎉' }, type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { text: '🎉' }, content: [], type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { color: 'red' }, type: 'status' }), true)
+  assert.equal(carried({ attrs: { timestamp: 'soon' }, type: 'date' }), true)
+  assert.equal(carried({ attrs: { timestamp: 1756080000000 }, type: 'date' }), true)
+  assert.equal(carried({ type: 'date' }), true)
+  assert.equal(carried({ attrs: { data: { name: 'Roadmap' } }, type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { data: { name: 'Roadmap' }, url: 'https://example.com/' }, type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.org/' }, type: 'link' }], type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { url: '' }, type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { url: 'https://example.com/\u0001' }, type: 'inlineCard' }), true)
+  assert.equal(carried({ attrs: { id: '5b10a2', text: '@Mikael' }, type: 'mention' }), true)
+})
+
 test('shows each block a carried node holds as a paragraph in a div', () => {
   const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.')), paragraph(text('Then import.'))], type: 'panel' }
   assert.equal(shown(html(adfToHtml(document(panel)))), '<p>Check the collation.</p><p>Then import.</p>')
@@ -199,11 +230,11 @@ test('shows a code block in a span carry as text, its line feeds line breaks', (
 
 test('shows the content a carried node holds in an attribute, and links a card or an external image to its URL', () => {
   const inline = (node: AdfNode): string => shown(html(adfToHtml(document(paragraph(node)))))
-  assert.equal(inline({ attrs: { timestamp: '1700000000000' }, type: 'date' }), '2023-11-14')
-  assert.equal(inline({ attrs: { shortName: ':smile:', text: '😄' }, type: 'emoji' }), '😄')
+  assert.equal(inline({ attrs: { timestamp: '1700000000000' }, marks: [{ attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }], type: 'date' }), '2023-11-14')
+  assert.equal(inline({ attrs: { shortName: ':smile:', text: '😄' }, marks: [{ attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }], type: 'emoji' }), '😄')
   assert.equal(inline({ attrs: { id: '5b10a2' }, type: 'mention' }), '@5b10a2')
-  assert.equal(inline({ attrs: { color: 'green', text: 'Done' }, type: 'status' }), 'Done')
-  assert.equal(inline({ attrs: { url: 'https://example.com/<card>' }, type: 'inlineCard' }), '<a href="https://example.com/&lt;card&gt;">https://example.com/&lt;card&gt;</a>')
+  assert.equal(inline({ attrs: { color: 'green', text: 'Done' }, marks: [{ attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }], type: 'status' }), 'Done')
+  assert.equal(inline({ attrs: { url: 'https://example.com/<card>' }, marks: [{ attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }], type: 'inlineCard' }), '<a href="https://example.com/&lt;card&gt;">https://example.com/&lt;card&gt;</a>')
   assert.equal(inline({ attrs: { data: { name: 'Roadmap' } }, type: 'inlineCard' }), 'Roadmap')
   assert.equal(inline(text('underlined', { type: 'underline' })), 'underlined')
   const image = (media: AdfNode): string => shown(html(adfToHtml(document({ attrs: { layout: 'wide' }, content: [media], type: 'mediaSingle' }))))
@@ -296,7 +327,7 @@ test('writes every URL as the ADF holds it, escaped, whatever its scheme', () =>
   assert.equal(linked('data:text/html,<b>x</b>'), '<p><a href="data:text/html,&lt;b&gt;x&lt;/b&gt;">x</a></p>\n')
   const image: AdfNode = { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'vbscript:x' }, type: 'media' }], type: 'mediaSingle' }
   assert.equal(html(adfToHtml(document(image))), '<p><img src="vbscript:x"></p>\n')
-  assert.equal(shown(html(adfToHtml(document(paragraph({ attrs: { url: 'javascript:alert(1)' }, type: 'inlineCard' }))))), '<a href="javascript:alert(1)">javascript:alert(1)</a>')
+  assert.equal(html(adfToHtml(document(paragraph({ attrs: { url: 'javascript:alert(1)' }, type: 'inlineCard' })))), '<p><a class="adf-inline-card" href="javascript:alert(1)">javascript:alert(1)</a></p>\n')
 })
 
 test('writes a container holding no content key as its element holding nothing', () => {
