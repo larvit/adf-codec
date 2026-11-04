@@ -172,7 +172,6 @@ test('carries an emoji, mention, status, date or card holding what its element c
   for (const timestamp of ['253402300799999', '-62135596800000']) assert.equal(carried({ attrs: { timestamp }, type: 'date' }), false)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap' } }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap' }, url: 'https://example.com/' }, type: 'inlineCard' }), true)
-  assert.equal(carried({ attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.org/' }, type: 'link' }], type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { url: '' }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { url: 'https://example.com/\u0001' }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap', url: 'https://example.com/' } }, marks: [comment], type: 'inlineCard' }), true)
@@ -278,9 +277,22 @@ test('shows a carried image marked by a link to another target as that link, the
   assert.equal(inline({ attrs: { href: 'https://example.com/', title: 5 }, type: 'link' }), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
 })
 
-test('links a carried card a link marks to that link\'s target alone', () => {
+test('links a card a link marks, inside a carried node, to that link\'s target alone', () => {
   const card: AdfNode = { attrs: { url: 'https://example.com/roadmap' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
-  assert.equal(shown(html(adfToHtml(document(paragraph(card))))), '<a href="https://example.com/">https://example.com/roadmap</a>')
+  assert.equal(shown(html(adfToHtml(document({ content: [paragraph(card)], type: 'panel' })))), '<p><a href="https://example.com/">https://example.com/roadmap</a></p>')
+})
+
+test('refuses an inline card a link marks, which ADF\'s schema gives no link mark', () => {
+  const marks: AdfMark[] = [{ attrs: { href: 'https://example.com/' }, type: 'link' }]
+  const cards: AdfNode[] = [{ attrs: { url: 'https://example.com/roadmap' }, marks, type: 'inlineCard' }, { attrs: { data: { name: 'Roadmap', url: 'https://example.com/roadmap' } }, marks, type: 'inlineCard' }]
+  for (const card of cards) {
+    const refused = adfToHtml(document(paragraph(text('See '), card)))
+    assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
+    assert.deepEqual(!refused.ok && refused.error.path, ['content', 0, 'content', 1])
+    assert.match(!refused.ok ? refused.error.message : '', /inlineCard.*link/)
+  }
+  const nested = adfToHtml(document({ content: [{ content: [paragraph(cards[0] ?? text('x'))], type: 'listItem' }], type: 'bulletList' }))
+  assert.deepEqual(!nested.ok && nested.error.path, ['content', 0, 'content', 0, 'content', 0, 'content', 0])
 })
 
 test('shows a note naming what a carried node references where it shows no text, linked where a link marks the node', () => {

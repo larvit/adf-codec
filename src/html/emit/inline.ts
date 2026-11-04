@@ -5,13 +5,16 @@ import { elementOfMark } from '../mark-elements.ts'
 import { holdsOnlyAttributes, isSpellableText, isUnmarkedSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
 import { nodeElement } from './node-element.ts'
-import { success, type ConvertErrorPath, type Result } from '../../result.ts'
+import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { writableValue } from '../escaping.ts'
 
 export function inlineHtml(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<string> {
   let html = ''
   let afterPlainText = false
   for (const [index, node] of nodes.entries()) {
+    if (node.type === 'inlineCard' && nodeMarks(node).some(({ type }) => type === 'link')) {
+      return failure('unsupported-node-shape', 'An inlineCard takes no link mark in ADF.', [...path, 'content', index])
+    }
     // Two unmarked text nodes side by side read back as one, so the second rides the carry.
     const written: string | undefined = afterPlainText && isUnmarkedSpellableText(node) ? undefined : tryInlineNode(node)
     if (written === undefined) {

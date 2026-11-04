@@ -17,7 +17,8 @@
   `localId` as `data-local-id`. Every other node is an element of class `adf-carry` holding the
   node's JSON in `data-adf` and showing its content, links included. Every URL is written as the
   ADF holds it, `javascript:` included: sanitize HTML from an author you do not trust before
-  showing it.
+  showing it. It refuses an inline card a link marks, which Atlassian's schema does not allow, as
+  `unsupported-node-shape`.
 - `htmlToAdf` reads `adfToHtml`'s HTML back to the document it came from, a carry element from its
   `data-adf`. It reads that HTML as a browser's `innerHTML` writes it too (a raw `"` in text,
   `&nbsp;`, a raw `<` or `>` in an attribute value) and as a form post sends it (`\r\n` for each

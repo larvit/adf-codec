@@ -646,6 +646,8 @@ Every call can raise these:
   twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node
   holding `content`. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
+- **Writing, in `adfToHtml`**: an inline card marked by a link, which Atlassian's schema does not
+  allow. Remove the mark; where you hold the ADF, the message's path names the card.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
 - **Past the engine's longest string**:
