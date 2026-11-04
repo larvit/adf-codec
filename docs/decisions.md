@@ -442,7 +442,7 @@ it joins the second panel's `<a>` to that portable spelling.
 Inside a carry element, a card a link marks links to the link's target, and shows its own URL as its
 text where it has one, so both stay. A card showing only its name keeps its URL in `data-adf` alone.
 Atlassian's schema gives no card a link mark, so only a hand-built document meets this;
-`todo.md` item 133 ends it, in 0.3.0, by writing such cards as their own element. Recorded 2026-10-24
+`todo.md` item 133 settles, in 0.3.0, how such a card is written. Recorded 2026-10-24
 without a panel of its own: it puts the second panel's `<a>` around the text a card shows.
 
 A fifth panel (2026-11-04, three readers in the same roles, then four more for what the first three
@@ -463,9 +463,7 @@ Seven readers picked a date as
 and `<span … data-data>` 2. The maintainer took the leading spelling of each, 2026-11-04:
 
 - a mention is `<span class="adf-mention" data-access-level="CONTAINER" data-id="5b10a2" data-user-type="DEFAULT">@Mikael</span>`, its `text` the content;
-- a card holding `data` and no URL is `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`, `href` the URL its `data` holds and the text its name, else that URL. A card holding both `data` and a `url` rides the carry, since read back its `href` would not say which of the two it spells.
-
-A card a link marks waits on a spelling of its own, `todo.md` item 133, so it rides the carry.
+- a card holding `data` and no URL is `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`, `href` the URL its `data` holds and the text its name, else that URL. A card holding both `data` and a `url` rides the carry: its `href`, read back, could not say which of the two URLs it spells.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 

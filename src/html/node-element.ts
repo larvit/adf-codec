@@ -4,7 +4,7 @@ import { inlineNodeModel } from '../adf/inline-nodes.ts'
 import { nodeAttrs } from '../adf/document.ts'
 import { shownText, shownUrl } from '../adf/shown-text.ts'
 
-// `shown` is the text the element holds and `leading.value` the attribute right after the class, each `undefined` where the node cannot be written as this element and rides the carry. The reader builds the node from the element's `data-*` attributes and text, then holds both to what `shown` and `leading.value` answer for it, so only what the writer writes reads back. `written` names the attributes the text stands in for, which no `data-*` attribute repeats.
+// `shown` is the text the element holds and `leading.value` the attribute right after the class, each `undefined` where the node cannot be written as this element and rides the carry. The reader builds a node from the element's `data-*` attributes and text, and refuses it unless `shown` and `leading.value` give back that text and attribute, so only what the writer writes reads back. `written` names the attributes no `data-*` attribute may hold, since the text or `leading` spells them.
 export type NodeElement = {
   build(data: AdfAttributes, shown: string): AdfAttributes
   class: string
@@ -33,7 +33,7 @@ const nodeElements: Readonly<Record<string, NodeElement>> = {
     class: 'adf-inline-card',
     element: 'a',
     leading: { name: 'href', value: (node) => card(node)?.href },
-    mismatch: 'holds one URL, as its href and as its text, or the name and URL its data-data holds, as its text and its href; to change the card, change them together',
+    mismatch: 'holds one URL, as its href and as its text, or the URL its data-data holds as its href and its name, else that URL, as its text; to change the card, change them together',
     shown: (node) => card(node)?.text,
     vocabulary: attributesOf('inlineCard'),
     written: ['url'],
@@ -46,7 +46,7 @@ function attributesOf(type: string): AttributeVocabulary {
   return inlineNodeModel(type)?.attributes ?? {}
 }
 
-// A card holding `data` shows its name and links to the URL `data` holds; one holding both `data` and a `url` rides the carry, since read back its href would not say which of the two it spells.
+// A card holding both `data` and a `url` rides the carry: its href, read back, could not say which of the two URLs it spells.
 function card(node: AdfNode): { href: string; text: string } | undefined {
   const { data, url } = nodeAttrs(node)
   if (data === undefined) return typeof url === 'string' && url !== '' ? { href: url, text: url } : undefined
