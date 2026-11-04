@@ -1,12 +1,12 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
-import type { RunGrouping, RunNode } from '../emit/inline-runs.ts'
+import type { RunGrouping } from '../emit/inline-runs.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { imageAside } from '../image-aside.ts'
-import { inlineRuns, insideRun, partedLine, spannedLine } from '../emit/inline-runs.ts'
+import { insideRun, runsSharedWithNext } from '../emit/inline-runs.ts'
 import { isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -34,7 +34,7 @@ export function reduceInline(nodes: readonly AdfNode[], container: LineContainer
 export function portableLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodes, container, path, depth)
   if (!leaves.ok) return leaves
-  return success(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value, spannedLine)), spannedLine))
+  return success(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value, 'spanned')), 'spanned'))
 }
 
 export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
@@ -198,22 +198,6 @@ function withoutEdgeBreaks(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.slice(first, last + 1)
 }
 
-// For each leaf but the last, how many runs of the line hold both it and the next leaf.
-function runsSharedWithNext(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
-  const shared = leaves.map(() => 0)
-  countSharedRuns(leaves.map((node) => ({ node, outer: 0 })), 0, grouping, shared)
-  return shared
-}
-
-// Recurses once per mark, and a portable leaf holds one mark of each kept type.
-function countSharedRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping, shared: number[]): void {
-  for (const run of inlineRuns(nodes, firstIndex, grouping)) {
-    if (run.kind === 'plain') continue
-    for (let index = run.index; index < run.index + run.nodes.length - 1; index += 1) shared[index] = (shared[index] ?? 0) + 1
-    countSharedRuns(run.nodes, run.index, grouping, shared)
-  }
-}
-
 function beside(neighbour: AdfNode | undefined, sharedRuns = 0): Beside {
   return { lineEdge: neighbour === undefined || neighbour.type === 'hardBreak', sharedRuns }
 }
@@ -256,17 +240,17 @@ function spellableLine(leaves: AdfNode[], container: LineContainer, path: Conver
     if (fallback === undefined) return success(line)
     const fixed = withoutFallback(line, fallback, path)
     if (!fixed.ok) return fixed
-    current = trimmedEdges(pass === readBackPasses ? withoutEmphasis(fixed.value) : fixed.value, spannedLine)
+    current = trimmedEdges(pass === readBackPasses ? withoutEmphasis(fixed.value) : fixed.value, 'spanned')
   }
 }
 
-// spec/flavour.md, Marks: the lines in the order the writer tries them, each trimmed by its own runs.
+// Judged as the writer writes a line: spanned where that reads back, else parted and trimmed by the parted runs, the line a fallback's indexes name.
 export function judgedLine(spanned: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<JudgedLine> {
-  const spannedFallback = portableLineFallback(spanned, container, path, spannedLine)
+  const spannedFallback = portableLineFallback(spanned, container, path, 'spanned')
   if (!spannedFallback.ok) return spannedFallback
   if (spannedFallback.value === undefined) return success({ fallback: undefined, leaves: [...spanned] })
-  const parted = trimmedEdges(spanned, partedLine)
-  const partedFallback = portableLineFallback(parted, container, path, partedLine)
+  const parted = trimmedEdges(spanned, 'parted')
+  const partedFallback = portableLineFallback(parted, container, path, 'parted')
   if (!partedFallback.ok) return partedFallback
   return success({ fallback: partedFallback.value, leaves: parted })
 }
@@ -279,7 +263,7 @@ export function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLi
 function withoutOpeningLinkCode(leaves: readonly AdfNode[]): AdfNode[] | undefined {
   const mark = nodeMarks(leaves[0] ?? {})[0]
   if (mark === undefined || mark.type !== 'link') return undefined
-  const past = leaves.findIndex((leaf) => insideRun({ node: leaf, outer: 0 }, mark) === undefined)
+  const past = leaves.findIndex((leaf) => insideRun({ carried: false, node: leaf, outer: 0 }, mark) === undefined)
   const end = past === -1 ? leaves.length : past
   // A code span is what binds the `]` a link definition reads, and dropping it keeps the link target.
   const spans = leaves.slice(0, end).some((leaf) => nodeMarks(leaf).length > 1 && nodeMarks(leaf).at(-1)?.type === 'code')

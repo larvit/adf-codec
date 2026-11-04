@@ -721,9 +721,11 @@ the maintainer decides. After the fifth ruling they gave the restructure to a su
 current design for a better reading rather than answer the ruling's places one by one (2026-11-04). A ruling judges the code, never the behaviour: item 91's spanning stays, since the
 paragraphs it spells, such as bold around a code span, occur in documents all the time
 (2026-11-03). The maintainer's call on how: refactor first, ruled alone (item 166), then make spanning part of
-grouping, with the span rule in one home. `inlineRuns` in `emit/inline-runs.ts` groups a line, `runCrosses` says which
-node a run passes, and a run ends at its last holder. Parting is a line's first fallback, so each pass walks once. The reducer
-judges the spanned line, then the parted line, each trimmed by its own runs through that same grouping. `withoutOpeningLinkCode`
+grouping, with the span rule in one home. `inlineRuns` in `emit/inline-runs.ts` groups a line spanned or parted, `runCrosses`
+says which node a run passes, and a run ends at its last holder. The writer tries the spanned line once and, where it needs any
+fallback, runs its fallback loop on the parted line, so `takeFallback` takes what it is handed; whether a node is carried is
+decided once per pass, on its `RunNode` (the restructure of 2026-11-04). The reducer judges the same two lines, each trimmed by
+its own runs, which `runsSharedWithNext` counts beside `inlineRuns`. `withoutOpeningLinkCode`
 stays on `insideRun` alone, since it answers the parted line. A refactor that merges as its own chunk took its own ruling,
 so the chunk's later rulings read against that merge, the commit `larv-review ruling-base` prints. A restructure past a
 pass's round cap still goes unreviewed, so the PR summary names it.
