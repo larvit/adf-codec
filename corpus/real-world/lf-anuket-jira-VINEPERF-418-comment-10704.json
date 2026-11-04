@@ -1,0 +1,85 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Lavender rosemary, glade ivy!",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Wren pine ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "sycamore willow/rosemary",
+          "type": "text"
+        },
+        {
+          "text": " mountain dawn moss trellis hi Morning ash. ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Beacon",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "language": "java"
+      },
+      "content": [
+        {
+          "text": "Spire fountain [r33_69-lichen-mountain-ash]\nSterling cinder ivy dawn Z emerald ash SHIMMER splendid\n-- Fountain sage\n-- Mountain sage\n-- Spire gorge wren dusk lantern yz: /able/olive/Morning-willow/beach\nRosemary sycamore hi modern Morning\nSapling ASH rosemary Morning\n[991%] Cedar modern Morning",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Lavender pine",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "language": "java"
+      },
+      "content": [
+        {
+          "text": "# ivy dawn Splendid.ash\ndawn --ivy e/Splendid.ash u/Splendid.ash\nbrook 3a41c54..41d641d 740585\n--- e/Splendid.ash\n+++ u/Splendid.ash\n@@ -68,5 +68,1 @@ IVY(STORK\n        ash/lavender.ash\n        ash/reef.l\n        ash/onyx_glimmer.ash\n-       ash/ash.l\n )",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

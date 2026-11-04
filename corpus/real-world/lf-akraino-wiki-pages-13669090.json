@@ -1,0 +1,44 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "extensionKey": "children",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "Glade spire"
+          },
+          "macroParams": {}
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "attrs": {
+        "extensionKey": "toc",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "b08714be-bf84-740f-872f-d3512baaec48"
+            },
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "Gorge hi Lavender"
+          },
+          "macroParams": {}
+        }
+      },
+      "type": "extension"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

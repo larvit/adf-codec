@@ -1,0 +1,177 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Glade, wren pine lavender - H ivy ash lavender ash ir ivy spire zyzeu3/lcn3 - H'wn dawn moss sage.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "H ash rosemary gorge q un Trellis sycamore ci Willow (wren morning) olive rosemary ash ivy beach um ash cedar ASH_MOUNTAIN_BEACON/IVY_BROOK_BEACON fountain um wren rp mountain ash lichen dusk sterling - ir able cinder ash sycamore ash - stork ash.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "H sleet pine emerald dawn ir reef modern ash q pillar wd IVY dapple (onyx window ir fern pine  ASH_*) ivy pn ash wq dawn quiet<mf6>/ash<nz9> jb fern um timber shimmer tarn splendid vine ash lantern ribbon (um wren rp fountain) - H rosemary ash coral un ivy slope mountain wd dapple window rp mf q gull ivy - ash sage sleet rosemary pollen hazel H tarn kettle pw sapling cove rp sycamore/sleet/ledger/rosemary/ivy/raven.teak.sycamore lavender - olive early um teak fable wd shimmer splendid dapple vine ash mossy (sleet beacon fern 9 lavender?).",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "__autoSize": true,
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "http://<Tranquil BS>:9174/dapple/twilight.ASH_MOUNTAIN_BEACON/",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#ff0000"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "glimmer/0",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "?juniper=58568",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "sage teak q sterling timber (ash tranquil?) ash fern able ash ash dapple vivid ci \"jasmine\"",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "content": [
+        {
+          "text": "Harvest hazel H vivid ash woodland lavender rp ash wharf/cedar rosemary (ash lily edcz5 ash ash ash lantern-ribbon OL) - H ash'w wq lily.  Silver ash vesper di able wd ash ASH coral fountain vine gleam rp ash Q0",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Jg vesper um tarn lavender cliff dl glacier mf ash zephyr - ash IVY cove sage wisp q [] dream ravine ash q swallow UT zu q gable ivy cove.  Ft sage reed wisp dl ravine hl ash dapple reef shimmer splendid - ash cottage ds again 38 ash drizzle beach - rp un mountain /glimmer/0 jb able tranquil",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "ash woodland ash juniper, eagle ivy dl granite sterling sr granite clover ash wq pw arrow.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Pm ash ivy splendid mf ASH_MOUNTAIN_BEACON - clover wq pw coral arrow 46 ash - sage jb vine ash splendid um ash Flint fountain - di aspen.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "full-width"
+      },
+      "content": [
+        {
+          "attrs": {
+            "__fileMimeType": "lunar/ash",
+            "__fileName": "Lavender 2580-61-10 95.48.13.ash",
+            "__fileSize": 581558,
+            "collection": "fountain-64259304",
+            "height": 1718,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file",
+            "width": 2808
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "content": [
+        {
+          "text": "/vibrant",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,250 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "width": 50
+          },
+          "content": [
+            {
+              "attrs": {
+                "panelType": "success"
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Trellis",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "Wren ivy PINE Morning Dawn ash ash h Trellis willow Moss",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "panel"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 100
+          },
+          "content": [
+            {
+              "attrs": {
+                "order": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Ir ivy Morning Glade, beacon Trellis",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "extensionKey": "inline-external-image",
+                            "extensionType": "com.atlassian.confluence.migration",
+                            "parameters": {
+                              "height": "586",
+                              "src": "https://sage.wren-z.ivy/lavender/rosemary/3369991/Sycamore.ASH?emerald=7&rosemary=4058568503846&ash=y5",
+                              "width": "815"
+                            }
+                          },
+                          "type": "inlineExtension"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Dusk h ivy Trellis able ash spire Ivy lichen",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "extensionKey": "inline-external-image",
+                            "extensionType": "com.atlassian.confluence.migration",
+                            "parameters": {
+                              "height": "",
+                              "src": "https://sage.wren-z.ivy/lavender/rosemary/3369991/Mountain.ASH?emerald=7&rosemary=4058568503846&ash=y5",
+                              "width": "4259"
+                            }
+                          },
+                          "type": "inlineExtension"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Ze able ivy Trellis cinder ash ivy fountain ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "Trellis Pine",
+                          "type": "text"
+                        },
+                        {
+                          "text": ", ul ash shimmer modern",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "orderedList"
+            },
+            {
+              "attrs": {
+                "extensionKey": "legacy-content",
+                "extensionType": "com.atlassian.confluence.migration",
+                "parameters": {
+                  "cxhtml": "<cn><wn olive=\"dawn-olive-reef: onyx;sterling-beach: onyx;\"><cn><wn>Mountain</wn><wn>Lantern</wn><wn>Gorge</wn><wn>...</wn></cn></wn></cn>",
+                  "nestedContent": {
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "content": [
+                              {
+                                "content": [
+                                  {
+                                    "content": [
+                                      {
+                                        "content": [
+                                          {
+                                            "text": "Mountain",
+                                            "type": "fern"
+                                          }
+                                        ],
+                                        "type": "mountain"
+                                      }
+                                    ],
+                                    "type": "fountain"
+                                  },
+                                  {
+                                    "content": [
+                                      {
+                                        "content": [
+                                          {
+                                            "text": "Lantern",
+                                            "type": "fern"
+                                          }
+                                        ],
+                                        "type": "mountain"
+                                      }
+                                    ],
+                                    "type": "fountain"
+                                  },
+                                  {
+                                    "content": [
+                                      {
+                                        "content": [
+                                          {
+                                            "text": "Gorge",
+                                            "type": "fern"
+                                          }
+                                        ],
+                                        "type": "mountain"
+                                      }
+                                    ],
+                                    "type": "fountain"
+                                  },
+                                  {
+                                    "content": [
+                                      {
+                                        "content": [
+                                          {
+                                            "text": "...",
+                                            "type": "fern"
+                                          }
+                                        ],
+                                        "type": "mountain"
+                                      }
+                                    ],
+                                    "type": "fountain"
+                                  }
+                                ],
+                                "type": "splendid"
+                              }
+                            ],
+                            "type": "fountain"
+                          }
+                        ],
+                        "type": "splendid"
+                      }
+                    ],
+                    "type": "ash",
+                    "version": 3
+                  },
+                  "reason": "cedar-brook-dawn-rosemary"
+                },
+                "text": "Mountain Lantern Gorge ..."
+              },
+              "type": "extension"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

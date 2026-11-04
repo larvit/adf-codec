@@ -1,0 +1,31 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "3a41c5441d64"
+      },
+      "content": [
+        {
+          "text": "Hi glade ivy lavender spire rosemary Gorge sycamore wren trellis ash rz willow beacon yz ash morning. Eu lc rosemary nw mountain ash lichen ivy fountain, mountain, ash olive:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+        "wrap": true
+      },
+      "content": [
+        {
+          "text": "sterling.emerald.nq = 3369 \nsterling.emerald.ash.nq = 99174 ",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

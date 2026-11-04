@@ -1,0 +1,300 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Wren ivy'hi trellis morning ivy'rz pine yz glade eu dawn moss sage emerald. ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Lavender ash lc ash ivy wren ash ivy, dusk spire ivy ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Gorge",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " willow.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "marks": [
+        {
+          "attrs": {
+            "level": 1
+          },
+          "type": "indentation"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ash'n able shimmer olive pine dawn. ",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "text": "Beach ivy ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Gorge",
+                  "type": "text"
+                },
+                {
+                  "text": " willow wn ivy ivy cedar qu ivy dawn. Nc brook reef pine:",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "text": " ",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "attrs": {
+                    "extensionKey": "inline-external-image",
+                    "extensionType": "com.atlassian.confluence.migration",
+                    "parameters": {
+                      "height": "",
+                      "src": "https://onyx.stork.ash/rosemary/sycamore/336999/iumr17-40.ivy?lantern=5&rosemary=8568503846581&ash=p5",
+                      "width": "586"
+                    }
+                  },
+                  "type": "inlineExtension"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "text": " ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Fern ivy fern qu ivy beacon wd sleet ivy pine yz glade ivy dawn dawn. ",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "text": "Ash ash tarn quiet pn coral sapling. ",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ash w glimmer yz vine ivy beacon gull mountain olive ivy dawn.",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Beach ivy ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Gorge",
+                  "type": "text"
+                },
+                {
+                  "text": " willow. ",
+                  "type": "text"
+                },
+                {
+                  "type": "hardBreak"
+                },
+                {
+                  "text": "Lavender tarn cove ivy beacon pn coral glimmer olive pine dawn. Lichen!",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "id": "fountain-juniper",
+            "shortName": ":juniper:",
+            "text": ":juniper:"
+          },
+          "type": "emoji"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " Ivy ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Gorge",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " willow teak jasmine qm moss mountain ivy sterling w teak cinder. Fn Lavender Slope, pine zj ash ash bm ash ivy. ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "extensionKey": "inline-external-image",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "height": "",
+              "src": "https://onyx.stork.ash/rosemary/sycamore/425930/sage.ash?lantern=5&rosemary=8568503846581&ash=p5",
+              "width": ""
+            }
+          },
+          "type": "inlineExtension"
+        },
+        {
+          "attrs": {
+            "extensionKey": "inline-external-image",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "height": "",
+              "src": "https://onyx.stork.ash/rosemary/sycamore/425930/able.ash?lantern=5&rosemary=8568503846581&ash=p5",
+              "width": ""
+            }
+          },
+          "type": "inlineExtension"
+        }
+      ],
+      "type": "heading"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,77 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Wren lavender, rosemary, sycamore ivy trellis rosemary hi mountain fountain rz y mountain sterling ze morning ivy willow splendid fountain ul ivy beacon glade lichen. Cn mountain ze lavender wn rosemary sycamore, y rosemary, lavender lavender cinder qu emerald, ze shimmer ash splendid ul-spire ash pine lavender, ash gorge y Modern olive qu dawn. Ivy pillar qu tranquil lantern twilight sterling, gorge sapling ze glimmer y moss beach hi lavender cedar wn juniper tranquil ash woodland sage jasmine wn ivy lavender lavender. Cn brook ze dapple y rosemary harvest hi wren glacier, ivy olive fountain mountain ivy tranquil ash woodland hi dusk sterling splendid splendid ash mountain fountain splendid stork swallow beacon glade lichen, gorge ash fountain ul ivy lavender.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Fountain lavender",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": ":",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#404040"
+              },
+              "type": "textColor"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "collection": "lavender-33699917",
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+          },
+          "type": "mediaInline"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

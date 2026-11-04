@@ -1,0 +1,48 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "language": "java"
+      },
+      "type": "codeBlock"
+    },
+    {
+      "content": [
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

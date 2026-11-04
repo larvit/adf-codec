@@ -1,0 +1,373 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Trellis",
+          "type": "text"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "      Wren Glade     ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://spire.lavender.ivy/h/rosemary-sycamore-rosemary-ir"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://spire.lavender.ivy/h/rosemary-sycamore-rosemary-ir",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Mountain zy Fountain Mountain Morning Glade",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "         Sterling Willow Sterling Willow Beacon /Pine ze Emerald",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Splendid dawn lichen ul ash moss: ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "CN.",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Cinder Gorge  : Olive Sage ash BEACH",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "IVY. Ash Modern / Fountain",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "WN. ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            },
+            {
+              "attrs": {
+                "href": "https://qu-lavender.mountain.ash/wren/shimmer/BEACH/Ivy+Ash+Rosemary"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Pillar",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            },
+            {
+              "attrs": {
+                "href": "https://qu-lavender.mountain.ash/wren/shimmer/BEACH/Ivy+Ash+Rosemary"
+              },
+              "type": "link"
+            }
+          ],
+          "text": " Sycamore",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://qu-lavender.mountain.ash/wren/shimmer/BEACH/Ivy+Ash+Rosemary"
+              },
+              "type": "link"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "  Ivy ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://dapple.ash/lavender/rosemary-sycamore-ash"
+              },
+              "type": "link"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "https://dapple.ash/lavender/rosemary-sycamore-ash",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "N. Rosemary ze Morning Window: Timber ASH lavender  ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "CI. Dusk / Cedar (Lantern ivy Splendid) ",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "IVY Ash Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "ABLE. Ivy Lavender: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Tranquil",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": " Ash Brook Twilight : Sterling ivy Tranquil",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Stork:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

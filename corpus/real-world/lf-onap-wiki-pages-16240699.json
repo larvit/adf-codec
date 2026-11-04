@@ -1,0 +1,409 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "LAVENDER, ivy rosemary wren glade hi",
+          "type": "text"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://ze-dawn.fountain.ash/moss/beacon/UL/spire/36999174"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Willow pine rz Y3 sycamore rosemary mountain",
+          "type": "text"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "C0 trellis Mountain sterling",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Splendid sage Gorge-olive morning ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Emerald wren-beach shimmer lichen nw ASH dusk fountain cedar BROOK stork",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Sleet ivy lichen quiet (NQ, Cinder, ABLE Mountain, CORAL, Modern, U&NC pillar, ivy) ash pine dawn iu rosemary reef rz shimmer lichen",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ASH slope sycamore",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "IVY onyx rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "extensionKey": "detailssummary",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "layout": "full-width",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "5"
+            },
+            "title": "Fern Twilight Window"
+          },
+          "macroParams": {
+            "cql": {
+              "value": "sleet = \"splendid-lavender\" ash raven = tranquil ( )"
+            },
+            "headings": {
+              "value": "Lavender,Lantern,Ash Hazel,C0 Dapple,Y3 Dapple"
+            },
+            "sortBy": {
+              "value": "Lavender"
+            }
+          }
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "attrs": {
+        "title": "Ivy hi ash mr fern..."
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Pw ash d trellis lavender:",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Tarn ash rz ash sterling sterling.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Early ash ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "layout": "align-start",
+                    "width": 34,
+                    "widthType": "pixel"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "collection": "tranquil-85685038",
+                        "height": 19,
+                        "id": "b08714be-bf84-740f-872f-d3512baaec48",
+                        "type": "file",
+                        "width": 34
+                      },
+                      "type": "media"
+                    }
+                  ],
+                  "type": "mediaSingle"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "timber pn ash ivy fable, hi vine ash gull tarn, ash ribbon Cove.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Window ash woodland.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Lavender ash pollen sapling iu rosemary.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Teak teak ash ivy gull ash ash sleet ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "splendid-lavender",
+                      "type": "text"
+                    },
+                    {
+                      "text": ", wq mf nz fountain nw ash mossy vivid.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        }
+      ],
+      "type": "expand"
+    },
+    {
+      "attrs": {
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "marks": [
+                {
+                  "type": "strong"
+                }
+              ],
+              "text": "Glimmer Vivid",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://ze-dawn.fountain.ash/moss/beacon/UL/spire/46581558"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Y3 mountain ash Ivy-sycamore rosemary",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://ze-dawn.fountain.ash/moss/beacon/UL/spire/42593042"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Lantern rz Tranquil Mountain Woodland juniper sage 6J Ash Able",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://ze-dawn.fountain.ash/moss/beacon/UL/spire/58061109"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Lantern rz Tranquil Mountain Woodland juniper sage WHARF Ash Able",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        }
+      ],
+      "type": "panel"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

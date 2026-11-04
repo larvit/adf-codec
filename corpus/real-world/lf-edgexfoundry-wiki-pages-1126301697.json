@@ -1,0 +1,40 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "3a41c5441d64"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Ivy ash Glade trellis wren: ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "1d8d074ef44f",
+            "url": "https://hi-lavender.rosemary.ash/pine/willow/RZ/spire/3369991740"
+          },
+          "type": "inlineCard"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "7f31bac87cc3"
+      },
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

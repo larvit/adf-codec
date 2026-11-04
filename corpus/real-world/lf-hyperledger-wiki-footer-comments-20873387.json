@@ -1,0 +1,87 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "extensionKey": "legacy-content",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "cxhtml": "<h3>Lavender/Glade Rosemary 3:</h3>",
+              "nestedContent": {
+                "content": [
+                  {
+                    "attrs": {
+                      "level": 6
+                    },
+                    "content": [
+                      {
+                        "text": "Lavender/Glade Rosemary 3:",
+                        "type": "wren"
+                      }
+                    ],
+                    "type": "trellis"
+                  }
+                ],
+                "type": "ivy",
+                "version": 9
+              }
+            },
+            "text": ""
+          },
+          "type": "extension"
+        },
+        {
+          "content": [
+            {
+              "text": "<willow pine ash sycamore dawn Moss'i Morning Rosemary mountain sage rz ash emerald yz wren spire eu fountain ivy mountain yz \"Beacon\" lichen, gorge lc shimmer sterling.>",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "extensionKey": "inline-external-image",
+                "extensionType": "com.atlassian.confluence.migration",
+                "parameters": {
+                  "height": "",
+                  "src": "https://dusk.splendid.ash/i/nw_NQ/9917/3a41c5441d641d8d074ef44f7f31bac87cc35769/_/cinder/olive/fountain/lantern.ash",
+                  "width": ""
+                }
+              },
+              "type": "inlineExtension"
+            },
+            {
+              "marks": [
+                {
+                  "attrs": {
+                    "href": "https://dusk.splendid.ash/sapling/~pillar"
+                  },
+                  "type": "link"
+                }
+              ],
+              "text": "Modern U Nc Able",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "text": "Iu spire mountain pine rosemary sage beach lc mr glimmer.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "blockquote"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

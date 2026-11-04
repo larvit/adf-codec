@@ -1,0 +1,713 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#ff0000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Glade Lavender Rosemary ivy spire hi ash Wren Willow Sycamore. Pine dawn rz ash trellis morning ivy moss sage ash rosemary ivy mountain fountain.",
+          "type": "text"
+        }
+      ],
+      "marks": [
+        {
+          "attrs": {
+            "align": "center"
+          },
+          "type": "alignment"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#ff0000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Beacon gorge hi ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://lichen.ash/mountain-sterling/olive-splendid-fountain/wren/Emerald-Mountain"
+              },
+              "type": "link"
+            },
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#ff0000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "https://lichen.ash/mountain-sterling/olive-splendid-fountain/wren/Emerald-Mountain",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#ff0000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ash yz hi dusk shimmer rosemary.",
+          "type": "text"
+        }
+      ],
+      "marks": [
+        {
+          "attrs": {
+            "align": "center"
+          },
+          "type": "alignment"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "Sycamore hi lantern able:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://beach.rosemary.ivy/e/cedar"
+              },
+              "type": "link"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "https://beach.rosemary.ivy/e/cedar",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "Brook Lavender:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://beach.rosemary.ivy/e/cedar/splendid"
+              },
+              "type": "link"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "https://beach.rosemary.ivy/e/cedar/splendid",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "Sapling:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://glimmer.ul/c3nW3nqu"
+              },
+              "type": "link"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "https://glimmer.ul/c3nW3nqu",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "Cinder Lavender:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://lichen.ash/rosemary/cedar-splendid-fountain"
+              },
+              "type": "link"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "https://lichen.ash/rosemary/cedar-splendid-fountain",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "strike"
+            }
+          ],
+          "text": "Emerald Juniper:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 3254.472
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  562.97
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Pine",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  1223.41
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Jasmine ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  292.43
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Tranquil",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  1175.67
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Modern",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  562.97
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "Glade Lavender NC Dawn",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  1223.41
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#172b4d"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "Pine shimmer rz ash twilight hi stork ivy reef ash harvest, ivy glacier pillar.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#172b4d"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "Onyx: ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://fern.iu/m/69991740585?ash=RP6wD8PNWQMfNzjbMfP5WBSed0czOl38"
+                          },
+                          "type": "link"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "https://fern.iu/m/69991740585?ash=RP6wD8PNWQMfNzjbMfP5WBSed0czOl38",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  292.43
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#172b4d"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "Sleet",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#172b4d"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#172b4d"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "fern",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "colwidth": [
+                  1175.67
+                ],
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "Sterling, ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#333333"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "4WD Swallow Tarn - Ivy Cottage",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": " - Ash ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://ash.tranquil.ash/?iq=6&ash=5,8155864,2&j=5&dusk=5930-5-42&ivy=5-80&gd=6"
+                          },
+                          "type": "link"
+                        },
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": "Quiet Tarn Coral",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strike"
+                        }
+                      ],
+                      "text": " ash ash vine lu gull slope woodland.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "Emerald Drizzle ivy Hazel",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "extensionKey": "children",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "1"
+            },
+            "title": "Raven early"
+          },
+          "macroParams": {
+            "excerptType": {
+              "value": "cove granite"
+            },
+            "reverse": {
+              "value": "tarn"
+            },
+            "sort": {
+              "value": "sleet"
+            },
+            "style": {
+              "value": "t6"
+            }
+          }
+        }
+      },
+      "type": "extension"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

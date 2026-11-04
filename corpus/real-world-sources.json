@@ -1,0 +1,902 @@
+{
+  "lf-akraino-jira-AKRAINO-4-comment-11094": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/AKRAINO-4/comment/11094"
+  },
+  "lf-akraino-jira-ICN-278-comment-10785": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/ICN-278/comment/10785"
+  },
+  "lf-akraino-jira-ICN-388-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/ICN-388?fields=description"
+  },
+  "lf-akraino-jira-IEC-46-comment-10908": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/IEC-46/comment/10908"
+  },
+  "lf-akraino-jira-RC-2-comment-10945": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/RC-2/comment/10945"
+  },
+  "lf-akraino-jira-REC-51-comment-10207": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/REC-51/comment/10207"
+  },
+  "lf-akraino-jira-ROVER-1-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/rest/api/3/issue/ROVER-1?fields=description"
+  },
+  "lf-akraino-wiki-footer-comments-13673154": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13673154"
+  },
+  "lf-akraino-wiki-footer-comments-13673215": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13673215"
+  },
+  "lf-akraino-wiki-footer-comments-13679860": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13679860"
+  },
+  "lf-akraino-wiki-footer-comments-13685437": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13685437"
+  },
+  "lf-akraino-wiki-footer-comments-13688317": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13688317"
+  },
+  "lf-akraino-wiki-footer-comments-13688319": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13688319"
+  },
+  "lf-akraino-wiki-footer-comments-13690356": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13690356"
+  },
+  "lf-akraino-wiki-footer-comments-13699635": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13699635"
+  },
+  "lf-akraino-wiki-footer-comments-13700648": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13700648"
+  },
+  "lf-akraino-wiki-footer-comments-13700650": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13700650"
+  },
+  "lf-akraino-wiki-footer-comments-13701432": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13701432"
+  },
+  "lf-akraino-wiki-footer-comments-13716653": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13716653"
+  },
+  "lf-akraino-wiki-footer-comments-13720622": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/footer-comments/13720622"
+  },
+  "lf-akraino-wiki-pages-13664510": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13664510"
+  },
+  "lf-akraino-wiki-pages-13664621": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13664621"
+  },
+  "lf-akraino-wiki-pages-13664706": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13664706"
+  },
+  "lf-akraino-wiki-pages-13664843": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13664843"
+  },
+  "lf-akraino-wiki-pages-13666542": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13666542"
+  },
+  "lf-akraino-wiki-pages-13667413": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13667413"
+  },
+  "lf-akraino-wiki-pages-13667449": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13667449"
+  },
+  "lf-akraino-wiki-pages-13667582": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13667582"
+  },
+  "lf-akraino-wiki-pages-13667700": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13667700"
+  },
+  "lf-akraino-wiki-pages-13669090": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13669090"
+  },
+  "lf-akraino-wiki-pages-13669524": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13669524"
+  },
+  "lf-akraino-wiki-pages-13669721": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13669721"
+  },
+  "lf-akraino-wiki-pages-13670530": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13670530"
+  },
+  "lf-akraino-wiki-pages-13670805": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13670805"
+  },
+  "lf-akraino-wiki-pages-13670903": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13670903"
+  },
+  "lf-akraino-wiki-pages-13671168": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-akraino.atlassian.net/wiki/api/v2/pages/13671168"
+  },
+  "lf-anuket-jira-VINEPERF-349-comment-10743": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/rest/api/3/issue/VINEPERF-349/comment/10743"
+  },
+  "lf-anuket-jira-VINEPERF-383-comment-10709": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/rest/api/3/issue/VINEPERF-383/comment/10709"
+  },
+  "lf-anuket-jira-VINEPERF-416-comment-10944": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/rest/api/3/issue/VINEPERF-416/comment/10944"
+  },
+  "lf-anuket-jira-VINEPERF-418-comment-10704": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/rest/api/3/issue/VINEPERF-418/comment/10704"
+  },
+  "lf-anuket-jira-VINEPERF-504-comment-10494": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/rest/api/3/issue/VINEPERF-504/comment/10494"
+  },
+  "lf-anuket-wiki-footer-comments-21865319": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/footer-comments/21865319"
+  },
+  "lf-anuket-wiki-pages-158728216": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/158728216"
+  },
+  "lf-anuket-wiki-pages-21495815": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21495815"
+  },
+  "lf-anuket-wiki-pages-21856701": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21856701"
+  },
+  "lf-anuket-wiki-pages-21862207": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21862207"
+  },
+  "lf-anuket-wiki-pages-21878853": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21878853"
+  },
+  "lf-anuket-wiki-pages-21894167": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21894167"
+  },
+  "lf-anuket-wiki-pages-21896523": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21896523"
+  },
+  "lf-anuket-wiki-pages-21898380": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-anuket.atlassian.net/wiki/api/v2/pages/21898380"
+  },
+  "lf-edgexfoundry-wiki-footer-comments-11677200": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-edgexfoundry.atlassian.net/wiki/api/v2/footer-comments/11677200"
+  },
+  "lf-edgexfoundry-wiki-pages-1126301697": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-edgexfoundry.atlassian.net/wiki/api/v2/pages/1126301697"
+  },
+  "lf-edgexfoundry-wiki-pages-11667352": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-edgexfoundry.atlassian.net/wiki/api/v2/pages/11667352"
+  },
+  "lf-edgexfoundry-wiki-pages-11667393": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-edgexfoundry.atlassian.net/wiki/api/v2/pages/11667393"
+  },
+  "lf-hyperledger-wiki-footer-comments-17433274": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/17433274"
+  },
+  "lf-hyperledger-wiki-footer-comments-17433582": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/17433582"
+  },
+  "lf-hyperledger-wiki-footer-comments-18728258": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/18728258"
+  },
+  "lf-hyperledger-wiki-footer-comments-19603766": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/19603766"
+  },
+  "lf-hyperledger-wiki-footer-comments-19759404": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/19759404"
+  },
+  "lf-hyperledger-wiki-footer-comments-20563002": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/20563002"
+  },
+  "lf-hyperledger-wiki-footer-comments-20563344": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/20563344"
+  },
+  "lf-hyperledger-wiki-footer-comments-20873387": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/20873387"
+  },
+  "lf-hyperledger-wiki-footer-comments-21438162": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/21438162"
+  },
+  "lf-hyperledger-wiki-footer-comments-21438387": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/21438387"
+  },
+  "lf-hyperledger-wiki-footer-comments-21438452": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/21438452"
+  },
+  "lf-hyperledger-wiki-footer-comments-21448361": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/21448361"
+  },
+  "lf-hyperledger-wiki-footer-comments-21791461": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/21791461"
+  },
+  "lf-hyperledger-wiki-footer-comments-22154564": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/22154564"
+  },
+  "lf-hyperledger-wiki-footer-comments-22315713": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/footer-comments/22315713"
+  },
+  "lf-hyperledger-wiki-pages-17301651": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/17301651"
+  },
+  "lf-hyperledger-wiki-pages-17433105": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/17433105"
+  },
+  "lf-hyperledger-wiki-pages-17433110": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/17433110"
+  },
+  "lf-hyperledger-wiki-pages-17433124": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/17433124"
+  },
+  "lf-hyperledger-wiki-pages-17826746": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/17826746"
+  },
+  "lf-hyperledger-wiki-pages-18120786": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18120786"
+  },
+  "lf-hyperledger-wiki-pages-18482467": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18482467"
+  },
+  "lf-hyperledger-wiki-pages-18497343": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18497343"
+  },
+  "lf-hyperledger-wiki-pages-18713869": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18713869"
+  },
+  "lf-hyperledger-wiki-pages-18714769": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18714769"
+  },
+  "lf-hyperledger-wiki-pages-18715382": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18715382"
+  },
+  "lf-hyperledger-wiki-pages-18715580": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-hyperledger.atlassian.net/wiki/api/v2/pages/18715580"
+  },
+  "lf-onap-jira-CPS-2981-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/rest/api/3/issue/CPS-2981?fields=description"
+  },
+  "lf-onap-jira-CPS-3135-comment-88168": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/rest/api/3/issue/CPS-3135/comment/88168"
+  },
+  "lf-onap-jira-CPS-3154-comment-91185": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/rest/api/3/issue/CPS-3154/comment/91185"
+  },
+  "lf-onap-jira-CPS-3191-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/rest/api/3/issue/CPS-3191?fields=description"
+  },
+  "lf-onap-jira-POLICY-5620-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/rest/api/3/issue/POLICY-5620?fields=description"
+  },
+  "lf-onap-jira-POLICY-5671-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/rest/api/3/issue/POLICY-5671?fields=description"
+  },
+  "lf-onap-wiki-footer-comments-16222775": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16222775"
+  },
+  "lf-onap-wiki-footer-comments-16224315": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16224315"
+  },
+  "lf-onap-wiki-footer-comments-16225027": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16225027"
+  },
+  "lf-onap-wiki-footer-comments-16230445": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16230445"
+  },
+  "lf-onap-wiki-footer-comments-16236603": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16236603"
+  },
+  "lf-onap-wiki-footer-comments-16237269": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16237269"
+  },
+  "lf-onap-wiki-footer-comments-16239479": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16239479"
+  },
+  "lf-onap-wiki-footer-comments-16241443": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16241443"
+  },
+  "lf-onap-wiki-footer-comments-16242917": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16242917"
+  },
+  "lf-onap-wiki-footer-comments-16244913": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16244913"
+  },
+  "lf-onap-wiki-footer-comments-16248177": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16248177"
+  },
+  "lf-onap-wiki-footer-comments-16253863": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/footer-comments/16253863"
+  },
+  "lf-onap-wiki-pages-15481943": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/15481943"
+  },
+  "lf-onap-wiki-pages-15483824": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/15483824"
+  },
+  "lf-onap-wiki-pages-16222923": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16222923"
+  },
+  "lf-onap-wiki-pages-16223061": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16223061"
+  },
+  "lf-onap-wiki-pages-16224503": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16224503"
+  },
+  "lf-onap-wiki-pages-16230107": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16230107"
+  },
+  "lf-onap-wiki-pages-16230119": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16230119"
+  },
+  "lf-onap-wiki-pages-16230611": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16230611"
+  },
+  "lf-onap-wiki-pages-16231263": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16231263"
+  },
+  "lf-onap-wiki-pages-16231985": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16231985"
+  },
+  "lf-onap-wiki-pages-16232039": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16232039"
+  },
+  "lf-onap-wiki-pages-16233643": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16233643"
+  },
+  "lf-onap-wiki-pages-16234177": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16234177"
+  },
+  "lf-onap-wiki-pages-16235403": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16235403"
+  },
+  "lf-onap-wiki-pages-16235467": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16235467"
+  },
+  "lf-onap-wiki-pages-16236205": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16236205"
+  },
+  "lf-onap-wiki-pages-16237113": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16237113"
+  },
+  "lf-onap-wiki-pages-16237773": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16237773"
+  },
+  "lf-onap-wiki-pages-16238807": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16238807"
+  },
+  "lf-onap-wiki-pages-16239453": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16239453"
+  },
+  "lf-onap-wiki-pages-16240699": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16240699"
+  },
+  "lf-onap-wiki-pages-16242163": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16242163"
+  },
+  "lf-onap-wiki-pages-16245045": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16245045"
+  },
+  "lf-onap-wiki-pages-16245167": {
+    "licence": "CC-BY-SA-4.0",
+    "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-onap.atlassian.net/wiki/api/v2/pages/16245167"
+  },
+  "lf-opendaylight-jira-AAA-278-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/AAA-278?fields=description"
+  },
+  "lf-opendaylight-jira-BGPCEP-1024-comment-27047": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1024/comment/27047"
+  },
+  "lf-opendaylight-jira-BGPCEP-1047-comment-50670": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1047/comment/50670"
+  },
+  "lf-opendaylight-jira-BGPCEP-1047-comment-51588": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1047/comment/51588"
+  },
+  "lf-opendaylight-jira-BGPCEP-1048-comment-50994": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1048/comment/50994"
+  },
+  "lf-opendaylight-jira-BGPCEP-1049-comment-50248": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1049/comment/50248"
+  },
+  "lf-opendaylight-jira-BGPCEP-1050-comment-50247": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1050/comment/50247"
+  },
+  "lf-opendaylight-jira-BGPCEP-1082-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/BGPCEP-1082?fields=description"
+  },
+  "lf-opendaylight-jira-CONTROLLER-2162-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/CONTROLLER-2162?fields=description"
+  },
+  "lf-opendaylight-jira-GNMI-4-comment-51726": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/GNMI-4/comment/51726"
+  },
+  "lf-opendaylight-jira-MDSAL-837-comment-38887": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/MDSAL-837/comment/38887"
+  },
+  "lf-opendaylight-jira-NETCONF-1054-comment-35181": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1054/comment/35181"
+  },
+  "lf-opendaylight-jira-NETCONF-1103-comment-33277": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1103/comment/33277"
+  },
+  "lf-opendaylight-jira-NETCONF-1252-comment-35584": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1252/comment/35584"
+  },
+  "lf-opendaylight-jira-NETCONF-1264-comment-34779": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1264/comment/34779"
+  },
+  "lf-opendaylight-jira-NETCONF-1271-comment-33839": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1271/comment/33839"
+  },
+  "lf-opendaylight-jira-NETCONF-1323-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1323?fields=description"
+  },
+  "lf-opendaylight-jira-NETCONF-1438-comment-46069": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1438/comment/46069"
+  },
+  "lf-opendaylight-jira-NETCONF-1474-comment-47986": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1474/comment/47986"
+  },
+  "lf-opendaylight-jira-NETCONF-1480-comment-49075": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1480/comment/49075"
+  },
+  "lf-opendaylight-jira-NETCONF-1572-description": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1572?fields=description"
+  },
+  "lf-opendaylight-jira-NETCONF-1616-comment-55230": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/rest/api/3/issue/NETCONF-1616/comment/55230"
+  },
+  "lf-opendaylight-wiki-footer-comments-12532380": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/wiki/api/v2/footer-comments/12532380"
+  },
+  "lf-opendaylight-wiki-footer-comments-725549057": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/wiki/api/v2/footer-comments/725549057"
+  },
+  "lf-opendaylight-wiki-pages-12522562": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/wiki/api/v2/pages/12522562"
+  },
+  "lf-opendaylight-wiki-pages-12524117": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/wiki/api/v2/pages/12524117"
+  },
+  "lf-opendaylight-wiki-pages-12524364": {
+    "licence": "CC-BY-3.0",
+    "licenceSource": "https://www.linuxfoundation.org/legal/terms",
+    "retrieved": "2026-11-04",
+    "url": "https://lf-opendaylight.atlassian.net/wiki/api/v2/pages/12524364"
+  }
+}

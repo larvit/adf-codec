@@ -1,0 +1,44 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "order": 1
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#0747a6"
+                      },
+                      "type": "textColor"
+                    }
+                  ],
+                  "text": "Hirz33699 ",
+                  "type": "text"
+                },
+                {
+                  "attrs": {
+                    "id": "lavender-glade_wren",
+                    "shortName": ":glade_wren:",
+                    "text": ":glade_wren:"
+                  },
+                  "type": "emoji"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "orderedList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

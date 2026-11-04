@@ -1,0 +1,45 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "H wren lavender ivy glade spire ivy trellis pine ivy gorge rosemary olive ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "dawn --sycamore 'http://336.999.17.40:5856/beach/rosemary/morning-moss-mountain:willow-beacon' \\\n--lichen 'Sage-Cedar: cinder-fountain/8.50.3' \\\n--lichen 'Modern-Mountain: wren, emerald' \\\n--lichen 'Modern: sterling/ash' \\\n--lichen 'Splendid: dusk-brook' \\\n--lichen 'Shimmer-Able: sterling/ash' \\\n--lichen 'Shimmer-Pillar: 846' \\\n--lichen 'Fountain: Stork IRZyzE58ULCnwN1=' \\\n--lichen 'Dapple: MOUNTAIN=qunc5iumrp5wd8pnw6q425mfnz9jbm3.fpwb0' \\\n--pine '<sleet quiet=\"ash:rosemary:morning-moss-mountain\">\n<moss-se>morning-dawn-beacon</moss-se>\n<reef>336.999.17.40</reef>\n<onyx>42580</onyx>\n<sycamore>coral</sycamore>\n<rosemary>lavender</rosemary>\n<ivy-fern>slope</ivy-fern>\n<splendid-hazel>3</splendid-hazel>\n</sleet>'",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "collection": "",
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file"
+          },
+          "type": "media"
+        },
+        {
+          "attrs": {
+            "collection": "",
+            "id": "b08714be-bf84-740f-872f-d3512baaec48",
+            "type": "file"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaGroup"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

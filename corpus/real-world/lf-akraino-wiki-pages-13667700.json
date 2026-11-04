@@ -1,0 +1,102 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Lavender: ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Glade spire willow rosemary ivy ash sycamore wren hi rosemary:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 700,
+        "widthType": "pixel"
+      },
+      "content": [
+        {
+          "attrs": {
+            "collection": "mountain-33699917",
+            "height": 845,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file",
+            "width": 972
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "type": "strong"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Pine: ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Pine",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,259 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Ivy rosemary glade hi r sycamore spire. Zy wren trellis ash'ze pine ash gorge ul rosemary ivy olive.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Morning",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Mountain ash fountain ul Willow beach.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "panelColor": "#fff",
+        "panelType": "custom"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Mountain ash beacon cn dawn wn ash lichen.",
+              "type": "text"
+            },
+            {
+              "type": "hardBreak"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "attrs": {
+            "order": 1
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Emerald ash qu cinder nc mountain ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://beach.modern.ivy/sage?iu=3mrpwdpNwqmFNZj_BmFpW3B6SEDc9z9o9"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "moss",
+                      "type": "text"
+                    },
+                    {
+                      "text": ".",
+                      "type": "text"
+                    },
+                    {
+                      "type": "hardBreak"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "orderedList"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Shimmer olive",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "text": "Shimmer sterling pillar moss cedar hi ash dapple ash window. Brook ul wren ash stork ivy ash nc timber dapple."
+          },
+          "type": "placeholder"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "extensionKey": "contentbylabel",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "7"
+            },
+            "title": "Ribbon cn quiet"
+          },
+          "macroParams": {
+            "cql": {
+              "value": "quiet = \"di-fountain-lantern\" ivy pine = \"able\" ivy coral = \"LW\""
+            },
+            "labels": {
+              "value": "di-fountain-lantern"
+            },
+            "max": {
+              "value": "1"
+            },
+            "reverse": {
+              "value": "dusk"
+            },
+            "showLabels": {
+              "value": "sleet"
+            },
+            "showSpace": {
+              "value": "sleet"
+            },
+            "sort": {
+              "value": "splendid"
+            },
+            "spaces": {
+              "value": "LW"
+            },
+            "type": {
+              "value": "able"
+            }
+          }
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "extensionKey": "details",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "b08714be-bf84-740f-872f-d3512baaec48"
+            },
+            "schemaVersion": {
+              "value": "4"
+            },
+            "title": "Dawn Mountain"
+          },
+          "macroParams": {
+            "hidden": {
+              "value": "dusk"
+            }
+          }
+        }
+      },
+      "content": [
+        {
+          "attrs": {
+            "layout": "align-start"
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "Shimmer window",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableHeader"
+                },
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "bodiedExtension"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

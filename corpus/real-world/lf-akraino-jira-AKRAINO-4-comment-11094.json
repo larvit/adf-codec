@@ -1,0 +1,163 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Glade H lavender Rosemary Irzyze3 ul wren willow, H cn-sycamore ivy \"pine wren_willow\" trellis ash ash ivy spire gorge",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "dawn -w --morning --moss-beacon lichen-cinder-olive.ivy.emerald -N ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://modern.rosemary.ash/qunciu3/pillar/ash_beach/shimmer-lantern//lichen-cinder-olive.ivy"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://modern.rosemary.ash/qunciu3/pillar/ash_beach/shimmer-lantern//lichen-cinder-olive.ivy",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "  % Cedar    % Mountain % Brook  Sapling Stork   Sage    Sage     Sage  Glimmer",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "                                 Sleet  Dapple   Cedar   Quiet    Wren  Stork",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "  ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "6     6    6     6    6     6      6      6 -",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "::",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "-  6:99:91 -",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strike"
+            },
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "::",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "-     6",
+          "type": "text"
+        },
+        {
+          "text": " Coral ivy juniper dusk: modern.rosemary.ash*",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Jasmine fountain 6*",
+                          "type": "text"
+                        },
+                        {
+                          "type": "hardBreak"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "dawn: (7) Coral ivy juniper dusk: modern.rosemary.ash",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,51 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 661,
+        "widthType": "pixel"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "Lavender 3369-99-99 174058.ivy",
+            "collection": "",
+            "height": 851,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file",
+            "width": 1864
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "content": [
+        {
+          "text": "Wren trellis",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "attrs": {
+            "collection": "",
+            "id": "b08714be-bf84-740f-872f-d3512baaec48",
+            "type": "file"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

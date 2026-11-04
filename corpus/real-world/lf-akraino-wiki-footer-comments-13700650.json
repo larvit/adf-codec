@@ -1,0 +1,68 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "\"",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Willow ivy trellis glade ash lavender morning:",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "extensionKey": "inline-external-image",
+            "extensionType": "com.atlassian.confluence.migration",
+            "parameters": {
+              "alt": "ivy_wren",
+              "height": "",
+              "src": "http://rosemary:3369/emerald/sycamore/rosemary/Mountain_Fountain.ash",
+              "width": ""
+            }
+          },
+          "type": "inlineExtension"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Beacon shimmer mountain ash hi sterling rz lichen pine 9…….",
+          "type": "text"
+        },
+        {
+          "text": "\"",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Dawn ivy_wren spire'y lantern.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

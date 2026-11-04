@@ -1,0 +1,730 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Trellis:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "extensionKey": "excerpt",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "Morning"
+          },
+          "macroParams": {
+            "atlassian-macro-output-type": {
+              "value": "WILLOW"
+            }
+          }
+        }
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Emerald Beacon:",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Lichen / Shimmer HI: Ivy lantern (rzyz36) eu lavender sapling;",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Lichen Glimmer, ash wren rosemary pine dawn moss ash cinder modern;",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Sage ivy pillar:",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Sycamore lc ASH 9.9.9 rosemary;",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Glade Dapple Mountain Ash eu ivy Fountain;",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Juniper nw Mountain ash spire sterling.",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    }
+                  ],
+                  "type": "bulletList"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Lichen splendid gorge ash wren olive nw jasmine nq;",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Ivy Fountain mountain rosemary;",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "U&N c/Sycamore.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "listItem"
+            }
+          ],
+          "type": "bulletList"
+        }
+      ],
+      "type": "bodiedExtension"
+    },
+    {
+      "attrs": {
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "layout": "align-start"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "type": "external",
+                        "url": "https://wren.rosemary.ash/lavender/splendid/91740585/Lavender.ash?harvest=3&tranquil=6850384658155&ash=i8"
+                      },
+                      "type": "media"
+                    }
+                  ],
+                  "type": "mediaSingle"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "layout": "align-start",
+                    "width": 445,
+                    "widthType": "pixel"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "type": "external",
+                        "url": "https://wren.rosemary.ash/lavender/splendid/6425930/glacier.ash?harvest=9&tranquil=4258061109548&ash=i8"
+                      },
+                      "type": "media"
+                    }
+                  ],
+                  "type": "mediaSingle"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Twilight um sterling nw tranquil r dusk ash woodland",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "lavender ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "ivy ivy. Ash able rosemary",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "window beach ash",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://dp-rosemary.fountain.ash/wren/cottage/IVY/Twilight+Pine+pw+Swallow"
+                          },
+                          "type": "link"
+                        },
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Twilight Pine pw Swallow",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "color": "#414042"
+                          },
+                          "type": "textColor"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": ".",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Drizzle ash Mountain",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Ivy ash ivy, ash dawn reef tranquil um eu ash Timber ribbon.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Woodland",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Onyx (Sterling) <cedar>",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Brook Stork (NW Ash / Splendid) <sleet.quiet@splendid.qm> ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "id": "3a41c5441d641d8d074ef44f",
+                    "text": "@Heidi Finnegan"
+                  },
+                  "type": "mention"
+                },
+                {
+                  "text": " (Fountain fn Window) ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#172b4d"
+                      },
+                      "type": "textColor"
+                    }
+                  ],
+                  "text": "<fountain.lavender@",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "http://ash.fern.zj.qm/"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "ash.fern.zj.qm",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#172b4d"
+                      },
+                      "type": "textColor"
+                    }
+                  ],
+                  "text": ">",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "@Pollen Bm-Kettle (Fountain fn Window) <",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "http://beacon.fp"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "beacon.fp",
+                  "type": "text"
+                },
+                {
+                  "text": "-silver@",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "http://ash.fern.zj.qm/"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "ash.fern.zj.qm",
+                  "type": "text"
+                },
+                {
+                  "text": ">",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Lavender ash Fern Juniper",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Tarn ash wren fountain (ASH) nw granite ash mountain eu ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://vesper.ash/rosemary/coral-vesper-slope-hazel-zephyr/gull/136"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "vine",
+                  "type": "text"
+                },
+                {
+                  "text": " gull vibrant. Pollen tarn tranquil nw wb ASH. Tarn cove sleet moss ash HI.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Ravine",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "ASH",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Sage Dewdrop",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "ASH",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Clover Beacon",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Prairie Lavender Rosemary Sterling - Teak",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ivy wicker se twilight Prairie Lavender Rosemary?",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Parlor raven",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

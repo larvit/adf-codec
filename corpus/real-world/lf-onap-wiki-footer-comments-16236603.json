@@ -1,0 +1,101 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "glade_ivy: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "underline"
+            }
+          ],
+          "text": "lavender",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "rosemary_trellis: 3.3.3-SYCAMORE",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "willow_trellis: 3.3-MORNING-beacon",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Emerald hi Wren",
+          "type": "text"
+        },
+        {
+          "text": ": \"Lichen Shimmer Rosemary hi ASH\"",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "Pine dawn Lantern R sapling zy spire MOSS, ash ivy \"sage.ze wren\" ash mountain cinder ASH (dusk fountain) zy modern ivy ash Shimmer mountain.",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Sterling R ul gorge able, cn hi ivy pillar ivy olive \"Shimmer Pine\" wn dapple ivy, beach cedar qu dawn splendid. ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Ash brook ?",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "layout": "align-start",
+        "width": 64
+      },
+      "content": [
+        {
+          "attrs": {
+            "__fileMimeType": "stork/reef",
+            "__fileName": "Mountain.IVY",
+            "__fileSize": 69991,
+            "collection": "fountain-74058568",
+            "height": 580,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file",
+            "width": 635
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

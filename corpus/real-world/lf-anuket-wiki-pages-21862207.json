@@ -1,0 +1,392 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "extensionKey": "vote",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+            },
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "dusk"
+          },
+          "macroParams": {
+            "__bodyContent": {
+              "value": "+3\n3\n-3"
+            },
+            "alwaysShowResults": {
+              "value": "pine"
+            },
+            "changeableVotes": {
+              "value": "pine"
+            },
+            "locked": {
+              "value": "pine"
+            },
+            "renderTitleLevel": {
+              "value": "3"
+            },
+            "showComments": {
+              "value": "pine"
+            },
+            "title": {
+              "value": "Sage ash ASH morning ash Hi Ivy Fountain Mountain ash ash Emerald ASH Wren?"
+            },
+            "userVisualization": {
+              "value": "gorge dawn moss"
+            },
+            "visiblePendingVoters": {
+              "value": "pine"
+            },
+            "visibleVoters": {
+              "value": "pine"
+            },
+            "voters": {
+              "value": "ivy,lavender,rosemary,glade,sycamore,rosemary,spire,trellis,mountain,Fountain,willow,mountain,sterling,wren,Splendid"
+            }
+          }
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "attrs": {
+        "extensionKey": "details",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "b08714be-bf84-740f-872f-d3512baaec48"
+            },
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "Able Rosemary"
+          },
+          "macroParams": {}
+        }
+      },
+      "content": [
+        {
+          "attrs": {
+            "layout": "align-start",
+            "width": 267
+          },
+          "content": [
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      154
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Pine Dawn",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                },
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      113
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Sage ash ASH morning ash",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://reef.olive.ivy/shimmer/ASH/Beach-+Cedar+6999+-+Hi+Ivy+ASH+Wren+Fountain"
+                              },
+                              "type": "link"
+                            },
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": " Hi-ash Fountain Mountain",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ash ash lantern ASH Wren?",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      154
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Beacon",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                },
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      113
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "color": "green",
+                            "localId": "b7fc6ca3-5587-76a9-b000-108b2f40346a",
+                            "style": "bold",
+                            "text": "ONYX"
+                          },
+                          "type": "status"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      154
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Pine Brook (-3 / 3 / +3)",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                },
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      113
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      154
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Pine Stork Fern",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                },
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      113
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "timestamp": "1740585685038"
+                          },
+                          "type": "date"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      154
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Sapling Stork Fern",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                },
+                {
+                  "attrs": {
+                    "colspan": 1,
+                    "colwidth": [
+                      113
+                    ],
+                    "rowspan": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "timestamp": "1740585685038"
+                          },
+                          "type": "date"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "tableCell"
+                }
+              ],
+              "type": "tableRow"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "bodiedExtension"
+    },
+    {
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "text": "Sycamore Rosemary Lavender",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "text": "Fern ash splendid rz Ivy Yz'e Sleet ul ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "timestamp": "1740585685038"
+          },
+          "type": "date"
+        },
+        {
+          "text": ", ash cn glimmer wn juniper lichen, ash ASH Wren qu Emerald.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,67 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "collection": "lavender-33699917",
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "  ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "rosemary ivy sycamore ash glade hi spire rosemary gorge mountain trellis fountain olive ash rz morning.   Yz beach ivy mountain wren ash rz sterling pine e splendid dawn fountain ivy willow cedar.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "extensionKey": "children",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "b08714be-bf84-740f-872f-d3512baaec48"
+            },
+            "schemaVersion": {
+              "value": "4"
+            },
+            "title": "Brook olive"
+          },
+          "macroParams": {}
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

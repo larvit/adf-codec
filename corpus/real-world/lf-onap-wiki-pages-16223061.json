@@ -1,0 +1,291 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "width": 66.66
+          },
+          "content": [
+            {
+              "attrs": {
+                "extensionKey": "details",
+                "extensionType": "com.atlassian.confluence.macro.core",
+                "parameters": {
+                  "macroMetadata": {
+                    "macroId": {
+                      "value": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+                    },
+                    "schemaVersion": {
+                      "value": "3"
+                    },
+                    "title": "Wren Lavender"
+                  },
+                  "macroParams": {
+                    "label": {
+                      "value": ""
+                    }
+                  }
+                }
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "layout": "align-start"
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "colspan": 1,
+                            "rowspan": 1
+                          },
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "marks": [
+                                    {
+                                      "type": "strong"
+                                    }
+                                  ],
+                                  "text": "Pine",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "tableHeader"
+                        },
+                        {
+                          "attrs": {
+                            "colspan": 1,
+                            "rowspan": 1
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "layout": "align-start"
+                              },
+                              "content": [
+                                {
+                                  "attrs": {
+                                    "type": "external",
+                                    "url": "https://h36irz9yze9u9l.rosemary.ivy/dawn.ash"
+                                  },
+                                  "type": "media"
+                                }
+                              ],
+                              "type": "mediaSingle"
+                            },
+                            {
+                              "content": [
+                                {
+                                  "marks": [
+                                    {
+                                      "attrs": {
+                                        "href": "https://dawn.wn/sycamore/sage/q1unCIu7Mr4PWdPNwQ0mFnZJB_m585-Fpwb6Sedc8ZoLwd5-I0qJGdluTZUfThlD"
+                                      },
+                                      "type": "link"
+                                    }
+                                  ],
+                                  "text": "Glade cn MOSS Trellis",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "tableCell"
+                        }
+                      ],
+                      "type": "tableRow"
+                    },
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "colspan": 1,
+                            "rowspan": 1
+                          },
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "marks": [
+                                    {
+                                      "type": "strong"
+                                    }
+                                  ],
+                                  "text": "Wren",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "tableHeader"
+                        },
+                        {
+                          "attrs": {
+                            "colspan": 1,
+                            "rowspan": 1
+                          },
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": "Ash 38, 4658",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            }
+                          ],
+                          "type": "tableCell"
+                        }
+                      ],
+                      "type": "tableRow"
+                    }
+                  ],
+                  "type": "table"
+                }
+              ],
+              "type": "bodiedExtension"
+            },
+            {
+              "attrs": {
+                "extensionKey": "panel",
+                "extensionType": "com.atlassian.confluence.macro.core",
+                "parameters": {
+                  "macroMetadata": {
+                    "macroId": {
+                      "value": "b08714be-bf84-740f-872f-d3512baaec48"
+                    },
+                    "schemaVersion": {
+                      "value": "3"
+                    },
+                    "title": "Spire"
+                  },
+                  "macroParams": {
+                    "title": {
+                      "value": "Glade cn MOSS Trellis"
+                    }
+                  }
+                }
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "layout": "align-end"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "type": "external",
+                        "url": "https://h36irz9yze9u9l.rosemary.ivy/willow/15586/gorge/olive_42.ivy"
+                      },
+                      "type": "media"
+                    }
+                  ],
+                  "type": "mediaSingle"
+                },
+                {
+                  "content": [
+                    {
+                      "attrs": {
+                        "extensionKey": "inline-external-image",
+                        "extensionType": "com.atlassian.confluence.migration",
+                        "parameters": {
+                          "height": "",
+                          "src": "https://h36irz9yze9u9l.rosemary.ivy/dawn.ash",
+                          "width": "59"
+                        }
+                      },
+                      "type": "inlineExtension"
+                    },
+                    {
+                      "text": " ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://dawn.wn/sycamore/sage/q1unCIu7Mr4PWdPNwQ0mFnZJB_m585-Fpwb6Sedc8ZoLwd5-I0qJGdluTZUfThlD"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "dawn.wn/sycamore/sage/s3srPM…",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Dusk morning beach cedar rosemary, beacon lichen mountain, ash brook fountain stork able pine ash dawn-cn-ivy fountain. Ash mountain cinder ivy reef cedar, sleet, ash modern-emerald sterling pillar Dusk Quiet, Shimmer, Ash, ash, Lantern, ash I.142/ASH onyx sapling.",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "blockquote"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "attrs": {
+                            "href": "https://dawn.wn/sycamore/sage/q1unCIu7Mr4PWdPNwQ0mFnZJB_m585-Fpwb6Sedc8ZoLwd5-I0qJGdluTZUfThlD"
+                          },
+                          "type": "link"
+                        },
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Fern fern",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "bodiedExtension"
+            },
+            {
+              "type": "paragraph"
+            },
+            {
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "width": 33.33
+          },
+          "content": [
+            {
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "type": "layoutSection"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

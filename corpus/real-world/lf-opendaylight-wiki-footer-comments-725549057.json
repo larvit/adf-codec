@@ -1,0 +1,31 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+      },
+      "content": [
+        {
+          "text": "Trellis morning hi ivy! ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "3a41c",
+            "localId": "b08714be-bf84-740f-872f-d3512baaec48",
+            "shortName": ":wren:",
+            "text": "🎉"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

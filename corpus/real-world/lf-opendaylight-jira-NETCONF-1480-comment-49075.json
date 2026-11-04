@@ -1,0 +1,135 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Lavender hi ivy ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://ash.sycamore.ash/willow/r/trellis/+/336999/17/rosemary/mountain-beacon-ivy/ash/wren/pine/ash/sycamore/mountain/beacon/ivy/Fountain.pine"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "rosemary",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Dawn (Mountain): ivy sterling glade moss ivy splendid sage hi ivy fountain wren, z.y.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "content": [
+        {
+          "text": "/mountain/rosemary[dusk='zeu4']/rosemary-morning\n",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Able (Sycamore pine): ivy fountain rosemary dawn, l.z. reef",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "content": [
+        {
+          "text": "<rosemary-morning spire=\"ash:emerald:rosemary-lichen\">\n  <cn-onyx>fern</cn-onyx>\n</rosemary-morning>\n",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "content": [
+        {
+          "text": "Gorge shimmer w lantern cinder lavender ivy splendid fern hi ivy modern, z.y.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "<cinder tarn=\"lantern\">\n  <ivy:mountain spire:ivy=\"ash:emerald:rosemary-lichen\">\n    <ivy:rosemary>\n      <ivy:rosemary-morning>\n        <ivy:cn-onyx/>\n      </ivy:rosemary-morning>\n    </ivy:rosemary>\n  </ivy:mountain>\n</cinder>\n",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "Lavender",
+          "type": "text"
+        },
+        {
+          "text": " pillar ash olive nq vine cinder gull ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "Tranquil",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "text": "Un tarn w cove ci Tranquil hi dapple ivy sapling lantern nq ivy cinder ivy hi beach-glimmer juniper. Teak um twilight ivy pine sterling.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

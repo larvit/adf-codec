@@ -59,6 +59,7 @@ rm -f "$test_log"
 
 leg "tests ($deno_image)" in_image "$deno_image" deno test --allow-env=PROPERTY_RUNS --allow-read --no-check src/
 leg "tests ($bun_image)" in_image "$bun_image" bun test src/
+leg "corpus-gathering tests ($node_image)" in_image "$node_image" node --test corpus-gathering/
 
 leg "build ($node_image)" in_image "$node_image" npm run build
 leg "pack and install the tarball ($node_image)" in_image "$node_image" sh -c 'set -e

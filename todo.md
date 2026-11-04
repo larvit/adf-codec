@@ -12,11 +12,10 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 163 | 0.3.0 |  |  | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
-| 164 | 0.3.0 | 163 |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
+| 164 | 0.3.0 |  |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 132, 163, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 73 | 0.3.0 | 132, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 167 | 0.3.0 |  | decision | **Refuse in `refusedShape` the schema-forbidden shapes `adfToLosslessMarkdown` refuses in its walk, and drop them from that writer.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
 | 72 | 0.3.0 | 132 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
@@ -67,15 +66,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
-
-The maintainer asked for it on 2026-11-03: paragraphs such as bold around a code span or italics over a line break occur all the time, and the project holds no evidence of what real documents contain. Find public sites that serve ADF without an account, such as Jira Cloud issues on public projects through the REST v3 API, and fetch enough documents to cover the node and mark types the flavour spells.
-
-The maintainer's answers, 2026-11-03:
-
-- AGENTS.md §1 meant the shipped library, which goal 8 keeps free of anything to connect: it never banned tooling that fetches. This chunk rewrites §1 to say so, and its fetch script lives outside the build.
-- Each document is anonymized before it is committed, keeping its exact format: every node, mark, attribute key and the shape of each value stay, while text, names, ids and URLs are replaced. Anonymize with fejkdata (`gitea.larvit.se/larvit/fejkdata`, a fake-data tool also in development), as a dev-only tool through its image or npm package, never a dependency of the package. This also tests whether fejkdata has what such a job needs. The chunk's PR summary and its report to the maintainer end with a `fejkdata feedback` section: each change, feature or fix that would make fejkdata a better fit for this job, with the corpus case that needed it.
 
 ### 164. Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.
 

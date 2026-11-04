@@ -1,0 +1,84 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "panelType": "success"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "marks": [
+                {
+                  "type": "strong"
+                }
+              ],
+              "text": "Trellis hi wren ivy lavender glade!",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "text": "Pine rz ash dawn moss ash wren lavender glade willow Rosemary. Sycamore beacon ivy spire ash morning rosemary lavender mountain ash yz-hi-sage.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Fountain Mountain (EU3)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Fountain Sterling (LC3)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Fountain Splendid (NW6)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

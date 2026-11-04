@@ -12,6 +12,11 @@ One directory per contract kind:
   pins which error.
 - `real-payloads/` — `<name>.json`: ADF Atlassian's editor wrote, round-tripped ADF→markdown→ADF
   and ADF→HTML→ADF. No expected markdown or HTML.
+- `real-world/` — `<name>.json`: anonymized documents from public Jira and Confluence sites,
+  round-tripped as `real-payloads/` is. `real-world-sources.json` names each one's source, licence
+  and retrieval date. `corpus-gathering/run.sh <raw folder>` writes both, and the raw folder stays
+  outside the repo because its documents hold the sites' real text
+  (`docs/decisions.md` §The real-world corpus holds anonymized documents from sites whose licence it records).
 - `commonmark-spec/` — the CommonMark suite run against `commonMarkToAdf` by three checks.
   `spec.json` is the suite; `refusals.json` pins each refusing example to its error `code`;
   `exceptions.json` pins each known divergence by `check`, `example`, `kind` and the exact

@@ -1,0 +1,104 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "Ivy ash glade hi ash RZ wren ivy willow yz spire pine, gorge eu dawn beacon",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " trellis ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#000000"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "olive lc moss ash ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "lc ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": " ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "http://beach.morning.ash"
+              },
+              "type": "link"
+            },
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "beach.morning.ash",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "? ( eu ivy emerald ash ivy lichen ash Shimmer)，cinder !",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

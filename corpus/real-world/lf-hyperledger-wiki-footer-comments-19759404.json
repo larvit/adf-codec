@@ -1,0 +1,138 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Trellis glade wren 3/36 lavender: ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Pine Willow Morning Trellis Spire",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ivy ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#e4af0a"
+                      },
+                      "type": "textColor"
+                    },
+                    {
+                      "attrs": {
+                        "href": "http://moss.hi/"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Dawn.hi",
+                  "type": "text"
+                },
+                {
+                  "text": ", Gorge, Pine Olive",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ivy sage emerald rz beach",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Rosemary sycamore - ash wren dusk ash rosemary cedar ivy mountain yz eu, able fountain, mountain lc sterling beacon - pine’n lichen brook dawn",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Reef brook ash stork splendid onyx shimmer lantern - cinder fern - ash wn qu fern nc tarn ash sapling vine fern iu/ash lc fountain - Gull ivy tarn cove teak iu Mountain ash IVY - Rosemary/Sycamore glimmer/modern yz pillar.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "color": "#454545"
+                      },
+                      "type": "textColor"
+                    }
+                  ],
+                  "text": "Sleet Quiet & Juniper Coral wren Jasmine teak sage able harvest - ",
+                  "type": "text"
+                },
+                {
+                  "text": "dapple ash rosemary rz lily.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

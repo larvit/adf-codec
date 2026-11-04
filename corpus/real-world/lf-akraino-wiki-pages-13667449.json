@@ -1,0 +1,65 @@
+{
+  "content": [
+    {
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#f0f0f0"
+              },
+              "type": "backgroundColor"
+            }
+          ],
+          "text": "wren pine: ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://willow.trellis.ivy/h/beacon?i=ash.ash;r=dawn;z=ivy/yzeu3_Lavender;l=3a41c5441d641d8d074ef44f7f31bac87cc35769;cn=MOSS"
+              },
+              "type": "link"
+            },
+            {
+              "attrs": {
+                "color": "#f0f0f0"
+              },
+              "type": "backgroundColor"
+            }
+          ],
+          "text": "https://willow.trellis.ivy/h/beacon?i=ash.ash;r=dawn;z=ivy/yzeu3_Lavender;l=3a41c5441d641d8d074ef44f7f31bac87cc35769;cn=MOSS",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "W3 Glade ash:",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://willow.trellis.ivy/h/beacon?i=ash.ash;r=dawn;z=ivy/yzeu3_Lavender/spire-morning-nqunc6.9;l=000bf04ac9d0655a98847af7ed715037805ba5b4;cn=MOSS"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "https://willow.trellis.ivy/h/beacon?i=ash.ash;r=dawn;z=ivy/yzeu3_Lavender/spire-morning-nqunc6.9;l=000bf04ac9d0655a98847af7ed715037805ba5b4;cn=MOSS",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

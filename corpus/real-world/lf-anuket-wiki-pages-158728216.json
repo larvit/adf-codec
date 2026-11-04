@@ -1,0 +1,225 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "attrs": {
+            "id": "3a41",
+            "shortName": ":hirzyz3:",
+            "text": "✏"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " EU",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "content": [
+        {
+          "attrs": {
+            "text": "LAVENDER。LC“//”TRELLIS，LC“/NW”ROSEMARY。"
+          },
+          "type": "placeholder"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": ""
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "3",
+            "state": "TODO"
+          },
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "6",
+            "state": "TODO"
+          },
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "attrs": {
+        "title": "NQ WREN"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "text": "SYCAMORE。"
+              },
+              "type": "placeholder"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "expand"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "attrs": {
+            "id": "9991",
+            "shortName": ":rosemary:",
+            "text": "✨"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " WILLOW",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": ""
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "7",
+            "state": "TODO"
+          },
+          "type": "taskItem"
+        },
+        {
+          "attrs": {
+            "localId": "4",
+            "state": "TODO"
+          },
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "attrs": {
+        "title": "NQ WREN"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "text": "MOUNTAIN。"
+              },
+              "type": "placeholder"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "expand"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "attrs": {
+            "id": "c5441",
+            "shortName": ":fountain:",
+            "text": "📋"
+          },
+          "type": "emoji"
+        },
+        {
+          "text": " MORNING",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "UN 3",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": ""
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "1",
+            "state": "TODO"
+          },
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "text": "UN 6",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": ""
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "5",
+            "state": "TODO"
+          },
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

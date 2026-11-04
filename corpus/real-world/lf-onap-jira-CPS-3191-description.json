@@ -1,0 +1,334 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "3a41c5441d64"
+      },
+      "content": [
+        {
+          "text": "Hi wren rz IVY trellis PINE glade'y dawn lavender ze ash-morning ul Emerald rosemary cn ash spire wn moss ul ivy trellis sage gorge ul wren rz OLIVE (ash ash shimmer sycamore) qu wn wren rosemary.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "1d8d074ef44f"
+      },
+      "content": [
+        {
+          "text": "Willow beacon qu ze dawn mountain dusk moss lichen fountain ze OLIVE. ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "7f31bac87cc3"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "isNumberColumnEnabled": false,
+        "layout": "align-start",
+        "localId": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "5769000bf04a"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "c9d0655a9884"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "7af7ed715037"
+                  },
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "805ba5b4a0bd"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "5ed42dc88544"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Cinder → PINE",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "0dbc820dbfbf"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "d6d0fbfd5cc2"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "PINE → IVY",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "localId": "ba9aee1cd6b7"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "01c827a5014b"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Beach",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "ab772ffc99c0"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "13820f450ce2"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "587b7efbd201"
+                  },
+                  "content": [
+                    {
+                      "text": "IVY lantern mountain",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "localId": "46fa1fc34ade"
+                  },
+                  "content": [
+                    {
+                      "text": "dusk lavender modern",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "7e72b7cdf9c6"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "language": "",
+                    "localId": "b6a6a45b49c8"
+                  },
+                  "content": [
+                    {
+                      "text": "{\n    \"nc\": \"iu3\",\n    \"sterling\": \"cedar\"\n    \"mountain\":moss\n}",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "codeBlock"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "5c22aaa6ba93"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "da98cdfe1115"
+                  },
+                  "content": [
+                    {
+                      "text": "{\n    \"nc\": \"iu3\",\n    \"sterling\": \"cedar\"\n}",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "codeBlock"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "de4d1fdb142d"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "3fc3afa5939b"
+                  },
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "attrs": {
+            "localId": "1bf672614007"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "f278a927fe9a"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "df79fb7a3830"
+                  },
+                  "content": [
+                    {
+                      "text": "IVY splendid mountain",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "localId": "4a9e68856c3a"
+                  },
+                  "content": [
+                    {
+                      "text": "dusk moss lavender modern",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "c65bbe691b99"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "language": "",
+                    "localId": "f1e888e10596"
+                  },
+                  "content": [
+                    {
+                      "text": "{\n    \"nc\": \"iu3\",\n    \"sterling\": \"cedar\"\n    \"mountain\":moss\n}",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "codeBlock"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "ea38914e72a5"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "language": "",
+                    "localId": "f94d7c43524c"
+                  },
+                  "content": [
+                    {
+                      "text": "{\n    \"nc\": \"iu3\",\n    \"sterling\": \"cedar\"\n    \"mountain\":moss\n}",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "codeBlock"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "localId": "9c8c844e7334"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "657bf3c9735b"
+                  },
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

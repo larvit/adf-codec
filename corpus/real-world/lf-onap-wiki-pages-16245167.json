@@ -1,0 +1,64 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "collection": "",
+            "id": "TRELLIS_GLADE_HI",
+            "type": "file"
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaGroup"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Lavender morning wren-rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Ivy sycamore ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://rz-moss.fountain.ash/sage/mountain/sterling/33699917/Willow_DAWN_Y4Z_Wren%1585-%6850384658.dusk?emerald=1&splendid=5586425930425&ash=e8"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "PINE/DAWN rosemary mountain",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

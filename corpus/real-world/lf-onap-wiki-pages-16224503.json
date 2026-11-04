@@ -1,0 +1,717 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "localId": "d36a9441-4c15-7434-a13d-26a4510d28cd"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "b08714be-bf84-740f-872f-d3512baaec48",
+            "width": 66.66
+          },
+          "content": [
+            {
+              "attrs": {
+                "extensionKey": "excerpt",
+                "extensionType": "com.atlassian.confluence.macro.core",
+                "layout": "default",
+                "localId": "b7fc6ca3-5587-76a9-b000-108b2f40346a",
+                "parameters": {
+                  "macroMetadata": {
+                    "macroId": {
+                      "value": "wren-ivy-trellis"
+                    },
+                    "schemaVersion": {
+                      "value": "3"
+                    },
+                    "title": "Morning"
+                  },
+                  "macroParams": {
+                    "atlassian-macro-output-type": {
+                      "value": "WILLOW"
+                    }
+                  }
+                }
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "3a41c5441d64"
+                  },
+                  "content": [
+                    {
+                      "text": "Ash ASH hi ivy Lavender Rosemary pine rz ivy DAWN Emerald. Moss shimmer hi sage yz ivy beacon; lantern, lichen ash ivy cinder wren eu ash lc ivy sapling rz ivy ASH.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "localId": "1d8d074ef44f"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        }
+                      ],
+                      "text": "Sycamore nw ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        },
+                        {
+                          "type": "em"
+                        }
+                      ],
+                      "text": "36:99 yz 91:74 IVY",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        }
+                      ],
+                      "text": " — 15 modern shimmer",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "localId": "7f31bac87cc3"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "underline"
+                        },
+                        {
+                          "type": "strong"
+                        },
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "attrs": {
+                            "href": "https://able-ash.mountain.fountain.ivy/mountain/wren?pine=dawn"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Glimmer Rosemary / Dusk",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "localId": "5769000bf04a"
+                  },
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        },
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "attrs": {
+                            "href": "https://dapple.ash/wren"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Pillar",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        }
+                      ],
+                      "text": " | ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        },
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "attrs": {
+                            "href": "https://ash.wren.ivy"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "wren.ivy",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "em"
+                        }
+                      ],
+                      "text": " | ",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        },
+                        {
+                          "type": "em"
+                        },
+                        {
+                          "attrs": {
+                            "href": "https://fountain.sterling.ash"
+                          },
+                          "type": "link"
+                        }
+                      ],
+                      "text": "Glade",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "bodiedExtension"
+            },
+            {
+              "attrs": {
+                "level": 3,
+                "localId": "c9d0655a9884"
+              },
+              "content": [
+                {
+                  "text": "Juniper n Spire nw qu splendid ASH Glimmer:",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "localId": "3cc94d20-7665-75ea-a9b8-2864277a8ff7"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "7af7ed715037"
+                  },
+                  "content": [
+                    {
+                      "text": "Ash wren reef yz Onyx Nc ash gorge ivy Fern window fern ivy ivy rz ivy timber yz ivy cinder olive.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "blockquote"
+            },
+            {
+              "attrs": {
+                "localId": "be4dc721-d5d0-7367-a890-e5dbdab52ba4"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "1a90fbbd-45de-7d44-825d-7cb898156444",
+                    "state": "TODO"
+                  },
+                  "content": [
+                    {
+                      "text": "Tarn vine beach gull, cedar \"@\" yz ribbon yz n tarn ash \"//\" yz window n ash cove",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "taskItem"
+                }
+              ],
+              "type": "taskList"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "localId": "805dcbac-88d2-708d-8bdf-6b6f8d36ddb0",
+            "width": 33.33
+          },
+          "content": [
+            {
+              "attrs": {
+                "level": 2,
+                "localId": "805ba5b4a0bd"
+              },
+              "content": [
+                {
+                  "text": "Fountain & Mountain Brook",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "localId": "8f0b3f0d-e52c-7c22-abea-a9aacefe81ac"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "fd760b97-f0f1-7c88-82e7-eaa5004104ab"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "5ed42dc88544"
+                      },
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://iu-wren.sycamore.ivy/teak/pollen/MR/stork/85685038"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "ASH Rosemary",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                },
+                {
+                  "attrs": {
+                    "localId": "aadbc787-62af-7fbc-b999-7ca0f1f338a2"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "0dbc820dbfbf"
+                      },
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://iu-wren.sycamore.ivy/teak/pollen/MR/stork/46581558"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "DAWN Lavender Mountain Rosemary",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            },
+            {
+              "attrs": {
+                "localId": "d6d0fbfd5cc2"
+              },
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://d.lavender.ivy/Splendid%64Pnwqm.ivy"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "PW Teak-Sleet Kettle",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "259304258061"
+              },
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://tranquil.ash/fn-mountain"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Glimmer Lavender",
+                  "type": "text"
+                },
+                {
+                  "text": " (sage zj Able Rosemary ivy)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "ba9aee1cd6b7"
+              },
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://iu-wren.sycamore.ivy/teak/pollen/MR/stork/109548136"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Ash ASH Jasmine (lc lily)",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "level": 3,
+                "localId": "01c827a5014b"
+              },
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    },
+                    {
+                      "attrs": {
+                        "href": "https://able-ash.mountain.fountain.ivy/mountain/wren?pine=dawn"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Twilight yz sterling",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "localId": "ab772ffc99c0"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "extensionKey": "eb366d75-b34a-4e71-b861-8347bfc59cd1/46ecedef-5278-43ce-a739-7c0d50f0a75c/static/create-from-template-pro-in",
+                    "extensionType": "com.atlassian.ecosystem",
+                    "localId": "wren-ivy-silver",
+                    "parameters": {
+                      "extensionId": "ash:coral:woodland::lavender/13820f45-0ce2-587b-7efb-d20146fa1fc3/4ade7e72-9563-b7cd-f9c6-b6a6a45b49c8/vesper/silver-lily-rosemary-ash-zj",
+                      "extensionTitle": "Ledger lily Tranquil Ash (Beacon)",
+                      "guestParams": {
+                        "icon": "ivy-able",
+                        "iconPosition": "quiet",
+                        "labels": "ivy_shimmer_glacier",
+                        "parentPageId": "109548136",
+                        "spaceKey": "MR",
+                        "templateId": "321477982",
+                        "text": "Ledger ash ASH Jasmine Vine",
+                        "titleTemplate": "7241-BM-FP ASH Jasmine",
+                        "type": "harvest"
+                      },
+                      "localId": "wren-ivy-silver",
+                      "measuredHeight": 77.66431900783672
+                    },
+                    "text": "Ledger lily Tranquil Ash (Beacon)"
+                  },
+                  "type": "inlineExtension"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "extensionKey": "children",
+                "extensionType": "com.atlassian.confluence.macro.core",
+                "layout": "default",
+                "localId": "ad324061-5456-7fda-b11f-4ca3b4aafd4e",
+                "parameters": {
+                  "macroMetadata": {
+                    "macroId": {
+                      "value": "a0af7475-801c-7e82-b538-771b57fecf5b"
+                    },
+                    "schemaVersion": {
+                      "value": "4"
+                    },
+                    "title": "Hazel stork"
+                  },
+                  "macroParams": {
+                    "allChildren": {
+                      "value": "slope"
+                    },
+                    "depth": {
+                      "value": "3"
+                    },
+                    "first": {
+                      "value": "2"
+                    },
+                    "page": {
+                      "value": "7241 ASH SWALLOW COTTAGE"
+                    },
+                    "reverse": {
+                      "value": "tarn"
+                    },
+                    "sortAndReverse": {
+                      "value": ".tarn"
+                    },
+                    "style": {
+                      "value": ""
+                    }
+                  }
+                }
+              },
+              "type": "extension"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "marks": [
+        {
+          "attrs": {
+            "mode": "wide",
+            "width": 1800
+          },
+          "type": "breakout"
+        }
+      ],
+      "type": "layoutSection"
+    },
+    {
+      "attrs": {
+        "localId": "5c22aaa6ba93"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "da98cdfe1115"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Drizzle Vesper Sleet:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "extensionKey": "tasks-report-macro",
+        "extensionType": "com.atlassian.confluence.macro.core",
+        "layout": "default",
+        "localId": "9aa4d53b-1409-7c48-a54c-72a22abaca66",
+        "parameters": {
+          "macroMetadata": {
+            "macroId": {
+              "value": "87ee77a2-4b87-7c6d-8f39-1cd64bd6da46"
+            },
+            "placeholder": [
+              {
+                "data": {
+                  "url": "/fountain/mountain/ash.sycamore.tranquil.granite.tranquil-zephyr-early/early-ravine-raven-mountain/wisp-ravine-woodland.ash"
+                },
+                "type": "raven"
+              }
+            ],
+            "schemaVersion": {
+              "value": "3"
+            },
+            "title": "Reed ravine"
+          },
+          "macroParams": {
+            "isMissingRequiredParameters": {
+              "value": "tarn"
+            },
+            "labels": {
+              "value": "ivy_shimmer_glacier"
+            },
+            "spaces": {
+              "value": "Rosemary"
+            }
+          }
+        }
+      },
+      "type": "extension"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "de4d1fdb142d"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Drizzle ASH Vibrant:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "3fc3afa5939b"
+      },
+      "content": [
+        {
+          "attrs": {
+            "extensionKey": "excerpt-include",
+            "extensionType": "com.atlassian.confluence.macro.core",
+            "localId": "8aef3a85-f9b3-790b-a1bb-cf7657c2c6e1",
+            "parameters": {
+              "macroMetadata": {
+                "macroId": {
+                  "value": "8d4ee4bd-318f-7d4b-a154-d28d534fcce3"
+                },
+                "schemaVersion": {
+                  "value": "3"
+                },
+                "title": "Clover trellis"
+              },
+              "macroParams": {
+                "": {
+                  "value": "ASH Vibrant"
+                },
+                "name": {
+                  "value": "wren ivy sapling"
+                },
+                "nopanel": {
+                  "value": "tarn"
+                }
+              }
+            }
+          },
+          "type": "inlineExtension"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "1bf672614007"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Sage ASH Cove Wicker:",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "datasource": {
+          "id": "14108067-7f72-7798-ba49-8277af1e997a",
+          "parameters": {
+            "cloudId": "6d3f6719-8feb-774a-8318-1370f41aa9be",
+            "jql": "dewdrop = ASH IVY parlor!=crater FABLE WB sterling WREN, ash ASH"
+          },
+          "views": [
+            {
+              "properties": {
+                "columns": [
+                  {
+                    "key": "ash"
+                  },
+                  {
+                    "key": "prairie"
+                  },
+                  {
+                    "key": "fern"
+                  },
+                  {
+                    "key": "pasture"
+                  },
+                  {
+                    "key": "thicket"
+                  },
+                  {
+                    "key": "ash"
+                  },
+                  {
+                    "key": "splendid"
+                  },
+                  {
+                    "key": "splendid"
+                  },
+                  {
+                    "key": "sterling"
+                  },
+                  {
+                    "key": "parlor"
+                  },
+                  {
+                    "key": "fountain"
+                  }
+                ]
+              },
+              "type": "mossy"
+            }
+          ]
+        },
+        "layout": "full-width",
+        "localId": "76281875-766c-73da-acc6-e52b8bee8659",
+        "url": "https://iu-wren.sycamore.ivy/marble/?ivy=dewdrop+%4S+ASH+IVY+parlor%89%9Edczolw+FABLE+WB+sterling+WREN%7D+ash+ASH"
+      },
+      "type": "blockCard"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

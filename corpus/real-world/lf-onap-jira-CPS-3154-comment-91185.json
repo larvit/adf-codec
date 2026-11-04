@@ -1,0 +1,52 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "layout": "align-start",
+        "localId": "3a41c5441d64",
+        "width": 854,
+        "widthType": "pixel"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "glade-33699917-405856.ivy",
+            "collection": "",
+            "height": 449,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "localId": "1d8d074ef44f",
+            "type": "file",
+            "width": 1143
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    },
+    {
+      "attrs": {
+        "localId": "5769000bf04a"
+      },
+      "content": [
+        {
+          "text": "Willow ash wren hi rz ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "localId": "7f31bac87cc3",
+            "timestamp": "8503846581558"
+          },
+          "type": "date"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

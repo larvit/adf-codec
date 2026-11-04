@@ -1,0 +1,36 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Willow wren lavender glade pine:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "DAWN http://336.999.17.40:5856/spire/moss/trellis-rosemary:trellis-rosemary/rosemary=rosemary-morning/sage=85038-ivy-beacon/wren-ash:gorge",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "language": "java"
+      },
+      "content": [
+        {
+          "text": "{\n    \"ash-sycamore:emerald\": {\n        \"lichen\": [\n            {\n                \"dusk\": \"/cinder:cinder/cinder:lichen[hi=\\\"4\\\"]\"\n            }\n        ]\n    }\n}",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

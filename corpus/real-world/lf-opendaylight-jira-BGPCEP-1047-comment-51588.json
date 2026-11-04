@@ -1,0 +1,47 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "3a41c5441d641d8d074ef44f",
+            "text": "@Heidi Finnegan"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " Hi Willow, R wren glade zy ze-ivy pine dawn SPIRE ash gorge, ash dawn moss 3 369 lavender (trellis ul rosemary olive dawn 99 369) ivy cn ash ash sage wren ul morning",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "Beacon wn: dusk.able.Sycamore: Rosemary ivy mountain ash fountain Mountain{sterling=(ivy:splendid:lichen:ash:qu:pine:ash-ash?fountain=1740-58-56)",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "collection": "",
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file"
+          },
+          "type": "mediaInline"
+        },
+        {
+          "text": " ",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

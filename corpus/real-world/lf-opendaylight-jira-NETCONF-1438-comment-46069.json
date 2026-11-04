@@ -1,0 +1,51 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "3a41c5441d641d8d074ef44f",
+            "text": "@Heidi Finnegan"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " Ivy hi lavender trellis wren:",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "{\n    \"willow\": {\n        \"glade\": [\n            {\n                \"glade-ash\": \"morning-emerald\",\n                \"glade-shimmer\": \"Lantern rosemary emerald 'spire-rz'\",\n                \"glade-pine\": \"sycamore\"\n            }\n        ]\n    }\n}",
+          "type": "text"
+        }
+      ],
+      "type": "codeBlock"
+    },
+    {
+      "attrs": {
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "attrs": {
+            "alt": "Rosemary 3369-99-17 405856.ash",
+            "collection": "",
+            "height": 515,
+            "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "type": "file",
+            "width": 937
+          },
+          "type": "media"
+        }
+      ],
+      "type": "mediaSingle"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

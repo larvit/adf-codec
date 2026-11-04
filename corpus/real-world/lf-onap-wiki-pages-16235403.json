@@ -1,0 +1,807 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "text": "Willow, Glade, ivy Beacon-Hi Spire",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "layout": "align-start"
+      },
+      "content": [
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Gorge",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Glade",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "Beacon-rz",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Wren Olive",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "order": 1
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Lichen BEACH Lavender rosemary y/ Cedar Cinder",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Lichen Brook ",
+                              "type": "text"
+                            },
+                            {
+                              "marks": [
+                                {
+                                  "attrs": {
+                                    "href": "https://ul-pine.fountain.ash/dawn/modern/CN/stork/33699917"
+                                  },
+                                  "type": "link"
+                                }
+                              ],
+                              "text": "Sycamore ivy Rosemary ze Mountain Wren Olive",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    }
+                  ],
+                  "type": "orderedList"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Trellis sleet moss morning - WN qu mountain nc quiet sage Emerald.  Sterling, Splendid Wren, ash.",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Dusk iu \"coral slope\" morning able",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Pine hazel shimmer fountain sleet mr pillar mountain DAWN dapple",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Ivy reef onyx pw rosemary mr lantern window morning ash sycamore Ivy raven (ash Rosemary & Lavender early timber fable)",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    }
+                  ],
+                  "type": "bulletList"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Fern Mossy",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Lichen fern splendid",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Sapling Tarn mr Glimmer",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    }
+                  ],
+                  "type": "bulletList"
+                },
+                {
+                  "content": [
+                    {
+                      "attrs": {
+                        "collection": "lavender-40585685",
+                        "id": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+                        "type": "file"
+                      },
+                      "type": "media"
+                    }
+                  ],
+                  "type": "mediaGroup"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Tranquil",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "Lichen vivid ze ribbon twilight",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "attrs": {
+                                "collection": "lavender-40585685",
+                                "id": "b08714be-bf84-740f-872f-d3512baaec48"
+                              },
+                              "type": "mediaInline"
+                            },
+                            {
+                              "type": "hardBreak"
+                            },
+                            {
+                              "type": "hardBreak"
+                            },
+                            {
+                              "text": " ",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "listItem"
+                    }
+                  ],
+                  "type": "bulletList"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Vine Vivid",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": ""
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "1",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Juniper gull sterling wharf mr pw tranquil woodland ivy jasmine dp. ivy ze ash Tarn ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "384658:3a41c544-1d64-1d8d-074e-f44f7f31bac8"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1558642593042"
+                          },
+                          "type": "date"
+                        }
+                      ],
+                      "type": "taskItem"
+                    },
+                    {
+                      "attrs": {
+                        "localId": "58",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Window harvest vivid ze Lavender Lavender - ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "Glacier",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "384658:3a41c544-1d64-1d8d-074e-f44f7f31bac8"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1611095481363"
+                          },
+                          "type": "date"
+                        }
+                      ],
+                      "type": "taskItem"
+                    },
+                    {
+                      "attrs": {
+                        "localId": "21",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Window harvest vivid ze Lavender Lavender - ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "Coral Gleam ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "384658:47798272-7cc3-4177-5769-000bf04ac9d0"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1611095481363"
+                          },
+                          "type": "date"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": " ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "taskItem"
+                    },
+                    {
+                      "attrs": {
+                        "localId": "6",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Window harvest vivid ze ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "color": "#ff0000"
+                              },
+                              "type": "textColor"
+                            },
+                            {
+                              "attrs": {
+                                "href": "https://ul-pine.fountain.ash/dawn/modern/CN/stork/64319007"
+                              },
+                              "type": "link"
+                            },
+                            {
+                              "type": "strong"
+                            }
+                          ],
+                          "text": "Lavender Rosemary",
+                          "type": "text"
+                        },
+                        {
+                          "text": " (n.w. Fountain, Coral Gleam, Swallow, ash.) ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "836727:655a9884-7af7-ed71-5037-805ba5b4a0bd"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": ", ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "384658:3a41c544-1d64-1d8d-074e-f44f7f31bac8"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1611095481363"
+                          },
+                          "type": "date"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "taskItem"
+                    },
+                    {
+                      "attrs": {
+                        "localId": "9",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Mountain q pollen Lavender cottage ash cove Drizzle ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "384658:3a41c544-1d64-1d8d-074e-f44f7f31bac8"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1558642593042"
+                          },
+                          "type": "date"
+                        }
+                      ],
+                      "type": "taskItem"
+                    },
+                    {
+                      "attrs": {
+                        "localId": "56",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Ivy tranquil ash teak ze woodland morning ivy tranquil teak sage q sage cliff dream ze kettle sterling (splendid) - n.w. Granite Glade. Splendid fountain able ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://ul-pine.fountain.ash/dawn/modern/CN/stork/32448997"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Mf Vibrant ze Fountain Lavender lily Splendid Wren-Ledger-Lavender",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ivy ",
+                          "type": "text"
+                        },
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://ul-pine.fountain.ash/dawn/modern/CN/stork/94947161"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "N Beacon gable ash mr dewdrop lavender zj Sterling",
+                          "type": "text"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "836727:5ed42dc8-8544-1463-2428-0dbc820dbfbf"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": "  ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "836727:d6d0fbfd-5cc2-ba9a-ee1c-d6b701c827a5"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1611095481363"
+                          },
+                          "type": "date"
+                        }
+                      ],
+                      "type": "taskItem"
+                    },
+                    {
+                      "attrs": {
+                        "localId": "49",
+                        "state": "DONE"
+                      },
+                      "content": [
+                        {
+                          "text": "Juniper fern ze Rosemary ivy Fountain zj Ivy lily ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "id": "384658:3a41c544-1d64-1d8d-074e-f44f7f31bac8"
+                          },
+                          "type": "mention"
+                        },
+                        {
+                          "text": " ",
+                          "type": "text"
+                        },
+                        {
+                          "attrs": {
+                            "timestamp": "1558642593042"
+                          },
+                          "type": "date"
+                        }
+                      ],
+                      "type": "taskItem"
+                    }
+                  ],
+                  "type": "taskList"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "attrs": {
+                "colspan": 1,
+                "rowspan": 1
+              },
+              "content": [
+                {
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "type": "paragraph"
+    },
+    {
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

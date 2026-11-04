@@ -1,0 +1,125 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "attrs": {
+            "accessLevel": "",
+            "id": "3a41c5441d641d8d074ef44f",
+            "localId": "d36a9441-4c15-7434-a13d-26a4510d28cd",
+            "text": "@Heidi Finnegan"
+          },
+          "type": "mention"
+        },
+        {
+          "text": " Lavender hi ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "url": "https://ivy.ash-willow.ash/ash/rzy3369.wren#trellis-9.9"
+          },
+          "type": "inlineCard"
+        },
+        {
+          "text": "  ",
+          "type": "text"
+        },
+        {
+          "type": "hardBreak"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ],
+              "text": "Pine dawn MOSS sage ze glade ivy wren MORNING rosemary, \"ash:dusk:beacon:emerald:wren:9.9\".  U dawn",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ],
+              "text": "ASH shimmer sycamore ivy rosemary MORNING mountain, hi fountain able lc mountain sterling splendid mountain.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "blockquote"
+    },
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "text": "ash ",
+              "type": "text"
+            },
+            {
+              "attrs": {
+                "url": "https://ivy.ash-willow.ash/ash/rzy3369.wren#trellis-1.7"
+              },
+              "type": "inlineCard"
+            },
+            {
+              "text": "  pine able ",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "text": "Dawn fountain ash lantern lichen ivy sapling ivy spire nw ivy MORNING\n   splendid.",
+              "type": "text"
+            }
+          ],
+          "type": "codeBlock"
+        }
+      ],
+      "type": "blockquote"
+    },
+    {
+      "content": [
+        {
+          "text": "Ash emerald-mountain rosemary ash sycamore sycamore glimmer rosemary ivy ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "dusk-emerald",
+          "type": "text"
+        },
+        {
+          "text": " gorge.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -1,0 +1,40 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "text": "Willow Beacon.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "content": [
+        {
+          "text": "H ivy lichen ir glade ash spire gorge ash trellis cinder zy ze olive beach  ",
+          "type": "text"
+        },
+        {
+          "attrs": {
+            "id": "3a41c",
+            "shortName": ":modern_cedar:",
+            "text": "🙁"
+          },
+          "type": "emoji"
+        },
+        {
+          "attrs": {
+            "id": "3a41c",
+            "shortName": ":modern_cedar:",
+            "text": "🙁"
+          },
+          "type": "emoji"
+        }
+      ],
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}
