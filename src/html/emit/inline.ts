@@ -12,6 +12,7 @@ export function inlineHtml(nodes: readonly AdfNode[], path: ConvertErrorPath): R
   let html = ''
   let afterPlainText = false
   for (const [index, node] of nodes.entries()) {
+    // Refused, not carried: HTML nests no link in a link. A card in a carried block never reaches here.
     if (node.type === 'inlineCard' && nodeMarks(node).some(({ type }) => type === 'link')) {
       return failure('unsupported-node-shape', 'an inlineCard takes no link mark: this one holds one', [...path, 'content', index])
     }
