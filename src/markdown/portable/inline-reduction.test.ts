@@ -7,7 +7,6 @@ import type { LineContainer } from '../line-container.ts'
 import type { PortableLineFallback } from '../emit/inline-line.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
 import { judgedLine, portableLeaves, reduceInline, trimmedEdges, withoutFallback } from './inline-reduction.ts'
-import { spannedLine } from '../emit/inline-runs.ts'
 import { success, type Result } from '../../result.ts'
 
 test('reduces a line alike dropping every run a pass may or the first alone', () => {
@@ -70,7 +69,7 @@ function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Resu
     if (fallback === undefined) return success(line)
     const fixed = withoutFallback(line, firstRun(fallback), [])
     if (!fixed.ok) return fixed
-    current = trimmedEdges(fixed.value, spannedLine)
+    current = trimmedEdges(fixed.value, 'spanned')
   }
 }
 

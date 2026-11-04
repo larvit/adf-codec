@@ -5,7 +5,6 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/doc
 import { adfToPortableMarkdown, reduceToPortable } from './adf-to-portable-markdown.ts'
 import { largestNesting } from '../../nesting.ts'
 import { portableLineFallback } from '../emit/inline-line.ts'
-import { spannedLine } from '../emit/inline-runs.ts'
 import { portableMarkdownToAdf } from './portable-markdown-to-adf.ts'
 
 const code: AdfMark = { type: 'code' }
@@ -413,12 +412,12 @@ test('gives up every highlight run whose own delimiter cannot flank in one fallb
   const highlight: AdfMark = { type: 'backgroundColor' }
   const line = [text('a '), text('x', highlight), text('a '), text('x', highlight), text('a '), text('x', highlight), text('a')]
   const runs = [{ first: 1, last: 1, mark: highlight }, { first: 3, last: 3, mark: highlight }, { first: 5, last: 5, mark: highlight }]
-  assert.deepEqual(portableLineFallback(line, 'paragraph', [], spannedLine), { ok: true, value: { kind: 'unspellable-run', runs } })
+  assert.deepEqual(portableLineFallback(line, 'paragraph', [], 'spanned'), { ok: true, value: { kind: 'unspellable-run', runs } })
 })
 
 test('refuses a portable line holding a node only the carry spells, at the line', () => {
   for (const mark of [{ attrs: { a: 1 }, type: 'em' }, { type: 'odd' }]) {
-    const refused = portableLineFallback([text('x', mark)], 'paragraph', ['content', 0], spannedLine)
+    const refused = portableLineFallback([text('x', mark)], 'paragraph', ['content', 0], 'spanned')
     assert.deepEqual(refused.ok ? refused : [refused.error.code, refused.error.path], ['unsupported-node-shape', ['content', 0]])
   }
 })

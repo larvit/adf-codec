@@ -31,11 +31,20 @@ test('spells a line alike taking every fallback a pass finds or the first alone'
   )
 })
 
-// Takes only the first fallback each pass finds, with no cap.
+test('carries the range it is handed on its first call', () => {
+  const fallbacks = withheldMarkFallbacks([{ text: 'a', type: 'text' }], 'lossless')
+  assert.deepEqual(takeFallback(fallbacks, [{ first: 0, last: 0 }], []), success(null))
+  assert.deepEqual([...fallbacks.carried], [0])
+})
+
+// Writes the spanned line where it reads back, else the parted line taking only the first fallback each pass finds, with no cap.
 function firstFallbackLine(nodes: readonly AdfNode[], container: LineContainer): Result<string> {
   const fallbacks = withheldMarkFallbacks(nodes, 'lossless')
+  const spanned = linePass(nodes, container, [], fallbacks, 'spanned')
+  if (!spanned.ok) return spanned
+  if (spanned.value.fallback === undefined) return success(spanned.value.line)
   for (;;) {
-    const attempt = linePass(nodes, container, [], fallbacks)
+    const attempt = linePass(nodes, container, [], fallbacks, 'parted')
     if (!attempt.ok) return attempt
     const { fallback } = attempt.value
     if (fallback === undefined) return success(attempt.value.line)
