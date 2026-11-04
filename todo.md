@@ -124,11 +124,9 @@ reading; `MIGRATION.md` says to convert it once with the last version that reads
 `CHANGELOG.md` and `MIGRATION.md`. Search the writers for any other refusal of a shape the schema
 forbids, and `carriedNode` for one the readers still build.
 
-The maintainer wants the behaviour in and out unchanged, with the checks alike in every format. The
-first step cannot tell which node one format's carry holds, so a shape that one writer refuses now
-is refused in all, a carried node included. That is the one change of behaviour: confirm it with
-the maintainer before the chunk ships, and file a `question` item if they want the carried case
-kept as it is.
+The aim is the same behaviour in and out, with the checks alike in every format. The breaking
+change above is what "alike" costs: `refusedShape` takes no format, so it cannot spare a node that
+only one writer carries. The maintainer accepted it (2026-11-04); the item adds no other refusal.
 
 Stays where it is: a node holding one mark type twice (the schema allows it, no spelling holds it),
 nesting depth, output length, a portable task list holding what no list item spells, and a
