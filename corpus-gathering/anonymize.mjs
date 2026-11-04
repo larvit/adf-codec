@@ -6,7 +6,10 @@ const formatKeys = new Set([
 ])
 const schemes = new Set(['file', 'ftp', 'http', 'https', 'mailto', 'tel'])
 const token = /[\p{L}\p{N}][\p{L}\p{M}\p{N}]*/gu
-const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+const uuid = new RegExp(`^${uuidPattern}$`, 'i')
+const uuidOrToken = new RegExp(`(?<![\\p{L}\\p{N}])${uuidPattern}(?![\\p{L}\\p{M}\\p{N}])|${token.source}`, 'giu')
+const uuidVersionAt = 14
 // A shorter token cannot leak anything, and a document may hold all of them, so drawing around it could never end.
 const shortestLeak = 3
 const redraws = 64
@@ -149,9 +152,19 @@ function replacer(document, draws) {
     return spelled.get(original)
   }
 
+  function spellUuid(original) {
+    const drawn = fresh(() => {
+      const next = nextUuid()
+      return `${next.slice(0, uuidVersionAt)}${original[uuidVersionAt]}${next.slice(uuidVersionAt + 1)}`
+    })
+    return /[A-F]/.test(original) ? drawn.toUpperCase() : drawn
+  }
+
   function string(original) {
-    if (uuid.test(original)) return memo(original, () => fresh(nextUuid))
-    return original.replaceAll(token, (match, offset) => (isScheme(original, match, offset) ? match : memo(match, spellToken)))
+    return original.replaceAll(uuidOrToken, (match, offset) => {
+      if (uuid.test(match)) return memo(match, spellUuid)
+      return isScheme(original, match, offset) ? match : memo(match, spellToken)
+    })
   }
 
   function person(original) {
@@ -195,7 +208,7 @@ function structure(document) {
 }
 
 function skeleton(text) {
-  return text.replaceAll(token, 'x')
+  return text.replaceAll(uuidOrToken, (match) => (uuid.test(match) ? `uuid${match[uuidVersionAt]}` : 'x'))
 }
 
 function holdsSameShape(before, after) {

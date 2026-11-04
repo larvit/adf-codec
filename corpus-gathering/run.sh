@@ -22,7 +22,7 @@ draw digits 5000 '{digits(32)}'
 draw hex 5000 '{hex(32)}'
 draw letters 5000 '{lower(32)}'
 draw persons 2000 '{/en_US.person}'
-draw uuids 20000 '{uuid()}'
+draw uuids 20000 '{/misc.uuid}'
 draw words 20000 '{/en_US.word}'
 
 in_node node corpus-gathering/write-corpus.mjs corpus-gathering/sites.json /raw corpus/real-world corpus/real-world-sources.json

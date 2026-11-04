@@ -1190,7 +1190,8 @@ of what real documents contain. Valid while no public source with a clearer lice
 
 Each document keeps its exact format: every node, mark, attribute key and the shape of each value.
 Its text, names, ids and URLs are replaced with fejkdata's draws, and a document that fails the
-shape or leak check stays out. `formatKeys` in `corpus-gathering/anonymize.mjs` lists the attributes
+shape or leak check stays out. A uuid, whether a whole value or inside one, keeps its version digit
+and case: the 22,769 hold v1, v3 and v4 uuids. `formatKeys` in `corpus-gathering/anonymize.mjs` lists the attributes
 kept because they name a format or a layout. The fetched originals are never committed.
 
 A site joins only with a published licence. All six are hosted by the Linux Foundation:
