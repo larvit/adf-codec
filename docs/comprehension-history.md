@@ -1498,3 +1498,25 @@ Inherited architect, decided by:
 - Locality: `src/markdown/portable/inline-reduction.ts:241` `edgeDepth`, with `runsSharedWithNext` (:202) and `countSharedRuns` (:209): in 0166a71 `sharedRuns` answered from a leaf and its neighbour alone. Now the number comes from a recursive walk of the whole line's runs, under a grouping threaded through `trimmedEdges`. Reading it as "outermost marks" rests on the invariant stated in the comment at `edgeDepth`.
 - Navigation, Shape: `src/markdown/emit/inline-runs.ts:19` `inlineRuns`: "why did this run group so" now has one named file, shared by the writer and the reducer. In 0166a71 the grouping was private to `inline-line.ts`, and `insideRun` sat in `mark-spellings.ts`, a file about spellings. `inline-line.ts` is lighter for it, though `carries` at :61 stretches the new file's name a little.
 - Shape: `src/markdown/emit/line-escaping.ts:23` `MarkRun`: it holds the mark itself where 0166a71 held a `depth` index, and that index would be wrong once a run crosses nodes. `withoutMarks` (`inline-reduction.ts:294`) and `endsAlone` (`unspellable-runs.ts:94`) now read as what they do. This outweighs a smaller cost: `depth` in `emitRun` and `outer` in `RunNode` now mean different things.
+
+## 2026-11-04T12:16:56Z, PR #112 at eb92f94, against 0166a71
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | same | better | same | better |
+| Inherited architect | better | same | better | same | better |
+
+Mid A, decided by:
+
+- Navigation, Shape, Overall: `src/markdown/emit/inline-runs.ts:18` `inlineRuns`. Run grouping now has its own truthfully named file, holding the walk, the crossing rule and the shared-run count. At base the walk sat inside `inline-line.ts`, and `insideRun` and `RunNode` sat in `mark-spellings.ts`, a module about spellings, so a run-grouping symptom now leads to one file.
+- Shape, Overall: `src/markdown/emit/line-escaping.ts:23` `MarkRun`. A run now names the mark it spells, so `withoutMarks` (`src/markdown/portable/inline-reduction.ts:278`) and `endsAlone` (`src/markdown/emit/unspellable-runs.ts:94`) read directly. The base's `depth` index needed a comment and a matching index filter to say the same thing.
+- Shape, Overall: `src/markdown/emit/inline-line.ts:262` `emitLeaf`. It takes a `PlainRun` whose `carried` is decided once per node in `lineSegments`. The base asked `carries(node, carried, index)` from three sites and threaded `carried` through `InlineContext`.
+- Shape: `src/markdown/portable/inline-reduction.ts:248` `judgedLine`. The counterweight, narrowing the gain without cancelling it: it repeats `emitLine`'s spanned-then-parted order, its fallback indexes name the parted line, which only a comment explains, and `runsSharedWithNext` lives in `emit/` but serves only the reducer.
+
+Inherited architect, decided by:
+
+- Navigation, Shape, Overall: `src/markdown/emit/inline-runs.ts:18` `inlineRuns`. Run grouping now has one home, named for what it holds, so a symptom about a mark split or opened twice leads straight there. At base the same logic sat at `inline-line.ts:232`, in the middle of the line writer, with `RunNode` and `insideRun` in a file about spellings.
+- Shape: `src/markdown/mark-spellings.ts:32` `markSpelling`. The file now holds only spellings, so its name tells the truth. The base also kept the run type and `insideRun` there.
+- Shape: `src/markdown/emit/line-escaping.ts:23` `MarkRun`. A run now names its mark instead of an array index. This reads truthfully at `withoutMarks` (`src/markdown/portable/inline-reduction.ts:278`), and a reader no longer has to work out what a `depth` indexes into.
