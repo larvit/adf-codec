@@ -4,7 +4,7 @@
       "content": [
         {
           "attrs": {
-            "id": "336999:3a41c544-1d64-1d8d-1740-074ef44f7f31",
+            "id": "336999:a41c5441-d641-4d8d-b4ef-44f7f31bac87",
             "text": "@Heidi Finnegan"
           },
           "type": "mention"
@@ -90,7 +90,7 @@
                       }
                     ],
                     "type": "ash",
-                    "version": 5
+                    "version": 1
                   }
                 },
                 "text": ""
@@ -107,7 +107,7 @@
                 "extensionKey": "legacy-content",
                 "extensionType": "com.atlassian.confluence.migration",
                 "parameters": {
-                  "cxhtml": "<fountain>Dusk: 8 ivy, 8 lantern, 5 wn. STERLING.</fountain>",
+                  "cxhtml": "<fountain>Dusk: 7 ivy, 7 lantern, 4 wn. STERLING.</fountain>",
                   "nestedContent": {
                     "content": [
                       {
@@ -115,7 +115,7 @@
                           {
                             "content": [
                               {
-                                "text": "Dusk: 8 ivy, 8 lantern, 5 wn. STERLING.",
+                                "text": "Dusk: 7 ivy, 7 lantern, 4 wn. STERLING.",
                                 "type": "wren"
                               }
                             ],
@@ -126,7 +126,7 @@
                       }
                     ],
                     "type": "ash",
-                    "version": 6
+                    "version": 1
                   }
                 },
                 "text": ""

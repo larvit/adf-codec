@@ -7,7 +7,7 @@ const draws = {
   hex: ['9f3ac07be1d4'],
   letters: ['qkxwzj'],
   persons: ['Pat Smith', 'Lo Berg'],
-  uuids: ['0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b', '0190a1b2-c3d4-7e5f-8a9b-1c1d2e3f4a5c'],
+  uuids: ['0190a1b2-c3d4-4e5f-8a9b-0c1d2e3f4a5b', '0190a1b2-c3d4-4e5f-8a9b-1c1d2e3f4a5c'],
   words: ['amber', 'clever', 'cobalt', 'merry', 'otter', 'cliff', 'tundra', 'pumice', 'lantern', 'harbour'],
 }
 
@@ -81,6 +81,36 @@ test('replaces a person, an account id and a uuid, keeping each shape', () => {
   assert.ok(!mention.attrs.text.includes('Person'))
 })
 
+test('keeps the version of every uuid it replaces', () => {
+  for (const [version, original] of [['1', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'], ['3', '6fa459ea-ee8a-3ca4-894e-db77e160355e'], ['4', '3f2b8c1e-9d4a-4c7b-8e21-5a6f7b8c9d0e']]) {
+    const [mention] = anonymize(paragraph({ attrs: { localId: original }, type: 'mention' }), draws).content[0].content
+    assert.match(mention.attrs.localId, new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-${version}[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$`))
+    assert.notEqual(mention.attrs.localId, original)
+  }
+})
+
+test('keeps a uuid in capitals in capitals', () => {
+  const [mention] = anonymize(paragraph({ attrs: { localId: '6FA459EA-EE8A-3CA4-894E-DB77E160355E' }, type: 'mention' }), draws).content[0].content
+  assert.match(mention.attrs.localId, /^[0-9A-F]{8}-[0-9A-F]{4}-3[0-9A-F]{3}-[0-9A-F]{4}-[0-9A-F]{12}$/)
+  assert.ok(/[A-F]/.test(mention.attrs.localId))
+})
+
+test('keeps a uuid inside a longer value a uuid of its version', () => {
+  const inside = '[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}'
+  const accountId = '712020:abcdabcd-ebfa-3cde-8abc-abcdefabcdef'
+  const href = 'https://wiki.example.org/page?id=abcdabcd-ebfa-3cde-8abc-abcdefabcdef'
+  const [mention] = anonymize(paragraph({ attrs: { id: accountId }, type: 'mention' }), draws).content[0].content
+  const [link] = anonymize(paragraph({ marks: [{ attrs: { href }, type: 'link' }], text: 'x', type: 'text' }), draws).content[0].content
+  assert.match(mention.attrs.id, new RegExp(`^[1-9]\\d{5}:${inside}$`))
+  assert.match(link.marks[0].attrs.href, new RegExp(`^https://[a-z]+\\.[a-z]+\\.[a-z]+/[a-z]+\\?[a-z]{2}=${inside}$`))
+})
+
+test('reports a uuid whose version changed', () => {
+  const before = paragraph({ attrs: { id: '712020:6fa459ea-ee8a-3ca4-894e-db77e160355e' }, type: 'mention' })
+  const after = paragraph({ attrs: { id: '712020:6fa459ea-ee8a-4ca4-894e-db77e160355e' }, type: 'mention' })
+  assert.deepEqual(shapeDifferences(before, after), ['/content/0/content/0/attrs/id'])
+})
+
 test('keeps a date timestamp a number of the same length', () => {
   const [date] = anonymize(paragraph({ attrs: { timestamp: '1700000000000' }, type: 'date' }), draws).content[0].content
   assert.match(date.attrs.timestamp, /^[1-9]\d{12}$/)
@@ -107,7 +137,7 @@ test('never draws a word the document already holds', () => {
 
 test('never draws a uuid holding a part of an original one', () => {
   const original = '1c5f0e3a-7958-4eb4-b3d1-2d9b6e417c80'
-  const [mention] = anonymize(paragraph({ attrs: { localId: original }, type: 'mention' }), { ...draws, uuids: ['7baa5903-cd2a-7958-ac4d-6f3ee1010175', draws.uuids[0]] }).content[0].content
+  const [mention] = anonymize(paragraph({ attrs: { localId: original }, type: 'mention' }), { ...draws, uuids: ['7baa5903-7958-4d2a-ac4d-6f3ee1010175', draws.uuids[0]] }).content[0].content
   assert.equal(mention.attrs.localId, draws.uuids[0])
 })
 
