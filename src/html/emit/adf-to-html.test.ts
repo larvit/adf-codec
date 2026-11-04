@@ -140,7 +140,7 @@ test('carries every other node in an adf-carry element holding its JSON', () => 
   assert.equal(html(adfToHtml(document(paragraph(text('Ask '), mention)))), '<p>Ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;,&quot;text&quot;:&quot;@Mikael&quot;},&quot;type&quot;:&quot;mention&quot;}">@Mikael</span></p>\n')
 })
 
-test('writes an emoji, status, date and URL card as their elements, their attributes data-* sorted by name', () => {
+test('writes an emoji, status, date and card holding a URL as their elements, their attributes data-* sorted by name', () => {
   const inline = (node: AdfNode): string => html(adfToHtml(document(paragraph(text('See '), node))))
   assert.equal(inline({ attrs: { id: '1f389', localId: 'e1', shortName: ':tada:', text: '🎉' }, type: 'emoji' }), '<p>See <span class="adf-emoji" data-id="1f389" data-local-id="e1" data-short-name=":tada:">🎉</span></p>\n')
   assert.equal(inline({ attrs: { text: '<3' }, type: 'emoji' }), '<p>See <span class="adf-emoji">&lt;3</span></p>\n')
@@ -149,7 +149,7 @@ test('writes an emoji, status, date and URL card as their elements, their attrib
   assert.equal(inline({ attrs: { localId: 'c1', url: 'https://example.com/spec?a=1&b=2' }, type: 'inlineCard' }), '<p>See <a class="adf-inline-card" href="https://example.com/spec?a=1&amp;b=2" data-local-id="c1">https://example.com/spec?a=1&amp;b=2</a></p>\n')
 })
 
-test('carries an emoji, status, date or URL card the element cannot hold', () => {
+test('carries an emoji, status, date or card holding a URL the element cannot hold', () => {
   const carried = (node: AdfNode): boolean => html(adfToHtml(document(paragraph(node)))).includes('adf-carry')
   const comment: AdfMark = { attrs: { annotationType: 'inlineComment', id: 'c1' }, type: 'annotation' }
   assert.equal(carried({ attrs: { text: '🎉' }, marks: [comment], type: 'emoji' }), true)
@@ -163,6 +163,8 @@ test('carries an emoji, status, date or URL card the element cannot hold', () =>
   assert.equal(carried({ attrs: { timestamp: 'soon' }, type: 'date' }), true)
   assert.equal(carried({ attrs: { timestamp: 1756080000000 }, type: 'date' }), true)
   assert.equal(carried({ type: 'date' }), true)
+  for (const timestamp of ['253402300800000', '-62135596800001', '-62167219200000']) assert.equal(carried({ attrs: { timestamp }, type: 'date' }), true)
+  for (const timestamp of ['253402300799999', '-62135596800000']) assert.equal(carried({ attrs: { timestamp }, type: 'date' }), false)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap' } }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { data: { name: 'Roadmap' }, url: 'https://example.com/' }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.org/' }, type: 'link' }], type: 'inlineCard' }), true)
