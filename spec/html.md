@@ -107,9 +107,7 @@ later release writes it as its own element.
   - Characters HTML cannot hold are dropped.
 - A node rides the carry where it holds a mark or a key its element does not write, an attribute
   its type does not hold as that kind, an empty `attrs`, `content` or `marks`, or a value its
-  element cannot hold. The exception is an inline card a link marks, in a block written as an element:
-  `adfToHtml` refuses it as `unsupported-node-shape`, since Atlassian's schema gives a card no link
-  mark and HTML nests no link in a link. In a carried block it rides the carry.
+  element cannot hold:
   - text holding no character, or a character HTML cannot hold; text holding a mark twice, or a
     mark with attributes besides a link's `href` and `title`;
   - an unmarked text node straight after one written as plain text, which would read back as one;
@@ -129,6 +127,9 @@ later release writes it as its own element.
   - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
     an attribute its type does not hold: the whole list rides the carry;
   - a `listItem` outside a list, an inline node in block position and a block node inline.
+- An inline card a link marks, in a block written as an element, is refused as
+  `unsupported-node-shape` instead: Atlassian's schema gives a card no link mark, and HTML nests no
+  link in a link. In a carried block it rides the carry.
 - A block carry's JSON nests at most 500 levels less the depth it stands at, an inline carry's at
   most 500, as in markdown.
 
