@@ -717,7 +717,8 @@ chunk.
 Where a plan item of the release already restores that code, the entry above holds instead, and the chunk restructures nothing.
 Each later ruling reads the restructured head against the first ruling's base, with the same seats,
 and every ruling stays in the history. Each restructure runs one rung higher; past the top rung,
-the maintainer decides. A ruling judges the code, never the behaviour: item 91's spanning stays, since the
+the maintainer decides. After the fifth ruling they gave the restructure to a subagent on model fable, told to look past the
+current design for a better reading rather than answer the ruling's places one by one (2026-11-04). A ruling judges the code, never the behaviour: item 91's spanning stays, since the
 paragraphs it spells, such as bold around a code span, occur in documents all the time
 (2026-11-03). The maintainer's call on how: refactor first, ruled alone (item 166), then make spanning part of
 grouping, with the span rule in one home. `inlineRuns` in `emit/inline-runs.ts` groups a line, `runCrosses` says which
