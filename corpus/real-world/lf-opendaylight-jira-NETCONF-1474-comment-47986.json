@@ -7,7 +7,7 @@
             "accessLevel": "",
             "id": "3a41c5441d641d8d074ef44f",
             "localId": "a41c5441-d641-4d8d-b4ef-44f7f31bac87",
-            "text": "@Heidi Finnegan"
+            "text": "@Wren Willow"
           },
           "type": "mention"
         },
@@ -17,7 +17,7 @@
         },
         {
           "attrs": {
-            "url": "https://ivy.ash-willow.ash/ash/rzy3369.wren#trellis-9.9"
+            "url": "https://ivy.ash-beacon.ash/ash/rzy3369.pine#trellis-9.9"
           },
           "type": "inlineCard"
         },
@@ -41,7 +41,7 @@
                   "type": "code"
                 }
               ],
-              "text": "Pine dawn MOSS sage ze glade ivy wren MORNING rosemary, \"ash:dusk:beacon:emerald:wren:9.9\".  U dawn",
+              "text": "Dawn moss SAGE wren ze glade ivy dusk MORNING rosemary, \"ash:able:lichen:emerald:dusk:9.9\".  U moss",
               "type": "text"
             }
           ],
@@ -55,7 +55,7 @@
                   "type": "code"
                 }
               ],
-              "text": "ASH shimmer sycamore ivy rosemary MORNING mountain, hi fountain able lc mountain sterling splendid mountain.",
+              "text": "ASH shimmer sycamore ivy rosemary MORNING mountain, hi fountain pine lc mountain sterling splendid mountain.",
               "type": "text"
             }
           ],
@@ -74,12 +74,12 @@
             },
             {
               "attrs": {
-                "url": "https://ivy.ash-willow.ash/ash/rzy3369.wren#trellis-1.7"
+                "url": "https://ivy.ash-beacon.ash/ash/rzy3369.pine#trellis-1.7"
               },
               "type": "inlineCard"
             },
             {
-              "text": "  pine able ",
+              "text": "  dawn pine ",
               "type": "text"
             }
           ],
@@ -88,7 +88,7 @@
         {
           "content": [
             {
-              "text": "Dawn fountain ash lantern lichen ivy sapling ivy spire nw ivy MORNING\n   splendid.",
+              "text": "Reef fountain ash lantern cinder ivy sapling ivy spire nw ivy MORNING\n   splendid.",
               "type": "text"
             }
           ],
@@ -109,7 +109,7 @@
               "type": "code"
             }
           ],
-          "text": "dusk-emerald",
+          "text": "able-emerald",
           "type": "text"
         },
         {

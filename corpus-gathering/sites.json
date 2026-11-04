@@ -6,32 +6,6 @@
         "licenceSource": "https://www.linuxfoundation.org/legal/terms"
       },
       "wiki": {
-        "licence": "CC-BY-SA-4.0",
-        "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source"
-      }
-    },
-    "site": "lf-onap"
-  },
-  {
-    "products": {
-      "jira": {
-        "licence": "CC-BY-3.0",
-        "licenceSource": "https://www.linuxfoundation.org/legal/terms"
-      },
-      "wiki": {
-        "licence": "CC-BY-3.0",
-        "licenceSource": "https://www.linuxfoundation.org/legal/terms"
-      }
-    },
-    "site": "lf-opendaylight"
-  },
-  {
-    "products": {
-      "jira": {
-        "licence": "CC-BY-3.0",
-        "licenceSource": "https://www.linuxfoundation.org/legal/terms"
-      },
-      "wiki": {
         "licence": "CC-BY-3.0",
         "licenceSource": "https://www.linuxfoundation.org/legal/terms"
       }
@@ -58,7 +32,7 @@
         "licenceSource": "https://www.linuxfoundation.org/legal/terms"
       }
     },
-    "site": "lf-hyperledger"
+    "site": "lf-edgexfoundry"
   },
   {
     "products": {
@@ -67,6 +41,32 @@
         "licenceSource": "https://www.linuxfoundation.org/legal/terms"
       }
     },
-    "site": "lf-edgexfoundry"
+    "site": "lf-hyperledger"
+  },
+  {
+    "products": {
+      "jira": {
+        "licence": "CC-BY-3.0",
+        "licenceSource": "https://www.linuxfoundation.org/legal/terms"
+      },
+      "wiki": {
+        "licence": "CC-BY-SA-4.0",
+        "licenceSource": "https://lf-onap.atlassian.net/wiki/spaces/DW/pages/16220224/Open+Source"
+      }
+    },
+    "site": "lf-onap"
+  },
+  {
+    "products": {
+      "jira": {
+        "licence": "CC-BY-3.0",
+        "licenceSource": "https://www.linuxfoundation.org/legal/terms"
+      },
+      "wiki": {
+        "licence": "CC-BY-3.0",
+        "licenceSource": "https://www.linuxfoundation.org/legal/terms"
+      }
+    },
+    "site": "lf-opendaylight"
   }
 ]

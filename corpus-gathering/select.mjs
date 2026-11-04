@@ -23,7 +23,7 @@ function collect(node, parentType, found) {
   })
 }
 
-// What a document shows the corpus: its node and mark types, attribute keys, nesting, marks held together and neighbours such as bold beside a code span.
+// A document's features: its node and mark types, attribute keys, nesting, marks held together and neighbours such as bold beside a code span.
 export function features(document) {
   const found = new Set()
   collect(document, undefined, found)
@@ -47,7 +47,7 @@ function bestCandidate(candidates, covered) {
       showsType ||= isType(feature)
     }
     const score = added / candidate.size
-    if (added > 0 && (showsType && !bestShowsType || showsType === bestShowsType && score > bestScore)) {
+    if (showsType && !bestShowsType || showsType === bestShowsType && score > bestScore) {
       best = candidate
       bestScore = score
       bestShowsType = showsType
@@ -60,13 +60,11 @@ function bestCandidate(candidates, covered) {
 export function selectDocuments(candidates, limit) {
   const covered = new Set()
   const chosen = []
-  let remaining = candidates
   while (chosen.length < limit) {
-    const best = bestCandidate(remaining, covered)
+    const best = bestCandidate(candidates, covered)
     if (best === undefined) break
     chosen.push(best)
     for (const feature of best.features) covered.add(feature)
-    remaining = remaining.filter((candidate) => candidate !== best)
   }
   return chosen
 }

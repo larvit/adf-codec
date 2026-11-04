@@ -6,10 +6,10 @@ import test from 'node:test'
 
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
-import { htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
+import { htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { isAdfDocument } from '../adf/document.ts'
+import { isAdfDocument, isRecord } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { markVocabularies } from '../adf/mark-attributes.ts'
@@ -22,8 +22,8 @@ const realPayloadsRoot = join(corpusRoot, 'real-payloads')
 const realWorldRoot = join(corpusRoot, 'real-world')
 const roundTripRoot = join(corpusRoot, 'round-trip')
 
-const typesNoFetchedDocumentHolds = ['bodiedSyncBlock', 'decisionItem', 'decisionList', 'extensionFrame', 'fragment', 'multiBodiedExtension', 'syncBlock']
 const roundTripDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
+const typesNoFetchedDocumentHolds = ['bodiedSyncBlock', 'decisionItem', 'decisionList', 'extensionFrame', 'fragment', 'multiBodiedExtension', 'syncBlock']
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -140,9 +140,6 @@ for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
   })
 }
 
-// The opening tag of each block type whose only attributes are `localId`, `level` and `order`, as the editor writes them.
-const blockElements: Readonly<Record<string, string>> = { blockquote: '<blockquote', bulletList: '<ul', heading: '<h', orderedList: '<ol', paragraph: '<p', rule: '<hr' }
-
 for (const root of [realPayloadsRoot, realWorldRoot]) {
   const kind = basename(root)
 
@@ -171,22 +168,25 @@ for (const root of [realPayloadsRoot, realWorldRoot]) {
   }
 }
 
-for (const name of names(realPayloadsRoot, '.json')) {
-  test(`real-payloads/${name} writes each block holding only its id as its element`, () => {
-    const payload: unknown = JSON.parse(readFileSync(join(realPayloadsRoot, `${name}.json`), 'utf8'))
-    assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
-    assert.ok(adfToHtml(payload).ok)
-    for (const block of payload.content ?? []) {
-      const opening = Object.hasOwn(blockElements, block.type) ? blockElements[block.type] : undefined
-      if (opening === undefined || block.marks !== undefined || Object.keys(block.attrs ?? {}).some((key) => !['level', 'localId', 'order'].includes(key))) continue
-      const written = adfToHtml({ content: [block], type: 'doc', version: 1 })
-      assert.ok(written.ok && written.value.startsWith(opening), `${block.type} wrote ${written.ok ? written.value.slice(0, 80) : written.error.code}`)
-    }
-  })
-}
+// The opening tag of each block type, for a block whose only attributes are `localId`, `level` and `order`, as Atlassian's editor writes it.
+const blockElements: Readonly<Record<string, string>> = { blockquote: '<blockquote', bulletList: '<ul', heading: '<h', orderedList: '<ol', paragraph: '<p', rule: '<hr' }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+for (const root of [realPayloadsRoot, realWorldRoot]) {
+  for (const name of names(root, '.json')) {
+    test(`${basename(root)}/${name} writes each block holding only its id as its element`, () => {
+      const payload: unknown = JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8'))
+      assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+      assert.ok(adfToHtml(payload).ok)
+      for (const block of payload.content ?? []) {
+        const opening = Object.hasOwn(blockElements, block.type) ? blockElements[block.type] : undefined
+        if (opening === undefined || block.marks !== undefined || Object.keys(block.attrs ?? {}).some((key) => !['level', 'localId', 'order'].includes(key))) continue
+        // A heading without `level` has no element to write: it rides the carry.
+        if (block.type === 'heading' && block.attrs?.['level'] === undefined) continue
+        const written = adfToHtml({ content: [block], type: 'doc', version: 1 })
+        assert.ok(written.ok && written.value.startsWith(opening), `${block.type} wrote ${written.ok ? written.value.slice(0, 80) : written.error.code}`)
+      }
+    })
+  }
 }
 
 function typesHeld(value: unknown, found: Set<string>): void {
@@ -199,26 +199,35 @@ function typesHeld(value: unknown, found: Set<string>): void {
   }
 }
 
-test('real-world holds every type the flavour spells but the ones no fetched document holds', () => {
+test('real-world holds every type the flavour spells except the ones no fetched document holds', () => {
   const found = new Set<string>()
   for (const name of names(realWorldRoot, '.json')) typesHeld(JSON.parse(readFileSync(join(realWorldRoot, `${name}.json`), 'utf8')), found)
   const spelled = [...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...markVocabularies.keys()]
   assert.deepEqual(spelled.filter((type) => !found.has(type)).sort(), [...typesNoFetchedDocumentHolds].sort())
 })
 
-test('real-world-sources.json records where each real-world document came from and its licence', () => {
-  const sources: unknown = JSON.parse(readFileSync(join(corpusRoot, 'real-world-sources.json'), 'utf8'))
-  assert.ok(isRecord(sources))
-  assert.deepEqual(Object.keys(sources).sort(), names(realWorldRoot, '.json'))
-  for (const [name, source] of Object.entries(sources)) {
-    assert.ok(isRecord(source), name)
-    assert.deepEqual(Object.keys(source).sort(), ['licence', 'licenceSource', 'retrieved', 'url'], name)
-    assert.match(String(source['licence']), /^CC-BY(-SA)?-\d\.\d$/, name)
-    assert.match(String(source['licenceSource']), /^https:\/\//, name)
-    assert.match(String(source['retrieved']), /^\d{4}-\d{2}-\d{2}$/, name)
-    assert.match(String(source['url']), /^https:\/\/[a-z-]+\.atlassian\.net\//, name)
-  }
+const realWorldSources: unknown = JSON.parse(readFileSync(join(corpusRoot, 'real-world-sources.json'), 'utf8'))
+const realWorldSites: unknown = JSON.parse(readFileSync(join(corpusRoot, '..', 'corpus-gathering', 'sites.json'), 'utf8'))
+
+test('real-world-sources.json has an entry for each real-world document', () => {
+  assert.ok(isRecord(realWorldSources))
+  assert.deepEqual(Object.keys(realWorldSources).sort(), names(realWorldRoot, '.json'))
 })
+
+for (const [name, source] of Object.entries(isRecord(realWorldSources) ? realWorldSources : {})) {
+  test(`real-world-sources.json records ${name}'s page, licence and retrieval`, () => {
+    assert.ok(isRecord(source))
+    const [, site = '', product = ''] = /^(.+)-(jira|wiki)-/.exec(name) ?? []
+    const entry: unknown = Array.isArray(realWorldSites) ? realWorldSites.find((held: unknown) => isRecord(held) && held['site'] === site) : undefined
+    assert.ok(isRecord(entry) && isRecord(entry['products']))
+    const { licence, licenceSource, retrieved, url } = source
+    assert.deepEqual({ licence, licenceSource }, entry['products'][product])
+    assert.deepEqual(Object.keys(source).sort(), ['licence', 'licenceSource', 'retrieved', 'url'])
+    assert.equal(new Date(String(retrieved)).toISOString(), retrieved)
+    // A page's title or an attachment's name in the link would put original text in the repo.
+    assert.match(String(url), new RegExp(`^https://${site}\\.atlassian\\.net/(browse/[A-Z0-9-]+|wiki/spaces/[^/?]+/(overview|pages/\\d+|blog/\\d+/\\d+/\\d+/\\d+))(\\?focusedCommentId=\\d+)?$`))
+  })
+}
 
 // The position the input itself gives an offset, recomputed rather than trusted from the parser.
 function lineStarting(markdown: string, offset: number): { line: number; offset: number } | undefined {

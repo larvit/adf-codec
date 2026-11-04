@@ -7,12 +7,12 @@
             "extensionKey": "legacy-content",
             "extensionType": "com.atlassian.confluence.migration",
             "parameters": {
-              "cxhtml": "<h3>Lavender/Glade Rosemary 3:</h3>",
+              "cxhtml": "<h9>Lavender/Glade Rosemary 3:</h9>",
               "nestedContent": {
                 "content": [
                   {
                     "attrs": {
-                      "level": 6
+                      "level": 3
                     },
                     "content": [
                       {
@@ -24,7 +24,7 @@
                   }
                 ],
                 "type": "ivy",
-                "version": 9
+                "version": 6
               }
             },
             "text": ""

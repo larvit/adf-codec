@@ -1,0 +1,1140 @@
+{
+  "content": [
+    {
+      "attrs": {
+        "level": 3,
+        "localId": "a41c5441-d641-4d8d-b4ef-44f7f31bac87"
+      },
+      "content": [
+        {
+          "text": "IVY Trellis ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "attrs": {
+                "href": "https://pine-ash.lavender.rosemary.ash/morning/33699917405?sycamore=c3576900-0bf0-44ac-9065-5a98847af7ed"
+              },
+              "type": "link"
+            }
+          ],
+          "text": "Wren",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "15037805-ba5b-44a0-95ed-42dc885440db"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "attrs": {
+                "color": "#172b4d"
+              },
+              "type": "textColor"
+            }
+          ],
+          "text": "IVY rosemary ivy dawn hi-willow ash moss rz sage yz Mountain. Fountain: 8:56 eu Emerald.",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "820dbfbf-d6d0-4fbf-9cc2-ba9aee1cd6b7"
+      },
+      "content": [
+        {
+          "text": "Mountain & Sterling",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "1c827a50-14ba-4b77-bfc9-9c013820f450"
+      },
+      "content": [
+        {
+          "text": "IVY Shimmer ash Lantern splendid beacon wren glade fountain spire",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "e2587b7e-fbd2-4014-ba1f-c34ade7e72b7"
+      },
+      "content": [
+        {
+          "text": "Lichen ivy mountain gorge lc rosemary fountain",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "df9c6b6a-6a45-4b49-85c2-2aaa6ba93da9"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "cdfe1115-de4d-41fd-942d-3fc3afa5939b",
+            "width": 50
+          },
+          "content": [
+            {
+              "attrs": {
+                "layout": "align-start",
+                "localId": "bf672614-007f-4278-927f-e9adf79fb7a3",
+                "width": 760
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "304a9e68-856c-43ac-9bbe-691b99f1e888"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "10596ea3-8914-4e72-9f94-d7c43524c9c8",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "844e7334-657b-4f3c-b35b-1d7537dcfb5a"
+                          },
+                          "content": [
+                            {
+                              "marks": [
+                                {
+                                  "type": "strong"
+                                }
+                              ],
+                              "text": "Dusk",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableHeader"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "dc78da01-e6bc-4d8a-8c1b-204b2a01c293",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "fd7a179d-01fa-4447-9d43-7a3d061f9ea3"
+                          },
+                          "content": [
+                            {
+                              "marks": [
+                                {
+                                  "type": "strong"
+                                }
+                              ],
+                              "text": "Sycamore",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableHeader"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "d2939dd1-15f6-4f23-ac80-eecd14a4a6ea"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "background": "#ffffff",
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "6587a39f-ba56-4cb1-bcfc-70c00b3c6209",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "a9a31bd6-1b00-4f68-a2bc-6b00afd9e34f"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "3a41c5441d641d8d074ef44f",
+                                "localId": "6d8133d5-f1c6-4ad6-b7ac-49ee17f496b3"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "3ad05160-7091-41d3-b563-907853be6352",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "20d922aa-c885-4c38-afab-4eddf237d94b"
+                          },
+                          "content": [
+                            {
+                              "text": "Rosemary.able",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "9f57181f-b20a-4555-9d1a-4c765058582f"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "background": "#ffffff",
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "4e503d21-3a2a-48d7-a259-94180edafd24",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "421c8a3e-cd53-404c-b915-c16db8e23dab"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "7f31bac87cc35769000bf04a",
+                                "localId": "2e7807fe-0d65-4ec3-a654-56761fc88b95"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "ba705717-acff-4ea6-8109-dfcebfbeeef9",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "fd881d15-22a6-4e7b-858f-ffb0706a7190"
+                          },
+                          "content": [
+                            {
+                              "text": "Rosemary.able",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "41e231d6-5f09-4079-abd8-4a5473e5e121"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "background": "#ffffff",
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "b2bbd551-a92e-4460-bce5-fa68186d7970",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "bde90f0d-a380-40a8-80df-5e2727fda058"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "850384:475252d1-fd5e-42d3-b029-2cd229fa9a4f",
+                                "localId": "83397c35-26cd-4178-8876-d83af10b7524"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "9cca9199-1b7d-48fe-b4ea-17499da2e888",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "7d6cf701-81e4-462d-b4b4-5106e1fe8e31"
+                          },
+                          "content": [
+                            {
+                              "text": "ASH",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "72f45c92-5e43-461a-8166-24e5d0e9793b"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "background": "#ffffff",
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "620f0c72-b5c2-45ad-8d51-3e85b43294af",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "d637ce61-a164-4982-92e8-43037d9b0bc6"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "65815:c5bec554-727f-44ac-b42b-55dd6d0dace9",
+                                "localId": "cf121fa0-6e8d-4ea4-b796-a2024baa5739"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "f45a98f8-fe6f-4f63-87ba-7fd1e0cfdf93",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "03716d76-7ebd-4ef9-8039-5ea6a6459643"
+                          },
+                          "content": [
+                            {
+                              "text": "Cinder",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "20e9562b-10ec-4fa0-991b-6ed46714bd79"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "background": "#ffffff",
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "c17292d4-2b43-4828-98fa-b7646a2c22fe",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "c86b9661-fa3f-4325-a00b-968c0c332723"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "c9d0655a98847af7ed715037",
+                                "localId": "192b04c1-3e17-463a-99dc-f7df7c2e2be1"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "6f6134ae-b566-44f7-bf6b-f77662289d5b",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "bcc54321-04dd-44b1-801b-1f854ef6bff6"
+                          },
+                          "content": [
+                            {
+                              "text": "Modern",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "4165e120-12b9-40f0-bac2-57052e44c714"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "background": "#ffffff",
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "5e94fe5b-0604-42ea-ae3d-9bcd675fc4ea",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "dee30dbf-8c74-409e-b817-27cf11a7787c"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "805ba5b4a0bd5ed42dc88544",
+                                "localId": "f5941035-1d10-42d6-98f2-30439891724e"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "129c09d5-4eff-45e2-857d-37dfe21cb04d",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "4c2cebad-5fba-407f-ae2f-46e43f34f21e"
+                          },
+                          "content": [
+                            {
+                              "text": "Lavender Splendid",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                },
+                {
+                  "attrs": {
+                    "localId": "1fb08c1f-f665-47e9-abce-81d9f1db4f38"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          199
+                        ],
+                        "localId": "0aa74991-b36b-4fcf-b1e5-1fcfebc6694f",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "74bbc588-7da6-4f6c-96c4-48a099ff6744"
+                          },
+                          "content": [
+                            {
+                              "attrs": {
+                                "id": "65815:92312c67-d4ae-4d8f-9e82-aa56267e441c",
+                                "localId": "c18b6b6a-9674-43cd-a653-17ba660b878f"
+                              },
+                              "type": "mention"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    },
+                    {
+                      "attrs": {
+                        "colspan": 1,
+                        "colwidth": [
+                          326
+                        ],
+                        "localId": "02deca04-80ce-46b2-ac6e-19f21e371229",
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "attrs": {
+                            "localId": "a4252082-7fc9-4736-8daf-35630553b3bf"
+                          },
+                          "content": [
+                            {
+                              "text": "Olive Lavender",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "tableCell"
+                    }
+                  ],
+                  "type": "tableRow"
+                }
+              ],
+              "type": "table"
+            },
+            {
+              "attrs": {
+                "localId": "8da19b6d-e796-43e3-b0b4-02cc4ac8c05c"
+              },
+              "content": [
+                {
+                  "text": "Beach: ",
+                  "type": "text"
+                },
+                {
+                  "attrs": {
+                    "id": "0dbc820dbfbfd6d0fbfd5cc2",
+                    "localId": "38de63be-4332-4a9f-a353-8f6a4f1fb9f2"
+                  },
+                  "type": "mention"
+                },
+                {
+                  "text": " ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "0d56a29f-2c67-4826-acdb-be7ade0afffc"
+              },
+              "content": [
+                {
+                  "text": "Tranquil:",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "layoutColumn"
+        },
+        {
+          "attrs": {
+            "localId": "a8f6ad1c-1228-443a-930b-e14d70d7d4f3",
+            "width": 50
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "c40e361a-65b6-4c26-b8ba-5ddca3bf8fa8"
+              },
+              "type": "rule"
+            },
+            {
+              "attrs": {
+                "extensionKey": "tasks-report-macro",
+                "extensionType": "com.atlassian.confluence.macro.core",
+                "layout": "default",
+                "localId": "04d1ee59-f319-47b4-a1cb-b8dcaf3048b1",
+                "parameters": {
+                  "macroMetadata": {
+                    "macroId": {
+                      "value": "ba9aee1cd6b701c827a5014bab772ffc99c013820f450ce2587b7efbd20146fa"
+                    },
+                    "placeholder": [
+                      {
+                        "data": {
+                          "url": "/twilight/sterling/ash.tranquil.woodland.sapling.woodland-pillar-brook/brook-dapple-cedar-sterling/dawn-dapple-lavender.ash"
+                        },
+                        "type": "cedar"
+                      }
+                    ],
+                    "schemaVersion": {
+                      "value": "5"
+                    },
+                    "title": "Reef dapple"
+                  },
+                  "macroParams": {
+                    "isMissingRequiredParameters": {
+                      "value": "pine"
+                    },
+                    "labels": {
+                      "value": "ash"
+                    },
+                    "spaces": {
+                      "value": "IVY"
+                    }
+                  }
+                }
+              },
+              "type": "extension"
+            }
+          ],
+          "type": "layoutColumn"
+        }
+      ],
+      "marks": [
+        {
+          "attrs": {
+            "mode": "wide",
+            "width": 1800
+          },
+          "type": "breakout"
+        }
+      ],
+      "type": "layoutSection"
+    },
+    {
+      "attrs": {
+        "localId": "c18e8111-bd74-4916-9883-70be12ec3056"
+      },
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "67a2c63b-dc24-46e5-a388-080813c095d1",
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "attrs": {
+            "level": 2,
+            "localId": "ba118ff4-a457-42a8-87c9-243d101915bf"
+          },
+          "content": [
+            {
+              "text": "Window",
+              "type": "text"
+            }
+          ],
+          "type": "heading"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "localId": "5fab2a65-faa3-49a8-b118-c63b6ad28397"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "e18b4dd4-0acd-4bc9-a757-a411ad39286f"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "516dc478-05d2-49e4-bf73-11be8897375e"
+              },
+              "content": [
+                {
+                  "text": "Stork ivy Rosemary",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "988e900a-eb5c-4f4b-ad38-3bd126ec1c45"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "bb0f53ac-2092-4c47-bc50-99b62a8ccd29"
+              },
+              "content": [
+                {
+                  "text": "Nw onyx sleet nq fountain ivy glimmer'u Mountain Timber, quiet ivy ivy fern ribbon fern ivy NC ash glimmer tranquil. Ash window iu woodland coral sterling splendid, splendid fountain fountain lavender, ivy lavender mr rosemary. Pollen kettle ash pw ivy tarn ash lavender, ledger juniper vine jasmine slope harvest. Shimmer dp ivy NC ivy juniper Beacon Fountain nw ivy gull Silver Fountain IVY, quiet mountain slope harvest lc ivy NC.",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "attrs": {
+                "localId": "9c05f885-0eca-45a0-9a1e-59526de621e0"
+              },
+              "content": [
+                {
+                  "attrs": {
+                    "localId": "c2cf9f29-8b58-4ec3-8bd3-6670c20bec8e"
+                  },
+                  "content": [
+                    {
+                      "attrs": {
+                        "localId": "89403047-6045-4c52-aba5-a59e8805b674"
+                      },
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "attrs": {
+                                "href": "https://q.tranquil.ash/Mountain%86Mfnzj.ash"
+                              },
+                              "type": "link"
+                            }
+                          ],
+                          "text": "Mountain Timber",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "listItem"
+                }
+              ],
+              "type": "bulletList"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "d7d852ec-d7f5-4721-b9d1-a934cf187d32"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "77950e91-fdd7-46c1-ab6f-4c5f6f0d39c5"
+              },
+              "content": [
+                {
+                  "text": "Window Glacier, Tarn Cove, Vesper Hazel (ivy, ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "8:56-8:42 eu",
+                  "type": "text"
+                },
+                {
+                  "text": ")",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "0383edb1-8041-4aa0-9866-6ca9b722fb56"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "2f5c86ea-68cb-4020-ba9c-75d7de4805ca"
+              },
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://bm-rosemary.tranquil.ash/teak/vesper/IVY/sleet/59304258"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "Lavender",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "6bea8124-a293-48a5-868a-259ebd650a0c"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "7a15e9e1-2ed9-4426-a475-1a1c8d0002a4"
+              },
+              "content": [
+                {
+                  "text": "ASH Swallow",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "4faf651d-f532-4637-842f-5fb756d498ab"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "62cfd3a7-0ac0-4568-8320-542a81094712"
+              },
+              "content": [
+                {
+                  "text": "Sterling Zephyr",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "4380acee-09fc-4d7d-bcc6-021be7875f92"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "a23c6ebb-27d8-4b27-98d2-7c2379873f14"
+              },
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://bm-rosemary.tranquil.ash/teak/vesper/IVY/sleet/16110954"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "IVY Twilight Fountain",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "1b7c839b-cd9d-4546-8e45-020286139e97"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "67bef59d-9a4e-4f2b-ac22-5630c498027b"
+              },
+              "content": [
+                {
+                  "text": "Cottage Ravine",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        },
+        {
+          "attrs": {
+            "localId": "718e4198-3e05-4118-b08b-feb316197020"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "a039036f-0d10-438a-8699-c4bf6ae05c40"
+              },
+              "content": [
+                {
+                  "text": "Ash Raven Ravine",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "listItem"
+        }
+      ],
+      "type": "bulletList"
+    },
+    {
+      "attrs": {
+        "localId": "c86592c8-7c70-4818-93c3-8cc37b0a5fba",
+        "panelType": "info"
+      },
+      "content": [
+        {
+          "attrs": {
+            "level": 2,
+            "localId": "878713d5-80ca-4249-89bf-58e37d1cfb4d"
+          },
+          "content": [
+            {
+              "text": "Drizzle",
+              "type": "text"
+            }
+          ],
+          "type": "heading"
+        }
+      ],
+      "type": "panel"
+    },
+    {
+      "attrs": {
+        "localId": "699f6162-afe6-4e6e-ab08-1a2187908f3a"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Granite",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "1fc34ade7e72"
+      },
+      "content": [
+        {
+          "text": "Lavender FP clover, WICKER vibrant ivy early wb se ivy teak dewdrop ash SAGE prairie lc ash parlor. Nw onyx woodland lc pasture clover ash fable able",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "8f018dd1-08b5-4917-9f4f-a0b45989917f"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "ASH Swallow",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "82cf7dc1-8696-4a57-815d-168c55f32b72"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Sterling Zephyr",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "localId": "93aee787-8811-4ca1-acb7-5f028669dc1d"
+      },
+      "content": [
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Cottage Mossy",
+          "type": "text"
+        }
+      ],
+      "type": "paragraph"
+    },
+    {
+      "attrs": {
+        "level": 2,
+        "localId": "a6e5c855-1cbf-4c32-9382-0f7691c9457c"
+      },
+      "content": [
+        {
+          "text": "Vesper Hazel",
+          "type": "text"
+        }
+      ],
+      "type": "heading"
+    },
+    {
+      "attrs": {
+        "localId": "2729a873-ac9d-4adc-87cb-8015cf9d22de"
+      },
+      "content": [
+        {
+          "attrs": {
+            "localId": "5",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "attrs": {
+                "localId": "eaff4a08-6f65-4526-9fef-b0b79530ec49",
+                "text": "Lily vine dawn lily, vivid \"@\" lc crater lc d able ash \"//\" lc marble d ash vine"
+              },
+              "type": "placeholder"
+            }
+          ],
+          "type": "taskItem"
+        }
+      ],
+      "type": "taskList"
+    },
+    {
+      "attrs": {
+        "localId": "b7cdf9c6b6a6"
+      },
+      "type": "paragraph"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

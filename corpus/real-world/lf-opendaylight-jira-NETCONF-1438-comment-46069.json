@@ -6,12 +6,12 @@
           "attrs": {
             "accessLevel": "",
             "id": "3a41c5441d641d8d074ef44f",
-            "text": "@Heidi Finnegan"
+            "text": "@Wren Willow"
           },
           "type": "mention"
         },
         {
-          "text": " Ivy hi lavender trellis wren:",
+          "text": " Ivy hi lavender trellis pine:",
           "type": "text"
         }
       ],
@@ -20,7 +20,7 @@
     {
       "content": [
         {
-          "text": "{\n    \"willow\": {\n        \"glade\": [\n            {\n                \"glade-ash\": \"morning-emerald\",\n                \"glade-shimmer\": \"Lantern rosemary emerald 'spire-rz'\",\n                \"glade-pine\": \"sycamore\"\n            }\n        ]\n    }\n}",
+          "text": "{\n    \"beacon\": {\n        \"glade\": [\n            {\n                \"glade-ash\": \"morning-emerald\",\n                \"glade-shimmer\": \"Lantern rosemary emerald 'spire-rz'\",\n                \"glade-dawn\": \"sycamore\"\n            }\n        ]\n    }\n}",
           "type": "text"
         }
       ],

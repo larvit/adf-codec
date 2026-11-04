@@ -93,8 +93,8 @@ In `docs/decisions.md`:
 ## 1. Nothing about any consumer in the library
 
 The shipped library holds no Jira client, no HTTP, no REST shapes, no issue keys and no actual
-consumer's name. Design against the README's personas. Tooling outside the build may fetch from
-public sites and name them, as `corpus-gathering/` does.
+consumer's name. Design against the README's personas. Tooling and fixtures outside the build may
+name public sites, and tooling may fetch from them, as `corpus-gathering/` does.
 
 ## 2. Release automation
 
