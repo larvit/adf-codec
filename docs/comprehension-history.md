@@ -1520,3 +1520,17 @@ Inherited architect, decided by:
 - Navigation, Shape, Overall: `src/markdown/emit/inline-runs.ts:18` `inlineRuns`. Run grouping now has one home, named for what it holds, so a symptom about a mark split or opened twice leads straight there. At base the same logic sat at `inline-line.ts:232`, in the middle of the line writer, with `RunNode` and `insideRun` in a file about spellings.
 - Shape: `src/markdown/mark-spellings.ts:32` `markSpelling`. The file now holds only spellings, so its name tells the truth. The base also kept the run type and `insideRun` there.
 - Shape: `src/markdown/emit/line-escaping.ts:23` `MarkRun`. A run now names its mark instead of an array index. This reads truthfully at `withoutMarks` (`src/markdown/portable/inline-reduction.ts:278`), and a reader no longer has to work out what a `depth` indexes into.
+
+## 2026-11-04T13:11:07Z, PR #117 at 283cf91, against d5d594b
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | same | same |
+| Inherited architect | same | same | worse | same | same |
+
+Inherited architect, decided by:
+
+- Shape: `src/html/node-element.ts:9` `NodeElement.textAttribute`. Leaving it `undefined` marks the row as a date, which the type doesn't say; emit and parse both read `undefined` as "derive the text from `timestamp`", and the four rows are built three ways.
+- Shape: `src/html/parse/node-element.ts:36` `mismatch`. It picks its message from `model.leading` (`datetime` for a date, `href` for a card) in place of the node type, and `readNodeElement` checks all four kinds in one condition, so a reader works out which checks apply to which kind.
