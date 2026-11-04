@@ -9,8 +9,8 @@ import { writableValue } from '../escaping.ts'
 export function nodeElement(node: AdfNode): string | undefined {
   const model = elementOfNodeType(node.type)
   if (model === undefined || node.content !== undefined) return undefined
-  const data = dataAttributes(node, model.vocabulary, model.content === undefined ? [] : [model.content])
-  const held = model.content === undefined ? htmlDay(shownText(node)) : nodeAttrs(node)[model.content]
+  const data = dataAttributes(node, model.vocabulary, model.textAttribute === undefined ? [] : [model.textAttribute])
+  const held = model.textAttribute === undefined ? htmlDay(shownText(node)) : nodeAttrs(node)[model.textAttribute]
   const shown = typeof held === 'string' && held !== '' ? writableValue(held) : undefined
   if (data === undefined || shown === undefined) return undefined
   const leading = model.leading === undefined ? '' : ` ${model.leading}="${shown}"`

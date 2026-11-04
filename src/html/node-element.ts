@@ -1,25 +1,29 @@
 import type { AttributeVocabulary } from '../adf/attribute-vocabulary.ts'
 import { inlineNodeModel } from '../adf/inline-nodes.ts'
 
-// `content` names the attribute holding the shown text, none for a date, which shows the day its `timestamp` falls on; `leading` names the attribute right after the class, holding that same text.
+// `textAttribute` names the attribute holding the shown text, none for a date, which shows the day its `timestamp` falls on; `leading` names the attribute right after the class, holding that same text.
 export type NodeElement = {
   class: string
-  content: string | undefined
   element: 'a' | 'span' | 'time'
   leading: 'datetime' | 'href' | undefined
+  textAttribute: string | undefined
   vocabulary: AttributeVocabulary
 }
 
 const nodeElements: Readonly<Record<string, NodeElement>> = {
-  date: { class: 'adf-date', content: undefined, element: 'time', leading: 'datetime', vocabulary: attributesOf('date') },
-  emoji: { class: 'adf-emoji', content: 'text', element: 'span', leading: undefined, vocabulary: attributesOf('emoji') },
+  date: { class: 'adf-date', element: 'time', leading: 'datetime', textAttribute: undefined, vocabulary: attributesOf('date') },
+  emoji: { class: 'adf-emoji', element: 'span', leading: undefined, textAttribute: inlineNodeModel('emoji')?.textAttribute, vocabulary: attributesOf('emoji') },
   // Leaves out `data`, whose spelling is open (todo.md item 133), so a card holding it rides the carry.
-  inlineCard: { class: 'adf-inline-card', content: 'url', element: 'a', leading: 'href', vocabulary: { localId: 'string', url: 'string' } },
-  status: { class: 'adf-status', content: 'text', element: 'span', leading: undefined, vocabulary: attributesOf('status') },
+  inlineCard: { class: 'adf-inline-card', element: 'a', leading: 'href', textAttribute: 'url', vocabulary: { localId: 'string', url: 'string' } },
+  status: { class: 'adf-status', element: 'span', leading: undefined, textAttribute: inlineNodeModel('status')?.textAttribute, vocabulary: attributesOf('status') },
 }
 
 function attributesOf(type: string): AttributeVocabulary {
   return inlineNodeModel(type)?.attributes ?? {}
+}
+
+export function classesOfElement(element: string): string[] {
+  return Object.values(nodeElements).filter((candidate) => candidate.element === element).map((candidate) => candidate.class)
 }
 
 export function elementOfNodeType(type: string): NodeElement | undefined {

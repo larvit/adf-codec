@@ -199,6 +199,9 @@ test('reads an emoji, status, date and card holding a URL from their elements', 
     { attrs: { color: 'yellow', localId: 's1', style: 'bold', text: 'In "review"' }, type: 'status' },
     { attrs: { localId: 'd1', timestamp: '1756080000000' }, type: 'date' },
     { attrs: { localId: 'c1', url: 'https://example.com/spec?a=1&b=2' }, type: 'inlineCard' },
+    { attrs: { text: ' ' }, type: 'emoji' },
+    { attrs: { text: ' ' }, type: 'status' },
+    { attrs: { url: ' ' }, type: 'inlineCard' },
   ]
   for (const node of nodes) assert.deepEqual(inline(node), document(paragraph(text('See '), node)))
   assert.deepEqual(read(htmlToAdf('<p><span class="adf-emoji">a&nbsp;&quot;b</span></p>\n')), document(paragraph({ attrs: { text: 'a\u00a0"b' }, type: 'emoji' })))
@@ -282,6 +285,9 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     ['<p><time datetime="2025-08-25">2025-08-25</time></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+    ['<p><a class="adf-status">x</a></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><time class="adf-emoji">x</time></p>\n', 'unmappable-html at /content/0 line 1 offset 0'],
+    ['<p><a class="adf-inline-card" data-local-id="x">x</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="">a</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="https://example.com/" title="t">https://example.com/</a></p>\n', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
     ['<p><a class="adf-inline-card" href="https://example.com/" data-data="{}">https://example.com/</a></p>\n', 'unsupported-node-shape at /content/0/content/0 line 1 offset 0'],
@@ -392,7 +398,7 @@ const messages: readonly (readonly [string, string])[] = [
   ['<p><em></em></p>\n', 'a mark element holds text, or one other mark element around text: found "</em></p>\\n"'],
   ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', '<a> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: found "&b=2\\">x</a></strong></p>"…'],
   [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows what adfToHtml writes for its node, as it or a browser spells it, then </div>; to change the node, edit its ADF and write the HTML again: found "<b>collation</b>.</p></d"…'],
-  ['<p><span>a</span></p>\n', 'a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone: found "<span>a</span></p>\\n"'],
+  ['<p><span>a</span></p>\n', 'a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji" or "adf-status": found "<span>a</span></p>\\n"'],
   ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'a carry element spells its node\'s JSON canonically: compact, keys sorted, each character HTML cannot hold spelled as a JSON escape: found "{ &quot;type&quot;:&quot"…'],
   [`${documentCarry}\n<hr>\n`, 'a carry element holding the document stands alone, as the whole document: found "\\n<hr>\\n"'],
   [`<hr>\n${documentCarry}\n`, 'a carry element holding the document stands alone, as the whole document: found "<div class=\\"adf-carry\\" d"…'],

@@ -159,6 +159,7 @@ test('carries an emoji, status, date or card holding a URL the element cannot ho
   assert.equal(carried({ attrs: { size: 'big', text: '🎉' }, type: 'emoji' }), true)
   assert.equal(carried({ attrs: { id: 5, text: '🎉' }, type: 'emoji' }), true)
   assert.equal(carried({ attrs: { text: '🎉' }, content: [], type: 'emoji' }), true)
+  assert.equal(carried({ attrs: { text: '🎉' }, content: [text('x')], type: 'emoji' }), true)
   assert.equal(carried({ attrs: { color: 'red' }, type: 'status' }), true)
   assert.equal(carried({ attrs: { timestamp: 'soon' }, type: 'date' }), true)
   assert.equal(carried({ attrs: { timestamp: 1756080000000 }, type: 'date' }), true)

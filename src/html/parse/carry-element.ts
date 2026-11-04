@@ -3,6 +3,7 @@ import type { Read } from '../../result.ts'
 import { carriedNesting, carriedNode, carriedValue } from '../../adf/carried-json.ts'
 import { carryContent } from '../carry-content.ts'
 import { carryJsonOffset, readCarryAttributes } from '../carry-attributes.ts'
+import { classesOfElement } from '../node-element.ts'
 import { foundAt, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { holdableJson, readsAsShown } from '../escaping.ts'
 import { spellsCanonicalJson } from '../../canonical-json.ts'
@@ -13,7 +14,11 @@ const holder = "a carry element's data-adf"
 // What the element shows must read back as `adfToHtml` shows its node, so an edit to it is refused rather than dropped (README goal 7).
 export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', levels: number, place: Place): ReadNode {
   const json = readCarryAttributes(tag.attributes)
-  if (json === undefined) return refused('unmappable-html', `a <${tag.name}> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone: ${foundAt(html, tag.start)}`, html, tag.start, place)
+  if (json === undefined) {
+    const others = classesOfElement(tag.name)
+    const alternative = others.length === 0 ? '' : `, or opens with class="${others.join('" or "')}"`
+    return refused('unmappable-html', `a <${tag.name}> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone${alternative}: ${foundAt(html, tag.start)}`, html, tag.start, place)
+  }
   const jsonAt = tag.start + carryJsonOffset(tag.name)
   const node = heldNode(json, levels, html, jsonAt)
   if (node.fault !== undefined) return refused(node.fault.code, node.fault.message, html, jsonAt, place)

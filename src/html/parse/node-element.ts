@@ -13,7 +13,7 @@ export function readNodeElement(html: string, tag: StartTag, place: Place): Read
   if (found === undefined) return undefined
   const [type, model] = found
   if (model.leading !== undefined && rest[0]?.[0] !== model.leading) return refused('unmappable-html', `<${tag.name} class="${model.class}"> holds ${model.leading} first, before its data-* attributes: ${foundAt(html, tag.start)}`, html, tag.start, place)
-  const data = readDataAttributes(rest, `${tag.name} class="${model.class}"`, model.vocabulary, model.content === undefined ? [] : [model.content], model.leading)
+  const data = readDataAttributes(rest, `${tag.name} class="${model.class}"`, model.vocabulary, model.textAttribute === undefined ? [] : [model.textAttribute], model.leading)
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const closer = `</${tag.name}>`
   const stop = html.indexOf('<', tag.end)
@@ -22,7 +22,7 @@ export function readNodeElement(html: string, tag: StartTag, place: Place): Read
   if (shown === undefined) return misspelledText(html, tag.end + misspelledAt(html.slice(tag.end, end), 'text'), place)
   if (!html.startsWith(closer, end)) return refused('unmappable-html', `<${tag.name} class="${model.class}"> holds its text, then ${closer}: ${foundAt(html, end)}`, html, end, place)
   const node = nodeOf(type, model, data.value, shown)
-  const expected = model.content === undefined ? htmlDay(shownText(node)) : shown
+  const expected = model.textAttribute === undefined ? htmlDay(shownText(node)) : shown
   if (expected === undefined || expected === '' || shown !== expected || (model.leading !== undefined && rest[0]?.[1] !== expected)) {
     return refused('unmappable-html', `${mismatch(tag.name, model)}: ${foundAt(html, tag.end)}`, html, tag.end, place)
   }
@@ -30,7 +30,7 @@ export function readNodeElement(html: string, tag: StartTag, place: Place): Read
 }
 
 function nodeOf(type: string, model: NodeElement, data: AdfAttributes, shown: string): AdfNode {
-  return { attrs: model.content === undefined ? data : { ...data, [model.content]: shown }, type }
+  return { attrs: model.textAttribute === undefined ? data : { ...data, [model.textAttribute]: shown }, type }
 }
 
 function mismatch(name: string, model: NodeElement): string {
