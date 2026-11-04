@@ -45,6 +45,10 @@ export function foundAt(html: string, index: number): string {
   return `found ${spelled}${index + found.length < html.length ? '…' : ''}`
 }
 
+export function misspelledText<T>(html: string, index: number, place: Place): Result<T, ParseError> {
+  return refused('unmappable-html', `text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: ${foundAt(html, index)}`, html, index, place)
+}
+
 // The position of the start of `line` in `html` as handed in, for a line counted after each `\r\n` became a line feed.
 export function positionIn(html: string, { line }: SourcePosition): SourcePosition {
   let offset = 0

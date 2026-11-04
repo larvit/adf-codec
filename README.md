@@ -516,8 +516,10 @@ content. No stylesheet ships. The complete dialect:
 | `blockquote` | `<blockquote>` |
 | `bulletList`, `orderedList`, `listItem` | `<ul>`, `<ol>`, `<ol start="3">` for an `order` of 3, and `<li>`; an item's first paragraph stands bare, `<li>Bolt</li>`, or as `<li><p data-local-id="p1">Bolt</p></li>` where it holds an attribute |
 | `codeBlock` | `<pre><code class="language-js">`, no `class` without a language |
+| `date`, `emoji`, `status` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="…">2025-08-25</time>`, `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, `<span class="adf-status" data-color="yellow">In review</span>` |
 | `hardBreak` | `<br>` |
 | `heading` | `<h1>` to `<h6>` |
+| `inlineCard` holding a `url` | `<a class="adf-inline-card" href="…">…</a>` |
 | `link` | `<a href="…" title="…">` |
 | `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it; an image holding such an attribute, as editor-written ones do, rides the carry element |
 | `paragraph` | `<p>` |

@@ -12,10 +12,10 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 133 | 0.3.0 |  | question | **Write mentions, and inline cards holding `data` or a link mark, as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 163 | 0.3.0 |  |  | **Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.** | 3 | 2 | 4 | 7 | 4 | 6 by 3 | 3.0 |
 | 164 | 0.3.0 | 163 |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
 | 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
-| 133 | 0.3.0 |  | decision | **Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 3 | 3.0 |
 | 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
 | 73 | 0.3.0 | 132, 133, 163, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
 | 72 | 0.3.0 | 132, 133 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
@@ -69,6 +69,24 @@
 
 ## Details
 
+### 133. Write mentions, and inline cards holding `data` or a link mark, as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+
+The fifth writer panel (`docs/decisions.md` §The HTML dialect) did not reach 5 of 7 on two
+spellings, so mentions and cards holding `data` ride the carry until the maintainer settles them.
+Class: the HTML dialect's spellings. Earlier entries: `data-*` named as HTML's `dataset` names it,
+`data-local-id` over `data-adf-local-id`. Candidates, each following those entries:
+
+- a mention as `<span class="adf-mention" data-access-level="CONTAINER" data-id="5b10a2" data-user-type="DEFAULT">@Mikael</span>` (4 of 7; `data-mention-id` drew 2);
+- a card holding `data` and no URL as `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`, `href` the URL its `data` holds (3 of 7; `data-card` drew 2, a `<span>` without `href` 2).
+
+Where a link marks a card, both the link's target and the card's URL stay in sight, a card showing
+only its name included.
+
+Candidate entry for §The HTML dialect, if the leading spellings stand: "A mention is
+`<span class="adf-mention" data-access-level data-id data-user-type>` showing its text. A card
+holding `data` and no URL is `<a class="adf-inline-card" href data-data>`, `href` the URL its `data`
+holds, showing its name." The instance it yields for the example above: `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`.
+
 ### 163. Gather a corpus of real-world ADF documents from public Jira and Confluence sites, each recording where it came from and under what licence.
 
 The maintainer asked for it on 2026-11-03: paragraphs such as bold around a code span or italics over a line break occur all the time, and the project holds no evidence of what real documents contain. Find public sites that serve ADF without an account, such as Jira Cloud issues on public projects through the REST v3 API, and fetch enough documents to cover the node and mark types the flavour spells.
@@ -85,12 +103,6 @@ The examples are picked by an explicit list of corpus ids, each with a one-line 
 ### 165. Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.
 
 The panel follows AGENTS.md §7's reader-panel rule: readers, one per persona the row serves, see only `## Audience` and the row, and say whether the output is what they expect. A rejected row becomes an item naming the expected output. The verdicts land in `docs/decisions.md`.
-
-### 133. Write mentions, emoji, dates, statuses and inline cards as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
-
-A writer panel picks the elements, classes and `data-*` attributes. Where a link marks a card, both
-the link's target and the card's URL stay in sight, a card showing only its name included
-(`docs/decisions.md` §The HTML dialect).
 
 ### 132. Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 

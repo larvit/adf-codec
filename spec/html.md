@@ -35,10 +35,20 @@ block's `data-*` attributes stand on its `<pre>`.
 
 | ADF | HTML |
 | --- | --- |
+| `date` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`, the day in UTC; its other attributes after the class, as below |
 | `em`, `strong`, `code` | `<em>`, `<strong>`, `<code>` around the text |
+| `emoji` | `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its `text` the content |
 | `hardBreak` | `<br>` |
+| `inlineCard`, holding a `url` | `<a class="adf-inline-card" href="https://example.com/spec">https://example.com/spec</a>` |
 | `link`, holding `href` and an optional `title` | `<a href="…" title="…">` around the text |
+| `status` | `<span class="adf-status" data-color="yellow">In review</span>`, its `text` the content |
 | `text` | its text, escaped |
+
+A `date`, `emoji`, `inlineCard` or `status` writes each other attribute its type holds as a
+`data-*` attribute, named and sorted as on a block, `data-local-id` among them. It rides the carry
+where it holds a mark, `content`, a key or value its type does not hold, or an empty `attrs`; where
+it has no text to show (an emoji or status with no `text`, a date whose `timestamp` names no day, a
+card with no `url`); and where a card holds `data`. A `mention` rides the carry.
 
 A text node's marks nest in the order its `marks` array lists them, the first outermost:
 `<strong><em>manual</em></strong>`. Each text node writes its own elements, so two text nodes a link
@@ -138,6 +148,9 @@ that node in either spelling: an edit there would be lost, so it is `unmappable-
 - Any other HTML is `unmappable-html`: another element, attribute or escape, attributes in another
   order, a block on the line of another, a carriage return not followed by a line feed, or
   non-empty HTML not ending in a line feed.
+- An emoji, status, date or card element reads back as its node only when it shows what `adfToHtml`
+  writes for it: the text is not empty, a date's `datetime` and text are the day its `data-timestamp`
+  names, and a card's `href` and text are one URL. Another shape is `unmappable-html`.
 - A `data-*` attribute that its element does not take, such as `data-level` on `<h1>`, or that holds
   a value outside its attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
 - A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,

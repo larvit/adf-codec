@@ -8,14 +8,16 @@
   to or from markdown, wrappers and forks aside; its second table lists other ecosystems'
   libraries and Atlassian's own paths.
 - `adfToHtml` writes ADF as HTML: paragraphs, headings, lists, quotes, code blocks, rules, hard
-  breaks, a centered, uncaptioned external image holding no attribute but its URL and alt, and `em`,
-  `strong`, `code` and links as their elements. A paragraph, heading, quote, list, list item, code block or
+  breaks, a centered, uncaptioned external image holding no attribute but its URL and alt, an
+  emoji, a status, a date and a card holding only a URL (`<span class="adf-emoji">`, `<span class="adf-status">`,
+  `<time class="adf-date">`, `<a class="adf-inline-card">`), and `em`, `strong`, `code` and links as
+  their elements. A paragraph, heading, quote, list, list item, code block or
   rule writes its other attributes as `data-*` attributes, `localId` as `data-local-id`. Every other
   node is an element of class `adf-carry` holding the node's JSON in `data-adf` and showing its
   content, links included. Every URL is written as the ADF holds it,
   `javascript:` included: sanitize HTML from an author you do not trust before showing it.
 - `htmlToAdf` reads `adfToHtml`'s HTML back to the document it came from, a carry element from its
-  `data-adf`. It reads that HTML as a browser's `innerHTML` writes it too (a raw `"` in text,
+  `data-adf`, and those elements. It reads that HTML as a browser's `innerHTML` writes it too (a raw `"` in text,
   `&nbsp;`, a raw `<` or `>` in an attribute value) and as a form post sends it (`\r\n` for each
   line feed). It refuses any other HTML, including an edit to what a carry element shows, with the
   codes README §The calls lists.
