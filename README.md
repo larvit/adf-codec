@@ -32,7 +32,7 @@ Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdow
 npm install @larvit/adf-codec
 ```
 
-ESM only, Node 18 or later ([The package](#the-package)). Upgrading from `0.1.0`:
+ESM only, Node 18 or later ([The package](#the-package)). Upgrading:
 [MIGRATION.md](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md).
 
 ## Quick start
@@ -253,8 +253,8 @@ comes from npm searches on 2026-11-05 for "adf markdown", "markdown to adf", "ad
 "atlassian document format" and "adf converter".
 
 On 2026-11-05, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
-ran each package's published code, at the version the table names, with its default options. A
-package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
+ran each other package's published code at the version the table names, and this package's latest
+release, with default options. A package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
 holding the same marks and link.
 
@@ -785,7 +785,7 @@ All three commands need only Docker, git and bash 5.
 ## Links
 
 - [Changelog](https://github.com/larvit/adf-codec/blob/main/CHANGELOG.md)
-- [Upgrading from `0.1.0`](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md)
+- [Upgrading](https://github.com/larvit/adf-codec/blob/main/MIGRATION.md)
 - [The lossless flavour's grammar, `spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md)
 - [Decisions](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md)
 - [Plan](https://github.com/larvit/adf-codec/blob/main/todo.md)

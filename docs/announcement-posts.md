@@ -1,9 +1,7 @@
 # Announcement posts for 0.3.0
 
-Drafts for the maintainer to post, one per place. Each post opens with the asker's problem, says how
-the package solves it, then links the repository, whose README opens on what the package is, and the
-[comparison table](https://github.com/larvit/adf-codec#other-adf-converters). The Turndown sample in
-the first post ran against `0.3.0` on 2026-11-05. Each post says its author maintains the package.
+Drafts for the maintainer to post, one per place. The Turndown sample under Topic 96176 ran against
+`0.3.0` on 2026-11-05.
 
 Delete this file once the posts are out.
 
@@ -18,7 +16,7 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 > Atlaskit transformer's `encode` throws "This is not implemented yet"; here `adfToPortableMarkdown`
 > and `adfToLosslessMarkdown` write the markdown, and `losslessMarkdownToAdf` reads the lossless one
 > back to the same document, panels, mentions, statuses and unknown node types included. Every call
-> returns a result and never throws. I maintain it.
+> returns a result and never throws. Wiki markup is not covered. I maintain it.
 >
 > https://github.com/larvit/adf-codec
 > How it compares with the other npm packages, run on their published code:
@@ -30,8 +28,7 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 
 ### Topic 96176, "Is there a way to convert from HTML to ADF using TypeScript on NodeJS?"
 
-> `@atlaskit/editor-markdown-transformer` doesn't load as ESM in plain Node, so the Turndown route
-> above stops at the import. I maintain [`@larvit/adf-codec`](https://github.com/larvit/adf-codec),
+> The Turndown route above stops where the Atlaskit packages won't import as ESM, as you found. I maintain [`@larvit/adf-codec`](https://github.com/larvit/adf-codec),
 > which reads markdown into ADF with no Atlaskit, no React and no dependencies, as ESM that runs in
 > Node, Forge and browsers. It takes the place of the Atlaskit transformer in that route:
 >
@@ -69,11 +66,11 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 
 ### Topic 86214, "Add a comment in Rovo action"
 
-> The Atlaskit transformers don't bundle in the Forge backend, but a plain function does:
+> The Atlaskit transformers can't be used in the Forge backend, but a plain function can:
 > [`@larvit/adf-codec`](https://github.com/larvit/adf-codec) (I maintain it) turns the markdown an
 > agent writes into a valid ADF comment body, with no Atlaskit, no React and no dependencies:
 > `const body = portableMarkdownToAdf(markdown)`, then send `body.value` as the comment's `body`
-> when `body.ok`. Headings, lists, tables, code blocks, links and marks all come out as ADF nodes,
+> when `body.ok`. Headings, lists, tables, code blocks, links and marks all come out as ADF nodes and marks,
 > and an invalid input returns an error instead of throwing.
 > [Comparison with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters).
 
@@ -82,7 +79,7 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 > To the question of what else converts markdown to ADF and back: [`@larvit/adf-codec`](https://github.com/larvit/adf-codec),
 > which I maintain. It is a library, so it doesn't publish to Confluence or ship an Obsidian plugin.
 > It reads markdown into ADF (CommonMark, GFM tables, task lists and alerts, Obsidian callouts) and
-> writes ADF back as markdown, and the lossless pair gives back the original document, panels,
+> writes ADF back as markdown, and `adfToLosslessMarkdown` with `losslessMarkdownToAdf` gives back the original document, panels,
 > mentions, statuses, macros and node types it doesn't know included. Models can edit that markdown,
 > since it is markdown, which suits the MD to ADF need for LLMs mentioned above.
 > [Comparison with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters).
@@ -91,9 +88,10 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 
 > I can't change what the server accepts, but a client that reads ADF over REST can avoid the loss
 > itself. [`@larvit/adf-codec`](https://github.com/larvit/adf-codec) (I maintain it) writes ADF as
-> markdown in which media nodes, mentions, panels, statuses, macros and unknown node types are kept
-> as small `!adf:` spellings, and reads that markdown back to the same document. The model edits the
-> markdown, and `losslessMarkdownToAdf` gives ADF to send, with the media node still in it.
+> markdown in which media nodes, mentions, panels, statuses and macros are kept as `!adf:` lines and
+> node types it doesn't know as fenced JSON, and reads that markdown back to the same document. The
+> model edits the markdown, and `losslessMarkdownToAdf` gives ADF to send with the REST API, with the
+> media node still in it.
 > [Comparison with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters).
 
 ## GitHub, `atlassian/atlassian-mcp-server`
@@ -110,11 +108,11 @@ of their own.
 > and runs in Node, Deno, Bun and browsers.
 > [Comparison with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters).
 
-### Issue 161, "Lossless markdown round-trip for Confluence macros and large-page support via file-path parameter" (optional)
+### Issue 161, "Lossless markdown round-trip for Confluence macros and large-page support via file-path parameter"
 
 > The first proposal, macros surviving a markdown round-trip, is what [`@larvit/adf-codec`](https://github.com/larvit/adf-codec)
-> (I maintain it) does for any client: `adfToLosslessMarkdown` writes a macro as an `!adf:extension`
-> line holding its key, type and parameters, and `losslessMarkdownToAdf` restores it exactly.
+> (I maintain it) does for any client: `adfToLosslessMarkdown` writes a macro as an `!adf:extension` or
+> `!adf:bodiedExtension` directive holding its key, type and parameters, and `losslessMarkdownToAdf` restores it exactly.
 > [Comparison with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters).
 
 ## Left out
