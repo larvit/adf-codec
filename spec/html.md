@@ -123,12 +123,13 @@ later release writes it as its own element.
     alone whose `url` is missing or holds only whitespace;
   - a code block holding more than one text node, a marked one, or a language holding ASCII
     whitespace;
-  - a rule or hard break holding `content`, and a hard break holding an attribute;
+  - a hard break holding an attribute;
   - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
     an attribute its type does not hold: the whole list rides the carry;
   - a `listItem` outside a list, an inline node in block position and a block node inline.
-- An inline card a link marks is refused as `unsupported-node-shape`, carried or not, by `adfToHtml`
-  and by `htmlToAdf` reading a carry element: Atlassian's schema gives a card no link mark.
+- An inline card a link marks, a block or non-text inline node holding `text`, and a leaf block or
+  non-text inline node holding `content` are refused as `unsupported-node-shape`, carried or not, by
+  `adfToHtml` and by `htmlToAdf` reading a carry element: Atlassian's schema gives no node those.
 - A block carry's JSON nests at most 500 levels less the depth it stands at, an inline carry's at
   most 500, as in markdown.
 

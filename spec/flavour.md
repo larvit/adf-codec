@@ -582,9 +582,10 @@ open or close where the run sits (`un**-real**istic`), or one CommonMark's match
 the merged run's pairing to another delimiter — rides the inline carry whole. So does every node
 holding `em`, `strike` or `strong` in a line still read back wrong after 32 tries. An opaque carry inside
 a mark spelling is a named error in input: the carry restores its node exactly, marks included
-(`docs/decisions.md` §Unknown nodes ride the carry). An inline card a link marks rides no carry:
-`adfToLosslessMarkdown` refuses it as `unsupported-node-shape`, and so does `losslessMarkdownToAdf`
-reading a carry that holds one, since Atlassian's schema gives a card no link mark.
+(`docs/decisions.md` §Unknown nodes ride the carry). An inline card a link marks, a block or non-text inline
+node holding `text`, and a leaf block or non-text inline node holding `content` ride no carry:
+`adfToLosslessMarkdown` refuses each as `unsupported-node-shape`, and so does `losslessMarkdownToAdf`
+reading a carry that holds one, since Atlassian's schema gives no node those.
 
 ```
 !adf:textColor[**Overdue**]{color="#ae2e24"}, H!adf:subsup[2]{type=sub}O, !adf:underline[signed].

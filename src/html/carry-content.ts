@@ -44,7 +44,7 @@ function shownPiece(node: AdfNode, lineFeed: string): string {
   return linkedText(node, shownText(node), shownUrl(node), lineFeed)
 }
 
-// As portable markdown writes it inline, except that a link around a note stays and an image's own `text`, outside ADF's schema, shows first (docs/decisions.md §The HTML dialect).
+// As portable markdown writes it inline, except that a link around a note stays (docs/decisions.md §The HTML dialect).
 function linkedImage(media: AdfNode, lineFeed: string): string {
   const image = shownImage(media, shownLink(media)?.href)
   const shown = linkedText(media, image?.text, image?.link, lineFeed)

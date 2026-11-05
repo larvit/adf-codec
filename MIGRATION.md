@@ -27,6 +27,13 @@ the error's `path` naming the card, since Atlassian's schema gives a card no lin
 `link` mark from that card before you write it with `0.3.0`; to keep the link's target, put the
 link on a `text` node beside the card.
 
+`0.3.0` refuses, as `unsupported-node-shape`, a block or non-text inline node holding `text`, and a
+leaf block or non-text inline node holding non-empty `content`. Atlassian's schema gives no node
+those. `adfToHtml` and `adfToPortableMarkdown` wrote such a node in `0.2.0`, and `adfToLosslessMarkdown`
+wrote one inside a carried node; all three now refuse it, and `losslessMarkdownToAdf` and `htmlToAdf`
+refuse a stored carry holding one. Read a stored document with `0.2.0`, remove what the error's
+`path` names and write it with `0.3.0`, once.
+
 ## From `0.1.0` to `0.2.0`
 
 Each call names the markdown it reads or writes:

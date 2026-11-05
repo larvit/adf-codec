@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Breaking:** `adfToHtml`, `adfToPortableMarkdown`, `htmlToAdf` and `losslessMarkdownToAdf` refuse
+  a block or non-text inline node holding `text`, and a leaf block or non-text inline node holding
+  `content`, as `adfToLosslessMarkdown` already did outside a carried node, which it now also
+  refuses. `MIGRATION.md` says how to convert a stored document.
 - The package's description and keywords say it needs no React, Atlaskit or runtime dependency and
   runs in Node, Forge, Deno, Bun and browsers, and the README opens with the call to take for each
   need. The README's first comparison table lists the npm packages running in Node that convert ADF

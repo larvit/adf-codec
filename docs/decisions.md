@@ -436,8 +436,7 @@ the shown code keeps the class its code block's own element takes.
 Inside a carry element, an image marked by a link to another target shows as portable markdown
 writes it inline (§A linked image standing inline in portable markdown, its link to another target,
 is written `[alt](href) ([image](url))`), so both targets stay; Goal 7 counts them as content. A link
-marking a node that shows a note goes around the note, and an image's own `text`, outside Atlassian's
-schema, shows first, as every carried node's does. Recorded 2026-10-24 without a panel of its own:
+marking a node that shows a note goes around the note. Recorded 2026-10-24 without a panel of its own:
 it joins the second panel's `<a>` to that portable spelling.
 
 HTML nests no `<a>` in an `<a>`, so no element can hold both a card's URL and the target of a link
@@ -762,10 +761,8 @@ writer refuses alike, with one code, message and path, wherever the shape stands
 too, and a carry reader refuses it with the same code and the writers' message after its holder's
 name. The first step refuses an `inlineCard` with a `link` mark as `unsupported-node-shape`: the
 schema gives a card the `annotation` mark alone (§The node tables answer to Atlassian's schema),
-and HTML nests no `<a>` in an `<a>`. `adfToLosslessMarkdown` still refuses two more, on a node not
-riding the carry: a block or non-text inline node holding `text`, and a leaf block or non-text
-inline node holding a non-empty `content`. `todo.md` item 167 moves them, and until it ships this entry does
-not hold for them.
+and HTML nests no `<a>` in an `<a>`. It also refuses a block or non-text inline node holding `text`,
+and a leaf block or non-text inline node holding a non-empty `content`.
 
 Nothing else joins the first step. Nothing refuses a node type, mark or attribute the schema does
 not name (§Unknown nodes ride the carry), a known node where no section spells it, or a mark a node

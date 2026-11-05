@@ -2,7 +2,7 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import { anchorOpener } from '../anchor-element.ts'
 import { carriedInline } from './carry-element.ts'
 import { elementOfMark } from '../mark-elements.ts'
-import { holdsOnlyAttributes, isSpellableText, isUnmarkedSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { holdsOnlyAttributes, isSpellableText, isUnmarkedSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
 import { nodeElement } from './node-element.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -25,7 +25,7 @@ export function inlineHtml(nodes: readonly AdfNode[], path: ConvertErrorPath): R
 }
 
 function tryInlineNode(node: AdfNode): string | undefined {
-  if (node.type === 'hardBreak') return holdsOnlyAttributes(node, []) && nodeContent(node).length === 0 ? '<br>' : undefined
+  if (node.type === 'hardBreak') return holdsOnlyAttributes(node, []) ? '<br>' : undefined
   const element = nodeElement(node)
   if (element !== undefined) return element
   const text = isSpellableText(node) ? writableText(node.text) : undefined

@@ -1,6 +1,5 @@
 import type { AdfNode } from './document.ts'
 import type { AttributeVocabulary } from './attribute-vocabulary.ts'
-import { nodeMarks } from './document.ts'
 
 export const codeTextMarkTypes: readonly string[] = ['annotation', 'code', 'link']
 export const formattedTextMarkTypes: readonly string[] = ['annotation', 'backgroundColor', 'em', 'link', 'strike', 'strong', 'subsup', 'textColor', 'underline']
@@ -40,7 +39,7 @@ export function inlineNodeModel(type: string): InlineNodeModel | undefined {
 
 // Undefined means every mark: a node type outside this module's tables, which the schema restricts nowhere.
 export function takenMarkTypes(node: AdfNode): readonly string[] | undefined {
-  if (node.type === 'text') return nodeMarks(node).some((mark) => mark.type === 'code') ? codeTextMarkTypes : formattedTextMarkTypes
+  if (node.type === 'text') return node.marks?.some((mark) => mark.type === 'code') === true ? codeTextMarkTypes : formattedTextMarkTypes
   return inlineNodeModel(node.type)?.markTypes
 }
 
