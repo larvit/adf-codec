@@ -20,13 +20,30 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
 | `paragraph` | `<p>…</p>` |
 | `rule` | `<hr>` |
+| `table` | `<table>`, a line feed, a `<thead>` where its first row holds cells that are all `tableHeader`, then a `<tbody>` for the other rows where there are any, a line feed, `</table>`. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
+| `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `style="background-color:#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
+| `tableRow` | `<tr>`, its cells with no line feed between them, `</tr>` |
 
 A container holding no `content` key is its element holding nothing: `<blockquote></blockquote>`,
-`<ul></ul>`, `<li></li>`; so is a paragraph or heading, `<p></p>`.
+`<ul></ul>`, `<li></li>`, `<table></table>`, `<tr></tr>`, `<td></td>`; so is a paragraph or heading,
+`<p></p>`.
 
-On a paragraph, heading, quote, list, list item, code block or rule, each attribute its type holds
-(`spec/flavour.md` §Block nodes) that the element does not write as `level`, `order` or `language`
-is a `data-*` attribute, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the
+A table and each of its rows count one nesting level; a cell counts none, as a list item does.
+
+```html
+<table>
+<thead>
+<tr><th>Part</th><th>Stock</th></tr>
+</thead>
+<tbody>
+<tr><td>Bolt M8</td><td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">Low</td></tr>
+</tbody>
+</table>
+```
+
+On a paragraph, heading, quote, list, list item, table, row, cell, code block or rule, each attribute its type holds
+(`spec/flavour.md` §Block nodes) that the element does not write as `level`, `order`, `language`,
+`colspan`, `rowspan`, `background` or `colwidth` is a `data-*` attribute, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the
 element's own attributes and sorted by name. A string is its value; any other value is its JSON,
 compact: `<ol start="3" data-local-id="91177a27-b0ff">`, `<pre data-wrap="true"><code>`. A code
 block's `data-*` attributes stand on its `<pre>`.
@@ -124,9 +141,15 @@ later release writes it as its own element.
   - a code block holding more than one text node, a marked one, or a language holding ASCII
     whitespace;
   - a hard break holding an attribute;
-  - a list holding a node that is no `listItem`, or an item holding a mark, text, an empty key or
-    an attribute its type does not hold: the whole list rides the carry;
-  - a `listItem` outside a list, an inline node in block position and a block node inline.
+  - a list holding a node that is no `listItem`, or an item holding a mark, an empty key or an
+    attribute its type does not hold: the whole list rides the carry;
+  - a table holding a node that is no `tableRow`, a row holding a node that is no cell, or a table,
+    row or cell holding a mark, an empty key or an attribute its type does not hold: the whole table
+    rides the carry. So does a cell whose `colspan` or `rowspan` is no positive safe integer, whose
+    `colwidth` is no list of numbers, or whose `background` holds anything but letters and digits
+    after an optional `#`;
+  - a `listItem`, `tableRow` or cell outside its parent, an inline node in block position and a block
+    node inline.
 - An inline card a link marks, a block or non-text inline node holding `text`, and a leaf block or
   non-text inline node holding `content` are refused as `unsupported-node-shape`, carried or not, by
   `adfToHtml` and by `htmlToAdf` reading a carry element: Atlassian's schema gives no node those.

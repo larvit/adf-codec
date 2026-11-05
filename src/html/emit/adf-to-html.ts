@@ -3,6 +3,7 @@ import { anchorOpener } from '../anchor-element.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
 import { carryContent } from '../carry-content.ts'
+import { cellAttributes, isHeaderRow } from '../cell-element.ts'
 import { containerElements, headingElement, listStart } from '../block-elements.ts'
 import { dataAttributes } from '../data-attributes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -16,10 +17,11 @@ import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.t
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 
-// depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s `data-*` attributes, built when its list checked the item.
+// depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s, `<td>`'s or `<th>`'s, built when its list or table checked it.
 type Block = { depth: number; kind: 'block'; node: AdfNode; path: ConvertErrorPath }
-type Item = { attributes: string; depth: number; kind: 'item'; node: AdfNode; path: ConvertErrorPath }
-type Pending = Block | Item | string
+type Item = { attributes: string; depth: number; kind: 'item'; node: AdfNode; path: ConvertErrorPath; tag: string }
+type Row = { depth: number; kind: 'row'; path: ConvertErrorPath; pieces: Pending[] }
+type Pending = Block | Item | Row | string
 
 export function adfToHtml(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => writeHtml(document))
@@ -40,7 +42,7 @@ function writeHtml(document: AdfDocument): Result<string> {
       continue
     }
     if (next.depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the writer carries`, next.path)
-    const pieces = next.kind === 'item' ? writeItem(next) : writeBlock(next)
+    const pieces = next.kind === 'row' ? success(next.pieces) : next.kind === 'item' ? writeItem(next) : writeBlock(next)
     if (!pieces.ok) return pieces
     for (const piece of pieces.value.reverse()) pending.push(piece)
   }
@@ -58,7 +60,7 @@ function blockPieces(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: n
 
 function writeBlock(block: Block): Result<Pending[]> {
   const { depth, node, path } = block
-  const container = node.type === 'blockquote' ? quotePieces(block) : listPieces(block)
+  const container = node.type === 'blockquote' ? quotePieces(block) : node.type === 'table' ? tablePieces(block) : listPieces(block)
   if (container !== undefined) return success(container)
   const html = tryLeafBlock(node, path) ?? carriedBlock(node, path, depth)
   return html.ok ? success([html.value]) : html
@@ -79,9 +81,49 @@ function listPieces({ depth, node, path }: Block): Pending[] | undefined {
     const attributes = item.type === 'listItem' ? dataAttributes(item, blockNodes.listItem.attributes, []) : undefined
     if (attributes === undefined) return undefined
     if (index > 0) items.push('\n')
-    items.push({ attributes, depth: depth + 1, kind: 'item', node: item, path: [...path, 'content', index] })
+    items.push({ attributes, depth: depth + 1, kind: 'item', node: item, path: [...path, 'content', index], tag: 'li' })
   }
   return containerPieces(element.tag, element.attributes, node.content === undefined ? undefined : items)
+}
+
+// `undefined` where the table, a row or a cell holds what the elements cannot, so the whole table rides the carry.
+function tablePieces({ depth, node, path }: Block): Pending[] | undefined {
+  const attributes = dataAttributes(node, blockNodes.table.attributes, [])
+  if (attributes === undefined) return undefined
+  const rows: Row[] = []
+  for (const [index, held] of nodeContent(node).entries()) {
+    const rowPath = [...path, 'content', index]
+    const pieces = held.type === 'tableRow' ? rowPieces(held, rowPath, depth + 2) : undefined
+    if (pieces === undefined) return undefined
+    rows.push({ depth: depth + 1, kind: 'row', path: rowPath, pieces })
+  }
+  return containerPieces('table', attributes, node.content === undefined ? undefined : sectionPieces(rows, isHeaderRow(nodeContent(node)[0] ?? {})))
+}
+
+function rowPieces(row: AdfNode, path: ConvertErrorPath, depth: number): Pending[] | undefined {
+  const attributes = dataAttributes(row, blockNodes.tableRow.attributes, [])
+  if (attributes === undefined) return undefined
+  const cells: Pending[] = [`<tr${attributes}>`]
+  for (const [index, cell] of nodeContent(row).entries()) {
+    const tag = cellTag(cell)
+    const held = tag === undefined ? undefined : cellAttributes(cell)
+    if (tag === undefined || held === undefined) return undefined
+    cells.push({ attributes: held, depth, kind: 'item', node: cell, path: [...path, 'content', index], tag })
+  }
+  cells.push('</tr>')
+  return cells
+}
+
+function cellTag({ type }: AdfNode): string | undefined {
+  if (type === 'tableCell') return 'td'
+  return type === 'tableHeader' ? 'th' : undefined
+}
+
+function sectionPieces(rows: readonly Row[], headed: boolean): Pending[] {
+  const body = headed ? rows.slice(1) : rows
+  const head = headed ? ['<thead>\n', ...rows.slice(0, 1), '\n</thead>'] : []
+  const parted = body.flatMap((row, index) => (index > 0 ? ['\n', row] : [row]))
+  return [...head, ...(headed && parted.length > 0 ? ['\n'] : []), ...(parted.length > 0 ? ['<tbody>\n', ...parted, '\n</tbody>'] : [])]
 }
 
 function listElement(node: AdfNode): { attributes: string; tag: string } | undefined {
@@ -101,15 +143,15 @@ function containerPieces(tag: string, attributes: string, children: Pending[] | 
   return [`<${tag}${attributes}>\n`, ...children, `\n</${tag}>`]
 }
 
-function writeItem({ attributes, depth, node, path }: Item): Result<Pending[]> {
-  if (node.content === undefined) return success([`<li${attributes}></li>`])
+function writeItem({ attributes, depth, node, path, tag }: Item): Result<Pending[]> {
+  if (node.content === undefined) return success([`<${tag}${attributes}></${tag}>`])
   const blocks = blockPieces(node.content, path, depth)
   const [first] = node.content
   const line = first?.type === 'paragraph' ? tryFirstParagraph(first, [...path, 'content', 0]) : undefined
-  if (line === undefined) return success([`<li${attributes}>\n`, ...blocks, '\n</li>'])
+  if (line === undefined) return success([`<${tag}${attributes}>\n`, ...blocks, `\n</${tag}>`])
   if (!line.ok) return line
   // The first paragraph, written on the item's line, stands in for its block.
-  return success(blocks.length === 1 ? [`<li${attributes}>${line.value}</li>`] : [`<li${attributes}>${line.value}`, ...blocks.slice(1), '\n</li>'])
+  return success(blocks.length === 1 ? [`<${tag}${attributes}>${line.value}</${tag}>`] : [`<${tag}${attributes}>${line.value}`, ...blocks.slice(1), `\n</${tag}>`])
 }
 
 // `undefined` where the paragraph takes a line of its own.

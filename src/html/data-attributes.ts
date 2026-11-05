@@ -8,7 +8,7 @@ import { optionalAttribute } from './escaping.ts'
 import { parseJsonText } from '../json-text.ts'
 import { serializeCanonicalJson, spellsCanonicalJson } from '../canonical-json.ts'
 
-// The attributes a node holds besides those its element writes, as `data-*` attributes sorted by key, a value that is no string as JSON; `undefined` where the node holds what no attribute writes: a mark, text, an empty key, or an attribute the vocabulary does not hold as that kind (docs/decisions.md §The HTML dialect).
+// The attributes a node holds besides those its element writes, as `data-*` attributes sorted by key, a value that is no string as JSON; `undefined` where the node holds what no attribute writes: a mark, an empty key, or an attribute the vocabulary does not hold as that kind (docs/decisions.md §The HTML dialect).
 export function dataAttributes(node: AdfNode, vocabulary: AttributeVocabulary, written: readonly string[]): string | undefined {
   if (!holdsOnlyAttributes(node, Object.keys(vocabulary))) return undefined
   const pairs = vocabularyPairs(nodeAttrs(node), vocabulary, written)
@@ -47,7 +47,7 @@ function dataName(key: string): string {
   return `data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`
 }
 
-function dataValue(spelled: string, kind: AttributeKind): JsonValue | undefined {
+export function dataValue(spelled: string, kind: AttributeKind): JsonValue | undefined {
   if (kind === 'string') return spelled
   const { value } = parseJsonText(spelled)
   return value !== undefined && holdsKind(value, kind) && spellsCanonicalJson(value, 'compact', spelled) ? value : undefined

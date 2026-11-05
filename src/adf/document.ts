@@ -68,7 +68,7 @@ export function attributeNestingMessage(key: string, type: string): string {
 }
 
 export function holdsOnlyAttributes(node: AdfNode, attributes: readonly string[]): boolean {
-  if (nodeMarks(node).length > 0 || node.text !== undefined || emptyKeys(node).length > 0) return false
+  if (nodeMarks(node).length > 0 || emptyKeys(node).length > 0) return false
   return holdsOnly(nodeAttrs(node), attributes)
 }
 

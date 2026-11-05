@@ -11,13 +11,13 @@
   need. The README's first comparison table lists the npm packages running in Node that convert ADF
   to or from markdown, wrappers and forks aside; its second table lists other ecosystems'
   libraries and Atlassian's own paths.
-- `adfToHtml` writes ADF as HTML: paragraphs, headings, lists, quotes, code blocks, rules, hard
-  breaks, a centered, uncaptioned external image holding no attribute but its URL and alt, and
+- `adfToHtml` writes ADF as HTML: paragraphs, headings, lists, quotes, tables, code blocks, rules,
+  hard breaks, a centered, uncaptioned external image holding no attribute but its URL and alt, and
   `em`, `strong`, `code` and links as their elements. An unmarked emoji, mention, status, date
   and card holding a URL, or `data` holding one, not both, are `<span class="adf-emoji">`,
   `<span class="adf-mention">`, `<span class="adf-status">`, `<time class="adf-date">` and
-  `<a class="adf-inline-card">`. A paragraph, heading, quote, list, list item, code block, rule,
-  emoji, mention, status, date or card writes its other attributes as `data-*` attributes,
+  `<a class="adf-inline-card">`. A paragraph, heading, quote, list, list item, table, row, cell,
+  code block, rule, emoji, mention, status, date or card writes its other attributes as `data-*` attributes,
   `localId` as `data-local-id`. Every other node is an element of class `adf-carry` holding the
   node's JSON in `data-adf` and showing its content, links included. Every URL is written as the
   ADF holds it, `javascript:` included: sanitize HTML from an author you do not trust before

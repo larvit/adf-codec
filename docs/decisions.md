@@ -402,7 +402,7 @@ for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the g
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
-The spellings, `spec/html.md`, are five writer panels' (2026-10-23, -24 and 2026-11-04), each of a
+The spellings, `spec/html.md`, are six writer panels' (2026-10-23, -24, 2026-11-04 and -05), each of a
 product manager, an engineer and a support agent. The first picked each of these 3 of 3:
 
 - an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
@@ -462,6 +462,18 @@ and `<span … data-data>` 2. The maintainer took the leading spelling of each, 
 
 - a mention is `<span class="adf-mention" data-access-level="CONTAINER" data-id="5b10a2" data-user-type="DEFAULT">@Mikael</span>`, its `text` the content;
 - a card holding `data` and no URL is `<a class="adf-inline-card" href="https://example.com/plan" data-data="{…}">Release plan</a>`, `href` the URL its `data` holds and the text its name, else that URL. A card holding both `data` and a `url` rides the carry: its `href`, read back, could not say which of the two URLs it spells.
+
+A sixth panel (2026-11-05, three readers in the same roles) picked each of these 3 of 3 for a table,
+which until then rode the carry:
+
+- a first row of header cells alone in `<thead>` and the rest in `<tbody>`, a row to a line, over a
+  bare `<table>` of `<tr>` rows and over a line per cell;
+- a cell's first paragraph bare, `<td>Bolt M8</td>`, as a list item's;
+- a cell's attributes as `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">`,
+  over `data-*` for all four.
+
+A `background` holding anything but letters and digits after an optional `#` rides the carry, so no
+value can end the `style` declaration.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 

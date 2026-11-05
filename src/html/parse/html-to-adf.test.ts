@@ -200,6 +200,72 @@ test('refuses a carry element holding a shape every writer refuses, at any depth
   }
 })
 
+test('reads a table back, its rows, cells and attributes as adfToHtml writes them', () => {
+  const row = (...content: AdfNode[]): AdfNode => ({ content, type: 'tableRow' })
+  const body = '<tr><td>Bolt M8</td></tr>'
+  const boltRow = row({ content: [paragraph(text('Bolt M8'))], type: 'tableCell' })
+  const partRow = row({ content: [paragraph(text('Part'))], type: 'tableHeader' })
+  assert.deepEqual(read(htmlToAdf(`<table>\n<thead>\n<tr><th>Part</th></tr>\n</thead>\n<tbody>\n${body}\n${body}\n</tbody>\n</table>\n`)), document({ content: [partRow, boltRow, boltRow], type: 'table' }))
+  assert.deepEqual(read(htmlToAdf('<table>\n<thead>\n<tr><th>Part</th></tr>\n</thead>\n</table>\n')), document({ content: [partRow], type: 'table' }))
+  assert.deepEqual(read(htmlToAdf(`<table>\n<tbody>\n${body}\n<tr><th>Part</th></tr>\n</tbody>\n</table>\n`)), document({ content: [boltRow, partRow], type: 'table' }))
+  assert.deepEqual(read(htmlToAdf('<table></table>\n')), document({ type: 'table' }))
+  assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr></tr>\n</tbody>\n</table>\n')), document({ content: [{ type: 'tableRow' }], type: 'table' }))
+  assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td></td><th></th></tr>\n</tbody>\n</table>\n')), document({ content: [row({ type: 'tableCell' }, { type: 'tableHeader' })], type: 'table' }))
+  assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td>a\n<p>b</p>\n</td><td>\n<hr>\n</td></tr>\n</tbody>\n</table>\n')), document({ content: [row({ content: [paragraph(text('a')), paragraph(text('b'))], type: 'tableCell' }, { content: [{ type: 'rule' }], type: 'tableCell' })], type: 'table' }))
+  assert.deepEqual(
+    read(htmlToAdf('<table data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" style="background-color:#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">x</td></tr>\n</tbody>\n</table>\n')),
+    document({ attrs: { layout: 'wide', width: 760 }, content: [{ attrs: { localId: 'r1' }, content: [{ attrs: { background: '#fffae6', colspan: 2, colwidth: [120, 80], localId: 'c1', rowspan: 3, valign: 'top' }, content: [paragraph(text('x'))], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }),
+  )
+  assert.deepEqual(read(htmlToAdf('<ul>\n<li>\n<table></table>\n</li>\n</ul>\n')), document({ content: [item({ type: 'table' })], type: 'bulletList' }))
+})
+
+const tableRefusals: readonly (readonly [string, string])[] = [
+  ['<table><tr></tr></table>\n', 'unmappable-html'],
+  ['<table>\n<tr></tr>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<thead>\n</thead>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<thead>\n<tr></tr>\n</thead>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<thead>\n<tr><td>a</td></tr>\n</thead>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<thead>\n<tr><th>a</th><td>b</td></tr>\n</thead>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<thead>\n<tr><th>a</th></tr>\n<tr><th>b</th></tr>\n</thead>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><th>a</th></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<td>a</td>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><p>a</p></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td>a</td>\n<td>b</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td><p>a</p></td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td rowspan="2" colspan="2">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td colspan="2" colspan="2">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td data-local-id="c" colspan="2">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td data-local-id="c" data-colwidth="1">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td colspan="0">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td colspan="02">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td rowspan="x">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td style="color:red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td style="background-color:url(x)">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td data-colwidth="[1]">a</td></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
+  ['<table>\n<tbody>\n<tr><td data-colwidth="01">a</td></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
+  ['<table data-size="big"></table>\n', 'unsupported-node-shape'],
+  ['<table>\n<tbody>\n<tr data-size="big"></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
+  ['<table>\n<tbody>\n<tr><td data-size="big"></td></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
+]
+
+for (const [html, code] of tableRefusals) {
+  test(`refuses a table not written as adfToHtml writes it: ${JSON.stringify(html)}`, () => {
+    assert.equal(refusal(htmlToAdf(html)).split(' ')[0], code)
+  })
+}
+
+test('counts a table and its rows each a level, and a cell none, as adfToHtml does', () => {
+  const holding = (levels: number, inner: string): string => `${'<blockquote>\n'.repeat(levels)}${inner}${'\n</blockquote>'.repeat(levels)}\n`
+  const row = '<table>\n<tbody>\n<tr></tr>\n</tbody>\n</table>'
+  const cell = '<table>\n<tbody>\n<tr><td>x</td></tr>\n</tbody>\n</table>'
+  assert.equal(htmlToAdf(holding(499, row)).ok, true)
+  assert.equal(refusal(htmlToAdf(holding(500, row))).split(' ')[0], 'unsupported-nesting-depth')
+  assert.equal(htmlToAdf(holding(500, '<table></table>')).ok, true)
+  assert.equal(htmlToAdf(holding(498, cell)).ok, true)
+  assert.equal(refusal(htmlToAdf(holding(499, cell))).split(' ')[0], 'unsupported-nesting-depth')
+})
+
 test('reads a carry element from its data-adf, what it shows read back as adfToHtml writes it', () => {
   assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(panel, paragraph(text('Ask '), mention)))
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', text('a\u0085b', { type: 'underline' }), 'ab').replace('\u0085', '\\u0085')}</p>\n`)), document(paragraph(text('a\u0085b', { type: 'underline' }))))
@@ -421,14 +487,14 @@ const messages: readonly (readonly [string, string])[] = [
   ['<p>a&nbsp</p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&nbsp</p>\\n"'],
   ['<pre><code>a</code></pre\n', 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"'],
   ['<pre><code class="hljs language-js">x</code></pre>\n', '<code> as written here is no code element of the dialect, which writes <code> or <code class="language-…">: found "<code class=\\"hljs langua"…'],
-  ['<ul>\n<li>a</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block, and its text spells < as &lt;: found "</ul>\\n"'],
+  ['<ul>\n<li>a</ul>\n', 'the line ends at </li>, or at a line feed before the next block, and its text spells < as &lt;: found "</ul>\\n"'],
   ['<ul>\n<li>a<b>b</b></li>\n</ul>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></li>\\n</ul>\\n"'],
-  ['<ul>\n<li>if a < b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block, and its text spells < as &lt;: found "< b</li>\\n</ul>\\n"'],
+  ['<ul>\n<li>if a < b</li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block, and its text spells < as &lt;: found "< b</li>\\n</ul>\\n"'],
   ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', '<a> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: found "&b=2\\">x</a></li>\\n</ul>\\n"'],
-  ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<strong>x</strong></li>\\n"…'],
-  ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<ul>\\n<li>a</li>\\n</ul></l"…'],
-  ['<ul>\n<li>a<li>b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<li>b</li>\\n</ul>\\n"'],
-  ['<ul>\n<li>a\n<li>b</li>\n</ul>\n', 'an item\'s line ends at </li>, or at a line feed before the item\'s next block: found "<li>b</li>\\n</ul>\\n"'],
+  ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<strong>x</strong></li>\\n"…'],
+  ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<ul>\\n<li>a</li>\\n</ul></l"…'],
+  ['<ul>\n<li>a<li>b</li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<li>b</li>\\n</ul>\\n"'],
+  ['<ul>\n<li>a\n<li>b</li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<li>b</li>\\n</ul>\\n"'],
   ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<b>x</b></strong></p>\\n"'],
   ['<p><strong><br>x</strong></p>\n', '<br> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<br>x</strong></p>\\n"'],
   ['<p><em></em></p>\n', 'a mark element holds text, or one other mark element around text: found "</em></p>\\n"'],
@@ -438,9 +504,9 @@ const messages: readonly (readonly [string, string])[] = [
   ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'a carry element spells its node\'s JSON canonically: compact, keys sorted, each character HTML cannot hold spelled as a JSON escape: found "{ &quot;type&quot;:&quot"…'],
   [`${documentCarry}\n<hr>\n`, 'a carry element holding the document stands alone, as the whole document: found "\\n<hr>\\n"'],
   [`<hr>\n${documentCarry}\n`, 'a carry element holding the document stands alone, as the whole document: found "<div class=\\"adf-carry\\" d"…'],
-  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'an item\'s first paragraph holding content and no attribute stands bare on the item\'s line, as in <li>Bolt</li>: found "<p>Bolt</p></li>\\n</ul>\\n"'],
-  ['<ul>\n<li><p></p></li>\n</ul>\n', 'an item\'s first paragraph holding neither content nor an attribute stands on a line of its own: found "<p></p></li>\\n</ul>\\n"'],
-  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', 'an item\'s first paragraph holding an attribute stands as its <p> on the item\'s line, straight after <li>: found "<p data-local-id=\\"x\\"></p"…'],
+  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'the first paragraph of an item or cell holding content and no attribute stands bare on its line, as in <li>Bolt</li>: found "<p>Bolt</p></li>\\n</ul>\\n"'],
+  ['<ul>\n<li><p></p></li>\n</ul>\n', 'the first paragraph of an item or cell holding neither content nor an attribute stands on a line of its own: found "<p></p></li>\\n</ul>\\n"'],
+  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', 'the first paragraph of an item or cell holding an attribute stands as its <p> on its line, straight after <li> or <td>: found "<p data-local-id=\\"x\\"></p"…'],
   ['<p><img src="a">b</p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "b</p>\\n"'],
   ['<p><img src="a" alt=""></p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "<img src=\\"a\\" alt=\\"\\"></p>"…'],
   ['<ol start="03">\n<li>a</li>\n</ol>\n', 'an ordered list starts at an integer, written as JavaScript writes it: found "03\\">\\n<li>a</li>\\n</ol>\\n"'],

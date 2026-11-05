@@ -298,6 +298,64 @@ test('shows a note naming what a carried node references where it shows no text,
   assert.equal(shown(html(adfToHtml(document({ attrs: { resourceId: ids.resource }, type: 'syncBlock' })))), '<p><em>(synced block)</em></p>')
 })
 
+test('writes a table as its elements, a first row of header cells in <thead>, a cell\'s first paragraph on its line', () => {
+  const row = (...content: AdfNode[]): AdfNode => ({ content, type: 'tableRow' })
+  const cell = (...content: AdfNode[]): AdfNode => ({ content, type: 'tableCell' })
+  const header = (...content: AdfNode[]): AdfNode => ({ content, type: 'tableHeader' })
+  const table = (...content: AdfNode[]): AdfNode => ({ content, type: 'table' })
+  const head = row(header(paragraph(text('Part'))), header(paragraph(text('Note'))))
+  const body = row(cell(paragraph(text('Bolt M8'))), cell(paragraph(text('Grade 8.8'))))
+  assert.equal(html(adfToHtml(document(table(head, body)))), '<table>\n<thead>\n<tr><th>Part</th><th>Note</th></tr>\n</thead>\n<tbody>\n<tr><td>Bolt M8</td><td>Grade 8.8</td></tr>\n</tbody>\n</table>\n')
+  assert.equal(html(adfToHtml(document(table(body, head)))), '<table>\n<tbody>\n<tr><td>Bolt M8</td><td>Grade 8.8</td></tr>\n<tr><th>Part</th><th>Note</th></tr>\n</tbody>\n</table>\n')
+  assert.equal(html(adfToHtml(document(table(head)))), '<table>\n<thead>\n<tr><th>Part</th><th>Note</th></tr>\n</thead>\n</table>\n')
+  assert.equal(html(adfToHtml(document(table(row(header(paragraph(text('a'))), cell(paragraph(text('b')))))))), '<table>\n<tbody>\n<tr><th>a</th><td>b</td></tr>\n</tbody>\n</table>\n')
+  assert.equal(html(adfToHtml(document({ type: 'table' }))), '<table></table>\n')
+  assert.equal(html(adfToHtml(document(table({ type: 'tableRow' })))), '<table>\n<tbody>\n<tr></tr>\n</tbody>\n</table>\n')
+  assert.equal(html(adfToHtml(document(table(row({ type: 'tableCell' }, { type: 'tableHeader' }))))), '<table>\n<tbody>\n<tr><td></td><th></th></tr>\n</tbody>\n</table>\n')
+  assert.equal(html(adfToHtml(document(table(row(cell(paragraph(text('a')), paragraph(text('b'))), cell({ type: 'rule' })))))), '<table>\n<tbody>\n<tr><td>a\n<p>b</p>\n</td><td>\n<hr>\n</td></tr>\n</tbody>\n</table>\n')
+})
+
+test('writes a table\'s attributes as the writer panel picked them', () => {
+  const attrs = { background: '#fffae6', colspan: 2, colwidth: [120, 80], localId: 'c1', rowspan: 3, valign: 'top' }
+  const table: AdfNode = { attrs: { isNumberColumnEnabled: true, layout: 'wide', width: 760 }, content: [{ attrs: { localId: 'r1' }, content: [{ attrs, content: [paragraph(text('Sold as a pair'))], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }
+  assert.equal(
+    html(adfToHtml(document(table))),
+    '<table data-is-number-column-enabled="true" data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" style="background-color:#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">Sold as a pair</td></tr>\n</tbody>\n</table>\n',
+  )
+  assert.equal(html(adfToHtml(document({ content: [{ content: [{ attrs: { background: 'red', colwidth: [0.5] }, type: 'tableHeader' }], type: 'tableRow' }], type: 'table' }))), '<table>\n<thead>\n<tr><th style="background-color:red" data-colwidth="0.5"></th></tr>\n</thead>\n</table>\n')
+})
+
+test('carries the whole table where it, a row or a cell holds what its element cannot', () => {
+  const cell = (attrs: AdfAttributes): AdfNode => ({ attrs, content: [paragraph(text('x'))], type: 'tableCell' })
+  const inRow = (node: AdfNode): AdfNode => ({ content: [{ content: [node], type: 'tableRow' }], type: 'table' })
+  for (const attrs of [{ background: 'url(x)' }, { background: 'red;color:blue' }, { background: '' }, { background: 7 }, { colspan: 0 }, { colspan: 1.5 }, { colspan: '2' }, { rowspan: -1 }, { colwidth: [] }, { colwidth: ['1'] }, { colwidth: 120 }, { valign: 7 }, { size: 'big' }]) {
+    assert.equal(carriedBlock(inRow(cell(attrs))), true, JSON.stringify(attrs))
+  }
+  assert.equal(carriedBlock({ content: [paragraph(text('x'))], type: 'table' }), true)
+  assert.equal(carriedBlock(inRow(paragraph(text('x')))), true)
+  assert.equal(carriedBlock({ content: [], type: 'table' }), true)
+  assert.equal(carriedBlock({ content: [{ content: [], type: 'tableRow' }], type: 'table' }), true)
+  assert.equal(carriedBlock(inRow({ content: [], type: 'tableCell' })), true)
+  assert.equal(carriedBlock({ attrs: { size: 'big' }, type: 'table' }), true)
+  assert.equal(carriedBlock({ content: [{ attrs: { size: 'big' }, type: 'tableRow' }], type: 'table' }), true)
+  assert.equal(carriedBlock({ content: [{ marks: [{ type: 'x' }], type: 'tableRow' }], type: 'table' }), true)
+  assert.equal(carriedBlock({ type: 'tableRow' }), true)
+  assert.equal(carriedBlock({ type: 'tableCell' }), true)
+  assert.equal(html(adfToHtml(document(inRow(cell({ colspan: 1 }))))).includes('adf-carry'), false)
+})
+
+test('counts a table and its rows each a level, and a cell none, as a list and its items', () => {
+  const row: AdfNode = { type: 'tableRow' }
+  const cell: AdfNode = { content: [paragraph(text('x'))], type: 'tableCell' }
+  const holding = (levels: number, inner: AdfNode): AdfDocument => document(nested('blockquote', levels, inner))
+  const table = (...content: AdfNode[]): AdfNode => ({ content, type: 'table' })
+  assert.equal(adfToHtml(holding(499, table(row))).ok, true)
+  assert.equal(refusal(adfToHtml(holding(500, table(row)))).startsWith('unsupported-nesting-depth'), true)
+  assert.equal(adfToHtml(holding(500, { type: 'table' })).ok, true)
+  assert.equal(adfToHtml(holding(498, table({ content: [cell], type: 'tableRow' }))).ok, true)
+  assert.equal(refusal(adfToHtml(holding(499, table({ content: [cell], type: 'tableRow' })))).startsWith('unsupported-nesting-depth'), true)
+})
+
 test('carries a node holding what its element cannot', () => {
   assert.equal(carriedBlock({ attrs: { localId: 7 }, content: [text('x')], type: 'paragraph' }), true)
   assert.equal(carriedBlock({ attrs: { layout: 'wide' }, content: [text('x')], type: 'paragraph' }), true)
@@ -312,7 +370,6 @@ test('carries a node holding what its element cannot', () => {
   assert.equal(carriedBlock({ attrs: { localId: 7 }, content: [item(paragraph(text('x')))], type: 'orderedList' }), true)
   assert.equal(carriedBlock({ content: [item(paragraph(text('x'))), paragraph(text('y'))], type: 'bulletList' }), true)
   assert.equal(carriedBlock({ content: [{ attrs: {}, content: [paragraph(text('x'))], type: 'listItem' }], type: 'bulletList' }), true)
-  assert.equal(carriedBlock({ content: [{ content: [paragraph(text('x'))], text: 'y', type: 'listItem' }], type: 'bulletList' }), true)
   assert.equal(carriedBlock({ content: [], type: 'bulletList' }), true)
   assert.equal(carriedBlock({ attrs: { language: 'c sharp' }, content: [text('x')], type: 'codeBlock' }), true)
   assert.equal(carriedBlock({ attrs: { language: 5 }, content: [text('x')], type: 'codeBlock' }), true)
