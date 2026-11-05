@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 73 | 0.3.0 |  |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 |  | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -78,17 +77,6 @@ We draft each post for the place it goes. Each opens with the asker's problem an
 solves it, then links the GitHub repository, the README's comparison table and the README's
 opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
 announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
-
-### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
-
-Blocked by every other `0.3.0` item but 73 (the maintainer, 2026-10-05; moved to `0.3.0` 2026-10-28,
-since the copy, not marked a mirror, reads as the package's origin). The maintainer does this. Gitea
-cannot convert an existing repository to a mirror, so the copy is deleted and re-created. That drops
-the copy's commit hashes from before the 2026-10-04 history rewrite, and its Actions secrets. The
-Gitea copy holds no issues or releases to move. Actions stay off on the mirror: Gitea runs
-`.github/workflows/` when `.gitea/workflows/` is absent, and the mirrored `publish` job would
-otherwise run there. When this lands, the `docs/decisions.md` entry "GitHub is canonical" loses its
-interim sentence.
 
 ### 153. Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.
 
