@@ -17,7 +17,7 @@ products store as ADF.
 | Markdown from a bot, a model or a person | ADF | `portableMarkdownToAdf` | reads CommonMark plus GFM's tables, task lists and alerts, `~~`, and Obsidian's callouts and `==`; `commonMarkToAdf` reads strict CommonMark alone |
 | ADF | markdown to edit, then ADF again | `adfToLosslessMarkdown`, then `losslessMarkdownToAdf` | the pair gives back the document it started from, panels, mentions, statuses and node types this version does not know included |
 | ADF | markdown that GitHub, GitLab and Obsidian render | `adfToPortableMarkdown` | keeps the text, images by URL and link targets and drops the rest |
-| ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, code blocks, rules, breaks, a plain external image, links, and code, emphasis and strong text as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
+| ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, tables, code blocks, rules, breaks, a plain external image, links, and code, emphasis and strong text as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
 
 Every call returns a result, never a throw. A refusal carries a code from a closed list, and the same input gets the same refusal, except
 for `engine-limit` ([The guarantees](#the-guarantees)).
@@ -524,8 +524,9 @@ content. No stylesheet ships. The complete dialect:
 | `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it; an image holding such an attribute, as editor-written ones do, rides the carry element |
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
+| `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
-| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
+| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot, except an inline card a link marks, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a
