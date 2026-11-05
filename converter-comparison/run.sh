@@ -1,6 +1,6 @@
 #!/bin/sh
 # Keep these versions and --before in step with the README's comparison table.
-# --before reads a bare date as midnight UTC, so the day after the run date keeps that day's publishes.
+# --before reads a bare date as midnight UTC, so the day after the run date includes that day's publishes.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 node_image=node:26.13.0-alpine3.24
