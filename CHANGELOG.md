@@ -2,13 +2,32 @@
 
 ## Unreleased
 
-- `docs/feature-table.md` sets real documents beside what `adfToLosslessMarkdown`,
+- **Breaking:** `adfToPortableMarkdown` refuses, as `unsupported-node-shape`, a known block holding
+  `text`, a known non-text inline node holding `text` or non-empty `content`, and a known block that
+  takes no content, such as `rule`, holding non-empty `content`. `adfToLosslessMarkdown` now refuses
+  them inside a carried node too, and `losslessMarkdownToAdf` refuses a carry holding one.
+  `MIGRATION.md` says how to convert stored markdown.
+- **Breaking:** `losslessMarkdownToAdf` gives a `date`, `emoji`, `inlineCard`, `mention`, `status`
+  or `mediaInline` only the marks Atlassian's schema lets it hold: `**!adf:mention[@A]{id=…}**` now
+  reads as a plain mention. A link or directive mark around only nodes that cannot take it is
+  `unsupported-node-shape`, even in markdown `adfToLosslessMarkdown` wrote. A link around hard
+  breaks alone still reads as before. `adfToLosslessMarkdown` writes a node holding a mark its type
+  cannot take as `!adf:carry{json="…"}`, except an inline card a link marks, which it refuses.
+  `MIGRATION.md` says how to convert stored markdown.
+- **Breaking:** `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse an inline card a link marks
+  as `unsupported-node-shape` at the card's path, and `losslessMarkdownToAdf` refuses a carry
+  holding one, since Atlassian's schema gives a card no link mark. `MIGRATION.md` says what to do.
+- **Breaking:** every reader gives code text no mark but `link` and `annotation`, as Atlassian's
+  schema requires: ``**`npm ci`**`` now reads as plain code, and a directive mark other than a link
+  around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
+  holding another mark as `!adf:carry{json="…"}`, and `adfToPortableMarkdown` drops that mark.
+- **Breaking:** `losslessMarkdownToAdf` gives text no `border` mark, as Atlassian's schema requires:
+  `!adf:border[x]{color="#091e42" size=2}` is `unsupported-node-shape`, and only a
+  `mediaInline` takes `border`. `adfToLosslessMarkdown` writes text holding `border` as `!adf:carry{json="…"}`.
+  `MIGRATION.md` says how to convert stored markdown.
+- `docs/feature-table.md` sets example documents beside what `adfToLosslessMarkdown`,
   `adfToPortableMarkdown` and `adfToHtml` write for them, and says whether each output reads back to
   the same document.
-- **Breaking:** `adfToHtml`, `adfToPortableMarkdown`, `htmlToAdf` and `losslessMarkdownToAdf` refuse
-  a block or non-text inline node holding `text`, and a leaf block or non-text inline node holding
-  `content`, as `adfToLosslessMarkdown` already did outside a carried node, which it now also
-  refuses. `MIGRATION.md` says how to convert a stored document.
 - The package's description and keywords say it needs no React, Atlaskit or runtime dependency and
   runs in Node, Forge, Deno, Bun and browsers, and the README opens with the call to take for each
   need. The README's first comparison table lists the npm packages running in Node that convert ADF
@@ -25,31 +44,16 @@
   node's JSON in `data-adf` and showing its content, links included. Every URL is written as the
   ADF holds it, `javascript:` included: sanitize HTML from an author you do not trust before
   showing it.
+  It refuses, carried or not and as `unsupported-node-shape`, a known block holding `text`, a known
+  non-text inline node holding `text` or non-empty `content`, and a known block that takes no
+  content, such as `rule`, holding non-empty `content`.
 - `htmlToAdf` reads `adfToHtml`'s HTML back to the document it came from, a carry element from its
   `data-adf`. It reads that HTML as a browser's `innerHTML` writes it too (a raw `"` in text,
   `&nbsp;`, a raw `<` or `>` in an attribute value) and as a form post sends it (`\r\n` for each
   line feed). An edit to an emoji's, mention's or status's text becomes its `text`; an edit to a
   date's or a card's text alone is refused. It refuses any other HTML, including an edit to what a
   carry element shows, with the codes README §The calls lists.
-- **Breaking:** `losslessMarkdownToAdf` gives a `date`, `emoji`, `inlineCard`, `mention`, `status`
-  or `mediaInline` only the marks Atlassian's schema lets it hold: `**!adf:mention[@A]{id=…}**` now
-  reads as a plain mention. A link or directive mark around only nodes that cannot take it is
-  `unsupported-node-shape`, even in markdown `adfToLosslessMarkdown` wrote. A link around hard
-  breaks alone still reads as before. `adfToLosslessMarkdown` writes a node holding a mark its type
-  cannot take as `!adf:carry{json="…"}`, except an inline card a link marks, which it refuses.
-  `MIGRATION.md` says how to convert stored markdown.
-- **Breaking:** `adfToLosslessMarkdown` and `adfToPortableMarkdown` refuse an inline card a link marks
-  as `unsupported-node-shape` at the card's path, and `losslessMarkdownToAdf` refuses a carry
-  holding one, since Atlassian's schema gives a card no link mark. `adfToHtml` and `htmlToAdf` do
-  the same. `MIGRATION.md` says what to do.
-- **Breaking:** every reader gives code text no mark but `link` and `annotation`, as Atlassian's
-  schema requires: ``**`npm ci`**`` now reads as plain code, and a directive mark other than a link
-  around only code spans is `unsupported-node-shape`. `adfToLosslessMarkdown` writes code text
-  holding another mark as `!adf:carry{json="…"}`, and `adfToPortableMarkdown` drops that mark.
-- **Breaking:** `losslessMarkdownToAdf` gives text no `border` mark, as Atlassian's schema requires:
-  `!adf:border[x]{color="#091e42" size=2}` is `unsupported-node-shape`, and only a
-  `mediaInline` takes `border`. `adfToLosslessMarkdown` writes text holding `border` as `!adf:carry{json="…"}`.
-  `MIGRATION.md` says how to convert stored markdown.
+  It also refuses a carry element holding a shape `adfToHtml` refuses.
 - `adfToLosslessMarkdown` and `adfToPortableMarkdown` write an `em`, `strike`, `strong` or `link`
   mark once across the hard breaks between two texts it marks: `_One\` then `Two_`, where they
   wrote `_One_\` then `_Two_`. They write an `em`, `strike` or `strong` mark once around a code

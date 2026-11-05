@@ -8,16 +8,18 @@ const writers = [
 
 const intro = `# What each call writes
 
-\`feature-table/build.mjs\` writes this page from the corpus and the built package, and \`./ci.sh\` fails where the page differs.
+Each section sets a sample ADF document beside what each call writes for it, then reads that output back: \`adfToLosslessMarkdown\` with \`losslessMarkdownToAdf\`, \`adfToPortableMarkdown\` with \`portableMarkdownToAdf\`, \`adfToHtml\` with \`htmlToAdf\`. \`holds\` means the reader gives the same document, \`loses\` a different one, and \`refused\` that the writer or reader returned an error, whose code the section names.
 
-Each output is read back by its format's reader. \`holds\` means that gives the same document, \`loses\` a different one, and \`refused\` an error whose code the example names.
+A result covers that example alone, and the examples are plain. Portable markdown drops every attribute, so a document holding one loses it even where its row says \`holds\`: to edit and save back, use \`adfToLosslessMarkdown\` and \`losslessMarkdownToAdf\`. An image holding an attribute, as editor-written ones do, rides the carry element in HTML, where this page shows \`<img>\`.
+
+\`./feature-table/write.sh\` writes this page. Don't edit it by hand.
 `
 
-// `library` holds the package's calls, so a test can hand in what a real document cannot make them do.
+// `library` is a parameter, so a test can hand in calls that refuse, which no corpus example makes them do.
 export function renderFeatureTable(examples, library) {
   const written = examples.map(({ doc, name }) => ({ doc, name, outcomes: writers.map((writer) => outcome(doc, writer, library)) }))
   const rows = written.map(({ name, outcomes }) => `| [${name}](#${name.toLowerCase().replaceAll(' ', '-')}) | ${outcomes.map(({ result }) => result).join(' | ')} |`)
-  const head = `| Example | ${writers.map(({ column }) => column).join(' | ')} |\n| --- | --- | --- | --- |`
+  const head = `| Example | ${writers.map(({ column }) => column).join(' | ')} |\n| --- | ${writers.map(() => '---').join(' | ')} |`
   return [intro, [head, ...rows].join('\n') + '\n', ...written.map(section)].join('\n')
 }
 
