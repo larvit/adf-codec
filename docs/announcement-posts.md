@@ -15,8 +15,8 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 > markdown to ADF and ADF to markdown or HTML, with no Atlaskit, no React and no dependencies. The
 > Atlaskit transformer's `encode` throws "This is not implemented yet"; here `adfToPortableMarkdown`
 > and `adfToLosslessMarkdown` write the markdown, and `losslessMarkdownToAdf` reads the lossless one
-> back to the same document, panels, mentions, statuses and unknown node types included. Every call
-> returns a result and never throws. Wiki markup is not covered. I maintain it.
+> back to the same document, panels, mentions, statuses and unknown node types included. Malformed
+> input gets an error result, not a throw. Wiki markup is not covered. I maintain it.
 >
 > https://github.com/larvit/adf-codec
 > How it compares with the other npm packages, run on their published code:
@@ -40,7 +40,7 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 > const adf = portableMarkdownToAdf(markdown) // { ok: true, value: <ADF doc> } or { ok: false, error }
 > ```
 >
-> A call returns a result and never throws. `htmlToAdf` reads only the HTML that its own `adfToHtml`
+> Malformed input gets an error result, not a throw. `htmlToAdf` reads only the HTML that its own `adfToHtml`
 > writes, so arbitrary HTML still goes through markdown first. It also writes ADF back out as
 > markdown or HTML. [How it compares with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters),
 > run on their published code.
@@ -91,7 +91,7 @@ Plain text, so it pastes into Jira's comment editor whatever its mode.
 > markdown in which media nodes, mentions, panels, statuses and macros are kept as `!adf:` lines and
 > node types it doesn't know as fenced JSON, and reads that markdown back to the same document. The
 > model edits the markdown, and `losslessMarkdownToAdf` gives ADF to send with the REST API, with the
-> media node still in it.
+> media node still in it unless the edit removed its lines.
 > [Comparison with the other npm packages](https://github.com/larvit/adf-codec#other-adf-converters).
 
 ## GitHub, `atlassian/atlassian-mcp-server`
