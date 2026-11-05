@@ -1185,8 +1185,9 @@ rather than Node, goes in the second table. A wrapper or fork of a listed packag
 
 ## The real-world corpus holds anonymized documents from sites whose licence it records
 
-2026-11-04, on the maintainer's answers of 2026-11-03. It serves goal 6: real documents show what
-ordinary input must convert without surprise. Valid while no public source with a clearer licence
+2026-11-04, on the maintainer's answers of 2026-11-03, and their answer of 2026-11-05 accepting the
+inferred licence. It serves goal 6: real documents show what ordinary input must convert without
+surprise. Valid while no public source with a clearer licence
 serves ADF.
 
 Each document keeps every node, mark and attribute key. Its words, names, ids and URLs are replaced
@@ -1195,16 +1196,16 @@ punctuation and case, and a number keeps its digit count. A document stays out i
 changed or its output still holds an original token. The fetched originals are never committed:
 `corpus-gathering/run.sh` refuses a raw folder inside the repo.
 
-`corpus/real-world-sources.json` links each document to its original page, because the licences ask
-for credit and naming a creator in the document would undo the anonymizing.
+Each document's credit is its `url` in `corpus/real-world-sources.json`, a page a person reads,
+since naming a creator would undo the anonymizing.
 
-A site joins only with a published licence, its own or its host's. All six sites in
+A site joins only with a published licence, its own or its host's. Where the host's terms don't name
+the site, applying them is an inference, which `corpus/README.md` tells the reader. All six sites in
 `corpus-gathering/sites.json` are hosted by the Linux Foundation:
 
 - The foundation's terms of use put wikis and other non-code submissions under CC-BY-3.0. Those
-  terms don't name issue trackers or `*.atlassian.net`, so applying them to these sites is an
-  inference, which `corpus/README.md` tells the reader. When a site states its own licence, that
-  licence replaces them in `sites.json`.
+  terms don't name issue trackers or `*.atlassian.net`, so every site but the ONAP wiki rests on
+  that inference. When a site states its own licence, that licence replaces them in `sites.json`.
 - The ONAP wiki states its own, but its pages disagree: a 2017 page says CC-BY-SA-4.0 and a 2019
   page says CC-BY-4.0. Its documents record CC-BY-SA-4.0, which satisfies both.
 
