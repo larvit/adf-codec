@@ -1228,3 +1228,24 @@ blocks stacked under a heading per example, with a table of the round-trip resul
 wide pipe table and over one wide HTML table with a `<pre>` per cell. Examples come from
 `corpus/round-trip/` and are the ones `feature-table/examples.json` lists, never
 `corpus/real-world/`, whose licence is not the package's.
+
+A reader panel (2026-11-05, goal 6) judged each row. The same three personas first wrote what they
+expected of the three writers for all fifteen examples, in a shuffled order each, then saw the
+page's outputs and ruled each row reasonable or not. Eleven rows drew 3 of 3 reasonable. Three drew
+3 of 3 not reasonable, each for `adfToHtml` writing a known node or mark as an opaque `adf-carry`
+element, whose visible copy an editor shows and whose `data-adf` JSON then clashes with an edit to it:
+
+- Panels, expected as `<div class="adf-panel" data-panel-type="warning"><p>…</p></div>`, the
+  `localId`, colour and icon in `data-local-id`, `data-panel-color`, `data-panel-icon`,
+  `data-panel-icon-id` and `data-panel-icon-text`.
+- Task list, expected as `<ul class="adf-task-list" data-local-id="…">` of
+  `<li data-state="DONE" data-local-id="…"><input type="checkbox" checked disabled> Write the spec</li>`,
+  a block item an `<li>` of two `<p>`, the nested list an inner `<ul>`, the empty item an
+  `<li data-state="TODO">`.
+- Emphasis and strikethrough, expected as `<s>relay</s>` or `<del>relay</del>`.
+
+`todo.md` items 134 and 141 already write these; their writer panels pick the spelling with these
+expectations as input. The Date row drew 1 of 3 not reasonable, so four more readers (bot,
+markdown reader, export/indexing, viewer/editor) read it: 5 of 7 find it reasonable.
+`adfToLosslessMarkdown` keeps writing `!adf:date{timestamp=1756080000000}`. The two who rejected
+it wanted the day shown, as `!adf:date[2025-08-25]{timestamp=…}`.

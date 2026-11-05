@@ -12,9 +12,8 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 165 | 0.3.0 |  |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
-| 73 | 0.3.0 | 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 72 | 0.3.0 | 165 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 73 | 0.3.0 |  |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 |  | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -31,10 +30,10 @@
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
 | 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
-| 141 | 0.4.0 |  |  | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
+| 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
-| 134 | 0.4.0 |  |  | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.8 |
+| 134 | 0.4.0 |  | decision | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.8 |
 | 46 | 0.4.0 | 134, 135, 136 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
@@ -63,10 +62,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 165. Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.
-
-The panel follows AGENTS.md §7's reader-panel rule: readers, one per persona the row serves, see only `## Audience` and the row, and say whether the output is what they expect. A rejected row becomes an item naming the expected output. The verdicts land in `docs/decisions.md`.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
@@ -242,7 +237,8 @@ maintainer, 2026-10-28).
 ### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 
 GFM spells `strike`, and no other HTML item writes it: `adfToHtml` writes only the marks CommonMark
-spells. A writer panel picks `<s>` or `<del>`.
+spells. A writer panel picks `<s>` or `<del>`. A reader panel (`docs/decisions.md`, the
+feature-table entry) expected `<s>` or `<del>`, and the writer panel takes that as input.
 
 ### 135. Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
@@ -257,7 +253,10 @@ A writer panel picks the spellings.
 ### 134. Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
 An expand is `<details><summary>`, as `htmlToAdf` reads it (`docs/decisions.md` §Foreign HTML sorts
-three ways). A writer panel picks the rest.
+three ways). A writer panel picks the rest. A reader panel (`docs/decisions.md`, the feature-table
+entry) expected a panel as `<div class="adf-panel" data-panel-type="…">` and a task list as
+`<ul class="adf-task-list">` of `<li data-state="DONE|TODO">` with a checkbox input, and the writer
+panel takes these as input.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
