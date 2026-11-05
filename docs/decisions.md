@@ -1186,8 +1186,8 @@ rather than Node, goes in the second table. A wrapper or fork of a listed packag
 ## The real-world corpus holds anonymized documents from sites whose licence it records
 
 2026-11-04, on the maintainer's answers of 2026-11-03, and their answer of 2026-11-05 accepting the
-inferred licence. It serves goal 6: real documents show what ordinary input must convert without
-surprise. Valid while no public source with a clearer licence
+inferred licence and credit by link. It serves goal 6: real documents show what ordinary input must
+convert without surprise. Valid while no public source with a clearer licence
 serves ADF.
 
 Each document keeps every node, mark and attribute key. Its words, names, ids and URLs are replaced
