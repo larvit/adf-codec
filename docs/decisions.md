@@ -1229,23 +1229,24 @@ wide pipe table and over one wide HTML table with a `<pre>` per cell. Examples c
 `corpus/round-trip/` and are the ones `feature-table/examples.json` lists, never
 `corpus/real-world/`, whose licence is not the package's.
 
-A reader panel (2026-11-05, goal 6) judged each row. The same three personas first wrote what they
-expected of the three writers for all fifteen examples, in a shuffled order each, then saw the
-page's outputs and ruled each row reasonable or not. Eleven rows drew 3 of 3 reasonable. Three drew
-3 of 3 not reasonable, each for `adfToHtml` writing a known node or mark as an opaque `adf-carry`
-element, whose visible copy an editor shows and whose `data-adf` JSON then clashes with an edit to it:
+A reader panel (2026-11-05, goal 6) judged each of the page's fifteen rows. The same three personas
+first wrote what they expected of the three writers for every example, each in its own shuffled
+order, then saw the page's outputs and ruled each row reasonable or not. Eleven rows drew 3 of 3
+reasonable. Three drew 3 of 3 not reasonable, each because `adfToHtml` writes a node or mark it
+knows as an opaque `adf-carry` element. An editor shows that element's visible copy, and an edit to
+the copy is refused as `unmappable-html` rather than saved. They expected:
 
-- Panels, expected as `<div class="adf-panel" data-panel-type="warning"><p>…</p></div>`, the
-  `localId`, colour and icon in `data-local-id`, `data-panel-color`, `data-panel-icon`,
-  `data-panel-icon-id` and `data-panel-icon-text`.
-- Task list, expected as `<ul class="adf-task-list" data-local-id="…">` of
-  `<li data-state="DONE" data-local-id="…"><input type="checkbox" checked disabled> Write the spec</li>`,
-  a block item an `<li>` of two `<p>`, the nested list an inner `<ul>`, the empty item an
-  `<li data-state="TODO">`.
-- Emphasis and strikethrough, expected as `<s>relay</s>` or `<del>relay</del>`.
+- A panel as `<div class="adf-panel" data-panel-type="warning"><p>…</p></div>`, with its `localId`,
+  colour and icon in `data-local-id`, `data-panel-color`, `data-panel-icon`, `data-panel-icon-id`
+  and `data-panel-icon-text`.
+- A task list as `<ul class="adf-task-list" data-local-id="…">` of
+  `<li data-state="DONE" data-local-id="…"><input type="checkbox" checked disabled> Write the spec</li>`.
+  A `blockTaskItem` is an `<li>` of two `<p>`, a nested list an inner `<ul>`, and an empty item
+  an `<li data-state="TODO">`.
+- The `strike` mark in Emphasis and strikethrough as `<s>relay</s>` or `<del>relay</del>`.
 
-`todo.md` items 134 and 141 already write these; their writer panels pick the spelling with these
+Plan items 134 and 141 will write these; their writer panels pick the spelling with these
 expectations as input. The Date row drew 1 of 3 not reasonable, so four more readers (bot,
-markdown reader, export/indexing, viewer/editor) read it: 5 of 7 find it reasonable.
+reader of the markdown, export/indexing, viewer/editor) read it, and 5 of 7 found it reasonable.
 `adfToLosslessMarkdown` keeps writing `!adf:date{timestamp=1756080000000}`. The two who rejected
 it wanted the day shown, as `!adf:date[2025-08-25]{timestamp=…}`.
