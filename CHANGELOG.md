@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
 
 - **Breaking:** `adfToPortableMarkdown` refuses, as `unsupported-node-shape`, a known block holding
   `text`, a known non-text inline node holding `text` or non-empty `content`, and a known block that
