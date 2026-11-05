@@ -10,7 +10,7 @@ const intro = `# What each call writes
 
 Each section sets a sample ADF document beside what each call writes for it, then reads that output back: \`adfToLosslessMarkdown\` with \`losslessMarkdownToAdf\`, \`adfToPortableMarkdown\` with \`portableMarkdownToAdf\`, \`adfToHtml\` with \`htmlToAdf\`. \`holds\` means the reader gives the same document, \`loses\` a different one, and \`refused\` that the writer or reader returned an error, whose code the section names.
 
-A result covers that example alone, and the examples are plain. Portable markdown drops every attribute, so a document holding one loses it even where its row says \`holds\`: to edit and save back, use \`adfToLosslessMarkdown\` and \`losslessMarkdownToAdf\`. An image holding an attribute, as editor-written ones do, rides the carry element in HTML, where this page shows \`<img>\`.
+A result covers that example alone, and the examples are plain. Portable markdown keeps only the attributes its spelling holds, such as a heading's level and a link's target, so a document holding any other loses it even where its row says \`holds\`: to edit and save back, use \`adfToLosslessMarkdown\` and \`losslessMarkdownToAdf\`. An image holding more than the alt, layout, type and url of this page's example, as editor-written ones do, rides the carry element in HTML, where this page shows \`<img>\`.
 
 \`./feature-table/write.sh\` writes this page. Don't edit it by hand.
 `
