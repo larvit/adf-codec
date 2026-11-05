@@ -632,7 +632,7 @@ Every call can raise these:
   - writes as a directive a node or mark the lossless flavour spells as CommonMark;
   - puts `!adf:textBreak{}` where it parts nothing, or `!adf:doc` anywhere but as the whole
     document;
-  - carries an inline card a link marks, as the writers' cause below says.
+  - carries a node the writers' cause below names, such as an inline card a link marks.
 - **Reading, in `htmlToAdf`.** Fix what the message names;
   [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) lists each element's
   attributes. The HTML:
@@ -641,16 +641,17 @@ Every call can raise these:
     `data-wrap="yes"`;
   - holds a carry element whose `data-adf` holds JSON that is no ADF node, is not written compact
     with its keys sorted, or holds a number JSON cannot spell;
-  - holds a carry element carrying an inline card a link marks, as the writers' cause below says;
+  - holds a carry element carrying a node the writers' cause below names, such as an inline card a
+    link marks;
   - holds the document's own carry element beside another block.
 - **Writing, in `adfToLosslessMarkdown`**: a node not riding the carry that carries one mark type
-  twice, a block or a non-text inline node holding `text`, or a leaf block or a non-text inline node
-  holding `content`. Keep the ADF and show the document read-only; where you built the ADF, fix
+  twice. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
-- **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: an inline card
-  marked by a link, even inside a node that rides the carry: Atlassian's schema gives a card no link
-  mark. Keep the ADF and pass the document over or show it read-only; where you built the ADF,
-  remove the link mark from the card the error's `path` names.
+- **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: what Atlassian's
+  schema gives no node, even inside a node that rides the carry: an inline card marked by a link, a
+  block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding
+  `content`. Keep the ADF and pass the document over or show it read-only; where you built the ADF,
+  remove what the error's `path` and message name.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
 - **Past the engine's longest string**:

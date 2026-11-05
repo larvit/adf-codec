@@ -174,8 +174,6 @@ function directivePair(node: AdfNode, opener: string, body: BlockText, headroom:
 }
 
 function emitDirectiveBlock(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number, walkBody: () => Result<PlacedBlocks>): Result<EmittedBlock> {
-  if (node.text !== undefined) return failure('unsupported-node-shape', `a ${node.type} carries no text: this one holds text`, path)
-  if (blockDirectiveForm(node.type) === 'leaf' && nodeContent(node).length > 0) return failure('unsupported-node-shape', `a ${node.type} holds no content: this one holds some`, path)
   if (model.contentModel === 'code') return emitCodeDirective(node, model, path, depth)
   const opener = spellBlockDirectiveOpener(node, model, path)
   if (opener === undefined) return carriedFence(carriedBlock(node, path, depth))

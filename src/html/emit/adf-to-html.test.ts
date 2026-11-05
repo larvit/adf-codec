@@ -163,7 +163,6 @@ test('carries an emoji, mention, status, date or card holding what its element c
   assert.equal(carried({ attrs: { size: 'big', text: '🎉' }, type: 'emoji' }), true)
   assert.equal(carried({ attrs: { id: 5, text: '🎉' }, type: 'emoji' }), true)
   assert.equal(carried({ attrs: { text: '🎉' }, content: [], type: 'emoji' }), true)
-  assert.equal(carried({ attrs: { text: '🎉' }, content: [text('x')], type: 'emoji' }), true)
   assert.equal(carried({ attrs: { color: 'red' }, type: 'status' }), true)
   assert.equal(carried({ attrs: { timestamp: 'soon' }, type: 'date' }), true)
   assert.equal(carried({ attrs: { timestamp: 1756080000000 }, type: 'date' }), true)
@@ -184,7 +183,6 @@ test('carries an emoji, mention, status, date or card holding what its element c
   assert.equal(carried({ attrs: { data: { name: 'Roadmap\u0001', url: 'https://example.com/' } }, type: 'inlineCard' }), true)
   assert.equal(carried({ attrs: { id: '5b10a2' }, type: 'mention' }), true)
   assert.equal(carried({ attrs: { id: '5b10a2', text: '' }, type: 'mention' }), true)
-  assert.equal(carried({ attrs: { id: '5b10a2', text: '@Mikael' }, content: [text('x')], type: 'mention' }), true)
   assert.equal(carried({ attrs: { id: '5b10a2', text: '@Mikael' }, marks: [comment], type: 'mention' }), true)
   assert.equal(carried({ attrs: { id: 7, text: '@Mikael' }, type: 'mention' }), true)
   assert.equal(carried({ attrs: { id: '5b10a2', text: 7 }, type: 'mention' }), true)
@@ -233,7 +231,6 @@ test('shows a code block in a div carry as pre and code, keeping its line feeds 
 
 test('shows a block inside a code block in a div carry as a paragraph, and the text after it as code', () => {
   assert.equal(shown(html(adfToHtml(document({ content: [text('x'), paragraph(text('a\nb')), text('z')], type: 'codeBlock' })))), '<pre><code>x</code></pre><p>a<br>b</p><pre><code>z</code></pre>')
-  assert.equal(shown(html(adfToHtml(document({ content: [text('x'), { attrs: { id: 'u' }, content: [paragraph(text('a'))], type: 'mention' }, text('z')], type: 'codeBlock' })))), '<pre><code>x@u</code></pre><p>a</p><pre><code>z</code></pre>')
 })
 
 test('gives a code block in a div carry the class its element takes, and none where its language is no class token', () => {
@@ -270,8 +267,6 @@ test('shows a carried image marked by a link to another target as that link, the
   assert.equal(image({ alt: 'The moon', type: 'external', url: 'https://example.com/' }), '<p><a href="https://example.com/">The moon</a></p>')
   const blank = shown(html(adfToHtml(document({ attrs: { layout: 'wide' }, content: [{ attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, marks: [{ attrs: { href: ' ' }, type: 'link' }], type: 'media' }], type: 'mediaSingle' }))))
   assert.equal(blank, '<p><a href=" ">https://example.com/moon.jpg</a> (<a href="https://example.com/moon.jpg">image</a>)</p>')
-  const texted = shown(html(adfToHtml(document({ attrs: { layout: 'wide' }, content: [{ attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, marks: [link], text: 'Moon', type: 'media' }], type: 'mediaSingle' }))))
-  assert.equal(texted, '<p><a href="https://example.com/">Moon</a> (<a href="https://example.com/moon.jpg">image</a>)</p>')
   const inline = (mark: AdfMark): string => shown(html(adfToHtml(document(paragraph({ attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, marks: [mark], type: 'mediaInline' })))))
   assert.equal(inline(link), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
   assert.equal(inline({ attrs: { href: 'https://example.com/', title: 5 }, type: 'link' }), '<a href="https://example.com/">The moon</a> (<a href="https://example.com/moon.jpg">image</a>)')
@@ -308,7 +303,6 @@ test('carries a node holding what its element cannot', () => {
   assert.equal(carriedBlock({ attrs: { layout: 'wide' }, content: [text('x')], type: 'paragraph' }), true)
   assert.equal(carriedBlock({ content: [], type: 'paragraph' }), true)
   assert.equal(carriedBlock({ attrs: {}, type: 'rule' }), true)
-  assert.equal(carriedBlock({ content: [text('x')], type: 'rule' }), true)
   assert.equal(carriedBlock({ attrs: { color: 'a\u0001' }, type: 'rule' }), true)
   assert.equal(carriedBlock({ attrs: { level: 1 }, type: 'rule' }), true)
   assert.equal(carriedBlock({ type: 'unknownBlock' }), true)
@@ -346,7 +340,6 @@ test('carries inline what its element cannot hold, and a text node that would jo
   assert.equal(carriedSpans(text('x', { attrs: { href: 'https://example.com/' }, type: 'underline' })), 1)
   assert.equal(carriedSpans(text('x', { attrs: { href: 'https://example.com/', id: ids.item }, type: 'link' })), 1)
   assert.equal(carriedSpans({ attrs: { text: '\n' }, type: 'hardBreak' }), 1)
-  assert.equal(carriedSpans({ content: [text('x')], type: 'hardBreak' }), 1)
   assert.equal(carriedSpans(paragraph(text('x'))), 1)
 })
 

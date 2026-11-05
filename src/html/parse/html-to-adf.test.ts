@@ -187,6 +187,19 @@ test('refuses a carry element holding an inline card a link marks, at any depth 
   }
 })
 
+test('refuses a carry element holding a shape every writer refuses, at any depth in the node it carries', () => {
+  const shapes = [
+    { message: 'a panel carries no text: this one holds text', node: { text: 'x', type: 'panel' } },
+    { message: 'a rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
+    { message: 'a status node holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
+  ]
+  for (const { message: refusal, node } of shapes) {
+    for (const carried of [node, { content: [node], type: 'futureBlock' }]) {
+      assert.equal(message(htmlToAdf(`${carry('div', carried, '')}\n`)), `a carry element's data-adf holds a node every writer refuses: ${refusal}`)
+    }
+  }
+})
+
 test('reads a carry element from its data-adf, what it shows read back as adfToHtml writes it', () => {
   assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(panel, paragraph(text('Ask '), mention)))
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', text('a\u0085b', { type: 'underline' }), 'ab').replace('\u0085', '\\u0085')}</p>\n`)), document(paragraph(text('a\u0085b', { type: 'underline' }))))

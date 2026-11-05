@@ -1,4 +1,6 @@
+import { blockNodeModel } from './block-nodes.ts'
 import { failure, faulted, success, type ConvertError, type ConvertFault, type Result } from '../result.ts'
+import { inlineNodeModel } from './inline-nodes.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { withinLongest } from '../length-bound.ts'
@@ -147,20 +149,34 @@ export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
   return node.marks ?? []
 }
 
-// Walks every node, carried or of an unknown type, so a link-marked card is refused wherever it stands (docs/decisions.md §Schema refusals are made in the first step alone).
+// Walks every node, carried or of an unknown type, so a shape is refused wherever it stands (docs/decisions.md §Schema refusals are made in the first step alone).
 export function refusedShape(content: readonly AdfNode[]): ConvertError | undefined {
   type Step = { index: number; node: AdfNode; parent: Step | undefined }
   const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()
   for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
-    if (step.node.type === 'inlineCard' && nodeMarks(step.node).some(({ type }) => type === 'link')) {
+    const message = shapeRefusal(step.node)
+    if (message !== undefined) {
       const path: (number | string)[] = []
       for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.push(up.index, 'content')
       path.reverse()
-      return { code: 'unsupported-node-shape', message: 'an inlineCard takes no link mark: this one holds one', path }
+      return { code: 'unsupported-node-shape', message, path }
     }
     for (const child of nodeContent(step.node).map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
   }
   return undefined
+}
+
+function shapeRefusal(node: AdfNode): string | undefined {
+  if (node.type === 'inlineCard' && nodeMarks(node).some(({ type }) => type === 'link')) return 'an inlineCard takes no link mark: this one holds one'
+  const holdsContent = nodeContent(node).length > 0
+  if (inlineNodeModel(node.type) !== undefined) {
+    if (holdsContent) return `a ${node.type} node holds neither content nor text: this one holds content`
+    return node.text === undefined ? undefined : `a ${node.type} node holds neither content nor text: this one holds text`
+  }
+  const model = blockNodeModel(node.type)
+  if (model === undefined) return undefined
+  if (node.text !== undefined) return `a ${node.type} carries no text: this one holds text`
+  return model.contentModel === 'none' && holdsContent ? `a ${node.type} holds no content: this one holds some` : undefined
 }
 
 // Tracks ancestors alone: a tree may share an object, but an object holding itself walks the guards forever.

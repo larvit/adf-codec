@@ -497,6 +497,16 @@ test('refuses a carry holding an inline card a link marks, whether it stands alo
   }
 })
 
+test('refuses a carry holding a shape every writer refuses, whether it stands alone, in a block or in a fence', () => {
+  const refused = 'unsupported-node-shape: the opaque carry holds a node every writer refuses: '
+  const refusal = (markdown: string): string => String(content(losslessMarkdownToAdf(markdown))).replace(/; .*$/, '')
+  const status = { text: 'x', type: 'status' }
+  const json = JSON.stringify(status).replaceAll('"', '\\"')
+  assert.equal(refusal(`!adf:carry{json="${json}"}\n`), `${refused}a status node holds neither content nor text: this one holds text`)
+  assert.equal(refusal(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), `${refused}a status node holds neither content nor text: this one holds text`)
+  assert.equal(refusal(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), `${refused}a panel carries no text: this one holds text`)
+})
+
 test('names the shape the inline carry reads alone', () => {
   assert.equal(content(losslessMarkdownToAdf('!adf:carry[x]{json="{}"}\n')), 'unsupported-node-shape: carry takes no content: this one holds some')
   assert.equal(content(losslessMarkdownToAdf('!adf:carry{}\n')), 'unsupported-node-shape: carry holds one json attribute alone: this one does not')

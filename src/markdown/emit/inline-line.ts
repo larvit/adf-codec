@@ -15,7 +15,7 @@ import { highlightDelimiter } from '../inline-tokens.ts'
 import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { inlineNodeModel, takenMarkTypes } from '../../adf/inline-nodes.ts'
 import { inlineRuns } from './inline-runs.ts'
-import { isSpellableText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { joinsWhenRead, textBreakSpelling } from '../adjacent-text.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
@@ -143,7 +143,7 @@ function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): bo
   const model = inlineNodeModel(node.type)
   if (model === undefined) return true
   const slot = model.textAttribute === undefined ? undefined : nodeAttrs(node)[model.textAttribute]
-  return typeof slot === 'string' && slotFault(node.type, slot) !== undefined && nodeContent(node).length === 0 && node.text === undefined
+  return typeof slot === 'string' && slotFault(node.type, slot) !== undefined
 }
 
 export function takeFallback(fallbacks: LineFallbacks, fallback: Fallback, path: ConvertErrorPath): Result<null> {
@@ -225,11 +225,6 @@ function bracketedLinkTarget(target: string): InlineSegment {
   return { escaping: 'bracketed-link-target', text: escapeUnbalanced(target, '[', ']') }
 }
 
-function heldContentOrText(node: AdfNode): 'content' | 'text' | undefined {
-  if (nodeContent(node).length > 0) return 'content'
-  return node.text === undefined ? undefined : 'text'
-}
-
 function emitRun(nodes: readonly RunNode[], depth: number, firstIndex: number, context: InlineContext): Result<Emission> {
   if (depth > largestNesting) {
     return failure('unsupported-nesting-depth', `the marks nest deeper than the ${largestNesting} levels the emitter carries`, context.path)
@@ -268,8 +263,6 @@ function emitLeaf({ carried, index, node }: PlainRun, context: InlineContext): R
   const types = nodeMarks(node).map((mark) => mark.type)
   if (new Set(types).size !== types.length) return failure('unsupported-node-shape', `a ${node.type} node carries one mark type twice`, nodePath(context, index))
   const model = inlineNodeModel(node.type)
-  const held = model === undefined ? undefined : heldContentOrText(node)
-  if (held !== undefined) return failure('unsupported-node-shape', `a ${node.type} node holds neither content nor text: this one holds ${held}`, nodePath(context, index))
   const segments = model === undefined ? textSegments(node, context) : node.type === 'hardBreak' ? hardBreakSegments(node, model, context) : inlineDirectiveSegments(node, model)
   return segments === undefined ? carriedRun({ first: index, last: index }, context) : success({ segments })
 }

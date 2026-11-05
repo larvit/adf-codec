@@ -152,6 +152,41 @@ test('refuses an inline card a link marks, wherever the document holds it and wh
   }
 })
 
+test('refuses what Atlassian\'s schema gives no node, wherever the document holds it and whichever call writes it', () => {
+  const shapes: { message: string; node: AdfNode }[] = [
+    { message: 'a panel carries no text: this one holds text', node: { text: 'x', type: 'panel' } },
+    { message: 'a paragraph carries no text: this one holds text', node: { text: 'x', type: 'paragraph' } },
+    { message: 'a media holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'media' } },
+    { message: 'a rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
+    { message: 'a status node holds neither content nor text: this one holds content', node: { content: [{ text: 'x', type: 'text' }], type: 'status' } },
+    { message: 'a status node holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
+    { message: 'a hardBreak node holds neither content nor text: this one holds text', node: { text: 'x', type: 'hardBreak' } },
+  ]
+  for (const { message, node } of shapes) {
+    const holders = [
+      { content: [node], type: 'doc' },
+      { content: [{ content: [node], type: 'paragraph' }], type: 'doc' },
+      { content: [{ content: [node], type: 'futureBlock' }], type: 'doc' },
+    ]
+    const paths = [['content', 0], ['content', 0, 'content', 0], ['content', 0, 'content', 0]]
+    for (const [index, { content }] of holders.entries()) {
+      for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) {
+        const refused = write({ content, type: 'doc', version: 1 })
+        assert.deepEqual(refused.ok ? 'written' : refused.error, { code: 'unsupported-node-shape', message, path: paths[index] })
+      }
+    }
+  }
+})
+
+test('writes what the schema refusals leave to the carry', () => {
+  const carried: AdfNode[] = [
+    { content: [], type: 'rule' },
+    { content: [{ text: 'x', type: 'text' }], text: 'y', type: 'futureBlock' },
+    { content: [{ content: [{ type: 'paragraph' }], type: 'text' }], type: 'paragraph' },
+  ]
+  for (const node of carried) for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) assert.equal(write({ content: [node], type: 'doc', version: 1 }).ok, true)
+})
+
 test('names the first link-marked card in document order', () => {
   const card = (url: string): AdfNode => ({ attrs: { url }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })
   const content = [{ content: [card('https://a.example/'), card('https://b.example/')], type: 'paragraph' }, { content: [card('https://c.example/')], type: 'paragraph' }]

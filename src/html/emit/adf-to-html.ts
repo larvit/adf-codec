@@ -155,6 +155,6 @@ function tryImage(node: AdfNode): string | undefined {
 }
 
 function tryRule(node: AdfNode): string | undefined {
-  const attributes = node.type === 'rule' && nodeContent(node).length === 0 ? dataAttributes(node, blockNodes.rule.attributes, []) : undefined
+  const attributes = node.type === 'rule' ? dataAttributes(node, blockNodes.rule.attributes, []) : undefined
   return attributes === undefined ? undefined : `<hr${attributes}>`
 }

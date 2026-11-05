@@ -667,3 +667,20 @@ Read most (opens and searches):
 - `src/adf/shown-text.ts` 3
 - `src/html/parse/inline.ts` 3
 - `src/html/parse/source.ts` 3
+
+## Reading cost, chunk 6b022a1028b9, finished 2026-11-05T09:52:21Z
+
+253907 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `ci.sh` 8
+- `docs/decisions.md` 8
+- `src/conformance/corpus.test.ts` 8
+- `todo.md` 8
+- `AGENTS.md` 6
+- `README.md` 5
+- `browser-tests/run.js` 4
+- `.gitignore` 3
+- `corpus/README.md` 3
+- `package.json` 3
