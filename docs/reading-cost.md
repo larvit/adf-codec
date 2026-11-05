@@ -684,3 +684,22 @@ Read most (opens and searches):
 - `.gitignore` 3
 - `corpus/README.md` 3
 - `package.json` 3
+
+## Reading cost, chunk 97f468d346f7, finished 2026-11-05T11:10:07Z
+
+325036 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 11
+- `docs/decisions.md` 11
+- `MIGRATION.md` 7
+- `spec/html.md` 7
+- `todo.md` 7
+- `src/html/emit/adf-to-html.test.ts` 6
+- `CHANGELOG.md` 5
+- `spec/flavour.md` 5
+- `src/markdown/emit/inline-line.ts` 5
+- `ci.sh` 3
+
+## Reading cost reset, 2026-11-05T11:14:06Z
