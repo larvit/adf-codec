@@ -570,8 +570,9 @@ around it.
 
 `github.com/larvit/adf-codec` owns the history, its issues and its CI, and publishes to npm with the
 organization's `NPM_TOKEN` secret. `gitea.larvit.se/larvit/adf-codec` is a read-only pull mirror of
-it, its issues and Actions off and its description pointing at GitHub. A move back to Gitea stays
-possible, and Gitea never holds a commit, issue or pull request of its own. Push to GitHub only.
+the GitHub repository. Its issues and Actions are off, and its description points at GitHub. A move
+back to Gitea stays possible, and Gitea never holds a commit, issue or pull request of its own. Push
+to GitHub only.
 
 ## The formats are API
 
