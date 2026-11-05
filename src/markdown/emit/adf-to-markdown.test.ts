@@ -756,8 +756,8 @@ test('spells colwidth as its widths, comma-separated, and carries a cell whose c
 })
 
 test('refuses the content a directive body has no room for', () => {
-  assert.equal(markdown(adfToLosslessMarkdown(document({ content: [paragraph()], type: 'media' }))), 'unsupported-node-shape: a media holds no content: this one holds some')
-  assert.equal(markdown(adfToLosslessMarkdown(document({ text: 'x', type: 'panel' }))), 'unsupported-node-shape: a panel carries no text: this one holds text')
+  assert.equal(markdown(adfToLosslessMarkdown(document({ content: [paragraph()], type: 'media' }))), 'unsupported-node-shape: a node of type media holds no content: this one holds some')
+  assert.equal(markdown(adfToLosslessMarkdown(document({ text: 'x', type: 'panel' }))), 'unsupported-node-shape: a node of type panel holds no text key: this one holds one')
 })
 
 test('separates blocks in a container body by a blank line only where a directive line is not separation already', () => {
@@ -882,7 +882,7 @@ test('carries an inline node attribute no section spells', () => {
 
 test('refuses the content and slot an inline directive has no room for', () => {
   const refused = (node: AdfNode): string => markdown(adfToLosslessMarkdown(document(paragraph(node, { text: 'y', type: 'text' }))))
-  const neither = (type: string, held: string): string => `unsupported-node-shape: a ${type} node holds neither content nor text: this one holds ${held}`
+  const neither = (type: string, held: string): string => `unsupported-node-shape: a node of type ${type} holds neither content nor text: this one holds ${held}`
   assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'status' }), neither('status', 'content'))
   assert.equal(refused({ text: 'x', type: 'status' }), neither('status', 'text'))
   assert.equal(refused({ content: [{ text: 'x', type: 'text' }], type: 'hardBreak' }), neither('hardBreak', 'content'))

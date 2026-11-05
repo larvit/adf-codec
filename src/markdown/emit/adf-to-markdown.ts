@@ -324,6 +324,6 @@ function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFla
 }
 
 function tryRule(node: AdfNode): string | undefined {
-  if (!holdsOnlyAttributes(node, []) || nodeContent(node).length > 0) return undefined
+  if (!holdsOnlyAttributes(node, [])) return undefined
   return '---'
 }

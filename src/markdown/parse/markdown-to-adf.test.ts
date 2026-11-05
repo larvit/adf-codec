@@ -105,26 +105,28 @@ test('refuses a value that is not a string, in every reader, at the start of the
   }
 })
 
-test('reads each shape a flavour claims as the flavour of the reader it reaches', () => {
-  const highlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
-  const withoutIds = (result: Result<AdfDocument>): AdfNode[] | string => JSON.parse(JSON.stringify(content(result)), (key, value: unknown) => (key === 'localId' || (key === 'attrs' && JSON.stringify(value) === '{}') ? undefined : value))
-  const shapes: [string, AdfNode[], AdfNode[], AdfNode[]][] = [
-    ['!adf:panel info\nx\n!adf:/panel\n', [paragraph('!adf:panel info x !adf:/panel')], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }], [paragraph('!adf:panel info x !adf:/panel')]],
-    ['a!adf:textBreak{}a\n', [paragraph('a!adf:textBreak{}a')], [{ content: [text('a'), text('a')], type: 'paragraph' }], [paragraph('a!adf:textBreak{}a')]],
-    ['!adf:doc {content=none}\n', [paragraph('!adf:doc {content=none}')], [], [paragraph('!adf:doc {content=none}')]],
-    ['| a |\n| --- |\n| b |\n', [paragraph('| a | | --- | | b |')], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))]],
-    ['~~x~~\n', [paragraph('~~x~~')], [{ content: [marked('x', strike)], type: 'paragraph' }], [{ content: [marked('x', strike)], type: 'paragraph' }]],
-    ['==x==\n', [paragraph('==x==')], [paragraph('==x==')], [{ content: [marked('x', highlight)], type: 'paragraph' }]],
-    ['> [!NOTE]\n> x\n', [quote(paragraph('[!NOTE] x'))], [quote(paragraph('[!NOTE] x'))], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }]],
-    ['- [x] a\n', [bulletList(item(paragraph('[x] a')))], [bulletList(item(paragraph('[x] a')))], [{ content: [{ attrs: { state: 'DONE' }, content: [text('a')], type: 'taskItem' }], type: 'taskList' }]],
-    ['```adf:futureBlock\n{}\n```\n', [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }], [{ type: 'futureBlock' }], [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }]],
-  ]
-  for (const [markdown, commonMark, lossless, portable] of shapes) {
-    assert.deepEqual(content(commonMarkToAdf(markdown)), commonMark, `commonMarkToAdf ${JSON.stringify(markdown)}`)
-    assert.deepEqual(content(losslessMarkdownToAdf(markdown)), lossless, `losslessMarkdownToAdf ${JSON.stringify(markdown)}`)
-    assert.deepEqual(withoutIds(portableMarkdownToAdf(markdown)), portable, `portableMarkdownToAdf ${JSON.stringify(markdown)}`)
-  }
-})
+const highlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
+
+const flavourShapes: readonly [string, AdfNode[], AdfNode[], AdfNode[]][] = [
+  ['!adf:panel info\nx\n!adf:/panel\n', [paragraph('!adf:panel info x !adf:/panel')], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }], [paragraph('!adf:panel info x !adf:/panel')]],
+  ['a!adf:textBreak{}a\n', [paragraph('a!adf:textBreak{}a')], [{ content: [text('a'), text('a')], type: 'paragraph' }], [paragraph('a!adf:textBreak{}a')]],
+  ['!adf:doc {content=none}\n', [paragraph('!adf:doc {content=none}')], [], [paragraph('!adf:doc {content=none}')]],
+  ['| a |\n| --- |\n| b |\n', [paragraph('| a | | --- | | b |')], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))], [table(row(cell('tableHeader', text('a'))), row(cell('tableCell', text('b'))))]],
+  ['~~x~~\n', [paragraph('~~x~~')], [{ content: [marked('x', strike)], type: 'paragraph' }], [{ content: [marked('x', strike)], type: 'paragraph' }]],
+  ['==x==\n', [paragraph('==x==')], [paragraph('==x==')], [{ content: [marked('x', highlight)], type: 'paragraph' }]],
+  ['> [!NOTE]\n> x\n', [quote(paragraph('[!NOTE] x'))], [quote(paragraph('[!NOTE] x'))], [{ attrs: { panelType: 'info' }, content: [paragraph('x')], type: 'panel' }]],
+  ['- [x] a\n', [bulletList(item(paragraph('[x] a')))], [bulletList(item(paragraph('[x] a')))], [{ content: [{ attrs: { state: 'DONE' }, content: [text('a')], type: 'taskItem' }], type: 'taskList' }]],
+  ['```adf:futureBlock\n{}\n```\n', [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }], [{ type: 'futureBlock' }], [{ attrs: { language: 'adf:futureBlock' }, content: [text('{}')], type: 'codeBlock' }]],
+]
+
+for (const [markdown, commonMark, lossless, portable] of flavourShapes) {
+  test(`reads a shape a flavour claims as the flavour of the reader it reaches: ${JSON.stringify(markdown)}`, () => {
+    const withoutIds = (result: Result<AdfDocument>): AdfNode[] | string => JSON.parse(JSON.stringify(content(result)), (key, value: unknown) => (key === 'localId' || (key === 'attrs' && JSON.stringify(value) === '{}') ? undefined : value))
+    assert.deepEqual(content(commonMarkToAdf(markdown)), commonMark)
+    assert.deepEqual(content(losslessMarkdownToAdf(markdown)), lossless)
+    assert.deepEqual(withoutIds(portableMarkdownToAdf(markdown)), portable)
+  })
+}
 
 test('builds an empty document from input holding no block, and one holding no content key from the doc directive alone', () => {
   assert.deepEqual(losslessMarkdownToAdf(''), { ok: true, value: { content: [], type: 'doc', version: 1 } })
@@ -502,9 +504,9 @@ test('refuses a carry holding a shape every writer refuses, whether it stands al
   const refusal = (markdown: string): string => String(content(losslessMarkdownToAdf(markdown))).replace(/; .*$/, '')
   const status = { text: 'x', type: 'status' }
   const json = JSON.stringify(status).replaceAll('"', '\\"')
-  assert.equal(refusal(`!adf:carry{json="${json}"}\n`), `${refused}a status node holds neither content nor text: this one holds text`)
-  assert.equal(refusal(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), `${refused}a status node holds neither content nor text: this one holds text`)
-  assert.equal(refusal(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), `${refused}a panel carries no text: this one holds text`)
+  assert.equal(refusal(`!adf:carry{json="${json}"}\n`), `${refused}a node of type status holds neither content nor text: this one holds text`)
+  assert.equal(refusal(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), `${refused}a node of type status holds neither content nor text: this one holds text`)
+  assert.equal(refusal(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), `${refused}a node of type panel holds no text key: this one holds one`)
 })
 
 test('names the shape the inline carry reads alone', () => {

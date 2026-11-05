@@ -189,9 +189,9 @@ test('refuses a carry element holding an inline card a link marks, at any depth 
 
 test('refuses a carry element holding a shape every writer refuses, at any depth in the node it carries', () => {
   const shapes = [
-    { message: 'a panel carries no text: this one holds text', node: { text: 'x', type: 'panel' } },
-    { message: 'a rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
-    { message: 'a status node holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
+    { message: 'a node of type panel holds no text key: this one holds one', node: { text: 'x', type: 'panel' } },
+    { message: 'a node of type rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
+    { message: 'a node of type status holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
   ]
   for (const { message: refusal, node } of shapes) {
     for (const carried of [node, { content: [node], type: 'futureBlock' }]) {
@@ -247,6 +247,11 @@ const tableRefusals: readonly (readonly [string, string])[] = [
   ['<table data-size="big"></table>\n', 'unsupported-node-shape'],
   ['<table>\n<tbody>\n<tr data-size="big"></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
   ['<table>\n<tbody>\n<tr><td data-size="big"></td></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
+  ['<table>\n<tfoot>\n<tr></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<thead>\n<tr><th>a</th></tr>\n</tfoot>\n<tbody>\n<tr></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td colspan="2x">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td style="color:red;background-color:red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td>a<hr>\n</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
 ]
 
 for (const [html, code] of tableRefusals) {
@@ -254,6 +259,10 @@ for (const [html, code] of tableRefusals) {
     assert.equal(refusal(htmlToAdf(html)).split(' ')[0], code)
   })
 }
+
+test('refuses a character between a list item\'s tag and its first block', () => {
+  assert.equal(refusal(htmlToAdf('<ul>\n<li>a<hr>\n</li>\n</ul>\n')).split(' ')[0], 'unmappable-html')
+})
 
 test('counts a table and its rows each a level, and a cell none, as adfToHtml does', () => {
   const holding = (levels: number, inner: string): string => `${'<blockquote>\n'.repeat(levels)}${inner}${'\n</blockquote>'.repeat(levels)}\n`
@@ -504,9 +513,9 @@ const messages: readonly (readonly [string, string])[] = [
   ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'a carry element spells its node\'s JSON canonically: compact, keys sorted, each character HTML cannot hold spelled as a JSON escape: found "{ &quot;type&quot;:&quot"…'],
   [`${documentCarry}\n<hr>\n`, 'a carry element holding the document stands alone, as the whole document: found "\\n<hr>\\n"'],
   [`<hr>\n${documentCarry}\n`, 'a carry element holding the document stands alone, as the whole document: found "<div class=\\"adf-carry\\" d"…'],
-  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'the first paragraph of an item or cell holding content and no attribute stands bare on its line, as in <li>Bolt</li>: found "<p>Bolt</p></li>\\n</ul>\\n"'],
-  ['<ul>\n<li><p></p></li>\n</ul>\n', 'the first paragraph of an item or cell holding neither content nor an attribute stands on a line of its own: found "<p></p></li>\\n</ul>\\n"'],
-  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', 'the first paragraph of an item or cell holding an attribute stands as its <p> on its line, straight after <li> or <td>: found "<p data-local-id=\\"x\\"></p"…'],
+  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'an item\'s or cell\'s first paragraph holding content and no attribute stands bare on the line of the item\'s or cell\'s start tag, as in <li>Bolt</li>: found "<p>Bolt</p></li>\\n</ul>\\n"'],
+  ['<ul>\n<li><p></p></li>\n</ul>\n', 'an item\'s or cell\'s first paragraph holding neither content nor an attribute stands on a line of its own: found "<p></p></li>\\n</ul>\\n"'],
+  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', 'an item\'s or cell\'s first paragraph holding an attribute stands as its <p> straight after the item\'s or cell\'s start tag: found "<p data-local-id=\\"x\\"></p"…'],
   ['<p><img src="a">b</p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "b</p>\\n"'],
   ['<p><img src="a" alt=""></p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "<img src=\\"a\\" alt=\\"\\"></p>"…'],
   ['<ol start="03">\n<li>a</li>\n</ol>\n', 'an ordered list starts at an integer, written as JavaScript writes it: found "03\\">\\n<li>a</li>\\n</ol>\\n"'],

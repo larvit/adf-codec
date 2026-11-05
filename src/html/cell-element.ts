@@ -18,14 +18,13 @@ export function isHeaderRow(row: { content?: AdfNode[] }): boolean {
   return cells.length > 0 && cells.every(({ type }) => type === 'tableHeader')
 }
 
-// A cell's attributes in the order `readCellAttributes` takes them; `undefined` where one spells nothing its element writes, so the whole table rides the carry.
+// A cell's attributes in the order `readCellAttributes` takes them; `undefined` where a value has no spelling on the element, so the whole table rides the carry.
 export function cellAttributes(cell: AdfNode): string | undefined {
   const { background, colspan, colwidth, rowspan } = nodeAttrs(cell)
   const own = [spanAttribute('colspan', colspan), spanAttribute('rowspan', rowspan), styleAttribute(background), widthsAttribute(colwidth), dataAttributes(cell, blockNodes.tableCell.attributes, elementWritten)]
   return own.every((attribute) => attribute !== undefined) ? own.join('') : undefined
 }
 
-// `style` and `colspan`, `rowspan` and `data-colwidth` stand first, each once, in the order `cellAttributes` writes them.
 export function readCellAttributes(pairs: readonly (readonly [string, string])[], element: string): Read<AdfAttributes> {
   const attrs: AdfAttributes = {}
   let rest = pairs
@@ -38,7 +37,7 @@ export function readCellAttributes(pairs: readonly (readonly [string, string])[]
     rest = rest.slice(1)
   }
   const misplaced = rest.find(([name]) => leading.includes(name))
-  if (misplaced !== undefined) return { fault: { code: 'unmappable-html', message: `<${element}> takes colspan, rowspan, style and data-colwidth first, each once and in that order: found ${misplaced[0]} after them` } }
+  if (misplaced !== undefined) return { fault: { code: 'unmappable-html', message: `<${element}> takes colspan, rowspan, style and data-colwidth first, each once and in that order: found ${misplaced[0]} out of place` } }
   const data = readDataAttributes(rest, element, blockNodes.tableCell.attributes, elementWritten)
   return data.fault === undefined ? { value: { ...attrs, ...data.value } } : data
 }

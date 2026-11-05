@@ -28,13 +28,10 @@ type BlockReader = (html: string, tag: StartTag, place: Place, open: Open) => Re
 
 type BlockStep = { end: number; kind: 'node'; node: AdfNode } | { end: number; kind: 'opened'; open: Open }
 
-// A container whose blocks, items, rows or cells are being read: `node` holds what its opening tag gave, `depth` is its children's as `adfToHtml` counts it, and `closer` ends it. A table's rows are `rows` and its closer turns from `headCloser` to `bodyCloser` at `</thead>`.
+// A container whose blocks, items, rows or cells are being read: `node` holds what its opening tag gave, `depth` is its children's as `adfToHtml` counts it, and `closer` ends it. An open table has kind `rows`, and its closer turns from `headCloser` to `bodyCloser` at `</thead>`.
 type Open = { closer: string; content: AdfNode[]; depth: number; kind: 'blocks' | 'item' | 'list' | 'row' | 'rows'; node: AdfNode; place: Place | undefined }
 
 // No element name opens both a block and an inline node, so the name alone tells an item's line from its next block.
-const bodyCloser = '\n</tbody>\n</table>'
-const headCloser = '\n</thead>\n</table>'
-const headToBody = '</thead>\n<tbody>\n'
 const blockReaders: ReadonlyMap<string, BlockReader> = new Map([
   [containerElements.blockquote, containerReader('blockquote')],
   [containerElements.bulletList, containerReader('bulletList')],
@@ -46,15 +43,18 @@ const blockReaders: ReadonlyMap<string, BlockReader> = new Map([
   ['table', readTable],
   ...headingElements.map((name): [string, BlockReader] => [name, readHeading]),
 ])
+const bodyCloser = '\n</tbody>\n</table>'
 const codeCloser = '</code></pre>'
 const documentCarryAlone = 'a carry element holding the document stands alone, as the whole document'
 const documentCarryEnd = `${carryContent({ type: 'doc' }, 'div')}</div>`
 const emptyDocument = serializeCanonicalJson({ type: 'doc', version: 1 }, 'compact')
 const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
-  bare: "the first paragraph of an item or cell holding content and no attribute stands bare on its line, as in <li>Bolt</li>",
-  block: 'the first paragraph of an item or cell holding neither content nor an attribute stands on a line of its own',
-  element: 'the first paragraph of an item or cell holding an attribute stands as its <p> on its line, straight after <li> or <td>',
+  bare: "an item's or cell's first paragraph holding content and no attribute stands bare on the line of the item's or cell's start tag, as in <li>Bolt</li>",
+  block: "an item's or cell's first paragraph holding neither content nor an attribute stands on a line of its own",
+  element: "an item's or cell's first paragraph holding an attribute stands as its <p> straight after the item's or cell's start tag",
 }
+const headCloser = '\n</thead>\n</table>'
+const headToBody = '</thead>\n<tbody>\n'
 
 // Reads back what `adfToHtml` writes, as it or a browser spells it.
 export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
@@ -280,7 +280,7 @@ function readRow(html: string, index: number, place: Place, table: Open): Result
 }
 
 function firstRowRefusal<T>(html: string, index: number, place: Place | undefined): Result<T, ParseError> {
-  return refused('unmappable-html', `a table's first row stands in <thead> where every cell is a <th> and it holds one, and in <tbody> otherwise: ${foundAt(html, index)}`, html, index, place)
+  return refused('unmappable-html', `a table's first row stands in <thead> where it holds at least one cell and all its cells are <th>, and in <tbody> otherwise: ${foundAt(html, index)}`, html, index, place)
 }
 
 function readCell(html: string, index: number, place: Place, depth: number): Result<BlockStep, ParseError> {
