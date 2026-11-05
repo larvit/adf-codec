@@ -20,7 +20,7 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
 | `paragraph` | `<p>…</p>` |
 | `rule` | `<hr>` |
-| `table` | `<table>`, a line feed, a `<thead>` where its first row holds cells that are all `tableHeader`, then a `<tbody>` for the other rows where there are any, a line feed, `</table>`. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
+| `table` | `<table>`, a line feed, its sections parted by a line feed, a line feed, `</table>`: a `<thead>` where its first row holds cells that are all `tableHeader`, and a `<tbody>` for the other rows where there are any. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
 | `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `style="background-color:#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
 | `tableRow` | `<tr>`, its cells with no line feed between them, `</tr>` |
 
@@ -28,18 +28,19 @@ A container holding no `content` key is its element holding nothing: `<blockquot
 `<ul></ul>`, `<li></li>`, `<table></table>`, `<tr></tr>`, `<td></td>`; so is a paragraph or heading,
 `<p></p>`.
 
-A table and each of its rows count one nesting level; a cell counts none, as a list item does.
-
 ```html
 <table>
 <thead>
-<tr><th>Part</th><th>Stock</th></tr>
+<tr><th>Part</th><th>Stock</th><th>Bin</th></tr>
 </thead>
 <tbody>
-<tr><td>Bolt M8</td><td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">Low</td></tr>
+<tr><td rowspan="2">Bolt M8</td><td colspan="2" style="background-color:#fffae6" data-colwidth="120,80">Low</td></tr>
+<tr><td>12</td><td>A4</td></tr>
 </tbody>
 </table>
 ```
+
+A table and each of its rows count one nesting level; a cell doesn't count, nor does a list item.
 
 On a paragraph, heading, quote, list, list item, table, row, cell, code block or rule, each attribute its type holds
 (`spec/flavour.md` §Block nodes) that the element does not write as `level`, `order`, `language`,
@@ -145,14 +146,15 @@ later release writes it as its own element.
     attribute its type does not hold: the whole list rides the carry;
   - a table holding a node that is no `tableRow`, a row holding a node that is no cell, or a table,
     row or cell holding a mark, an empty key or an attribute its type does not hold: the whole table
-    rides the carry. So does a cell whose `colspan` or `rowspan` is no positive safe integer, whose
-    `colwidth` is no list of numbers, or whose `background` holds anything but letters and digits
-    after an optional `#`;
+    rides the carry. So does a cell whose `colspan` or `rowspan` isn't a positive safe integer, whose
+    `colwidth` isn't a list of numbers, or whose `background` isn't a string of one or more letters
+    and digits, after an optional `#`;
   - a `listItem`, `tableRow` or cell outside its parent, an inline node in block position and a block
     node inline.
-- An inline card a link marks, a block or non-text inline node holding `text`, and a leaf block or
-  non-text inline node holding `content` are refused as `unsupported-node-shape`, carried or not, by
-  `adfToHtml` and by `htmlToAdf` reading a carry element: Atlassian's schema gives no node those.
+- An inline card a link marks, a known block holding `text`, a known non-text inline node holding
+  `text` or non-empty `content`, and a known block that takes no content, such as `rule`, holding
+  non-empty `content` are refused as `unsupported-node-shape`, carried or not, by `adfToHtml` and by
+  `htmlToAdf` reading a carry element, since Atlassian's schema allows none of these.
 - A block carry's JSON nests at most 500 levels less the depth it stands at, an inline carry's at
   most 500, as in markdown.
 

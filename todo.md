@@ -67,8 +67,8 @@
 
 ### 168. Lower the reading cost of the files a chunk reads most before its first commit.
 
-The last 5 chunks' median was 215876 new input tokens before their first commit, and the 5 before
-them 147097. Most read: `todo.md` 36, `docs/decisions.md` 25, `README.md` 21, `spec/flavour.md` 16,
+As of 2026-11-05, the last 5 chunks' median was 215876 new input tokens before their first commit,
+and the 5 before them 147097. Opens and searches of each file over those last 5 chunks: `todo.md` 36, `docs/decisions.md` 25, `README.md` 21, `spec/flavour.md` 16,
 `ci.sh` 15, `src/html/parse/html-to-adf.test.ts` 13, `src/markdown/emit/adf-to-markdown.test.ts` 11,
 `CHANGELOG.md` 9, `src/conformance/corpus.test.ts` 8, `MIGRATION.md` 7.
 
