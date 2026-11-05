@@ -720,3 +720,17 @@ Read most (opens and searches):
 - `src/html/parse/html-to-adf.test.ts` 3
 - `CHANGELOG.md` 2
 - `docs/reading-cost.md` 2
+
+## Reading cost, chunk a6bfcef6b694, finished 2026-11-05T15:27:46Z
+
+397288 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 10
+- `docs/decisions.md` 9
+- `docs/feature-table.md` 5
+- `README.md` 2
+- `AGENTS.md` 1
+- `spec/flavour.md` 1
+- `spec/html.md` 1
