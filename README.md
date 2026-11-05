@@ -301,7 +301,7 @@ documentation says, on 2026-10-28.
 
 Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
 whole result; no I/O, no configuration. [What each call writes](https://github.com/larvit/adf-codec/blob/main/docs/feature-table.md)
-sets real documents beside each writer's output and says whether that output reads back the same.
+sets example documents beside each writer's output and says whether that output reads back the same.
 
 ```ts
 adfToLosslessMarkdown(doc: AdfDocument): Result<string>
@@ -528,7 +528,7 @@ content. No stylesheet ships. The complete dialect:
 | `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
 | `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
-| any other node, or a node holding what its element cannot, except an inline card a link marks, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
+| any other node, or a node holding what its element cannot, except a shape Atlassian's schema forbids, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a
   card's, and a carried link's in the carry element. Sanitize the HTML before showing a document from
@@ -649,11 +649,12 @@ Every call can raise these:
 - **Writing, in `adfToLosslessMarkdown`**: a node not riding the carry that carries one mark type
   twice. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
-- **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: what Atlassian's
-  schema gives no node, even inside a node that rides the carry: an inline card marked by a link, a
-  block or a non-text inline node holding `text`, or a leaf block or a non-text inline node holding
-  `content`. Keep the ADF and pass the document over or show it read-only; where you built the ADF,
-  remove what the error's `path` and message name.
+- **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: a shape
+  Atlassian's schema forbids, even inside a node that rides the carry: an inline card a link marks,
+  a known block holding `text`, a known non-text inline node holding `text` or non-empty `content`,
+  or a known block that takes no content, such as `rule`, holding non-empty `content`. Keep the ADF
+  and pass the document over or show it read-only; where you built the ADF, remove what the error's
+  `path` and message name.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
 - **Past the engine's longest string**:
