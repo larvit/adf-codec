@@ -1,0 +1,17 @@
+[
+  { "id": "combinations/bold-command", "name": "Bold instruction with a command in it" },
+  { "id": "commonmark-subset/em-strong-strike", "name": "Emphasis and strikethrough" },
+  { "id": "commonmark-subset/heading", "name": "Headings" },
+  { "id": "commonmark-subset/bullet-list", "name": "Bullet list" },
+  { "id": "commonmark-subset/code-block", "name": "Code block" },
+  { "id": "commonmark-subset/blockquote", "name": "Quote" },
+  { "id": "commonmark-subset/link", "name": "Link" },
+  { "id": "block-nodes/table-plain", "name": "Table" },
+  { "id": "block-nodes/panel", "name": "Panels" },
+  { "id": "block-nodes/task-list", "name": "Task list" },
+  { "id": "block-nodes/image", "name": "Image" },
+  { "id": "inline-nodes/mention", "name": "Mention" },
+  { "id": "inline-nodes/status", "name": "Status" },
+  { "id": "inline-nodes/date", "name": "Date" },
+  { "id": "opaque-carry/unknown-block", "name": "Node types this version does not know" }
+]

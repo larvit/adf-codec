@@ -300,7 +300,8 @@ documentation says, on 2026-10-28.
 ## The calls
 
 Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
-whole result; no I/O, no configuration.
+whole result; no I/O, no configuration. [What each call writes](https://github.com/larvit/adf-codec/blob/main/docs/feature-table.md)
+sets real documents beside each writer's output and says whether that output reads back the same.
 
 ```ts
 adfToLosslessMarkdown(doc: AdfDocument): Result<string>
@@ -771,9 +772,11 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 
 ## Changing the source
 
-Both commands need only Docker, git and bash 5.
+All three commands need only Docker, git and bash 5.
 
 - `./ci.sh` runs every check CI runs.
+- `./feature-table/write.sh` rewrites `docs/feature-table.md` from `feature-table/examples.json` and
+  the build. `./ci.sh` fails where a change leaves that page stale.
 - `./mutation-tests/run.sh [<base>]` mutation-tests the lines changed since `<base>`, `origin/main`
   by default, in source files git tracks. It needs 6 GB of memory for Docker, and lists the mutants
   that survived. Survivors don't fail it; a mutant whose test run crashed does.

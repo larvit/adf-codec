@@ -60,8 +60,10 @@ rm -f "$test_log"
 leg "tests ($deno_image)" in_image "$deno_image" deno test --allow-env=PROPERTY_RUNS --allow-read --no-check src/
 leg "tests ($bun_image)" in_image "$bun_image" bun test src/
 leg "corpus-gathering tests ($node_image)" in_image "$node_image" node --test corpus-gathering/
+leg "feature table tests ($node_image)" in_image "$node_image" node --test feature-table/
 
 leg "build ($node_image)" in_image "$node_image" npm run build
+leg "feature table is current ($node_image)" in_image "$node_image" node feature-table/build.mjs --check
 leg "pack and install the tarball ($node_image)" in_image "$node_image" sh -c 'set -e
   rm -rf package-tests/node_modules
   npm pack --pack-destination /tmp
