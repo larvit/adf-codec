@@ -1245,7 +1245,7 @@ the copy is refused as `unmappable-html` rather than saved. They expected:
   an `<li data-state="TODO">`.
 - The `strike` mark in Emphasis and strikethrough as `<s>relay</s>` or `<del>relay</del>`.
 
-Plan items 134 and 141 will write these; their writer panels pick the spelling with these
+`todo.md` items 134 and 141 will write these; their writer panels pick the spelling with these
 expectations as input. The Date row drew 1 of 3 not reasonable, so four more readers (bot,
 reader of the markdown, export/indexing, viewer/editor) read it, and 5 of 7 found it reasonable.
 `adfToLosslessMarkdown` keeps writing `!adf:date{timestamp=1756080000000}`. The two who rejected
