@@ -2,9 +2,33 @@
   "content": [
     {
       "content": [
-        { "marks": [{ "type": "strong" }], "text": "Run ", "type": "text" },
-        { "marks": [{ "type": "code" }], "text": "npm ci", "type": "text" },
-        { "marks": [{ "type": "strong" }], "text": " first", "type": "text" }
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": "Run ",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "code"
+            }
+          ],
+          "text": "npm ci",
+          "type": "text"
+        },
+        {
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ],
+          "text": " first",
+          "type": "text"
+        }
       ],
       "type": "paragraph"
     }
