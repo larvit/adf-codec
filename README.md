@@ -249,10 +249,10 @@ place, and on CI failing a change that breaks a guarantee.
 Serves [Goals](#goals) 3. The first table lists every npm package that runs in Node, converts ADF to
 or from markdown, whatever its downloads: one that starts and converts anything is listed, and its
 row says where it fails ordinary input. A wrapper or fork of a listed package is left out. The list
-comes from npm searches on 2026-10-28 for "adf markdown", "markdown to adf", "adf to markdown",
+comes from npm searches on 2026-11-05 for "adf markdown", "markdown to adf", "adf to markdown",
 "atlassian document format" and "adf converter".
 
-On 2026-10-28, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
+On 2026-11-05, [`converter-comparison/`](https://github.com/larvit/adf-codec/tree/main/converter-comparison)
 ran each package's published code, at the version the table names, with its default options. A
 package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
@@ -276,7 +276,7 @@ holding the same marks and link.
 | `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 |
 | `md-adf` 0.2.2 | both ways, with a warning for each fallback | a different document: the mention and the status come back as text, the marks in the other order, the panel as a quote | dropped with its text, with a warning | markdown | 5 |
 | `md-to-adf` 0.6.4 | markdown to ADF; fails ordinary input: each list item is written as a list of its own | – | – | markdown | 2 |
-| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.1 writes as markdown; throws on a status | – | throws | markdown | 3 |
+| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.2 writes as markdown; throws on a status | – | throws | markdown | 3 |
 
 The next table lists converters this comparison does not run: other ecosystems' libraries,
 Atlassian's own paths, and one npm package that needs a browser. Each row is what the project's
