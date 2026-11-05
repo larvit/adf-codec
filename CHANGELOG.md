@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `docs/feature-table.md` sets real documents beside what `adfToLosslessMarkdown`,
+  `adfToPortableMarkdown` and `adfToHtml` write for them, and says whether each output reads back to
+  the same document.
 - **Breaking:** `adfToHtml`, `adfToPortableMarkdown`, `htmlToAdf` and `losslessMarkdownToAdf` refuse
   a block or non-text inline node holding `text`, and a leaf block or non-text inline node holding
   `content`, as `adfToLosslessMarkdown` already did outside a carried node, which it now also

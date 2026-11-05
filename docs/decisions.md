@@ -1221,3 +1221,13 @@ the site, applying them is an inference, which `corpus/README.md` tells the read
 None of the 22,773 fetched documents holds a type in `typesNoFetchedDocumentHolds`
 (`src/conformance/corpus.test.ts`), and neither did up to 40 pages per site with "decision" in the
 title. A regenerated corpus holding one of those types fails that test until the type leaves the list.
+
+## The feature table is a section per corpus example, led by a summary table
+
+2026-11-05, a developer panel, 3 of 3. Goal 3. Valid while the page lists about fifteen examples.
+
+Readers from the viewer/editor, export/indexing and LLM/agent pipeline personas picked labelled code
+blocks stacked under a heading per example, with a table of the round-trip results on top, over one
+wide pipe table and over one wide HTML table with a `<pre>` per cell. Examples come from
+`corpus/round-trip/` and are the ones `feature-table/examples.json` lists, never
+`corpus/real-world/`, whose licence is not the package's.

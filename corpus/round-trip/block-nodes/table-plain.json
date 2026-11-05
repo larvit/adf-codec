@@ -1,0 +1,110 @@
+{
+  "content": [
+    {
+      "content": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Part",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Stock",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableHeader"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Bolt M8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "120",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Washer M8",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "45",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "type": "doc",
+  "version": 1
+}

@@ -6,18 +6,16 @@
 
 `Bar = 0.1`
 
-`Next ID = 168`
+`Next ID = 169`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 164 | 0.3.0 |  |  | **Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.** | 3 | 2 | 1 | 4 | 5 | 3 by 6, 6 by 4 | 6.2 |
-| 165 | 0.3.0 | 164 |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
-| 132 | 0.3.0 |  |  | **Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 4 | 2.4 |
-| 73 | 0.3.0 | 132, 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
-| 167 | 0.3.0 |  | decision | **Refuse in `refusedShape` the schema-forbidden shapes `adfToLosslessMarkdown` refuses in its walk, and drop them from that writer.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 13.1 |
-| 72 | 0.3.0 | 132 | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
+| 168 | 0.3.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 4 | code health by 5 | 21.8 |
+| 165 | 0.3.0 |  |  | **Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.** | 2 | 2 | 1 | 3 | 3 | 6 by 5 | 7.5 |
+| 73 | 0.3.0 | 165 |  | **Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.** | 1 | 2 | 2 | 3 | 2 | 3 by 8 | 16.9 |
+| 72 | 0.3.0 |  | decision | **Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 156 | 0.4.0 |  |  | **Stop a leg's container when its script is interrupted, so Ctrl-C ends `ci.sh` or `mutation-tests/run.sh` at once.** | 1 | 2 | 1 | 2 | 1 | code health by 2 | 20.9 |
 | 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -67,18 +65,16 @@
 
 ## Details
 
-### 164. Publish a feature table setting chosen corpus examples beside what each call writes for them, readable at a glance by people and parseable by LLMs, and kept current by the gate.
+### 168. Lower the reading cost of the files a chunk reads most before its first commit.
 
-The examples are picked by an explicit list of corpus ids, each with a one-line name such as "bold instruction with a command in it". For each one, the table shows the ADF, `adfToLosslessMarkdown`, `adfToPortableMarkdown` and `adfToHtml` output, and whether the round-trip holds. A script builds the table from the built package. The gate fails when the committed table differs from what the script writes, so the table always shows what the release does. A writer panel from `## Audience` picks the layout, rendered or source, before it ships.
+The last 5 chunks' median was 215876 new input tokens before their first commit, and the 5 before
+them 147097. Most read: `todo.md` 36, `docs/decisions.md` 25, `README.md` 21, `spec/flavour.md` 16,
+`ci.sh` 15, `src/html/parse/html-to-adf.test.ts` 13, `src/markdown/emit/adf-to-markdown.test.ts` 11,
+`CHANGELOG.md` 9, `src/conformance/corpus.test.ts` 8, `MIGRATION.md` 7.
 
 ### 165. Have a reader panel seated from `## Audience` judge each feature-table row reasonable or not, and file an item for each row it rejects.
 
 The panel follows AGENTS.md §7's reader-panel rule: readers, one per persona the row serves, see only `## Audience` and the row, and say whether the output is what they expect. A rejected row becomes an item naming the expected output. The verdicts land in `docs/decisions.md`.
-
-### 132. Write tables as `<table>` in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
-
-Header cells as `<th>`; a cell's span, width and background in HTML attributes or `data-*`, as a
-writer panel picks.
 
 ### 73. Announce the package where someone needing an ADF converter already reads: JRACLOUD-77436, the Atlassian developer community and Stack Overflow's ADF-to-markdown questions.
 
@@ -95,36 +91,6 @@ We draft each post for the place it goes. Each opens with the asker's problem an
 solves it, then links the GitHub repository, the README's comparison table and the README's
 opening. The maintainer posts them once `0.3.0` is published (`docs/decisions.md` §Posts
 announcing a release wait for its publish). Found while planning discoverability, 2026-10-04.
-
-### 167. Refuse in `refusedShape` the schema-forbidden shapes `adfToLosslessMarkdown` refuses in its walk, and drop them from that writer.
-
-The maintainer's call, 2026-11-04 (`docs/decisions.md` §Schema refusals are made in the first step
-alone): the first step holds every schema check, "moved there from wherever else in the code they
-are". It replaces item 68, which would have carried these shapes. Move into `refusedShape`:
-
-- `emitDirectiveBlock` in `emit/adf-to-markdown.ts`: a block holding `text`, and a leaf block
-  holding `content`.
-- `emitLeaf` in `emit/inline-line.ts`: a non-text inline node holding `content` or `text`.
-
-Atlassian's schema gives each such node no `text` or `content` (`additionalProperties` is false).
-Breaking: `adfToHtml` and `adfToPortableMarkdown` refuse these shapes too, and so does
-`adfToLosslessMarkdown` inside a node that rides the carry, where it writes them today. Both carry
-readers refuse them too, so a stored markdown or HTML document whose carry holds one stops
-reading; `MIGRATION.md` says to convert it once with the last version that reads it. Say so in
-`CHANGELOG.md` and `MIGRATION.md`. Search the writers for any other refusal of a shape the schema
-forbids, and `carriedNode` for one the readers still build.
-
-The aim is the same behaviour in and out, with the checks alike in every format. The breaking
-change above is what "alike" costs: `refusedShape` takes no format, so it cannot spare a node that
-only one writer carries. The maintainer accepted it (2026-11-04); the item adds no other refusal.
-
-Stays where it is: a node holding one mark type twice (the schema allows it, no spelling holds it),
-nesting depth, output length, a portable task list holding what no list item spells, and a
-reader's refusal of markdown or HTML it cannot read. A node type, mark or attribute the schema does
-not name, a known node out of place and a mark a node cannot hold keep riding the carry. Drop the
-refused shapes from the README's `unsupported-node-shape` cause under writing in
-`adfToLosslessMarkdown` and add them to the cause common to the writers, and from `spec/flavour.md`;
-the property generators build none of them.
 
 ### 72. Re-create `gitea.larvit.se/larvit/adf-codec` as a read-only pull mirror of GitHub, its issues and Actions off and its description pointing at GitHub.
 
