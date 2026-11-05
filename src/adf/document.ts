@@ -170,13 +170,13 @@ function shapeRefusal(node: AdfNode): string | undefined {
   if (node.type === 'inlineCard' && nodeMarks(node).some(({ type }) => type === 'link')) return 'an inlineCard takes no link mark: this one holds one'
   const holdsContent = nodeContent(node).length > 0
   if (inlineNodeModel(node.type) !== undefined) {
-    if (holdsContent) return `a ${node.type} node holds neither content nor text: this one holds content`
-    return node.text === undefined ? undefined : `a ${node.type} node holds neither content nor text: this one holds text`
+    if (holdsContent) return `a node of type ${node.type} holds neither content nor text: this one holds content`
+    return node.text === undefined ? undefined : `a node of type ${node.type} holds neither content nor text: this one holds text`
   }
   const model = blockNodeModel(node.type)
   if (model === undefined) return undefined
-  if (node.text !== undefined) return `a ${node.type} carries no text: this one holds text`
-  return model.contentModel === 'none' && holdsContent ? `a ${node.type} holds no content: this one holds some` : undefined
+  if (node.text !== undefined) return `a node of type ${node.type} holds no text key: this one holds one`
+  return model.contentModel === 'none' && holdsContent ? `a node of type ${node.type} holds no content: this one holds some` : undefined
 }
 
 // Tracks ancestors alone: a tree may share an object, but an object holding itself walks the guards forever.

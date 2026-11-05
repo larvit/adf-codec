@@ -325,12 +325,17 @@ test('writes a table\'s attributes as the writer panel picked them', () => {
   assert.equal(html(adfToHtml(document({ content: [{ content: [{ attrs: { background: 'red', colwidth: [0.5] }, type: 'tableHeader' }], type: 'tableRow' }], type: 'table' }))), '<table>\n<thead>\n<tr><th style="background-color:red" data-colwidth="0.5"></th></tr>\n</thead>\n</table>\n')
 })
 
+const carriedCellAttrs: readonly AdfAttributes[] = [{ background: 'url(x)' }, { background: 'red;color:blue' }, { background: '' }, { background: 7 }, { colspan: 0 }, { colspan: 1.5 }, { colspan: '2' }, { rowspan: -1 }, { colwidth: [] }, { colwidth: ['1'] }, { colwidth: 120 }, { valign: 7 }, { size: 'big' }]
+
+for (const attrs of carriedCellAttrs) {
+  test(`carries the whole table where a cell holds ${JSON.stringify(attrs)}`, () => {
+    assert.equal(carriedBlock({ content: [{ content: [{ attrs, content: [paragraph(text('x'))], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }), true)
+  })
+}
+
 test('carries the whole table where it, a row or a cell holds what its element cannot', () => {
   const cell = (attrs: AdfAttributes): AdfNode => ({ attrs, content: [paragraph(text('x'))], type: 'tableCell' })
   const inRow = (node: AdfNode): AdfNode => ({ content: [{ content: [node], type: 'tableRow' }], type: 'table' })
-  for (const attrs of [{ background: 'url(x)' }, { background: 'red;color:blue' }, { background: '' }, { background: 7 }, { colspan: 0 }, { colspan: 1.5 }, { colspan: '2' }, { rowspan: -1 }, { colwidth: [] }, { colwidth: ['1'] }, { colwidth: 120 }, { valign: 7 }, { size: 'big' }]) {
-    assert.equal(carriedBlock(inRow(cell(attrs))), true, JSON.stringify(attrs))
-  }
   assert.equal(carriedBlock({ content: [paragraph(text('x'))], type: 'table' }), true)
   assert.equal(carriedBlock(inRow(paragraph(text('x')))), true)
   assert.equal(carriedBlock({ content: [], type: 'table' }), true)
@@ -354,6 +359,13 @@ test('counts a table and its rows each a level, and a cell none, as a list and i
   assert.equal(adfToHtml(holding(500, { type: 'table' })).ok, true)
   assert.equal(adfToHtml(holding(498, table({ content: [cell], type: 'tableRow' }))).ok, true)
   assert.equal(refusal(adfToHtml(holding(499, table({ content: [cell], type: 'tableRow' })))).startsWith('unsupported-nesting-depth'), true)
+})
+
+test('names the path of a row or a cell it refuses', () => {
+  const holding = (levels: number, inner: AdfNode): AdfDocument => document(nested('blockquote', levels, inner))
+  const cell: AdfNode = { content: [paragraph(text('x'))], type: 'tableCell' }
+  assert.equal(refusal(adfToHtml(holding(500, { content: [{ type: 'tableRow' }], type: 'table' }))), `unsupported-nesting-depth at ${'/content/0'.repeat(502)}`)
+  assert.equal(refusal(adfToHtml(holding(499, { content: [{ type: 'tableRow' }, { content: [cell], type: 'tableRow' }], type: 'table' }))), `unsupported-nesting-depth at ${'/content/0'.repeat(500)}/content/1/content/0`)
 })
 
 test('carries a node holding what its element cannot', () => {

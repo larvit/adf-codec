@@ -152,40 +152,48 @@ test('refuses an inline card a link marks, wherever the document holds it and wh
   }
 })
 
-test('refuses what Atlassian\'s schema gives no node, wherever the document holds it and whichever call writes it', () => {
-  const shapes: { message: string; node: AdfNode }[] = [
-    { message: 'a panel carries no text: this one holds text', node: { text: 'x', type: 'panel' } },
-    { message: 'a paragraph carries no text: this one holds text', node: { text: 'x', type: 'paragraph' } },
-    { message: 'a media holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'media' } },
-    { message: 'a rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
-    { message: 'a status node holds neither content nor text: this one holds content', node: { content: [{ text: 'x', type: 'text' }], type: 'status' } },
-    { message: 'a status node holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
-    { message: 'a hardBreak node holds neither content nor text: this one holds text', node: { text: 'x', type: 'hardBreak' } },
-  ]
-  for (const { message, node } of shapes) {
-    const holders = [
-      { content: [node], type: 'doc' },
-      { content: [{ content: [node], type: 'paragraph' }], type: 'doc' },
-      { content: [{ content: [node], type: 'futureBlock' }], type: 'doc' },
-    ]
-    const paths = [['content', 0], ['content', 0, 'content', 0], ['content', 0, 'content', 0]]
-    for (const [index, { content }] of holders.entries()) {
-      for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) {
-        const refused = write({ content, type: 'doc', version: 1 })
-        assert.deepEqual(refused.ok ? 'written' : refused.error, { code: 'unsupported-node-shape', message, path: paths[index] })
-      }
+const shapeWriters = [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]
+
+const schemaRefusals: readonly { message: string; node: AdfNode }[] = [
+  { message: 'a node of type panel holds no text key: this one holds one', node: { text: 'x', type: 'panel' } },
+  { message: 'a node of type paragraph holds no text key: this one holds one', node: { text: 'x', type: 'paragraph' } },
+  { message: 'a node of type media holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'media' } },
+  { message: 'a node of type rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
+  { message: 'a node of type status holds neither content nor text: this one holds content', node: { content: [{ text: 'x', type: 'text' }], type: 'status' } },
+  { message: 'a node of type status holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
+  { message: 'a node of type hardBreak holds neither content nor text: this one holds text', node: { text: 'x', type: 'hardBreak' } },
+]
+
+const schemaRefusalHolders: readonly { hold: (node: AdfNode) => AdfNode[]; path: (number | string)[]; where: string }[] = [
+  { hold: (node) => [node], path: ['content', 0], where: 'at the top' },
+  { hold: (node) => [{ content: [node], type: 'paragraph' }], path: ['content', 0, 'content', 0], where: 'in a known node' },
+  { hold: (node) => [{ content: [node], type: 'futureBlock' }], path: ['content', 0, 'content', 0], where: 'in a carried node' },
+]
+
+for (const { message, node } of schemaRefusals) {
+  for (const { hold, path, where } of schemaRefusalHolders) {
+    for (const write of shapeWriters) {
+      test(`${write.name} refuses what Atlassian's schema forbids ${where}: ${message}`, () => {
+        const refused = write({ content: hold(node), type: 'doc', version: 1 })
+        assert.deepEqual(refused.ok ? 'written' : refused.error, { code: 'unsupported-node-shape', message, path })
+      })
     }
   }
-})
+}
 
-test('writes what the schema refusals leave to the carry', () => {
-  const carried: AdfNode[] = [
-    { content: [], type: 'rule' },
-    { content: [{ text: 'x', type: 'text' }], text: 'y', type: 'futureBlock' },
-    { content: [{ content: [{ type: 'paragraph' }], type: 'text' }], type: 'paragraph' },
-  ]
-  for (const node of carried) for (const write of [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]) assert.equal(write({ content: [node], type: 'doc', version: 1 }).ok, true)
-})
+const carriedShapes: readonly AdfNode[] = [
+  { content: [], type: 'rule' },
+  { content: [{ text: 'x', type: 'text' }], text: 'y', type: 'futureBlock' },
+  { content: [{ content: [{ type: 'paragraph' }], type: 'text' }], type: 'paragraph' },
+]
+
+for (const node of carriedShapes) {
+  for (const write of shapeWriters) {
+    test(`${write.name} writes what the schema refusals leave to the carry: ${JSON.stringify(node)}`, () => {
+      assert.equal(write({ content: [node], type: 'doc', version: 1 }).ok, true)
+    })
+  }
+}
 
 test('names the first link-marked card in document order', () => {
   const card = (url: string): AdfNode => ({ attrs: { url }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })
