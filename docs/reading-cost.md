@@ -703,3 +703,20 @@ Read most (opens and searches):
 - `ci.sh` 3
 
 ## Reading cost reset, 2026-11-05T11:14:06Z
+
+## Reading cost, chunk 980d22723d71, finished 2026-11-05T11:29:36Z
+
+109922 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 9
+- `README.md` 5
+- `docs/decisions.md` 5
+- `src/markdown/emit/adf-to-markdown.test.ts` 4
+- `AGENTS.md` 3
+- `ci.sh` 3
+- `package.json` 3
+- `src/html/parse/html-to-adf.test.ts` 3
+- `CHANGELOG.md` 2
+- `docs/reading-cost.md` 2
