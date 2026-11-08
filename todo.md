@@ -288,7 +288,8 @@ unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
 ### 174. Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.
 
 `trimmedEdges` (`src/markdown/portable/inline-reduction.ts`) repeats a pass until nothing changes, and
-each pass costs O(leaves). Leaves alternating `' '` marked code with `' '` marked em take
+each pass costs O(leaves) while leaf text is short; the trailing-blank scan inside one long leaf is
+item 42's. Leaves alternating `' '` marked code with `' '` marked em take
 ceil(n/4) + 1 passes: 26, 251 and 2 501 at n = 100, 1 000 and 10 000, so the trim is quadratic,
 against goal 9. The same holds for `'x'` code beside `' '` em, and for `[link, code] 'x'` beside
 `[link, em] ' '`. The smallest line is six leaves `' '` marked code, em, code, em, code, em, which
@@ -303,8 +304,7 @@ while a run is shared, keep when not) isn't monotone. A hard break between `[lin
 first. Two ways forward: make the edge rule monotone, which changes output in edge cases and
 needs a decision and a writer panel; keep run extents under truncation in `runsSharedWithNext`
 (`emit/inline-runs.ts`), exact but large. Count passes
-to measure, never time (§Cost fixes are measured, never timed). Related: item 42 trims blanks inside
-one leaf. Found by the principles audit of the release review of 0.3.0, 2026-11-08.
+to measure, never time (§Cost fixes are measured, never timed). Found by the principles audit of the release review of 0.3.0, 2026-11-08.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 
