@@ -1633,3 +1633,12 @@ Inherited architect, decided by:
 - Shape: `src/adf/block-nodes.ts:1` `isHeadingLevel`: one source for the 1 to 6 range
 - Locality: `src/html/parse/html-to-adf.ts:95` `readBlocks`: RowStep, `closerOf` and the close loop have to be pieced together to follow table state
 - Self-sufficiency: `src/html/parse/html-to-adf.ts:273` `readTable`: the thead and tbody branches advance by one length that holds only because both strings are equally long
+
+## 2026-11-08T22:07:58Z, PR #140 at 27e212c, against b3d136d
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | same | same |
+| Inherited architect | same | same | same | same | same |
