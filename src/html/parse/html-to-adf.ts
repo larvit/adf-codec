@@ -18,7 +18,7 @@ import { positioned, success } from '../../result.ts'
 import { readAnchorAttributes } from '../anchor-element.ts'
 import { readCarry } from './carry-element.ts'
 import { readCarryAttributes } from '../carry-attributes.ts'
-import { readDataAttributes } from '../data-attributes.ts'
+import { readDataAttributes, readDataAttributesAfter } from '../data-attributes.ts'
 import { readImageAttributes } from '../image-element.ts'
 import { readLanguageClass } from '../language-class.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
@@ -242,7 +242,8 @@ function readContainer(html: string, tag: StartTag, type: ContainerType, place: 
     const at = tag.start + `<${tag.name} start="`.length
     return refused('unmappable-html', `an ordered list starts at an integer, written as JavaScript writes it: ${foundAt(html, at)}`, html, at, place)
   }
-  const data = readDataAttributes(tag.attributes, tag.name, blockNodes[type].attributes, ordered ? ['order'] : [], ordered ? 'start' : undefined)
+  const vocabulary = blockNodes[type].attributes
+  const data = ordered ? readDataAttributesAfter('start', tag.attributes, tag.name, vocabulary, ['order']) : readDataAttributes(tag.attributes, tag.name, vocabulary, [])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const node = built(type, order === undefined ? data.value : { order, ...data.value }, [])
   const closer = `</${tag.name}>`
@@ -320,15 +321,20 @@ function readItemLine(html: string, index: number, element: string, open: Open):
   if (!line.ok) return line
   const { end, node } = line.value
   if (!html.startsWith(closer, end) && !html.startsWith('\n', end)) {
-    const lineEnd = `the line ends at ${closer}, or at a line feed before the next block`
-    // After a line's `</p>`, or before a block or the next item, no inline element can stand.
-    const stop = line.value.form === 'bare' && !isBlockStart(html, end) && startTagName(html, end) !== element ? misread(html, end, `${lineEnd}, and its text spells < as &lt;`, 'no inline element of the dialect') : { at: end, message: `${lineEnd}: ${foundAt(html, end)}` }
+    const stop = lineEndRefusal(html, end, line.value.form, element)
     return refused('unmappable-html', stop.message, html, stop.at, open.place)
   }
   const paragraph = asFirstParagraph({ end, node }, line.value.form, html, index, place)
   if (!paragraph.ok) return paragraph
   if (html.startsWith(closer, end)) return success({ end: end + closer.length, kind: 'node', node: { ...open.node, content: [node] } })
   return success({ end: end + 1, kind: 'opened', open: { ...open, content: [node] } })
+}
+
+function lineEndRefusal(html: string, end: number, form: FirstParagraphForm, element: string): { at: number; message: string } {
+  const lineEnd = `the line ends at </${element}>, or at a line feed before the next block`
+  // After a line's `</p>`, or before a block or the next item, no inline element can stand.
+  if (form !== 'bare' || isBlockStart(html, end) || startTagName(html, end) === element) return { at: end, message: `${lineEnd}: ${foundAt(html, end)}` }
+  return misread(html, end, `${lineEnd}, and its text spells < as &lt;`, 'no inline element of the dialect')
 }
 
 // The paragraph on an item's or cell's line and the form it stands in there, up to its closer or to the line feed before its next block.

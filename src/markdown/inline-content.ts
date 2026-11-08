@@ -276,7 +276,7 @@ function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[]
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.shared.path)
   if (marksLink(nodes)) return failure('unsupported-node-shape', linkInLink, scan.shared.path)
-  if (commonMarkLink(nodeAttrs(mark), href, adfNodes(nodes), 0, scan.container === undefined, 'lossless') === undefined) return undefined
+  if (commonMarkLink(nodeAttrs(mark), href, adfNodes(nodes), { bracketed: scan.container === undefined, escapes: 'lossless', marksInside: 0 }) === undefined) return undefined
   if (index !== 0 || scan.container !== 'paragraph') return failure('unsupported-node-shape', spellableLink, scan.shared.path)
   scan.openingSpellableLink = true
   return undefined

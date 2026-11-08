@@ -30,6 +30,15 @@ type Emission = { carries: [NodeRange, ...NodeRange[]]; segments?: undefined } |
 
 type Fallback = [NodeRange, ...NodeRange[]] | 'opening-link'
 
+// How a line is judged and what its fallbacks do: the lossless writer carries nodes, the portable reduction drops marks.
+export type FallbackAction<Line, LineFallback, Written> = {
+  giveUpEmphasis: (line: Line) => Line
+  judge: (line: Line, grouping: RunGrouping) => Result<LineJudgement<Line, LineFallback, Written>>
+  // A line whose fallbacks rewrite its nodes judges its spanned line again on every pass.
+  spansEachPass: boolean
+  take: (line: Line, fallback: LineFallback) => Result<Line>
+}
+
 type InlineContext = {
   atBlockEnd: boolean
   bracketed: boolean
@@ -44,10 +53,13 @@ type InlineContext = {
 
 type LineAttempt = { fallback: Fallback; line?: undefined; segments?: undefined } | { fallback?: undefined; line: string; segments: InlineSegment[] }
 
+// What one grouping writes, or the fallback it needs and the line that fallback's indexes name.
+export type LineJudgement<Line, LineFallback, Written> = { fallback: LineFallback; kind: 'fallback'; line: Line } | { kind: 'written'; written: Written }
+
 type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
 
 // docs/decisions.md §After 32 passes, a line carries or drops every em, strike and strong mark.
-export const readBackPasses = 32
+const readBackPasses = 32
 
 export type PortableLineFallback = { kind: 'opening-link' } | { kind: 'unspellable-run'; runs: [MarkRun, ...MarkRun[]] }
 
@@ -93,26 +105,42 @@ export function tryImageLine(alt: string | undefined, url: string, flavour: Writ
 }
 
 function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedLine> {
-  const fallbacks = withheldMarkFallbacks(nodes, flavour)
-  // spec/flavour.md, Marks: the spanned line where it reads back, else the parted line with every fallback it needs.
-  const spanned = linePass(nodes, container, path, fallbacks, 'spanned')
-  if (!spanned.ok) return spanned
-  const { fallback, line, segments } = spanned.value
-  if (fallback === undefined) return success({ line, openingLinkAsDirective: false, segments })
-  return partedLine(nodes, container, path, fallbacks)
+  return settledLine(withheldMarkFallbacks(nodes, flavour), {
+    giveUpEmphasis: (fallbacks) => carryEveryEmphasis(fallbacks, nodes),
+    judge: (fallbacks, grouping) => writerJudgement(nodes, container, path, fallbacks, grouping),
+    spansEachPass: false,
+    take: (fallbacks, fallback) => {
+      const taken = takeFallback(fallbacks, fallback, path)
+      return taken.ok ? success(fallbacks) : taken
+    },
+  })
 }
 
-function partedLine(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks): Result<EmittedLine> {
-  // Terminates because takeFallback refuses a pass that took no new fallback.
-  for (let pass = 1; ; pass += 1) {
-    const attempt = linePass(nodes, container, path, fallbacks, 'parted')
-    if (!attempt.ok) return attempt
-    const { fallback, line, segments } = attempt.value
-    if (fallback === undefined) return success({ line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments })
-    const taken = takeFallback(fallbacks, fallback, path)
+// spec/flavour.md, Marks: the spanned line where it reads back, else the parted line, taking one fallback a pass.
+export function settledLine<Line, LineFallback, Written>(line: Line, action: FallbackAction<Line, LineFallback, Written>): Result<Written> {
+  // Terminates because `take` refuses a pass that changes nothing.
+  for (let current = line, pass = 1; ; pass += 1) {
+    let parting = current
+    if (pass === 1 || action.spansEachPass) {
+      const spanned = action.judge(current, 'spanned')
+      if (!spanned.ok) return spanned
+      if (spanned.value.kind === 'written') return success(spanned.value.written)
+      parting = spanned.value.line
+    }
+    const parted = action.judge(parting, 'parted')
+    if (!parted.ok) return parted
+    if (parted.value.kind === 'written') return success(parted.value.written)
+    const taken = action.take(parted.value.line, parted.value.fallback)
     if (!taken.ok) return taken
-    if (pass === readBackPasses) carryEveryEmphasis(fallbacks, nodes)
+    current = pass === readBackPasses ? action.giveUpEmphasis(taken.value) : taken.value
   }
+}
+
+function writerJudgement(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks, grouping: RunGrouping): Result<LineJudgement<LineFallbacks, Fallback, EmittedLine>> {
+  const attempt = linePass(nodes, container, path, fallbacks, grouping)
+  if (!attempt.ok) return attempt
+  const { fallback, line, segments } = attempt.value
+  return success(fallback === undefined ? { kind: 'written', written: { line, openingLinkAsDirective: fallbacks.openingLinkAsDirective, segments } } : { fallback, kind: 'fallback', line: fallbacks })
 }
 
 export function linePass(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, fallbacks: LineFallbacks, grouping: RunGrouping): Result<LineAttempt> {
@@ -122,8 +150,9 @@ export function linePass(nodes: readonly AdfNode[], container: LineContainer, pa
   return success(segments === undefined ? { fallback: carries } : attemptLine(segments, container, fallbacks.flavour))
 }
 
-function carryEveryEmphasis(fallbacks: LineFallbacks, nodes: readonly AdfNode[]): void {
+function carryEveryEmphasis(fallbacks: LineFallbacks, nodes: readonly AdfNode[]): LineFallbacks {
   for (const [index, node] of nodes.entries()) if (nodeMarks(node).some(isEmphasis)) fallbacks.carried.add(index)
+  return fallbacks
 }
 
 // Seeds the withheld-mark carries once per line, so the run at each mark depth does not rescan every node's marks.
@@ -359,7 +388,7 @@ function tryLink(nodes: readonly [RunNode, ...RunNode[]], mark: AdfMark, depth: 
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return carriedRun(range, context)
   const opening = depth === 0 && range.first === 0 && context.openingLinkAsDirective
-  const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes.map(({ node }) => node), nodes[0].outer, context.bracketed, titleEscapes(context.flavour, context.container))
+  const commonMark = opening ? undefined : commonMarkLink(nodeAttrs(mark), href, nodes.map(({ node }) => node), { bracketed: context.bracketed, escapes: titleEscapes(context.flavour, context.container), marksInside: nodes[0].outer })
   if (commonMark === undefined) return undefined
   if (commonMark.form === 'autolink') return success({ segments: [syntax(`<${href}>`)] })
   const inner = emitRun(nodes, depth + 1, range.first, { ...context, bracketed: true })

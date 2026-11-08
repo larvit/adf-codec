@@ -5,7 +5,7 @@ import type { ConvertFault } from '../../result.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from '../inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
-import { commonMarkSpelling, openingLinkTakesDirective, type SpellingMemo } from '../emit/spelling-questions.ts'
+import { commonMarkSpelling, openingLinkTakesDirective, spellingMemo, type SpellingMemo } from '../emit/spelling-questions.ts'
 import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
 import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result } from '../../result.ts'
@@ -55,7 +55,7 @@ function readMarkdown(markdown: string, readAs: ReadAs): Result<AdfDocument> {
     const fault = documentFault(only)
     return fault === undefined ? success({ type: 'doc', version: 1 }) : positioned(faulted(fault, []), only.position)
   }
-  const reading: Reading = { ...readAs, definitions: parsed.definitions, memo: new Map() }
+  const reading: Reading = { ...readAs, definitions: parsed.definitions, memo: spellingMemo() }
   const content = readBlocks(parsed.blocks, reading, [], 0)
   return content.ok ? success({ content: content.value, type: 'doc', version: 1 }) : content
 }

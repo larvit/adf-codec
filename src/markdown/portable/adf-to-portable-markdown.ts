@@ -1,10 +1,10 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
-import { commonMarkSpelling, largestListMarker, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
+import { commonMarkSpelling, largestListMarker, spellingMemo, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
-import { inlineLeaves, portableLink, reduceInline, writableHref } from './inline-reduction.ts'
+import { inlineLeaves, portableLink, reduceInline, writableHref, type ReductionPlace } from './inline-reduction.ts'
 import { inlineNodeModel } from '../../adf/inline-nodes.ts'
 import { isBlockNodeType, oneLine } from '../../adf/shown-text.ts'
 import { languageSlot } from '../code-language.ts'
@@ -14,11 +14,10 @@ import { nodeAttrs, nodeContent, nodeMarks, writableContent } from '../../adf/do
 import { portableWriting } from './block-spelling.ts'
 import { splitTaskList } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
-import { toEditorNormal } from './editor-normal.ts'
+import { editorNormalForm, sourceIndex, toEditorNormal } from './editor-normal.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
 
-// depth: the level the node reduced stands at, counted as the emitter counts it.
-type Reduction = { depth: number; memo: SpellingMemo; path: ConvertErrorPath }
+type Reduction = ReductionPlace & { memo: SpellingMemo }
 
 type BlockReducer = (node: AdfNode, reduction: Reduction) => Result<AdfNode[]>
 
@@ -41,7 +40,7 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
   extension: paragraphOfNode,
   heading: reduceHeading,
   media: reduceMedia,
-  mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index) => reduceStanding(child, childReduction(reduction, index)))),
+  mediaSingle: (node, reduction) => concatenated(nodeContent(node).map((child, index, children) => reduceStanding(child, childReduction(reduction, children, index)))),
   nestedExpand: reduceExpand,
   orderedList: reduceList,
   panel: reducePanel,
@@ -64,12 +63,9 @@ export function reduceToPortable(document: AdfDocument): Result<AdfDocument> {
   const checked = writableContent(document)
   if (!checked.ok) return checked
   // Two documents the editor holds equal write the same portable markdown (docs/decisions.md §Equality is deep).
-  const blocks = reduceBlocks(nodeContent(toEditorNormal(document)), { depth: 0, memo: new Map(), path: [] })
-  if (!blocks.ok) {
-    // Merging text renumbers siblings, so a refusal's path comes from the caller's document.
-    const raw = reduceBlocks(nodeContent(document), { depth: 0, memo: new Map(), path: [] })
-    return !raw.ok && raw.error.code === blocks.error.code ? raw : blocks
-  }
+  const { normal, sources } = editorNormalForm(document)
+  const blocks = reduceBlocks(nodeContent(normal), { depth: 0, memo: spellingMemo(), path: [], sources })
+  if (!blocks.ok) return blocks
   return success(toEditorNormal({ content: blocks.value, type: 'doc', version: 1 }))
 }
 
@@ -83,7 +79,7 @@ function reduceBlocks(nodes: readonly AdfNode[], reduction: Reduction): Result<A
   }
   const sourced: Sourced[] = []
   for (const entry of placed) {
-    const at = { ...reduction, path: [...reduction.path, 'content', entry.index] }
+    const at = { ...reduction, path: [...reduction.path, 'content', sourceIndex(nodes, entry.index, reduction.sources)] }
     const blocks = entry.loose === undefined ? reduceNode(entry.node, at) : paragraphOf(entry.loose, reduction)
     if (!blocks.ok) return blocks
     for (const block of blocks.value) sourced.push({ block, path: at.path })
@@ -112,8 +108,8 @@ function reduceBody(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   return reduceBlocks(nodeContent(node), { ...reduction, depth: reduction.depth + 1 })
 }
 
-function childReduction(reduction: Reduction, index: number): Reduction {
-  return { ...reduction, depth: reduction.depth + 1, path: [...reduction.path, 'content', index] }
+function childReduction(reduction: Reduction, children: readonly AdfNode[], index: number): Reduction {
+  return { ...reduction, depth: reduction.depth + 1, path: [...reduction.path, 'content', sourceIndex(children, index, reduction.sources)] }
 }
 
 function concatenated(results: readonly Result<AdfNode[]>[]): Result<AdfNode[]> {
@@ -183,7 +179,7 @@ function listOf(items: readonly AdfNode[], type: string): AdfNode[] {
 }
 
 function paragraphOf(nodes: readonly AdfNode[], reduction: Reduction): Result<AdfNode[]> {
-  const content = reduceInline(nodes, 'paragraph', reduction.path, reduction.depth)
+  const content = reduceInline(nodes, 'paragraph', reduction)
   return content.ok ? success(content.value.length === 0 ? [] : [paragraph(content.value)]) : content
 }
 
@@ -217,12 +213,12 @@ function withoutTrailingBlanks(text: string): string {
 function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const level = nodeAttrs(node)['level']
   if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return paragraphOf(nodeContent(node), reduction)
-  const content = reduceInline(nodeContent(node), 'heading', reduction.path, reduction.depth)
+  const content = reduceInline(nodeContent(node), 'heading', reduction)
   return content.ok ? success([{ attrs: { level }, content: content.value, type: 'heading' }]) : content
 }
 
 function reduceCodeBlock(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
-  const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction.path, reduction.depth)
+  const leaves = inlineLeaves(nodeContent(node), 'paragraph', reduction)
   if (!leaves.ok) return leaves
   const code = leaves.value.map((leaf) => leaf.text ?? '\n').join('')
   const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims.portable)
@@ -239,7 +235,7 @@ function reduceList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
 }
 
 function reduceItems(node: AdfNode, reduction: Reduction, itemBlocks: (child: AdfNode, at: Reduction) => Result<AdfNode[]>): Result<AdfNode[]> {
-  const items = concatenated(nodeContent(node).map((child, index) => listItem(itemBlocks(child, childReduction(reduction, index)))))
+  const items = concatenated(nodeContent(node).map((child, index, children) => listItem(itemBlocks(child, childReduction(reduction, children, index)))))
   return items.ok ? success(listOf(items.value, node.type === 'orderedList' ? 'orderedList' : 'bulletList')) : items
 }
 
@@ -266,8 +262,9 @@ function blankedLines(code: readonly AdfNode[]): AdfNode[] {
 // A task list opening with a task and holding tasks and task lists alone keeps its spelling; any other keeps its markers as text. A child reducing to nothing counts for neither.
 function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const kept: { blocks: AdfNode[]; child: AdfNode }[] = []
-  for (const [index, child] of nodeContent(node).entries()) {
-    const at = childReduction(reduction, index)
+  const children = nodeContent(node)
+  for (const [index, child] of children.entries()) {
+    const at = childReduction(reduction, children, index)
     const reduced = isTaskItem(child) ? reduceTask(child, at) : reduceStanding(child, at)
     if (!reduced.ok) return reduced
     if (reduced.value.length > 0) kept.push({ blocks: reduced.value, child })
@@ -285,7 +282,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
 function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
   const attrs = { state: nodeAttrs(task)['state'] === 'DONE' ? 'DONE' : 'TODO' }
   if (task.type === 'taskItem') {
-    const content = reduceInline(nodeContent(task), 'paragraph', at.path, at.depth)
+    const content = reduceInline(nodeContent(task), 'paragraph', at)
     return content.ok ? success([{ attrs, content: content.value, type: 'taskItem' }]) : content
   }
   const blocks = reduceBlocks(nodeContent(task), at)
@@ -301,11 +298,13 @@ function marked(blocks: readonly AdfNode[], marker: string): AdfNode[] {
 
 function reduceTable(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const rows: PlacedCell[][] = []
-  for (const [rowIndex, row] of nodeContent(node).entries()) {
-    const rowReduction = childReduction(reduction, rowIndex)
+  const rowNodes = nodeContent(node)
+  for (const [rowIndex, row] of rowNodes.entries()) {
+    const rowReduction = childReduction(reduction, rowNodes, rowIndex)
     const cells: PlacedCell[] = []
-    for (const [cellIndex, cell] of (row.type === 'tableRow' ? nodeContent(row) : [row]).entries()) {
-      const paragraph = cellParagraph(cell, childReduction(rowReduction, cellIndex))
+    const rowCells = row.type === 'tableRow' ? nodeContent(row) : [row]
+    for (const [cellIndex, cell] of rowCells.entries()) {
+      const paragraph = cellParagraph(cell, childReduction(rowReduction, rowCells, cellIndex))
       if (!paragraph.ok) return paragraph
       cells.push({ colspan: span(nodeAttrs(cell)['colspan']), paragraph: paragraph.value, rowspan: span(nodeAttrs(cell)['rowspan']) })
     }
@@ -354,7 +353,7 @@ function setCell(grid: (AdfNode | undefined)[][], row: number, column: number, c
 
 function cellParagraph(cell: AdfNode, reduction: Reduction): Result<AdfNode> {
   const blocks = cell.type === 'tableCell' || cell.type === 'tableHeader' ? nodeContent(cell) : [cell]
-  const content = reduceInline(blocks, 'table-cell', reduction.path, reduction.depth)
+  const content = reduceInline(blocks, 'table-cell', reduction)
   return content.ok ? success(content.value.length === 0 ? { type: 'paragraph' } : paragraph(content.value)) : content
 }
 

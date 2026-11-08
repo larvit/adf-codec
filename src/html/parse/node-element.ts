@@ -1,7 +1,7 @@
 import type { AdfNode } from '../../adf/document.ts'
 import { foundAt, misspelledText, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { nodeTypeOfElement } from '../node-element.ts'
-import { readDataAttributes } from '../data-attributes.ts'
+import { readDataAttributes, readDataAttributesAfter } from '../data-attributes.ts'
 import { success } from '../../result.ts'
 import { misspelledAt, unescapedValue } from '../escaping.ts'
 
@@ -13,7 +13,8 @@ export function readNodeElement(html: string, tag: StartTag, place: Place): Read
   const [type, model] = found
   const name = `<${tag.name} class="${model.class}">`
   if (model.leading !== undefined && rest[0]?.[0] !== model.leading.name) return refused('unmappable-html', `${name} holds ${model.leading.name} first, before its data-* attributes: ${foundAt(html, tag.start)}`, html, tag.start, place)
-  const data = readDataAttributes(rest, `${tag.name} class="${model.class}"`, model.vocabulary, model.written, model.leading?.name)
+  const element = `${tag.name} class="${model.class}"`
+  const data = model.leading === undefined ? readDataAttributes(rest, element, model.vocabulary, model.written) : readDataAttributesAfter(model.leading.name, rest, element, model.vocabulary, model.written)
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const closer = `</${tag.name}>`
   const stop = html.indexOf('<', tag.end)

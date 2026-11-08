@@ -34,8 +34,9 @@ export type PlacedBlock = SpelledBlock & { node: AdfNode }
 export type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
 type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: BlockText } | { alternateText: BlockText; interruptsParagraph: boolean; ordered: boolean; spelling: 'list'; text: BlockText }
-// Keyed by reference: only a caller building one object per position (the parse, the portable reduction) passes one; a consumer's document may share a node.
-export type SpellingMemo = Map<AdfNode, KeptSpelling>
+type Spell = () => Result<EmittedBlock> | undefined
+// ask: spell the node, keeping the spelling unless refused; take: spell the node, reading and dropping what is kept.
+export type SpellingMemo = Readonly<Record<'ask' | 'take', (node: AdfNode, depth: number, spell: Spell) => Result<EmittedBlock> | undefined>>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
 export type WrittenAs = { flavour: 'lossless' } | { blocks: FlavourBlockWriters; flavour: 'portable' }
 export type Writing = WrittenAs & { memo: SpellingMemo | undefined }
@@ -110,14 +111,14 @@ function blankLineBetween(previous: PlacedBlock, next: PlacedBlock, container: B
 export function emitBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const model = blockNodeModel(node.type)
   if (model === undefined) return carriedFence(carriedBlock(node, path, depth))
-  const readable = readableBlock(node, path, depth, writing, 'walked')
+  const readable = readableBlock(node, path, depth, writing)
   if (readable !== undefined) return readable
   return emitDirectiveBlock(node, model, path, depth, () => walkBlocks(nodeContent(node), path, depth + 1, writing))
 }
 
 // Whether the node takes a CommonMark spelling, rather than its directive.
 export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing & { memo: SpellingMemo }): Result<boolean> {
-  const readable = readableBlock(node, path, depth, writing, 'asked')
+  const readable = writing.memo.ask(node, depth, () => spellReadableBlock(node, path, depth, writing))
   if (readable === undefined) return success(false)
   if (!readable.ok) return readable
   const fits = withinLongest(readable.value.text.length, readable.value)
@@ -125,20 +126,30 @@ export function commonMarkSpelling(node: AdfNode, path: ConvertErrorPath, depth:
   return success(readable.value.spelling !== 'directive')
 }
 
-// Only an `asked` call keeps a spelling, and any read drops it: the ancestor that reads it spells it into its own text, so no two levels hold that text.
-function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, caller: 'asked' | 'walked'): Result<EmittedBlock> | undefined {
-  const { memo } = writing
-  const kept = memo?.get(node)
-  memo?.delete(node)
-  if (kept !== undefined) {
-    if (kept.block === undefined) return undefined
+function readableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
+  const spell = () => spellReadableBlock(node, path, depth, writing)
+  return writing.memo === undefined ? spell() : writing.memo.take(node, depth, spell)
+}
+
+// Keyed by reference: only a caller building one object per position (the parse, the portable reduction) makes one; a consumer's document may share a node.
+export function spellingMemo(): SpellingMemo {
+  const kept = new Map<AdfNode, KeptSpelling>()
+  // Any read drops the entry: the ancestor that reads it spells it into its own text, so no two levels hold that text.
+  const take: SpellingMemo['take'] = (node, depth, spell) => {
+    const entry = kept.get(node)
+    kept.delete(node)
+    if (entry === undefined) return spell()
+    if (entry.block === undefined) return undefined
     // An entry holds the spelling at its fill depth. A read at or above it rebases headroom; a read below re-spells, because a hit skips the walk's depth guards.
-    if (depth <= kept.depth) return success({ ...kept.block, headroom: kept.block.headroom + kept.depth - depth })
+    return depth <= entry.depth ? success({ ...entry.block, headroom: entry.block.headroom + entry.depth - depth }) : spell()
   }
-  const spelled = spellReadableBlock(node, path, depth, writing)
-  if (caller === 'asked' && spelled === undefined) memo?.set(node, { block: undefined, depth })
-  if (caller === 'asked' && spelled?.ok === true) memo?.set(node, { block: spelled.value, depth })
-  return spelled
+  const ask: SpellingMemo['ask'] = (node, depth, spell) => take(node, depth, () => {
+    const spelled = spell()
+    if (spelled === undefined) kept.set(node, { block: undefined, depth })
+    else if (spelled.ok) kept.set(node, { block: spelled.value, depth })
+    return spelled
+  })
+  return { ask, take }
 }
 
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {

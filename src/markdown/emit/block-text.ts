@@ -5,7 +5,7 @@ export type BlockText = Readonly<Lines & { first: FirstLine; later: LaterLines; 
 type Lines =
   | { body: BlockText; head: string; indent: string; kind: 'prefixed' }
   | { body: BlockText; kind: 'quoted' }
-  | { kind: 'joined'; parts: readonly BlockText[] }
+  | { kind: 'joined'; parts: readonly [BlockText, ...BlockText[]] }
   | { kind: 'text'; lines: readonly string[] }
 type Prefix = Lines & { kind: 'prefixed' | 'quoted' }
 type OpenPrefix = { innermostQuote: number; prefix: Prefix }
@@ -17,37 +17,49 @@ type LaterLines = Readonly<{ blank: number; empty: number; written: number }>
 export const emptyLine = blockText('')
 
 export function blockText(text: string): BlockText {
-  const [first = '', ...rest] = text.split('\n')
-  const empty = rest.filter((line) => line === '').length
-  const later = { blank: rest.filter((line) => line !== '' && isBlankLine(line)).length, empty, written: rest.length - empty }
-  return { first: { blank: first !== '' && isBlankLine(first), character: first.charAt(0), ruleCharacters: holdsOnlyRuleCharacters(first), text: first }, kind: 'text', later, length: text.length, lines: [first, ...rest] }
+  return measured({ kind: 'text', lines: text.split('\n') })
 }
 
 export function joinedText(parts: readonly BlockText[]): BlockText {
   const [first, ...others] = parts
-  if (first === undefined) return emptyLine
-  let { blank, empty, written } = first.later
-  let { length } = first
-  for (const part of others) {
-    blank += part.later.blank + (part.first.blank ? 1 : 0)
-    empty += part.later.empty + (part.first.text === '' ? 1 : 0)
-    written += part.later.written + (part.first.text === '' ? 0 : 1)
-    length += 1 + part.length
-  }
-  return { first: first.first, kind: 'joined', later: { blank, empty, written }, length, parts }
+  return first === undefined ? emptyLine : measured({ kind: 'joined', parts: [first, ...others] })
 }
 
 // head, never blank, leads the first line; indent, spaces alone, leads every later line holding text.
 export function prefixedText(head: string, indent: string, body: BlockText): BlockText {
-  const length = body.length + head.length + indent.length * body.later.written
-  return { body, first: headedLine(head, body.first), head, indent, kind: 'prefixed', later: body.later, length }
+  return measured({ body, head, indent, kind: 'prefixed' })
 }
 
 // Each line takes `> `, an empty one `>`.
 export function quotedText(body: BlockText): BlockText {
+  return measured({ body, kind: 'quoted' })
+}
+
+function measured(lines: Lines): BlockText {
+  if (lines.kind === 'text') {
+    const [first = '', ...rest] = lines.lines
+    const empty = rest.filter((line) => line === '').length
+    const later = { blank: rest.filter((line) => line !== '' && isBlankLine(line)).length, empty, written: rest.length - empty }
+    const length = rest.reduce((sum, line) => sum + 1 + line.length, first.length)
+    return { ...lines, first: { blank: first !== '' && isBlankLine(first), character: first.charAt(0), ruleCharacters: holdsOnlyRuleCharacters(first), text: first }, later, length }
+  }
+  if (lines.kind === 'joined') {
+    const [first, ...others] = lines.parts
+    let { blank, empty, written } = first.later
+    let { length } = first
+    for (const part of others) {
+      blank += part.later.blank + (part.first.blank ? 1 : 0)
+      empty += part.later.empty + (part.first.text === '' ? 1 : 0)
+      written += part.later.written + (part.first.text === '' ? 0 : 1)
+      length += 1 + part.length
+    }
+    return { ...lines, first: first.first, later: { blank, empty, written }, length }
+  }
+  const { body } = lines
+  if (lines.kind === 'prefixed') return { ...lines, first: headedLine(lines.head, body.first), later: body.later, length: body.length + lines.head.length + lines.indent.length * body.later.written }
   const head = body.first.text === '' ? '>' : '> '
   const later = { blank: 0, empty: 0, written: body.later.empty + body.later.written }
-  return { body, first: headedLine(head, body.first), kind: 'quoted', later, length: body.length + head.length + 2 * body.later.written + body.later.empty }
+  return { ...lines, first: headedLine(head, body.first), later, length: body.length + head.length + 2 * body.later.written + body.later.empty }
 }
 
 // A line holds only rule characters exactly when each of its parts does.

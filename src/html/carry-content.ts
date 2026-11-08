@@ -6,35 +6,31 @@ import { nodeAttrs, nodeContent } from '../adf/document.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../adf/shown-text.ts'
 import { shownValue } from './escaping.ts'
 
-// The content a carry element shows of one block; `code` the code block holding it, if any.
-type ShownBlock = { code: AdfNode | undefined; html: string }
+// One object per block a node stands in, so a block's content after a nested block parts from its content before; `code` the code block it is, if any.
+type BlockPart = { code: AdfNode | undefined }
+
+type ShownBlock = { html: string; part: BlockPart }
 
 // What a carry element shows of the node it holds, and all `htmlToAdf` accepts there, so a change here breaks reading stored HTML (docs/decisions.md §The formats are API).
 export function carryContent(node: AdfNode, tag: 'div' | 'span'): string {
   if (tag === 'span') return shownBlocks(node, '<br>').map(({ html }) => html).join('<br>')
-  return shownBlocks(node, '\n').map(({ code, html }) => (code === undefined ? `<p>${html}</p>` : `<pre><code${languageClass(nodeAttrs(code)['language']) ?? ''}>${html}</code></pre>`)).join('')
+  return shownBlocks(node, '\n').map(({ html, part: { code } }) => (code === undefined ? `<p>${html}</p>` : `<pre><code${languageClass(nodeAttrs(code)['language']) ?? ''}>${html}</code></pre>`)).join('')
 }
 
 // What a carry element shows, block by block, as the writer panels picked it (docs/decisions.md §The HTML dialect).
 function shownBlocks(root: AdfNode, codeLineFeed: string): ShownBlock[] {
   const shown: ShownBlock[] = []
-  let current: ShownBlock = { code: undefined, html: '' }
-  // Each entry holds the code block it stands in, none where another block stands between them; a `null` node ends a block, and what follows stands in that entry's `code`, the code block around the block that ended.
-  const pending: { code: AdfNode | undefined; node: AdfNode | null }[] = [{ code: undefined, node: root }]
+  const pending: { node: AdfNode; part: BlockPart }[] = [{ node: root, part: { code: undefined } }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     const { node } = next
-    const code = node?.type === 'codeBlock' ? node : node !== null && partsShownText(node.type) ? undefined : next.code
-    if (node === null || partsShownText(node.type)) {
-      if (current.html !== '') shown.push(current)
-      current = { code, html: '' }
-    }
-    if (node === null) continue
-    current = { ...current, html: current.html + shownPiece(node, current.code === undefined ? '<br>' : codeLineFeed) }
-    if (partsShownText(node.type)) pending.push({ code: next.code, node: null })
-    for (const child of [...nodeContent(node)].reverse()) pending.push({ code, node: child })
+    const part = partsShownText(node.type) ? { code: node.type === 'codeBlock' ? node : undefined } : next.part
+    const piece = shownPiece(node, part.code === undefined ? '<br>' : codeLineFeed)
+    const last = shown.at(-1)
+    if (last?.part === part) last.html += piece
+    else shown.push({ html: piece, part })
+    for (const child of [...nodeContent(node)].reverse()) pending.push({ node: child, part })
   }
-  if (current.html !== '') shown.push(current)
-  return shown
+  return shown.filter(({ html }) => html !== '')
 }
 
 // The node's own part of what its carry element shows.
