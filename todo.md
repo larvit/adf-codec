@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 154 | 0.4.0 |  |  | **Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 155 | 0.4.0 |  |  | **Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 162 | 0.4.0 |  |  | **Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
 | 175 | 0.4.0 |  |  | **Delete the guards in `tryTaskList` that `reduceToPortable` makes unreachable, once a test shows `adfToPortableMarkdown` reaches none of them.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
@@ -73,13 +72,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 154. Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.
-
-A comprehension seat found `src/markdown/inline-content.ts` `resolveNodes` / `pairedHighlights`
-hard: an empty text node stands in for each `==` until pairing, then a cursor walk overwrites it.
-The pairing reads each `==`'s position, stretch and marks off the built nodes; give the pieces what
-it reads, so it can run on them first. Make that place easier to read.
 
 ### 155. Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.
 

@@ -50,7 +50,7 @@ type Nodes = { kind: 'nodes'; nodes: Inline[] }
 
 type Resolved = ImageLink | Nodes
 
-type HighlightDelimiter = { closes: boolean; holder: AdfNode; index: number; opens: boolean; position: number; stretch: number }
+type HighlightDelimiter = { closes: boolean; index: number; marks: readonly AdfMark[]; opens: boolean; position: number; stretch: number }
 
 type HighlightPair = { closer: number; opener: number }
 
@@ -514,17 +514,19 @@ function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean)
   return nodes.ok ? success(mergeReadText(nodes.value.flat())) : nodes
 }
 
-// `nodes[index]` holds piece `index`'s nodes, which each step below rewrites in place.
+// The result's `[index]` holds piece `index`'s nodes.
 function markedNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean): Result<Inline[][]> {
-  const nodes = pieces.map(pieceNodes)
   const runs = delimiterRuns(pieces)
   const pairings = matchEmphasis(runs)
   for (const { closer, closerOffset, opener, openerOffset, used } of pairings) record(scan.shared, { at: opener.offset + openerOffset, closer: closer.offset + closerOffset, kind: 'emphasis', width: used })
+  const marks = pairingMarks(pieces, pairings)
+  if (marks === undefined) return failure('unsupported-node-shape', ownMarksInMark, scan.shared.path)
+  const nodes = pieces.map(pieceNodes)
   writeUnpaired(nodes, runs, pairings)
-  if (!markPairings(pieces, nodes, pairings)) return failure('unsupported-node-shape', ownMarksInMark, scan.shared.path)
-  const paired = highlights ? pairedHighlights(pieces, nodes) : []
-  markHighlights(pieces, nodes, paired)
-  return success(nodes)
+  const paired = highlights ? pairedHighlights(pieces, nodes, marks) : []
+  const marked = nodes.map((held, index) => (marks[index] ?? []).reduceRight((inner, mark) => applyMark(inner, mark), held))
+  markHighlights(marked, paired)
+  return success(marked)
 }
 
 // A text break and a node whose marks are its own are walls: the text on either side joins only its own side.
@@ -545,13 +547,13 @@ function mergeReadText(items: readonly Inline[]): Inline[] {
 }
 
 // The image arm is an image inside an image's description or a link's text, which reads as its plain alt text.
-// A highlight delimiter holds an empty text node until it pairs, so the emphasis around it marks it.
+// A highlight delimiter is the text `==` until it pairs, so the emphasis around it marks it.
 function pieceNodes(piece: Piece): Inline[] {
   switch (piece.kind) {
     case 'ownMarks':
       return [piece]
     case 'highlight':
-      return [{ text: '', type: 'text' }]
+      return [{ text: highlightDelimiter, type: 'text' }]
     case 'image':
       return piece.alt === '' ? [] : [{ text: piece.alt, type: 'text' }]
     case 'imageLink':
@@ -589,17 +591,17 @@ function writeUnpaired(nodes: Inline[][], runs: readonly Run[], pairings: readon
   }
 }
 
-// Pairings nest, so one walk holding the open ones on a stack marks each piece once, the marks outermost first (spec/flavour.md, Marks).
-function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: readonly Pairing[]): boolean {
+// Pairings nest, so one walk holding the open ones on a stack gives each piece its marks, outermost first (spec/flavour.md, Marks).
+// It is `undefined` where an own-marks node stands inside a mark.
+function pairingMarks(pieces: readonly Piece[], pairings: readonly Pairing[]): AdfMark[][] | undefined {
   const opening = pairingsByOpener(pairings)
   const open: { closer: number; marks: AdfMark[] }[] = []
+  const marks: AdfMark[][] = []
   for (const [index, piece] of pieces.entries()) {
     while (open.at(-1)?.closer === index) open.pop()
-    const marks = open.at(-1)?.marks
-    if (marks !== undefined) {
-      if (piece.kind === 'ownMarks') return false
-      nodes[index] = marks.reduceRight((marked, mark) => applyMark(marked, mark), nodes[index] ?? [])
-    }
+    const here = open.at(-1)?.marks ?? []
+    if (here.length > 0 && piece.kind === 'ownMarks') return undefined
+    marks.push(here)
     for (const pairing of opening.get(index) ?? []) {
       const type = markType(pairing.opener.character, pairing.used)
       // Each type once, so a piece's marks stay at most three however deep the pairings nest.
@@ -607,7 +609,7 @@ function markPairings(pieces: readonly Piece[], nodes: Inline[][], pairings: rea
       open.push({ closer: pairing.closer.index, marks: [...outer, { type }] })
     }
   }
-  return true
+  return marks
 }
 
 // `matchEmphasis` lists a run's pairings innermost first, so each list here is reversed to stack the outermost first.
@@ -622,20 +624,14 @@ function pairingsByOpener(pairings: readonly Pairing[]): Map<number, Pairing[]> 
   return opening
 }
 
-function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][]): HighlightDelimiter[] {
+function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][], marks: readonly AdfMark[][]): HighlightDelimiter[] {
   const found: HighlightDelimiter[] = []
   // A stretch is a run of text no other inline node breaks.
   let stretch = 0
   let position = 0
   for (const [index, piece] of pieces.entries()) {
-    const held = adfNodes(nodes[index] ?? [])
-    const [holder] = held
-    if (piece.kind === 'highlight' && holder !== undefined) {
-      found.push({ closes: piece.closes, holder, index, opens: piece.opens, position, stretch })
-      position += highlightDelimiter.length
-      continue
-    }
-    for (const node of held) {
+    if (piece.kind === 'highlight') found.push({ closes: piece.closes, index, marks: marks[index] ?? [], opens: piece.opens, position, stretch })
+    for (const node of adfNodes(nodes[index] ?? [])) {
       if (node.type === 'text') position += node.text?.length ?? 0
       else stretch += 1
     }
@@ -644,8 +640,8 @@ function highlightDelimiters(pieces: readonly Piece[], nodes: readonly Inline[][
 }
 
 // Each opener pairs with the next closer at least one character after it, and only when both sit in one stretch under the same marks.
-function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]): HighlightPair[] {
-  const found = highlightDelimiters(pieces, nodes)
+function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][], marks: readonly AdfMark[][]): HighlightPair[] {
+  const found = highlightDelimiters(pieces, nodes, marks)
   const paired: HighlightPair[] = []
   let closer = 0
   let resume = 0
@@ -658,18 +654,15 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][]):
       candidate = found[closer]
     }
     if (candidate === undefined) break
-    if (candidate.stretch !== opener.stretch || !identicalMarks(nodeMarks(opener.holder), nodeMarks(candidate.holder))) continue
+    if (candidate.stretch !== opener.stretch || !identicalMarks(opener.marks, candidate.marks)) continue
     paired.push({ closer: candidate.index, opener: opener.index })
     resume = candidate.position + highlightDelimiter.length
   }
   return paired
 }
 
-// A node holds one highlight, and a rebuilt node would lose its attributes.
-function markHighlights(pieces: readonly Piece[], nodes: Inline[][], paired: readonly HighlightPair[]): void {
-  for (const [index, piece] of pieces.entries()) {
-    if (piece.kind === 'highlight') nodes[index] = adfNodes(nodes[index] ?? []).map((holder) => ({ ...holder, text: highlightDelimiter }))
-  }
+// A pair's delimiters leave, and the nodes between them take the highlight.
+function markHighlights(nodes: Inline[][], paired: readonly HighlightPair[]): void {
   for (const { closer, opener } of paired) {
     nodes[opener] = []
     nodes[closer] = []
@@ -677,6 +670,7 @@ function markHighlights(pieces: readonly Piece[], nodes: Inline[][], paired: rea
   }
 }
 
+// A node holds one highlight, and a rebuilt node would lose its attributes.
 function highlighted(node: Inline): Inline {
   if (!isNode(node)) return node
   const marks = nodeMarks(node)
