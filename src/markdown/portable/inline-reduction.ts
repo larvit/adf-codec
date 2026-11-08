@@ -17,7 +17,7 @@ import { spellDestination } from '../commonmark/link-syntax.ts'
 // What stands beside a leaf's edge: whether a line edge does, and how many runs hold the leaf and its neighbour both.
 type Beside = { lineEdge: boolean; sharedRuns: number }
 
-// How many of the leaf's marks edge whitespace keeps, or that it drops at a line edge.
+// `keep`: how many of the leaf's marks its edge whitespace keeps; `drop`: the whitespace goes, at a line edge.
 type EdgeOutcome = { kind: 'drop' } | { depth: number; kind: 'keep' }
 
 type PlacedLeaf = { after: Beside; before: Beside; leaf: AdfNode }
@@ -34,7 +34,7 @@ export function reduceInline(nodes: readonly AdfNode[], container: LineContainer
   const leaves = portableLeaves(nodes, container, place)
   if (!leaves.ok) return leaves
   const { path } = place
-  // Ends: withoutFallback refuses a pass that drops no mark, and trimmedEdges adds none.
+  // Terminates: withoutFallback refuses a pass that drops no mark, and trimmedEdges adds none.
   return settledLine<readonly AdfNode[], PortableLineFallback, AdfNode[]>(leaves.value, {
     giveUpEmphasis: withoutEmphasis,
     judge: (line, grouping) => portableJudgement(line, grouping, container, path),
@@ -43,7 +43,7 @@ export function reduceInline(nodes: readonly AdfNode[], container: LineContainer
   })
 }
 
-// The leaves before the spanned trim `portableJudgement` gives them.
+// Trimmed once for `highlightsInsideSharedMarks`; `portableJudgement` trims each grouping's line again.
 export function portableLeaves(nodes: readonly AdfNode[], container: LineContainer, place: ReductionPlace): Result<AdfNode[]> {
   const leaves = inlineLeaves(nodes, container, place)
   if (!leaves.ok) return leaves
@@ -248,7 +248,7 @@ function edgeOutcome(marks: readonly AdfMark[], { lineEdge, sharedRuns }: Beside
   return depth === 0 && lineEdge ? { kind: 'drop' } : { depth, kind: 'keep' }
 }
 
-// Each grouping's line trimmed by its own runs, which a fallback's indexes name.
+// Trims the line by `grouping`'s runs and judges it; a fallback's indexes name the trimmed line.
 export function portableJudgement(leaves: readonly AdfNode[], grouping: RunGrouping, container: LineContainer, path: ConvertErrorPath): Result<LineJudgement<readonly AdfNode[], PortableLineFallback, AdfNode[]>> {
   const line = trimmedEdges(leaves, grouping)
   const fallback = portableLineFallback(line, container, path, grouping)

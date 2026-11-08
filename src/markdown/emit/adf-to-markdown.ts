@@ -35,7 +35,7 @@ export type PlacedBlocks = { blocks: readonly PlacedBlock[]; headroom: number }
 // CommonMark starts a new list where the marker changes, so every second list in a run of one kind takes `alternateText`.
 type SpelledBlock = { spelling: 'commonmark' | 'directive'; text: BlockText } | { alternateText: BlockText; interruptsParagraph: boolean; ordered: boolean; spelling: 'list'; text: BlockText }
 type Spell = () => Result<EmittedBlock> | undefined
-// ask: spell the node, keeping the spelling unless refused; take: spell the node, reading and dropping what is kept.
+// take: read and drop the node's kept spelling, else spell it; ask: as take, keeping a fresh spelling unless refused.
 export type SpellingMemo = Readonly<Record<'ask' | 'take', (node: AdfNode, depth: number, spell: Spell) => Result<EmittedBlock> | undefined>>
 type WalkedItem = { node: AdfNode; walk: PlacedBlocks }
 export type WrittenAs = { flavour: 'lossless' } | { blocks: FlavourBlockWriters; flavour: 'portable' }

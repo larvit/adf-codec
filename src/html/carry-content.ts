@@ -6,7 +6,7 @@ import { nodeAttrs, nodeContent } from '../adf/document.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../adf/shown-text.ts'
 import { shownValue } from './escaping.ts'
 
-// One object per block a node stands in, so a block's content after a nested block parts from its content before; `code` the code block it is, if any.
+// Compared by reference: each block makes one, so its content after a nested block starts a new shown block. `code`: this block, where it is a code block.
 type BlockPart = { code: AdfNode | undefined }
 
 type ShownBlock = { html: string; part: BlockPart }

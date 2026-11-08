@@ -28,7 +28,7 @@ type BlockReader = (html: string, tag: StartTag, place: Place, open: Open) => Re
 
 type BlockStep = { end: number; kind: 'node'; node: AdfNode } | { end: number; kind: 'opened'; open: Open }
 
-// A container whose blocks, items, rows or cells are being read: `node` holds what its opening tag gave, `depth` is its children's as `adfToHtml` counts it, and `closer` ends it. An open table has kind `rows` and no `closer`: `section` names the one its rows stand in, and `closerOf` derives its closer from it.
+// A container whose blocks, items, rows or cells are being read: `node` holds what its opening tag gave, `depth` is its children's as `adfToHtml` counts it, and `closer` ends it. An open table has kind `rows` and no `closer`: `section` names the table section, head or body, its rows stand in.
 type Open = { content: AdfNode[]; depth: number; node: AdfNode; place: Place | undefined } & ({ closer: string; kind: 'blocks' | 'item' | 'list' | 'row' } | { kind: 'rows'; section: TableSection })
 
 // A row's step names the section the table's rows stand in from that row on.
