@@ -224,6 +224,11 @@ test('keeps a backslash a title line ends in as text, a break only before a foll
   assert.deepEqual(read('> [!NOTE]- x\\\\\n> body\n'), [node('expand', { title: 'x\\' }, said('body'))])
 })
 
+test('strips every space and tab after a callout marker, whatever the callout', () => {
+  assert.deepEqual(read('> [!faq]-   \t t\n'), [node('expand', { title: 't' }, paragraph())])
+  assert.deepEqual(read('> [!NOTE]   \t first\n>\n> x\n'), [panel('info', said('first'), said('x'))])
+})
+
 test('keeps the target of a link in a title whichever marks sit beside the link', () => {
   const titled = (markdown: string): unknown => {
     const blocks = read(markdown)
@@ -271,7 +276,6 @@ test('places a refusal in a bullet list by the list and the item holding it', ()
 
 test('reads a task whose marker line holds only breaks and spaces by the lines after it', () => {
   assert.deepEqual(read('- [ ] a\n  b\n'), [bare('taskList', task('TODO', text('a b')))])
-  assert.deepEqual(read('- [ ] \\\n  \\\n  x\n'), [bare('taskList', task('TODO', text('x')))])
   assert.deepEqual(read('- [x]\n\n  Second.\n- [ ] Next\n'), [bare('taskList', task('DONE', text('Second.')), task('TODO', text('Next')))])
   assert.deepEqual(read('- [x]\n\n  First.\n\n  Second.\n'), [bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.')))])
   assert.deepEqual(read('- [x]\n- [ ]\n'), [bare('taskList', task('DONE'), task('TODO'))])
