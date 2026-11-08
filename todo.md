@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 171`
+`Next ID = 175`
 
 ## Items
 
@@ -27,6 +27,8 @@
 | 169 | 0.4.0 |  | owner | **Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.** | 1 | 1 | 1 | 1 | 3 | 3 by 4 | 6.3 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
+| 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
+| 173 | 0.4.0 |  | principle | **Keep each description `commonMarkSpellings` gives a refused block beside the emitter's spelling it describes.** | 2 | 1 | 1 | 2 | 4 | code health by 1 | 4.4 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
 | 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
@@ -34,9 +36,11 @@
 | 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 134 | 0.4.0 |  | decision | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.8 |
 | 46 | 0.4.0 | 134, 135, 136 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 3.2 |
+| 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasised blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 2.3 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 2.1 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
 | 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
+| 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.8 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -210,6 +214,26 @@ with an empty `path`. An export tool told this about one document in thousands t
 document's whole tree. Give the node's path, and name its type and the attribute key as
 `attributeNestingMessage` does. Found by the product-owner review of items 66 and 67, 2026-10-05.
 
+### 171. Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.
+
+README → Audience says a message is free text that may change in any release, yet `content()` in
+`src/markdown/parse/markdown-to-adf.test.ts` folds a failure into `${code}: ${message}`, about 103
+assertions compare that whole sentence, and `document.test.ts` (7) and `html-to-adf.test.ts` (3)
+pin `message:` the same way. A rewording fails tests with no behaviour changed, while the facts
+§`message` and `path` requires (the violation, the escape named) are never asserted on their own.
+Assert `code`, `path`, `position` and `assert.match(message, …)` on the facts the text carries.
+Technical principle: "Pin wording only where the wording is the contract". Found by the principles
+audit of the release review of 0.3.0, 2026-11-08.
+
+### 173. Keep each description `commonMarkSpellings` gives a refused block beside the emitter's spelling it describes.
+
+`commonMarkSpellings` (`src/markdown/parse/markdown-to-adf.ts`) restates in prose the spellings
+`spellReadableBlock` (`src/markdown/emit/adf-to-markdown.ts`) owns, such as "each item behind `- `,
+or behind `* ` where …". A changed spelling leaves the refusal naming the old one, and a node
+missing from the map is refused naming no spelling. Put each description beside the spelling and
+export it through `emit/spelling-questions.ts`, the one import `parse/` may take from `emit/`.
+Technical principle: DRY. Found by the principles audit of the release review of 0.3.0, 2026-11-08.
+
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 
 `src/result.test.ts` checks the union against the call sites only, so a code added or removed
@@ -260,6 +284,27 @@ or report the unminified gzip). The figure lands in README §The package beside 
 dependencies" claim, and in a size column of the comparison table. Measured today,
 unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
 
+### 174. Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasised blanks trims in linear time.
+
+`trimmedEdges` (`src/markdown/portable/inline-reduction.ts`) repeats a pass until nothing changes, and
+each pass costs O(leaves). Leaves alternating `' '` marked code with `' '` marked em take
+floor(n/4) + 2 passes: 26, 251 and 2 501 at n = 100, 1 000 and 10 000, so the trim is quadratic,
+against goal 9. The same holds for `'x'` code beside `' '` em, and for `[link, code] 'x'` beside
+`[link, em] ' '`. The smallest line is six leaves `' '` marked code, em, code, em, code, em, which
+takes 3 passes. The passes in a random search of 20 000 short lines never went above 4.
+
+The cause: under `spanned` grouping an em or link run crosses the code leaves, which can't hold
+it, so one run spans the line and only its two end leaves stand beside a neighbour outside it. Each
+pass strips em from those two, and the next pair is exposed. A single pass cannot take the fixpoint
+directly: every pass judges all leaves against one snapshot, and `edgeOutcome` (drop at a line edge
+while a run is shared, keep when not) isn't monotone. A hard break between `[link, em] ' '` and
+`[link, em] ' b'` trims to `b` today, but to a linked space and `b` if the first leaf's drop is seen
+first. Three ways forward: make the edge rule monotone, which changes output in edge cases and
+needs a decision and a writer panel; keep run extents under truncation in `runsSharedWithNext`
+(`emit/inline-runs.ts`), exact but large; or state the cost as an exception under goal 9. Count passes
+to measure, never time (§Cost fixes are measured, never timed). Related: item 42 trims blanks inside
+one leaf. Found by the principles audit of the release review of 0.3.0, 2026-11-08.
+
 ### 51. Match a reference label to its definition under Unicode case folding.
 
 `link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
@@ -285,6 +330,17 @@ reading foreign HTML is a separate goal, added to the README in this change. Bef
 panel of the developer personas picks the API among those the goals allow: a parameter on
 `htmlToAdf` or a separate call; Goal 8's "nothing to configure" and Goal 6.1's naming bear on the
 choice. Split into items once the API is picked.
+
+### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
+
+134 loops run several readers or cases inside one test body, for example
+`for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf])` at lines 97,
+279, 771, 917, 926, 962 and 1118 of `src/markdown/parse/markdown-to-adf.test.ts`; the most are in
+`adf-schema.test.ts` (18), `limits.test.ts` (12) and `portable-markdown-to-adf.test.ts` (10). The
+first failing reader stops the test and the failure never names the reader. Write
+`for (const read of readers) test(`… in ${read.name}`, …)` at the top level. Technical principle:
+"No loops or branches in a test body; parametrize the cases". Found by the principles audit of the
+release review of 0.3.0, 2026-11-08.
 
 ### 77. Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.
 

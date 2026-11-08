@@ -28,8 +28,13 @@ type BlockReader = (html: string, tag: StartTag, place: Place, open: Open) => Re
 
 type BlockStep = { end: number; kind: 'node'; node: AdfNode } | { end: number; kind: 'opened'; open: Open }
 
-// A container whose blocks, items, rows or cells are being read: `node` holds what its opening tag gave, `depth` is its children's as `adfToHtml` counts it, and `closer` ends it. An open table has kind `rows`, and its closer turns from `headCloser` to `bodyCloser` at `</thead>`.
-type Open = { closer: string; content: AdfNode[]; depth: number; kind: 'blocks' | 'item' | 'list' | 'row' | 'rows'; node: AdfNode; place: Place | undefined }
+// A container whose blocks, items, rows or cells are being read: `node` holds what its opening tag gave, `depth` is its children's as `adfToHtml` counts it, and `closer` ends it. An open table has kind `rows` and no `closer`: `section` names the one its rows stand in, and `closerOf` derives its closer from it.
+type Open = { content: AdfNode[]; depth: number; node: AdfNode; place: Place | undefined } & ({ closer: string; kind: 'blocks' | 'item' | 'list' | 'row' } | { kind: 'rows'; section: TableSection })
+
+// A row's step names the section the table's rows stand in from that row on.
+type RowStep = BlockStep & { section: TableSection }
+
+type TableSection = 'body' | 'head'
 
 // No element name opens both a block and an inline node, so the name alone tells an item's line from its next block.
 const blockReaders: ReadonlyMap<string, BlockReader> = new Map([
@@ -90,13 +95,14 @@ function readDocumentCarry(html: string): Result<AdfDocument, ParseError> | unde
 function readBlocks(html: string): Result<AdfDocument, ParseError> {
   const root: Open = { closer: '', content: [], depth: 0, kind: 'blocks', node: { type: 'doc' }, place: undefined }
   const opened: Open[] = []
-  let open = root
+  let open: Open = root
   let index = 0
   for (;;) {
     const place = { index: open.content.length, parent: open.place }
     if (open.depth > largestNesting) return refused('unsupported-nesting-depth', `blocks nest deeper than ${largestNesting} levels`, html, index, place)
     const step = readStep(html, index, place, open)
     if (!step.ok) return step
+    if (open.kind === 'rows' && 'section' in step.value) open.section = step.value.section
     index = step.value.end
     if (step.value.kind === 'opened') {
       opened.push(open)
@@ -104,12 +110,12 @@ function readBlocks(html: string): Result<AdfDocument, ParseError> {
       continue
     }
     open.content.push(step.value.node)
-    while (open !== root && html.startsWith(open.closer, index)) {
-      index += open.closer.length
+    while (open !== root && html.startsWith(closerOf(open), index)) {
+      index += closerOf(open).length
       const closed: AdfNode = { ...open.node, content: open.content }
       const closedPlace = open.place
       open = opened.pop() ?? root
-      if (open.kind === 'rows' && open.content.length === 0 && isHeaderRow(closed) !== (open.closer === headCloser)) return firstRowRefusal(html, index, closedPlace)
+      if (open.kind === 'rows' && open.content.length === 0 && isHeaderRow(closed) !== (open.section === 'head')) return firstRowRefusal(html, index, closedPlace)
       open.content.push(closed)
     }
     if (open.kind === 'row') continue
@@ -125,7 +131,12 @@ function partedRefusal<T>(html: string, end: number, place: Place | undefined): 
   return refused('unmappable-html', `a line feed parts each block from the next, and ends the HTML: ${foundAt(html, at)}`, html, at, place)
 }
 
-function readStep(html: string, index: number, place: Place, open: Open): Result<BlockStep, ParseError> {
+function closerOf(open: Open): string {
+  if (open.kind !== 'rows') return open.closer
+  return open.section === 'head' ? headCloser : bodyCloser
+}
+
+function readStep(html: string, index: number, place: Place, open: Open): Result<BlockStep | RowStep, ParseError> {
   if (open.kind === 'list') return readItem(html, index, place, open.depth)
   if (open.kind === 'rows') return readRow(html, index, place, open)
   return open.kind === 'row' ? readCell(html, index, place, open.depth) : readBlock(html, index, place, open)
@@ -259,15 +270,15 @@ function readTable(html: string, tag: StartTag, place: Place, open: Open): Resul
   if (html.startsWith('</table>', tag.end)) return success({ end: tag.end + '</table>'.length, kind: 'node', node })
   const headed = html.startsWith('\n<thead>\n', tag.end)
   if (!headed && !html.startsWith('\n<tbody>\n', tag.end)) return refused('unmappable-html', `<table> holds </table> straight after it, or a line feed and <thead> or <tbody> on a line of its own: ${foundAt(html, tag.end)}`, html, tag.end, place)
-  return success({ end: tag.end + '\n<thead>\n'.length, kind: 'opened', open: { closer: headed ? headCloser : bodyCloser, content: [], depth: open.depth + 1, kind: 'rows', node, place } })
+  return success({ end: tag.end + '\n<thead>\n'.length, kind: 'opened', open: { content: [], depth: open.depth + 1, kind: 'rows', node, place, section: headed ? 'head' : 'body' } })
 }
 
 // `<thead>` holds one row, so a second row stands past `</thead>`.
-function readRow(html: string, index: number, place: Place, table: Open): Result<BlockStep, ParseError> {
-  const pastHead = table.closer === headCloser && table.content.length > 0
+function readRow(html: string, index: number, place: Place, table: Open & { kind: 'rows' }): Result<RowStep, ParseError> {
+  const pastHead = table.section === 'head' && table.content.length > 0
   if (pastHead && !html.startsWith(headToBody, index)) return refused('unmappable-html', `<thead> holds one row, then </thead>: ${foundAt(html, index)}`, html, index, place)
   const start = pastHead ? index + headToBody.length : index
-  if (pastHead) table.closer = bodyCloser
+  const section = pastHead ? 'body' : table.section
   const tag = readStartTag(html, start)
   if (tag?.name !== 'tr') {
     const stop = misread(html, start, 'a table section holds <tr> rows, one to a line', 'no table row of the dialect')
@@ -276,8 +287,8 @@ function readRow(html: string, index: number, place: Place, table: Open): Result
   const data = readDataAttributes(tag.attributes, tag.name, blockNodes.tableRow.attributes, [])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const node = built('tableRow', data.value, [])
-  if (!html.startsWith('</tr>', tag.end)) return success({ end: tag.end, kind: 'opened', open: { closer: '</tr>', content: [], depth: table.depth + 1, kind: 'row', node, place } })
-  return table.closer === headCloser ? firstRowRefusal(html, tag.end, place) : success({ end: tag.end + '</tr>'.length, kind: 'node', node })
+  if (!html.startsWith('</tr>', tag.end)) return success({ end: tag.end, kind: 'opened', open: { closer: '</tr>', content: [], depth: table.depth + 1, kind: 'row', node, place }, section })
+  return section === 'head' ? firstRowRefusal(html, tag.end, place) : success({ end: tag.end + '</tr>'.length, kind: 'node', node, section })
 }
 
 function firstRowRefusal<T>(html: string, index: number, place: Place | undefined): Result<T, ParseError> {

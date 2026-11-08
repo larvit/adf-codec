@@ -2,7 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { BlockNodeModel } from '../../adf/block-nodes.ts'
 import type { WrittenFlavour } from '../flavour.ts'
 import { blockDirectiveForm, documentSpelling } from '../directive/block.ts'
-import { blockNodeModel, blockNodes } from '../../adf/block-nodes.ts'
+import { blockNodeModel, blockNodes, isHeadingLevel } from '../../adf/block-nodes.ts'
 import { blockText, emptyLine, holdsBlankLine, joinedText, opensWithThematicBreak, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
 import { carriedBlock } from '../opaque-carry.ts'
 import { emitInlineLine } from './inline-line.ts'
@@ -250,7 +250,7 @@ function fencedTexts(node: AdfNode): string[] | undefined {
 function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
   if (!holdsOnlyAttributes(node, ['level'])) return undefined
   const level = nodeAttrs(node)['level']
-  if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return undefined
+  if (!isHeadingLevel(level)) return undefined
   const hashes = '#'.repeat(level)
   const content = nodeContent(node)
   if (content.length === 0) return success(commonMarkText(blockText(hashes)))
