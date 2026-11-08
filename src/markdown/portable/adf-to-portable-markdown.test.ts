@@ -504,9 +504,11 @@ test('writes a task list nested to the deepest level the reader carries, and ref
   assert.equal(written.split('\n').length, largestNesting + 1)
   const refused = adfToPortableMarkdown(document(nested(largestNesting + 1)))
   assert.deepEqual(refused.ok ? undefined : [refused.error.code, refused.error.path], ['unsupported-nesting-depth', ['content', 0, ...Array.from({ length: largestNesting }, () => ['content', 1]).flat(), 'content', 0]])
-  const quoted = (levels: number): string => portable(node('panel', { panelType: 'info' }, nested(levels)))
-  assert.ok(portableMarkdownToAdf(quoted(largestNesting - 1)).ok)
-  assert.match(quoted(largestNesting), /^unsupported-nesting-depth at \//)
+  const quoted = (levels: number) => adfToPortableMarkdown(document(node('panel', { panelType: 'info' }, nested(levels))))
+  const fits = quoted(largestNesting - 1)
+  assert.ok(fits.ok && portableMarkdownToAdf(fits.value).ok)
+  const crowded = quoted(largestNesting)
+  assert.equal(crowded.ok ? undefined : crowded.error.code, 'unsupported-nesting-depth')
 })
 
 test('writes a task list nested in the task before it, and more than one beside each other in that task', () => {
