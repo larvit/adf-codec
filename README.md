@@ -3,16 +3,18 @@
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-Convert between ADF (Atlassian Document Format) and other formats.
+Convert between ADF (Atlassian Document Format) and markdown or HTML. For application developers
+whose app shows, edits, exports or generates the rich text Atlassian products store as ADF.
 
 ## Main functionality
 
-* **portableMarkdownToAdf** Use this if you "just have markdown". It reads CommonMark plus GFM's tables, task lists and alerts, ~~, and Obsidians's callouts and ==; `commonMarkToAdf` reads strict CommonMark alone.
-* **commonMarkToAdf** Strict CommonMark parser to ADF. Will return an error if not strictly CommonMark.
-* **adfToLosslessMarkdown** Converts ADF to adf-codecs own flavour of markdown to accommodate to ADFs specials like panels, mentions, statuses etc, as well as carrying unkown future ADF nodes to always guarantee a way to losslessly convert between ADF and Markdown. 
-* **losslessMarkdownToAdf** The reverse roundtrip from the function above.
-* **adfToHtml** ADF to HTML.
-* **htmlToAdf** HTML to ADF.
+* `portableMarkdownToAdf` — use this if you "just have markdown". It reads CommonMark plus GFM's tables, task lists and alerts, `~~`, and Obsidian's callouts and `==`.
+* `commonMarkToAdf` — reads strict CommonMark only. Extensions like tables or `~~` come out as plain text.
+* `adfToLosslessMarkdown` — ADF to adf-codec's own markdown flavour, which spells ADF's special nodes (panels, mentions, statuses and so on) and carries node types this version doesn't know, so nothing is lost.
+* `losslessMarkdownToAdf` — the way back: gives you the ADF you started from.
+* `adfToPortableMarkdown` — ADF to markdown that GitHub, GitLab and Obsidian render. Keeps text, images by URL and link targets, and drops the rest.
+* `adfToHtml` — ADF to HTML.
+* `htmlToAdf` — HTML to ADF.
 
 ## Features and perks
 
@@ -20,8 +22,12 @@ Convert between ADF (Atlassian Document Format) and other formats.
   * No React, no Atlaskit.
 * Runs on Node, Forge, Deno, Bun and browsers.
 * Nothing to configure or connect.
-* All errors are returned, never thrown.
-  * All errors are known and documented so you can make a complete implementation with all error handling pre-handled.
+* Ships TypeScript types.
+* Errors are returned, never thrown.
+  * Every error has a code from a closed list.
+
+Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdown throws.
+[Other ADF converters](#other-adf-converters) compares this package with it and the rest.
 
 ## Install
 
