@@ -197,7 +197,8 @@ const hostileBlockCarry = fc
   .map(([[type, untyped], named, body, spelling, other]) => {
     const value = body === 'untyped' ? untyped : body === 'typed' ? { ...untyped, type } : other
     const json = spelling === 'canonical' ? serializeCanonicalJson(value, 'two-space') : spelling === 'compact' ? JSON.stringify(value) : JSON.stringify(value, null, 1)
-    return fencedCodeBlock(`${carryFencePrefix}${named ?? type}`, json)
+    const info = `${carryFencePrefix}${named ?? type}`
+    return info.includes('`') ? `~~~${info}\n${json}\n~~~` : fencedCodeBlock(info, json)
   })
 
 function prefixLines(body: string, first: string, rest: (index: number) => string): string {
