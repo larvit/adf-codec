@@ -378,7 +378,9 @@ they are handed, most of them returning `void`, and `parseInlineContent` reads a
 output.
 Once `Scan`'s pieces have owners, the bracket resolution — `linkedAlt` through `linkTo`,
 `holdsLink`, and `closeBracket` through `altText` — can leave `inline-content.ts` (about 690 lines)
-for a module of its own.
+for a module of its own. That module resolves an image once, into a node holding its alt text and
+its link, so `imageAlt`, `resolvedPieces` and `directiveMarkPieces` no longer filter and regroup
+`ImageLink` pieces. Found by the architecture pass of the release review of 0.3.0, 2026-11-08.
 
 ### 118. Spell a portable link's title through `oneLine`.
 

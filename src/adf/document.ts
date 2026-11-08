@@ -109,14 +109,19 @@ function heldTextLength(nodes: readonly AdfNode[]): number {
 }
 
 export function mergeAdjacentText(nodes: readonly AdfNode[], joins: (previous: AdfNode, node: AdfNode) => boolean): AdfNode[] {
-  const merged: AdfNode[] = []
-  for (const node of nodes) {
+  return mergedTextRuns(nodes, joins).map(({ node }) => node)
+}
+
+// `first`: the index of the first of the nodes merged into `node`.
+export function mergedTextRuns(nodes: readonly AdfNode[], joins: (previous: AdfNode, node: AdfNode) => boolean): { first: number; node: AdfNode }[] {
+  const merged: { first: number; node: AdfNode }[] = []
+  for (const [index, node] of nodes.entries()) {
     const previous = merged[merged.length - 1]
-    if (previous !== undefined && joins(previous, node)) {
-      merged[merged.length - 1] = { ...previous, text: `${previous.text ?? ''}${node.text ?? ''}` }
+    if (previous !== undefined && joins(previous.node, node)) {
+      previous.node = { ...previous.node, text: `${previous.node.text ?? ''}${node.text ?? ''}` }
       continue
     }
-    merged.push(node)
+    merged.push({ first: index, node })
   }
   return merged
 }

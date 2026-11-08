@@ -22,13 +22,13 @@ export function dataAttributes(node: AdfNode, vocabulary: AttributeVocabulary, w
   return attributes
 }
 
-// What `dataAttributes` wrote, its pairs' values unescaped; the caller reads `leading`, an attribute the element writes ahead of them, where it stands first. A pair it does not write in that order is no HTML of the dialect; a name or value no attribute of the node spells is the node's shape, as a directive's is (docs/decisions.md §Which code a cause takes).
-export function readDataAttributes(pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[], leading?: string): Read<AdfAttributes> {
+// What `dataAttributes` wrote, its pairs' values unescaped. A pair it does not write in that order is no HTML of the dialect; a name or value no attribute of the node spells is the node's shape, as a directive's is (docs/decisions.md §Which code a cause takes).
+export function readDataAttributes(pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[]): Read<AdfAttributes> {
   const attrs: AdfAttributes = {}
   let previous = ''
-  for (const [name, spelled] of leading !== undefined && pairs[0]?.[0] === leading ? pairs.slice(1) : pairs) {
+  for (const [name, spelled] of pairs) {
     const [key, kind] = dataKey(name, vocabulary, written) ?? []
-    if (key === undefined || kind === undefined) return { fault: nameFault(name, element, leading, previous) }
+    if (key === undefined || kind === undefined) return { fault: nameFault(name, element) }
     if (key <= previous) return { fault: unmappable(`the data-* attributes stand once each, sorted by the attribute they name: found ${name} after ${dataName(previous)}`) }
     const value = dataValue(spelled, kind)
     if (value === undefined) return { fault: { code: 'unsupported-node-shape', message: `${name} holds no ${kind} written as compact JSON` } }
@@ -36,6 +36,15 @@ export function readDataAttributes(pairs: readonly (readonly [string, string])[]
     previous = key
   }
   return { value: attrs }
+}
+
+// As `readDataAttributes`, past `leading`, an attribute the element writes ahead of them, where it stands first; the caller reads `leading`.
+export function readDataAttributesAfter(leading: string, pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[]): Read<AdfAttributes> {
+  const repeated = pairs.findIndex(([name], index) => index > 0 && name === leading)
+  const data = readDataAttributes(pairs.slice(pairs[0]?.[0] === leading ? 1 : 0, repeated < 0 ? pairs.length : repeated), element, vocabulary, written)
+  const before = repeated < 0 ? undefined : pairs[repeated - 1]
+  if (data.fault !== undefined || before === undefined) return data
+  return { fault: unmappable(`<${element}> takes ${leading} once, before its data-* attributes: found ${leading} after ${before[0]}`) }
 }
 
 // The attribute `name` spells, among those the element itself does not write.
@@ -53,11 +62,9 @@ export function dataValue(spelled: string, kind: AttributeKind): JsonValue | und
   return value !== undefined && holdsKind(value, kind) && spellsCanonicalJson(value, 'compact', spelled) ? value : undefined
 }
 
-// At a `leading`, `previous` is empty only where another `leading` stood first.
-function nameFault(name: string, element: string, leading: string | undefined, previous: string): ConvertFault {
-  if (name.startsWith('data-')) return { code: 'unsupported-node-shape', message: `<${element}> takes no ${name} attribute` }
-  if (name !== leading) return unmappable(`<${element}> takes no ${name} attribute`)
-  return unmappable(`<${element}> takes ${name} once, before its data-* attributes: found ${name} after ${previous === '' ? name : dataName(previous)}`)
+function nameFault(name: string, element: string): ConvertFault {
+  const message = `<${element}> takes no ${name} attribute`
+  return name.startsWith('data-') ? { code: 'unsupported-node-shape', message } : unmappable(message)
 }
 
 function unmappable(message: string): ConvertFault {

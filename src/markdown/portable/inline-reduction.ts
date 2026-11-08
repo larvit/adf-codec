@@ -8,41 +8,54 @@ import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } f
 import { imageAside } from '../image-aside.ts'
 import { insideRun, runsSharedWithNext } from '../emit/inline-runs.ts'
 import { isEmphasis } from '../mark-spellings.ts'
-import { joinsWhenEditorNormal } from './editor-normal.ts'
+import { joinsWhenEditorNormal, sourceIndex, type SourceIndexes } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
 import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
-import { portableLineFallback, readBackPasses, type PortableLineFallback } from '../emit/inline-line.ts'
+import { portableLineFallback, settledLine, type LineJudgement, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 // What stands beside a leaf's edge: whether a line edge does, and how many runs hold the leaf and its neighbour both.
 type Beside = { lineEdge: boolean; sharedRuns: number }
 
-// `leaves` is the line `fallback` was judged on.
-type JudgedLine = { fallback: PortableLineFallback | undefined; leaves: AdfNode[] }
+// How many of the leaf's marks edge whitespace keeps, or that it drops at a line edge.
+type EdgeOutcome = { kind: 'drop' } | { depth: number; kind: 'keep' }
+
+type PlacedLeaf = { after: Beside; before: Beside; leaf: AdfNode }
+
+// Where a reduction stands: its path, counted in the caller's document by `sources`, and its level as the emitter counts it.
+export type ReductionPlace = { depth: number; path: ConvertErrorPath; sources: SourceIndexes }
 
 const highlight = 'backgroundColor'
 const highlightMark: AdfMark = { type: highlight }
 const edgeStrippingMarks: readonly string[] = [highlight, 'em', 'strike', 'strong']
 const keptMarks: readonly string[] = [...edgeStrippingMarks, 'code', 'link']
 
-export function reduceInline(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
-  const leaves = portableLeaves(nodes, container, path, depth)
+export function reduceInline(nodes: readonly AdfNode[], container: LineContainer, place: ReductionPlace): Result<AdfNode[]> {
+  const leaves = portableLeaves(nodes, container, place)
   if (!leaves.ok) return leaves
-  return spellableLine(leaves.value, container, path)
+  const { path } = place
+  // Ends: withoutFallback refuses a pass that drops no mark, and trimmedEdges adds none.
+  return settledLine<readonly AdfNode[], PortableLineFallback, AdfNode[]>(leaves.value, {
+    giveUpEmphasis: withoutEmphasis,
+    judge: (line, grouping) => portableJudgement(line, grouping, container, path),
+    spansEachPass: true,
+    take: (line, fallback) => withoutFallback(line, fallback, path),
+  })
 }
 
-export function portableLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
-  const leaves = inlineLeaves(nodes, container, path, depth)
+// The leaves before the spanned trim `portableJudgement` gives them.
+export function portableLeaves(nodes: readonly AdfNode[], container: LineContainer, place: ReductionPlace): Result<AdfNode[]> {
+  const leaves = inlineLeaves(nodes, container, place)
   if (!leaves.ok) return leaves
-  return success(trimmedEdges(highlightsInsideSharedMarks(trimmedEdges(leaves.value, 'spanned')), 'spanned'))
+  return success(highlightsInsideSharedMarks(trimmedEdges(leaves.value, 'spanned')))
 }
 
-export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
-  if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, path)
+export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer, place: ReductionPlace): Result<AdfNode[]> {
+  if (place.depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the emitter carries`, place.path)
   const leaves: AdfNode[] = []
   let joinsNext = false
   for (const [index, node] of nodes.entries()) {
-    const held = nodeLeaves(node, container, [...path, 'content', index], depth)
+    const held = nodeLeaves(node, container, { ...place, path: [...place.path, 'content', sourceIndex(nodes, index, place.sources)] })
     if (!held.ok) return held
     if (held.value.length === 0) continue
     const block = partsShownText(node.type)
@@ -53,7 +66,7 @@ export function inlineLeaves(nodes: readonly AdfNode[], container: LineContainer
   return success(leaves)
 }
 
-function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorPath, depth: number): Result<AdfNode[]> {
+function nodeLeaves(node: AdfNode, container: LineContainer, place: ReductionPlace): Result<AdfNode[]> {
   const marks = nodeMarks(node)
   if (node.type === 'text') return success(textLeaves(node.text, marks, container))
   if (node.type === 'hardBreak') return success([lineBreak(container)])
@@ -63,7 +76,7 @@ function nodeLeaves(node: AdfNode, container: LineContainer, path: ConvertErrorP
   if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(node, marks, container))
   if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(node, marks, container))
   const own = textLeaves(node.text ?? shownText(node), marks, container)
-  const held = inlineLeaves(nodeContent(node), container, path, depth + 1)
+  const held = inlineLeaves(nodeContent(node), container, { ...place, depth: place.depth + 1 })
   if (!held.ok) return held
   return success(own.length > 0 && held.value.length > 0 ? [...own, textLeaf(' ', []), ...held.value] : [...own, ...held.value])
 }
@@ -173,11 +186,10 @@ export function trimmedEdges(leaves: readonly AdfNode[], grouping: RunGrouping):
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
     const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    const shared = runsSharedWithNext(merged, grouping)
     let changed = false
     const trimmed: AdfNode[] = []
-    for (const [index, leaf] of merged.entries()) {
-      const edges = leafEdges(leaf, beside(merged[index - 1], shared[index - 1]), beside(merged[index + 1], shared[index]))
+    for (const { after, before, leaf } of placedLeaves(merged, grouping)) {
+      const edges = leafEdges(leaf, before, after)
       if (edges === undefined) {
         trimmed.push(leaf)
         continue
@@ -198,6 +210,11 @@ function withoutEdgeBreaks(leaves: readonly AdfNode[]): AdfNode[] {
   return leaves.slice(first, last + 1)
 }
 
+function placedLeaves(leaves: readonly AdfNode[], grouping: RunGrouping): PlacedLeaf[] {
+  const shared = runsSharedWithNext(leaves, grouping)
+  return leaves.map((leaf, index) => ({ after: beside(leaves[index + 1], shared[index]), before: beside(leaves[index - 1], shared[index - 1]), leaf }))
+}
+
 function beside(neighbour: AdfNode | undefined, sharedRuns = 0): Beside {
   return { lineEdge: neighbour === undefined || neighbour.type === 'hardBreak', sharedRuns }
 }
@@ -209,50 +226,34 @@ function leafEdges(leaf: AdfNode, before: Beside, after: Beside): AdfNode[] | un
   if (text === undefined || marks.some((mark) => mark.type === 'code')) return undefined
   const lead = text.slice(0, text.search(/[^ \t]|$/))
   const trail = text.slice(text.search(/[ \t]*$/))
-  const leadDepth = edgeDepth(marks, before, lead)
-  const trailDepth = edgeDepth(marks, after, trail)
-  if (leadDepth === marks.length && trailDepth === marks.length) return undefined
-  if (lead === text) return leadDepth === undefined || trailDepth === undefined ? [] : [textLeaf(text, marks.slice(0, Math.min(leadDepth, trailDepth)))]
+  const leading = edgeOutcome(marks, before, lead)
+  const trailing = edgeOutcome(marks, after, trail)
+  if (leading.kind === 'keep' && trailing.kind === 'keep' && leading.depth === marks.length && trailing.depth === marks.length) return undefined
+  if (lead === text) return leading.kind === 'drop' || trailing.kind === 'drop' ? [] : [textLeaf(text, marks.slice(0, Math.min(leading.depth, trailing.depth)))]
   const edges: AdfNode[] = []
-  if (lead !== '' && leadDepth !== undefined) edges.push(textLeaf(lead, marks.slice(0, leadDepth)))
+  if (lead !== '' && leading.kind === 'keep') edges.push(textLeaf(lead, marks.slice(0, leading.depth)))
   const core = text.slice(lead.length, text.length - trail.length)
   if (core !== '') edges.push(textLeaf(core, marks))
-  if (trail !== '' && trailDepth !== undefined) edges.push(textLeaf(trail, marks.slice(0, trailDepth)))
+  if (trail !== '' && trailing.kind === 'keep') edges.push(textLeaf(trail, marks.slice(0, trailing.depth)))
   return edges
 }
 
-// How many of the leaf's marks the edge whitespace keeps, `undefined` where it drops at a line edge. Text not marked `code` holds every run over it, so the runs it shares are its outermost marks.
-function edgeDepth(marks: readonly AdfMark[], { lineEdge, sharedRuns }: Beside, whitespace: string): number | undefined {
-  if (whitespace === '') return marks.length
+// Text not marked `code` holds every run over it, so the runs it shares are its outermost marks.
+function edgeOutcome(marks: readonly AdfMark[], { lineEdge, sharedRuns }: Beside, whitespace: string): EdgeOutcome {
+  if (whitespace === '') return { depth: marks.length, kind: 'keep' }
   // A run crossing a hard break holds this whitespace at the edge of a line, where CommonMark strips it.
-  if (lineEdge && sharedRuns > 0) return undefined
+  if (lineEdge && sharedRuns > 0) return { kind: 'drop' }
   const stripping = marks.findIndex((mark, index) => index >= sharedRuns && edgeStrippingMarks.includes(mark.type))
-  const kept = stripping === -1 ? marks.length : stripping
-  return kept === 0 && lineEdge ? undefined : kept
+  const depth = stripping === -1 ? marks.length : stripping
+  return depth === 0 && lineEdge ? { kind: 'drop' } : { depth, kind: 'keep' }
 }
 
-function spellableLine(leaves: AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<AdfNode[]> {
-  // Terminates: withoutFallback refuses a pass that takes no mark, and trimmedEdges adds none to any character.
-  for (let current = leaves, pass = 1; ; pass += 1) {
-    const judged = judgedLine(current, container, path)
-    if (!judged.ok) return judged
-    const { fallback, leaves: line } = judged.value
-    if (fallback === undefined) return success(line)
-    const fixed = withoutFallback(line, fallback, path)
-    if (!fixed.ok) return fixed
-    current = trimmedEdges(pass === readBackPasses ? withoutEmphasis(fixed.value) : fixed.value, 'spanned')
-  }
-}
-
-// Judged as the writer writes a line: spanned where that reads back, else parted and trimmed by the parted runs, the line a fallback's indexes name.
-export function judgedLine(spanned: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath): Result<JudgedLine> {
-  const spannedFallback = portableLineFallback(spanned, container, path, 'spanned')
-  if (!spannedFallback.ok) return spannedFallback
-  if (spannedFallback.value === undefined) return success({ fallback: undefined, leaves: [...spanned] })
-  const parted = trimmedEdges(spanned, 'parted')
-  const partedFallback = portableLineFallback(parted, container, path, 'parted')
-  if (!partedFallback.ok) return partedFallback
-  return success({ fallback: partedFallback.value, leaves: parted })
+// Each grouping's line trimmed by its own runs, which a fallback's indexes name.
+export function portableJudgement(leaves: readonly AdfNode[], grouping: RunGrouping, container: LineContainer, path: ConvertErrorPath): Result<LineJudgement<readonly AdfNode[], PortableLineFallback, AdfNode[]>> {
+  const line = trimmedEdges(leaves, grouping)
+  const fallback = portableLineFallback(line, container, path, grouping)
+  if (!fallback.ok) return fallback
+  return success(fallback.value === undefined ? { kind: 'written', written: line } : { fallback: fallback.value, kind: 'fallback', line })
 }
 
 export function withoutFallback(leaves: readonly AdfNode[], fallback: PortableLineFallback, path: ConvertErrorPath): Result<AdfNode[]> {

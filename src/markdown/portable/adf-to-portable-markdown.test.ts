@@ -70,6 +70,7 @@ test('refuses what the document guard refuses, and nothing else', () => {
   let deepInline: AdfNode = text('x')
   for (let level = 0; level <= largestNesting; level += 1) deepInline = { content: [deepInline], type: 'unknownInline' }
   assert.match(portableDocument(document(paragraph(deepInline))), /^unsupported-nesting-depth at /)
+  assert.match(portableDocument(document(paragraph(text('a'), text('b'), deepInline))), /^unsupported-nesting-depth at \/content\/0\/content\/2(\/content\/0)+$/)
 })
 
 test('refuses a paragraph whose text would pass V8\'s longest string, joining none of it', () => {

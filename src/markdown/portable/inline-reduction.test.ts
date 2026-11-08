@@ -6,13 +6,13 @@ import type { AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { PortableLineFallback } from '../emit/inline-line.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
-import { judgedLine, portableLeaves, reduceInline, trimmedEdges, withoutFallback } from './inline-reduction.ts'
+import { portableJudgement, portableLeaves, reduceInline, withoutFallback } from './inline-reduction.ts'
 import { success, type Result } from '../../result.ts'
 
 test('reduces a line alike dropping every run a pass may or the first alone', () => {
   fc.assert(
     fc.property(markedLine, lineContainer, (nodes, container) => {
-      assert.deepEqual(reduceInline(nodes, container, [], 0), firstRunLine(nodes, container))
+      assert.deepEqual(reduceInline(nodes, container, { depth: 0, path: [], sources: new Map() }), firstRunLine(nodes, container))
     }),
     // Lines the fixed seed rarely generates: a later run must not drop with the first, or one pass drops every copy of a repeated mark run.
     {
@@ -58,18 +58,20 @@ test('refuses an unspellable-run fallback that takes no mark', () => {
   assert.equal(refused.ok ? 'kept' : refused.error.code, 'unsupported-node-shape')
 })
 
-// Drops only the first run each pass finds, with every misflanked highlight, and takes no cap.
+// Judges each pass spanned, else parted, dropping only the first run it finds, with every misflanked highlight, and takes no cap.
 function firstRunLine(nodes: readonly AdfNode[], container: LineContainer): Result<AdfNode[]> {
-  const leaves = portableLeaves(nodes, container, [], 0)
+  const leaves = portableLeaves(nodes, container, { depth: 0, path: [], sources: new Map() })
   if (!leaves.ok) return leaves
-  for (let current = leaves.value; ; ) {
-    const judged = judgedLine(current, container, [])
-    if (!judged.ok) return judged
-    const { fallback, leaves: line } = judged.value
-    if (fallback === undefined) return success(line)
-    const fixed = withoutFallback(line, firstRun(fallback), [])
+  for (let current: readonly AdfNode[] = leaves.value; ; ) {
+    const spanned = portableJudgement(current, 'spanned', container, [])
+    if (!spanned.ok) return spanned
+    if (spanned.value.kind === 'written') return success(spanned.value.written)
+    const parted = portableJudgement(spanned.value.line, 'parted', container, [])
+    if (!parted.ok) return parted
+    if (parted.value.kind === 'written') return success(parted.value.written)
+    const fixed = withoutFallback(parted.value.line, firstRun(parted.value.fallback), [])
     if (!fixed.ok) return fixed
-    current = trimmedEdges(fixed.value, 'spanned')
+    current = fixed.value
   }
 }
 

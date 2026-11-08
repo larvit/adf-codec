@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import type { AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
-import { toEditorNormal } from './editor-normal.ts'
+import { editorNormalForm, sourceIndex, toEditorNormal } from './editor-normal.ts'
 
 test('merges adjacent text nodes carrying identical marks, at every level', () => {
   const content: AdfNode[] = [
@@ -82,4 +82,13 @@ test('drops the content a text node holds, and joins the node as any other', () 
   const normal = (content: AdfNode[]): AdfNode[] | undefined => toEditorNormal({ content: [{ content, type: 'paragraph' }], type: 'doc', version: 1 }).content
   assert.deepEqual(normal([holding, { text: 'b', type: 'text' }]), [{ content: [{ text: 'ab', type: 'text' }], type: 'paragraph' }])
   assert.deepEqual(normal([{ text: 'b', type: 'text' }, holding]), [{ content: [{ text: 'ba', type: 'text' }], type: 'paragraph' }])
+})
+
+test('counts a node\'s index in a run of its siblings, or alone, in the document it was normalized from', () => {
+  const rule: AdfNode = { type: 'rule' }
+  const { normal, sources } = editorNormalForm({ content: [rule, { text: 'a', type: 'text' }, { text: 'b', type: 'text' }, { type: 'mention' }, { type: 'rule' }], type: 'doc', version: 1 })
+  const content = normal.content ?? []
+  assert.deepEqual(content.map((_, index) => sourceIndex(content, index, sources)), [0, 1, 3, 4])
+  assert.deepEqual([sourceIndex(content.slice(1, 3), 1, sources), sourceIndex(content.slice(2, 3), 0, sources)], [2, 0])
+  assert.equal(sourceIndex([rule], 0, sources), 0)
 })

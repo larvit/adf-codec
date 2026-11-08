@@ -63,8 +63,11 @@ export function linkHref(attrs: AdfAttributes): string | undefined {
   return typeof href === 'string' ? href : undefined
 }
 
-// spec/flavour.md, Marks. `marksInside` counts the marks the link's nodes carry within it: the emitter's `outer`, the parser's 0.
-export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], marksInside: number, bracketed: boolean, escapes: TitleEscapes): CommonMarkLink | undefined {
+// `marksInside` counts the marks the link's nodes carry within it: the emitter's `outer`, the parser's 0.
+type LinkSurroundings = { bracketed: boolean; escapes: TitleEscapes; marksInside: number }
+
+// spec/flavour.md, Marks.
+export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readonly AdfNode[], { bracketed, escapes, marksInside }: LinkSurroundings): CommonMarkLink | undefined {
   if (Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   const title = attrs['title']
   const autolinkHolds = !bracketed || (!href.includes('`') && !holdsDirectivePrefix(href) && escapeUnbalanced(href, '[', ']') === href)

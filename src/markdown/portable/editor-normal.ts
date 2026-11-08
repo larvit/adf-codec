@@ -1,11 +1,14 @@
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
-import { mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
+import { mergedTextRuns, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { joinsWhenRead } from '../adjacent-text.ts'
 
 type JsonContainer = JsonValue[] | { [key: string]: JsonValue }
 
 type NodeHolder = { content?: AdfNode[] }
+
+// Each editor-normal node's index among its siblings in the document it was normalized from.
+export type SourceIndexes = ReadonlyMap<AdfNode, number>
 
 // The editor joins two text nodes where the reader would join their editor-normal forms.
 export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean {
@@ -14,13 +17,19 @@ export function joinsWhenEditorNormal(previous: AdfNode, node: AdfNode): boolean
 }
 
 export function toEditorNormal(document: AdfDocument): AdfDocument {
+  return editorNormalForm(document).normal
+}
+
+export function editorNormalForm(document: AdfDocument): { normal: AdfDocument; sources: SourceIndexes } {
   const normal: AdfDocument = { type: document.type, version: Object.is(document.version, -0) ? 0 : document.version }
+  const sources = new Map<AdfNode, number>()
   const pending: { holder: NodeHolder; source: NodeHolder }[] = [{ holder: normal, source: document }]
   for (let entry = pending.pop(); entry !== undefined; entry = pending.pop()) {
-    const content = mergeAdjacentText(nodeContent(entry.source), joinsWhenEditorNormal)
+    const content = mergedTextRuns(nodeContent(entry.source), joinsWhenEditorNormal)
     if (content.length === 0) continue
-    entry.holder.content = content.map((source) => {
+    entry.holder.content = content.map(({ first, node: source }) => {
       const holder = normalNode(source)
+      sources.set(holder, first)
       // Atlassian's schema forbids content on a text node, so the editor drops it.
       if (source.type !== 'text') pending.push({ holder, source })
       return holder
@@ -28,7 +37,16 @@ export function toEditorNormal(document: AdfDocument): AdfDocument {
   }
   // ADF's schema requires content on doc, so an empty one stays.
   if (document.content !== undefined && normal.content === undefined) normal.content = []
-  return normal
+  return { normal, sources }
+}
+
+// A node's index in a list of siblings, or in a list of one, counted in the document the siblings were normalized from.
+export function sourceIndex(nodes: readonly AdfNode[], index: number, sources: SourceIndexes): number {
+  const first = nodes[0]
+  const node = nodes[index]
+  const from = first === undefined ? undefined : sources.get(first)
+  const at = node === undefined ? undefined : sources.get(node)
+  return from === undefined || at === undefined ? index : at - from
 }
 
 function normalNode(node: AdfNode): AdfNode {
