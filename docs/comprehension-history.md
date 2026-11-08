@@ -1602,3 +1602,34 @@ Inherited architect, decided by:
 
 - Locality: `src/adf/document.ts:151` `refusedShape`: the rule against a link-marked card lives in one walk that every writer and both carry readers pass through
 - Locality: `src/html/emit/inline.ts:15` `inlineHtml`: the base held the check at the top of the HTML writer's inline loop, with a comment about callers elsewhere
+
+## 2026-11-08T21:12:40Z, PR #139 at 75606ad, against acc6df4
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | better | better | better | same | better |
+| Inherited architect | same | better | better | same | better |
+
+Mid A, decided by:
+
+- Locality, Shape, Overall: `src/html/carry-content.ts:21` `shownBlocks`: one BlockPart compared by reference replaces null sentinels and a mutable current record
+- Locality, Shape, Overall: `src/markdown/emit/adf-to-markdown.ts:135` `spellingMemo`: ask and take hold the keep-or-drop rule in one closure, and the caller flag is gone
+- Locality, Navigation, Overall: `src/adf/document.ts:174` `shapeRefusal`: one walk refuses every bad shape, where three files did
+- Locality, Overall: `src/html/data-attributes.ts:42` `readDataAttributesAfter`: the leading-attribute case leaves `nameFault` and its hidden invariant
+- Locality, Shape: `src/html/parse/html-to-adf.ts:105` `readBlocks`: table state threads through the block loop, which reads harder than before
+- Shape: `src/markdown/emit/unspellable-runs.ts:30` `Verdict`: one named verdict per pair replaces a Uint8Array and a separate set
+- Shape: `src/markdown/mark-spellings.ts:70` `commonMarkLink`: a named LinkSurroundings object replaces three positional parameters
+- Navigation, Shape: `src/html/cell-element.ts:22` `cellAttributes`: table-cell attributes are written and read in one file named for them
+
+Inherited architect, decided by:
+
+- Locality, Shape, Overall: `src/markdown/portable/adf-to-portable-markdown.ts:61` `reduceToPortable`: a refusal's path comes from a source map, so no second run on the raw document
+- Locality, Overall: `src/adf/document.ts:174` `shapeRefusal`: schema shape refusals live in one function in the first step
+- Locality, Shape, Overall: `src/html/carry-content.ts:21` `shownBlocks`: no sentinel to hold in mind
+- Shape: `src/markdown/portable/inline-reduction.ts:242` `edgeOutcome`: a tagged union says what the result means, where `undefined` did not
+- Locality, Shape: `src/html/data-attributes.ts:42` `readDataAttributesAfter`: its own entry point for the leading attribute, chosen openly by the callers
+- Shape: `src/adf/block-nodes.ts:1` `isHeadingLevel`: one source for the 1 to 6 range
+- Locality: `src/html/parse/html-to-adf.ts:95` `readBlocks`: RowStep, `closerOf` and the close loop have to be pieced together to follow table state
+- Self-sufficiency: `src/html/parse/html-to-adf.ts:273` `readTable`: the thead and tbody branches advance by one length that holds only because both strings are equally long
