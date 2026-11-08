@@ -3,28 +3,25 @@
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-Convert Atlassian Document Format (ADF), the rich text of Jira and Confluence, to and from markdown,
-with a lossless round-trip, and to HTML.
+Convert between ADF (Atlassian Document Format) and other formats.
 
-This package is pure functions with no React, no Atlaskit and no runtime dependencies, and nothing to
-configure or connect. It runs in Node, Forge, Deno, Bun and browsers.
+## Main functionality
 
-It is for application developers whose app shows, edits, exports or generates the rich text Atlassian
-products store as ADF.
+* **portableMarkdownToAdf** Use this if you "just have markdown". It reads CommonMark plus GFM's tables, task lists and alerts, ~~, and Obsidians's callouts and ==; `commonMarkToAdf` reads strict CommonMark alone.
+* **commonMarkToAdf** Strict CommonMark parser to ADF. Will return an error if not strictly CommonMark.
+* **adfToLosslessMarkdown** Converts ADF to adf-codecs own flavour of markdown to accommodate to ADFs specials like panels, mentions, statuses etc, as well as carrying unkown future ADF nodes to always guarantee a way to losslessly convert between ADF and Markdown. 
+* **losslessMarkdownToAdf** The reverse roundtrip from the function above.
+* **adfToHtml** ADF to HTML.
+* **htmlToAdf** HTML to ADF.
 
-| You have | You want | Take | What it does |
-| --- | --- | --- | --- |
-| Markdown from a bot, a model or a person | ADF | `portableMarkdownToAdf` | reads CommonMark plus GFM's tables, task lists and alerts, `~~`, and Obsidian's callouts and `==`; `commonMarkToAdf` reads strict CommonMark alone |
-| ADF | markdown to edit, then ADF again | `adfToLosslessMarkdown`, then `losslessMarkdownToAdf` | the pair gives back the document it started from, panels, mentions, statuses and node types this version does not know included |
-| ADF | markdown that GitHub, GitLab and Obsidian render | `adfToPortableMarkdown` | keeps the text, images by URL and link targets and drops the rest |
-| ADF | HTML | `adfToHtml` | writes paragraphs, headings, lists, quotes, tables, code blocks, rules, breaks, a plain external image, links, and code, emphasis and strong text as HTML elements, and every other node as an element holding its JSON; `htmlToAdf` reads that HTML back to the same document, and refuses any other HTML |
+## Features and perks
 
-Every call returns a result, never a throw. A refusal carries a code from a closed list, and the same input gets the same refusal, except
-for `engine-limit` ([The guarantees](#the-guarantees)).
-TypeScript types ship beside the JavaScript.
-
-Atlaskit's markdown transformer converts markdown to ADF, and its ADF to markdown throws.
-[Other ADF converters](#other-adf-converters) compares this package with it and the rest.
+* No runtime dependencies.
+  * No React, no Atlaskit.
+* Runs on Node, Forge, Deno, Bun and browsers.
+* Nothing to configure or connect.
+* All errors are returned, never thrown.
+  * All errors are known and documented so you can make a complete implementation with all error handling pre-handled.
 
 ## Install
 
