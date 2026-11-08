@@ -6,6 +6,7 @@ firefox_image=selenium/standalone-firefox:159.0.1
 floor_image=node:18.20.8-alpine3.21
 node_image=node:26.13.0-alpine3.24
 
+# --init: the container's process 1 ignores a SIGINT it has no handler for, so without it Ctrl-C leaves the container running.
 in_image() {
   local image=$1 entrypoint=$2
   shift 2
