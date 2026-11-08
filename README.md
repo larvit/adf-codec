@@ -14,7 +14,7 @@ products store as ADF.
 * `commonMarkToAdf` — reads strict CommonMark only. Extensions like tables or `~~` come out as plain text.
 * `adfToLosslessMarkdown` — ADF to adf-codec's own markdown flavour, which spells ADF's special nodes (panels, mentions, statuses and so on) and carries node types this version doesn't know, so nothing is lost.
 * `losslessMarkdownToAdf` — the way back: gives you the ADF you started from.
-* `adfToPortableMarkdown` — ADF to markdown that GitHub, GitLab and Obsidian render. Keeps text, images by URL and link targets, and drops the rest.
+* `adfToPortableMarkdown` — ADF to markdown that GitHub, GitLab and Obsidian render. Keeps the content and drops colours, layout and other attributes.
 * `adfToHtml` — ADF to HTML.
 * `htmlToAdf` — HTML to ADF.
 

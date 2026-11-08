@@ -18,8 +18,12 @@ test('refuses a README with no paragraph before its first section', () => {
   assert.equal(readmeTagline(`${title}## Install\n`).ok, false)
 })
 
+test('refuses a README whose next section follows the badges, whatever its heading level', () => {
+  assert.equal(readmeTagline(`${title}# Install\n\nRun it with Jira.\n`).ok, false)
+})
+
 test('refuses markup, which npm would show as raw characters', () => {
-  for (const markup of ['`code`', '[link](https://example.com)', '**bold**', '_em_', '<b>x</b>']) {
+  for (const markup of ['`code`', '[link](https://example.com)', '**bold**', '_em_', '~~old~~', '<b>x</b>']) {
     assert.equal(readmeTagline(`${title}Convert ${markup}.\n`).ok, false, markup)
   }
 })
