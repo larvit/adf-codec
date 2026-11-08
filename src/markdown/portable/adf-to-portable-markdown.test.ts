@@ -491,3 +491,31 @@ test('writes a text node holding content the same in either order beside its nei
   assert.equal(portable(paragraph(holding, text('b'))), 'ab\n')
   assert.equal(portable(paragraph(text('b'), holding)), 'ba\n')
 })
+
+test('writes a task list nested to the deepest level the reader carries, and refuses one more at the item holding it', () => {
+  const task = (): AdfNode => node('taskItem', { state: 'TODO' }, text('a'))
+  const nested = (levels: number): AdfNode => {
+    let list: AdfNode = { content: [task()], type: 'taskList' }
+    for (let level = 1; level < levels; level += 1) list = { content: [task(), list], type: 'taskList' }
+    return list
+  }
+  const written = portable(nested(largestNesting))
+  assert.ok(portableMarkdownToAdf(written).ok)
+  assert.equal(written.split('\n').length, largestNesting + 1)
+  const refused = adfToPortableMarkdown(document(nested(largestNesting + 1)))
+  assert.deepEqual(refused.ok ? undefined : [refused.error.code, refused.error.path], ['unsupported-nesting-depth', ['content', 0, ...Array.from({ length: largestNesting }, () => ['content', 1]).flat(), 'content', 0]])
+  const quoted = (levels: number): string => portable(node('panel', { panelType: 'info' }, nested(levels)))
+  assert.ok(portableMarkdownToAdf(quoted(largestNesting - 1)).ok)
+  assert.match(quoted(largestNesting), /^unsupported-nesting-depth at \//)
+})
+
+test('writes a task list nested in the task before it, and more than one beside each other in that task', () => {
+  const done = (value: string): AdfNode => node('taskItem', { state: 'DONE' }, text(value))
+  const list = (...content: AdfNode[]): AdfNode => ({ content, type: 'taskList' })
+  assert.equal(portable(list(done('Parent'), list(done('Child')), done('Next'))), '- [x] Parent\n  - [x] Child\n- [x] Next\n')
+  assert.equal(portable(list(done('Parent'), list(done('A')), list(done('B')))), '- [x] Parent\n  - [x] A\n  * [x] B\n')
+})
+
+test('writes a task list opening with a list as that list in an item of its own', () => {
+  assert.equal(portable({ content: [{ content: [node('taskItem', { state: 'TODO' }, text('a'))], type: 'taskList' }], type: 'taskList' }), '- - [ ] a\n')
+})

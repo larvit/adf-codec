@@ -218,6 +218,71 @@ test('refuses a task list nested one level past the 500 the parser carries, at i
   assert.equal(quoted.ok ? undefined : quoted.error.code, 'unsupported-nesting-depth')
 })
 
+test('keeps a backslash a title line ends in as text, a break only before a following line', () => {
+  assert.deepEqual(read('> [!NOTE]- Trail\\\n'), [node('expand', { title: 'Trail\\' }, paragraph())])
+  assert.deepEqual(read('> [!NOTE]- a \\* b\n> body\n'), [node('expand', { title: 'a * b' }, said('body'))])
+  assert.deepEqual(read('> [!NOTE]- x\\\\\n> body\n'), [node('expand', { title: 'x\\' }, said('body'))])
+})
+
+test('keeps the target of a link in a title whichever marks sit beside the link', () => {
+  const titled = (markdown: string): unknown => {
+    const blocks = read(markdown)
+    return typeof blocks === 'string' ? blocks : blocks[0]?.attrs?.['title']
+  }
+  assert.equal(titled('> [!faq]- ~~[x](http://y)~~ b\n'), 'x (http://y) b')
+  assert.equal(titled('> [!faq]- ==[x](http://y)== b\n'), 'x (http://y) b')
+  assert.equal(titled('> [!faq]- *[x](http://y)* and [**z**](http://w)\n'), 'x (http://y) and z (http://w)')
+  assert.equal(titled('> [!faq]- **[x](http://y)** and [*z*](http://w)\n'), 'x (http://y) and z (http://w)')
+  assert.equal(titled('> [!faq]- [x](http://y)~~z~~\n'), 'x (http://y)z')
+  assert.equal(titled('> [!faq]- ![a](http://u)\n'), 'a (http://u)')
+})
+
+test('refuses what a callout title or body holds that no node spells, at the path of the paragraph or the callout', () => {
+  const refused = (markdown: string): string => {
+    const parsed = portableMarkdownToAdf(markdown)
+    return parsed.ok ? 'read' : `${parsed.error.code} ${parsed.error.path.map((step) => '/' + step).join('')}`
+  }
+  assert.equal(refused('> [!faq]- a <b>x</b>\n'), 'unmappable-html /content/0')
+  assert.equal(refused('> [!NOTE]\n>\n> a <b>x</b>\n'), 'unmappable-html /content/0/content/0')
+  assert.equal(refused('> [!NOTE] first\n>\n> a <b>x</b>\n'), 'unmappable-html /content/0/content/1')
+  assert.equal(refused('> [!NOTE]-\n>\n> a <b>x</b>\n'), 'unmappable-html /content/0/content/0')
+  assert.equal(refused('> [!NOTE]- t\n>\n> > [!NOTE]-\n> >\n> > a <b>x</b>\n'), 'unmappable-html /content/0/content/0/content/0')
+  assert.equal(refused('p\n\n> [!NOTE]\n>\n> a <b>x</b>\n'), 'unmappable-html /content/1/content/0')
+})
+
+test('refuses a callout nested one level past the 500 the parser carries, a panel and an expand alike', () => {
+  const nested = (marker: string, levels: number): string => Array.from({ length: levels }, (_, level) => `${'> '.repeat(level + 1)}${marker}\n${'> '.repeat(level + 1)}\n`).join('')
+  for (const marker of ['[!NOTE]', '[!NOTE]-', '[!NOTE]- t']) {
+    assert.ok(portableMarkdownToAdf(nested(marker, largestNesting)).ok, marker)
+    const refused = portableMarkdownToAdf(nested(marker, largestNesting + 1))
+    assert.equal(refused.ok ? undefined : refused.error.code, 'unsupported-nesting-depth', marker)
+  }
+})
+
+test('places a refusal in a bullet list by the list and the item holding it', () => {
+  const refused = (markdown: string): string => {
+    const parsed = portableMarkdownToAdf(markdown)
+    return parsed.ok ? 'read' : parsed.error.path.map((step) => '/' + step).join('')
+  }
+  assert.equal(refused('p\n\n- a\n\n- b <b>x</b>\n'), '/content/1/content/1/content/0')
+  assert.equal(refused('- [x] a\n- b <b>x</b>\n'), '/content/0/content/1/content/0')
+  assert.equal(refused('q\n\n- [x] a\n- [ ] b <b>x</b>\n'), '/content/1/content/1')
+})
+
+test('reads a task whose marker line holds only breaks and spaces by the lines after it', () => {
+  assert.deepEqual(read('- [ ] a\n  b\n'), [bare('taskList', task('TODO', text('a b')))])
+  assert.deepEqual(read('- [ ] \\\n  \\\n  x\n'), [bare('taskList', task('TODO', text('x')))])
+  assert.deepEqual(read('- [x]\n\n  Second.\n- [ ] Next\n'), [bare('taskList', task('DONE', text('Second.')), task('TODO', text('Next')))])
+  assert.deepEqual(read('- [x]\n\n  First.\n\n  Second.\n'), [bare('taskList', node('blockTaskItem', { state: 'DONE' }, said('First.'), said('Second.')))])
+  assert.deepEqual(read('- [x]\n- [ ]\n'), [bare('taskList', task('DONE'), task('TODO'))])
+})
+
+test('reads a lone image after a task marker as its alt text linked', () => {
+  const link: AdfMark = { attrs: { href: 'http://u' }, type: 'link' }
+  assert.deepEqual(read('- [ ] ![alt](http://u)\n'), [bare('taskList', task('TODO', text('alt', link)))])
+  assert.deepEqual(read('- [ ] ![alt](http://u) b\n'), [bare('taskList', task('TODO', text('alt', link), text(' b')))])
+})
+
 test('reads a task list beside a list of another bullet character as two lists', () => {
   const tasks = (state: string, value: string): AdfNode => bare('taskList', node('taskItem', { state }, text(value)))
   assert.deepEqual(read('- [x] a\n* b\n'), [tasks('DONE', 'a'), bare('bulletList', bare('listItem', bare('paragraph', text('b'))))])
