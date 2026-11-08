@@ -1642,3 +1642,20 @@ Ruling: same
 |---|---|---|---|---|---|
 | Mid A | same | same | same | same | same |
 | Inherited architect | same | same | same | same | same |
+
+## 2026-11-08T23:20:43Z, PR #141 at 883fe80, against 2766a0a
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | same | same |
+| Inherited architect | same | same | worse | better | same |
+
+Inherited architect, decided by:
+
+- Shape: `src/markdown/portable/portable-markdown-to-adf.test.ts:245` `refuses what a callout title or body holds that no node spells, at the path of the paragraph or the callout`: a third local `refused` helper, in two variants, beside the ones at :184 and :268
+- Shape: `src/markdown/portable/adf-to-portable-markdown.test.ts:514` `writes a task list nested in the task before it, and more than one beside each other in that task`: repeats task-list spellings the existing test at :141 pins, in two places that do not point to each other
+- Shape: `src/markdown/portable/portable-markdown-to-adf.test.ts:278` `reads a task whose marker line holds only breaks and spaces by the lines after it`: its first assertion has text on the marker line, so the name does not describe it
+- Self-sufficiency: `src/markdown/portable/portable-markdown-to-adf.test.ts:232` `keeps the target of a link in a title whichever marks sit beside the link`: worked input-to-output examples where a reader needed spec/flavour.md open beside the code
+- Self-sufficiency: `src/markdown/portable/adf-to-portable-markdown.test.ts:495` `writes a task list nested to the deepest level the reader carries, and refuses one more at the item holding it`: shows in one place that the writer's depth limit lines up with the reader's
