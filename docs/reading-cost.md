@@ -744,3 +744,17 @@ Read most (opens and searches):
 - `todo.md` 7
 - `docs/decisions.md` 2
 - `CHANGELOG.md` 1
+
+## Reading cost, chunk fd457ff72bc3, finished 2026-11-08T22:18:00Z
+
+66590 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 3
+- `ci.sh` 2
+- `docker-runner.sh` 2
+- `AGENTS.md` 1
+- `CHANGELOG.md` 1
+- `README.md` 1
+- `mutation-tests/run.sh` 1
