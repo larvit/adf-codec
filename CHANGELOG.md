@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
 - The README opens with a one-line description, a list of the calls and the package's perks, and
   `package.json`'s description, which npmjs shows, is now that same line, naming Jira and Confluence.
