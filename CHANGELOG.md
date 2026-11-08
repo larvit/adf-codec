@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The README opens with a one-line description, a list of the calls and the package's perks, and
+  `package.json`'s description, which npmjs shows, is now that same line, naming Jira and Confluence.
+
 ## 0.3.0
 
 - **Breaking:** `adfToPortableMarkdown` refuses, as `unsupported-node-shape`, a known block holding
