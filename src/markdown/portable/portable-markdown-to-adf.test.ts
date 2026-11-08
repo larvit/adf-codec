@@ -255,14 +255,15 @@ test('refuses what a callout title or body holds that no node spells, at the pat
   assert.equal(refused('p\n\n> [!NOTE]\n>\n> a <b>x</b>\n'), 'unmappable-html /content/1/content/0')
 })
 
-test('refuses a callout nested one level past the 500 the parser carries, a panel and an expand alike', () => {
-  const nested = (marker: string, levels: number): string => Array.from({ length: levels }, (_, level) => `${'> '.repeat(level + 1)}${marker}\n${'> '.repeat(level + 1)}\n`).join('')
-  for (const marker of ['[!NOTE]', '[!NOTE]-', '[!NOTE]- t']) {
-    assert.ok(portableMarkdownToAdf(nested(marker, largestNesting)).ok, marker)
-    const refused = portableMarkdownToAdf(nested(marker, largestNesting + 1))
-    assert.equal(refused.ok ? undefined : refused.error.code, 'unsupported-nesting-depth', marker)
-  }
-})
+const nestedCallouts = (marker: string, levels: number): string => Array.from({ length: levels }, (_, level) => `${'> '.repeat(level + 1)}${marker}\n${'> '.repeat(level + 1)}\n`).join('')
+
+for (const { kind, marker } of [{ kind: 'a panel', marker: '[!NOTE]' }, { kind: 'an expand', marker: '[!NOTE]-' }, { kind: 'an expand with a title', marker: '[!NOTE]- t' }]) {
+  test(`refuses ${kind} nested one level past the 500 the parser carries`, () => {
+    assert.ok(portableMarkdownToAdf(nestedCallouts(marker, largestNesting)).ok)
+    const refused = portableMarkdownToAdf(nestedCallouts(marker, largestNesting + 1))
+    assert.equal(refused.ok ? undefined : refused.error.code, 'unsupported-nesting-depth')
+  })
+}
 
 test('places a refusal in a bullet list by the list and the item holding it', () => {
   const refused = (markdown: string): string => {
