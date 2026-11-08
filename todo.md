@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 154 | 0.4.0 |  |  | **Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 155 | 0.4.0 |  |  | **Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 162 | 0.4.0 |  |  | **Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
@@ -74,14 +73,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
-
-`blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
-whose info string is `carry`. Under the `docs/decisions.md` entry "The carry fence names the node
-type", that is an ordinary code language, so the property reaches `readCarriedBlock`'s refusals only
-where a random edit lands in a canonical document. Write `adf:<type>` and `adf:` fences, canonical
-and hostile. Technical principle: for pure logic over many inputs, prefer a property test, so the property must reach the fenced carry's refusals itself. Found by the technical-principles audit, 2026-10-04.
 
 ### 154. Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.
 
