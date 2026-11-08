@@ -6,18 +6,18 @@
 
 `Bar = 0.1`
 
-`Next ID = 175`
+`Next ID = 176`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 128 | 0.4.0 |  |  | **Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 75 | 0.4.0 |  |  | **Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 154 | 0.4.0 |  |  | **Pair highlights over the inline reader's pieces by their offsets before building nodes, so no placeholder text node stands in for a delimiter.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 155 | 0.4.0 |  |  | **Have `closeBracket` return the link, image or literal bracket it builds, and apply it to the scan in one caller.** | 2 | 1 | 2 | 3 | 4 | code health by 4 | 17.4 |
 | 162 | 0.4.0 |  |  | **Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
+| 175 | 0.4.0 |  |  | **Delete the guards in `tryTaskList` that `reduceToPortable` makes unreachable, once a test shows `adfToPortableMarkdown` reaches none of them.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
@@ -75,14 +75,6 @@ a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded).
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
 
-### 128. Pin the portable flavour's block reading and writing with tests: callout titles past one line, a link beside other marks in a title, the nesting limit of callouts and task lists, refusals inside tasks and their paths, and empty or non-paragraph tasks.
-
-Mutation testing left about 40 mutants alive in code moved verbatim into `src/markdown/portable/`
-on 2026-10-22, so the gaps predate the move: `tryTaskList` and `taskBlocks` in `src/markdown/portable/block-spelling.ts`, and
-`markerLine`, `quoteReader`, `titleText`, `taskBlocks` and `readTaskBlock` in
-`src/markdown/portable/portable-markdown-to-adf.ts`. Each test takes its expected value from
-`spec/flavour.md` or `docs/decisions.md`, never from the code.
-
 ### 75. Make the generated-markdown property write block carries as `adf:` fences, canonical and hostile.
 
 `blockCarry` and `hostileBlockCarry` (`src/conformance/markdown-property.test.ts`) write a fence
@@ -118,6 +110,15 @@ reference writes it. They sit in `endsAlone`'s mark check, `holdsAlike`'s `held 
 random seed. Write one line per rule of that entry, its expected markdown worked from the entry,
 never from the code, then run Stryker on the file. A mutant that only takes fewer runs back costs a
 pass and may survive.
+
+### 175. Delete the guards in `tryTaskList` that `reduceToPortable` makes unreachable, once a test shows `adfToPortableMarkdown` reaches none of them.
+
+`reduceToPortable` runs first and turns a task list opening with a non-task into a bullet list. So
+`tryTaskList` (`portable/block-spelling.ts`) never sees `previous === undefined`, and its
+`'a task holds blocks no list item spells'` failure has no test. The `path` it passes to
+`taskBlocks` and `placedBlock`, and its `Math.min` of `headroom`, change no output, since the
+nesting refusal's path comes from `reduceToPortable`. Found by mutation testing for item 128,
+2026-11-08.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
