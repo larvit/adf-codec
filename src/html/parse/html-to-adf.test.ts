@@ -523,6 +523,7 @@ const messages: readonly (readonly [string, string])[] = [
   ['<p data-color="x">a</p>\n', '<p> takes no data-color attribute'],
   ['<ol data-local-id="x" start="2">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after data-local-id'],
   ['<ol start="2" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after start'],
+  ['<ol start="2" data-bogus="1" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes no data-bogus attribute'],
   ['<pre data-wrap="yes"><code>x</code></pre>\n', 'data-wrap holds no boolean written as compact JSON'],
   ['<p><span class="adf-emoji"></span></p>\n', '<span class="adf-emoji"> holds its text, which is not empty: found "</span></p>\\n"'],
   ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', '<a class="adf-inline-card"> holds one URL, as its href and as its text, or the URL its data-data holds as its href and its name, else that URL, as its text; to change the card, change them together: found "Spec</a></p>\\n"'],
