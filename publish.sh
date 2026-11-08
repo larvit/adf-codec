@@ -36,7 +36,7 @@ if [ -z "$published" ]; then
   leg "install ($node_image)" in_image "$node_image" npm ci
   leg "build ($node_image)" in_image "$node_image" npm run build
   # npmjs shows the README's tagline, which package.json's description is overwritten with here.
-  leg "copy the README tagline to the description ($node_image)" in_image "$node_image" node release-tooling/write-description.mjs
+  in_image_memory=1g leg "copy the README tagline to the description ($node_image)" in_image "$node_image" node release-tooling/write-description.mjs
   leg "publish $name@$version ($node_image)" \
     docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -e NPM_TOKEN -v "$PWD:/app" -w /app --entrypoint sh "$node_image" -c \
     'printf "//registry.npmjs.org/:_authToken=%s\n" "$NPM_TOKEN" > "$HOME/.npmrc" && npm publish --access public'

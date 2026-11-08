@@ -61,7 +61,7 @@ leg "tests ($deno_image)" in_image "$deno_image" deno test --allow-env=PROPERTY_
 leg "tests ($bun_image)" in_image "$bun_image" bun test src/
 leg "corpus-gathering tests ($node_image)" in_image "$node_image" node --test corpus-gathering/
 leg "feature table tests ($node_image)" in_image "$node_image" node --test feature-table/
-leg "release tooling tests ($node_image)" in_image "$node_image" node --test release-tooling/
+in_image_memory=1g leg "release tooling tests ($node_image)" in_image "$node_image" node --test release-tooling/
 
 leg "build ($node_image)" in_image "$node_image" npm run build
 leg "feature table is current ($node_image)" in_image "$node_image" node feature-table/build.mjs --check
