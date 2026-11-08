@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 169`
+`Next ID = 170`
 
 ## Items
 
@@ -24,6 +24,7 @@
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
 | 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
+| 169 | 0.4.0 |  | owner | **Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.** | 1 | 1 | 1 | 1 | 3 | 3 by 4 | 6.3 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
@@ -171,6 +172,25 @@ an image, so both writers render one answer.
 Leave what an HTML carry element shows unchanged, or ship the change as a breaking HTML change with
 a `MIGRATION.md` entry: `htmlToAdf` refuses any other content, so HTML stored by an earlier release
 would no longer read (`docs/decisions.md` §The formats are API).
+
+### 169. Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.
+
+`https://github.com/kovetskiy/mark` publishes markdown files as Confluence pages. Read its
+README, source and issues, and run its conversion on the corpus's documents where that works with no
+Confluence account; say which parts were only read. Write the report as one page under `docs/`
+answering:
+
+- Which format does it write: ADF, or Confluence's storage format? Can it read a page back?
+- How does it spell the Confluence features we spell as directives, alerts and callouts: macros,
+  panels, includes, labels, attachments and page metadata? Where do its spellings and ours differ,
+  and which would the README's `## Audience` expect?
+- Which personas overlap, and what does a user of one need from the other?
+- Does it belong in the README's "Other ADF converters" table? `docs/decisions.md` §The comparison
+  table lists every converter that starts and converts covers npm packages, and this is a Go
+  program. If it is not ADF at all, that is a question for the maintainer.
+
+The report changes no spelling: one is changed only by a writer panel (`AGENTS.md` §7). A finding
+that asks for a change is filed as its own item.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 
