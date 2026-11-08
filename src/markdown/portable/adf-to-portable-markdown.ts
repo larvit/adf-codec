@@ -1,5 +1,5 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
-import { blockNodeModel, isTaskItem } from '../../adf/block-nodes.ts'
+import { blockNodeModel, isHeadingLevel, isTaskItem } from '../../adf/block-nodes.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { commonMarkSpelling, largestListMarker, spellingMemo, writeMarkdown, type SpellingMemo } from '../emit/adf-to-markdown.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
@@ -212,7 +212,7 @@ function withoutTrailingBlanks(text: string): string {
 
 function reduceHeading(node: AdfNode, reduction: Reduction): Result<AdfNode[]> {
   const level = nodeAttrs(node)['level']
-  if (typeof level !== 'number' || !Number.isInteger(level) || level < 1 || level > 6) return paragraphOf(nodeContent(node), reduction)
+  if (!isHeadingLevel(level)) return paragraphOf(nodeContent(node), reduction)
   const content = reduceInline(nodeContent(node), 'heading', reduction)
   return content.ok ? success([{ attrs: { level }, content: content.value, type: 'heading' }]) : content
 }

@@ -1,15 +1,15 @@
 import type { JsonValue } from '../json-value.ts'
+import { headingLevels, isHeadingLevel } from '../adf/block-nodes.ts'
 
 export type ContainerType = 'blockquote' | 'bulletList' | 'orderedList'
 
 // The element of each node whose blocks, or list items, stand a line each inside it.
 export const containerElements: Readonly<Record<ContainerType, string>> = { blockquote: 'blockquote', bulletList: 'ul', orderedList: 'ol' }
-const headingLevels: readonly unknown[] = [1, 2, 3, 4, 5, 6]
 export const headingElements: readonly string[] = headingLevels.map((level) => `h${level}`)
 
 // `undefined` where the level is none of 1 to 6, so the heading rides the carry.
 export function headingElement(level: JsonValue | undefined): string | undefined {
-  return headingLevels.includes(level) ? `h${level}` : undefined
+  return isHeadingLevel(level) ? `h${level}` : undefined
 }
 
 // The level of `<h1>` to `<h6>`, 0 for any other element.

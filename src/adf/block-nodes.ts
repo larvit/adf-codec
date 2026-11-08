@@ -83,10 +83,16 @@ export const blockNodes = {
   taskList: { attributes: localIdAttributes, contentModel: 'block' },
 } satisfies Readonly<Record<string, BlockNodeModel>>
 
+export const headingLevels: readonly number[] = [1, 2, 3, 4, 5, 6]
+
 export type BlockType = keyof typeof blockNodes
 
 export function blockNodeModel(type: string): BlockNodeModel | undefined {
   return isBlockType(type) ? blockNodes[type] : undefined
+}
+
+export function isHeadingLevel(level: unknown): level is number {
+  return typeof level === 'number' && headingLevels.includes(level)
 }
 
 export function isTaskItem(node: AdfNode | undefined): boolean {
