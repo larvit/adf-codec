@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 170`
+`Next ID = 171`
 
 ## Items
 
@@ -39,6 +39,7 @@
 | 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
 | 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
+| 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 26.2 |
 | 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
 | 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 19.6 |
@@ -310,6 +311,19 @@ node's JSON spells past V8's longest string, which the writers refuse as `unsupp
 the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
 spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
 are API). Found by the README-goals audit of item 83, 2026-10-11.
+
+### 170. Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.
+
+Consumers bundle the package, Forge apps with webpack among them, and one reported a "Critical
+dependency" warning from another converter. Nothing in the gate bundles it today. Install the
+tarball as `package-tests` does, bundle an entry file that round-trips one document through
+`adfToLosslessMarkdown` and `losslessMarkdownToAdf`, and run each bundle in Node. A warning fails the
+leg as an error does: webpack's "Critical dependency" is a warning. The bundlers live in their own
+package, as Stryker does (§Stryker in its own package), with pinned versions. Bun builds from the
+image the gate already pulls. No leg needs an account or a network beyond the install.
+
+Once the leg holds, the README may say the package bundles with those four; it says nothing about
+Forge's runtime, which no leg tests. Item 46 may take its bundle size from this leg.
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
