@@ -30,7 +30,7 @@ type Emission = { carries: [NodeRange, ...NodeRange[]]; segments?: undefined } |
 
 type Fallback = [NodeRange, ...NodeRange[]] | 'opening-link'
 
-// How a line is judged and what its fallbacks do: the lossless writer carries nodes, the portable reduction drops marks.
+// How a line is judged and what its fallbacks do: the writer carries nodes, the portable reduction drops marks.
 export type FallbackAction<Line, LineFallback, Written> = {
   giveUpEmphasis: (line: Line) => Line
   judge: (line: Line, grouping: RunGrouping) => Result<LineJudgement<Line, LineFallback, Written>>
@@ -118,7 +118,7 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
 
 // spec/flavour.md, Marks: the spanned line where it reads back, else the parted line, taking one fallback a pass.
 export function settledLine<Line, LineFallback, Written>(line: Line, action: FallbackAction<Line, LineFallback, Written>): Result<Written> {
-  // Terminates because `take` refuses a pass that changes nothing.
+  // Terminates while each `take` refuses or moves one way: the writer carries more nodes, the reduction keeps fewer marks.
   for (let current = line, pass = 1; ; pass += 1) {
     let parting = current
     if (pass === 1 || action.spansEachPass) {

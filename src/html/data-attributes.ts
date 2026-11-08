@@ -22,7 +22,7 @@ export function dataAttributes(node: AdfNode, vocabulary: AttributeVocabulary, w
   return attributes
 }
 
-// What `dataAttributes` wrote, its pairs' values unescaped. A pair it does not write in that order is no HTML of the dialect; a name or value no attribute of the node spells is the node's shape, as a directive's is (docs/decisions.md §Which code a cause takes).
+// What `dataAttributes` wrote, its pairs' values unescaped. A pair it does not write in that order is no HTML of the dialect; a `data-*` name or a value no attribute of the node spells is the node's shape, as a directive's is (docs/decisions.md §Which code a cause takes).
 export function readDataAttributes(pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[]): Read<AdfAttributes> {
   const attrs: AdfAttributes = {}
   let previous = ''
@@ -38,7 +38,7 @@ export function readDataAttributes(pairs: readonly (readonly [string, string])[]
   return { value: attrs }
 }
 
-// As `readDataAttributes`, past `leading`, an attribute the element writes ahead of them, where it stands first; the caller reads `leading`.
+// As `readDataAttributes`, skipping `leading` where it is the first pair and refusing it later; the caller reads `leading`'s value.
 export function readDataAttributesAfter(leading: string, pairs: readonly (readonly [string, string])[], element: string, vocabulary: AttributeVocabulary, written: readonly string[]): Read<AdfAttributes> {
   const repeated = pairs.findIndex(([name], index) => index > 0 && name === leading)
   const data = readDataAttributes(pairs.slice(pairs[0]?.[0] === leading ? 1 : 0, repeated < 0 ? pairs.length : repeated), element, vocabulary, written)

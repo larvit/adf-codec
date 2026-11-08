@@ -40,7 +40,7 @@ export function editorNormalForm(document: AdfDocument): { normal: AdfDocument; 
   return { normal, sources }
 }
 
-// A node's index in a list of siblings, or in a list of one, counted in the document the siblings were normalized from.
+// The node's offset from the list's first node, counted in the document they were normalized from; `index` where either is not in `sources`.
 export function sourceIndex(nodes: readonly AdfNode[], index: number, sources: SourceIndexes): number {
   const first = nodes[0]
   const node = nodes[index]

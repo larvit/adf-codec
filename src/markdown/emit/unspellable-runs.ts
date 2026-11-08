@@ -26,7 +26,7 @@ type PairSweep = {
 // How another pair stands when the judged one falls: `moves` where a carry or a merge may move its delimiters, `unsettled` where it may stand or have fallen.
 type Standing = 'fallen' | 'moves' | 'stands' | 'unsettled'
 
-// `merges` where a drop may merge runs at the pair's ends, so its delimiters may move; `falls` where it goes back with the first misread pair, itself included unless it merges; `kept` otherwise.
+// `merges` where a drop may merge runs at the pair's ends, so its delimiters may move; `falls` where it goes back with the first misread pair, as the first pair does unless it merges; `kept` otherwise.
 type Verdict = 'falls' | 'kept' | 'merges'
 
 // The runs this pass takes back: the first emphasis run the line misreads and every run that falls with it, else every misflanked highlight run.
@@ -109,7 +109,6 @@ function endsAlone(edge: AdfNode | undefined, beside: AdfNode | undefined, mark:
   return marks.slice(marks.findIndex((held) => identicalMark(held, mark)) + 1).every((held) => !besideTypes.has(held.type))
 }
 
-// A pair falls with the first where it falls cleanly, and cannot read whichever character it is written with.
 function fallsWithFirst(sweep: PairSweep, judged: number): boolean {
   if (!fallsCleanly(sweep, judged)) return false
   const spellings = pairSpellings(sweep, judged, judged)
