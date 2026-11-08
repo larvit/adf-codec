@@ -3,8 +3,10 @@
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-Convert between ADF (Atlassian Document Format) and markdown or HTML. For application developers
-whose app shows, edits, exports or generates the rich text Atlassian products store as ADF.
+Convert between ADF (Atlassian Document Format, the rich text of Jira and Confluence) and markdown or HTML.
+
+For application developers whose app shows, edits, exports or generates the rich text Atlassian
+products store as ADF.
 
 ## Main functionality
 
@@ -784,6 +786,8 @@ All three commands need only Docker, git and bash 5.
 - `./mutation-tests/run.sh [<base>]` mutation-tests the lines changed since `<base>`, `origin/main`
   by default, in source files git tracks. It needs 6 GB of memory for Docker, and lists the mutants
   that survived. Survivors don't fail it; a mutant whose test run crashed does.
+- The README's first paragraph after the badges is the npm description: `./publish.sh` copies it to
+  `package.json`. Keep it plain text; `./ci.sh` fails where it isn't.
 
 ## Links
 
