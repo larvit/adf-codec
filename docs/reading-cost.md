@@ -734,3 +734,13 @@ Read most (opens and searches):
 - `AGENTS.md` 1
 - `spec/flavour.md` 1
 - `spec/html.md` 1
+
+## Reading cost, chunk 1ab496a7fb35, finished 2026-11-08T21:57:34Z
+
+74016 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 7
+- `docs/decisions.md` 2
+- `CHANGELOG.md` 1

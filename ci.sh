@@ -45,6 +45,26 @@ boundaries_fire() {
 
 leg "import boundaries fire ($node_image)" boundaries_fire
 
+# Without `docker run --init`, process 1 ignores the SIGINT docker forwards and the container runs to its end.
+interrupt_stops_container() {
+  local pid ready started waited=0
+  ready=$(mktemp) || return 1
+  in_image "$node_image" sh -c 'echo ready; sleep 60' > "$ready" &
+  pid=$!
+  until grep -q ready "$ready"; do
+    waited=$((waited + 1))
+    [ "$waited" -le 300 ] || return 1
+    sleep 0.2
+  done
+  kill -INT "$pid"
+  started=$SECONDS
+  wait "$pid" || true
+  rm -f "$ready"
+  [ $((SECONDS - started)) -lt 20 ]
+}
+
+leg "Ctrl-C stops a leg's container ($node_image)" interrupt_stops_container
+
 test_log=$(mktemp)
 node_tests() {
   in_image "$node_image" npm test 2>&1 | tee "$test_log"
