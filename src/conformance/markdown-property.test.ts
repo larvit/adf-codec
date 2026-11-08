@@ -12,7 +12,7 @@ import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPortableMarkdown } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { blockArgument, marksAttribute } from '../markdown/directive/block.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
-import { carryName } from '../markdown/opaque-carry.ts'
+import { carryFencePrefix, carryName } from '../markdown/opaque-carry.ts'
 import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import {
   directivePrefix,
@@ -168,15 +168,37 @@ function container(opener: string, body: string, closer: string): string {
   return [opener, body, closer].filter((line) => line !== '').join('\n')
 }
 
-const carriedNode = fc.oneof(
-  fc.tuple(fc.constantFrom('mention', 'paragraph', 'status', 'widget'), fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true })).map(([type, attrs]): JsonValue => ({ attrs, type })),
-  textOf(1).map((held): JsonValue => ({ text: held, type: 'text' })),
+type CarriedParts = readonly [type: string, untyped: { [key: string]: JsonValue }]
+const carriedAttributes = fc.dictionary(jsonKey, jsonValue, { maxKeys: 2, noNullPrototype: true })
+const carriedParts = fc.oneof(
+  fc.tuple(fc.constantFrom('mention', 'paragraph', 'status', 'widget'), carriedAttributes).map(([type, attrs]): CarriedParts => [type, { attrs }]),
+  textOf(1).map((held): CarriedParts => ['text', { text: held }]),
 )
+const unnamedParts = fc.tuple(fc.constantFrom(' x', 'a`b', 'a\\b', 'a&amp;b'), carriedAttributes).map(([type, attrs]): CarriedParts => [type, { attrs }])
+const carriedNode = carriedParts.map(([type, untyped]): JsonValue => ({ ...untyped, type }))
 const spellCarry = (json: string) => spellInlineLeafDirective(carryName, `{json=${spellStringAttribute(json)}}`)
 const inlineCarry = carriedNode.map((node) => spellCarry(serializeCanonicalJson(node, 'compact')))
 const hostileInlineCarry = fc.oneof(carriedNode, jsonValue).map((node) => spellCarry(JSON.stringify(node, null, 1)))
-const blockCarry = carriedNode.map((node) => fencedCodeBlock(carryName, serializeCanonicalJson(node, 'two-space')))
-const hostileBlockCarry = fc.oneof(carriedNode, jsonValue).map((node) => fencedCodeBlock(carryName, JSON.stringify(node)))
+const blockCarry = fc.oneof(
+  { arbitrary: carriedParts.map(([type, untyped]) => fencedCodeBlock(`${carryFencePrefix}${type}`, serializeCanonicalJson(untyped, 'two-space'))), weight: 3 },
+  { arbitrary: unnamedParts.map(([type, untyped]) => fencedCodeBlock(carryFencePrefix, serializeCanonicalJson({ ...untyped, type }, 'two-space'))), weight: 1 },
+)
+const hostileBlockCarry = fc
+  .tuple(
+    fc.oneof(carriedParts, unnamedParts),
+    fc.oneof(
+      { arbitrary: fc.constantFrom(undefined, ''), weight: 6 },
+      { arbitrary: fc.constantFrom('widget', 'x y', 'a`b', 'a\\b', 'a&amp;b', ' padded'), weight: 1 },
+    ),
+    fc.oneof({ arbitrary: fc.constantFrom('untyped', 'typed'), weight: 6 }, { arbitrary: fc.constant('other'), weight: 1 }),
+    fc.oneof({ arbitrary: fc.constant('canonical'), weight: 4 }, { arbitrary: fc.constantFrom('compact', 'indented'), weight: 1 }),
+    jsonValue,
+  )
+  .map(([[type, untyped], named, body, spelling, other]) => {
+    const value = body === 'untyped' ? untyped : body === 'typed' ? { ...untyped, type } : other
+    const json = spelling === 'canonical' ? serializeCanonicalJson(value, 'two-space') : spelling === 'compact' ? JSON.stringify(value) : JSON.stringify(value, null, 1)
+    return fencedCodeBlock(`${carryFencePrefix}${named ?? type}`, json)
+  })
 
 function prefixLines(body: string, first: string, rest: (index: number) => string): string {
   return body
@@ -402,6 +424,7 @@ const edit: Arbitrary<Edit> = fc.tuple(fc.nat(), fc.nat({ max: 3 }), fc.oneof(pi
 const markdown = fc.oneof(
   { arbitrary: cleanMarkdown, weight: 4 },
   { arbitrary: hostileMarkdown, weight: 2 },
+  { arbitrary: fc.oneof(blockCarry, hostileBlockCarry), weight: 2 },
   { arbitrary: canonical, weight: 2 },
   { arbitrary: fc.tuple(fc.oneof(cleanMarkdown, canonical), fc.array(edit, { maxLength: 3, minLength: 1 })).map(([held, edits]) => edited(held, edits)), weight: 3 },
   { arbitrary: fc.string({ maxLength: 40, unit: piece }), weight: 1 },

@@ -758,3 +758,20 @@ Read most (opens and searches):
 - `CHANGELOG.md` 1
 - `README.md` 1
 - `mutation-tests/run.sh` 1
+
+## Reading cost, chunk 1b0dd5a87659, finished 2026-11-08T23:23:58Z
+
+196044 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 12
+- `README.md` 5
+- `src/markdown/portable/portable-markdown-to-adf.test.ts` 5
+- `docs/decisions.md` 4
+- `spec/flavour.md` 4
+- `docker-runner.sh` 3
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 3
+- `src/markdown/portable/portable-markdown-to-adf.ts` 2
+- `AGENTS.md` 1
+- `ci.sh` 1
