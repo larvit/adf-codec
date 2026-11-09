@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { NodeRange } from './line-escaping.ts'
+import type { RunGrouping } from './inline-runs.ts'
 import { isAdfMark, type AdfMark, type AdfNode } from '../../adf/document.ts'
 import { linePass, withheldMarkFallbacks } from './inline-line.ts'
 import { portableJudgement, portableLeaves } from '../portable/inline-reduction.ts'
@@ -78,24 +79,26 @@ const lines: { carry?: string[]; drop?: string[]; name: string; nodes: AdfNode[]
 ]
 
 for (const { carry, drop, name, nodes } of lines) {
-  test(`unspellableRuns returns ${name}`, () => {
-    for (const grouping of ['spanned', 'parted'] as const) {
-      if (carry !== undefined) {
-        const pass = linePass(nodes, 'paragraph', [], withheldMarkFallbacks(nodes, 'lossless'), grouping)
-        assert.ok(pass.ok)
-        assert.ok(pass.value.fallback !== undefined && pass.value.fallback !== 'opening-link')
-        assert.deepEqual(named(pass.value.fallback), carry)
-      }
-      if (drop !== undefined) {
-        const leaves = portableLeaves(nodes, 'paragraph', { depth: 0, path: [], sources: new Map() })
-        assert.ok(leaves.ok)
-        const judged = portableJudgement(leaves.value, grouping, 'paragraph', [])
-        assert.ok(judged.ok)
-        assert.ok(judged.value.kind === 'fallback' && judged.value.fallback.kind === 'unspellable-run')
-        assert.deepEqual(named(judged.value.fallback.runs), drop)
-      }
-    }
-  })
+  for (const grouping of ['spanned', 'parted'] as const) {
+    if (carry !== undefined) test(`${grouping} line of ${name}: a carry takes ${carry.join(', ')}`, () => assert.deepEqual(carryRuns(nodes, grouping), carry))
+    if (drop !== undefined) test(`${grouping} line of ${name}: a drop takes ${drop.join(', ')}`, () => assert.deepEqual(dropRuns(nodes, grouping), drop))
+  }
+}
+
+function carryRuns(nodes: readonly AdfNode[], grouping: RunGrouping): string[] {
+  const pass = linePass(nodes, 'paragraph', [], withheldMarkFallbacks(nodes, 'lossless'), grouping)
+  assert.ok(pass.ok)
+  assert.ok(pass.value.fallback !== undefined && pass.value.fallback !== 'opening-link')
+  return named(pass.value.fallback)
+}
+
+function dropRuns(nodes: readonly AdfNode[], grouping: RunGrouping): string[] {
+  const leaves = portableLeaves(nodes, 'paragraph', { depth: 0, path: [], sources: new Map() })
+  assert.ok(leaves.ok)
+  const judged = portableJudgement(leaves.value, grouping, 'paragraph', [])
+  assert.ok(judged.ok)
+  assert.ok(judged.value.kind === 'fallback' && judged.value.fallback.kind === 'unspellable-run')
+  return named(judged.value.fallback.runs)
 }
 
 function marked(types: readonly string[], text: string): AdfNode {

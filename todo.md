@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 176`
+`Next ID = 177`
 
 ## Items
 
@@ -14,6 +14,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
 | 175 | 0.4.0 |  |  | **Delete the guards in `tryTaskList` that `reduceToPortable` makes unreachable, once a test shows `adfToPortableMarkdown` reaches none of them.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 176 | 0.4.0 |  |  | **Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.** | 1 | 1 | 2 | 2 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
@@ -79,6 +80,13 @@ files, with its `ci.sh` probe, extends the decision.
 `taskBlocks` and `placedBlock`, and its `Math.min` of `headroom`, change no output, since the
 nesting refusal's path comes from `reduceToPortable`. Found by mutation testing for item 128,
 2026-11-08.
+
+### 176. Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.
+
+In `src/markdown/emit/unspellable-runs.ts`, Stryker's mutants of `runEdge`'s
+`if (standing === 'moves') return undefined` survive the hand-worked tests, and 50,000 fuzz runs
+comparing the code with the mutant found no output differ. Found on PR 145, 2026-11-09. The
+comprehension seats found `runEdge` hard to read (`larv-review places`); make it easier.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
