@@ -14,7 +14,7 @@ import { withinEngineLimits } from './length-bound.ts'
 const em: AdfMark = { type: 'em' }
 const duplicateMarks: AdfDocument = { content: [{ content: [{ marks: [em, em], text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }
 
-// One refusal per code. The Record type fails the build where a code has no entry, or an entry names no code.
+// The Record type fails the typecheck where a code has no entry, or an entry names no code.
 const causes: Record<ConvertErrorCode, () => Result<unknown>> = {
   'engine-limit': () =>
     withinEngineLimits(() => {

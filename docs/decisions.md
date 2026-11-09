@@ -960,8 +960,8 @@ https://issues.chromium.org/issues/521080746 unfixed can run the library.
 
 The library reads JSON text with `parseJsonText`, never `JSON.parse`: from V8 13.6, `JSON.parse`
 can read an escaped key as another key it read before, and the round-trip then refuses its own
-output. A test fails on `JSON.parse(` in a shipped file. The tests' own oracles keep `JSON.parse`,
-since a misread there fails the gate and never hides a bug.
+output. A test reads escaped keys back through each reader after priming V8's misread. The tests'
+own oracles keep `JSON.parse`, since a misread there fails the gate and never hides a bug.
 
 ## An ADF document is read once into a plain copy
 
