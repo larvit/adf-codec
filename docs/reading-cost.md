@@ -818,3 +818,20 @@ Read most (opens and searches):
 - `CHANGELOG.md` 1
 - `docs/decisions.md` 1
 - `src/markdown/emit/line-escaping.ts` 1
+
+## Reading cost, chunk d6ae4c8ddf50, finished 2026-11-09T04:04:53Z
+
+369605 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/unspellable-runs.ts` 9
+- `src/markdown/emit/unspellable-runs.test.ts` 7
+- `src/markdown/emit/inline-line.ts` 5
+- `docs/decisions.md` 4
+- `README.md` 3
+- `src/markdown/emit/inline-line.test.ts` 3
+- `src/markdown/portable/inline-reduction.test.ts` 3
+- `src/markdown/portable/inline-reduction.ts` 3
+- `todo.md` 3
+- `src/conformance/property-harness.ts` 2
