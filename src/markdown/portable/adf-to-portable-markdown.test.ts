@@ -511,6 +511,25 @@ test('writes a task list nested to the deepest level the reader carries, and ref
   assert.equal(crowded.ok ? undefined : crowded.error.code, 'unsupported-nesting-depth')
 })
 
+test('refuses a list that cannot be a markdown list at the depth a bullet chain in its place refuses', () => {
+  // The item's text is two markers, which reads as a thematic break and the directive form is out of reach.
+  const unspellable = bulletList(item(bulletList(item())))
+  const task = (value: string): AdfNode => node('taskItem', { state: 'TODO' }, text(value))
+  const tasks = node('taskList', {}, task('a'), node('taskList', {}, task('b'), node('taskList', {}, task('c'))))
+  const bullets = bulletList(item(said('a'), bulletList(item(said('b'), bulletList(item(said('c')))))))
+  const refusal = (chain: AdfNode, panels: number): string | undefined => {
+    let wrapped: AdfNode = bulletList(item(unspellable, chain))
+    for (let level = 0; level < panels; level += 1) wrapped = node('panel', { panelType: 'info' }, wrapped)
+    const result = adfToPortableMarkdown(document(wrapped))
+    return result.ok ? undefined : result.error.code
+  }
+  const edge = largestNesting - 4
+  assert.equal(refusal(bullets, edge - 1), undefined)
+  assert.equal(refusal(bullets, edge), 'unsupported-nesting-depth')
+  assert.equal(refusal(tasks, edge - 1), undefined)
+  assert.equal(refusal(tasks, edge), 'unsupported-nesting-depth')
+})
+
 test('writes a task list nested in the task before it, and more than one beside each other in that task', () => {
   const done = (value: string): AdfNode => node('taskItem', { state: 'DONE' }, text(value))
   const list = (...content: AdfNode[]): AdfNode => ({ content, type: 'taskList' })

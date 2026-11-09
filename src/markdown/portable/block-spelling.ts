@@ -7,6 +7,7 @@ import { emitBlock, joinBlocks, quotedBlocks, spelledList, walkBlocks } from '..
 import { emitInlineLine } from '../emit/inline-line.ts'
 import { failure, success } from '../../result.ts'
 import { isTaskItem } from '../../adf/block-nodes.ts'
+import { largestNesting } from '../../nesting.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 
 const portableBlockWriters: FlavourBlockWriters = {
@@ -40,6 +41,7 @@ function headed(head: string): (body: BlockText) => BlockText {
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const items: PlacedBlock[][] = []
+  let headroom = largestNesting - depth - 1
   // The portable reduction opens every task list with a task, so this empty array is replaced before any block is pushed to it.
   let item: PlacedBlock[] = []
   // A child other than a task nests in the task before it.
@@ -47,13 +49,14 @@ function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writi
     const task = isTaskItem(child)
     const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, writing) : placedBlock(child, [...path, 'content', index], depth + 1, writing)
     if (!walk.ok) return walk
+    headroom = Math.min(headroom, walk.value.headroom)
     if (task) {
       item = []
       items.push(item)
     }
     for (const block of walk.value.blocks) item.push(block)
   }
-  const list = spelledList(items.map((blocks) => joinBlocks(blocks, 'list-item')), undefined, Number.POSITIVE_INFINITY)
+  const list = spelledList(items.map((blocks) => joinBlocks(blocks, 'list-item')), undefined, headroom)
   // The portable reduction leaves no task a list item cannot hold: a directive here would break the flavour.
   return list === undefined ? failure('unsupported-node-shape', 'a task holds blocks no list item spells', path) : success(list)
 }
