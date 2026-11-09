@@ -1682,3 +1682,24 @@ Inherited architect, decided by:
 - Locality, Shape: `src/markdown/inline-content.ts:595` `pairingMarks`: pure, returns each piece's marks or `undefined` on the refusal, where `markPairings` rewrote `nodes` and returned a boolean
 - Shape, Self-sufficiency: `src/markdown/inline-content.ts:626` `highlightDelimiters`: `holder` becomes `marks` and the position special case is gone
 - Self-sufficiency: `src/markdown/inline-content.ts:550` `pieceNodes`: its comment says what the delimiter is, where it explained a trick
+
+## 2026-11-09T00:53:30Z, PR #144 at f822c57519a129feb51cc682f906445f54e209f4, against 19c1a53dcc162523920fafc5019d83c5cd8fe426
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | better | same | better |
+| Inherited architect | same | better | same | same | better |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/markdown/inline-content.ts:425` `closeBracket`: it reads the scan and returns a `Closing`; the base changed the scan at four points as it went
+- Locality: `src/markdown/inline-content.ts:438` `applyClosing`: every change a `]` makes to the scan sits in one function, and `linkOpenersFrom` is one expression where the base wrote it twice
+- Shape: `src/markdown/inline-content.ts:421` `Closing`: a two-arm type replaces `popBracket`, `literalClose` and `unopened`
+
+Inherited architect, decided by:
+
+- Locality: `src/markdown/inline-content.ts:438` `applyClosing`: every change a `]` makes to the scan happens here, `linkOpenersFrom` one expression keyed on `closesLink`
+- Locality: `src/markdown/inline-content.ts:425` `closeBracket`: it only reads the scan and returns a `Closing` listing the two outcomes
+- Locality: `src/markdown/inline-content.ts:179` `readToken`: the `bracket-close` case flushes like its neighbours
