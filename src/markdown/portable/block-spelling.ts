@@ -65,7 +65,6 @@ function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   return block.ok ? success({ blocks: [{ ...block.value, node }], headroom: block.value.headroom }) : block
 }
 
-// A block task item reaches here holding two or more paragraphs, so the marker leads the first (`itemParts` in task-list.ts).
 function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   const marker = taskMarker(nodeAttrs(task)['state'])
   if (task.type === 'taskItem') {
@@ -74,6 +73,7 @@ function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writin
     if (!line.ok) return line
     return success({ blocks: [{ node: { type: 'paragraph' }, spelling: 'commonmark', text: blockText(line.value === '' ? marker : `${marker} ${line.value}`) }], headroom: Number.POSITIVE_INFINITY })
   }
+  // `itemParts` in task-list.ts leaves a block task item holding only paragraphs, two or more, so the marker leads the first.
   const walk = walkBlocks(nodeContent(task), path, depth, writing)
   if (!walk.ok) return walk
   const blocks = walk.value.blocks.map((block, index) => (index === 0 ? { ...block, text: prefixedText(`${marker} `, '', block.text) } : block))
