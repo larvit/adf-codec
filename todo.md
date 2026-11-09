@@ -77,9 +77,10 @@ files, with its `ci.sh` probe, extends the decision.
 `reduceToPortable` runs first, so `adfToPortableMarkdown` never reaches the failure in `tryTaskList`
 (`portable/block-spelling.ts`), and no test reaches it. The failure stays because `spelledList`
 returns `undefined` for blocks a list item cannot hold, and the code rules ban the cast that would
-drop that case. The `path` arguments to `taskBlocks` and `placedBlock` don't change any output:
-`reduceToPortable` refuses a document nested past `largestNesting` and names the path itself.
-Found by mutation testing for item 128, 2026-11-08.
+drop that case. Mutants of the `path` arguments to `taskBlocks` and `placedBlock` survived, so
+no test shows they reach an error; delete them only once one does or an argument shows none can.
+Found by mutation testing for item 128, 2026-11-08. The `headroom` is not a guard: a list that
+cannot be a markdown list refuses by it, as a test now pins.
 
 ### 176. Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.
 
