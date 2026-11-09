@@ -48,14 +48,9 @@ for (const [code, cause] of Object.entries(causes)) {
   })
 }
 
-// A code added or removed must reach the README's tables, which are the contract a consumer switches on.
 test('the README error tables list exactly the codes ConvertErrorCode holds', () => {
   const readme = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'README.md'), 'utf8')
-  const section = readme.slice(readme.indexOf('\n## The errors\n'))
-  const listed = new Set<string>()
-  for (const line of section.slice(1, section.indexOf('\n## ', 1)).split('\n')) {
-    const code = /^\| `([a-z-]+)` \|/.exec(line)?.[1]
-    if (code !== undefined) listed.add(code)
-  }
-  assert.deepEqual([...listed].sort(), Object.keys(causes).sort())
+  const section = readme.slice(readme.indexOf('\n## The errors\n') + 1, readme.indexOf('\n## ', readme.indexOf('\n## The errors\n') + 1))
+  const listed = [...section.matchAll(/^\| `([a-z-]+)` \|/gm)].map((match) => match[1])
+  assert.deepEqual(listed.sort(), Object.keys(causes).sort())
 })
