@@ -514,7 +514,7 @@ function resolveNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean)
   return nodes.ok ? success(mergeReadText(nodes.value.flat())) : nodes
 }
 
-// The result's `[index]` holds piece `index`'s nodes.
+// Entry `index` of the result holds piece `index`'s nodes.
 function markedNodes(pieces: readonly Piece[], scan: Scan, highlights: boolean): Result<Inline[][]> {
   const runs = delimiterRuns(pieces)
   const pairings = matchEmphasis(runs)
@@ -547,7 +547,7 @@ function mergeReadText(items: readonly Inline[]): Inline[] {
 }
 
 // The image arm is an image inside an image's description or a link's text, which reads as its plain alt text.
-// A highlight delimiter is the text `==` until it pairs, so the emphasis around it marks it.
+// An unpaired highlight delimiter stays the text `==`, under the emphasis around it.
 function pieceNodes(piece: Piece): Inline[] {
   switch (piece.kind) {
     case 'ownMarks':
@@ -592,7 +592,6 @@ function writeUnpaired(nodes: Inline[][], runs: readonly Run[], pairings: readon
 }
 
 // Pairings nest, so one walk holding the open ones on a stack gives each piece its marks, outermost first (spec/flavour.md, Marks).
-// It is `undefined` where an own-marks node stands inside a mark.
 function pairingMarks(pieces: readonly Piece[], pairings: readonly Pairing[]): AdfMark[][] | undefined {
   const opening = pairingsByOpener(pairings)
   const open: { closer: number; marks: AdfMark[] }[] = []
@@ -661,7 +660,7 @@ function pairedHighlights(pieces: readonly Piece[], nodes: readonly Inline[][], 
   return paired
 }
 
-// A pair's delimiters leave, and the nodes between them take the highlight.
+// A node holds one highlight, and a rebuilt node would lose its attributes.
 function markHighlights(nodes: Inline[][], paired: readonly HighlightPair[]): void {
   for (const { closer, opener } of paired) {
     nodes[opener] = []
@@ -670,7 +669,6 @@ function markHighlights(nodes: Inline[][], paired: readonly HighlightPair[]): vo
   }
 }
 
-// A node holds one highlight, and a rebuilt node would lose its attributes.
 function highlighted(node: Inline): Inline {
   if (!isNode(node)) return node
   const marks = nodeMarks(node)
