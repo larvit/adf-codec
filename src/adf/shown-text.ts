@@ -17,8 +17,15 @@ export function oneLine(text: string): string {
   return text.replace(/[\r\u0000]/g, '').replace(/\n/g, ' ')
 }
 
-// The name of what a node references where it shows no text of its own, for a note standing in its place.
-export function referenceName(node: AdfNode): string | undefined {
+export type ShownNote = { link: LinkAttrs | undefined; name: string }
+
+// The note standing in place of a node that shows no text of its own: `name` what it references, and `link` the node's link, which both writers keep around the note. `undefined` where the node references nothing.
+export function shownNote(node: AdfNode): ShownNote | undefined {
+  const name = referenceName(node)
+  return name === undefined ? undefined : { link: shownLink(node), name }
+}
+
+function referenceName(node: AdfNode): string | undefined {
   switch (node.type) {
     case 'blockCard':
     case 'embedCard':

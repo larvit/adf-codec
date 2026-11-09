@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
 | 169 | 0.4.0 |  | owner | **Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.** | 1 | 1 | 1 | 1 | 3 | 3 by 4 | 6.3 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
@@ -63,19 +62,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 143. Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.
-
-`noteLeaves` (`src/markdown/portable/inline-reduction.ts`) drops the node's marks, so a stored
-image a link marks writes `_(image not included)_` without the link's target, which Goal 7 counts as
-content. `adfToHtml`'s carry element keeps it, `<a href="…"><em>(image)</em></a>`.
-
-Move the choice of where a note's link goes into `src/adf/shown-text.ts`, beside `shownImage`'s for
-an image, so both writers render one answer.
-
-Leave what an HTML carry element shows unchanged, or ship the change as a breaking HTML change with
-a `MIGRATION.md` entry: `htmlToAdf` refuses any other content, so HTML stored by an earlier release
-would no longer read (`docs/decisions.md` §The formats are API).
 
 ### 169. Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.
 

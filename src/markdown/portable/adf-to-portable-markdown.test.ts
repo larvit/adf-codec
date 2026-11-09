@@ -296,6 +296,15 @@ test('keeps an external image wherever it stands and spells a stored file as its
   assert.equal(portable(caption), 'The moon.\n')
 })
 
+test('keeps the link marking a node around the note standing in its place', () => {
+  const linked = (stored: AdfNode, href: string, title?: string): AdfNode => ({ ...stored, marks: [{ attrs: title === undefined ? { href } : { href, title }, type: 'link' }, { type: 'strong' }] })
+  assert.equal(portable(paragraph(text('a '), linked(node('mediaInline', { type: 'file' }), 'https://example.com/a'))), 'a [_(image not included)_](https://example.com/a)\n')
+  assert.equal(portable(paragraph(linked(node('mediaInline', { type: 'file' }), 'https://example.com/a', 'T'))), '[_(image not included)_](https://example.com/a "T")\n')
+  assert.equal(portable(paragraph(linked(node('inlineExtension', { extensionKey: 'macro' }), 'https://example.com/b'))), '[_(macro not included)_](https://example.com/b)\n')
+  assert.equal(portable(paragraph(linked(node('mediaInline', { type: 'file' }), 'a|b'))), '[_(image not included)_](a|b)\n')
+  assert.equal(portable(node('table', {}, node('tableRow', {}, node('tableCell', {}, paragraph(linked(node('mediaInline', { type: 'file' }), 'a|b')))))), '| [_(image not included)_](a%7Cb) |\n| --- |\n')
+})
+
 test('spells an extension as its text attribute, else a note naming it, and a placeholder as nothing', () => {
   assert.equal(portable(node('extension', { extensionKey: 'toc', text: 'Contents' }), node('extension', { extensionKey: 'jira-issues-table' })), 'Contents\n\n_(jira-issues-table not included)_\n')
   assert.equal(portable(node('syncBlock', { resourceId: 'r' })), '_(synced block not included)_\n')
