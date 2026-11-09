@@ -963,13 +963,21 @@ can read an escaped key as another key it read before, and the round-trip then r
 output. A test fails on `JSON.parse(` in a shipped file. The tests' own oracles keep `JSON.parse`,
 since a misread there fails the gate and never hides a bug.
 
-## No value `JSON.parse` or `structuredClone` builds loops a call
+## A call reads its input once into a plain copy
 
-2026-10-04, the maintainer. Goals 1 and 9. Valid until `todo.md` item 77 lands.
+2026-10-04, the maintainer; the 10 million 2026-10-05; the code and the name 2026-11-09, applying
+§Which code a cause takes and the entry for the long output. Goals 1 and 9. Valid while a persona
+can hand in a value with accessors or a Proxy.
 
-The guards walk a value by `Object.values` and refuse a cycle in it. An inherited or non-enumerable
-key, a getter, a Proxy or a custom iterator is the caller's to rule out: no persona builds one. Goal
-9's size counts ADF as JSON, so a shared object costs once per place it is held.
+`readAdfDocument` and the three writers copy the input once, before any check, reading property
+descriptors so no getter runs: an accessor property, or a Proxy trap that throws, is
+`not-an-adf-document`. The copy keeps own enumerable string keys, as `JSON.stringify` does, so an
+inherited or non-enumerable key drops, and reads an array by index, so no iterator runs. It refuses
+a cycle by the objects above the one it copies. Every later step reads the copy. The copy takes at
+most 10 million JSON values, each object, array, string, number, boolean and null counting one,
+past which the document is `unsupported-node-shape`, since the document does not convert; an array
+claiming more elements than the values left is refused before it is read. Goal 9's size counts ADF
+as JSON, so a shared object costs once per place it is held.
 
 ## Nothing spreads an unbounded array
 

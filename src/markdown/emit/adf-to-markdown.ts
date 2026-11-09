@@ -10,7 +10,7 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
 import { holdsNullCharacter, markerInterruptsParagraph } from '../commonmark/grammar.ts'
-import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
+import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { withinEngineLimits, withinLongest } from '../../length-bound.ts'
@@ -48,7 +48,10 @@ const listItemOpener = spellDirectiveOpener('listItem', undefined, '')
 const orderedDelimiters: Delimiters = ['.', ')']
 
 export function adfToLosslessMarkdown(document: AdfDocument): Result<string> {
-  return withinEngineLimits(() => writeMarkdown(document, { flavour: 'lossless' }))
+  return withinEngineLimits(() => {
+    const read = readAdfDocument(document)
+    return read.ok ? writeMarkdown(read.value, { flavour: 'lossless' }) : read
+  })
 }
 
 export function writeMarkdown(document: AdfDocument, writtenAs: WrittenAs): Result<string> {

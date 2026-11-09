@@ -1,4 +1,4 @@
-// Export only the conversions, their types, isAdfDocument and what a guarantee or a persona needs.
+// Export only the conversions, their types, readAdfDocument and what a guarantee or a persona needs.
 export type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './adf/document.ts'
 export type { ConvertError, ConvertErrorCode, ConvertErrorPath, ParseError, Result, SourcePosition } from './result.ts'
 export type { JsonValue } from './json-value.ts'
@@ -7,5 +7,5 @@ export { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
 export { adfToPortableMarkdown } from './markdown/portable/adf-to-portable-markdown.ts'
 export { commonMarkToAdf, losslessMarkdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 export { htmlToAdf } from './html/parse/html-to-adf.ts'
-export { isAdfDocument } from './adf/document.ts'
 export { portableMarkdownToAdf } from './markdown/portable/portable-markdown-to-adf.ts'
+export { readAdfDocument } from './adf/document.ts'

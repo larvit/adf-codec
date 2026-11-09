@@ -1,8 +1,9 @@
 import { blockNodeModel } from './block-nodes.ts'
-import { failure, faulted, success, type ConvertError, type ConvertFault, type Result } from '../result.ts'
+import { failure, faulted, success, type ConvertError, type ConvertFault, type Read, type Result } from '../result.ts'
 import { inlineNodeModel } from './inline-nodes.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
+import { plainCopy } from './plain-copy.ts'
 import { withinLongest } from '../length-bound.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
@@ -34,21 +35,34 @@ const markKeys = ['attrs', 'type']
 const nodeKeys = ['attrs', 'content', 'marks', 'text', 'type']
 
 export function adfDocumentFault(value: unknown): ConvertFault | undefined {
+  const shaped = shapedDocument(value)
+  return shaped.fault ?? nestingFault(shaped.value.content ?? [])
+}
+
+// Reads `value` once into a plain copy and checks the copy's shape. Depth is the walks' business, not the shape's: a deep document reads as blocks and marks do.
+export function readAdfDocument(value: unknown): Result<AdfDocument> {
+  const copy = plainCopy(value)
+  if (copy.fault !== undefined) return faulted(copy.fault, [])
+  const shaped = shapedDocument(copy.value)
+  return shaped.fault === undefined ? success(shaped.value) : faulted(shaped.fault, [])
+}
+
+function shapedDocument(value: unknown): Read<AdfDocument> {
   if (!isRecord(value)) return notADocument(`an ADF document is an object: found ${describe(value)}`)
   const extra = extraKey(value, documentKeys)
   if (extra !== undefined) return notADocument(`an ADF document holds content, type and version alone: found the key ${extra}`)
   if (!('type' in value)) return notADocument('an ADF document holds type "doc": found no type field')
-  if (value['type'] !== 'doc') return notADocument(`an ADF document holds type "doc": found ${describe(value['type'])}`)
+  const type: unknown = value['type']
+  if (type !== 'doc') return notADocument(`an ADF document holds type "doc": found ${describe(type)}`)
   if (!('version' in value)) return notADocument('an ADF document holds a version number: found no version field')
-  const version = value['version']
+  const version: unknown = value['version']
   if (typeof version !== 'number' || !Number.isFinite(version)) return notADocument(`an ADF document holds a version number: found ${describe(version)}`)
-  if (!('content' in value)) return undefined
-  const held: unknown = value['content']
-  if (!Array.isArray(held)) return notADocument(`an ADF document's content is an array: found ${describe(held)}`)
-  const content: readonly unknown[] = held
-  if (holdsItself(content)) return notADocument('an ADF document is a tree: an object in it holds itself')
-  if (!isNodeArray(content)) return notADocument("an ADF document's content holds ADF nodes: one of them is not")
-  return nestingFault(content)
+  if (!('content' in value)) return { value: { type, version } }
+  const content: unknown = value['content']
+  if (!Array.isArray(content)) return notADocument(`an ADF document's content is an array: found ${describe(content)}`)
+  const nodes: readonly unknown[] = content
+  if (!isNodeArray(nodes)) return notADocument("an ADF document's content holds ADF nodes: one of them is not")
+  return { value: { content: nodes, type, version } }
 }
 
 // The checks every writer opens with; `undefined` where the document holds no `content` key, which each format spells its own way.
@@ -126,12 +140,6 @@ export function mergedTextRuns(nodes: readonly AdfNode[], joins: (previous: AdfN
   return merged
 }
 
-// Depth is the walks' business, not the shape's: the guard waves a deep document through as blocks and marks do.
-export function isAdfDocument(value: unknown): value is AdfDocument {
-  const fault = adfDocumentFault(value)
-  return fault === undefined || fault.code === 'unsupported-nesting-depth'
-}
-
 export function isAdfNode(value: unknown): value is AdfNode {
   return isNodeArray([value])
 }
@@ -184,24 +192,7 @@ function shapeRefusal(node: AdfNode): string | undefined {
   return model.contentModel === 'none' && holdsContent ? `a node of type ${node.type} holds no content: this one holds some` : undefined
 }
 
-// Tracks ancestors alone: a tree may share an object, but an object holding itself walks the guards forever.
-function holdsItself(root: object): boolean {
-  const pending = [{ depth: 0, item: root }]
-  const ancestors: object[] = []
-  const onPath = new Set<unknown>()
-  while (pending.length > 0) {
-    const entry = pending.pop()
-    if (entry === undefined) continue
-    while (ancestors.length > entry.depth) onPath.delete(ancestors.pop())
-    if (onPath.has(entry.item)) return true
-    ancestors.push(entry.item)
-    onPath.add(entry.item)
-    for (const child of Object.values(entry.item)) if (typeof child === 'object' && child !== null) pending.push({ depth: entry.depth + 1, item: child })
-  }
-  return false
-}
-
-function isNodeArray(value: readonly unknown[]): value is readonly AdfNode[] {
+function isNodeArray(value: readonly unknown[]): value is AdfNode[] {
   const pending: unknown[] = [...value]
   while (pending.length > 0) {
     const node = pending.pop()
@@ -265,8 +256,8 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function notADocument(message: string): ConvertFault {
-  return { code: 'not-an-adf-document', message }
+function notADocument(message: string): { fault: ConvertFault } {
+  return { fault: { code: 'not-an-adf-document', message } }
 }
 
 function describe(value: unknown): string {

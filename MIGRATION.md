@@ -1,5 +1,24 @@
 # Migrating
 
+## From `0.3.1` to `0.4.0`
+
+`isAdfDocument` is gone. `readAdfDocument` takes its place and returns a `Result<AdfDocument>`; the
+`message` of its error names the branch that refused.
+
+| `0.3.1` | `0.4.0` |
+| --- | --- |
+| `if (isAdfDocument(value)) convert(value)` | `const read = readAdfDocument(value); if (read.ok) convert(read.value)` |
+| `const valid = isAdfDocument(value)` | `const valid = readAdfDocument(value).ok` |
+
+Convert `read.value`: it is a copy that shares no object with `value`. The copy keeps own
+enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops. A document
+nesting past 500 levels still reads; the converters refuse it as `unsupported-nesting-depth`.
+
+`readAdfDocument`, `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown` read a document
+once into that copy. A document holding an accessor property, or a Proxy that throws, is
+`not-an-adf-document` in `0.4.0`, where `0.3.1` ran the getter or threw. A document holding more
+than 10,000,000 JSON values is `unsupported-node-shape`.
+
 ## From `0.2.0` to `0.3.0`
 
 Every reader skips code text when it spells a mark other than a link, and `losslessMarkdownToAdf`

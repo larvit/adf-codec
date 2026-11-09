@@ -5,11 +5,21 @@ import vm from 'node:vm'
 import type { AdfDocument, AdfNode } from './document.ts'
 import type { JsonValue } from '../json-value.ts'
 import { adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown } from '../index.ts'
-import { adfDocumentFault, isAdfDocument, writableContent } from './document.ts'
+import { adfDocumentFault, readAdfDocument, writableContent } from './document.ts'
 import { largestNesting } from '../nesting.ts'
+import { mostValues } from './plain-copy.ts'
 
 function fault(value: unknown): string {
   return adfDocumentFault(value)?.message ?? 'accepted'
+}
+
+function readable(value: unknown): boolean {
+  return readAdfDocument(value).ok
+}
+
+function readFault(value: unknown): string {
+  const result = readAdfDocument(value)
+  return result.ok ? 'accepted' : `${result.error.code}: ${result.error.message}`
 }
 
 function faultCode(value: unknown): string {
@@ -27,13 +37,13 @@ function withAttribute(value: JsonValue): unknown {
 }
 
 test('accepts an editor-normal document', () => {
-  assert.equal(isAdfDocument({ content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }), true)
-  assert.equal(isAdfDocument({ type: 'doc', version: 1 }), true)
+  assert.equal(readable({ content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }), true)
+  assert.equal(readable({ type: 'doc', version: 1 }), true)
   assert.equal(fault({ content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }), 'accepted')
 })
 
 test('names the check anything that is not a doc node failed', () => {
-  assert.equal(isAdfDocument(null), false)
+  assert.equal(readable(null), false)
   assert.equal(fault(null), 'an ADF document is an object: found null')
   assert.equal(fault(undefined), 'an ADF document is an object: found undefined')
   assert.equal(fault([]), 'an ADF document is an object: found an array')
@@ -54,13 +64,13 @@ test('names the check anything that is not a doc node failed', () => {
 test('rejects a node whose shape ProseMirror JSON cannot hold', () => {
   assert.equal(fault({ content: {}, type: 'doc', version: 1 }), "an ADF document's content is an array: found an object")
   assert.equal(fault({ content: [{ type: 1 }], type: 'doc', version: 1 }), "an ADF document's content holds ADF nodes: one of them is not")
-  assert.equal(isAdfDocument({ content: [{ type: 1 }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ text: 1, type: 'text' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ node: 'x', type: 'paragraph' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ content: {}, type: 'paragraph' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ marks: [{ type: 1 }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ attrs: { a: Number.POSITIVE_INFINITY }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ attrs: [], type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ type: 1 }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ text: 1, type: 'text' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ node: 'x', type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ content: {}, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ marks: [{ type: 1 }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ attrs: { a: Number.POSITIVE_INFINITY }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ attrs: [], type: 'paragraph' }], type: 'doc', version: 1 }), false)
 })
 
 test('names the attribute nesting past the levels the parser reads one at, and still calls the value a document', () => {
@@ -68,48 +78,48 @@ test('names the attribute nesting past the levels the parser reads one at, and s
   assert.equal(fault(withAttribute(nested(largestNesting))), 'accepted')
   assert.equal(fault(withAttribute(nested(largestNesting + 1))), deeper('a', 'paragraph'))
   assert.equal(faultCode(withAttribute(nested(largestNesting + 1))), 'unsupported-nesting-depth')
-  assert.equal(isAdfDocument(withAttribute(nested(largestNesting + 1))), true)
+  assert.equal(readable(withAttribute(nested(largestNesting + 1))), true)
   const marked = (levels: number): unknown => ({ content: [{ marks: [{ attrs: { a: nested(levels) }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 })
   assert.equal(fault(marked(largestNesting)), 'accepted')
   assert.equal(fault(marked(largestNesting + 1)), deeper('a', 'link'))
-  assert.equal(isAdfDocument(marked(largestNesting + 1)), true)
+  assert.equal(readable(marked(largestNesting + 1)), true)
 })
 
 test('accepts the JSON values an attribute may hold', () => {
-  assert.equal(isAdfDocument({ content: [{ attrs: { a: [1, 'x', null, true, { b: 2 }] }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
-  assert.equal(isAdfDocument({ content: [{ attrs: { a: [() => 1] }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ attrs: { a: Object.assign(Object.create(null), { b: 1 }) }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
-  assert.equal(isAdfDocument(vm.runInNewContext("({ content: [{ attrs: { a: { b: [1] } }, type: 'paragraph' }], type: 'doc', version: 1 })")), true)
+  assert.equal(readable({ content: [{ attrs: { a: [1, 'x', null, true, { b: 2 }] }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
+  assert.equal(readable({ content: [{ attrs: { a: [() => 1] }, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ attrs: { a: Object.assign(Object.create(null), { b: 1 }) }, type: 'paragraph' }], type: 'doc', version: 1 }), true)
+  assert.equal(readable(vm.runInNewContext("({ content: [{ attrs: { a: { b: [1] } }, type: 'paragraph' }], type: 'doc', version: 1 })")), true)
 })
 
 test('refuses an attribute value that is an object JSON does not hold', () => {
   class Point { x = 1 }
   for (const value of [new Date(0), new Map([['b', 1]]), new Set([1]), new Uint8Array([1, 2]), new Point(), [new Map()], { b: new Set() }]) {
-    assert.equal(isAdfDocument({ content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }), false, String(value))
+    assert.equal(readable({ content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }), false, String(value))
   }
-  assert.equal(isAdfDocument({ content: [{ attrs: new Map(), type: 'paragraph' }], type: 'doc', version: 1 }), false)
-  assert.equal(isAdfDocument({ content: [{ marks: [{ attrs: { href: new URL('https://x.test') }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ attrs: new Map(), type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readable({ content: [{ marks: [{ attrs: { href: new URL('https://x.test') }, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), false)
 })
 
 test("reads a node's siblings as a walk rather than as one call's arguments", () => {
   const wide = { content: [{ content: Array.from({ length: 200000 }, () => ({ type: 'rule' })), type: 'blockquote' }], type: 'doc', version: 1 }
-  assert.equal(isAdfDocument(wide), true)
+  assert.equal(readable(wide), true)
   assert.equal(fault(wide), 'accepted')
 })
 
 test('refuses an object holding itself, and accepts one shared', () => {
-  const holdsItself = 'an ADF document is a tree: an object in it holds itself'
+  const holdsItself = 'not-an-adf-document: an ADF document is a tree: an object in it holds itself'
   const paragraph: { content: unknown[]; type: string } = { content: [], type: 'paragraph' }
   paragraph.content.push(paragraph)
-  assert.equal(fault({ content: [paragraph], type: 'doc', version: 1 }), holdsItself)
+  assert.equal(readFault({ content: [paragraph], type: 'doc', version: 1 }), holdsItself)
   const document: { content: unknown[]; type: string; version: number } = { content: [], type: 'doc', version: 1 }
   document.content.push(document)
-  assert.equal(fault(document), holdsItself)
+  assert.equal(readFault(document), holdsItself)
   const attrs: Record<string, unknown> = {}
   attrs['a'] = [attrs]
-  assert.equal(fault({ content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }), holdsItself)
-  assert.equal(fault({ content: [{ marks: [{ attrs, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), holdsItself)
-  assert.equal(isAdfDocument({ content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }), false)
+  assert.equal(readFault({ content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }), holdsItself)
+  assert.equal(readFault({ content: [{ marks: [{ attrs, type: 'link' }], text: 'x', type: 'text' }], type: 'doc', version: 1 }), holdsItself)
+  assert.equal(readable({ content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }), false)
   const bold = { type: 'strong' }
   const text = { marks: [bold], text: 'x', type: 'text' }
   const shared = { content: [text, text], type: 'paragraph' }
@@ -216,4 +226,98 @@ test('names a link-marked card at any depth by its path alone, with no step quad
   const refused = writableContent({ content: [node], type: 'doc', version: 1 })
   assert.equal(!refused.ok && refused.error.path.length, 2 * (depth + 1))
   assert.deepEqual(!refused.ok && refused.error.path.slice(0, 4), ['content', 0, 'content', 0])
+})
+
+const writers = [adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown]
+
+function documentOf(attrs: unknown): unknown {
+  return { content: [{ attrs, type: 'paragraph' }], type: 'doc', version: 1 }
+}
+
+test('reads a document once into a copy that shares nothing with the original', () => {
+  const original = { content: [{ attrs: { a: [1, { b: 'x' }] }, content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }
+  const result = readAdfDocument(original)
+  assert.ok(result.ok)
+  assert.deepEqual(result.value, original)
+  assert.notEqual(result.value, original)
+  original.content[0]?.content.push({ text: 'y', type: 'text' })
+  assert.equal(result.value.content?.[0]?.content?.length, 1)
+})
+
+test('refuses a value holding an accessor property, whichever object or array holds it', () => {
+  const refused = 'not-an-adf-document: an ADF document is plain data: one of its objects holds a getter or a setter'
+  assert.equal(readFault({ get content() { return [] }, type: 'doc', version: 1 }), refused)
+  assert.equal(readFault({ content: [{ get type() { return 'rule' } }], type: 'doc', version: 1 }), refused)
+  assert.equal(readFault(documentOf({ set a(value: number) { void value } })), refused)
+  assert.equal(readFault(documentOf({ a: Object.defineProperty([], 0, { enumerable: true, get: () => 1 }) })), refused)
+})
+
+test('refuses a getter minting a fresh child per access without walking it', () => {
+  const endless = (): unknown => ({ get next() { return endless() } })
+  assert.equal(readFault(documentOf(endless())), 'not-an-adf-document: an ADF document is plain data: one of its objects holds a getter or a setter')
+})
+
+test('refuses a Proxy that throws, and a revoked one, wherever they stand', () => {
+  const unreadable = 'not-an-adf-document: an ADF document is plain data: reading one of its objects threw'
+  const throwing = (target: object, trap: string): object => new Proxy(target, { [trap]: () => { throw new Error('trap') } })
+  for (const trap of ['getOwnPropertyDescriptor', 'getPrototypeOf', 'ownKeys']) {
+    assert.equal(readFault(throwing({ type: 'doc', version: 1 }, trap)), unreadable, trap)
+    assert.equal(readFault(documentOf(throwing({ b: 1 }, trap))), unreadable, trap)
+  }
+  assert.equal(readFault({ content: throwing([1], 'getOwnPropertyDescriptor'), type: 'doc', version: 1 }), unreadable)
+  assert.equal(readFault({ content: throwing([], 'get'), type: 'doc', version: 1 }), unreadable)
+  const revoked = Proxy.revocable({}, {})
+  revoked.revoke()
+  assert.equal(readFault(revoked.proxy), unreadable)
+  assert.equal(readFault(documentOf(revoked.proxy)), unreadable)
+})
+
+test('copies own enumerable string keys alone, as JSON.stringify does', () => {
+  const keyed = Object.defineProperty({ own: 2, [Symbol('symbol')]: 4 }, 'hidden', { enumerable: false, value: 3 })
+  const result = readAdfDocument(documentOf(keyed))
+  assert.ok(result.ok)
+  assert.deepEqual(result.value.content?.[0]?.attrs, { own: 2 })
+  assert.equal(readable({ content: [Object.create({ type: 'rule' })], type: 'doc', version: 1 }), false)
+  const proxied = new Proxy({ b: 1 }, { getOwnPropertyDescriptor: () => undefined })
+  const dropped = readAdfDocument(documentOf(proxied))
+  assert.ok(dropped.ok)
+  assert.deepEqual(dropped.value.content?.[0]?.attrs, {})
+})
+
+test('copies a key named __proto__ as a key, leaving the copy a plain object', () => {
+  const result = readAdfDocument(documentOf(JSON.parse('{"__proto__":{"polluted":1}}')))
+  assert.ok(result.ok)
+  const attrs = result.value.content?.[0]?.attrs
+  assert.deepEqual(Object.keys(attrs ?? {}), ['__proto__'])
+  assert.equal(Object.getPrototypeOf(attrs), Object.prototype)
+  assert.equal(Reflect.get(attrs ?? {}, 'polluted'), undefined)
+})
+
+test('reads an array by index, so no iterator runs and a hole is no JSON value', () => {
+  const iterated = Object.assign([1, 2], { [Symbol.iterator]: () => { throw new Error('iterated') } })
+  const result = readAdfDocument(documentOf({ a: iterated }))
+  assert.ok(result.ok)
+  assert.deepEqual(result.value.content?.[0]?.attrs, { a: [1, 2] })
+  assert.equal(readable(documentOf({ a: [1, , 3] })), false)
+})
+
+test('refuses an array claiming more elements than the values left, before it reads any', () => {
+  const claimed = `unsupported-node-shape: an ADF document holds at most ${mostValues} JSON values: this one holds more`
+  const claiming = (length: unknown): object => new Proxy([], { get: (target, key) => (key === 'length' ? length : Reflect.get(target, key)) })
+  assert.equal(readFault({ content: claiming(2 ** 32 - 1), type: 'doc', version: 1 }), claimed)
+  assert.equal(readFault({ content: new Array(mostValues - 1), type: 'doc', version: 1 }), claimed)
+  assert.equal(readFault({ content: claiming('many'), type: 'doc', version: 1 }), 'not-an-adf-document: an ADF document is plain data: reading one of its objects threw')
+  assert.equal(readFault({ content: claiming(-1), type: 'doc', version: 1 }), 'not-an-adf-document: an ADF document is plain data: reading one of its objects threw')
+})
+
+test('returns a result for a hostile document from every writer', () => {
+  const throwing = new Proxy({ type: 'rule' }, { ownKeys: () => { throw new Error('trap') } })
+  const hostile: AdfDocument[] = [{ get content() { return [] }, type: 'doc', version: 1 }, { content: [throwing], type: 'doc', version: 1 }]
+  for (const write of writers) {
+    for (const document of hostile) {
+      const result = write(document)
+      assert.ok(!result.ok)
+      assert.equal(result.error.code, 'not-an-adf-document')
+    }
+  }
 })

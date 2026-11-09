@@ -10,7 +10,7 @@ import { isBlockNodeType, oneLine } from '../../adf/shown-text.ts'
 import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
-import { nodeAttrs, nodeContent, nodeMarks, writableContent } from '../../adf/document.ts'
+import { nodeAttrs, nodeContent, nodeMarks, readAdfDocument, writableContent } from '../../adf/document.ts'
 import { portableWriting } from './block-spelling.ts'
 import { splitTaskList, taskListItems } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
@@ -53,7 +53,8 @@ const blockReducers: Readonly<Record<string, BlockReducer>> = {
 
 export function adfToPortableMarkdown(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => {
-    const reduced = reduceToPortable(document)
+    const read = readAdfDocument(document)
+    const reduced = read.ok ? reduceToPortable(read.value) : read
     return reduced.ok ? writeMarkdown(reduced.value, portableWriting) : reduced
   })
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking:** `readAdfDocument` replaces `isAdfDocument`: it returns a `Result<AdfDocument>` whose
+  error names the branch that refused, and `MIGRATION.md` shows the change.
+- `readAdfDocument`, `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown` read the
+  document once into a plain copy, so a document holding an accessor property, or a Proxy that
+  throws, returns `not-an-adf-document` where it ran the getter, looped or threw. A document of
+  more than 10,000,000 JSON values returns `unsupported-node-shape`.
+
 ## 0.3.1
 
 - The README opens with a one-line description, a list of the calls and the package's perks, and

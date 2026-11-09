@@ -4,12 +4,13 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
+import type { AdfDocument } from '../adf/document.ts'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { inlineNodes } from '../adf/inline-nodes.ts'
-import { isAdfDocument, isRecord } from '../adf/document.ts'
+import { isRecord, readAdfDocument } from '../adf/document.ts'
 import { isJsonValue } from '../json-value.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { markVocabularies } from '../adf/mark-attributes.ts'
@@ -24,6 +25,12 @@ const roundTripRoot = join(corpusRoot, 'round-trip')
 
 const roundTripDirectories = ['block-nodes', 'combinations', 'commonmark-subset', 'inline-nodes', 'opaque-carry']
 const typesNoFetchedDocumentHolds = ['bodiedSyncBlock', 'decisionItem', 'decisionList', 'extensionFrame', 'fragment', 'multiBodiedExtension', 'syncBlock']
+
+function documentIn(json: unknown, name: string): AdfDocument {
+  const read = readAdfDocument(json)
+  assert.ok(read.ok, `${name}.json is not an ADF document`)
+  return read.value
+}
 
 function directoryNames(root: string): string[] {
   return readdirSync(root, { withFileTypes: true })
@@ -84,8 +91,7 @@ for (const directory of roundTripDirectories) {
 
   for (const name of names) {
     test(`${directory}/${name} emits its markdown byte for byte`, () => {
-      const parsed: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
-      assert.ok(isAdfDocument(parsed), `${name}.json is not an ADF document`)
+      const parsed = documentIn(JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8')), name)
       const result = adfToLosslessMarkdown(parsed)
       assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
       const expected = readFileSync(join(roundTripRoot, directory, `${name}.md`))
@@ -99,8 +105,7 @@ for (const directory of roundTripDirectories) {
 for (const directory of roundTripDirectories) {
   for (const name of fixtureNames(directory, '.md')) {
     test(`${directory}/${name} reads its markdown back to the document beside it`, () => {
-      const expected: unknown = JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8'))
-      assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
+      const expected = documentIn(JSON.parse(readFileSync(join(roundTripRoot, directory, `${name}.json`), 'utf8')), name)
       const result = losslessMarkdownToAdf(readFileSync(join(roundTripRoot, directory, `${name}.md`), 'utf8'))
       assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
       assert.deepEqual(result.value, expected)
@@ -127,8 +132,7 @@ test('no round-trip fixture repeats the document another holds', () => {
 
 for (const name of pairedNames(normalizationRoot, '.md', '.json')) {
   test(`normalization/${name} parses to the document beside it, which emits and reads back to itself`, () => {
-    const expected: unknown = JSON.parse(readFileSync(join(normalizationRoot, `${name}.json`), 'utf8'))
-    assert.ok(isAdfDocument(expected), `${name}.json is not an ADF document`)
+    const expected = documentIn(JSON.parse(readFileSync(join(normalizationRoot, `${name}.json`), 'utf8')), name)
     const result = losslessMarkdownToAdf(readFileSync(join(normalizationRoot, `${name}.md`), 'utf8'))
     assert.ok(result.ok, result.ok ? '' : `${result.error.code}: ${result.error.message}`)
     assert.deepEqual(result.value, expected)
@@ -149,8 +153,7 @@ for (const root of [realPayloadsRoot, realWorldRoot]) {
 
   for (const name of names(root, '.json')) {
     test(`${kind}/${name} emits markdown that reads back to it`, () => {
-      const payload: unknown = JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8'))
-      assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+      const payload = documentIn(JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8')), name)
       const emitted = adfToLosslessMarkdown(payload)
       assert.ok(emitted.ok, emitted.ok ? '' : `${emitted.error.code}: ${emitted.error.message}`)
       const parsed = losslessMarkdownToAdf(emitted.value)
@@ -159,8 +162,7 @@ for (const root of [realPayloadsRoot, realWorldRoot]) {
     })
 
     test(`${kind}/${name} writes HTML that reads back to it`, () => {
-      const payload: unknown = JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8'))
-      assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+      const payload = documentIn(JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8')), name)
       const written = adfToHtml(payload)
       assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
       assert.deepEqual(htmlToAdf(written.value), { ok: true, value: payload })
@@ -174,8 +176,7 @@ const blockElements: Readonly<Record<string, string>> = { blockquote: '<blockquo
 for (const root of [realPayloadsRoot, realWorldRoot]) {
   for (const name of names(root, '.json')) {
     test(`${basename(root)}/${name} writes each block holding only its id as its element`, () => {
-      const payload: unknown = JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8'))
-      assert.ok(isAdfDocument(payload), `${name}.json is not an ADF document`)
+      const payload = documentIn(JSON.parse(readFileSync(join(root, `${name}.json`), 'utf8')), name)
       assert.ok(adfToHtml(payload).ok)
       for (const block of payload.content ?? []) {
         const opening = Object.hasOwn(blockElements, block.type) ? blockElements[block.type] : undefined
