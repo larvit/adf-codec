@@ -11,7 +11,7 @@ export function splitTaskList(items: readonly TaskListItem[]): AdfNode[] {
     const { kept, rest } = itemParts(item)
     for (const node of kept) tasks.push(node)
     if (rest.length === 0) continue
-    if (tasks.length > 0) blocks.push({ content: tasks, type: 'taskList' })
+    blocks.push({ content: tasks, type: 'taskList' })
     tasks = []
     for (const block of rest) blocks.push(block)
   }
@@ -19,13 +19,12 @@ export function splitTaskList(items: readonly TaskListItem[]): AdfNode[] {
   return blocks
 }
 
-// A task and the children after it up to the next task, which nest in it.
+// A task, then every child before the next task.
 export type TaskListItem = { after: AdfNode[]; task: AdfNode }
 
-// The list's items, or undefined where a child other than a task opens it.
-export function taskListItems(list: AdfNode): TaskListItem[] | undefined {
+export function taskListItems(children: readonly AdfNode[]): TaskListItem[] | undefined {
   const items: TaskListItem[] = []
-  for (const child of nodeContent(list)) {
+  for (const child of children) {
     const item = items.at(-1)
     if (isTaskItem(child)) items.push({ after: [], task: child })
     else if (item === undefined) return undefined

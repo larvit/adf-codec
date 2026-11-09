@@ -26,15 +26,15 @@ test('groups a task list into tasks, each with the children after it up to the n
   const first: AdfNode = { attrs: { state: 'TODO' }, type: 'taskItem' }
   const nested: AdfNode = { content: [first], type: 'taskList' }
   const second: AdfNode = { attrs: { state: 'DONE' }, content: [{ type: 'paragraph' }], type: 'blockTaskItem' }
-  assert.deepEqual(taskListItems({ content: [first, nested, nested, second], type: 'taskList' }), [
+  assert.deepEqual(taskListItems([first, nested, nested, second]), [
     { after: [nested, nested], task: first },
     { after: [], task: second },
   ])
-  assert.deepEqual(taskListItems({ type: 'taskList' }), [])
+  assert.deepEqual(taskListItems([]), [])
 })
 
-test('groups no task list a child other than a task opens', () => {
+test('returns no items for a task list that opens with a child other than a task', () => {
   const task: AdfNode = { attrs: { state: 'TODO' }, type: 'taskItem' }
-  assert.equal(taskListItems({ content: [{ type: 'paragraph' }, task], type: 'taskList' }), undefined)
-  assert.equal(taskListItems({ content: [{ content: [task], type: 'taskList' }, task], type: 'taskList' }), undefined)
+  assert.equal(taskListItems([{ type: 'paragraph' }, task]), undefined)
+  assert.equal(taskListItems([{ content: [task], type: 'taskList' }, task]), undefined)
 })
