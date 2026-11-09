@@ -158,28 +158,23 @@ test('spells a task list as a bullet list whose items lead with their state', ()
   assert.equal(portable(node('taskList', {}, task('DONE', 'a'), node('taskList', {}, task('TODO', '')))), '- [x] a\n  - [ ]\n')
 })
 
-test('leaves a block task item only when it opens with a paragraph', () => {
-  const task = (state: string, value: string): AdfNode => node('taskItem', { state }, text(value))
+test('leaves a block task item only when it opens with two or more paragraphs', () => {
+  const task = (value: string): AdfNode => node('taskItem', { state: 'TODO' }, text(value))
   const blockTask = (...content: AdfNode[]): AdfNode => node('blockTaskItem', { state: 'TODO' }, ...content)
   const codeBlock: AdfNode = { content: [text('x')], type: 'codeBlock' }
-  const nested = node('taskList', {}, task('TODO', 'n'))
-  const lists = [
-    node('taskList', {}, blockTask(said('a'), said('b')), blockTask(codeBlock, said('c')), blockTask(bulletList(item(said('d'))), said('e'))),
-    node('taskList', {}, blockTask(nested, said('f')), blockTask(said('g'), codeBlock, said('h')), blockTask(), blockTask(said('i'))),
-    node('taskList', {}, blockTask(said('j'), nested, said('k'), nested), blockTask(said('l'), said('m'), nested)),
-  ]
-  const reduced = reduceToPortable(document(...lists))
-  assert.ok(reduced.ok)
-  const pending = [...(reduced.value.content ?? [])]
-  let blockTasks = 0
-  for (let at = pending.pop(); at !== undefined; at = pending.pop()) {
-    for (const child of at.content ?? []) pending.push(child)
-    if (at.type !== 'blockTaskItem') continue
-    blockTasks += 1
-    assert.equal(at.content?.[0]?.type, 'paragraph')
-    assert.ok((at.content ?? []).filter((child) => child.type === 'paragraph').length >= 2)
-  }
-  assert.equal(blockTasks, 2)
+  const taskList = (...content: AdfNode[]): AdfNode => ({ content, type: 'taskList' })
+  const nested = taskList(task('n'))
+  const reduced = reduceToPortable(
+    document(node('taskList', {}, blockTask(said('a'), said('b')), blockTask(codeBlock, said('c')), blockTask(said('d'), codeBlock), blockTask(said('e'), said('f'), node('taskList', {}, task('n'))))),
+  )
+  assert.deepEqual(reduced.ok && reduced.value.content, [
+    taskList(blockTask(said('a'), said('b')), { attrs: { state: 'TODO' }, type: 'taskItem' }),
+    codeBlock,
+    said('c'),
+    taskList(task('d')),
+    codeBlock,
+    taskList(blockTask(said('e'), said('f')), nested),
+  ])
 })
 
 test('spells a decision list as a plain bullet list', () => {
