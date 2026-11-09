@@ -963,21 +963,29 @@ can read an escaped key as another key it read before, and the round-trip then r
 output. A test fails on `JSON.parse(` in a shipped file. The tests' own oracles keep `JSON.parse`,
 since a misread there fails the gate and never hides a bug.
 
-## A call reads its input once into a plain copy
+## An ADF document is read once into a plain copy
 
-2026-10-04, the maintainer; the 10 million 2026-10-05; the code and the name 2026-11-09, applying
-§Which code a cause takes and the entry for the long output. Goals 1 and 9. Valid while a persona
-can hand in a value with accessors or a Proxy.
+2026-10-04, the maintainer. The 10 million 2026-10-05, applying §Output past V8's longest string is
+refused on every engine. The code, 2026-11-09, applying §Which code a cause takes. The name by a
+developer panel, 2026-11-09. Goals 1 and 9. Valid while a persona can hand in a value with
+accessors or a Proxy.
 
 `readAdfDocument` and the three writers copy the input once, before any check, reading property
 descriptors so no getter runs: an accessor property, or a Proxy trap that throws, is
 `not-an-adf-document`. The copy keeps own enumerable string keys, as `JSON.stringify` does, so an
-inherited or non-enumerable key drops, and reads an array by index, so no iterator runs. It refuses
-a cycle by the objects above the one it copies. Every later step reads the copy. The copy takes at
-most 10 million JSON values, each object, array, string, number, boolean and null counting one,
-past which the document is `unsupported-node-shape`, since the document does not convert; an array
-claiming more elements than the values left is refused before it is read. Goal 9's size counts ADF
-as JSON, so a shared object costs once per place it is held.
+inherited or non-enumerable key drops, and reads an array by index, so no iterator runs. Every
+later step reads the copy.
+
+A cycle is an object that holds one of the objects above it on the walk's path; the copy refuses
+it. The copy takes at most 10 million JSON values, each object, array, string, number, boolean and
+null counting one, past which the document is `unsupported-node-shape`, since the document does
+not convert. An array whose length passes the values still free is refused before any element is
+read. Goal 9's size counts ADF as JSON, so a shared object costs once per place it is held. The
+width check on an object's keys is the array's, and no test pins it: a Proxy would need to return
+10 million key names to reach it.
+
+The panel read 5 of 7 for `readAdfDocument` over `parseAdfDocument`, which two read as taking JSON
+text, and over `validateAdfDocument`, `checkAdfDocument`, `toAdfDocument` and `adfDocumentFrom`.
 
 ## Nothing spreads an unbounded array
 
@@ -1093,8 +1101,8 @@ rather than a figure.
 
 A cost fix that changes no behaviour lands on the suite staying green with no fixture output
 changed, and a before-and-after figure in its PR; the gate times nothing. Measured and kept:
-`adfDocumentFault`'s shape and depth walks stay two — the parting gives depth its own code — at
-52 ms for a 9 MB document the emit takes 314 ms over. The 500-level guard runs after the block walk,
+The shape walk of `readAdfDocument` and the depth walk of `writableContent` stay two — the parting
+gives depth its own code — at 52 ms for a 9 MB document the emit takes 314 ms over. The 500-level guard runs after the block walk,
 so it doesn't bound the walk's cost.
 
 ## Only the hard break holds a raw newline

@@ -9,6 +9,7 @@
 | --- | --- |
 | `if (isAdfDocument(value)) convert(value)` | `const read = readAdfDocument(value); if (read.ok) convert(read.value)` |
 | `const valid = isAdfDocument(value)` | `const valid = readAdfDocument(value).ok` |
+| `docs.filter(isAdfDocument)` | `docs.filter((value) => readAdfDocument(value).ok)` |
 
 Convert `read.value`: it is a copy that shares no object with `value`. The copy keeps own
 enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops. A document
@@ -16,8 +17,10 @@ nesting past 500 levels still reads; the converters refuse it as `unsupported-ne
 
 `readAdfDocument`, `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown` read a document
 once into that copy. A document holding an accessor property, or a Proxy that throws, is
-`not-an-adf-document` in `0.4.0`, where `0.3.1` ran the getter or threw. A document holding more
-than 10,000,000 JSON values is `unsupported-node-shape`.
+`not-an-adf-document` in `0.4.0`, where `0.3.1` ran the getter, looped or threw. A document of a
+class that keeps its fields behind getters (Vue 2, MobX) is refused too: hand in a snapshot,
+`JSON.parse(JSON.stringify(document))`. A document holding more than 10,000,000 JSON values is
+`unsupported-node-shape`.
 
 ## From `0.2.0` to `0.3.0`
 
