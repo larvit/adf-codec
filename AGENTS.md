@@ -73,7 +73,7 @@ In `docs/decisions.md`:
 - HTML writes a URL as the ADF holds it, whatever its scheme
 - Nothing recurses unbounded
 - JSON text is read by `parseJsonText`
-- A call reads its input once into a plain copy
+- An ADF document is read once into a plain copy
 - Nothing spreads an unbounded array
 - A retry loop checks its own termination
 - After 32 passes, a line carries or drops every em, strike and strong mark
@@ -134,7 +134,7 @@ parenthesized value set reading `string`; fenced examples are skipped. Keep pros
 - Two-space indent, English everywhere. Alphabetical order wherever order carries no meaning,
   keyed on the name a line introduces: an import sorts on its first binding, type imports ahead of
   value imports, so moving or renaming a module reorders nothing.
-- No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a type guard validating the
+- No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a reader validating the
   fields it claims (`readAdfDocument`); past it everything is typed. Make invalid states
   unrepresentable.
 - Failures are values: everything returns `Result<T>`, nothing throws. `try/catch` only wrapped

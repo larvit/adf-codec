@@ -333,12 +333,11 @@ Each call's name says which format it reads or writes:
 | `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
 | `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `readAdfDocument` | reads ADF as JSON, a value you hold from a parser or a store, into an `AdfDocument`, and writes nothing | `not-an-adf-document`, `unsupported-node-shape` |
+| `readAdfDocument` | checks a parsed value you hold from a parser or a store, never JSON text, and returns a copy of it as an `AdfDocument`; writes nothing | `engine-limit`, `not-an-adf-document`, `unsupported-node-shape` |
 
-`readAdfDocument` reads the JSON you receive into an `AdfDocument`, copying it once. It reads data
-properties and own enumerable keys alone, as `JSON.stringify` does, so an accessor property or a
-Proxy that throws is `not-an-adf-document` and never a throw, and the three writers read their
-document the same way. It checks the shape the converters require: `type: 'doc'`, a finite
+`readAdfDocument` reads the JSON you receive into an `AdfDocument`, copying it once. It copies own
+enumerable keys and data properties alone, so an accessor property or a Proxy that throws is
+`not-an-adf-document` and never a throw. The three writers read their document the same way. It checks the shape the converters require: `type: 'doc'`, a finite
 `version` (the converters take only 1), nodes holding only `attrs`, `content`, `marks`, `text` and
 `type`, attribute values that are JSON values, and no object holding itself. It reads a document
 nesting past 500 levels; the converters refuse that one with `unsupported-nesting-depth`.
@@ -611,16 +610,17 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 ### Emitting
 
 `adfToLosslessMarkdown`, `adfToPortableMarkdown` and `adfToHtml` raise these, and the codes under
-[Either direction](#either-direction):
+[Either direction](#either-direction). `readAdfDocument` raises `not-an-adf-document` and
+`unsupported-node-shape`, and `engine-limit`.
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an accessor property, a Proxy that throws, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | read the boundary you receive JSON at with `readAdfDocument`; the message names the branch that refused. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
+| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an accessor property, a Proxy that throws, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | read the boundary you receive JSON at with `readAdfDocument`; the message names the branch that refused. Where your objects hold getters (Vue 2, MobX, a class model), hand in a snapshot, `JSON.parse(JSON.stringify(document))`. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
 | `unsupported-document-version` | the document's `version` is not 1 | keep the ADF and pass the document over, or show it read-only; the version is the site's, not yours to change |
 
 ### Either direction
 
-Every call can raise these:
+Every call can raise `engine-limit`, and every conversion `unsupported-nesting-depth`:
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
@@ -737,8 +737,8 @@ Serves [Goals](#goals) 1, 4 and 5.
 - Past that and `~~`, `losslessMarkdownToAdf` reads no GFM: an autolink literal and a `- [ ]`
   marker stay text, and a checklist is the `taskList` directive — `portableMarkdownToAdf` turns the
   marker into a `taskList`.
-- A document nested deeper than 500 levels is an error result, not a stack overflow, and no call
-  loops forever on a string, or on a value `JSON.parse` or `structuredClone` builds.
+- A document nested deeper than 500 levels is an error result from every conversion, not a stack
+  overflow, and no call loops forever on a string, or on any value you hand it.
 - The emitted formats are semver surface
   ([The formats are API](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#the-formats-are-api)).
 

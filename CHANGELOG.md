@@ -5,9 +5,10 @@
 - **Breaking:** `readAdfDocument` replaces `isAdfDocument`: it returns a `Result<AdfDocument>` whose
   error names the branch that refused, and `MIGRATION.md` shows the change.
 - `readAdfDocument`, `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown` read the
-  document once into a plain copy, so a document holding an accessor property, or a Proxy that
-  throws, returns `not-an-adf-document` where it ran the getter, looped or threw. A document of
-  more than 10,000,000 JSON values returns `unsupported-node-shape`.
+  document once into a plain copy. A document holding an accessor property, or a Proxy that throws,
+  returns `not-an-adf-document`, where `0.3.1` ran the getter, looped or threw. The copy keeps own
+  enumerable keys alone, so an inherited or non-enumerable key drops. A document of more than
+  10,000,000 JSON values returns `unsupported-node-shape`.
 
 ## 0.3.1
 
