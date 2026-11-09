@@ -67,7 +67,14 @@ container_is_limited() {
   [ "$(in_image "$node_image" sh -c 'cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.swap.max' | tr '\n' ' ')" = '8589934592 0 ' ]
 }
 
-leg "an in_image container has equal memory and swap limits ($node_image)" container_is_limited
+leg "an in_image container is capped at 8g with no swap ($node_image)" container_is_limited
+
+# with_firefox and publish.sh start containers no leg here can inspect.
+every_docker_run_is_limited() {
+  ! grep -h 'docker run' docker-runner.sh publish.sh | grep -v -e '--memory "[^"]*" --memory-swap "[^"]*"'
+}
+
+leg "every docker run in docker-runner.sh and publish.sh names a memory and a swap limit" every_docker_run_is_limited
 
 test_log=$(mktemp)
 node_tests() {
