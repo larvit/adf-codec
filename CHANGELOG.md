@@ -2,9 +2,8 @@
 
 ## Unreleased
 
-- `adfToPortableMarkdown` keeps the link marking a stored image, an extension or a card with no
-  text around the note standing in its place, so its target is no longer dropped:
-  `[_(image not included)_](https://example.com/a)`.
+- `adfToPortableMarkdown` keeps a link around the note standing in place of a node it marks, such
+  as a stored image: `[_(image not included)_](https://example.com/a)`.
 - **Breaking:** `readAdfDocument` replaces `isAdfDocument`: it returns a `Result<AdfDocument>` whose
   error names the branch that refused, and `MIGRATION.md` shows the change.
 - `readAdfDocument`, `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown` read the
