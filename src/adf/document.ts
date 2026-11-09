@@ -4,7 +4,7 @@ import { inlineNodeModel } from './inline-nodes.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
 import { plainCopy } from './plain-copy.ts'
-import { withinLongest } from '../length-bound.ts'
+import { withinEngineLimits, withinLongest } from '../length-bound.ts'
 import { serializeCanonicalJson } from '../canonical-json.ts'
 
 export type AdfAttributes = { [key: string]: JsonValue }
@@ -34,17 +34,14 @@ const documentKeys = ['content', 'type', 'version']
 const markKeys = ['attrs', 'type']
 const nodeKeys = ['attrs', 'content', 'marks', 'text', 'type']
 
-export function adfDocumentFault(value: unknown): ConvertFault | undefined {
-  const shaped = shapedDocument(value)
-  return shaped.fault ?? nestingFault(shaped.value.content ?? [])
-}
-
-// Reads `value` once into a plain copy and checks the copy's shape. Depth is the walks' business, not the shape's: a deep document reads as blocks and marks do.
+// Reads a document nested past 500 levels too: the converters refuse that depth, as they do a block's or a mark's.
 export function readAdfDocument(value: unknown): Result<AdfDocument> {
-  const copy = plainCopy(value)
-  if (copy.fault !== undefined) return faulted(copy.fault, [])
-  const shaped = shapedDocument(copy.value)
-  return shaped.fault === undefined ? success(shaped.value) : faulted(shaped.fault, [])
+  return withinEngineLimits(() => {
+    const copy = plainCopy(value)
+    if (copy.fault !== undefined) return faulted(copy.fault, [])
+    const shaped = shapedDocument(copy.value)
+    return shaped.fault === undefined ? success(shaped.value) : faulted(shaped.fault, [])
+  })
 }
 
 function shapedDocument(value: unknown): Read<AdfDocument> {
@@ -67,7 +64,7 @@ function shapedDocument(value: unknown): Read<AdfDocument> {
 
 // The checks every writer opens with; `undefined` where the document holds no `content` key, which each format spells its own way.
 export function writableContent(document: AdfDocument): Result<readonly AdfNode[] | undefined> {
-  const fault = adfDocumentFault(document)
+  const fault = nestingFault(document.content ?? [])
   if (fault !== undefined) return faulted(fault, [])
   if (document.version !== 1) return failure('unsupported-document-version', `no format this library writes carries ADF version ${document.version}`, [])
   if (document.content === undefined) return success(undefined)
