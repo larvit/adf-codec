@@ -12,7 +12,7 @@ import { largestNesting } from '../../nesting.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
 import { nodeAttrs, nodeContent, nodeMarks, writableContent } from '../../adf/document.ts'
 import { portableWriting } from './block-spelling.ts'
-import { splitTaskList } from './task-list.ts'
+import { splitTaskList, taskListItems } from './task-list.ts'
 import { taskMarker } from './conventions.ts'
 import { editorNormalForm, sourceIndex, toEditorNormal } from './editor-normal.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
@@ -269,14 +269,14 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     if (!reduced.ok) return reduced
     if (reduced.value.length > 0) kept.push({ blocks: reduced.value, child })
   }
-  const regular = isTaskItem(kept[0]?.child) && kept.every(({ child }) => isTaskItem(child) || child.type === 'taskList')
+  const nestsTasks = kept.every(({ child }) => isTaskItem(child) || child.type === 'taskList')
   const tasks: AdfNode[] = []
   for (const { blocks, child } of kept) {
-    const standsAlone = !regular && !isTaskItem(child) && child.type !== 'taskList'
+    const standsAlone = !nestsTasks && !isTaskItem(child) && child.type !== 'taskList'
     for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
   }
-  if (regular) return success(splitTaskList({ content: tasks, type: 'taskList' }))
-  return success(listOf(tasksAsText(tasks), 'bulletList'))
+  const items = nestsTasks ? taskListItems({ content: tasks, type: 'taskList' }) : undefined
+  return success(items === undefined ? listOf(tasksAsText(tasks), 'bulletList') : splitTaskList(items))
 }
 
 function reduceTask(task: AdfNode, at: Reduction): Result<AdfNode[]> {
