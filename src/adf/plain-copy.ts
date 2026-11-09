@@ -2,7 +2,7 @@ import type { ConvertFault, Read } from '../result.ts'
 import { isPlainObject } from '../json-value.ts'
 
 // Each object, array, string, number, boolean and null counts one: far past any real page, and it stops a Proxy claiming unbounded width.
-export const mostValues = 10_000_000
+const mostValues = 10_000_000
 
 // An object that is no plain object is copied with this prototype, so `isJsonValue` refuses the copy as it refuses the original.
 const unplain = {}
@@ -10,12 +10,13 @@ const unplain = {}
 type Step = { depth: number; key: number | string; source: unknown; target: object }
 type Held = { entries: [number | string, unknown][]; kind: 'array' | 'object' | 'unplain' }
 
+const badLength: ConvertFault = { code: 'not-an-adf-document', message: "an ADF document is plain data: an array's length is not a count" }
 const holdsItself: ConvertFault = { code: 'not-an-adf-document', message: 'an ADF document is a tree: an object in it holds itself' }
 const tooMany: ConvertFault = { code: 'unsupported-node-shape', message: `an ADF document holds at most ${mostValues} JSON values: this one holds more` }
 const unreadable: ConvertFault = { code: 'not-an-adf-document', message: 'an ADF document is plain data: reading one of its objects threw' }
 const withAccessor: ConvertFault = { code: 'not-an-adf-document', message: 'an ADF document is plain data: one of its objects holds a getter or a setter' }
 
-// Every later step reads the copy, never the caller's object: a getter, a Proxy trap or an iterator of theirs runs at most once here, and never an accessor.
+// Reads the caller's object through property descriptors alone, so no getter runs and a Proxy's traps run once for each place the object is held; every later step reads the copy.
 export function plainCopy(value: unknown): Read<unknown> {
   const root: unknown[] = []
   const pending: Step[] = [{ depth: 0, key: 0, source: value, target: root }]
@@ -44,13 +45,13 @@ export function plainCopy(value: unknown): Read<unknown> {
   return { value: root[0] }
 }
 
-// The only reads of the caller's object, so the only `try`: a throw there is the caller's Proxy.
+// The only reads of the caller's object, so the only `try`: a throw there is the caller's Proxy, or an engine out of memory that this cannot tell apart from it.
 function heldBy(source: object, left: number): Read<Held> {
   try {
     const entries: [number | string, unknown][] = []
     if (Array.isArray(source)) {
       const length: unknown = source.length
-      if (typeof length !== 'number' || !Number.isSafeInteger(length) || length < 0) return { fault: unreadable }
+      if (typeof length !== 'number' || !Number.isSafeInteger(length) || length < 0) return { fault: badLength }
       if (length > left) return { fault: tooMany }
       for (let index = 0; index < length; index += 1) {
         const descriptor = Object.getOwnPropertyDescriptor(source, index)
