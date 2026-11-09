@@ -65,11 +65,12 @@ files, with its `ci.sh` probe, extends the decision.
 
 ### 177. Decide whether `kovetskiy/mark`, a Go program that writes Confluence storage format and never touches ADF, gets a row in the README's second "Other ADF converters" table, and record the answer in §The comparison table lists every converter that starts and converts.
 
-The gap: §The comparison table lists every converter that starts and converts covers converters of
+The gap: the decision entry "The comparison table lists every converter that starts and converts"
+settles which npm packages and which other-ecosystem libraries are listed, and all of them convert
 ADF. The first table lists npm packages that run in Node and convert ADF to or from markdown; the
-second lists converters the comparison does not run, and every row of it converts ADF. `mark`
-converts markdown to storage format only (`docs/kovetskiy-mark.md` § Does it belong in the
-comparison table). The options: leave it out, or add a row saying it converts markdown to storage
+second lists converters the comparison does not run, and every library in it converts ADF. `mark`
+converts markdown to storage format only (`docs/kovetskiy-mark.md`, "Does it belong in the
+comparison table"). The options: leave it out, or add a row saying it converts markdown to storage
 format and not ADF.
 
 Candidate sentence for the entry: "A converter that never reads or writes ADF, such as one writing
