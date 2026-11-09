@@ -1721,3 +1721,31 @@ Mid A, decided by:
 Inherited architect, decided by:
 
 - Navigation, Overall: `src/markdown/emit/unspellable-runs.test.ts:80` `lines`: a sibling test beside `unspellable-runs.ts` holds twelve concrete lines under carry and drop, where the base had none
+
+## 2026-11-09T04:44:01Z, PR #146 at 6f5087c, against 59453f6
+
+Ruling: worse
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | worse | same | same | worse |
+| Inherited architect | same | worse | same | same | worse |
+
+Mid A, decided by:
+
+- Locality, Overall: `src/markdown/portable/block-spelling.ts:45` `tryTaskList`: the loop pushes into a placeholder `item` array that is dropped if the first child is not a task, so blocks vanish silently and whether that can happen is decided in `task-list.ts` `itemParts`; the base handled it locally
+- Locality: `src/markdown/portable/block-spelling.ts:46` `tryTaskList`: an `item` alias pushed into `items` and changed through `item.push` is more state across loop turns than the base's `items.at(-1)`
+
+Inherited architect, decided by:
+
+- Locality, Overall: `src/markdown/portable/block-spelling.ts:44` `tryTaskList`: a stand-in `item` array holds blocks pushed before the first task and loses them without a failure, so its safety rests on `reduceTaskList` and `splitTaskList` in other files, where the base never lost a block
+- Locality: `src/markdown/portable/task-list.ts:42` `itemsOf`: groups a task and its children up to the next task as the base `tryTaskList` did, and the new loop breaks that match between the two places
+
+## 2026-11-09T04:45:44Z, PR #146 at 6030d12, against 59453f6
+
+Ruling: same
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | same | same |
+| Inherited architect | same | same | same | same | same |
