@@ -885,3 +885,20 @@ Read most (opens and searches):
 - `AGENTS.md` 1
 - `docker-runner.sh` 1
 - `package.json` 1
+
+## Reading cost, chunk 0a04be76fd43, finished 2026-11-09T06:51:38Z
+
+152169 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 14
+- `todo.md` 12
+- `src/adf/document.test.ts` 11
+- `docs/decisions.md` 6
+- `src/adf/document.ts` 6
+- `src/conformance/corpus.test.ts` 6
+- `MIGRATION.md` 4
+- `AGENTS.md` 3
+- `src/index.ts` 3
+- `CHANGELOG.md` 2

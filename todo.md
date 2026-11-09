@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
 | 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
@@ -67,24 +66,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 127. Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.
-
-Technical principle "Assert the outcome", which bans scanning the source with `ast` or a regex.
-Three tests read source text:
-
-- `src/markdown/commonmark/entity-references.test.ts` regex-extracts the `packedReferences` literal
-  from `entity-references.ts`, to guard that each of the 2125 packed references parts into one name
-  and one value the table decodes. Reformatting the literal fails it with the table unchanged.
-- `src/json-text.test.ts` greps every shipped file for `JSON.parse(`, to guard that only
-  `parseJsonText` reads JSON text. `JSON.parse (` or `JSON['parse'](` escapes it.
-- `src/result.test.ts` regex-parses the `ConvertErrorCode` union out of `result.ts`, and each
-  `failure('…'` and `code: '…'` out of every shipped file, to guard that every declared code has a
-  production cause and every call site names a declared code. A code held in a variable or passed
-  through another helper escapes it.
-
-Item 81 changes `result.test.ts` too. Found by the technical-principles audit of
-item 60, 2026-10-22.
 
 ### 159. Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.
 
@@ -172,9 +153,10 @@ Technical principle: DRY. Found by the principles audit of the release review of
 
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 
-`src/result.test.ts` checks the union against the call sites only, so a code added or removed
-leaves the README's tables a false contract under a green gate. Assert that the tables list exactly
-the union. Found by the technical-principles audit of item 78, 2026-10-05.
+`src/result.test.ts` holds one refusal per code in a `Record<ConvertErrorCode, …>`, so a code added
+or removed leaves the README's tables a false contract under a green gate. Assert that the tables
+list exactly the codes of that record's keys. Found by the technical-principles audit of item 78,
+2026-10-05.
 
 ### 147. Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.
 

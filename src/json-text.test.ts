@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict'
-import { dirname, join } from 'node:path'
 import fc from 'fast-check'
-import { fileURLToPath } from 'node:url'
-import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
+import type { AdfDocument, AdfNode } from './adf/document.ts'
 import type { JsonSpelling } from './canonical-json.ts'
+import { adfToHtml } from './html/emit/adf-to-html.ts'
+import { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
+import { adfToPortableMarkdown } from './markdown/portable/adf-to-portable-markdown.ts'
+import { htmlToAdf } from './html/parse/html-to-adf.ts'
 import { jsonValue, propertyRuns } from './conformance/property-harness.ts'
+import { losslessMarkdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { parseJsonText } from './json-text.ts'
+import { portableMarkdownToAdf } from './markdown/portable/portable-markdown-to-adf.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 
 test('reads every JSON value kind', () => {
@@ -87,10 +91,32 @@ test('accepts exactly the text JSON.parse accepts', () => {
   )
 })
 
-test('no shipped file reads JSON with JSON.parse, which parseJsonText stands in for', () => {
-  const sourceRoot = dirname(fileURLToPath(import.meta.url))
-  const readers = readdirSync(sourceRoot, { encoding: 'utf8', recursive: true }).filter(
-    (name) => name.endsWith('.ts') && !name.endsWith('.test.ts') && !name.startsWith('conformance') && readFileSync(join(sourceRoot, name), 'utf8').includes('JSON.parse('),
-  )
-  assert.deepEqual(readers, [])
+test('no reader reads JSON text with JSON.parse, which parseJsonText stands in for', () => {
+  const unknownBlock: AdfNode = { attrs: { a: [1, { b: 'c' }] }, content: [{ text: 'x', type: 'text' }], type: 'unknownBlock' }
+  const unknownInline: AdfNode = { attrs: { a: { b: 2 } }, type: 'unknownInline' }
+  const table: AdfNode = {
+    content: [{ content: [{ attrs: { colwidth: [100, 200] }, content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }],
+    type: 'table',
+  }
+  const marked: AdfNode = { content: [{ marks: [{ attrs: { color: '#fff' }, type: 'textColor' }], text: 'x', type: 'text' }, unknownInline], type: 'paragraph' }
+  const document: AdfDocument = { content: [unknownBlock, table, marked, { attrs: { panelType: 'info' }, content: [marked], type: 'panel' }], type: 'doc', version: 1 }
+  const spellings = [adfToLosslessMarkdown(document), adfToPortableMarkdown(document), adfToHtml(document)]
+  const [lossless, portable, html] = spellings.map((spelled) => (spelled.ok ? spelled.value : undefined))
+  assert.ok(lossless !== undefined && portable !== undefined && html !== undefined)
+  const parse = JSON.parse
+  let called = 0
+  JSON.parse = (...args: Parameters<typeof JSON.parse>) => {
+    called += 1
+    return parse(...args)
+  }
+  try {
+    const read = [losslessMarkdownToAdf(lossless), portableMarkdownToAdf(portable), htmlToAdf(html)]
+    assert.deepEqual(
+      read.map((result) => result.ok),
+      [true, true, true],
+    )
+  } finally {
+    JSON.parse = parse
+  }
+  assert.equal(called, 0)
 })
