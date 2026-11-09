@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `portableMarkdownToAdf` reads GFM's pipe table further: a body row holding fewer cells than the
+  header is padded with empty cells, a line holding no `|` after the table is a row of one cell,
+  and `a |` over `--- |` is a one-column table. A row holding more cells stays an error result.
+  `MIGRATION.md` shows the change.
 - `adfToPortableMarkdown` keeps a link around the note standing in place of a node it marks, such
   as a stored image: `[_(image not included)_](https://example.com/a)`.
 - **Breaking:** `readAdfDocument` replaces `isAdfDocument`: it returns a `Result<AdfDocument>` whose

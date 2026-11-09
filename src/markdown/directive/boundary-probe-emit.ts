@@ -1,0 +1,1 @@
+import '../emit/image.ts';

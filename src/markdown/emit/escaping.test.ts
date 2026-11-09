@@ -34,6 +34,8 @@ test('escapes the delimiter row a hard break leaves opening a pipe table with no
   assert.equal(broken('--- | ---'), 'a | b\\\n\\--- | ---\n')
   assert.equal(broken(':--- | ---:'), 'a | b\\\n\\:--- | ---:\n')
   assert.equal(broken('c | d'), 'a | b\\\nc | d\n')
+  const oneColumn = markdown(adfToLosslessMarkdown(document(paragraph({ text: 'a |', type: 'text' }, { type: 'hardBreak' }, { text: '--- |', type: 'text' }))))
+  assert.equal(oneColumn, 'a |\\\n\\--- |\n')
 })
 
 test('escapes only text that would otherwise open a construct', () => {

@@ -980,3 +980,20 @@ Read most (opens and searches):
 - `ci.sh` 1
 =======
 >>>>>>> origin/main
+
+## Reading cost, chunk a624aacf239f, finished 2026-11-09T10:24:02Z
+
+167585 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 7
+- `README.md` 6
+- `docs/decisions.md` 6
+- `spec/flavour.md` 4
+- `docs/kovetskiy-mark.md` 3
+- `CHANGELOG.md` 2
+- `ci.sh` 2
+- `corpus/README.md` 1
+- `corpus/round-trip/block-nodes/expand.md` 1
+- `corpus/round-trip/block-nodes/panel.md` 1
