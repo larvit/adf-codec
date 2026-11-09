@@ -6,14 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 177`
+`Next ID = 178`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 169 | 0.4.0 |  | owner | **Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.** | 1 | 1 | 1 | 1 | 3 | 3 by 4 | 6.3 |
+| 177 | 0.4.0 |  | question | **Decide whether `kovetskiy/mark`, a Go program that writes Confluence storage format and never touches ADF, gets a row in the README's second "Other ADF converters" table, and record the answer in §The comparison table lists every converter that starts and converts.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
@@ -63,24 +63,18 @@ a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded).
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
 
-### 169. Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.
+### 177. Decide whether `kovetskiy/mark`, a Go program that writes Confluence storage format and never touches ADF, gets a row in the README's second "Other ADF converters" table, and record the answer in §The comparison table lists every converter that starts and converts.
 
-`https://github.com/kovetskiy/mark` publishes markdown files as Confluence pages. Read its
-README, source and issues, and run its conversion on the corpus's documents where that works with no
-Confluence account; say which parts were only read. Write the report as one page under `docs/`
-answering:
+The gap: §The comparison table lists every converter that starts and converts covers converters of
+ADF. The first table lists npm packages that run in Node and convert ADF to or from markdown; the
+second lists converters the comparison does not run, and every row of it converts ADF. `mark`
+converts markdown to storage format only (`docs/kovetskiy-mark.md` § Does it belong in the
+comparison table). The options: leave it out, or add a row saying it converts markdown to storage
+format and not ADF.
 
-- Which format does it write: ADF, or Confluence's storage format? Can it read a page back?
-- How does it spell the Confluence features we spell as directives, alerts and callouts: macros,
-  panels, includes, labels, attachments and page metadata? Where do its spellings and ours differ,
-  and which would the README's `## Audience` expect?
-- Which personas overlap, and what does a user of one need from the other?
-- Does it belong in the README's "Other ADF converters" table? `docs/decisions.md` §The comparison
-  table lists every converter that starts and converts covers npm packages, and this is a Go
-  program. If it is not ADF at all, that is a question for the maintainer.
-
-The report changes no spelling: one is changed only by a writer panel (`AGENTS.md` §7). A finding
-that asks for a change is filed as its own item.
+Candidate sentence for the entry: "A converter that never reads or writes ADF, such as one writing
+Confluence storage format, is left out." Recommended: leave it out, unless the maintainer wants
+non-ADF neighbours listed.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 
