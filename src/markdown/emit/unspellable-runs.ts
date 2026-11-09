@@ -166,6 +166,7 @@ function mayFlank(sweep: PairSweep, judged: number, character: string, end: 'clo
 function runEdge(sweep: PairSweep, judged: number, from: number, step: -1 | 1, character: string): string[] | undefined {
   const found: string[] = []
   const { delimiters } = touching(sweep, from, step)
+  // Each pair beside adds the characters it may be written with; one that stands ends the run unless it may be written with `character`.
   for (const at of delimiters) {
     const other = sweep.pairAt[at] ?? -1
     const standing = pairStanding(sweep, judged, other)
