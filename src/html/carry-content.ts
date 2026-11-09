@@ -40,7 +40,7 @@ function shownPiece(node: AdfNode, lineFeed: string): string {
   return linkedText(node, shownText(node), shownUrl(node), lineFeed)
 }
 
-// As portable markdown writes it inline (docs/decisions.md §The HTML dialect).
+// Links an image as portable markdown does inline (docs/decisions.md §The HTML dialect).
 function linkedImage(media: AdfNode, lineFeed: string): string {
   const image = shownImage(media, shownLink(media)?.href)
   const shown = linkedText(media, image?.text, image?.link, lineFeed)

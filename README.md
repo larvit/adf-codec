@@ -486,7 +486,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
   naming it where it stood: `_(image not included)_` for stored media with no `alt`,
   `_(link card not included)_` for a card with neither URL nor name, an extension with no `text`
   its key, `_(jira-issues-table not included)_`, or `_(extension not included)_` without one, and
-  `_(synced block not included)_` for a `syncBlock`. A link marking the node stays around its note.
+  `_(synced block not included)_` for a `syncBlock`. A link marking such a node stays around its note; its other marks drop.
 - `backgroundColor`, `code`, `em`, `link`, `strike` and `strong` stay; every other mark drops,
   keeping its text, and so does a mark the flavour cannot spell where it stands. A line still
   read back wrong after 32 tries drops every `em`, `strike` and `strong` at once. Code text keeps
