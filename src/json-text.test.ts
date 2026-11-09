@@ -91,7 +91,7 @@ test('accepts exactly the text JSON.parse accepts', () => {
 })
 
 // V8 from 13.6 reads an escaped key as one it read before; priming it as the bug report does shows a reader that calls JSON.parse.
-const keys = { '\b': 1, '\f': 2 }
+const keys = { '\b': 1, '\f': 2, url: 'x' }
 const readers: [string, (document: AdfDocument) => Result<string>, (text: string) => Result<AdfDocument>][] = [
   ['lossless markdown', adfToLosslessMarkdown, losslessMarkdownToAdf],
   ['HTML', adfToHtml, htmlToAdf],
@@ -101,7 +101,7 @@ const documents: [string, AdfNode][] = [
   ['an unknown block', { attrs: { keys }, type: 'unknownBlock' }],
   ['an unknown inline node', paragraphOf({ attrs: { keys }, type: 'unknownInline' })],
   ['extension parameters', { attrs: { extensionKey: 'toc', extensionType: 'x', parameters: keys }, type: 'extension' }],
-  ['an inline card', paragraphOf({ attrs: { data: keys, url: 'https://example.com' }, type: 'inlineCard' })],
+  ['an inline card', paragraphOf({ attrs: { data: keys }, type: 'inlineCard' })],
 ]
 
 for (const [format, write, read] of readers) {
@@ -110,8 +110,8 @@ for (const [format, write, read] of readers) {
       const document: AdfDocument = { content: [node], type: 'doc', version: 1 }
       const written = write(document)
       assert.ok(written.ok)
-      JSON.parse('{"\\b":1,"\\f":2}')
-      JSON.parse('{"\\b":3,"\\\\":4}')
+      JSON.parse('{"\\b":1,"\\f":2,"url":"x"}')
+      JSON.parse('{"\\b":3,"\\\\":4,"url":"x"}')
       assert.deepEqual(read(written.value), { ok: true, value: document })
     })
   }
