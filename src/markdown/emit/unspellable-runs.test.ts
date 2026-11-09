@@ -7,73 +7,72 @@ import { isAdfMark, type AdfMark, type AdfNode } from '../../adf/document.ts'
 import { linePass, withheldMarkFallbacks } from './inline-line.ts'
 import { portableJudgement, portableLeaves } from '../portable/inline-reduction.ts'
 
-// Each line is worked by hand from docs/decisions.md §With the first misread emphasis run, `unspellableRuns` returns only runs that, taken back early, leave the line as the one-run-per-pass reference writes it.
-// A run reads `mark@first-last`, nodes named by index. `carry` is the lossless writer's first read-back pass, `drop` the portable writer's.
+// Worked by hand from docs/decisions.md §With the first misread emphasis run, `unspellableRuns` returns only runs that, taken back early, leave the line as the one-run-per-pass reference writes it.
 const lines: { carry?: string[]; drop?: string[]; name: string; nodes: AdfNode[] }[] = [
   {
     carry: ['em@0-0', 'strong@0-0'],
-    name: 'a strong whose em cannot close, with the em',
+    name: 'em, strong and strike on one node before a word',
     nodes: [marked(['em', 'strong', 'strike'], ')'), plain('a')],
   },
   {
     carry: ['strike@1-1'],
     drop: ['em@1-1', 'strike@1-1'],
-    name: 'the strike that cannot open',
+    name: 'a strong over two nodes, the second also struck and emphasized',
     nodes: [marked(['strong'], 'r'), marked(['strong', 'strike', 'em'], '_'), plain('a')],
   },
   {
     carry: ['strike@0-0'],
     drop: ['strike@0-0', 'strong@0-0'],
-    name: 'the strike that cannot close',
+    name: 'strike, em and strong on one node before a digit',
     nodes: [marked(['strike', 'em', 'strong'], '_'), plain('0')],
   },
   {
     carry: ['strike@1-1', 'strike@3-3'],
     drop: ['strike@1-1', 'strike@3-3'],
-    name: 'two strikes that cannot open, not the strong over them',
+    name: 'strikes on nodes 1 and 3 under a strong over nodes 1 to 3',
     nodes: [plain('b'), marked(['strike', 'strong'], '_'), marked(['strong'], 'r'), marked(['strong', 'strike', 'em'], '(')],
   },
   {
     carry: ['strong@0-0'],
     drop: ['strike@0-1', 'strong@0-0'],
-    name: 'the strong that cannot close, and under a drop the strike',
+    name: 'strike and em over nodes 0 and 1, the first also strong',
     nodes: [marked(['strike', 'em', 'strong'], '_'), marked(['strike', 'em'], 'b)'), plain('0')],
   },
   {
     carry: ['strong@0-0'],
     drop: ['em@2-3', 'strong@0-0', 'strong@2-3'],
-    name: 'the strong that cannot close, the em holding a strike staying under a carry',
+    name: 'strong on node 0, em and strong over nodes 2 and 3 with a strike on node 2',
     nodes: [marked(['strong'], '*'), plain('0'), marked(['em', 'strong', 'strike'], '['), marked(['em', 'strong'], '(')],
   },
   {
     carry: ['strike@1-1'],
     drop: ['em@2-2', 'strike@1-1', 'strong@2-2'],
-    name: 'the strike that cannot open, and under a drop the strong and em after it',
+    name: 'a strike on node 1, em and strong on node 2, a word on either side',
     nodes: [plain('b'), marked(['strike'], ')'), marked(['em', 'strong'], '_'), plain('n')],
   },
   {
     drop: ['strong@2-2'],
-    name: 'a strong that cannot open, the em beside a strike that merges staying',
+    name: 'strong and strike on node 0, strike on node 1, strike, strong and em on node 2',
     nodes: [marked(['strong', 'strike'], 'a'), marked(['strike'], 'a'), marked(['strike', 'strong', 'em'], '_')],
   },
   {
     drop: ['strong@1-2'],
-    name: 'a strong that cannot open, the em beside it staying as its end can merge',
+    name: 'a word, strong and em on node 1, strong on node 2, em and strong on node 3',
     nodes: [plain('a'), marked(['strong', 'em'], '[ '), marked(['strong'], 'a'), marked(['em', 'strong'], 'a')],
   },
   {
     carry: ['strong@0-0', 'strong@2-2'],
-    name: 'a strong whose opener follows a word beside an em written `_`',
+    name: 'strong on nodes 0 and 2 round a digit, em on node 2',
     nodes: [marked(['strong'], '_'), plain('0'), marked(['strong', 'em'], 'a)')],
   },
   {
     carry: ['em@1-1', 'strong@1-1'],
-    name: 'a strong and em that cannot close inside a strike that reads',
+    name: 'strong, then strike, em and strong on one node, then strike on a digit',
     nodes: [marked(['strong'], '!'), marked(['strike', 'em', 'strong'], '['), marked(['strike'], '0')],
   },
   {
     carry: ['em@2-2'],
-    name: 'the em that cannot open, not the strong over more nodes holding it',
+    name: 'a word, strong over nodes 1 and 2, em on node 2, a word after',
     nodes: [plain('b'), marked(['strong'], '(a'), marked(['strong', 'em'], ')'), plain('c')],
   },
 ]
