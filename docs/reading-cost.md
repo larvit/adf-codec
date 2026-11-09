@@ -869,3 +869,19 @@ Read most (opens and searches):
 - `src/markdown/portable/adf-to-portable-markdown.ts` 2
 - `src/markdown/portable/portable-markdown-to-adf.ts` 2
 - `AGENTS.md` 1
+
+## Reading cost, chunk ad62c02e9a23, finished 2026-11-09T06:06:35Z
+
+92431 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/unspellable-runs.ts` 5
+- `todo.md` 5
+- `src/markdown/emit/unspellable-runs.test.ts` 4
+- `README.md` 2
+- `ci.sh` 2
+- `docs/decisions.md` 2
+- `AGENTS.md` 1
+- `docker-runner.sh` 1
+- `package.json` 1
