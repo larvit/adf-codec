@@ -42,19 +42,15 @@ function headed(head: string): (body: BlockText) => BlockText {
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const items: PlacedBlock[][] = []
   let headroom = largestNesting - depth - 1
-  // The portable reduction opens every task list with a task, so this empty array is replaced before any block is pushed to it.
-  let item: PlacedBlock[] = []
   // A child other than a task nests in the task before it.
   for (const [index, child] of nodeContent(node).entries()) {
     const task = isTaskItem(child)
     const walk = task ? taskBlocks(child, [...path, 'content', index], depth + 1, writing) : placedBlock(child, [...path, 'content', index], depth + 1, writing)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
-    if (task) {
-      item = []
-      items.push(item)
-    }
-    for (const block of walk.value.blocks) item.push(block)
+    const previous = items.at(-1)
+    if (task || previous === undefined) items.push([...walk.value.blocks])
+    else for (const block of walk.value.blocks) previous.push(block)
   }
   const list = spelledList(items.map((blocks) => joinBlocks(blocks, 'list-item')), undefined, headroom)
   // The portable reduction leaves no task a list item cannot hold: a directive here would break the flavour.
