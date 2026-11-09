@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 162 | 0.4.0 |  |  | **Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.** | 2 | 1 | 1 | 2 | 4 | code health by 4 | 17.4 |
 | 175 | 0.4.0 |  |  | **Delete the guards in `tryTaskList` that `reduceToPortable` makes unreachable, once a test shows `adfToPortableMarkdown` reaches none of them.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -71,20 +70,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 162. Pin each rule of the emphasis sweep with a hand-worked line, so every mutant that lets a pair fall where the one-run-per-pass reference keeps it fails a test.
-
-About 20 mutants of `src/markdown/emit/unspellable-runs.ts` survive the gate. Each lets a pair fall
-with the first where the one-run-per-pass reference keeps it, so the line comes out other than the
-reference writes it, against `docs/decisions.md` §With the first misread emphasis run,
-`unspellableRuns` returns only runs that, taken back early, leave the line as the one-run-per-pass
-reference writes it. They sit in `endsAlone`'s mark check, `holdsAlike`'s `held >= 0`,
-`mayBeWrittenWith`, the `'moves'` give-ups in `runEdge`, `wordBeside` and `pairStanding`,
-`pairSpellings`' carry-split rule and `holdsPairBefore`'s `<=`. The properties beside
-`inline-line.ts` and `inline-reduction.ts` miss them; the `runEdge` one survived 20000 runs on a
-random seed. Write one line per rule of that entry, its expected markdown worked from the entry,
-never from the code, then run Stryker on the file. A mutant that only takes fewer runs back costs a
-pass and may survive.
 
 ### 175. Delete the guards in `tryTaskList` that `reduceToPortable` makes unreachable, once a test shows `adfToPortableMarkdown` reaches none of them.
 
