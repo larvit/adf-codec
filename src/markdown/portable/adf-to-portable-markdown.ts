@@ -275,7 +275,7 @@ function reduceTaskList(node: AdfNode, reduction: Reduction): Result<AdfNode[]> 
     const standsAlone = !nestsTasks && !isTaskItem(child) && child.type !== 'taskList'
     for (const block of standsAlone ? [{ content: blocks, type: 'listItem' }] : blocks) tasks.push(block)
   }
-  const items = nestsTasks ? taskListItems({ content: tasks, type: 'taskList' }) : undefined
+  const items = nestsTasks ? taskListItems(tasks) : undefined
   return success(items === undefined ? listOf(tasksAsText(tasks), 'bulletList') : splitTaskList(items))
 }
 

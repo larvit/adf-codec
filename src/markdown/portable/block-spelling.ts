@@ -6,7 +6,6 @@ import { blockText, emptyLine, joinedText, opening, prefixedText, type BlockText
 import { emitBlock, joinBlocks, quotedBlocks, spelledList, walkBlocks } from '../emit/adf-to-markdown.ts'
 import { emitInlineLine } from '../emit/inline-line.ts'
 import { failure, success } from '../../result.ts'
-import { isTaskItem } from '../../adf/block-nodes.ts'
 import { largestNesting } from '../../nesting.ts'
 import { nodeAttrs, nodeContent } from '../../adf/document.ts'
 import { taskListItems } from './task-list.ts'
@@ -41,21 +40,18 @@ function headed(head: string): (body: BlockText) => BlockText {
 }
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
-  const items = taskListItems(node)
-  // The portable reduction opens every task list with a task: a child nesting in no task would have no list item to stand in.
+  const items = taskListItems(nodeContent(node))
+  // The portable reduction opens every task list with a task.
   if (items === undefined) return failure('unsupported-node-shape', 'a task list opens with a child other than a task', path)
   const inners: BlockText[] = []
   let headroom = largestNesting - depth - 1
-  let index = 0
   for (const { after, task } of items) {
     const blocks: PlacedBlock[] = []
-    for (const child of [task, ...after]) {
-      const childPath = [...path, 'content', index]
-      const walk = isTaskItem(child) ? taskBlocks(child, childPath, depth + 1, writing) : placedBlock(child, childPath, depth + 1, writing)
+    const walks = [taskBlocks(task, path, depth + 1, writing), ...after.map((child) => placedBlock(child, path, depth + 1, writing))]
+    for (const walk of walks) {
       if (!walk.ok) return walk
       headroom = Math.min(headroom, walk.value.headroom)
       for (const block of walk.value.blocks) blocks.push(block)
-      index += 1
     }
     inners.push(joinBlocks(blocks, 'list-item'))
   }
