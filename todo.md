@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 176 | 0.4.0 |  |  | **Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.** | 1 | 1 | 2 | 2 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
@@ -70,13 +69,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 176. Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.
-
-In `src/markdown/emit/unspellable-runs.ts`, Stryker's mutants of `runEdge`'s
-`if (standing === 'moves') return undefined` survive the hand-worked tests, and 50,000 fuzz runs
-comparing the code with the mutant found no output differ. Found on PR 145, 2026-11-09. The
-comprehension seats found `runEdge` hard to read (`larv-review places`); make it easier.
 
 ### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
 
