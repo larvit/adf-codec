@@ -143,9 +143,9 @@ the short row and the line holding no `|` for `losslessMarkdownToAdf` alone. The
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
-Rides on `readAdfDocument`, whose copy walks every node. Today every refused node, such as one
-with a `Date` in an attribute, reads `an ADF document's content holds ADF nodes: one of them is not`
-with an empty `path`. An export tool told this about one document in thousands then searches that
+Today `readAdfDocument` and the converters refuse every node, such as one with a `Date` in an
+attribute, with the message `an ADF document's content holds ADF nodes: one of them is not` and an
+empty `path`. An export tool told this about one document in thousands then searches that
 document's whole tree. Give the node's path, and name its type and the attribute key as
 `attributeNestingMessage` does. Found by the product-owner review of items 66 and 67, 2026-10-05.
 
