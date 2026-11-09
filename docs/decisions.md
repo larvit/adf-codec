@@ -1195,17 +1195,17 @@ format's ban on the other format, and `ci.sh` probes every override. They are li
 test that scans the source, and a lint rule reads every import spelling: `from`, a bare `import`,
 double quotes and a dynamic `import()`.
 
-## The comparison table lists every converter that starts and converts
+## The comparison tables list every ADF converter that starts and converts
 
 2026-10-28, the maintainer, answering the bar for the README's "Other ADF converters" table. It
 serves goal 3: a developer choosing a converter sees every one, and what it gets wrong.
 
-A converter that starts and converts anything stays in its table, however poorly. Its row says where
+A converter that starts and converts any ADF stays in its table, however poorly. Its row says where
 it fails ordinary input, such as a list or a quote. A converter that doesn't start, or needs a page
 rather than Node, goes in the second table. A wrapper or fork of a listed package is left out.
 
-A converter that never reads or writes ADF is left out of both. 2026-11-09, the maintainer: a Go
-program that writes Confluence storage format (`docs/kovetskiy-mark.md`) gets no row.
+A converter that never reads or writes ADF is left out of both. 2026-11-09, the maintainer:
+`kovetskiy/mark`, which writes Confluence storage format (`docs/kovetskiy-mark.md`), gets no row.
 
 ## The real-world corpus holds anonymized documents from sites whose licence it records
 

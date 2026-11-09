@@ -87,7 +87,7 @@ In `docs/decisions.md`:
 - Readable spellings take the `try` prefix
 - The attribute vocabulary is ADF's
 - The source parts by ADF and format
-- The comparison table lists every converter that starts and converts
+- The comparison tables list every ADF converter that starts and converts
 - The real-world corpus holds anonymized documents from sites whose licence it records
 - The feature table is a section per corpus example, led by a summary table
 
