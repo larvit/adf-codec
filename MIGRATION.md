@@ -22,13 +22,19 @@ class that keeps its fields behind getters (Vue 2, MobX) is refused too: hand in
 `JSON.parse(JSON.stringify(document))`. A document holding more than 10,000,000 JSON values is
 `unsupported-node-shape`.
 
-`portableMarkdownToAdf` reads more of GFM's pipe table. A body row holding fewer cells than the
-header is padded with empty cells, where `0.3.1` returned `malformed-pipe-table`. A line holding no
-`|` after a table is a row of one cell, where it ended the table and read as a paragraph. `a |` over
-`--- |` is a one-column table, where it read as a paragraph. A markdown string that relied on the
-old reading takes a blank line between the table and the paragraph. `losslessMarkdownToAdf` reads
-the first two as before, and now returns `malformed-pipe-table` for `a |` over `--- |` too, as it
-does for any table without leading pipes.
+`portableMarkdownToAdf` reads more of GFM's pipe table:
+
+- A body row holding fewer cells than the header is padded with empty cells, where `0.3.1`
+  returned `malformed-pipe-table`.
+- A line after a table that holds no `|` and opens no other block is a row of one cell, where it
+  ended the table and read as a paragraph. Markdown that relied on that takes a blank line between
+  the table and the paragraph.
+- Two lines that read as a paragraph in `0.3.1`, a line ending in `|` over a line of `-` runs
+  ending in `|` (`a |` over `--- |`), are a one-column table. `losslessMarkdownToAdf` returns
+  `malformed-pipe-table` for them too, as for any table without leading pipes. In either reader,
+  write the first line as `a \|` to keep both as text.
+
+`losslessMarkdownToAdf` reads the first two as before.
 
 ## From `0.2.0` to `0.3.0`
 

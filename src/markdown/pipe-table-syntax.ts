@@ -4,15 +4,16 @@ import { backslashEscape, claimsPipeLine, trimSpace } from './commonmark/grammar
 const alignmentCell = /^:-+:?$|^-+:$/
 const delimiterCell = /^-+$/
 
-// spec/flavour.md, Tables: the cells of a row no leading `|` claimed — GFM's form without the outer pipes, one `|` making a one-column row.
+// spec/flavour.md, Tables: the cells of a row no leading `|` claimed — GFM's form without the outer pipes; a closing `|` after one cell makes a one-column row.
 export function barePipeCells(line: string): string[] | undefined {
   const cells = splitPipeCells(line, 0)
   return cells.length > 1 ? withoutClosingCell(cells) : undefined
 }
 
+// A one-cell row is no delimiter here: the hard break before it leaves its header line ending in `\`, which splits into two cells.
 export function isBareDelimiterRow(line: string): boolean {
   const cells = barePipeCells(line)
-  return cells !== undefined && isDelimiterRow(cells)
+  return cells !== undefined && cells.length > 1 && isDelimiterRow(cells)
 }
 
 export function isDelimiterRow(cells: readonly string[]): boolean {

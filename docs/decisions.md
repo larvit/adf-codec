@@ -393,9 +393,16 @@ breaks Goal 4. A refusal builds no table, but it still breaks Goal 4: a bot gets
 GitHub renders. Goal 7 is a Maintain goal, holding whatever it costs, so it wins over Goal 4, an
 Achieve goal.
 
-A shape whose GFM reading drops nothing is read as GFM reads it: a short body row is padded with
-empty cells, a line holding no `|` after the table is a row of one cell, and `a |` over `--- |` is
-a one-column table.
+
+## The portable reader reads what GFM's reading keeps
+
+2026-11-09, plan item 112, approved by the maintainer. Goals 4 and 7. Valid while GFM's reading
+of a shape drops no content.
+
+Where GFM's reading of a shape drops nothing, `portableMarkdownToAdf` reads it as GFM does. A pipe
+table's short body row is padded with empty cells, a line holding no `|` that opens no other
+block is a body row of one cell, and `a |` over `--- |` is a one-column table. `losslessMarkdownToAdf`
+keeps its stricter reading (§The portable reader refuses what GFM's reading would drop).
 
 ## The HTML dialect
 

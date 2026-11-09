@@ -2,10 +2,13 @@
 
 ## Unreleased
 
-- `portableMarkdownToAdf` reads GFM's pipe table further: a body row holding fewer cells than the
-  header is padded with empty cells, a line holding no `|` after the table is a row of one cell,
-  and `a |` over `--- |` is a one-column table. A row holding more cells stays an error result.
-  `MIGRATION.md` shows the change.
+- **Breaking:** `portableMarkdownToAdf` reads more of GFM's pipe table. A body row holding fewer
+  cells than the header is padded with empty cells, where `0.3.1` returned `malformed-pipe-table`.
+  A line after the table that holds no `|` and opens no other block is a row of one cell, where it
+  was a paragraph. A row holding more cells stays an error result.
+- **Breaking:** `a |` over `--- |` is a one-column table. `portableMarkdownToAdf` reads it as one,
+  and `losslessMarkdownToAdf` returns `malformed-pipe-table` for it, as for any table without
+  leading pipes, where `0.3.1` read both as a paragraph. `MIGRATION.md` shows the change.
 - `adfToPortableMarkdown` keeps a link around the note standing in place of a node it marks, such
   as a stored image: `[_(image not included)_](https://example.com/a)`.
 - **Breaking:** `readAdfDocument` replaces `isAdfDocument`: it returns a `Result<AdfDocument>` whose
