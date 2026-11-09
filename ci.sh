@@ -62,9 +62,11 @@ interrupt_stops_container() {
 
 leg "Ctrl-C stops an in_image container ($node_image)" interrupt_stops_container
 
-# memory.swap.max is 0 when --memory-swap equals --memory.
+# Equal --memory-swap leaves cgroup v2 a swap.max of 0; cgroup v1 reports it as the memory-plus-swap limit.
 container_is_limited() {
-  [ "$(in_image "$node_image" sh -c 'cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.swap.max' | tr '\n' ' ')" = '8589934592 0 ' ]
+  local limits
+  limits=$(in_image "$node_image" sh -c 'cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.swap.max 2>/dev/null || cat /sys/fs/cgroup/memory/memory.limit_in_bytes /sys/fs/cgroup/memory/memory.memsw.limit_in_bytes' | tr '\n' ' ') &&
+  { [ "$limits" = '8589934592 0 ' ] || [ "$limits" = '8589934592 8589934592 ' ]; }
 }
 
 leg "an in_image container is capped at 8g with no swap ($node_image)" container_is_limited
