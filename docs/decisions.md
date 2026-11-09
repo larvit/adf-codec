@@ -1204,6 +1204,9 @@ A converter that starts and converts anything stays in its table, however poorly
 it fails ordinary input, such as a list or a quote. A converter that doesn't start, or needs a page
 rather than Node, goes in the second table. A wrapper or fork of a listed package is left out.
 
+A converter that never reads or writes ADF is left out of both. 2026-11-09, the maintainer: a Go
+program that writes Confluence storage format (`docs/kovetskiy-mark.md`) gets no row.
+
 ## The real-world corpus holds anonymized documents from sites whose licence it records
 
 2026-11-04, on the maintainer's answers of 2026-11-03, and their answer of 2026-11-05 accepting the

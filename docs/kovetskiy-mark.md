@@ -79,8 +79,8 @@ API (`README.md` §Other ADF converters).
 
 Neither table fits. The first lists npm packages that run in Node and convert ADF to or from
 markdown. The second lists converters the comparison does not run, and every library in it converts
-ADF. `mark` is a Go program that never touches ADF. Item 177 asks the maintainer: leave it out, or
-add a row to the second table saying it converts markdown to storage format and not ADF.
+ADF. `mark` is a Go program that never touches ADF, so it is left out of both
+(`docs/decisions.md` §The comparison table lists every converter that starts and converts).
 
 No spelling changes follow: `[!IMPORTANT]` is the README's choice to reopen, not a defect, and only
 a writer panel changes a spelling (`AGENTS.md` §7).
