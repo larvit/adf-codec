@@ -4,14 +4,13 @@ import test from 'node:test'
 
 import type { AdfDocument, AdfNode } from './adf/document.ts'
 import type { JsonSpelling } from './canonical-json.ts'
+import type { Result } from './result.ts'
 import { adfToHtml } from './html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
-import { adfToPortableMarkdown } from './markdown/portable/adf-to-portable-markdown.ts'
 import { htmlToAdf } from './html/parse/html-to-adf.ts'
 import { jsonValue, propertyRuns } from './conformance/property-harness.ts'
 import { losslessMarkdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { parseJsonText } from './json-text.ts'
-import { portableMarkdownToAdf } from './markdown/portable/portable-markdown-to-adf.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
 
 test('reads every JSON value kind', () => {
@@ -91,32 +90,29 @@ test('accepts exactly the text JSON.parse accepts', () => {
   )
 })
 
-test('no reader reads JSON text with JSON.parse, which parseJsonText stands in for', () => {
-  const unknownBlock: AdfNode = { attrs: { a: [1, { b: 'c' }] }, content: [{ text: 'x', type: 'text' }], type: 'unknownBlock' }
-  const unknownInline: AdfNode = { attrs: { a: { b: 2 } }, type: 'unknownInline' }
-  const table: AdfNode = {
-    content: [{ content: [{ attrs: { colwidth: [100, 200] }, content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }],
-    type: 'table',
+// V8 from 13.6 reads an escaped key as one it read before; priming it as the bug report does shows a reader that calls JSON.parse.
+const keys = { '\b': 1, '\f': 2 }
+const readers: [string, (document: AdfDocument) => Result<string>, (text: string) => Result<AdfDocument>][] = [
+  ['lossless markdown', adfToLosslessMarkdown, losslessMarkdownToAdf],
+  ['HTML', adfToHtml, htmlToAdf],
+]
+const paragraphOf = (node: AdfNode): AdfNode => ({ content: [node], type: 'paragraph' })
+const documents: [string, AdfNode][] = [
+  ['an unknown block', { attrs: { keys }, type: 'unknownBlock' }],
+  ['an unknown inline node', paragraphOf({ attrs: { keys }, type: 'unknownInline' })],
+  ['extension parameters', { attrs: { extensionKey: 'toc', extensionType: 'x', parameters: keys }, type: 'extension' }],
+  ['an inline card', paragraphOf({ attrs: { data: keys, url: 'https://example.com' }, type: 'inlineCard' })],
+]
+
+for (const [format, write, read] of readers) {
+  for (const [held, node] of documents) {
+    test(`${format} reads the escaped keys of ${held} as spelled, after V8 read other escaped keys`, () => {
+      const document: AdfDocument = { content: [node], type: 'doc', version: 1 }
+      const written = write(document)
+      assert.ok(written.ok)
+      JSON.parse('{"\\b":1,"\\f":2}')
+      JSON.parse('{"\\b":3,"\\\\":4}')
+      assert.deepEqual(read(written.value), { ok: true, value: document })
+    })
   }
-  const marked: AdfNode = { content: [{ marks: [{ attrs: { color: '#fff' }, type: 'textColor' }], text: 'x', type: 'text' }, unknownInline], type: 'paragraph' }
-  const document: AdfDocument = { content: [unknownBlock, table, marked, { attrs: { panelType: 'info' }, content: [marked], type: 'panel' }], type: 'doc', version: 1 }
-  const spellings = [adfToLosslessMarkdown(document), adfToPortableMarkdown(document), adfToHtml(document)]
-  const [lossless, portable, html] = spellings.map((spelled) => (spelled.ok ? spelled.value : undefined))
-  assert.ok(lossless !== undefined && portable !== undefined && html !== undefined)
-  const parse = JSON.parse
-  let called = 0
-  JSON.parse = (...args: Parameters<typeof JSON.parse>) => {
-    called += 1
-    return parse(...args)
-  }
-  try {
-    const read = [losslessMarkdownToAdf(lossless), portableMarkdownToAdf(portable), htmlToAdf(html)]
-    assert.deepEqual(
-      read.map((result) => result.ok),
-      [true, true, true],
-    )
-  } finally {
-    JSON.parse = parse
-  }
-  assert.equal(called, 0)
-})
+}

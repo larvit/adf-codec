@@ -14,6 +14,7 @@ test('every named reference parts into one name and one value', () => {
 
 test('decodes a reference to the characters HTML5 gives its name', () => {
   assert.deepEqual(readEntityReference('&ApplyFunction;', 0), { length: 15, text: '⁡' })
+  assert.deepEqual(readEntityReference('&CounterClockwiseContourIntegral;', 0), { length: 33, text: '\u2233' })
   assert.deepEqual(readEntityReference('&NewLine;', 0), { length: 9, text: '\n' })
   assert.deepEqual(readEntityReference('&Tab;', 0), { length: 5, text: '\t' })
   assert.deepEqual(readEntityReference('&ThickSpace;', 0), { length: 12, text: '  ' })
