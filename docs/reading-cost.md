@@ -835,3 +835,20 @@ Read most (opens and searches):
 - `src/markdown/portable/inline-reduction.ts` 3
 - `todo.md` 3
 - `src/conformance/property-harness.ts` 2
+
+## Reading cost, chunk 3292be52e286, finished 2026-11-09T04:52:49Z
+
+90319 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 5
+- `src/markdown/emit/adf-to-markdown.ts` 3
+- `src/markdown/portable/block-spelling.ts` 3
+- `package.json` 2
+- `src/markdown/portable/adf-to-portable-markdown.ts` 2
+- `README.md` 1
+- `ci.sh` 1
+- `docker-runner.sh` 1
+- `docs/decisions.md` 1
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 1
