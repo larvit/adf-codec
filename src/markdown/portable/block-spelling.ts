@@ -40,7 +40,7 @@ function headed(head: string): (body: BlockText) => BlockText {
 
 function tryTaskList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> {
   const items: PlacedBlock[][] = []
-  // The portable reduction leaves a task list opening with a task, so `item` is set before any child nests in it.
+  // The portable reduction opens every task list with a task, so this empty array is replaced before any block is pushed to it.
   let item: PlacedBlock[] = []
   // A child other than a task nests in the task before it.
   for (const [index, child] of nodeContent(node).entries()) {
