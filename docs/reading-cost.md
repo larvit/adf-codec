@@ -792,3 +792,16 @@ Read most (opens and searches):
 - `package.json` 1
 - `src/markdown/commonmark/backtick-runs.ts` 1
 - `src/markdown/commonmark/grammar.ts` 1
+
+## Reading cost, chunk ca685f64bce7, finished 2026-11-09T00:27:56Z
+
+85473 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/inline-content.ts` 8
+- `todo.md` 5
+- `README.md` 3
+- `AGENTS.md` 1
+- `ci.sh` 1
+- `docs/decisions.md` 1

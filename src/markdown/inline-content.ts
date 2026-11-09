@@ -177,7 +177,8 @@ function readToken(scan: Scan, inline: InlineSource, index: number, token: Inlin
       scan.pieces.push({ image: token.image, kind: 'open' })
       return success(end)
     case 'bracket-close':
-      return closeBracket(scan, index)
+      flush(scan, false)
+      return applyClosing(scan, closeBracket(scan, index), index)
     case 'code-span':
       flush(scan, false)
       record(scan.shared, { at: scan.offset + index, kind: 'codeSpans' })
@@ -416,42 +417,40 @@ function linkedText(text: string, scheme: string): AdfNode {
   return { marks: [{ attrs: { href: `${scheme}${text}` }, type: 'link' }], text, type: 'text' }
 }
 
-function closeBracket(scan: Scan, index: number): Result<number> {
-  flush(scan, false)
-  const open = popBracket(scan)
-  if (open === undefined) return success(literalClose(scan, index))
-  const target = open.active ? resolveTarget(scan, open.start, index) : undefined
-  if (target === undefined) return success(unopened(scan, open, index))
+// What a `]` makes of the innermost open bracket, decided without writing to the scan. `closesLink` is whether a link closes here, or one inside these brackets did, which leaves every link opener still open literal.
+type Closing =
+  | { closesLink: boolean; kind: 'literal'; open: OpenBracket | undefined }
+  | { closesLink: boolean; end: number; kind: 'built'; open: OpenBracket; pieces: Result<Piece[]> }
+
+function closeBracket(scan: Scan, index: number): Closing {
+  const open = scan.brackets.at(-1)
+  if (open === undefined) return { closesLink: false, kind: 'literal', open }
+  const target = open.image || scan.brackets.length > scan.linkOpenersFrom ? resolveTarget(scan, open.start, index) : undefined
+  if (target === undefined) return { closesLink: false, kind: 'literal', open }
   const inner = scan.pieces.slice(open.index + 1)
-  // A link closing, or one inside these brackets, leaves every link opener still open literal.
-  if (!open.image) scan.linkOpenersFrom = scan.brackets.length
   // Before `linkPieces`' own-marks guard: brackets that go literal mark nothing, so a carry inside them is no error.
-  if (!open.image && holdsLink(inner)) return success(unopened(scan, open, index))
-  record(scan.shared, { at: scan.offset + open.start - 1, kind: 'links' })
-  const closed = open.image ? imagePieces(scan, inner, target.definition()) : linkPieces(scan, inner, target.definition())
-  if (!closed.ok) return closed
-  scan.pieces.length = open.index
-  for (const piece of closed.value) scan.pieces.push(piece)
-  return success(index + 1 + target.length)
+  if (!open.image && holdsLink(inner)) return { closesLink: true, kind: 'literal', open }
+  const pieces = open.image ? imagePieces(scan, inner, target.definition()) : linkPieces(scan, inner, target.definition())
+  return { closesLink: !open.image, end: index + 1 + target.length, kind: 'built', open, pieces }
 }
 
 // A close that builds nothing still pops its bracket, so no later close walks past it.
-function popBracket(scan: Scan): (OpenBracket & { active: boolean }) | undefined {
-  const open = scan.brackets.pop()
-  if (open === undefined) return undefined
-  const active = open.image || scan.brackets.length >= scan.linkOpenersFrom
-  scan.linkOpenersFrom = Math.min(scan.linkOpenersFrom, scan.brackets.length)
-  return { ...open, active }
-}
-
-function literalClose(scan: Scan, index: number): number {
-  scan.pending += ']'
-  return index + 1
-}
-
-function unopened(scan: Scan, open: OpenBracket, index: number): number {
-  scan.pieces[open.index] = { kind: 'nodes', nodes: bracketNodes(open) }
-  return literalClose(scan, index)
+function applyClosing(scan: Scan, closing: Closing, index: number): Result<number> {
+  const { closesLink, open } = closing
+  if (open !== undefined) {
+    scan.brackets.pop()
+    scan.linkOpenersFrom = closesLink ? scan.brackets.length : Math.min(scan.linkOpenersFrom, scan.brackets.length)
+  }
+  if (closing.kind === 'literal') {
+    if (open !== undefined) scan.pieces[open.index] = { kind: 'nodes', nodes: bracketNodes(open) }
+    scan.pending += ']'
+    return success(index + 1)
+  }
+  record(scan.shared, { at: scan.offset + closing.open.start - 1, kind: 'links' })
+  if (!closing.pieces.ok) return closing.pieces
+  scan.pieces.length = closing.open.index
+  for (const piece of closing.pieces.value) scan.pieces.push(piece)
+  return success(closing.end)
 }
 
 function bracketNodes(bracket: Bracket | OpenBracket): AdfNode[] {
