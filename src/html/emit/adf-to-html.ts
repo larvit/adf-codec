@@ -10,7 +10,7 @@ import { failure, success, type ConvertErrorPath, type Result } from '../../resu
 import { firstParagraphForm } from '../first-paragraph.ts'
 import { imageElement } from '../image-element.ts'
 import { inlineHtml, writableText } from './inline.ts'
-import { isUnmarkedSpellableText, nodeAttrs, nodeContent, writableContent } from '../../adf/document.ts'
+import { isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
 import { languageClass } from '../language-class.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
@@ -24,7 +24,10 @@ type Row = { depth: number; kind: 'row'; path: ConvertErrorPath; pieces: Pending
 type Pending = Block | Item | Row | string
 
 export function adfToHtml(document: AdfDocument): Result<string> {
-  return withinEngineLimits(() => writeHtml(document))
+  return withinEngineLimits(() => {
+    const read = readAdfDocument(document)
+    return read.ok ? writeHtml(read.value) : read
+  })
 }
 
 // A stack rather than recursion, since each level would cost several frames: a block returns its pieces in document order, and only this loop pushes them.

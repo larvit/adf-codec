@@ -1,5 +1,5 @@
 try {
-  const { adfToHtml, adfToLosslessMarkdown, htmlToAdf, isAdfDocument, losslessMarkdownToAdf } = await import('/dist/index.js')
+  const { adfToHtml, adfToLosslessMarkdown, htmlToAdf, losslessMarkdownToAdf, readAdfDocument } = await import('/dist/index.js')
   // WebDriver's JSON reads -0 back as 0, so a document crosses as JSON text with -0 tagged; run.js revives it.
   const spelled = (result) => (result.ok ? { ok: true, value: JSON.stringify(result.value, (_, value) => (Object.is(value, -0) ? '\u0000-0' : value)) } : result)
   // A viewer/editor app posts the page's innerHTML back, so htmlToAdf must read what the browser writes.
@@ -18,11 +18,11 @@ try {
       const adf = JSON.parse(json)
       const emitted = adfToLosslessMarkdown(adf)
       const html = adfToHtml(adf)
-      return { emitted, html, htmlParsed: html.ok ? spelled(htmlToAdf(html.value)) : undefined, innerHtml: throughInnerHtml(adf), isDocument: isAdfDocument(adf), name, parsed: emitted.ok ? spelled(losslessMarkdownToAdf(emitted.value)) : undefined }
+      return { emitted, html, htmlParsed: html.ok ? spelled(htmlToAdf(html.value)) : undefined, innerHtml: throughInnerHtml(adf), isDocument: readAdfDocument(adf).ok, name, parsed: emitted.ok ? spelled(losslessMarkdownToAdf(emitted.value)) : undefined }
     }),
     roundTrip: corpus.roundTrip.map(({ json, markdown, name }) => {
       const adf = JSON.parse(json)
-      return { emitted: adfToLosslessMarkdown(adf), isDocument: isAdfDocument(adf), name, parsed: spelled(losslessMarkdownToAdf(markdown)) }
+      return { emitted: adfToLosslessMarkdown(adf), isDocument: readAdfDocument(adf).ok, name, parsed: spelled(losslessMarkdownToAdf(markdown)) }
     }),
   })
 } catch (cause) {

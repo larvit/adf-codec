@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
 | 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
@@ -35,7 +34,6 @@
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
 | 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.9 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.8 |
-| 77 | 0.4.0 |  | decision | **Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.** | 3 | 1 | 3 | 5 | 4 |  | 0.0 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 26.2 |
@@ -69,13 +67,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 45. Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.
-
-Lands with item 77: the reader returns item 77's copy. Goal 1 has every call return a result; the
-boolean guard is the one export that does not, and it cannot say which branch refused, where
-`not-an-adf-document`'s message already does. Breaking: `MIGRATION.md` shows the guard's
-replacement.
 
 ### 127. Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.
 
@@ -152,7 +143,7 @@ the short row and the line holding no `|` for `losslessMarkdownToAdf` alone. The
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 
-Lands with items 45 and 77, whose reader walks every node. Today every refused node, such as one
+Rides on `readAdfDocument`, whose copy walks every node. Today every refused node, such as one
 with a `Date` in an attribute, reads `an ADF document's content holds ADF nodes: one of them is not`
 with an empty `path`. An export tool told this about one document in thousands then searches that
 document's whole tree. Give the node's path, and name its type and the attribute key as
@@ -286,24 +277,6 @@ first failing reader stops the test and the failure never names the reader. Writ
 ``for (const read of readers) test(`… in ${read.name}`, …)`` at the top level. Technical principle:
 "No loops or branches in a test body; parametrize the cases". Found by the principles audit of the
 release review of 0.3.0, 2026-11-08.
-
-### 77. Read the input once into a plain copy, so an accessor property or a throwing Proxy yields `not-an-adf-document` and every call returns a result.
-
-Lands with item 45, in one chunk: item 45's reader returns the copy. The maintainer's call,
-2026-10-04: Goal 1 promises a result for any value, getters and Proxies included. Today the guards
-and the conversions read the caller's object many times, so a throwing getter, a revoked Proxy or a
-getter minting a fresh child per access throws or walks forever. Item 45's reader copies the
-document once inside one tight `try/catch`, reading property descriptors so no getter runs: an
-accessor property, or a Proxy trap that throws, is `not-an-adf-document`. The copy keeps own
-enumerable keys, as `JSON.stringify` does, so an inherited or non-enumerable key drops. The reader
-reads arrays by index, so no custom iterator runs. Every later step works on the copy. A Proxy can
-still claim unbounded width, which the 500-level limit does not cover, so the copy reads at most 10
-million JSON values, each object, array, string, number, boolean and null counting one (the
-maintainer, 2026-10-05): roughly 50 to 100 MB of JSON, far past any real page, where 10 000 would
-refuse a 500-row table. Before reading an array, the reader checks its `length` against the values
-left, so a Proxy claiming 2³² elements is refused at once. The chunk asks whether that refusal
-shares the 500-level guard's `unsupported-nesting-depth` or takes another code. Found by the
-technical-principles audit, 2026-10-04.
 
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 

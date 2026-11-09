@@ -311,7 +311,7 @@ sets example documents beside each writer's output and says whether that output 
 ```ts
 adfToLosslessMarkdown(doc: AdfDocument): Result<string>
 losslessMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
-isAdfDocument(v: unknown): v is AdfDocument
+readAdfDocument(v: unknown): Result<AdfDocument>
 
 commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError>
 
@@ -333,12 +333,15 @@ Each call's name says which format it reads or writes:
 | `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
 | `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `readAdfDocument` | reads ADF as JSON, a value you hold from a parser or a store, into an `AdfDocument`, and writes nothing | `not-an-adf-document`, `unsupported-node-shape` |
 
-`isAdfDocument` is the type guard for the boundary you receive JSON at. It checks the shape the
-converters require: `type: 'doc'`, a finite `version` (the converters take only 1), nodes holding
-only `attrs`, `content`, `marks`, `text` and `type`, attribute values that are JSON values, and no
-object holding itself. It returns `true` for a document nesting past 500 levels; the converters
-refuse that one with `unsupported-nesting-depth`.
+`readAdfDocument` reads the JSON you receive into an `AdfDocument`, copying it once. It reads data
+properties and own enumerable keys alone, as `JSON.stringify` does, so an accessor property or a
+Proxy that throws is `not-an-adf-document` and never a throw, and the three writers read their
+document the same way. It checks the shape the converters require: `type: 'doc'`, a finite
+`version` (the converters take only 1), nodes holding only `attrs`, `content`, `marks`, `text` and
+`type`, attribute values that are JSON values, and no object holding itself. It reads a document
+nesting past 500 levels; the converters refuse that one with `unsupported-nesting-depth`.
 
 The types:
 
@@ -612,7 +615,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | guard the boundary you receive JSON at with `isAdfDocument`; the message names the branch that refused. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
+| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an accessor property, a Proxy that throws, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | read the boundary you receive JSON at with `readAdfDocument`; the message names the branch that refused. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
 | `unsupported-document-version` | the document's `version` is not 1 | keep the ADF and pass the document over, or show it read-only; the version is the site's, not yours to change |
 
 ### Either direction
@@ -662,6 +665,9 @@ Every call can raise these:
   `path` and message name.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
+- **Reading a document, in `readAdfDocument` and the three writers**: the document holds more than
+  10,000,000 JSON values, each object, array, string, number, boolean and null counting one. Keep
+  the ADF and pass the document over or show it read-only; where you built the ADF, split it.
 - **Past the engine's longest string**:
   - a writer's markdown or HTML would pass 536870888 characters, V8's longest string, on every
     engine;
@@ -772,9 +778,9 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 | `adfToPortableMarkdown` | function | ADF to portable markdown, lossy |
 | `commonMarkToAdf` | function | strict CommonMark to ADF |
 | `htmlToAdf` | function | `adfToHtml`'s HTML, read back to ADF |
-| `isAdfDocument` | function | type guard for `AdfDocument` |
 | `losslessMarkdownToAdf` | function | the lossless flavour to ADF |
 | `portableMarkdownToAdf` | function | portable markdown to ADF |
+| `readAdfDocument` | function | JSON you receive, checked and copied into an `AdfDocument` |
 
 ## Changing the source
 
