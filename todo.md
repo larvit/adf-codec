@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 177 | 0.4.0 |  | question | **Decide whether `kovetskiy/mark`, a Go program that writes Confluence storage format and never touches ADF, gets a row in the README's second "Other ADF converters" table, and record the answer in §The comparison table lists every converter that starts and converts.** | 1 | 2 | 1 | 2 | 1 | 3 by 1 | 2.5 |
 | 112 | 0.4.0 |  |  | **Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.** | 2 | 1 | 2 | 3 | 3 | 4 by 4 | 6.2 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
@@ -62,20 +61,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 177. Decide whether `kovetskiy/mark`, a Go program that writes Confluence storage format and never touches ADF, gets a row in the README's second "Other ADF converters" table, and record the answer in §The comparison table lists every converter that starts and converts.
-
-The gap: the decision entry "The comparison table lists every converter that starts and converts"
-settles which npm packages and which other-ecosystem libraries are listed, and all of them convert
-ADF. The first table lists npm packages that run in Node and convert ADF to or from markdown; the
-second lists converters the comparison does not run, and every library in it converts ADF. `mark`
-converts markdown to storage format only (`docs/kovetskiy-mark.md`, "Does it belong in the
-comparison table"). The options: leave it out, or add a row saying it converts markdown to storage
-format and not ADF.
-
-Candidate sentence for the entry: "A converter that never reads or writes ADF, such as one writing
-Confluence storage format, is left out." Recommended: leave it out, unless the maintainer wants
-non-ADF neighbours listed.
 
 ### 112. Pad a GFM pipe table's short rows with empty cells, read its body rows holding no pipe, and read a one-column table without leading pipes in `portableMarkdownToAdf`.
 
