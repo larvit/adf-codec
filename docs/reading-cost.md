@@ -805,3 +805,16 @@ Read most (opens and searches):
 - `AGENTS.md` 1
 - `ci.sh` 1
 - `docs/decisions.md` 1
+
+## Reading cost, chunk a65075e633b3, finished 2026-11-09T00:57:29Z
+
+67156 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/inline-content.ts` 9
+- `todo.md` 3
+- `README.md` 2
+- `CHANGELOG.md` 1
+- `docs/decisions.md` 1
+- `src/markdown/emit/line-escaping.ts` 1
