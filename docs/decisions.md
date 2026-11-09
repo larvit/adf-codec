@@ -965,9 +965,9 @@ since a misread there fails the gate and never hides a bug.
 
 ## An ADF document is read once into a plain copy
 
-2026-10-04, the maintainer. The 10 million 2026-10-05, applying §Output past V8's longest string is
-refused on every engine. The code, 2026-11-09, applying §Which code a cause takes. The name by a
-developer panel, 2026-11-09. Goals 1 and 9. Valid while a persona can hand in a value with
+2026-10-04, the maintainer. The 10 million limit, 2026-10-05, applying §Output past V8's longest
+string is refused on every engine. The code, 2026-11-09, applying §Which code a cause takes. The
+name by a developer panel, 2026-11-09. Goals 1 and 9. Valid while a persona can hand in a value with
 accessors or a Proxy.
 
 `readAdfDocument` and the three writers copy the input once, before any check, reading property
