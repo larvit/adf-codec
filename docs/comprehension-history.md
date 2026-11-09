@@ -1703,3 +1703,21 @@ Inherited architect, decided by:
 - Locality: `src/markdown/inline-content.ts:438` `applyClosing`: every change a `]` makes to the scan happens here, `linkOpenersFrom` one expression keyed on `closesLink`
 - Locality: `src/markdown/inline-content.ts:425` `closeBracket`: it only reads the scan and returns a `Closing` listing the two outcomes
 - Locality: `src/markdown/inline-content.ts:179` `readToken`: the `bracket-close` case flushes like its neighbours
+
+## 2026-11-09T04:00:13Z, PR #145 at 3c07509b7371f4a8f8bcb7a6b25cfa23ca23c867, against 1939359cb8f083671fad4f90c2d7d3f8139d301c
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | same | same | better | better |
+| Inherited architect | better | same | same | same | better |
+
+Mid A, decided by:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.test.ts:11` `lines`: twelve worked lines give the exact runs a carry or a drop takes, where the base had no direct test of `unspellableRuns`
+- Self-sufficiency: `src/markdown/emit/unspellable-runs.test.ts:87` `carryRuns`: it shows the two call paths that reach `unspellableRuns`, which the base left to be traced across `inline-line.ts` and `portable/inline-reduction.ts`
+
+Inherited architect, decided by:
+
+- Navigation, Overall: `src/markdown/emit/unspellable-runs.test.ts:80` `lines`: a sibling test beside `unspellable-runs.ts` holds twelve concrete lines under carry and drop, where the base had none
