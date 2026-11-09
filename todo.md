@@ -153,9 +153,9 @@ Technical principle: DRY. Found by the principles audit of the release review of
 
 ### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
 
-`src/result.test.ts` holds one refusal per code in a `Record<ConvertErrorCode, …>`, so a code added
-or removed leaves the README's tables a false contract under a green gate. Assert that the tables
-list exactly the codes of that record's keys. Found by the technical-principles audit of item 78,
+Nothing checks the README's tables against the codes: `src/result.test.ts` holds a refusal per code,
+but a code added or removed leaves the tables a false contract under a green gate. Assert that the
+tables list exactly the codes `causes` holds. Found by the technical-principles audit of item 78,
 2026-10-05.
 
 ### 147. Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.
