@@ -1,31 +1,46 @@
 import assert from 'node:assert/strict'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
 
-const sourceRoot = dirname(fileURLToPath(import.meta.url))
-const union = /export type ConvertErrorCode =\n((?:\s+\| '[a-z-]+'\n)+)/
-const declared = /'([a-z-]+)'/g
-const callSite = /(?:failure\(|code: )'([a-z-]+)'/g
+import type { AdfDocument, AdfMark } from './adf/document.ts'
+import type { ConvertErrorCode, Result } from './result.ts'
+import type { JsonValue } from './json-value.ts'
+import { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
+import { htmlToAdf } from './html/parse/html-to-adf.ts'
+import { largestNesting } from './nesting.ts'
+import { losslessMarkdownToAdf } from './markdown/parse/markdown-to-adf.ts'
+import { readAdfDocument } from './adf/document.ts'
+import { withinEngineLimits } from './length-bound.ts'
 
-function declaredCodes(): string[] {
-  const source = readFileSync(join(sourceRoot, 'result.ts'), 'utf8')
-  const members = union.exec(source)?.[1]
-  assert.notEqual(members, undefined, 'result.ts declares no ConvertErrorCode union')
-  return [...(members ?? '').matchAll(declared)].map(([, name]) => name ?? '').sort()
+const em: AdfMark = { type: 'em' }
+const duplicateMarks: AdfDocument = { content: [{ content: [{ marks: [em, em], text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }
+
+// One refusal per code. The Record type fails the build where a code has no entry, or an entry names no code.
+const causes: Record<ConvertErrorCode, () => Result<unknown>> = {
+  'engine-limit': () =>
+    withinEngineLimits(() => {
+      throw new RangeError('Invalid array length')
+    }),
+  'malformed-directive': () => losslessMarkdownToAdf('!adf:/panel\n'),
+  'malformed-pipe-table': () => losslessMarkdownToAdf('| Part | Qty |\n'),
+  'not-a-string': () => Reflect.apply(losslessMarkdownToAdf, undefined, [null]),
+  'not-an-adf-document': () => readAdfDocument(null),
+  'unknown-directive-name': () => losslessMarkdownToAdf('!adf:widget[a]\n'),
+  'unmappable-html': () => htmlToAdf('<table><tr></tr></table>\n'),
+  'unsupported-document-version': () => adfToLosslessMarkdown({ type: 'doc', version: 2 }),
+  'unsupported-nesting-depth': () => adfToLosslessMarkdown(nestedAttribute(largestNesting + 1)),
+  'unsupported-node-shape': () => adfToLosslessMarkdown(duplicateMarks),
 }
 
-function calledCodes(): string[] {
-  const called = new Set<string>()
-  for (const name of readdirSync(sourceRoot, { encoding: 'utf8', recursive: true })) {
-    if (!name.endsWith('.ts') || name.endsWith('.test.ts') || name === 'result.ts') continue
-    for (const [, code] of readFileSync(join(sourceRoot, name), 'utf8').matchAll(callSite)) called.add(code ?? '')
-  }
-  return [...called].sort()
+function nestedAttribute(depth: number): AdfDocument {
+  let value: JsonValue = 1
+  for (let level = 0; level < depth; level += 1) value = { a: value }
+  return { content: [{ attrs: { a: value }, type: 'paragraph' }], type: 'doc', version: 1 }
 }
 
 // Removing a code is breaking (docs/decisions.md §The code list), so a code must not outlive its cause.
-test('every ConvertErrorCode is the code of a production call site, and every call site names a declared one', () => {
-  assert.deepEqual(calledCodes(), declaredCodes())
-})
+for (const [code, cause] of Object.entries(causes)) {
+  test(`${code} is the code of a refusal the library makes`, () => {
+    const result = cause()
+    assert.equal(!result.ok && result.error.code, code)
+  })
+}

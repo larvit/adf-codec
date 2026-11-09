@@ -200,7 +200,7 @@ const packedReferences =
   xsqcup~⨆ xuplus~⨄ xutri~△ xvee~⋁ xwedge~⋀ yacute~ý yacy~я ycirc~ŷ ycy~ы yen~¥ yfr~𝔶 yicy~ї yopf~𝕪 yscr~𝓎 yucy~ю\
   yuml~ÿ zacute~ź zcaron~ž zcy~з zdot~ż zeetrf~ℨ zeta~ζ zfr~𝔷 zhcy~ж zigrarr~⇝ zopf~𝕫 zscr~𝓏 zwj~‍ zwnj~‌'
 
-const namedReferences = new Map(packedReferences.split(/ +/).map(namedReference))
+export const namedReferences: ReadonlyMap<string, string> = new Map(packedReferences.split(/ +/).map(namedReference))
 
 export function holdsEntityReference(text: string): boolean {
   for (let index = text.indexOf('&'); index !== -1; index = text.indexOf('&', index + 1)) {
