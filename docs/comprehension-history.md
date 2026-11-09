@@ -1659,3 +1659,26 @@ Inherited architect, decided by:
 - Shape: `src/markdown/portable/portable-markdown-to-adf.test.ts:278` `reads a task whose marker line holds only breaks and spaces by the lines after it`: its first assertion has text on the marker line, so the name does not describe it
 - Self-sufficiency: `src/markdown/portable/portable-markdown-to-adf.test.ts:232` `keeps the target of a link in a title whichever marks sit beside the link`: worked input-to-output examples where a reader needed spec/flavour.md open beside the code
 - Self-sufficiency: `src/markdown/portable/adf-to-portable-markdown.test.ts:495` `writes a task list nested to the deepest level the reader carries, and refuses one more at the item holding it`: shows in one place that the writer's depth limit lines up with the reader's
+
+## 2026-11-09T00:23:10Z, PR #143 at 9a8f8b3, against 47b95fb
+
+Ruling: better
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Mid A | same | better | better | better | better |
+| Inherited architect | same | better | better | better | better |
+
+Mid A, decided by:
+
+- Locality, Shape: `src/markdown/inline-content.ts:518` `markedNodes`: the steps are calculations now; one array no longer rewritten in place by three steps that each rely on the shape the last left
+- Self-sufficiency, Locality: `src/markdown/inline-content.ts:551` `pieceNodes`: `==` is its literal text at once, where the placeholder's life cycle spanned three functions and a comment
+- Shape: `src/markdown/inline-content.ts:595` `pairingMarks`: the name says it returns marks, where `markPairings` mutated `nodes` and returned a boolean
+- Locality: `src/markdown/inline-content.ts:626` `highlightDelimiters`: reads `marks[index]` directly and counts every piece's text alike, with no holder special case
+
+Inherited architect, decided by:
+
+- Locality, Self-sufficiency: `src/markdown/inline-content.ts:518` `markedNodes`: marks are computed first as plain data and highlights pair on them, so no placeholder's life cycle is held in mind across three steps
+- Locality, Shape: `src/markdown/inline-content.ts:595` `pairingMarks`: pure, returns each piece's marks or `undefined` on the refusal, where `markPairings` rewrote `nodes` and returned a boolean
+- Shape, Self-sufficiency: `src/markdown/inline-content.ts:626` `highlightDelimiters`: `holder` becomes `marks` and the position special case is gone
+- Self-sufficiency: `src/markdown/inline-content.ts:550` `pieceNodes`: its comment says what the delimiter is, where it explained a trick
