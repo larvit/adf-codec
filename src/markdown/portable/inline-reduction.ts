@@ -2,6 +2,7 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { MarkRun } from '../emit/line-escaping.ts'
 import type { RunGrouping } from '../emit/inline-runs.ts'
+import type { ShownNote } from '../../adf/shown-text.ts'
 import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
@@ -10,7 +11,7 @@ import { insideRun, runsSharedWithNext } from '../emit/inline-runs.ts'
 import { isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal, sourceIndex, type SourceIndexes } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
-import { partsShownText, referenceName, shownImage, shownLink, shownText, shownUrl } from '../../adf/shown-text.ts'
+import { partsShownText, shownImage, shownLink, shownNote, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, settledLine, type LineJudgement, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
@@ -72,7 +73,7 @@ function nodeLeaves(node: AdfNode, container: LineContainer, place: ReductionPla
   if (node.type === 'hardBreak') return success([lineBreak(container)])
   if (['date', 'emoji', 'mention', 'status'].includes(node.type)) return success(textLeaves(shownText(node), marks, container))
   if (node.type === 'placeholder') return success([])
-  if (['extension', 'inlineExtension', 'syncBlock'].includes(node.type)) return success(textLeaves(shownText(node), marks, container, referenceName(node)))
+  if (['extension', 'inlineExtension', 'syncBlock'].includes(node.type)) return success(textLeaves(shownText(node), marks, container, shownNote(node)))
   if (['media', 'mediaInline'].includes(node.type)) return success(mediaLeaves(node, marks, container))
   if (['blockCard', 'embedCard', 'inlineCard'].includes(node.type)) return success(cardLeaves(node, marks, container))
   const own = textLeaves(node.text ?? shownText(node), marks, container)
@@ -83,7 +84,7 @@ function nodeLeaves(node: AdfNode, container: LineContainer, place: ReductionPla
 
 function cardLeaves(card: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   const href = shownUrl(card)
-  if (href === undefined) return textLeaves(shownText(card), marks, container, referenceName(card))
+  if (href === undefined) return textLeaves(shownText(card), marks, container, shownNote(card))
   return linkedLeaves(shownText(card) ?? href, href, marks, container)
 }
 
@@ -94,22 +95,23 @@ function linkedLeaves(text: string, href: string, marks: readonly AdfMark[], con
 // An image standing inline is a link to it: the reader builds no node for an inline image, reading it as its alt text linked, and inside a link as the link's text, then (image).
 function mediaLeaves(media: AdfNode, marks: readonly AdfMark[], container: LineContainer): AdfNode[] {
   const image = shownImage(media, shownLink(media)?.href)
-  if (image === undefined) return textLeaves(undefined, marks, container, referenceName(media))
+  if (image === undefined) return textLeaves(undefined, marks, container, shownNote(media))
   const { after, link, text } = image
   const shown = link === undefined ? textLeaves(text, marks, container) : linkedLeaves(text, link, marks, container)
   return after === undefined ? shown : [...shown, ...imageAside((word) => linkedLeaves(word, after, marks, container))]
 }
 
-function noteLeaves(name: string): AdfNode[] {
-  return [textLeaf(`(${name} not included)`, [{ type: 'em' }])]
+function noteLeaves({ link, name }: ShownNote, container: LineContainer): AdfNode[] {
+  const kept = link === undefined ? undefined : portableLink({ attrs: link, type: 'link' }, container)
+  return [textLeaf(`(${name} not included)`, kept === undefined ? [{ type: 'em' }] : [kept, { type: 'em' }])]
 }
 
 function lineBreak(container: LineContainer): AdfNode {
   return container === 'paragraph' ? { type: 'hardBreak' } : textLeaf(' ', [])
 }
 
-function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer, note?: string): AdfNode[] {
-  if (typeof value !== 'string') return note === undefined ? [] : noteLeaves(note)
+function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer, note?: ShownNote): AdfNode[] {
+  if (typeof value !== 'string') return note === undefined ? [] : noteLeaves(note, container)
   const text = value.replace(/[\r\u0000]/g, '')
   const kept = portableMarks(marks, container, text)
   const leaves: AdfNode[] = []
