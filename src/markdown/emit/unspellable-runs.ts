@@ -166,7 +166,6 @@ function mayFlank(sweep: PairSweep, judged: number, character: string, end: 'clo
 function runEdge(sweep: PairSweep, judged: number, from: number, step: -1 | 1, character: string): string[] | undefined {
   const found: string[] = []
   const { delimiters } = touching(sweep, from, step)
-  // Each pair beside adds the characters it may be written with; one that stands ends the run unless it may be written with `character`.
   for (const at of delimiters) {
     const other = sweep.pairAt[at] ?? -1
     const standing = pairStanding(sweep, judged, other)
@@ -176,10 +175,14 @@ function runEdge(sweep: PairSweep, judged: number, from: number, step: -1 | 1, c
     for (const spelling of spellings) if (spelling !== character) found.push(spelling)
     if (standing === 'stands' && !spellings.includes(character)) return found
   }
-  // Past the run stands the character after its last delimiter: a backslash where the text beside is escaped, which the next segment's start skips.
-  const edge = delimiterEdge(sweep.placed, delimiters.at(-1) ?? from, step)
-  found.push(sweep.output.charAt(step === 1 ? edge : edge - 1))
+  found.push(characterPast(sweep, delimiters.at(-1) ?? from, step))
   return found
+}
+
+// Past the run stands the character after its last delimiter: a backslash where the text beside is escaped, which the next segment's start skips.
+function characterPast({ output, placed }: PairSweep, lastDelimiter: number, step: -1 | 1): string {
+  const edge = delimiterEdge(placed, lastDelimiter, step)
+  return output.charAt(step === 1 ? edge : edge - 1)
 }
 
 // Whether a word character may stand beside the delimiter at `from` as resolveEmphasis reads the line, for each way the unsettled pairs fall.
