@@ -62,6 +62,13 @@ interrupt_stops_container() {
 
 leg "Ctrl-C stops an in_image container ($node_image)" interrupt_stops_container
 
+# memory.swap.max is 0 when --memory-swap equals --memory.
+container_is_limited() {
+  [ "$(in_image "$node_image" sh -c 'cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.swap.max' | tr '\n' ' ')" = '8589934592 0 ' ]
+}
+
+leg "an in_image container has equal memory and swap limits ($node_image)" container_is_limited
+
 test_log=$(mktemp)
 node_tests() {
   in_image "$node_image" npm test 2>&1 | tee "$test_log"

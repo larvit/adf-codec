@@ -919,3 +919,20 @@ Read most (opens and searches):
 - `src/markdown/parse/markdown-to-adf.test.ts` 2
 - `src/result.test.ts` 2
 - `README.md` 1
+
+## Reading cost, chunk 38c1baab4d5b, finished 2026-11-09T07:42:47Z
+
+87030 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 7
+- `src/markdown/portable/adf-to-portable-markdown.test.ts` 6
+- `todo.md` 5
+- `src/markdown/portable/task-list.ts` 4
+- `src/result.test.ts` 3
+- `docker-runner.sh` 2
+- `src/conformance/flavour.test.ts` 2
+- `src/markdown/portable/adf-to-portable-markdown.ts` 2
+- `src/result.ts` 2
+- `AGENTS.md` 1
