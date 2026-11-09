@@ -417,7 +417,7 @@ function linkedText(text: string, scheme: string): AdfNode {
   return { marks: [{ attrs: { href: `${scheme}${text}` }, type: 'link' }], text, type: 'text' }
 }
 
-// What a `]` makes of the innermost open bracket, decided without writing to the scan. `closesLink` is whether a link closes here, or one inside these brackets did, which leaves every link opener still open literal.
+// What a `]` makes of the innermost open bracket. `closesLink`: a link closes here, or these brackets hold one.
 type Closing =
   | { closesLink: boolean; kind: 'literal'; open: OpenBracket | undefined }
   | { closesLink: boolean; end: number; kind: 'built'; open: OpenBracket; pieces: Result<Piece[]> }
@@ -428,13 +428,13 @@ function closeBracket(scan: Scan, index: number): Closing {
   const target = open.image || scan.brackets.length > scan.linkOpenersFrom ? resolveTarget(scan, open.start, index) : undefined
   if (target === undefined) return { closesLink: false, kind: 'literal', open }
   const inner = scan.pieces.slice(open.index + 1)
-  // Before `linkPieces`' own-marks guard: brackets that go literal mark nothing, so a carry inside them is no error.
+  // Before `linkPieces`' own-marks guard: brackets that go literal mark nothing, so a carry inside them is not an error.
   if (!open.image && holdsLink(inner)) return { closesLink: true, kind: 'literal', open }
   const pieces = open.image ? imagePieces(scan, inner, target.definition()) : linkPieces(scan, inner, target.definition())
   return { closesLink: !open.image, end: index + 1 + target.length, kind: 'built', open, pieces }
 }
 
-// A close that builds nothing still pops its bracket, so no later close walks past it.
+// A literal close still pops its bracket, so no later close walks past it.
 function applyClosing(scan: Scan, closing: Closing, index: number): Result<number> {
   const { closesLink, open } = closing
   if (open !== undefined) {
@@ -442,7 +442,6 @@ function applyClosing(scan: Scan, closing: Closing, index: number): Result<numbe
     scan.linkOpenersFrom = closesLink ? scan.brackets.length : Math.min(scan.linkOpenersFrom, scan.brackets.length)
   }
   if (closing.kind === 'literal') {
-    if (open !== undefined) scan.pieces[open.index] = { kind: 'nodes', nodes: bracketNodes(open) }
     scan.pending += ']'
     return success(index + 1)
   }
