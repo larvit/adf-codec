@@ -602,7 +602,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 | Code | Fires when | What you can do |
 | --- | --- | --- |
 | `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
-| `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, a delimiter row whose cell count differs from the header's, or a body row holding more cells than the header; in `losslessMarkdownToAdf` also a body row holding fewer cells, an alignment colon, and a header or delimiter row not opening with a pipe | add a `---` row under the header and give no row more cells than the header, and for `losslessMarkdownToAdf` the header's count exactly; for `losslessMarkdownToAdf`, also open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, write one `\|` of its delimiter row as `\\|` |
+| `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, a delimiter row whose cell count differs from the header's, or a body row holding more cells than the header; in `losslessMarkdownToAdf` also a body row holding fewer cells, an alignment colon, and a header or delimiter row not opening with a pipe | add a `---` row of the header's cell count under the header and give no body row more cells; for `losslessMarkdownToAdf`, also give every row the header's count, open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, write one `\|` of its delimiter row as `\\|` |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
 | `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds HTML `adfToHtml` does not write, in a browser's spelling or its own, such as an edit to what a carry element shows, unless a code under [Either direction](#either-direction) names the cause | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the HTML as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it |
@@ -730,10 +730,11 @@ Serves [Goals](#goals) 1, 4 and 5.
 - Both readers narrow GFM's pipe table. A body row holding more cells than the header is an error
   result, where GFM cuts the extra cells.
 - `losslessMarkdownToAdf` narrows it further. A body row holding fewer cells is an error result,
-  where GFM pads it, and a line holding no `|` ends the table, where GFM reads it as a row. It
-  needs a leading `|`: a header or delimiter row without one is an error result. It refuses an
-  alignment colon in the delimiter row too, since ADF holds no column alignment.
-  `portableMarkdownToAdf` pads, reads the line as a row, accepts both and drops the alignment. The
+  where GFM pads it, and a later line without a leading `|` ends the table, where GFM reads it as
+  a row. A header or delimiter row without a leading `|` is an error result, and so is an
+  alignment colon in the delimiter row, since ADF holds no column alignment.
+  `portableMarkdownToAdf` pads a short row, reads a line holding no `|` as a row of one cell unless
+  it opens another block, reads a table without leading pipes, and drops the alignment. The
   trailing pipe is canonical output, optional in input.
 - Past that and `~~`, `losslessMarkdownToAdf` reads no GFM: an autolink literal and a `- [ ]`
   marker stay text, and a checklist is the `taskList` directive — `portableMarkdownToAdf` turns the

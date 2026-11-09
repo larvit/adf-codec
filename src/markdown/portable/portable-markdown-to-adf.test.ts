@@ -406,8 +406,10 @@ test('reads GFM\'s short row padded with empty cells, a line holding no pipe as 
   assert.deepEqual(read('a |\n:--- |\nb\n'), [column(['a', 'b'])])
   assert.deepEqual(read('| a |\n| --- |\nb\n'), [column(['a', 'b'])])
   assert.deepEqual(read('a\n--- |\n'), [said('a --- |')])
-  const long = portableMarkdownToAdf('a | b\n--- | ---\nc | d | e\n')
-  assert.deepEqual(long.ok ? undefined : long.error.code, 'malformed-pipe-table')
+  for (const refused of ['a | b\n--- | ---\nc | d | e\n', '| a | b |\n| --- |\n']) {
+    const result = portableMarkdownToAdf(refused)
+    assert.deepEqual(result.ok ? undefined : result.error.code, 'malformed-pipe-table', refused)
+  }
 })
 
 test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, an image sharing its paragraph with a marker among it', () => {

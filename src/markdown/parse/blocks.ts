@@ -533,7 +533,7 @@ function openGfmTable(walk: Walk, opener: string): boolean {
   return true
 }
 
-// GFM, Tables: a row without its leading `|` continues the table until a blank line or a line opening another block; a line holding no `|` is one cell.
+// GFM, Tables: a row without its leading `|` continues the table until a blank line or a line opening another block, and a line holding no `|` is one cell.
 function pipeTableRow(claims: Claims, line: string): string[] | undefined {
   const cells = pipeCells(line)
   if (cells !== undefined || claims.pipeTables !== 'gfm' || isBlankLine(line) || opensBlock(claims, line)) return cells

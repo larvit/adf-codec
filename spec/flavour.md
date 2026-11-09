@@ -367,13 +367,14 @@ inline layer's ordinary CommonMark escaping yields the pipe; each cell is the in
 one paragraph, trimmed; canonical form pads cells with single spaces and ends rows with `|`
 (optional in input). Named errors: a delimiter row whose cell count differs from the header's,
 a body row holding more cells than the header, and, in `losslessMarkdownToAdf`, a body row
-holding fewer cells and an alignment colon in the delimiter row — ADF holds no column alignment. In a pipe cell a hard break is `!adf:hardBreak{}` and a literal `|` is `\|`; a
-`|` inside a quoted attribute value is already `\u007c`, so the split never reaches it.
+holding fewer cells and an alignment colon in the delimiter row — ADF holds no column alignment.
+In a pipe cell a hard break is `!adf:hardBreak{}` and a literal `|` is `\|`; a `|` inside a quoted
+attribute value is already `\u007c`, so the split never reaches it.
 `portableMarkdownToAdf` reads GFM's table: any row may drop its leading `|`, a header over a
 delimiter row of one cell reads as a one-column table (`a |` over `--- |`), a body row continues
 the table until a blank line or a line opening another block, a body row holding fewer cells is
-padded with empty cells, a line holding no `|` is a body row of one cell, and an alignment colon is
-read and its alignment dropped.
+padded with empty cells, a line holding no `|` that opens no other block is a body row of one
+cell, and an alignment colon is read and its alignment dropped.
 
 The directive form nests cells as containers of block content inside `tableRow` containers:
 
