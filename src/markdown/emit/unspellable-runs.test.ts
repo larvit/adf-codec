@@ -78,7 +78,7 @@ const lines: { carry?: string[]; drop?: string[]; name: string; nodes: AdfNode[]
   {
     carry: ['em@2-2'],
     drop: ['em@2-2'],
-    name: 'a digit, strong and strike over nodes 1 and 2, em on node 2, strong on a digit',
+    name: 'a digit, strong over nodes 1 to 3, strike over nodes 1 and 2, em on node 2',
     nodes: [plain('0'), marked(['strong', 'strike'], '_'), marked(['strong', 'em', 'strike'], '_'), marked(['strong'], '0')],
   },
 ]
