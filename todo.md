@@ -408,7 +408,7 @@ functions write `pending`, `pieces`, `brackets`, `linkOpenersFrom` and `openingS
 they are handed, most of them returning `void`, and `parseInlineContent` reads a flag `scanInline` leaves on it. The same shape recurs in
 `mintTaskIds` (`portable/task-ids.ts`), which writes `attrs` on the document `readDocument` built;
 `takeFallback` (`emit/inline-line.ts`), which writes the record the next `lineSegments` pass reads;
-`writeUnpaired`, `markPairings` and `markHighlights` (`inline-content.ts`), whose order changes the
+`writeUnpaired` and `markHighlights` (`inline-content.ts`), whose order changes the
 output.
 Once `Scan`'s pieces have owners, the bracket resolution — `linkedAlt` through `linkTo`,
 `holdsLink`, and `closeBracket` through `altText` — can leave `inline-content.ts` (about 690 lines)
