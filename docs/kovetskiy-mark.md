@@ -75,12 +75,10 @@ A user of `mark` who needs ADF can fetch the page as ADF through the Confluence 
 converts storage format to ADF. A user of this package who needs storage format goes to that same
 API (`README.md` §Other ADF converters).
 
-## Does it belong in the comparison table
+## Does it belong in the comparison tables
 
-Neither table fits. The first lists npm packages that run in Node and convert ADF to or from
-markdown. The second lists converters the comparison does not run, and every library in it converts
-ADF. `mark` is a Go program that never touches ADF, so it is left out of both
-(`docs/decisions.md` §The comparison table lists every converter that starts and converts).
+`mark` never reads or writes ADF, so it is left out of both
+(`docs/decisions.md` §The comparison tables list every ADF converter that starts and converts).
 
 No spelling changes follow: `[!IMPORTANT]` is the README's choice to reopen, not a defect, and only
 a writer panel changes a spelling (`AGENTS.md` §7).
