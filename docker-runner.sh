@@ -6,11 +6,14 @@ firefox_image=selenium/standalone-firefox:159.0.1
 floor_image=node:18.20.8-alpine3.21
 node_image=node:26.13.0-alpine3.24
 
+# The test legs peak near 4.5g in the container's memory.peak, and a leg building strings near V8's longest fails when the limit is too small.
+container_memory=8g
+
 # --init: the container's process 1 ignores a SIGINT it has no handler for, so without it Ctrl-C leaves the container running.
 in_image() {
   local image=$1 entrypoint=$2
   shift 2
-  docker run --rm --init -u "$(id -u):$(id -g)" -e HOME=/tmp ${PROPERTY_RUNS+-e PROPERTY_RUNS} ${in_image_memory:+--memory "$in_image_memory" --memory-swap "$in_image_memory"} ${in_image_network:+--network "$in_image_network"} -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
+  docker run --rm --init -u "$(id -u):$(id -g)" -e HOME=/tmp ${PROPERTY_RUNS+-e PROPERTY_RUNS} --memory "${in_image_memory:-$container_memory}" --memory-swap "${in_image_memory:-$container_memory}" ${in_image_network:+--network "$in_image_network"} -v "$PWD:/app" -w /app --entrypoint "$entrypoint" "$image" "$@"
 }
 
 # Markers on stderr so a captured leg's value stays clean; leg_* because bash scopes local into the leg's own call.
@@ -28,7 +31,7 @@ leg() {
 
 with_firefox() {
   local container in_image_network status=0
-  container=$(docker run -d --rm "$firefox_image") || return $?
+  container=$(docker run -d --rm --memory "$container_memory" --memory-swap "$container_memory" "$firefox_image") || return $?
   # The id is baked in: the trap fires after this function's locals are gone.
   trap "docker rm -f $container >/dev/null 2>&1" EXIT
   trap 'exit 130' INT
