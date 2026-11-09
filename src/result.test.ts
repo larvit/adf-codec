@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import type { AdfDocument, AdfMark } from './adf/document.ts'
@@ -44,3 +47,15 @@ for (const [code, cause] of Object.entries(causes)) {
     assert.equal(!result.ok && result.error.code, code)
   })
 }
+
+// A code added or removed must reach the README's tables, which are the contract a consumer switches on.
+test('the README error tables list exactly the codes ConvertErrorCode holds', () => {
+  const readme = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'README.md'), 'utf8')
+  const section = readme.slice(readme.indexOf('\n## The errors\n'))
+  const listed = new Set<string>()
+  for (const line of section.slice(1, section.indexOf('\n## ', 1)).split('\n')) {
+    const code = /^\| `([a-z-]+)` \|/.exec(line)?.[1]
+    if (code !== undefined) listed.add(code)
+  }
+  assert.deepEqual([...listed].sort(), Object.keys(causes).sort())
+})

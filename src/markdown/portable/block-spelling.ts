@@ -65,19 +65,17 @@ function placedBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writi
   return block.ok ? success({ blocks: [{ ...block.value, node }], headroom: block.value.headroom }) : block
 }
 
-// The marker leads the first paragraph, or stands as one where the blocks open with another.
+// A block task item reaches here holding two or more paragraphs, so the marker leads the first (`itemParts` in task-list.ts).
 function taskBlocks(task: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<PlacedBlocks> {
   const marker = taskMarker(nodeAttrs(task)['state'])
-  const markerBlock: PlacedBlock = { node: { type: 'paragraph' }, spelling: 'commonmark', text: blockText(marker) }
   if (task.type === 'taskItem') {
     const content = nodeContent(task)
     const line = content.length === 0 ? success('') : emitInlineLine(content, 'paragraph', path, writing.flavour)
     if (!line.ok) return line
-    return success({ blocks: [{ ...markerBlock, text: blockText(line.value === '' ? marker : `${marker} ${line.value}`) }], headroom: Number.POSITIVE_INFINITY })
+    return success({ blocks: [{ node: { type: 'paragraph' }, spelling: 'commonmark', text: blockText(line.value === '' ? marker : `${marker} ${line.value}`) }], headroom: Number.POSITIVE_INFINITY })
   }
   const walk = walkBlocks(nodeContent(task), path, depth, writing)
   if (!walk.ok) return walk
-  const [first, ...rest] = walk.value.blocks
-  const blocks = first?.node.type === 'paragraph' ? [{ ...first, text: prefixedText(`${marker} `, '', first.text) }, ...rest] : [markerBlock, ...walk.value.blocks]
+  const blocks = walk.value.blocks.map((block, index) => (index === 0 ? { ...block, text: prefixedText(`${marker} `, '', block.text) } : block))
   return success({ blocks, headroom: walk.value.headroom })
 }
