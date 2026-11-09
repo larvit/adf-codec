@@ -18,6 +18,7 @@ import {
   setextHeadingLevel,
   thematicBreakTail,
   type ThematicBreakTail,
+  trimSpace,
 } from '../commonmark/grammar.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { blockDirectiveForm } from '../directive/block.ts'
@@ -532,11 +533,11 @@ function openGfmTable(walk: Walk, opener: string): boolean {
   return true
 }
 
-// GFM, Tables: a row without its leading `|` continues the table while it holds a `|` and opens no other block.
+// GFM, Tables: a row without its leading `|` continues the table until a blank line or a line opening another block; a line holding no `|` is one cell.
 function pipeTableRow(claims: Claims, line: string): string[] | undefined {
   const cells = pipeCells(line)
-  if (cells !== undefined || claims.pipeTables !== 'gfm' || opensBlock(claims, line)) return cells
-  return barePipeCells(line)
+  if (cells !== undefined || claims.pipeTables !== 'gfm' || isBlankLine(line) || opensBlock(claims, line)) return cells
+  return barePipeCells(line) ?? [trimSpace(line)]
 }
 
 function pipeTableBlock(rows: readonly [string[], ...string[][]], position: SourcePosition, claims: Claims): Block {
@@ -547,9 +548,11 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
   if (delimiter === undefined || !isDelimiterRow(delimiter)) {
     return faultedBlock('a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text', position)
   }
-  const ragged = [delimiter, ...body].find((row) => row.length !== header.length)
+  const padsShortRows = claims.pipeTables === 'gfm'
+  const ragged = [delimiter, ...body].find((row) => (padsShortRows && row !== delimiter ? row.length > header.length : row.length !== header.length))
   if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${cellCount(ragged.length)} where its header holds ${cellCount(header.length)}`, position)
-  return { kind: 'table', position, rows: [header, ...body] }
+  const padded = body.map((row) => [...row, ...Array.from({ length: header.length - row.length }, () => '')])
+  return { kind: 'table', position, rows: [header, ...padded] }
 }
 
 // spec/flavour.md, Tables: GFM's table without the leading pipes, which no line of it claims.

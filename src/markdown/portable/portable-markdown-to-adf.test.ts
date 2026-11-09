@@ -378,17 +378,36 @@ test('reads GFM\'s pipe table without its leading pipes or with alignment colons
   assert.deepEqual(read('a | b\n| --- | --- |\nc | d\n'), [table])
   assert.deepEqual(read('Intro.\na | b\n--- | ---\nc | d\n\nAfter.\n'), [said('Intro.'), table, said('After.')])
   assert.deepEqual(read('> a | b\n> --- | ---\n> c | d\n'), [bare('blockquote', table)])
-  assert.deepEqual(read('a | b\n--- | ---\nc | d\nAfter.\n'), [table, said('After.')])
   assert.deepEqual(read('a | b\n--- | ---\nc | d\n# h | i\n'), [table, { attrs: { level: 1 }, content: [text('h | i')], type: 'heading' }])
   assert.deepEqual(read('a | b\n--- | --- | ---\n'), [said('a | b --- | --- | ---')])
   assert.deepEqual(read('- a | b\n--- | ---\n'), [bare('bulletList', bare('listItem', said('a | b --- | ---')))])
-  assert.deepEqual(read('a | b\n--- | ---\nc\n'), [bare('table', table.content?.[0] ?? said('')), said('c')])
   assert.deepEqual(read('a | b\nc | d\n'), [said('a | b c | d')])
   assert.deepEqual(read('| a | b |\n| --- | --- |\n    | c | d |\n'), [bare('table', table.content?.[0] ?? said('')), bare('codeBlock', text('| c | d |'))])
   assert.deepEqual(read('a | b\n--- | ---\n    c | d\n'), [bare('table', table.content?.[0] ?? said('')), bare('codeBlock', text('c | d'))])
   assert.deepEqual(read('a | b\n    --- | ---\nc | d\n'), [said('a | b --- | --- c | d')])
   const ragged = portableMarkdownToAdf('Intro.\na | b\n--- | ---\nc | d | e\n')
   assert.deepEqual(ragged.ok ? undefined : [ragged.error.code, ragged.error.position], ['malformed-pipe-table', { line: 2, offset: 7 }])
+})
+
+test('reads GFM\'s short row padded with empty cells, a line holding no pipe as a row, and a one-column table', () => {
+  const cell = (type: string, value: string): AdfNode => bare(type, value === '' ? { type: 'paragraph' } : said(value))
+  const header = bare('tableRow', cell('tableHeader', 'a'), cell('tableHeader', 'b'))
+  const short = bare('table', header, bare('tableRow', cell('tableCell', 'c'), cell('tableCell', '')))
+  assert.deepEqual(read('a | b\n--- | ---\nc\n'), [short])
+  assert.deepEqual(read('| a | b |\n| --- | --- |\n| c |\n'), [short])
+  assert.deepEqual(read('a | b\n--- | ---\nc | d\nAfter.\n'), [
+    bare('table', header, bare('tableRow', cell('tableCell', 'c'), cell('tableCell', 'd')), bare('tableRow', cell('tableCell', 'After.'), cell('tableCell', ''))),
+  ])
+  assert.deepEqual(read('a | b\n--- | ---\nc\n\nAfter.\n'), [short, said('After.')])
+  assert.deepEqual(read('a | b\n--- | ---\nc\n# h\n'), [short, { attrs: { level: 1 }, content: [text('h')], type: 'heading' }])
+  const column = (rows: readonly string[]): AdfNode =>
+    bare('table', ...rows.map((value, index) => bare('tableRow', cell(index === 0 ? 'tableHeader' : 'tableCell', value))))
+  assert.deepEqual(read('a |\n--- |\nb |\n'), [column(['a', 'b'])])
+  assert.deepEqual(read('a |\n:--- |\nb\n'), [column(['a', 'b'])])
+  assert.deepEqual(read('| a |\n| --- |\nb\n'), [column(['a', 'b'])])
+  assert.deepEqual(read('a\n--- |\n'), [said('a --- |')])
+  const long = portableMarkdownToAdf('a | b\n--- | ---\nc | d | e\n')
+  assert.deepEqual(long.ok ? undefined : long.error.code, 'malformed-pipe-table')
 })
 
 test('reads what CommonMark reads where no row reads, a directive and a carry fence among it, an image sharing its paragraph with a marker among it', () => {

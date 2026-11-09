@@ -4,10 +4,10 @@ import { backslashEscape, claimsPipeLine, trimSpace } from './commonmark/grammar
 const alignmentCell = /^:-+:?$|^-+:$/
 const delimiterCell = /^-+$/
 
-// spec/flavour.md, Tables: the cells of a row no leading `|` claimed — GFM's form without the outer pipes.
+// spec/flavour.md, Tables: the cells of a row no leading `|` claimed — GFM's form without the outer pipes, one `|` making a one-column row.
 export function barePipeCells(line: string): string[] | undefined {
   const cells = splitPipeCells(line, 0)
-  return cells.length > 1 ? cells : undefined
+  return cells.length > 1 ? withoutClosingCell(cells) : undefined
 }
 
 export function isBareDelimiterRow(line: string): boolean {
@@ -33,7 +33,7 @@ export function malformedPipeTable(message: string): ConvertFault {
 
 // spec/flavour.md, Tables: the cells of a claimed row, the closing `|` the spelling writes optional here.
 export function pipeCells(line: string): string[] | undefined {
-  return claimsPipeLine(line) ? splitPipeCells(line, 1) : undefined
+  return claimsPipeLine(line) ? withoutClosingCell(splitPipeCells(line, 1)) : undefined
 }
 
 export function spellPipeDelimiter(columns: number): string {
@@ -60,6 +60,10 @@ function splitPipeCells(line: string, start: number): string[] {
     index += 1
   }
   cells.push(trimSpace(line.slice(cellStart)))
+  return cells
+}
+
+function withoutClosingCell(cells: string[]): string[] {
   if (cells.length > 1 && cells.at(-1) === '') cells.pop()
   return cells
 }
