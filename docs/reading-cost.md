@@ -902,3 +902,20 @@ Read most (opens and searches):
 - `AGENTS.md` 3
 - `src/index.ts` 3
 - `CHANGELOG.md` 2
+
+## Reading cost, chunk 8d75c35b392b, finished 2026-11-09T07:18:15Z
+
+92011 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 6
+- `src/json-text.test.ts` 3
+- `ci.sh` 2
+- `docker-runner.sh` 2
+- `package.json` 2
+- `src/adf/document.test.ts` 2
+- `src/markdown/commonmark/entity-references.ts` 2
+- `src/markdown/parse/markdown-to-adf.test.ts` 2
+- `src/result.test.ts` 2
+- `README.md` 1

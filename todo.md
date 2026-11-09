@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 159 | 0.4.0 |  |  | **Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 10.5 |
 | 144 | 0.4.0 |  |  | **Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.** | 1 | 1 | 1 | 1 | 2 | code health by 1 | 8.7 |
 | 143 | 0.4.0 |  | defect | **Keep, in `adfToPortableMarkdown`, the link around a note, so a linked stored image writes every target.** | 2 | 1 | 3 | 4 | 3 | 7 by 1 | 6.5 |
 | 169 | 0.4.0 |  | owner | **Investigate `kovetskiy/mark` in depth and record in a report how its formats differ from ours, where the two projects overlap and how they compare.** | 1 | 1 | 1 | 1 | 3 | 3 by 4 | 6.3 |
@@ -21,7 +20,6 @@
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
 | 173 | 0.4.0 |  | principle | **Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.** | 2 | 1 | 1 | 2 | 4 | code health by 1 | 4.4 |
-| 81 | 0.4.0 |  |  | **Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.** | 1 | 1 | 1 | 1 | 2 | 3 by 2 | 4.2 |
 | 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
@@ -66,13 +64,6 @@ as an argument today, would close the cycle writer → reader → writer and rec
 a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded). The override for
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
-
-### 159. Delete `taskBlocks`'s branch that writes the task marker as its own paragraph, once a test shows no block task item reaches it.
-
-`taskBlocks` (`portable/block-spelling.ts`) writes the marker as a paragraph of its own where a
-block task item's content opens with another block. Mutation testing finds that branch unreached:
-a block task item is left only when it holds two or more paragraphs. Found by the stability review
-of item 33, 2026-10-29.
 
 ### 144. Give every container `docker-runner.sh` and `publish.sh` start a memory limit and an equal swap limit, sized from the largest a gate leg measurably needs.
 
@@ -150,13 +141,6 @@ missing from the map is refused naming no spelling. Put each description beside 
 export it through `emit/spelling-questions.ts`, the one import `parse/` may take from `emit/`, and
 drop the comment at `markdown-to-adf.ts:145` that keeps them apart.
 Technical principle: DRY. Found by the principles audit of the release review of 0.3.0, 2026-11-08.
-
-### 81. Fail the gate unless the README's error tables list exactly the codes `ConvertErrorCode` holds.
-
-Nothing checks the README's tables against the codes: `src/result.test.ts` holds a refusal per code,
-but a code added or removed leaves the tables a false contract under a green gate. Assert that the
-tables list exactly the codes `causes` holds. Found by the technical-principles audit of item 78,
-2026-10-05.
 
 ### 147. Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.
 
