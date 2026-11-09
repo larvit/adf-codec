@@ -4,19 +4,34 @@ import { isTaskItem } from '../../adf/block-nodes.ts'
 import { nodeContent } from '../../adf/document.ts'
 
 // Atlassian's schema holds a blockTaskItem to paragraphs and extensions, and the portable flavour spells no extension: an item keeps its paragraphs, then the task lists nested in it, and the rest of it stands after the list, which resumes at the next task.
-export function splitTaskList(list: AdfNode): AdfNode[] {
+export function splitTaskList(items: readonly TaskListItem[]): AdfNode[] {
   const blocks: AdfNode[] = []
   let tasks: AdfNode[] = []
-  for (const item of itemsOf(nodeContent(list))) {
+  for (const item of items) {
     const { kept, rest } = itemParts(item)
     for (const node of kept) tasks.push(node)
     if (rest.length === 0) continue
-    if (tasks.length > 0) blocks.push({ ...list, content: tasks })
+    if (tasks.length > 0) blocks.push({ content: tasks, type: 'taskList' })
     tasks = []
     for (const block of rest) blocks.push(block)
   }
-  if (tasks.length > 0) blocks.push({ ...list, content: tasks })
+  if (tasks.length > 0) blocks.push({ content: tasks, type: 'taskList' })
   return blocks
+}
+
+// A task and the children after it up to the next task, which nest in it.
+export type TaskListItem = { after: AdfNode[]; task: AdfNode }
+
+// The list's items, or undefined where a child other than a task opens it.
+export function taskListItems(list: AdfNode): TaskListItem[] | undefined {
+  const items: TaskListItem[] = []
+  for (const child of nodeContent(list)) {
+    const item = items.at(-1)
+    if (isTaskItem(child)) items.push({ after: [], task: child })
+    else if (item === undefined) return undefined
+    else item.after.push(child)
+  }
+  return items
 }
 
 // Where `target` stands among `blocks`: its block's index, then the steps down to it. The split rebuilds lists and items but never an inline node, so an inline marker stays findable.
@@ -38,21 +53,8 @@ function stepsTo(visit: Visit): [number, ...ConvertErrorPath] {
   return [at.step, ...steps.reverse()]
 }
 
-// An item is a task and the children up to the next one.
-function itemsOf(children: readonly AdfNode[]): AdfNode[][] {
-  const items: AdfNode[][] = []
-  for (const child of children) {
-    const item = items.at(-1)
-    if (item === undefined || isTaskItem(child)) items.push([child])
-    else item.push(child)
-  }
-  return items
-}
-
 // The item reads as one run: the task's blocks, then the children after it.
-function itemParts(item: readonly AdfNode[]): { kept: AdfNode[]; rest: AdfNode[] } {
-  const [task, ...after] = item
-  if (task === undefined || !isTaskItem(task)) return { kept: [], rest: [...item] }
+function itemParts({ after, task }: TaskListItem): { kept: AdfNode[]; rest: AdfNode[] } {
   const content = task.type === 'blockTaskItem' ? nodeContent(task) : []
   const run = [...content, ...after]
   const paragraphs = runEnd(content, 0, 'paragraph')

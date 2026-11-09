@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Block } from '../parse/blocks.ts'
 import type { ConvertError, ConvertErrorPath, ParseError, Result, SourcePosition } from '../../result.ts'
 import type { FlavourBlockReaders, FlavourReading } from '../parse/markdown-to-adf.ts'
+import type { TaskListItem } from './task-list.ts'
 import { containerNode, contentNode, listNode, readBlocks, readDocument, tooDeep } from '../parse/markdown-to-adf.ts'
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from './conventions.ts'
@@ -127,7 +128,7 @@ function taskBlocks(items: readonly Block[][], reading: FlavourReading, path: Co
   const led = taskItems(items)
   if (led === undefined) return undefined
   if (depth + 1 > largestNesting) return tooDeep([...path, 'content', 0])
-  const tasks: AdfNode[] = []
+  const tasks: TaskListItem[] = []
   let refusal: Refusal | undefined
   for (const [index, { marker, others, position, text }] of led.entries()) {
     const body = text.replace(/^(?:[ \t\n]|\\\n)+/, '')
@@ -138,10 +139,10 @@ function taskBlocks(items: readonly Block[][], reading: FlavourReading, path: Co
       for (const node of read.nodes) task.content.push(node)
       refusal ??= read.refusal
     }
-    tasks.push(task)
+    tasks.push({ after: [], task })
     if (refusal !== undefined) break
   }
-  return success({ nodes: splitTaskList({ content: tasks, type: 'taskList' }), refusal })
+  return success({ nodes: splitTaskList(tasks), refusal })
 }
 
 // A refused block reads to a placeholder. The split tells only paragraphs and task lists from other blocks, so a paragraph that failed to read stays a paragraph.
