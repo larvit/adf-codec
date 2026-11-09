@@ -13,7 +13,7 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 153 | 0.4.0 |  | question | **Decide whether `src/markdown/` root may import `emit/`, `parse/` or `portable/`, and hold the answer in `.oxlintrc.json` and §The source parts by ADF and format.** | 1 | 2 | 2 | 3 | 2 | code health by 3 | 26.2 |
-| 175 | 0.4.0 |  |  | **Delete the `'a task holds blocks no list item spells'` failure and the `path` arguments in `tryTaskList`, once `spelledList` can't return `undefined` for a portable task list.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
+| 175 | 0.4.0 |  |  | **Delete the `previous === undefined` branch, the `'a task holds blocks no list item spells'` failure and the `path` arguments of `tryTaskList`, once a type makes a task list opening with a non-task unrepresentable.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 17.4 |
 | 176 | 0.4.0 |  |  | **Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.** | 1 | 1 | 2 | 2 | 2 | code health by 2 | 17.4 |
 | 45 | 0.4.0 |  | defect | **Replace `isAdfDocument` with a reader returning `Result<AdfDocument>`.** | 2 | 1 | 3 | 4 | 3 | 1 by 2 | 13.1 |
 | 127 | 0.4.0 |  | principle | **Hold what `entity-references.test.ts`, `json-text.test.ts` and `result.test.ts` check by asserting outcomes, so none reads source text.** | 2 | 2 | 1 | 3 | 3 | code health by 2 | 13.1 |
@@ -72,15 +72,15 @@ a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded).
 `src/markdown/**` bans only `html/`; banning `emit/`, `parse/` and `portable/` for the root's own
 files, with its `ci.sh` probe, extends the decision.
 
-### 175. Delete the `'a task holds blocks no list item spells'` failure and the `path` arguments in `tryTaskList`, once `spelledList` can't return `undefined` for a portable task list.
+### 175. Delete the `previous === undefined` branch, the `'a task holds blocks no list item spells'` failure and the `path` arguments of `tryTaskList`, once a type makes a task list opening with a non-task unrepresentable.
 
-`reduceToPortable` runs first, so `adfToPortableMarkdown` never reaches the failure in `tryTaskList`
-(`portable/block-spelling.ts`), and no test reaches it. The failure stays because `spelledList`
-returns `undefined` for blocks a list item cannot hold, and the code rules ban the cast that would
-drop that case. Mutants of the `path` arguments to `taskBlocks` and `placedBlock` survived, so
-no test shows they reach an error; delete them only once one does or an argument shows none can.
-Found by mutation testing for item 128, 2026-11-08. The `headroom` is not a guard: a list that
-cannot be a markdown list refuses by it, as a test now pins.
+`reduceToPortable` leaves every task list opening with a task. So `adfToPortableMarkdown` reaches
+neither the `previous === undefined` branch of `tryTaskList` (`portable/block-spelling.ts`) nor
+its failure. Deleting the branch made two panel seats rule the code harder to read: a block pushed
+before the first task would vanish silently. Delete it only together with a type that makes a task
+list opening with a non-task unrepresentable. Mutants of the `path` arguments to `taskBlocks` and
+`placedBlock` survived, so no test shows they reach an error. The `headroom` is not a guard: a list
+that cannot be a markdown list refuses by it, and a test pins that.
 
 ### 176. Delete `runEdge`'s `standing === 'moves'` give-up, and any code only it needs, once a test or an argument shows `runEdge` never reaches it, or else pin the case with a hand-worked line.
 
