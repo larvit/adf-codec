@@ -688,7 +688,7 @@ input reads `message`.
   it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
   inline alike, `\|` for every pipe row.
 - `not-an-adf-document` names a node that is not an ADF node at that node's path, as
-  `unsupported-node-shape` does (2026-11-10, plan item 80). The checks of the document's own fields
+  `unsupported-node-shape` does (2026-11-10, plan item 80, the maintainer). The checks of the document's own fields
   and the copy `readAdfDocument` makes first, which refuses a getter, an object holding itself, a
   throwing Proxy and a bad array length, stay at the empty path: the copy tracks no path, and
   threading one through it wants the manual stack §Nothing recurses unbounded forces. The message
