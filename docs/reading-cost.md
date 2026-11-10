@@ -1014,3 +1014,20 @@ Read most (opens and searches):
 - `CHANGELOG.md` 2
 - `src/markdown/emit/escaping.test.ts` 2
 - `src/markdown/pipe-table-syntax.ts` 2
+
+## Reading cost, chunk 15a08a64ac67, finished 2026-11-10T21:40:51Z
+
+80495 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 6
+- `ci.sh` 5
+- `src/adf/document.test.ts` 5
+- `src/adf/document.ts` 5
+- `docker-runner.sh` 3
+- `CHANGELOG.md` 2
+- `README.md` 2
+- `src/result.ts` 2
+- `MIGRATION.md` 1
+- `src/adf/plain-copy.ts` 1

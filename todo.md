@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
 | 173 | 0.4.0 |  | principle | **Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.** | 2 | 1 | 1 | 2 | 4 | code health by 1 | 4.4 |
 | 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
@@ -49,17 +48,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 171. Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.
-
-README → Audience says no persona may rely on a message's wording, yet `content()` in
-`src/markdown/parse/markdown-to-adf.test.ts` folds a failure into `${code}: ${message}`, about 103
-assertions compare that whole sentence, and `document.test.ts` (7) and `html-to-adf.test.ts` (3)
-pin `message:` the same way. A rewording fails tests with no behaviour changed, while the facts
-§`message` and `path` requires (the violation, the escape named) are never asserted on their own.
-Assert `code`, `path` and `position` exactly, and match `message` against the facts it must carry.
-Technical principle: "Pin wording only where the wording is the contract". Found by the principles
-audit of the release review of 0.3.0, 2026-11-08.
 
 ### 173. Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.
 
