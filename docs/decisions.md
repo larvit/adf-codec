@@ -1205,10 +1205,11 @@ consults it rather than restating it, so no fixture the emitter writes can be re
 spelling the emitter refuses gives its own error rather than a second name for it. That consulting
 is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`. The root of
 `markdown/` imports none of `emit/`, `parse/` and `portable/`, and `emit/` does not import `parse/`.
-The scan in `inline-content.ts` reports whether a spellable link opens the paragraph, and
-`parse/inline-content.ts` alone asks the writer whether that link still needs its directive. A
-read-back (`readLineBack`) never asks the writer: the writer calls it as it spells a line, so a
-read-back that asked would recurse without bound (§Nothing recurses unbounded).
+`markdown/commonmark/`, a leaf the root reads, stays outside that ban: nothing in it imports them
+(the maintainer, 2026-11-10). The scan in `inline-content.ts` reports whether a spellable link opens
+the paragraph, and `parse/inline-content.ts` alone asks the writer whether that link still needs its
+directive. A read-back (`readLineBack`) never asks the writer: the writer calls it as it spells a
+line, so a read-back that asked would recurse without bound (§Nothing recurses unbounded).
 
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `html/parse/` from importing
 `html/emit/`, keeps markdown's `parse/` and `emit/` from importing `portable/`, keeps `markdown/`'s
