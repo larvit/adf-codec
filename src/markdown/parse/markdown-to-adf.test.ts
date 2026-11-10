@@ -139,7 +139,7 @@ test('builds an empty document from input holding no block, and one holding no c
   assert.deepEqual(losslessMarkdownToAdf('\n \n\t\n'), { ok: true, value: { content: [], type: 'doc', version: 1 } })
   assert.deepEqual(losslessMarkdownToAdf('!adf:doc {content=none}\n'), { ok: true, value: { type: 'doc', version: 1 } })
   assert.deepEqual(losslessMarkdownToAdf('\n!adf:doc {content=none}\n\n'), { ok: true, value: { type: 'doc', version: 1 } })
-  const form = ['!adf:doc {content=none}']
+  const form = ['!adf:doc {content=none}', 'spells another']
   refused(losslessMarkdownToAdf('!adf:doc\n'), 'unsupported-node-shape', ...form)
   refused(losslessMarkdownToAdf('!adf:doc x {content=none}\n'), 'unsupported-node-shape', ...form)
   refused(losslessMarkdownToAdf('!adf:doc {content=empty}\n'), 'unsupported-node-shape', 'empty markdown', '!adf:doc {content=none}', 'content=empty')
@@ -147,7 +147,7 @@ test('builds an empty document from input holding no block, and one holding no c
   const alone = ['delete the !adf:doc {content=none} line', 'whole document']
   refused(losslessMarkdownToAdf('x\n\n!adf:doc {content=none}\n'), 'unsupported-node-shape', ...alone)
   refused(losslessMarkdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n'), 'unsupported-node-shape', ...alone)
-  refused(losslessMarkdownToAdf('!adf:doc\n!adf:/doc\n'), 'malformed-directive', '!adf:/doc', '\\!adf:')
+  refused(losslessMarkdownToAdf('!adf:doc\n!adf:/doc\n'), 'malformed-directive', 'takes no body', '!adf:/doc', '\\!adf:')
   refused(losslessMarkdownToAdf('a !adf:doc{content=none}\n'), 'unsupported-node-shape', '!adf:doc', 'inline form')
 })
 
@@ -248,8 +248,8 @@ test('names the pipe table a claimed line does not spell', () => {
   refused(losslessMarkdownToAdf('| a | b |\n'), 'malformed-pipe-table', '`-`', '\\|')
   refused(losslessMarkdownToAdf('| a |\n| x |\n'), 'malformed-pipe-table', '`-`', '\\|')
   refused(losslessMarkdownToAdf('| a | b |\n| :--- | ---: |\n'), 'malformed-pipe-table', 'alignment colon')
-  refused(losslessMarkdownToAdf('| a | b |\n| --- |\n'), 'malformed-pipe-table', '1 cell', '2 cells')
-  refused(losslessMarkdownToAdf('| a |\n| --- |\n| b | c |\n'), 'malformed-pipe-table', '2 cells', '1 cell')
+  refused(losslessMarkdownToAdf('| a | b |\n| --- |\n'), 'malformed-pipe-table', 'row holds 1 cell', 'header holds 2 cells')
+  refused(losslessMarkdownToAdf('| a |\n| --- |\n| b | c |\n'), 'malformed-pipe-table', 'row holds 2 cells', 'header holds 1 cell')
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n| a |\n')), ['content', 1])
 })
 
@@ -261,7 +261,7 @@ test('names the pipe table whose rows open with no pipe', () => {
   refused(losslessMarkdownToAdf('a | b\n:--- | ---:\n'), 'malformed-pipe-table', ...bare)
   refused(losslessMarkdownToAdf('a |\n--- |\n'), 'malformed-pipe-table', ...bare)
   assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c')])
-  refused(losslessMarkdownToAdf('| a | b |\n| --- | --- |\n| c |\n'), 'malformed-pipe-table', '1 cell', '2 cells')
+  refused(losslessMarkdownToAdf('| a | b |\n| --- | --- |\n| c |\n'), 'malformed-pipe-table', 'row holds 1 cell', 'header holds 2 cells')
   assert.deepEqual(content(losslessMarkdownToAdf('a | b\nc | d\n')), [paragraph('a | b c | d')])
   assert.deepEqual(content(losslessMarkdownToAdf('a | b\n--- | --- | ---\n')), [paragraph('a | b --- | --- | ---')])
   assert.deepEqual(content(losslessMarkdownToAdf('a \\| b\n--- | ---\n')), [paragraph('a | b --- | ---')])
@@ -314,7 +314,7 @@ test('claims a block line the prefix opens with no directive to parse it', () =>
   assert.equal(code(losslessMarkdownToAdf('!adf:/panel\n')), 'malformed-directive')
   assert.equal(code(losslessMarkdownToAdf('!adf:panel  info\n')), 'malformed-directive')
   assert.equal(code(losslessMarkdownToAdf('!adf:panel {a=1 a=2}\n!adf:/panel\n')), 'malformed-directive')
-  refused(losslessMarkdownToAdf('!adf:Panel\n'), 'malformed-directive', '\\!adf:')
+  refused(losslessMarkdownToAdf('!adf:Panel\n'), 'malformed-directive', 'no directive', '\\!adf:')
   assert.deepEqual(content(losslessMarkdownToAdf(':::panel info\nPart.\n:::\n')), [paragraph(':::panel info Part. :::')])
   assert.deepEqual(content(losslessMarkdownToAdf('::rule\n')), [paragraph('::rule')])
 })
@@ -385,7 +385,7 @@ test('names the closer that finds no container open where it stands', () => {
 })
 
 test('names the leaf given a body at its opener, ahead of any refusal the leaf holds itself', () => {
-  refused(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n'), 'malformed-directive', '!adf:/rule', '\\!adf:')
+  refused(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n'), 'malformed-directive', 'takes no body', '!adf:/rule', '\\!adf:')
   assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:rule {localId=a-2}\nPart.\n!adf:/rule\n')), ['content', 1])
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n')), ['content', 0])

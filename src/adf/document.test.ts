@@ -301,7 +301,6 @@ test('refuses a Proxy that throws on an array, and a revoked one, wherever they 
   refused(readAdfDocument({ content: throwing([], 'get'), type: 'doc', version: 1 }), 'not-an-adf-document', ...unreadable)
   const revoked = Proxy.revocable({}, {})
   revoked.revoke()
-  refused(readAdfDocument(revoked.proxy), 'not-an-adf-document', ...unreadable)
   refused(readAdfDocument(documentOf(revoked.proxy)), 'not-an-adf-document', ...unreadable)
   const read = readAdfDocument(revoked.proxy)
   refused(read, 'not-an-adf-document', ...unreadable)
