@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 153 | 0.4.0 |  |  | **Return from `parseInlineContent` whether a link opens the paragraph in a spellable form, ask the writer only in `parse/`, and ban `src/markdown/` root files from importing `emit/`, `parse/` and `portable/`, and `emit/` from importing `parse/`.** | 2 | 1 | 2 | 3 | 4 | code health by 3 | 13.1 |
 | 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
 | 173 | 0.4.0 |  | principle | **Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.** | 2 | 1 | 1 | 2 | 4 | code health by 1 | 4.4 |
@@ -51,27 +50,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 153. Return from `parseInlineContent` whether a link opens the paragraph in a spellable form, ask the writer only in `parse/`, and ban `src/markdown/` root files from importing `emit/`, `parse/` and `portable/`, and `emit/` from importing `parse/`.
-
-Today `parseInlineContent` (`src/markdown/inline-content.ts`) takes `openingLinkTakesDirective`, the
-writer's answer, as an argument, and all three callers (`parse/markdown-to-adf.ts`,
-`portable/portable-markdown-to-adf.ts`) pass the same function. The writers read lines back through
-`readLineBack`, which never asks the writer, so nothing recurses today. A root file importing the
-writer would close a module cycle, and a read-back honouring `openingSpellableLink` would recurse
-without bound on a paragraph opening with a spellable `!adf:link` (§Nothing recurses unbounded).
-
-- `parseInlineContent` drops the argument and returns `openingSpellableLink` beside the nodes and
-  the image. One function in `parse/` runs the scan, asks `emit/spelling-questions.ts` and refuses
-  with `spellableLink`; both readers call it, so `portable/` drops its `emit/` import.
-- `.oxlintrc.json`: an override for `src/markdown/*.ts` bans `emit/`, `parse/`, `portable/` and
-  `html/`, since a later override replaces an earlier one's rule; `emit/`'s override also bans
-  `parse/`. `ci.sh` probes both. §The source parts by ADF and format names the root's two bans.
-- A comment on `readLineBack` says a read-back never asks the writer, and the false comment at
-  `inline-content.ts:120` goes. A round-trip test covers a paragraph opening with a spellable
-  `!adf:link`.
-- The reader panel's smaller findings, not in this item: `commonmark/` and root names such as
-  `adjacent-text.ts` do not say which side they serve.
 
 ### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
 

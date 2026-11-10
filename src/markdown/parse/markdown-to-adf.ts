@@ -5,7 +5,7 @@ import type { ConvertFault } from '../../result.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from '../inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
-import { commonMarkSpelling, openingLinkTakesDirective, spellingMemo, type SpellingMemo } from '../emit/spelling-questions.ts'
+import { commonMarkSpelling, spellingMemo, type SpellingMemo } from '../emit/spelling-questions.ts'
 import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
 import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result } from '../../result.ts'
@@ -14,8 +14,8 @@ import { languageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { notAString } from '../../not-a-string.ts'
 import { parseBlocks } from './blocks.ts'
-import { parseInlineContent } from '../inline-content.ts'
 import { readBlockDirectiveNode } from '../directive/node-reading.ts'
+import { readInlineContent } from './inline-content.ts'
 import { spellStringAttribute, unsupportedNodeShape } from '../directive/syntax.ts'
 import { spellsEmpty } from '../directive/empty-keys.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
@@ -246,14 +246,14 @@ function codeBlockNode(language: string, text: string, reading: Reading, path: C
 
 // spec/flavour.md, The CommonMark image: only a `paragraph` block gives a lone image the block it needs.
 function paragraphNode(text: string, reading: Reading, path: ConvertErrorPath): Result<AdfNode> {
-  const content = parseInlineContent(text, reading.definitions, path, 'paragraph', reading.flavour, openingLinkTakesDirective)
+  const content = readInlineContent(text, reading.definitions, path, 'paragraph', reading.flavour)
   if (!content.ok) return content
   const image = content.value.image
   return success(image === undefined ? withContent({ type: 'paragraph' }, content.value.nodes) : image)
 }
 
 export function contentNode(node: AdfNode, text: string, reading: Reading, path: ConvertErrorPath, container: LineContainer): Result<AdfNode> {
-  const content = parseInlineContent(text, reading.definitions, path, container, reading.flavour, openingLinkTakesDirective)
+  const content = readInlineContent(text, reading.definitions, path, container, reading.flavour)
   if (!content.ok) return content
   return success(withContent(node, content.value.nodes))
 }

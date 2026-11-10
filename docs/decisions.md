@@ -1175,7 +1175,7 @@ is the markdown flavour's choice, not ADF's.
 
 2026-08-27, placement 2026-09-18, `adf/`'s bar 2026-09-21, `plain/` 2026-10-03, the import
 boundaries' lint 2026-10-22, the maintainer; `parse/` and `emit/` free of `portable/`,
-2026-10-22. Goal 2. Valid while each format has a reader and a writer through ADF.
+2026-10-22; the root's imports and `emit/` free of `parse/`, 2026-11-10. Goal 2. Valid while each format has a reader and a writer through ADF.
 
 `src/adf/` holds ADF's own knowledge, imports no format, and is where a construct both formats read
 lives: the question is answered in ADF's vocabulary — a node type, an attribute kind, a content
@@ -1202,10 +1202,16 @@ whether a list marker interrupts a paragraph — is one function there too, neve
 direction, however conservative the copy would be. Where the rule is the emitter's own choice, input
 consults it rather than restating it, so no fixture the emitter writes can be refused, and a
 spelling the emitter refuses gives its own error rather than a second name for it. That consulting
-is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`.
+is the only import `parse/` takes from `emit/`, through `emit/spelling-questions.ts`. The root
+imports neither `emit/`, `parse/` nor `portable/`, and `emit/` does not import `parse/`. The scan in
+`inline-content.ts` reports whether a spellable link opens the paragraph, and
+`parse/inline-content.ts` alone asks the writer what that link needs. A read-back (`readLineBack`)
+never asks the writer: the writer calls it as it spells a line, so a read-back that asked would
+recurse without bound (§Nothing recurses unbounded).
 
 `.oxlintrc.json` enforces that limit for `markdown/parse/`, keeps `html/parse/` from importing
-`html/emit/`, keeps markdown's `parse/` and `emit/` from importing `portable/`, keeps
+`html/emit/`, keeps markdown's `parse/` and `emit/` from importing `portable/`, keeps the root's files from
+importing `emit/`, `parse/` and `portable/`, keeps `emit/` from importing `parse/`, keeps
 `markdown/directive/` from importing `emit/` or `parse/`, keeps `markdown/` and `html/` from
 importing each other, and keeps `adf/` from importing either, as `no-restricted-imports` overrides.
 A later override replaces an earlier one's rule, so each subdirectory's override repeats its

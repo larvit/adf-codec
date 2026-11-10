@@ -7,10 +7,9 @@ import { containerNode, contentNode, listNode, readBlocks, readDocument, tooDeep
 import { largestNesting } from '../../nesting.ts'
 import { leadingMarker, readAlertMarker, readTaskMarker } from './conventions.ts'
 import { mintTaskIds } from './task-ids.ts'
-import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
-import { parseInlineContent } from '../inline-content.ts'
 import { pathTo, splitTaskList } from './task-list.ts'
 import { positioned, success } from '../../result.ts'
+import { readInlineContent } from '../parse/inline-content.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
 
 type Paragraph = Extract<Block, { kind: 'paragraph' }>
@@ -58,7 +57,7 @@ function quoteReader(foldedType: 'expand' | 'nestedExpand'): FlavourBlockReaders
     const { folded, panelType } = led.marker
     const { line, rest } = markerLine(led.text)
     if (!folded) return filledNode({ attrs: { panelType }, type: 'panel' }, readBlocks([...paragraphsOf(led.position, line, rest), ...body], reading, path, depth + 1))
-    const title = parseInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour, openingLinkTakesDirective)
+    const title = readInlineContent(line, reading.definitions, path, 'paragraph', reading.flavour)
     if (!title.ok) return title
     const text = titleText(title.value.nodes)
     return filledNode(text === '' ? { type: foldedType } : { attrs: { title: text }, type: foldedType }, readBlocks([...paragraphsOf(led.position, rest), ...body], { ...reading, blocks: expandBlockReaders }, path, depth + 1))
