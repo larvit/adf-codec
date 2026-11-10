@@ -687,10 +687,12 @@ input reads `message`.
   must invert before it reads as a failure — and where the flavour's claim refuses ordinary prose
   it names the escape that unclaims the form claimed: `\!adf:` for a directive, block line and
   inline alike, `\|` for every pipe row.
-- `not-an-adf-document` carries the document's own path throughout: seven of the guard's nine
-  branches read the document's own shape, and threading a path to the other two, which look anywhere
-  in the tree — a malformed node, or an object holding itself — wants the manual stack §Nothing
-  recurses unbounded forces. The message names the violation instead.
+- `not-an-adf-document` names a node that is not an ADF node at that node's path, as
+  `unsupported-node-shape` does (2026-11-10, plan item 80). The checks of the document's own fields
+  and the copy `readAdfDocument` makes first, which refuses a getter, an object holding itself, a
+  throwing Proxy and a bad array length, stay at the empty path: the copy tracks no path, and
+  threading one through it wants the manual stack §Nothing recurses unbounded forces. The message
+  names the violation.
 
 ## Publish on a version bump
 

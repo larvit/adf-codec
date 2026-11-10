@@ -615,7 +615,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an accessor property, a Proxy that throws, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | read the boundary you receive JSON at with `readAdfDocument`; the message names the branch that refused. Where your objects hold getters (Vue 2, MobX, a class model), hand in a snapshot, `JSON.parse(JSON.stringify(document))`. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
+| `not-an-adf-document` | the value handed in is no ADF document — a missing or wrong `type`, a stray key, a node that is not a node, an object in the document holding itself, an accessor property, a Proxy that throws, an attribute value that is not a plain object, array or JSON primitive, such as a `Date` or `Map` | read the boundary you receive JSON at with `readAdfDocument`; for a node that is not a node, `path` leads to it, and the message names the branch that refused. Where your objects hold getters (Vue 2, MobX, a class model), hand in a snapshot, `JSON.parse(JSON.stringify(document))`. Build an attribute value as JSON holds it: `date.toISOString()`, `Object.fromEntries(map)`, `{ ...instance }` |
 | `unsupported-document-version` | the document's `version` is not 1 | keep the ADF and pass the document over, or show it read-only; the version is the site's, not yours to change |
 
 ### Either direction
