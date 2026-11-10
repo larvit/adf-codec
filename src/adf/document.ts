@@ -202,7 +202,6 @@ function isNodeArray(value: readonly unknown[]): value is AdfNode[] {
   return unreadableNode(value) === undefined
 }
 
-// The first node in document order that is not an ADF node, and its path.
 function unreadableNode(content: readonly unknown[]): { fault: ConvertFault; path: ConvertErrorPath } | undefined {
   const refused = firstRefusal(content, unreadableChildren, nodeRefusal)
   return refused === undefined ? undefined : { fault: { code: 'not-an-adf-document', message: refused.message }, path: refused.path }
