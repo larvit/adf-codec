@@ -41,7 +41,6 @@ function refusal(result: Result<AdfDocument, ParseError>): string {
   return result.ok ? 'read' : `${result.error.code} at /${result.error.path.join('/')} line ${result.error.position.line} offset ${result.error.position.offset}`
 }
 
-// A message is free text: a refusal pins only the facts the message must name.
 function names(result: Result<AdfDocument, ParseError>, ...facts: readonly string[]): void {
   const message = result.ok ? '' : result.error.message
   for (const fact of facts) assert.ok(message.includes(fact), `${JSON.stringify(message)} names ${fact}`)

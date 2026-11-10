@@ -9,7 +9,6 @@ import { adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown } from '../inde
 import { readAdfDocument, writableContent } from './document.ts'
 import { largestNesting } from '../nesting.ts'
 
-// A message is free text: a refusal pins its code and only the facts the message must name.
 function refused(result: Result<unknown>, errorCode: ConvertErrorCode, ...facts: string[]): void {
   assert.equal(result.ok ? 'accepted' : result.error.code, errorCode)
   const message = result.ok ? '' : result.error.message
