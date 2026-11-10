@@ -66,7 +66,7 @@ test('names the check anything that is not a doc node failed', () => {
   assert.equal(fault({ type: 'doc', version: Number.NaN }), 'an ADF document holds a version number: found NaN')
 })
 
-function unreadableNode(content: unknown[]): { message: string; path: unknown } {
+function refusedNode(content: unknown[]): { message: string; path: unknown } {
   const read = readAdfDocument({ content, type: 'doc', version: 1 })
   assert.equal(read.ok, false)
   if (read.ok) throw new Error('unreachable')
@@ -75,26 +75,27 @@ function unreadableNode(content: unknown[]): { message: string; path: unknown } 
 }
 
 test('names the path of the node that is no ADF node, and what is wrong with it', () => {
-  const date = unreadableNode([{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }, { content: [{ attrs: { when: new Date(0) }, type: 'panel' }], type: 'paragraph' }])
+  const date = refusedNode([{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }, { content: [{ attrs: { when: new Date(0) }, type: 'panel' }], type: 'paragraph' }])
   assert.deepEqual(date.path, ['content', 1, 'content', 0])
   assert.match(date.message, /when attribute of panel/)
-  const topLevel = unreadableNode([{ type: 1 }])
+  const topLevel = refusedNode([{ type: 1 }])
   assert.deepEqual(topLevel.path, ['content', 0])
   assert.match(topLevel.message, /type string: found 1/)
-  const extra = unreadableNode([{ type: 'paragraph' }, { node: 'x', type: 'paragraph' }])
+  const extra = refusedNode([{ type: 'paragraph' }, { node: 'x', type: 'paragraph' }])
   assert.deepEqual(extra.path, ['content', 1])
   assert.match(extra.message, /key node/)
-  assert.match(unreadableNode([{ text: 1, type: 'text' }]).message, /text of text is a string: found 1/)
-  assert.match(unreadableNode([{ content: {}, type: 'paragraph' }]).message, /content of paragraph is an array: found an object/)
-  assert.match(unreadableNode([{ marks: [{ type: 1 }], text: 'x', type: 'text' }]).message, /mark of text/)
-  assert.match(unreadableNode([{ attrs: [], type: 'paragraph' }]).message, /attrs of paragraph is an object: found an array/)
-  assert.match(unreadableNode([{ attrs: new Map(), type: 'paragraph' }]).message, /attrs of paragraph is a plain object/)
-  assert.match(unreadableNode([5]).message, /node is an object: found 5/)
+  assert.match(refusedNode([{ text: 1, type: 'text' }]).message, /text of text is a string: found 1/)
+  assert.match(refusedNode([{ content: {}, type: 'paragraph' }]).message, /content of paragraph is an array: found an object/)
+  assert.match(refusedNode([{ marks: [{ type: 'em' }, { type: 1 }], text: 'x', type: 'text' }]).message, /mark at index 1 of text/)
+  assert.match(refusedNode([{ marks: {}, text: 'x', type: 'text' }]).message, /marks of text is an array: found an object/)
+  assert.match(refusedNode([{ attrs: [], type: 'paragraph' }]).message, /attrs of paragraph is an object: found an array/)
+  assert.match(refusedNode([{ attrs: new Map(), type: 'paragraph' }]).message, /attrs of paragraph is a plain object/)
+  assert.match(refusedNode([5]).message, /node is an object: found 5/)
 })
 
 test('names the first unreadable node in document order', () => {
-  const first = unreadableNode([{ content: [{ type: 1 }], type: 'paragraph' }, { type: 2 }])
-  assert.deepEqual(first.path, ['content', 0, 'content', 0])
+  assert.deepEqual(refusedNode([{ content: [{ type: 1 }], type: 'paragraph' }, { type: 2 }]).path, ['content', 0, 'content', 0])
+  assert.deepEqual(refusedNode([{ content: [{ type: 'text' }, { type: 1 }, { type: 2 }], type: 'paragraph' }]).path, ['content', 0, 'content', 1])
 })
 
 test('rejects a node whose shape ProseMirror JSON cannot hold', () => {

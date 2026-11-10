@@ -161,17 +161,26 @@ export function nodeMarks(node: { marks?: AdfMark[] }): readonly AdfMark[] {
 
 // Walks every node, carried or of an unknown type, so a shape is refused wherever it stands (docs/decisions.md §Schema refusals are made in the first step alone).
 export function refusedShape(content: readonly AdfNode[]): ConvertError | undefined {
-  type Step = { index: number; node: AdfNode; parent: Step | undefined }
+  const refused = firstRefusal(content, nodeContent, shapeRefusal)
+  return refused === undefined ? undefined : { code: 'unsupported-node-shape', message: refused.message, path: refused.path }
+}
+
+// The first node in document order that `refusal` names, with the path to it; the walk keeps its own stack, so no depth overflows it.
+function firstRefusal<Node>(
+  content: readonly Node[],
+  childrenOf: (node: Node) => readonly Node[],
+  refusal: (node: Node) => string | undefined,
+): { message: string; path: ConvertErrorPath } | undefined {
+  type Step = { index: number; node: Node; parent: Step | undefined }
   const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()
   for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
-    const message = shapeRefusal(step.node)
+    const message = refusal(step.node)
     if (message !== undefined) {
       const path: (number | string)[] = []
       for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.push(up.index, 'content')
-      path.reverse()
-      return { code: 'unsupported-node-shape', message, path }
+      return { message, path: path.reverse() }
     }
-    for (const child of nodeContent(step.node).map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
+    for (const child of childrenOf(step.node).map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
   }
   return undefined
 }
@@ -193,47 +202,45 @@ function isNodeArray(value: readonly unknown[]): value is AdfNode[] {
   return unreadableNode(value) === undefined
 }
 
-// The first node, in document order, that is no ADF node, with the path of the node that holds the fault.
+// The first node in document order that is not an ADF node, and its path.
 function unreadableNode(content: readonly unknown[]): { fault: ConvertFault; path: ConvertErrorPath } | undefined {
-  type Step = { index: number; node: unknown; parent: Step | undefined }
-  const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()
-  for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
-    const message = nodeFault(step.node)
-    if (message !== undefined) {
-      const path: (number | string)[] = []
-      for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.push(up.index, 'content')
-      return { fault: { code: 'not-an-adf-document', message }, path: path.reverse() }
-    }
-    if (!isRecord(step.node) || !Array.isArray(step.node['content'])) continue
-    const children: readonly unknown[] = step.node['content']
-    for (const child of children.map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
-  }
-  return undefined
+  const refused = firstRefusal(content, unreadableChildren, nodeRefusal)
+  return refused === undefined ? undefined : { fault: { code: 'not-an-adf-document', message: refused.message }, path: refused.path }
 }
 
-function nodeFault(node: unknown): string | undefined {
+function unreadableChildren(node: unknown): readonly unknown[] {
+  const content: unknown = isRecord(node) ? node['content'] : undefined
+  return Array.isArray(content) ? content : []
+}
+
+function nodeRefusal(node: unknown): string | undefined {
   if (!isRecord(node)) return `an ADF node is an object: found ${describe(node)}`
   const extra = extraKey(node, nodeKeys)
   if (extra !== undefined) return `an ADF node holds attrs, content, marks, text and type alone: found the key ${extra}`
   const type: unknown = node['type']
   if (typeof type !== 'string') return `an ADF node holds a type string: found ${'type' in node ? describe(type) : 'no type field'}`
-  if ('attrs' in node) {
-    const attrs: unknown = node['attrs']
-    if (!isRecord(attrs)) return `the attrs of ${type} is an object: found ${describe(attrs)}`
-    if (!isJsonValue(attrs)) {
-      const key = Object.keys(attrs).find((name) => !isJsonValue(attrs[name]))
-      return key === undefined ? `the attrs of ${type} is a plain object: this one is not` : `the ${key} attribute of ${type} holds JSON alone: this one holds a value that is not JSON`
-    }
-  }
+  const attrs = 'attrs' in node ? attrsRefusal(node['attrs'], type) : undefined
+  if (attrs !== undefined) return attrs
   if ('marks' in node) {
-    const marks: unknown = node['marks']
-    if (!Array.isArray(marks)) return `the marks of ${type} is an array: found ${describe(marks)}`
-    const unreadable = [...marks].some((mark) => !isAdfMark(mark))
-    if (unreadable) return `a mark of ${type} is an object of a string type and attrs alone, the attrs JSON: this one is not`
+    const marks = marksRefusal(node['marks'], type)
+    if (marks !== undefined) return marks
   }
   if ('text' in node && typeof node['text'] !== 'string') return `the text of ${type} is a string: found ${describe(node['text'])}`
   if ('content' in node && !Array.isArray(node['content'])) return `the content of ${type} is an array: found ${describe(node['content'])}`
   return undefined
+}
+
+function attrsRefusal(attrs: unknown, type: string): string | undefined {
+  if (!isRecord(attrs)) return `the attrs of ${type} is an object: found ${describe(attrs)}`
+  if (isJsonValue(attrs)) return undefined
+  const key = Object.keys(attrs).find((name) => !isJsonValue(attrs[name]))
+  return key === undefined ? `the attrs of ${type} is a plain object: this one is not` : `the ${key} attribute of ${type} holds JSON alone: this one holds a value that is not JSON`
+}
+
+function marksRefusal(marks: unknown, type: string): string | undefined {
+  if (!Array.isArray(marks)) return `the marks of ${type} is an array: found ${describe(marks)}`
+  const index = [...marks].findIndex((mark) => !isAdfMark(mark))
+  return index === -1 ? undefined : `the mark at index ${index} of ${type} is not a mark: a mark holds a string type and JSON attrs alone`
 }
 
 function marksKey(marks: readonly AdfMark[]): string {
