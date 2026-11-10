@@ -404,6 +404,13 @@ table's short body row is padded with empty cells, a line holding no `|` that op
 block is a body row of one cell, and `a |` over `--- |` is a one-column table. `losslessMarkdownToAdf`
 keeps its stricter reading (§The portable reader refuses what GFM's reading would drop).
 
+Padding builds cells the markdown never holds, so a header of N columns over M one-cell rows would
+build N×M cells from N+M cells of source, against Goal 9. `portableMarkdownToAdf` pads a table only
+while the cells the padding adds stay within the cells the table's source holds (header, delimiter
+and body rows); past that, the table is `malformed-pipe-table`, and the markdown writes the empty
+cells out. The output then stays within twice the input's cells, and the bound needs no number of
+its own.
+
 ## The HTML dialect
 
 2026-08-23, the maintainer; Atlassian's HTML+ 2026-10-28, the maintainer. Goals 6 and 8. Valid

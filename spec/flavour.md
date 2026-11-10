@@ -373,8 +373,9 @@ attribute value is already `\u007c`, so the split never reaches it.
 `portableMarkdownToAdf` reads GFM's table: any row may drop its leading `|`, a header over a
 delimiter row of one cell reads as a one-column table (`a |` over `--- |`), a body row continues
 the table until a blank line or a line opening another block, a body row holding fewer cells is
-padded with empty cells, a line holding no `|` that opens no other block is a body row of one
-cell, and an alignment colon is read and its alignment dropped.
+padded with empty cells, a line holding no `|` that opens no other block is a body row of one cell,
+and an alignment colon is read and its alignment dropped. The padding of a table may add no more
+cells than its header, delimiter row and body rows hold; past that it is a named error.
 
 The directive form nests cells as containers of block content inside `tableRow` containers:
 
