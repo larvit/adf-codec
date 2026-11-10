@@ -66,9 +66,39 @@ test('names the check anything that is not a doc node failed', () => {
   assert.equal(fault({ type: 'doc', version: Number.NaN }), 'an ADF document holds a version number: found NaN')
 })
 
+function unreadableNode(content: unknown[]): { message: string; path: unknown } {
+  const read = readAdfDocument({ content, type: 'doc', version: 1 })
+  assert.equal(read.ok, false)
+  if (read.ok) throw new Error('unreachable')
+  assert.equal(read.error.code, 'not-an-adf-document')
+  return { message: read.error.message, path: read.error.path }
+}
+
+test('names the path of the node that is no ADF node, and what is wrong with it', () => {
+  const date = unreadableNode([{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }, { content: [{ attrs: { when: new Date(0) }, type: 'panel' }], type: 'paragraph' }])
+  assert.deepEqual(date.path, ['content', 1, 'content', 0])
+  assert.match(date.message, /when attribute of panel/)
+  const topLevel = unreadableNode([{ type: 1 }])
+  assert.deepEqual(topLevel.path, ['content', 0])
+  assert.match(topLevel.message, /type string: found 1/)
+  const extra = unreadableNode([{ type: 'paragraph' }, { node: 'x', type: 'paragraph' }])
+  assert.deepEqual(extra.path, ['content', 1])
+  assert.match(extra.message, /key node/)
+  assert.match(unreadableNode([{ text: 1, type: 'text' }]).message, /text of text is a string: found 1/)
+  assert.match(unreadableNode([{ content: {}, type: 'paragraph' }]).message, /content of paragraph is an array: found an object/)
+  assert.match(unreadableNode([{ marks: [{ type: 1 }], text: 'x', type: 'text' }]).message, /mark of text/)
+  assert.match(unreadableNode([{ attrs: [], type: 'paragraph' }]).message, /attrs of paragraph is an object: found an array/)
+  assert.match(unreadableNode([{ attrs: new Map(), type: 'paragraph' }]).message, /attrs of paragraph is a plain object/)
+  assert.match(unreadableNode([5]).message, /node is an object: found 5/)
+})
+
+test('names the first unreadable node in document order', () => {
+  const first = unreadableNode([{ content: [{ type: 1 }], type: 'paragraph' }, { type: 2 }])
+  assert.deepEqual(first.path, ['content', 0, 'content', 0])
+})
+
 test('rejects a node whose shape ProseMirror JSON cannot hold', () => {
   assert.equal(fault({ content: {}, type: 'doc', version: 1 }), "an ADF document's content is an array: found an object")
-  assert.equal(fault({ content: [{ type: 1 }], type: 'doc', version: 1 }), "an ADF document's content holds ADF nodes: one of them is not")
   assert.equal(readable({ content: [{ type: 1 }], type: 'doc', version: 1 }), false)
   assert.equal(readable({ content: [{ text: 1, type: 'text' }], type: 'doc', version: 1 }), false)
   assert.equal(readable({ content: [{ node: 'x', type: 'paragraph' }], type: 'doc', version: 1 }), false)

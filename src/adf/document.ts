@@ -1,5 +1,5 @@
 import { blockNodeModel } from './block-nodes.ts'
-import { failure, faulted, success, type ConvertError, type ConvertFault, type Read, type Result } from '../result.ts'
+import { failure, faulted, success, type ConvertError, type ConvertErrorPath, type ConvertFault, type Result } from '../result.ts'
 import { inlineNodeModel } from './inline-nodes.ts'
 import { isJsonValue, overNested, type JsonValue } from '../json-value.ts'
 import { largestNesting } from '../nesting.ts'
@@ -39,12 +39,11 @@ export function readAdfDocument(value: unknown): Result<AdfDocument> {
   return withinEngineLimits(() => {
     const copy = plainCopy(value)
     if (copy.fault !== undefined) return faulted(copy.fault, [])
-    const shaped = shapedDocument(copy.value)
-    return shaped.fault === undefined ? success(shaped.value) : faulted(shaped.fault, [])
+    return shapedDocument(copy.value)
   })
 }
 
-function shapedDocument(value: unknown): Read<AdfDocument> {
+function shapedDocument(value: unknown): Result<AdfDocument> {
   if (!isRecord(value)) return notADocument(`an ADF document is an object: found ${describe(value)}`)
   const extra = extraKey(value, documentKeys)
   if (extra !== undefined) return notADocument(`an ADF document holds content, type and version alone: found the key ${extra}`)
@@ -54,12 +53,13 @@ function shapedDocument(value: unknown): Read<AdfDocument> {
   if (!('version' in value)) return notADocument('an ADF document holds a version number: found no version field')
   const version: unknown = value['version']
   if (typeof version !== 'number' || !Number.isFinite(version)) return notADocument(`an ADF document holds a version number: found ${describe(version)}`)
-  if (!('content' in value)) return { value: { type, version } }
+  if (!('content' in value)) return success({ type, version })
   const content: unknown = value['content']
   if (!Array.isArray(content)) return notADocument(`an ADF document's content is an array: found ${describe(content)}`)
   const nodes: readonly unknown[] = content
-  if (!isNodeArray(nodes)) return notADocument("an ADF document's content holds ADF nodes: one of them is not")
-  return { value: { content: nodes, type, version } }
+  if (isNodeArray(nodes)) return success({ content: nodes, type, version })
+  const unreadable = unreadableNode(nodes)
+  return unreadable === undefined ? notADocument('an ADF document holds ADF nodes: one is not') : faulted(unreadable.fault, unreadable.path)
 }
 
 // The checks every writer opens with; `undefined` where the document holds no `content` key, which each format spells its own way.
@@ -190,21 +190,50 @@ function shapeRefusal(node: AdfNode): string | undefined {
 }
 
 function isNodeArray(value: readonly unknown[]): value is AdfNode[] {
-  const pending: unknown[] = [...value]
-  while (pending.length > 0) {
-    const node = pending.pop()
-    if (!isRecord(node) || !holdsOnly(node, nodeKeys)) return false
-    if (typeof node['type'] !== 'string') return false
-    if ('attrs' in node && !isAttributes(node['attrs'])) return false
-    if ('marks' in node && !isArrayOf(node['marks'], isAdfMark)) return false
-    if ('text' in node && typeof node['text'] !== 'string') return false
-    if ('content' in node) {
-      const content = node['content']
-      if (!Array.isArray(content)) return false
-      for (const child of content) pending.push(child)
+  return unreadableNode(value) === undefined
+}
+
+// The first node, in document order, that is no ADF node, with the path of the node that holds the fault.
+function unreadableNode(content: readonly unknown[]): { fault: ConvertFault; path: ConvertErrorPath } | undefined {
+  type Step = { index: number; node: unknown; parent: Step | undefined }
+  const pending: Step[] = content.map((node, index) => ({ index, node, parent: undefined })).reverse()
+  for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
+    const message = nodeFault(step.node)
+    if (message !== undefined) {
+      const path: (number | string)[] = []
+      for (let up: Step | undefined = step; up !== undefined; up = up.parent) path.push(up.index, 'content')
+      return { fault: { code: 'not-an-adf-document', message }, path: path.reverse() }
+    }
+    if (!isRecord(step.node) || !Array.isArray(step.node['content'])) continue
+    const children: readonly unknown[] = step.node['content']
+    for (const child of children.map((node, index) => ({ index, node, parent: step })).reverse()) pending.push(child)
+  }
+  return undefined
+}
+
+function nodeFault(node: unknown): string | undefined {
+  if (!isRecord(node)) return `an ADF node is an object: found ${describe(node)}`
+  const extra = extraKey(node, nodeKeys)
+  if (extra !== undefined) return `an ADF node holds attrs, content, marks, text and type alone: found the key ${extra}`
+  const type: unknown = node['type']
+  if (typeof type !== 'string') return `an ADF node holds a type string: found ${'type' in node ? describe(type) : 'no type field'}`
+  if ('attrs' in node) {
+    const attrs: unknown = node['attrs']
+    if (!isRecord(attrs)) return `the attrs of ${type} is an object: found ${describe(attrs)}`
+    if (!isJsonValue(attrs)) {
+      const key = Object.keys(attrs).find((name) => !isJsonValue(attrs[name]))
+      return key === undefined ? `the attrs of ${type} is a plain object: this one is not` : `the ${key} attribute of ${type} holds JSON alone: this one holds a value that is not JSON`
     }
   }
-  return true
+  if ('marks' in node) {
+    const marks: unknown = node['marks']
+    if (!Array.isArray(marks)) return `the marks of ${type} is an array: found ${describe(marks)}`
+    const unreadable = [...marks].some((mark) => !isAdfMark(mark))
+    if (unreadable) return `a mark of ${type} is an object of a string type and attrs alone, the attrs JSON: this one is not`
+  }
+  if ('text' in node && typeof node['text'] !== 'string') return `the text of ${type} is a string: found ${describe(node['text'])}`
+  if ('content' in node && !Array.isArray(node['content'])) return `the content of ${type} is an array: found ${describe(node['content'])}`
+  return undefined
 }
 
 function marksKey(marks: readonly AdfMark[]): string {
@@ -241,10 +270,6 @@ function attributesFault(attrs: AdfAttributes, type: string): ConvertFault | und
   return undefined
 }
 
-function isArrayOf<T>(value: unknown, guard: (item: unknown) => item is T): value is T[] {
-  return Array.isArray(value) && [...value].every(guard)
-}
-
 function isAttributes(value: unknown): value is AdfAttributes {
   return isRecord(value) && isJsonValue(value)
 }
@@ -253,8 +278,8 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function notADocument(message: string): { fault: ConvertFault } {
-  return { fault: { code: 'not-an-adf-document', message } }
+function notADocument(message: string): Result<never> {
+  return failure('not-an-adf-document', message, [])
 }
 
 function describe(value: unknown): string {

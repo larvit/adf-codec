@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 80 | 0.4.0 |  |  | **Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.** | 2 | 1 | 2 | 3 | 3 | 6 by 4 | 6.0 |
 | 171 | 0.4.0 |  | principle | **Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.** | 3 | 1 | 1 | 3 | 6 | code health by 3 | 4.4 |
 | 173 | 0.4.0 |  | principle | **Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.** | 2 | 1 | 1 | 2 | 4 | code health by 1 | 4.4 |
 | 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
@@ -50,14 +49,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 80. Name the node's path and the attribute key when `not-an-adf-document` refuses a node inside the document.
-
-Today `readAdfDocument` and the converters refuse every node, such as one with a `Date` in an
-attribute, with the message `an ADF document's content holds ADF nodes: one of them is not` and an
-empty `path`. An export tool told this about one document in thousands then searches that
-document's whole tree. Give the node's path, and name its type and the attribute key as
-`attributeNestingMessage` does. Found by the product-owner review of items 66 and 67, 2026-10-05.
 
 ### 171. Assert the facts an error message must carry, never its whole sentence, in `markdown-to-adf.test.ts`, `document.test.ts` and `html-to-adf.test.ts`.
 

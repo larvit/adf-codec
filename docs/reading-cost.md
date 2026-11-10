@@ -997,3 +997,20 @@ Read most (opens and searches):
 - `corpus/README.md` 1
 - `corpus/round-trip/block-nodes/expand.md` 1
 - `corpus/round-trip/block-nodes/panel.md` 1
+
+## Reading cost, chunk a9b6ac0f3bd0, finished 2026-11-10T20:45:20Z
+
+92724 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 10
+- `src/markdown/parse/blocks.ts` 8
+- `docs/decisions.md` 6
+- `MIGRATION.md` 5
+- `spec/flavour.md` 4
+- `src/markdown/parse/markdown-to-adf.test.ts` 3
+- `todo.md` 3
+- `CHANGELOG.md` 2
+- `src/markdown/emit/escaping.test.ts` 2
+- `src/markdown/pipe-table-syntax.ts` 2
