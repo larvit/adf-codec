@@ -26,7 +26,7 @@ import { readTextDirective } from './directive/text.ts'
 // Only a `paragraph` block takes `image`, the `mediaSingle` a lone image builds; every other container takes `nodes`, where the image is its linked alt text.
 export type InlineContent = { image?: AdfNode; nodes: AdfNode[] }
 
-// `openingSpellableLink`: a directive link opens the paragraph that CommonMark could spell; `parse/` asks the writer whether the line still needs the directive.
+// `openingSpellableLink`: the paragraph opens with a directive link that CommonMark could spell.
 export type OutermostContent = InlineContent & { openingSpellableLink: boolean }
 
 // The text break leaf: it holds no marks, and stands between the nodes it parts until the outermost content checks and drops it.
@@ -132,7 +132,7 @@ export function parseInlineContent(source: string, definitions: LinkDefinitions,
   return success(image === undefined ? { nodes: nodes.value, openingSpellableLink } : { image, nodes: nodes.value, openingSpellableLink })
 }
 
-// A read-back never asks the writer for anything: the writer calls it while it spells a line. The reading of a line that faults still holds what the reader took before the fault.
+// The reading of a line that faults still holds what the reader took before the fault.
 export function readLineBack(line: string, container: LineContainer, claims: Claims): { faulted: boolean; reading: InlineReading } {
   const reading: InlineReading = { codeSpans: [], emphasis: new Map(), links: [] }
   const scan = freshScan(line, { definitions: noDefinitions, path: [], reading, targets: targetMemo(line) }, { claims, container, inLink: false, offset: 0, spans: noSpans })
@@ -271,7 +271,7 @@ function directiveMarkPieces(scan: Scan, name: string, mark: AdfMark, slot: read
   return success([...marked.filter((piece) => piece.kind === 'nodes'), ...besideLink(images, link)])
 }
 
-// spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens, which `parse/` asks the writer once `parseInlineContent` reports the opening.
+// spec/flavour.md, Marks. A link opening a paragraph may still need the directive form for the line it opens.
 function refuseLinkDirective(scan: Scan, mark: AdfMark, nodes: readonly Inline[], index: number): Result<Piece[]> | undefined {
   const href = linkHref(nodeAttrs(mark))
   if (href === undefined) return failure('unsupported-node-shape', hreflessLink, scan.shared.path)
