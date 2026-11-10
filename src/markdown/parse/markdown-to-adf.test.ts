@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
-import type { ParseError, Result, SourcePosition } from '../../result.ts'
+import type { ConvertErrorCode, ParseError, Result, SourcePosition } from '../../result.ts'
 import { commonMarkToAdf, losslessMarkdownToAdf } from './markdown-to-adf.ts'
 import { largestNesting } from '../../nesting.ts'
 import { portableMarkdownToAdf } from '../portable/portable-markdown-to-adf.ts'
@@ -26,6 +26,13 @@ function path(result: Result<AdfDocument>): readonly (number | string)[] {
 
 function position(result: Result<AdfDocument, ParseError>): SourcePosition | string {
   return result.ok ? 'built' : result.error.position
+}
+
+// A message is free text: a refusal pins its code and only the facts the message must name.
+function refused(result: Result<AdfDocument>, errorCode: ConvertErrorCode, ...facts: string[]): void {
+  assert.equal(code(result), errorCode)
+  const message = result.ok ? '' : result.error.message
+  for (const fact of facts) assert.ok(message.includes(fact), `${JSON.stringify(message)} names ${fact}`)
 }
 
 function text(value: string): AdfNode {
@@ -96,10 +103,9 @@ test('refuses a value that is not a string, in every reader, at the start of the
   const found: [unknown, string][] = [[null, 'null'], [undefined, 'undefined'], [42, 'a number'], [10n, 'a bigint'], [['x'], 'an object'], [revoked.proxy, 'an object']]
   for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
     for (const [value, described] of found) {
-      assert.deepEqual(Reflect.apply(read, undefined, [value]), {
-        error: { code: 'not-a-string', message: `markdown is a string: found ${described}`, path: [], position: { line: 1, offset: 0 } },
-        ok: false,
-      })
+      const result = Reflect.apply(read, undefined, [value])
+      refused(result, 'not-a-string', 'a string', `found ${described}`)
+      assert.deepEqual([path(result), position(result)], [[], { line: 1, offset: 0 }])
     }
     assert.notStrictEqual(position(Reflect.apply(read, undefined, [null])), position(Reflect.apply(read, undefined, [null])))
   }
@@ -133,19 +139,16 @@ test('builds an empty document from input holding no block, and one holding no c
   assert.deepEqual(losslessMarkdownToAdf('\n \n\t\n'), { ok: true, value: { content: [], type: 'doc', version: 1 } })
   assert.deepEqual(losslessMarkdownToAdf('!adf:doc {content=none}\n'), { ok: true, value: { type: 'doc', version: 1 } })
   assert.deepEqual(losslessMarkdownToAdf('\n!adf:doc {content=none}\n\n'), { ok: true, value: { type: 'doc', version: 1 } })
-  const form = 'unsupported-node-shape: doc spells the one form !adf:doc {content=none}: this one spells another'
-  assert.equal(content(losslessMarkdownToAdf('!adf:doc\n')), form)
-  assert.equal(content(losslessMarkdownToAdf('!adf:doc x {content=none}\n')), form)
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:doc {content=empty}\n')),
-    'unsupported-node-shape: an empty document is empty markdown, and !adf:doc {content=none} spells a document holding no content key: this one spells content=empty',
-  )
-  assert.equal(content(losslessMarkdownToAdf('!adf:doc {content="none"}\n')), form)
-  const alone = 'unsupported-node-shape: delete the !adf:doc {content=none} line to give the document content: it stands only as the whole document'
-  assert.equal(content(losslessMarkdownToAdf('x\n\n!adf:doc {content=none}\n')), alone)
-  assert.equal(content(losslessMarkdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n')), alone)
-  assert.equal(content(losslessMarkdownToAdf('!adf:doc\n!adf:/doc\n')), 'malformed-directive: doc takes no body, so no !adf:/doc closes it; \\!adf: keeps the prefix literal')
-  assert.equal(content(losslessMarkdownToAdf('a !adf:doc{content=none}\n')), 'unsupported-node-shape: doc takes the block form, !adf:doc, never the inline form')
+  const form = ['!adf:doc {content=none}']
+  refused(losslessMarkdownToAdf('!adf:doc\n'), 'unsupported-node-shape', ...form)
+  refused(losslessMarkdownToAdf('!adf:doc x {content=none}\n'), 'unsupported-node-shape', ...form)
+  refused(losslessMarkdownToAdf('!adf:doc {content=empty}\n'), 'unsupported-node-shape', 'empty markdown', '!adf:doc {content=none}', 'content=empty')
+  refused(losslessMarkdownToAdf('!adf:doc {content="none"}\n'), 'unsupported-node-shape', ...form)
+  const alone = ['delete the !adf:doc {content=none} line', 'whole document']
+  refused(losslessMarkdownToAdf('x\n\n!adf:doc {content=none}\n'), 'unsupported-node-shape', ...alone)
+  refused(losslessMarkdownToAdf('!adf:panel info\n!adf:doc {content=none}\n!adf:/panel\n'), 'unsupported-node-shape', ...alone)
+  refused(losslessMarkdownToAdf('!adf:doc\n!adf:/doc\n'), 'malformed-directive', '!adf:/doc', '\\!adf:')
+  refused(losslessMarkdownToAdf('a !adf:doc{content=none}\n'), 'unsupported-node-shape', '!adf:doc', 'inline form')
 })
 
 test('builds one paragraph from the lines a blank line does not part', () => {
@@ -209,15 +212,12 @@ test('reads the codeBlock directive body as the node content, the info string it
 })
 
 test('names the slot a codeBlock spells its language outside of', () => {
-  const slot = 'unsupported-node-shape: codeBlock spells its language in the fence info string, or in the attribute where no info string carries it back'
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n')), "unsupported-node-shape: move language=rust to the fences' info strings: they can spell this language")
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:codeBlock {language="c sharp"}\n```\nx\n```\n```\ny\n```\n!adf:/codeBlock\n')),
-    "unsupported-node-shape: move language=\"c sharp\" to the fences' info strings: they can spell this language",
-  )
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n')), slot)
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n')), slot)
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n')), slot)
+  const slot = ['codeBlock', 'info string']
+  refused(losslessMarkdownToAdf('!adf:codeBlock {language=rust wrap=true}\n```\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'language=rust', 'info strings')
+  refused(losslessMarkdownToAdf('!adf:codeBlock {language="c sharp"}\n```\nx\n```\n```\ny\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'language="c sharp"', 'info strings')
+  refused(losslessMarkdownToAdf('!adf:codeBlock {language=rust}\n```sql\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
+  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```adf:x\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
+  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n```a\\b\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', ...slot)
 })
 
 test('reads a pipe table into the header row and the body rows under it', () => {
@@ -245,23 +245,23 @@ test('claims the line a pipe opens and gives the rest back to the block walk', (
 })
 
 test('names the pipe table a claimed line does not spell', () => {
-  assert.equal(content(losslessMarkdownToAdf('| a | b |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text')
-  assert.equal(content(losslessMarkdownToAdf('| a |\n| x |\n')), 'malformed-pipe-table: a pipe table underlines its header with a row of `-` runs: this one has none; \\| at the start of every row keeps them literal text')
-  assert.equal(content(losslessMarkdownToAdf('| a | b |\n| :--- | ---: |\n')), 'malformed-pipe-table: a pipe table carries no column alignment ADF could hold: this delimiter row holds an alignment colon')
-  assert.equal(content(losslessMarkdownToAdf('| a | b |\n| --- |\n')), 'malformed-pipe-table: a pipe table row holds 1 cell where its header holds 2 cells')
-  assert.equal(content(losslessMarkdownToAdf('| a |\n| --- |\n| b | c |\n')), 'malformed-pipe-table: a pipe table row holds 2 cells where its header holds 1 cell')
+  refused(losslessMarkdownToAdf('| a | b |\n'), 'malformed-pipe-table', '`-`', '\\|')
+  refused(losslessMarkdownToAdf('| a |\n| x |\n'), 'malformed-pipe-table', '`-`', '\\|')
+  refused(losslessMarkdownToAdf('| a | b |\n| :--- | ---: |\n'), 'malformed-pipe-table', 'alignment colon')
+  refused(losslessMarkdownToAdf('| a | b |\n| --- |\n'), 'malformed-pipe-table', '1 cell', '2 cells')
+  refused(losslessMarkdownToAdf('| a |\n| --- |\n| b | c |\n'), 'malformed-pipe-table', '2 cells', '1 cell')
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n| a |\n')), ['content', 1])
 })
 
 test('names the pipe table whose rows open with no pipe', () => {
-  const bare = 'malformed-pipe-table: a pipe table opens every row with `|`: this one does not; \\| keeps a pipe literal text'
-  assert.equal(content(losslessMarkdownToAdf('a | b\n--- | ---\n')), bare)
-  assert.equal(content(losslessMarkdownToAdf('Intro.\na | b\n--- | ---\n')), bare)
-  assert.equal(content(losslessMarkdownToAdf('a | b\n--- | ---\n===\n')), bare)
-  assert.equal(content(losslessMarkdownToAdf('a | b\n:--- | ---:\n')), bare)
-  assert.equal(content(losslessMarkdownToAdf('a |\n--- |\n')), bare)
+  const bare = ['`|`', '\\|']
+  refused(losslessMarkdownToAdf('a | b\n--- | ---\n'), 'malformed-pipe-table', ...bare)
+  refused(losslessMarkdownToAdf('Intro.\na | b\n--- | ---\n'), 'malformed-pipe-table', ...bare)
+  refused(losslessMarkdownToAdf('a | b\n--- | ---\n===\n'), 'malformed-pipe-table', ...bare)
+  refused(losslessMarkdownToAdf('a | b\n:--- | ---:\n'), 'malformed-pipe-table', ...bare)
+  refused(losslessMarkdownToAdf('a |\n--- |\n'), 'malformed-pipe-table', ...bare)
   assert.deepEqual(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\nc\n')), [table(row(cell('tableHeader', text('a')), cell('tableHeader', text('b')))), paragraph('c')])
-  assert.equal(content(losslessMarkdownToAdf('| a | b |\n| --- | --- |\n| c |\n')), 'malformed-pipe-table: a pipe table row holds 1 cell where its header holds 2 cells')
+  refused(losslessMarkdownToAdf('| a | b |\n| --- | --- |\n| c |\n'), 'malformed-pipe-table', '1 cell', '2 cells')
   assert.deepEqual(content(losslessMarkdownToAdf('a | b\nc | d\n')), [paragraph('a | b c | d')])
   assert.deepEqual(content(losslessMarkdownToAdf('a | b\n--- | --- | ---\n')), [paragraph('a | b --- | --- | ---')])
   assert.deepEqual(content(losslessMarkdownToAdf('a \\| b\n--- | ---\n')), [paragraph('a | b --- | ---')])
@@ -270,11 +270,11 @@ test('names the pipe table whose rows open with no pipe', () => {
 })
 
 test('gives back the refusal an inline body holds, never the shape check above it', () => {
-  const bare = 'malformed-pipe-table: a pipe table opens every row with `|`: this one does not; \\| keeps a pipe literal text'
-  assert.equal(content(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n')), bare)
+  const bare = ['`|`', '\\|']
+  refused(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n'), 'malformed-pipe-table', ...bare)
   assert.deepEqual(position(losslessMarkdownToAdf('!adf:caption\na | b\n--- | ---\n!adf:/caption\n')), { line: 2, offset: 13 })
   assert.equal(code(losslessMarkdownToAdf('!adf:caption\n| a |\n!adf:/caption\n')), 'malformed-pipe-table')
-  assert.equal(content(losslessMarkdownToAdf('!adf:caption\n- a\n!adf:/caption\n')), 'unsupported-node-shape: caption takes one paragraph as its body: this body is not one')
+  refused(losslessMarkdownToAdf('!adf:caption\n- a\n!adf:/caption\n'), 'unsupported-node-shape', 'caption', 'one paragraph')
 })
 
 test('reads a change of bullet character or ordered delimiter as a second list, in every reader', () => {
@@ -314,7 +314,7 @@ test('claims a block line the prefix opens with no directive to parse it', () =>
   assert.equal(code(losslessMarkdownToAdf('!adf:/panel\n')), 'malformed-directive')
   assert.equal(code(losslessMarkdownToAdf('!adf:panel  info\n')), 'malformed-directive')
   assert.equal(code(losslessMarkdownToAdf('!adf:panel {a=1 a=2}\n!adf:/panel\n')), 'malformed-directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:Panel\n')), 'malformed-directive: an unescaped !adf: completes no directive; \\!adf: keeps the prefix literal')
+  refused(losslessMarkdownToAdf('!adf:Panel\n'), 'malformed-directive', '\\!adf:')
   assert.deepEqual(content(losslessMarkdownToAdf(':::panel info\nPart.\n:::\n')), [paragraph(':::panel info Part. :::')])
   assert.deepEqual(content(losslessMarkdownToAdf('::rule\n')), [paragraph('::rule')])
 })
@@ -334,74 +334,58 @@ test('reads the three directive forms into the nodes the tables name', () => {
 })
 
 test('names the CommonMark spelling to write for the directive form a node CommonMark spells', () => {
-  const named = (type: string, spelling: string): string => `unsupported-node-shape: ${type} takes the CommonMark spelling, not the directive form: write ${spelling}`
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule\n')), named('rule', '`---`'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n')), named('blockquote', 'each line behind `> `'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n')), named('heading', 'one `#` per level before its text, `## Title` at level 2'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n')), named('paragraph', 'its text alone'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n')), named('bulletList', 'each item behind `- `, or behind `* ` where the list right before it takes `- `'))
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:orderedList {order=5}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n')),
-    named('orderedList', 'each item behind its number, counting up from `5. `, or from `5) ` where the list right before it takes `.`'),
-  )
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n')), named('codeBlock', 'its text in a fence of more backticks than any run it holds, its language after the opening fence'))
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:mediaSingle {layout=center}\n!adf:media {alt=a type=external url=u}\n!adf:/mediaSingle\n')),
-    named('mediaSingle', '`![alt](url)`, or `[![alt](url)](href)` when linked'),
-  )
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:table\n!adf:tableRow\n!adf:tableHeader\nPart.\n!adf:/tableHeader\n!adf:/tableRow\n!adf:/table\n')),
-    named('table', 'a pipe table'),
-  )
+  refused(losslessMarkdownToAdf('!adf:rule\n'), 'unsupported-node-shape', 'rule', '`---`')
+  refused(losslessMarkdownToAdf('!adf:blockquote\nPart.\n!adf:/blockquote\n'), 'unsupported-node-shape', 'blockquote', 'each line behind `> `')
+  refused(losslessMarkdownToAdf('!adf:heading {level=2}\nPart.\n!adf:/heading\n'), 'unsupported-node-shape', 'heading', '`## Title`')
+  refused(losslessMarkdownToAdf('!adf:paragraph\nPart.\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'its text alone')
+  refused(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/bulletList\n'), 'unsupported-node-shape', 'bulletList', 'behind `- `', 'behind `* `')
+  refused(losslessMarkdownToAdf('!adf:orderedList {order=5}\n!adf:listItem\nPart.\n!adf:/listItem\n!adf:/orderedList\n'), 'unsupported-node-shape', 'orderedList', '`5. `', '`5) `')
+  refused(losslessMarkdownToAdf('!adf:codeBlock\n```\nx\n```\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'fence')
+  refused(losslessMarkdownToAdf('!adf:mediaSingle {layout=center}\n!adf:media {alt=a type=external url=u}\n!adf:/mediaSingle\n'), 'unsupported-node-shape', 'mediaSingle', '`![alt](url)`', '`[![alt](url)](href)`')
+  refused(losslessMarkdownToAdf('!adf:table\n!adf:tableRow\n!adf:tableHeader\nPart.\n!adf:/tableHeader\n!adf:/tableRow\n!adf:/table\n'), 'unsupported-node-shape', 'table', 'a pipe table')
   // The item whose first line reads back as a thematic break keeps the directive form the emitter falls back to.
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:bulletList\n!adf:listItem\n---\n!adf:/listItem\n!adf:/bulletList\n')), [bulletList(item({ type: 'rule' }))])
 })
 
 test('refuses the directive form of a blockquote opening with a code span', () => {
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n')),
-    'unsupported-node-shape: blockquote takes the CommonMark spelling, not the directive form: write each line behind `> `',
-  )
+  refused(losslessMarkdownToAdf('!adf:blockquote\n` `` `\n!adf:/blockquote\n'), 'unsupported-node-shape', 'blockquote', 'each line behind `> `')
 })
 
 // The input is some 1000 characters short of V8's longest string; the `> ` the quote adds to each of its 600 lines passes it. Reading this much outlasts Bun's 5 s default timeout.
 test('refuses a blockquote directive whose CommonMark spelling would pass V8\'s longest string', { timeout: 120_000 }, () => {
   const fence = `\`\`\`\n${`${'a'.repeat(894_782)}\n`.repeat(300)}\`\`\`\n`
-  const refused = losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`)
-  assert.equal(code(refused), 'unsupported-node-shape')
-  assert.equal(refused.ok ? '' : refused.error.message.includes('536870888'), true)
+  refused(losslessMarkdownToAdf(`!adf:blockquote\n${fence}\n${fence}!adf:/blockquote\n`), 'unsupported-node-shape', '536870888')
 })
 
 test('names the directive name no node reads back to', () => {
   assert.equal(code(losslessMarkdownToAdf('!adf:widget info\nx\n!adf:/widget\n')), 'unknown-directive-name')
-  assert.equal(content(losslessMarkdownToAdf('!adf:widget\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\!adf: keeps the prefix literal')
-  assert.equal(content(losslessMarkdownToAdf('!adf:widget[x]\n')), 'unknown-directive-name: the directive name widget reads back to no node; \\!adf: keeps the prefix literal')
-  assert.equal(content(losslessMarkdownToAdf('ratio a!adf:b[c]{d}\n')), 'malformed-directive: an attribute reads key=value, the value bare or double-quoted: this one does not; \\!adf: keeps the prefix literal')
+  refused(losslessMarkdownToAdf('!adf:widget\n'), 'unknown-directive-name', 'widget', '\\!adf:')
+  refused(losslessMarkdownToAdf('!adf:widget[x]\n'), 'unknown-directive-name', 'widget', '\\!adf:')
+  refused(losslessMarkdownToAdf('ratio a!adf:b[c]{d}\n'), 'malformed-directive', 'key=value', '\\!adf:')
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\n!adf:widget\n')), ['content', 1])
 })
 
 test('names the container no closer closes inside the block holding it', () => {
-  const unclosed = (name: string): string => `malformed-directive: the ${name} container is unclosed: no !adf:/${name} follows inside the block holding it; \\!adf: keeps the prefix literal`
-  assert.equal(content(losslessMarkdownToAdf('Part.\n!adf:expand\n')), unclosed('expand'))
+  const unclosed = (name: string): string[] => [`${name} container is unclosed`, `!adf:/${name}`, '\\!adf:']
+  refused(losslessMarkdownToAdf('Part.\n!adf:expand\n'), 'malformed-directive', ...unclosed('expand'))
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n!adf:expand\n')), ['content', 1])
-  assert.equal(content(losslessMarkdownToAdf('!adf:bulletList\n')), unclosed('bulletList'))
-  assert.equal(content(losslessMarkdownToAdf('- !adf:panel info\n  Part.\n!adf:/panel\n')), unclosed('panel'))
-  assert.equal(content(losslessMarkdownToAdf('> !adf:panel info\n> - a\n>   !adf:/panel\n')), unclosed('panel'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n')), unclosed('expand'))
+  refused(losslessMarkdownToAdf('!adf:bulletList\n'), 'malformed-directive', ...unclosed('bulletList'))
+  refused(losslessMarkdownToAdf('- !adf:panel info\n  Part.\n!adf:/panel\n'), 'malformed-directive', ...unclosed('panel'))
+  refused(losslessMarkdownToAdf('> !adf:panel info\n> - a\n>   !adf:/panel\n'), 'malformed-directive', ...unclosed('panel'))
+  refused(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n'), 'malformed-directive', ...unclosed('expand'))
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:panel info\n!adf:expand\nPart.\n!adf:/panel\n')), ['content', 0, 'content', 0])
 })
 
 test('names the closer that finds no container open where it stands', () => {
-  const unopened = (name: string): string => `malformed-directive: the closer !adf:/${name} closes no ${name} container open where it stands; \\!adf: keeps the prefix literal`
-  assert.equal(content(losslessMarkdownToAdf('Part.\n\n!adf:/panel\n')), unopened('panel'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:panel info\n> !adf:/panel\n!adf:/panel\n')), unopened('panel'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:panel info\n- !adf:/panel\n!adf:/panel\n')), unopened('panel'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:panel info\nPart.\n!adf:/expand\n!adf:/panel\n')), unopened('expand'))
+  const unopened = (name: string): string[] => [`!adf:/${name} closes no ${name}`, '\\!adf:']
+  refused(losslessMarkdownToAdf('Part.\n\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
+  refused(losslessMarkdownToAdf('!adf:panel info\n> !adf:/panel\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
+  refused(losslessMarkdownToAdf('!adf:panel info\n- !adf:/panel\n!adf:/panel\n'), 'malformed-directive', ...unopened('panel'))
+  refused(losslessMarkdownToAdf('!adf:panel info\nPart.\n!adf:/expand\n!adf:/panel\n'), 'malformed-directive', ...unopened('expand'))
 })
 
 test('names the leaf given a body at its opener, ahead of any refusal the leaf holds itself', () => {
-  const body = (name: string): string => `malformed-directive: ${name} takes no body, so no !adf:/${name} closes it; \\!adf: keeps the prefix literal`
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n')), body('rule'))
+  refused(losslessMarkdownToAdf('!adf:rule\nPart.\n!adf:/rule\n'), 'malformed-directive', '!adf:/rule', '\\!adf:')
   assert.deepEqual(position(losslessMarkdownToAdf('Part.\n\n!adf:rule\nPart.\n!adf:/rule\n')), { line: 3, offset: 7 })
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:rule {localId=a-2}\nPart.\n!adf:/rule\n')), ['content', 1])
   assert.deepEqual(path(losslessMarkdownToAdf('!adf:rule {localId=a-1}\n!adf:/rule\n!adf:/rule\n')), ['content', 0])
@@ -410,21 +394,21 @@ test('names the leaf given a body at its opener, ahead of any refusal the leaf h
 })
 
 test('names the position a directive name the other one spells belongs to', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:em\na\n!adf:/em\n')), 'unsupported-node-shape: em is spelled _x_, never as a block directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline\n')), 'unsupported-node-shape: underline is spelled !adf:underline[…], never as a block directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:link\n')), 'unsupported-node-shape: link is spelled [x](url) or !adf:link[…], never as a block directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:text {text=" "}\n')), 'unsupported-node-shape: text takes the inline form, !adf:text{…}, never the block form')
-  assert.equal(content(losslessMarkdownToAdf('!adf:date {timestamp=1}\n')), 'unsupported-node-shape: date takes the inline form, !adf:date{…}, never the block form')
-  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph[a]\n')), 'unsupported-node-shape: paragraph takes the block form, !adf:paragraph, never the inline form')
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule[a]\n')), 'unsupported-node-shape: rule takes the block form, !adf:rule, never the inline form')
+  refused(losslessMarkdownToAdf('!adf:em\na\n!adf:/em\n'), 'unsupported-node-shape', '_x_', 'block directive')
+  refused(losslessMarkdownToAdf('!adf:underline\n'), 'unsupported-node-shape', '!adf:underline[…]', 'block directive')
+  refused(losslessMarkdownToAdf('!adf:link\n'), 'unsupported-node-shape', '[x](url)', '!adf:link[…]', 'block directive')
+  refused(losslessMarkdownToAdf('!adf:text {text=" "}\n'), 'unsupported-node-shape', '!adf:text{…}', 'block form')
+  refused(losslessMarkdownToAdf('!adf:date {timestamp=1}\n'), 'unsupported-node-shape', '!adf:date{…}', 'block form')
+  refused(losslessMarkdownToAdf('!adf:paragraph[a]\n'), 'unsupported-node-shape', '!adf:paragraph', 'inline form')
+  refused(losslessMarkdownToAdf('!adf:rule[a]\n'), 'unsupported-node-shape', '!adf:rule', 'inline form')
   assert.equal(code(losslessMarkdownToAdf('!adf:widget\na\n!adf:/widget\n')), 'unknown-directive-name')
   assert.equal(code(losslessMarkdownToAdf('!adf:widget[a]\n')), 'unknown-directive-name')
 })
 
 test('names the reserved carry name a block directive spells', () => {
-  const reserved = 'malformed-directive: the name carry is reserved for the opaque carry, whose block form is the adf: fence'
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry\n')), reserved)
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry\nx\n!adf:/carry\n')), reserved)
+  const reserved = ['carry', 'adf: fence']
+  refused(losslessMarkdownToAdf('!adf:carry\n'), 'malformed-directive', ...reserved)
+  refused(losslessMarkdownToAdf('!adf:carry\nx\n!adf:/carry\n'), 'malformed-directive', ...reserved)
   assert.deepEqual(content(losslessMarkdownToAdf('```adf\nx\n```\n')), [{ attrs: { language: 'adf' }, content: [text('x')], type: 'codeBlock' }])
   assert.deepEqual(content(losslessMarkdownToAdf('```carry\nx\n```\n')), [{ attrs: { language: 'carry' }, content: [text('x')], type: 'codeBlock' }])
 })
@@ -436,14 +420,11 @@ test('reads the carry fence back to the node its info string names and its JSON 
     { attrs: { url: 'https://example.com/x' }, type: 'blockCard' },
   ])
   assert.deepEqual(content(losslessMarkdownToAdf('```adf:\n{\n  "type": "a`b"\n}\n```\n')), [{ type: 'a`b' }])
-  assert.equal(
-    content(losslessMarkdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n')),
-    'unsupported-node-shape: the adf:blockCard fence names its node\'s type: this JSON holds a type as well; !adf:codeBlock {language="adf:blockCard"} around a bare fence keeps it a code block',
-  )
-  assert.equal(content(losslessMarkdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n')), 'unsupported-node-shape: the adf: fence holds a type its info string can carry: spell the fence adf:blockCard and drop type from the JSON')
-  assert.equal(content(losslessMarkdownToAdf('```adf:\n{}\n```\n')), "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; !adf:codeBlock {language=\"adf:\"} around a bare fence keeps it a code block")
-  const unnamed = 'unsupported-node-shape: the carry fence names a type no info string carries back: spell it adf: with the type in the JSON; !adf:codeBlock {language="adf:\\\\"} around a bare fence keeps it a code block'
-  assert.equal(content(losslessMarkdownToAdf('```adf:\\\\\n{}\n```\n')), unnamed)
+  refused(losslessMarkdownToAdf('```adf:blockCard\n{\n  "type": "blockCard"\n}\n```\n'), 'unsupported-node-shape', 'adf:blockCard', 'holds a type as well', '!adf:codeBlock {language="adf:blockCard"}')
+  refused(losslessMarkdownToAdf('```adf:\n{\n  "type": "blockCard"\n}\n```\n'), 'unsupported-node-shape', 'adf:blockCard', 'drop type')
+  refused(losslessMarkdownToAdf('```adf:\n{}\n```\n'), 'unsupported-node-shape', 'no ADF node', '!adf:codeBlock {language="adf:"}')
+  const unnamed = ['spell it adf: with the type in the JSON', '!adf:codeBlock {language="adf:\\\\"}']
+  refused(losslessMarkdownToAdf('```adf:\\\\\n{}\n```\n'), 'unsupported-node-shape', ...unnamed)
 })
 
 test('reads the inline carry back to the node its json attribute holds', () => {
@@ -460,93 +441,80 @@ test('reads an escaped JSON key as the key it spells after reading a key holding
 })
 
 test('names the invalid JSON no opaque carry holds, and the spelling that keeps it literal', () => {
-  const invalid = 'malformed-directive: the opaque carry holds invalid JSON; '
-  const fence = `${invalid}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`
-  assert.equal(content(losslessMarkdownToAdf('```adf:x\n{"attrs":\n```\n')), fence)
-  assert.equal(content(losslessMarkdownToAdf('```adf:x\n```\n')), fence)
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{"}\n')), `${invalid}\\!adf: keeps the prefix literal`)
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json=abc}\n')), `${invalid}\\!adf: keeps the prefix literal`)
+  const fence = ['invalid JSON', '!adf:codeBlock {language="adf:x"}']
+  refused(losslessMarkdownToAdf('```adf:x\n{"attrs":\n```\n'), 'malformed-directive', ...fence)
+  refused(losslessMarkdownToAdf('```adf:x\n```\n'), 'malformed-directive', ...fence)
+  refused(losslessMarkdownToAdf('!adf:carry{json="{"}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
+  refused(losslessMarkdownToAdf('!adf:carry{json=abc}\n'), 'malformed-directive', 'invalid JSON', '\\!adf:')
 })
 
 test('names the canonical spelling a carried JSON reads alone', () => {
-  const canonically = "unsupported-node-shape: the opaque carry spells its node's JSON canonically: "
-  const literal = '; \\!adf: keeps the prefix literal'
-  assert.equal(
-    content(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n')),
-    `${canonically}two-space indent, keys sorted; !adf:codeBlock {language="adf:blockCard"} around a bare fence keeps it a code block`,
-  )
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n')), `${canonically}compact, keys sorted${literal}`)
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n')), `${canonically}compact, keys sorted${literal}`)
+  const compact = ['compact, keys sorted', '\\!adf:']
+  refused(losslessMarkdownToAdf('```adf:blockCard\n{"attrs":{}}\n```\n'), 'unsupported-node-shape', 'two-space indent', '!adf:codeBlock {language="adf:blockCard"}')
+  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\": \\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...compact)
+  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"blockCard\\",\\"attrs\\":{}}"}\n'), 'unsupported-node-shape', ...compact)
 })
 
 test('refuses compact JSON in the carry fence without building its two-space spelling', () => {
   const json = `{"attrs":{"value":${'['.repeat(495)}${new Array(560_000).fill(0).join(',')}${']'.repeat(495)}}}`
-  assert.equal(
-    content(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`)),
-    "unsupported-node-shape: the opaque carry spells its node's JSON canonically: two-space indent, keys sorted; !adf:codeBlock {language=\"adf:unknownBlock\"} around a bare fence keeps it a code block",
-  )
+  refused(losslessMarkdownToAdf(`\`\`\`adf:unknownBlock\n${json}\n\`\`\`\n`), 'unsupported-node-shape', 'two-space indent', '!adf:codeBlock {language="adf:unknownBlock"}')
 })
 
 test('names the node JSON an opaque carry restores alone', () => {
-  const node = "unsupported-node-shape: the opaque carry holds one ADF node's JSON: this JSON is no ADF node; "
-  assert.equal(content(losslessMarkdownToAdf('```adf:x\n[]\n```\n')), `${node}!adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block`)
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json=null}\n')), `${node}\\!adf: keeps the prefix literal`)
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n')), `${node}\\!adf: keeps the prefix literal`)
+  refused(losslessMarkdownToAdf('```adf:x\n[]\n```\n'), 'unsupported-node-shape', 'no ADF node', '!adf:codeBlock {language="adf:x"}')
+  refused(losslessMarkdownToAdf('!adf:carry{json=null}\n'), 'unsupported-node-shape', 'no ADF node', '\\!adf:')
+  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"kind\\":\\"x\\"}"}\n'), 'unsupported-node-shape', 'no ADF node', '\\!adf:')
 })
 
 test('refuses a carry holding an inline card a link marks, whether it stands alone, in a block or in a fence', () => {
   const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
   const json = JSON.stringify(card).replaceAll('"', '\\"')
   for (const markdown of [`!adf:carry{json="${json}"}\n`, `\`\`\`adf:futureBlock\n${JSON.stringify({ content: [card] }, null, 2)}\n\`\`\`\n`]) {
-    assert.match(String(content(losslessMarkdownToAdf(markdown))), /^unsupported-node-shape: the opaque carry holds a node every writer refuses: an inlineCard takes no link mark/)
+    refused(losslessMarkdownToAdf(markdown), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
   }
 })
 
 test('refuses a carry holding a shape every writer refuses, whether it stands alone, in a block or in a fence', () => {
-  const refused = 'unsupported-node-shape: the opaque carry holds a node every writer refuses: '
-  const refusal = (markdown: string): string => String(content(losslessMarkdownToAdf(markdown))).replace(/; .*$/, '')
+  const holdsText = ['every writer refuses', 'status', 'neither content nor text']
   const status = { text: 'x', type: 'status' }
   const json = JSON.stringify(status).replaceAll('"', '\\"')
-  assert.equal(refusal(`!adf:carry{json="${json}"}\n`), `${refused}a node of type status holds neither content nor text: this one holds text`)
-  assert.equal(refusal(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), `${refused}a node of type status holds neither content nor text: this one holds text`)
-  assert.equal(refusal(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), `${refused}a node of type panel holds no text key: this one holds one`)
+  refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', ...holdsText)
+  refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [status] }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', ...holdsText)
+  refused(losslessMarkdownToAdf(`\`\`\`adf:panel\n${JSON.stringify({ text: 'x' }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'panel', 'no text key')
 })
 
 test('names the shape the inline carry reads alone', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry[x]{json="{}"}\n')), 'unsupported-node-shape: carry takes no content: this one holds some')
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{}\n')), 'unsupported-node-shape: carry holds one json attribute alone: this one does not')
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{}" localId=x}\n')), 'unsupported-node-shape: carry holds one json attribute alone: this one does not')
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="null"}\n')), 'unsupported-node-shape: carry spells its json attribute as json=null')
+  refused(losslessMarkdownToAdf('!adf:carry[x]{json="{}"}\n'), 'unsupported-node-shape', 'carry takes no content')
+  refused(losslessMarkdownToAdf('!adf:carry{}\n'), 'unsupported-node-shape', 'one json attribute')
+  refused(losslessMarkdownToAdf('!adf:carry{json="{}" localId=x}\n'), 'unsupported-node-shape', 'one json attribute')
+  refused(losslessMarkdownToAdf('!adf:carry{json="null"}\n'), 'unsupported-node-shape', 'json=null')
 })
 
 test('holds a carried JSON value to the nesting its position leaves', () => {
   const nested = (levels: number): string => `${'['.repeat(levels)}${']'.repeat(levels)}`
   const fence = (prefix: string, levels: number): string => `${prefix}\`\`\`adf:x\n${prefix}${nested(levels)}\n${prefix}\`\`\`\n`
-  const deeper = (levels: number): string => `unsupported-nesting-depth: a carried node's JSON nests deeper than the ${levels} levels its position leaves`
-  assert.equal(content(losslessMarkdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`)), deeper(largestNesting))
-  assert.equal(
-    content(losslessMarkdownToAdf(fence('', largestNesting + 1))),
-    'unsupported-node-shape: the opaque carry spells its node\'s JSON canonically: two-space indent, keys sorted; !adf:codeBlock {language="adf:x"} around a bare fence keeps it a code block',
-  )
-  assert.equal(content(losslessMarkdownToAdf(fence('> ', largestNesting + 1))), deeper(largestNesting - 1))
+  const deeper = (levels: number): string[] => [`deeper than the ${levels} levels`]
+  refused(losslessMarkdownToAdf(`!adf:carry{json="${nested(largestNesting + 2)}"}\n`), 'unsupported-nesting-depth', ...deeper(largestNesting))
+  refused(losslessMarkdownToAdf(fence('', largestNesting + 1)), 'unsupported-node-shape', 'two-space indent', '!adf:codeBlock {language="adf:x"}')
+  refused(losslessMarkdownToAdf(fence('> ', largestNesting + 1)), 'unsupported-nesting-depth', ...deeper(largestNesting - 1))
 })
 
 test('names the number no JSON spelling carries in an opaque carry', () => {
-  const named = 'unsupported-node-shape: the opaque carry holds a number JSON cannot spell'
-  assert.equal(content(losslessMarkdownToAdf('!adf:carry{json="{\\"attrs\\":{\\"width\\":1e999},\\"type\\":\\"blockCard\\"}"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('```adf:x\n1e999\n```\n')), named)
+  const named = ['a number JSON cannot spell']
+  refused(losslessMarkdownToAdf('!adf:carry{json="{\\"attrs\\":{\\"width\\":1e999},\\"type\\":\\"blockCard\\"}"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('```adf:x\n1e999\n```\n'), 'unsupported-node-shape', ...named)
 })
 
 test('names the mark spelling no opaque carry sits inside', () => {
-  const named = 'unsupported-node-shape: move the opaque carry, or the node spelling marks=empty, out of the mark spelling: it holds its own marks'
-  assert.equal(content(losslessMarkdownToAdf(`_a ${carried} b_\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`**${carried}**\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`~~a ${carried}~~\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`[a ${carried} b](https://example.com/x)\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`[*<http://x/>${carried}*](/w)\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`!adf:underline[${carried}]\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`!adf:textColor[a ${carried}]{color="#ae2e24"}\n`)), named)
-  assert.equal(content(losslessMarkdownToAdf(`![_a ${carried}_](https://example.com/i)\n`)), named)
+  const named = ['marks=empty', 'out of the mark spelling']
+  refused(losslessMarkdownToAdf(`_a ${carried} b_\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`**${carried}**\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`~~a ${carried}~~\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`[a ${carried} b](https://example.com/x)\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`[*<http://x/>${carried}*](/w)\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`!adf:underline[${carried}]\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`!adf:textColor[a ${carried}]{color="#ae2e24"}\n`), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf(`![_a ${carried}_](https://example.com/i)\n`), 'unsupported-node-shape', ...named)
 })
 
 test('keeps the carry a mark spelling does not wrap', () => {
@@ -588,74 +556,73 @@ test('reads the reserved marks key as a JSON array where a mark is one the table
 })
 
 test('names the marks key no marks read back from', () => {
-  const array = 'unsupported-node-shape: the marks attribute of rule is its marks array in canonical JSON: this one is not'
-  const named = 'unsupported-node-shape: the marks attribute of rule names its marks one space apart, each as its type and any {attrs}: this one does not'
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n')), array)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n')), array)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="{}"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em  strong"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em "}\n')), named)
-  const inBreakout = (cause: string): string => `unsupported-node-shape: the breakout mark in the marks attribute of rule: ${cause}`
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=1 mode=wide}"}\n')), inBreakout('the {attrs} keys read in alphabetical order: mode before width'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode}"}\n')), inBreakout('an attribute reads key=value, the value bare or double-quoted: this one does not'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide\\"x\\"}"}\n')), inBreakout('an attribute reads key=value, the value bare or double-quoted: this one does not'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=}"}\n')), inBreakout('an attribute reads key=value, the value bare or double-quoted: this one does not'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide"}\n')), inBreakout('the {attrs} closing brace is missing'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}strong"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n')), 'unsupported-node-shape: the reserved key attrs takes only the value empty: this one spells attrs=x')
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks=x}\n')), 'unsupported-node-shape: the marks attribute of rule names x, no mark the flavour lists: write the marks as their JSON array, marks="[{\\"type\\":\\"x\\"}]"')
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=wide}"}\n')), 'unsupported-node-shape: the width attribute of breakout is no number')
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{bogus=1}"}\n')), 'unsupported-node-shape: breakout holds no bogus attribute: this one spells it')
+  const array = ['marks', 'rule', 'canonical JSON']
+  const named = ['marks', 'rule', 'one space apart']
+  refused(losslessMarkdownToAdf('!adf:rule {marks="[]"}\n'), 'unsupported-node-shape', ...array)
+  refused(losslessMarkdownToAdf('!adf:rule {marks="[1]"}\n'), 'unsupported-node-shape', ...array)
+  refused(losslessMarkdownToAdf('!adf:rule {marks="{}"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:rule {marks="em  strong"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:rule {marks="em "}\n'), 'unsupported-node-shape', ...named)
+  const inBreakout = ['breakout', 'marks', 'rule']
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=1 mode=wide}"}\n'), 'unsupported-node-shape', ...inBreakout, 'mode before width')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide\\"x\\"}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=}"}\n'), 'unsupported-node-shape', ...inBreakout, 'key=value')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=wide"}\n'), 'unsupported-node-shape', ...inBreakout, 'closing brace')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=empty}strong"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:rule {marks="em{attrs=x}"}\n'), 'unsupported-node-shape', 'attrs', 'empty', 'attrs=x')
+  refused(losslessMarkdownToAdf('!adf:rule {marks=x}\n'), 'unsupported-node-shape', 'names x', 'marks="[{\\"type\\":\\"x\\"}]"')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{width=wide}"}\n'), 'unsupported-node-shape', 'width', 'breakout', 'no number')
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{bogus=1}"}\n'), 'unsupported-node-shape', 'breakout', 'bogus')
 })
 
 test('names the marks key spelled outside the canonical form', () => {
-  const spells = (spelling: string): string => `unsupported-node-shape: rule spells its marks attribute as marks=${spelling}`
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"}]"}\n')), spells('em'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n')), spells('"em{attrs=empty}"'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n')), spells('"em{attrs=empty}"'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em{}"}\n')), spells('em'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="em"}\n')), spells('em'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=\\"wide\\"}"}\n')), 'unsupported-node-shape: breakout spells its mode attribute as mode=wide')
+  const spells = (spelling: string): string[] => ['rule', `marks=${spelling}`]
+  refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\"}]"}\n'), 'unsupported-node-shape', ...spells('em'))
+  refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"attrs\\":{},\\"type\\":\\"em\\"}]"}\n'), 'unsupported-node-shape', ...spells('"em{attrs=empty}"'))
+  refused(losslessMarkdownToAdf('!adf:rule {marks="[{\\"type\\":\\"em\\",\\"attrs\\":{}}]"}\n'), 'unsupported-node-shape', ...spells('"em{attrs=empty}"'))
+  refused(losslessMarkdownToAdf('!adf:rule {marks="em{}"}\n'), 'unsupported-node-shape', ...spells('em'))
+  refused(losslessMarkdownToAdf('!adf:rule {marks="em"}\n'), 'unsupported-node-shape', ...spells('em'))
+  refused(losslessMarkdownToAdf('!adf:rule {marks="breakout{mode=\\"wide\\"}"}\n'), 'unsupported-node-shape', 'breakout', 'mode=wide')
 })
 
 test('names the attribute a node holds no reading for', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {bogus=1}\n')), 'unsupported-node-shape: rule holds no bogus attribute: this one spells it')
-  assert.equal(content(losslessMarkdownToAdf('!adf:media {width=wide}\n')), 'unsupported-node-shape: the width attribute of media is no number')
-  assert.equal(content(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=yes}\n!adf:/table\n')), 'unsupported-node-shape: the isNumberColumnEnabled attribute of table is no boolean')
-  assert.equal(content(losslessMarkdownToAdf('!adf:media {width=true}\n')), 'unsupported-node-shape: the width attribute of media is no number')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,"}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no comma list of numbers')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[]"}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no comma list of numbers')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,\\"420\\"]"}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no comma list of numbers')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth=""}\n!adf:/tableCell\n')), 'unsupported-node-shape: the colwidth attribute of tableCell is no comma list of numbers')
-  assert.equal(content(losslessMarkdownToAdf('!adf:panel info {panelType=note}\nx\n!adf:/panel\n')), 'unsupported-node-shape: panel spells its panelType attribute as the directive argument, never in {attrs}')
-  assert.equal(content(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
+  refused(losslessMarkdownToAdf('!adf:rule {bogus=1}\n'), 'unsupported-node-shape', 'rule', 'bogus')
+  refused(losslessMarkdownToAdf('!adf:media {width=wide}\n'), 'unsupported-node-shape', 'width', 'media', 'no number')
+  refused(losslessMarkdownToAdf('!adf:table {isNumberColumnEnabled=yes}\n!adf:/table\n'), 'unsupported-node-shape', 'isNumberColumnEnabled', 'table', 'no boolean')
+  refused(losslessMarkdownToAdf('!adf:media {width=true}\n'), 'unsupported-node-shape', 'width', 'media', 'no number')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340,"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,\\"420\\"]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth=""}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth', 'tableCell', 'comma list of numbers')
+  refused(losslessMarkdownToAdf('!adf:panel info {panelType=note}\nx\n!adf:/panel\n'), 'unsupported-node-shape', 'panelType', 'directive argument')
+  refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
 })
 
 test('names the depth an attribute value nests past, never the kind the JSON reads as', () => {
   const nested = (levels: number): string => `${'['.repeat(levels)}1${']'.repeat(levels)}`
-  const deeper = (key: string, type: string): string =>
-    `unsupported-nesting-depth: the ${key} attribute of ${type} nests deeper than the ${largestNesting} levels an attribute carries`
-  assert.equal(content(losslessMarkdownToAdf(`!adf:extension {parameters="${nested(largestNesting + 1)}"}\n`)), deeper('parameters', 'extension'))
-  assert.equal(content(losslessMarkdownToAdf(`!adf:rule {marks="${nested(largestNesting + 1)}"}\n`)), deeper('marks', 'rule'))
-  assert.equal(content(losslessMarkdownToAdf(`!adf:rule {marks="[{\\"attrs\\":{\\"deep\\":${nested(largestNesting - 2)}},\\"type\\":\\"em\\"}]"}\n`)), deeper('marks', 'rule'))
-  assert.equal(content(losslessMarkdownToAdf(`!adf:media {width="${nested(largestNesting + 1)}"}\n`)), 'unsupported-node-shape: the width attribute of media is no number')
+  const deeper = (key: string, type: string): string[] => [`the ${key} attribute of ${type}`, `${largestNesting} levels`]
+  refused(losslessMarkdownToAdf(`!adf:extension {parameters="${nested(largestNesting + 1)}"}\n`), 'unsupported-nesting-depth', ...deeper('parameters', 'extension'))
+  refused(losslessMarkdownToAdf(`!adf:rule {marks="${nested(largestNesting + 1)}"}\n`), 'unsupported-nesting-depth', ...deeper('marks', 'rule'))
+  refused(losslessMarkdownToAdf(`!adf:rule {marks="[{\\"attrs\\":{\\"deep\\":${nested(largestNesting - 2)}},\\"type\\":\\"em\\"}]"}\n`), 'unsupported-nesting-depth', ...deeper('marks', 'rule'))
+  refused(losslessMarkdownToAdf(`!adf:media {width="${nested(largestNesting + 1)}"}\n`), 'unsupported-node-shape', 'width', 'media', 'no number')
 })
 
 test('names the attribute value spelled outside the canonical form', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule {localId="a-1"}\n')), 'unsupported-node-shape: rule spells its localId attribute as localId=a-1')
-  assert.equal(content(losslessMarkdownToAdf('!adf:media {width="20.0"}\n')), 'unsupported-node-shape: media spells its width attribute as width=20')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340, 420"}\n!adf:/tableCell\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth="340,420"')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="340"}\n!adf:/tableCell\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth=340')
-  assert.equal(content(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,420]"}\n!adf:/tableCell\n')), 'unsupported-node-shape: tableCell spells its colwidth attribute as colwidth="340,420"')
+  refused(losslessMarkdownToAdf('!adf:rule {localId="a-1"}\n'), 'unsupported-node-shape', 'localId=a-1')
+  refused(losslessMarkdownToAdf('!adf:media {width="20.0"}\n'), 'unsupported-node-shape', 'width=20')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340, 420"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth="340,420"')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="340"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth=340')
+  refused(losslessMarkdownToAdf('!adf:tableCell {colwidth="[340,420]"}\n!adf:/tableCell\n'), 'unsupported-node-shape', 'colwidth="340,420"')
 })
 
 test('names the argument and the body a node takes no reading for', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:rule x\n')), 'unsupported-node-shape: rule takes no argument: this one spells one')
-  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\nOne.\n\nTwo.\n!adf:/paragraph\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
-  assert.equal(content(losslessMarkdownToAdf('!adf:paragraph\n---\n!adf:/paragraph\n')), 'unsupported-node-shape: paragraph takes one paragraph as its body: this body is not one')
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes code blocks as its body: this body holds another block')
-  assert.equal(content(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n!adf:/codeBlock\n')), 'unsupported-node-shape: codeBlock takes code blocks as its body: this body holds none')
-  assert.equal(content(losslessMarkdownToAdf('Part !adf:date[now]{timestamp=1}.\n')), 'unsupported-node-shape: date takes no content: this one holds some')
+  refused(losslessMarkdownToAdf('!adf:rule x\n'), 'unsupported-node-shape', 'rule', 'no argument')
+  refused(losslessMarkdownToAdf('!adf:paragraph\nOne.\n\nTwo.\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'one paragraph')
+  refused(losslessMarkdownToAdf('!adf:paragraph\n---\n!adf:/paragraph\n'), 'unsupported-node-shape', 'paragraph', 'one paragraph')
+  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\nx\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'code blocks', 'another block')
+  refused(losslessMarkdownToAdf('!adf:codeBlock {wrap=true}\n!adf:/codeBlock\n'), 'unsupported-node-shape', 'codeBlock', 'code blocks', 'holds none')
+  refused(losslessMarkdownToAdf('Part !adf:date[now]{timestamp=1}.\n'), 'unsupported-node-shape', 'date', 'no content')
 })
 
 test('leaves the text that opens no directive the text it is', () => {
@@ -666,15 +633,15 @@ test('leaves the text that opens no directive the text it is', () => {
 })
 
 test('names the unescaped prefix that completes no directive', () => {
-  const named = 'malformed-directive: an unescaped !adf: completes no directive; \\!adf: keeps the prefix literal'
-  assert.equal(content(losslessMarkdownToAdf('Part !adf: here.\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('Part !adf:Mention[@A] here.\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('Part !adf:mention @A here.\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[a !adf: b]\n')), named)
+  const named = ['no directive', '\\!adf:']
+  refused(losslessMarkdownToAdf('Part !adf: here.\n'), 'malformed-directive', ...named)
+  refused(losslessMarkdownToAdf('Part !adf:Mention[@A] here.\n'), 'malformed-directive', ...named)
+  refused(losslessMarkdownToAdf('Part !adf:mention @A here.\n'), 'malformed-directive', ...named)
+  refused(losslessMarkdownToAdf('!adf:underline[a !adf: b]\n'), 'malformed-directive', ...named)
 })
 
 test('names the inline directive left unclosed at the end of its line', () => {
-  assert.equal(content(losslessMarkdownToAdf('Part !adf:mention[@A\n')), 'malformed-directive: an inline directive [content] is unclosed; \\!adf: keeps the prefix literal')
+  refused(losslessMarkdownToAdf('Part !adf:mention[@A\n'), 'malformed-directive', '[content] is unclosed', '\\!adf:')
   assert.equal(code(losslessMarkdownToAdf('Part !adf:mention[@A]{id=\n')), 'malformed-directive')
   assert.deepEqual(path(losslessMarkdownToAdf('> Part !adf:mention[@A\n')), ['content', 0, 'content', 0])
 })
@@ -942,22 +909,23 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   assert.deepEqual(read('!adf:underline[a !adf:emoji[🎉]{shortName=":tada:"}]\n'), [
     { content: [marked('a ', underline), { attrs: { shortName: ':tada:', text: '🎉' }, type: 'emoji' }], type: 'paragraph' },
   ])
-  const unlinkable = 'unsupported-node-shape: the text of this link holds only nodes that take no link: write the link around text beside them'
-  assert.equal(read('[!adf:status[Done]{color=green}](/u)\n'), unlinkable)
-  assert.equal(read('[!adf:status[Done]{color=green}\\\n](/u)\n'), unlinkable)
+  const unlinkable = ['take no link', 'write the link around text beside them']
+  refused(losslessMarkdownToAdf('[!adf:status[Done]{color=green}](/u)\n'), 'unsupported-node-shape', ...unlinkable)
+  refused(losslessMarkdownToAdf('[!adf:status[Done]{color=green}\\\n](/u)\n'), 'unsupported-node-shape', ...unlinkable)
   assert.deepEqual(read('[a !adf:inlineCard{url="https://x/"}](/u)\n'), [{ content: [marked('a ', link('/u')), { attrs: { url: 'https://x/' }, type: 'inlineCard' }], type: 'paragraph' }])
   assert.deepEqual(read('_!adf:mediaInline{id=m1}_\n'), [{ content: [media], type: 'paragraph' }])
   assert.deepEqual(read('!adf:border[!adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ ...media, marks: [border] }], type: 'paragraph' }])
   assert.deepEqual(read('[!adf:mediaInline{id=m1}](/u)\n'), [{ content: [{ ...media, marks: [link('/u')] }], type: 'paragraph' }])
   assert.deepEqual(read('!adf:border[a !adf:mediaInline{id=m1}]{color="#091e42" size=2}\n'), [{ content: [{ text: 'a ', type: 'text' }, { ...media, marks: [border] }], type: 'paragraph' }])
-  const unborderable = 'unsupported-node-shape: the border mark wraps the [content] it marks: this one wraps only nodes that take no border mark: only a mediaInline takes border: delete the border spelling'
-  assert.equal(read('!adf:border[a]{color="#091e42" size=2}\n'), unborderable)
-  assert.equal(read('_!adf:border[a]{color="#091e42" size=2}_\n'), unborderable)
-  assert.equal(read('!adf:underline[!adf:border[a]{color="#091e42" size=2}]\n'), unborderable)
-  assert.equal(read('!adf:border[a!adf:textBreak{}b]{color="#091e42" size=2}\n'), unborderable)
-  assert.equal(read('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
-  assert.equal(read('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
-  assert.equal(read('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape: the link mark wraps the [content] it marks: this one wraps only nodes that take no link mark: write the link mark around text beside them')
+  const unborderable = ['take no border mark', 'only a mediaInline takes border', 'delete the border spelling']
+  const wrapsOnly = (name: string): string[] => [`take no ${name} mark`, `write the ${name} mark around text beside them`]
+  refused(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=2}\n'), 'unsupported-node-shape', ...unborderable)
+  refused(losslessMarkdownToAdf('_!adf:border[a]{color="#091e42" size=2}_\n'), 'unsupported-node-shape', ...unborderable)
+  refused(losslessMarkdownToAdf('!adf:underline[!adf:border[a]{color="#091e42" size=2}]\n'), 'unsupported-node-shape', ...unborderable)
+  refused(losslessMarkdownToAdf('!adf:border[a!adf:textBreak{}b]{color="#091e42" size=2}\n'), 'unsupported-node-shape', ...unborderable)
+  refused(losslessMarkdownToAdf('!adf:underline[!adf:mention[@A]{id=b1c2}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
+  refused(losslessMarkdownToAdf('!adf:underline[!adf:mediaInline{id=m1}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
+  refused(losslessMarkdownToAdf('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
 })
 
 test('gives code text no mark but code, link and annotation', () => {
@@ -969,7 +937,7 @@ test('gives code text no mark but code, link and annotation', () => {
   }
   assert.deepEqual(content(portableMarkdownToAdf('~~`npm ci`~~\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[run `npm ci`]\n')), [{ content: [marked('run ', underline), marked('npm ci', code)], type: 'paragraph' }])
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[`npm ci`]\n')), 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps only nodes that take no underline mark: write the underline mark around text beside them')
+  refused(losslessMarkdownToAdf('!adf:underline[`npm ci`]\n'), 'unsupported-node-shape', 'underline', 'write the underline mark around text beside them')
 })
 
 test('decodes the fenced info string the block walk leaves raw', () => {
@@ -980,14 +948,14 @@ test('decodes the fenced info string the block walk leaves raw', () => {
 })
 
 test('refuses the raw inline HTML no element mapping carries, naming it', () => {
-  assert.equal(content(losslessMarkdownToAdf('Part <span> here.\n')), 'unmappable-html: no raw HTML converts at this version: <span>')
-  assert.equal(content(losslessMarkdownToAdf('Part </div> here.\n')), 'unmappable-html: no raw HTML converts at this version: <div>')
-  assert.equal(content(losslessMarkdownToAdf('Part <!-- note --> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML comment')
-  assert.equal(content(losslessMarkdownToAdf('Part <?php ?> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML processing instruction')
-  assert.equal(content(losslessMarkdownToAdf('Part <!DOCTYPE html> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML declaration')
-  assert.equal(content(losslessMarkdownToAdf('Part <![CDATA[x]]> here.\n')), 'unmappable-html: no raw HTML converts at this version: a CDATA section')
-  assert.equal(content(losslessMarkdownToAdf('Part <!--> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML comment')
-  assert.equal(content(losslessMarkdownToAdf('Part <!---> here.\n')), 'unmappable-html: no raw HTML converts at this version: an HTML comment')
+  refused(losslessMarkdownToAdf('Part <span> here.\n'), 'unmappable-html', '<span>')
+  refused(losslessMarkdownToAdf('Part </div> here.\n'), 'unmappable-html', '<div>')
+  refused(losslessMarkdownToAdf('Part <!-- note --> here.\n'), 'unmappable-html', 'an HTML comment')
+  refused(losslessMarkdownToAdf('Part <?php ?> here.\n'), 'unmappable-html', 'an HTML processing instruction')
+  refused(losslessMarkdownToAdf('Part <!DOCTYPE html> here.\n'), 'unmappable-html', 'an HTML declaration')
+  refused(losslessMarkdownToAdf('Part <![CDATA[x]]> here.\n'), 'unmappable-html', 'a CDATA section')
+  refused(losslessMarkdownToAdf('Part <!--> here.\n'), 'unmappable-html', 'an HTML comment')
+  refused(losslessMarkdownToAdf('Part <!---> here.\n'), 'unmappable-html', 'an HTML comment')
   assert.equal(code(losslessMarkdownToAdf('A <a href="/x" disabled\nid=y> b\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('Part.\n<span>\n')), 'unmappable-html')
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nA <b>b</b>.\n')), ['content', 1])
@@ -1232,7 +1200,7 @@ test('reads an image inside a link not alone in its paragraph as plain alt text 
     marked('image', link('/w')),
     text(')'),
   ])
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n')), 'unsupported-node-shape: no link wraps a link: the [content] this one marks already holds one')
+  refused(losslessMarkdownToAdf('!adf:link[x [![a](/u)](/v)]{href="a\\nb"}\n'), 'unsupported-node-shape', 'no link wraps a link')
 })
 
 test('writes no (image) after a link to the image itself, unless the image holds a title the link does not', () => {
@@ -1268,28 +1236,28 @@ test('reads the content slot as the text attribute the node spells there', () =>
 })
 
 test('names the content slot no lone plain text node reads back from', () => {
-  const named = 'unsupported-node-shape: the status content slot holds one text node carrying neither marks, attributes nor content: this one holds something else'
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[**A**]{color=yellow}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"attrs\\":{\\"localId\\":\\"a\\"},\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"content\\":[{\\"text\\":\\"B\\",\\"type\\":\\"text\\"}],\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n')), named)
+  const named = ['status content slot', 'one text node']
+  refused(losslessMarkdownToAdf('!adf:status[**A**]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"attrs\\":{\\"localId\\":\\"a\\"},\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:status[!adf:carry{json="{\\"content\\":[{\\"text\\":\\"B\\",\\"type\\":\\"text\\"}],\\"text\\":\\"A\\",\\"type\\":\\"text\\"}"}]{color=yellow}\n'), 'unsupported-node-shape', ...named)
   assert.equal(code(losslessMarkdownToAdf('!adf:status[a`b`]{color=yellow}\n')), 'unsupported-node-shape')
   assert.equal(code(losslessMarkdownToAdf('!adf:status[!adf:date{timestamp=1}]{color=yellow}\n')), 'unsupported-node-shape')
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[x !adf:status[![a](/u)]{color=yellow}]{href="a\\nb"}\n')), named)
+  refused(losslessMarkdownToAdf('!adf:status[![a](/u)]{color=yellow}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[x !adf:status[![a](/u)]{color=yellow}]{href="a\\nb"}\n'), 'unsupported-node-shape', ...named)
   assert.equal(code(losslessMarkdownToAdf('!adf:status[<div>]{color=yellow}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:date[<div>]{timestamp=1}\n')), 'unmappable-html')
   assert.equal(code(losslessMarkdownToAdf('!adf:widget[<div>]\n')), 'unmappable-html')
-  const spans = 'unsupported-node-shape: the status content slot holds a line ending, and an inline directive never spans lines: replace it with a space, or write the node as !adf:carry'
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\n"}]{color=yellow}\n')), spans)
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n')), spans)
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n')), spans)
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n')), 'unsupported-node-shape: the status content slot holds a null character: write the node as !adf:carry')
-  assert.equal(content(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n')), 'unsupported-node-shape: mention spells its text attribute in the content slot, never in {attrs}')
+  const spans = ['status content slot', 'line ending', 'replace it with a space', '!adf:carry']
+  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\n"}]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
+  refused(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
+  refused(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
+  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n'), 'unsupported-node-shape', 'null character', '!adf:carry')
+  refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
 })
 
 test('reads the characters CommonMark rewrites from their spellings', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('a&#13;b!adf:text{text="\\u0000\\u0000"}\n')), [paragraph('a\rb\u0000\u0000')])
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{text="\\u0000a"}\n')), 'unsupported-node-shape: text spells one run of spaces and tabs, one run of newlines, or one run of null characters: this one spells none of them')
+  refused(losslessMarkdownToAdf('!adf:text{text="\\u0000a"}\n'), 'unsupported-node-shape', 'one run of null characters')
 })
 
 test('reads the whitespace the reserved text directive carries', () => {
@@ -1300,14 +1268,14 @@ test('reads the whitespace the reserved text directive carries', () => {
 })
 
 test('names the text directive spelling no whitespace run reads back from', () => {
-  const named = 'unsupported-node-shape: text spells one run of spaces and tabs, one run of newlines, or one run of null characters: this one spells none of them'
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{text=hi}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{text=" \\n"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{text=""}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{}\n')), 'unsupported-node-shape: text holds one text attribute alone: this one does not')
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{localId=a text=" "}\n')), 'unsupported-node-shape: text holds one text attribute alone: this one does not')
-  assert.equal(content(losslessMarkdownToAdf('!adf:text[a]{text=" "}\n')), 'unsupported-node-shape: text takes no content: this one holds some')
-  assert.equal(content(losslessMarkdownToAdf('!adf:text{text="\\u0020"}\n')), 'unsupported-node-shape: text spells its text attribute as text=" "')
+  const named = ['one run of spaces and tabs, one run of newlines, or one run of null characters']
+  refused(losslessMarkdownToAdf('!adf:text{text=hi}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:text{text=" \\n"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:text{text=""}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:text{}\n'), 'unsupported-node-shape', 'one text attribute')
+  refused(losslessMarkdownToAdf('!adf:text{localId=a text=" "}\n'), 'unsupported-node-shape', 'one text attribute')
+  refused(losslessMarkdownToAdf('!adf:text[a]{text=" "}\n'), 'unsupported-node-shape', 'text takes no content')
+  refused(losslessMarkdownToAdf('!adf:text{text="\\u0020"}\n'), 'unsupported-node-shape', 'text=" "')
 })
 
 test('reads the directive marks, the nesting outermost first', () => {
@@ -1324,24 +1292,24 @@ test('reads the directive marks, the nesting outermost first', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('_!adf:underline[a!adf:date{timestamp=1}]_\n')), [
     { content: [marked('a', em, underline), { attrs: { timestamp: '1' }, type: 'date' }], type: 'paragraph' },
   ])
-  assert.equal(content(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=x}\n')), 'unsupported-node-shape: the size attribute of border is no number')
+  refused(losslessMarkdownToAdf('!adf:border[a]{color="#091e42" size=x}\n'), 'unsupported-node-shape', 'size', 'border', 'no number')
 })
 
 test('names the mark markdown spells, never a directive', () => {
-  assert.equal(content(losslessMarkdownToAdf('!adf:em[a]\n')), 'unsupported-node-shape: em is spelled _x_, never as a directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:strong[a]\n')), 'unsupported-node-shape: strong is spelled **x**, never as a directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:strike[a]\n')), 'unsupported-node-shape: strike is spelled ~~x~~, never as a directive')
-  assert.equal(content(losslessMarkdownToAdf('!adf:code[a]\n')), 'unsupported-node-shape: code is spelled `x`, never as a directive')
+  refused(losslessMarkdownToAdf('!adf:em[a]\n'), 'unsupported-node-shape', '_x_')
+  refused(losslessMarkdownToAdf('!adf:strong[a]\n'), 'unsupported-node-shape', '**x**')
+  refused(losslessMarkdownToAdf('!adf:strike[a]\n'), 'unsupported-node-shape', '~~x~~')
+  refused(losslessMarkdownToAdf('!adf:code[a]\n'), 'unsupported-node-shape', '`x`')
 })
 
 test('refuses the directive link CommonMark could spell, and reads the one it could not', () => {
-  const refused = 'unsupported-node-shape: link takes the directive form only where CommonMark cannot spell it: this one it can, as [text](url "title") or <url>'
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[a]{href="/u"}\n')), refused)
-  assert.equal(content(losslessMarkdownToAdf('See !adf:link[a]{href="/u"}.\n')), refused)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[https://example.com/]{href="https://example.com/"}\n')), refused)
-  assert.equal(content(losslessMarkdownToAdf('# !adf:link[`]: a`]{href="/u"}\n')), refused)
-  assert.equal(content(losslessMarkdownToAdf('| !adf:link[`]: a`]{href="/u"} |\n| --- |\n')), refused)
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:link[a]{href="/u"}]\n')), refused)
+  const spellable = ['[text](url "title")', '<url>']
+  refused(losslessMarkdownToAdf('!adf:link[a]{href="/u"}\n'), 'unsupported-node-shape', ...spellable)
+  refused(losslessMarkdownToAdf('See !adf:link[a]{href="/u"}.\n'), 'unsupported-node-shape', ...spellable)
+  refused(losslessMarkdownToAdf('!adf:link[https://example.com/]{href="https://example.com/"}\n'), 'unsupported-node-shape', ...spellable)
+  refused(losslessMarkdownToAdf('# !adf:link[`]: a`]{href="/u"}\n'), 'unsupported-node-shape', ...spellable)
+  refused(losslessMarkdownToAdf('| !adf:link[`]: a`]{href="/u"} |\n| --- |\n'), 'unsupported-node-shape', ...spellable)
+  refused(losslessMarkdownToAdf('!adf:underline[!adf:link[a]{href="/u"}]\n'), 'unsupported-node-shape', ...spellable)
   assert.deepEqual(path(losslessMarkdownToAdf('Part.\n\nSee !adf:link[a]{href="/u"}.\n')), ['content', 1])
   const opening: AdfNode = { marks: [{ attrs: { href: '/u' }, type: 'link' }, { type: 'code' }], text: ']: a', type: 'text' }
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:link[`]: a`]{href="/u"}\n')), [{ content: [opening], type: 'paragraph' }])
@@ -1351,60 +1319,53 @@ test('refuses the directive link CommonMark could spell, and reads the one it co
 })
 
 test('names the href the directive link spells no value for', () => {
-  const named = 'unsupported-node-shape: the link mark spells its href: this one spells none'
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[a]\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[a]{title=t}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c}\n')), named)
+  const named = ['link mark spells its href']
+  refused(losslessMarkdownToAdf('!adf:link[a]\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[a]{title=t}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('See !adf:link[a]{id=01a032c3-7a90-70c9-88f6-c60f710eda07}.\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c}\n'), 'unsupported-node-shape', ...named)
 })
 
 test('names the link a directive link wraps, no link holding another', () => {
-  const named = 'unsupported-node-shape: no link wraps a link: the [content] this one marks already holds one'
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c href="/u"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[<http://x/>]{href="/u"}\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[x !adf:underline[[![](/u)]()]]{href="a\\nb"}\n')), named)
+  const named = ['no link wraps a link']
+  refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[[a](/v)]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[a <http://x/> b]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[<http://x/>]{href="/u"}\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:link[x !adf:underline[[![](/u)]()]]{href="a\\nb"}\n'), 'unsupported-node-shape', ...named)
 })
 
 test('names the directive mark left without the content it wraps', () => {
-  const named = 'unsupported-node-shape: the underline mark wraps the [content] it marks: this one wraps none'
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[]\n')), named)
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline{}\n')), named)
-  const breaks = (name: string): string => `unsupported-node-shape: the ${name} mark wraps the [content] it marks: this one wraps only nodes that take no ${name} mark: write the ${name} mark around text beside them`
-  assert.equal(content(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n')), breaks('underline'))
-  assert.equal(content(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n')), breaks('link'))
+  const named = ['underline', 'wraps none']
+  refused(losslessMarkdownToAdf('!adf:underline[]\n'), 'unsupported-node-shape', ...named)
+  refused(losslessMarkdownToAdf('!adf:underline{}\n'), 'unsupported-node-shape', ...named)
+  const wrapsOnly = (name: string): string[] => [`take no ${name} mark`, `write the ${name} mark around text beside them`]
+  refused(losslessMarkdownToAdf('!adf:underline[!adf:hardBreak{}]\n'), 'unsupported-node-shape', ...wrapsOnly('underline'))
+  refused(losslessMarkdownToAdf('!adf:link[!adf:hardBreak{}]{href="/u" title=t}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
 })
 
 test('reads the text break only between two text nodes CommonMark joins, building no node', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('a!adf:textBreak{}b\n')), [{ content: [text('a'), text('b')], type: 'paragraph' }])
   assert.deepEqual(content(losslessMarkdownToAdf('==a!adf:textBreak{}b==\n')), [{ content: [text('==a'), text('b==')], type: 'paragraph' }])
-  const parts = 'unsupported-node-shape: delete !adf:textBreak{} here: it stands only between two runs of text with the same formatting, which would otherwise read as one'
+  const parts = ['delete !adf:textBreak{} here', 'two runs of text with the same formatting']
   const carried = '!adf:carry{json="{\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
   for (const markdown of ['!adf:textBreak{}a\n', 'a!adf:textBreak{}\n', 'a!adf:textBreak{}!adf:textBreak{}b\n', '**a**!adf:textBreak{}b\n', '[!adf:textBreak{}](/u)\n', `a!adf:textBreak{}${carried}\n`]) {
-    assert.equal(content(losslessMarkdownToAdf(markdown)), parts, markdown)
+    refused(losslessMarkdownToAdf(markdown), 'unsupported-node-shape', ...parts)
   }
-  assert.equal(content(losslessMarkdownToAdf('!adf:status[a!adf:textBreak{}b]\n')), 'unsupported-node-shape: delete !adf:textBreak{} from this content slot: a slot holds one text node')
-  assert.equal(content(losslessMarkdownToAdf('![a!adf:textBreak{}b](/i)\n')), 'unsupported-node-shape: delete !adf:textBreak{} from this image description: the description reads as plain alt text')
-  assert.equal(content(losslessMarkdownToAdf('a!adf:textBreak{x=y}b\n')), 'unsupported-node-shape: textBreak spells the bare leaf form, !adf:textBreak{}: this one spells more')
+  refused(losslessMarkdownToAdf('!adf:status[a!adf:textBreak{}b]\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'content slot')
+  refused(losslessMarkdownToAdf('![a!adf:textBreak{}b](/i)\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'image description')
+  refused(losslessMarkdownToAdf('a!adf:textBreak{x=y}b\n'), 'unsupported-node-shape', '!adf:textBreak{}', 'spells more')
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:carry{json="{\\"type\\":\\"textBreak\\"}"}\n')), [{ content: [{ type: 'textBreak' }], type: 'paragraph' }])
 })
 
 test('leads a refusal ordinary editing meets with the edit that fixes it', () => {
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:paragraph {content=empty}\nText.\n!adf:/paragraph\n')),
-    'unsupported-node-shape: remove content=empty to give the paragraph a body: content=empty holds none, and this one holds one',
-  )
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:codeBlock\n```\na\n```\n```\n```\n!adf:/codeBlock\n')),
-    'unsupported-node-shape: delete the empty fence: a fence beside another holds code, and this one holds none',
-  )
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:codeBlock {attrs=empty}\n```js\na\n```\n```js\nb\n```\n!adf:/codeBlock\n')),
-    "unsupported-node-shape: remove attrs=empty to give the codeBlock the fence's language: attrs=empty holds no language, and this fence names one",
-  )
-  assert.equal(
-    content(losslessMarkdownToAdf('!adf:panel info {attrs=empty}\nText.\n!adf:/panel\n')),
-    'unsupported-node-shape: panel spells attrs=empty beside another attribute, an argument or a [content] slot: drop attrs=empty, or the rest',
-  )
+  const leads = (markdown: string, edit: string): void => {
+    const result = losslessMarkdownToAdf(markdown)
+    assert.equal(code(result), 'unsupported-node-shape')
+    assert.ok(!result.ok && result.error.message.startsWith(edit), edit)
+  }
+  leads('!adf:paragraph {content=empty}\nText.\n!adf:/paragraph\n', 'remove content=empty')
+  leads('!adf:codeBlock\n```\na\n```\n```\n```\n!adf:/codeBlock\n', 'delete the empty fence')
+  leads('!adf:codeBlock {attrs=empty}\n```js\na\n```\n```js\nb\n```\n!adf:/codeBlock\n', 'remove attrs=empty')
+  refused(losslessMarkdownToAdf('!adf:panel info {attrs=empty}\nText.\n!adf:/panel\n'), 'unsupported-node-shape', 'drop attrs=empty')
 })

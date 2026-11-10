@@ -41,8 +41,10 @@ function refusal(result: Result<AdfDocument, ParseError>): string {
   return result.ok ? 'read' : `${result.error.code} at /${result.error.path.join('/')} line ${result.error.position.line} offset ${result.error.position.offset}`
 }
 
-function message(result: Result<AdfDocument, ParseError>): string {
-  return result.ok ? 'read' : result.error.message
+// A message is free text: a refusal pins only the facts the message must name.
+function names(result: Result<AdfDocument, ParseError>, ...facts: readonly string[]): void {
+  const message = result.ok ? '' : result.error.message
+  for (const fact of facts) assert.ok(message.includes(fact), `${JSON.stringify(message)} names ${fact}`)
 }
 
 const documentCarry = carry('div', { type: 'doc', version: 1 }, '')
@@ -183,19 +185,19 @@ test('reads an image standing alone in a paragraph, a link around it where one m
 test('refuses a carry element holding an inline card a link marks, at any depth in the node it carries', () => {
   const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
   for (const html of [`<p>${carry('span', card, '')}</p>\n`, `${carry('div', { content: [{ content: [card], type: 'futureNode' }], type: 'futureBlock' }, '')}\n`]) {
-    assert.match(message(htmlToAdf(html)), /^a carry element's data-adf holds a node every writer refuses: an inlineCard takes no link mark/)
+    names(htmlToAdf(html), 'data-adf', 'every writer refuses', 'inlineCard', 'link mark')
   }
 })
 
 test('refuses a carry element holding a shape every writer refuses, at any depth in the node it carries', () => {
   const shapes = [
-    { message: 'a node of type panel holds no text key: this one holds one', node: { text: 'x', type: 'panel' } },
-    { message: 'a node of type rule holds no content: this one holds some', node: { content: [{ type: 'paragraph' }], type: 'rule' } },
-    { message: 'a node of type status holds neither content nor text: this one holds text', node: { text: 'x', type: 'status' } },
+    { facts: ['panel', 'no text key'], node: { text: 'x', type: 'panel' } },
+    { facts: ['rule', 'no content'], node: { content: [{ type: 'paragraph' }], type: 'rule' } },
+    { facts: ['status', 'neither content nor text', 'holds text'], node: { text: 'x', type: 'status' } },
   ]
-  for (const { message: refusal, node } of shapes) {
+  for (const { facts, node } of shapes) {
     for (const carried of [node, { content: [node], type: 'futureBlock' }]) {
-      assert.equal(message(htmlToAdf(`${carry('div', carried, '')}\n`)), `a carry element's data-adf holds a node every writer refuses: ${refusal}`)
+      names(htmlToAdf(`${carry('div', carried, '')}\n`), 'data-adf', 'every writer refuses', ...facts)
     }
   }
 })
@@ -487,59 +489,59 @@ test('refuses a tag of three million attributes, past what one pattern over them
   assert.equal(refusal(htmlToAdf(`<p${' a=""'.repeat(3_000_000)}>x</p>\n`)), 'unmappable-html at /content/0 line 1 offset 0')
 })
 
-const messages: readonly (readonly [string, string])[] = [
-  ['<p>a<b>b</b></p>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></p>\\n"'],
-  ['<p>a > b</p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "> b</p>\\n"'],
-  ['<p><a href="a"b">a</a></p>\n', '<a> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: found "b\\">a</a></p>\\n"'],
-  ['<p>&b</p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&b</p>\\n"'],
-  ['<pre><code>a&b</code></pre>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&b</code></pre>\\n"'],
-  ['<p>a&nbsp</p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&nbsp</p>\\n"'],
-  ['<pre><code>a</code></pre\n', 'a code block\'s text ends at </code></pre>: found "</code></pre\\n"'],
-  ['<pre><code class="hljs language-js">x</code></pre>\n', '<code> as written here is no code element of the dialect, which writes <code> or <code class="language-…">: found "<code class=\\"hljs langua"…'],
-  ['<ul>\n<li>a</ul>\n', 'the line ends at </li>, or at a line feed before the next block, and its text spells < as &lt;: found "</ul>\\n"'],
-  ['<ul>\n<li>a<b>b</b></li>\n</ul>\n', '<b> as written here is no inline element of the dialect: found "<b>b</b></li>\\n</ul>\\n"'],
-  ['<ul>\n<li>if a < b</li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block, and its text spells < as &lt;: found "< b</li>\\n</ul>\\n"'],
-  ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', '<a> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: found "&b=2\\">x</a></li>\\n</ul>\\n"'],
-  ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<strong>x</strong></li>\\n"…'],
-  ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<ul>\\n<li>a</li>\\n</ul></l"…'],
-  ['<ul>\n<li>a<li>b</li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<li>b</li>\\n</ul>\\n"'],
-  ['<ul>\n<li>a\n<li>b</li>\n</ul>\n', 'the line ends at </li>, or at a line feed before the next block: found "<li>b</li>\\n</ul>\\n"'],
-  ['<p><strong><b>x</b></strong></p>\n', '<b> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<b>x</b></strong></p>\\n"'],
-  ['<p><strong><br>x</strong></p>\n', '<br> as written here is no mark element of the dialect, and a mark element holds text, or one other mark element around text: found "<br>x</strong></p>\\n"'],
-  ['<p><em></em></p>\n', 'a mark element holds text, or one other mark element around text: found "</em></p>\\n"'],
-  ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', '<a> holds its attributes as name="value", each value escaping & as &amp; and " as &quot;, then >: found "&b=2\\">x</a></strong></p>"…'],
-  [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'a carry element shows what adfToHtml writes for its node, as it or a browser spells it, then </div>; to change the node, edit its ADF and write the HTML again: found "<b>collation</b>.</p></d"…'],
-  ['<p><span>a</span></p>\n', 'a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji", "adf-mention" or "adf-status": found "<span>a</span></p>\\n"'],
-  ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', 'a carry element spells its node\'s JSON canonically: compact, keys sorted, each character HTML cannot hold spelled as a JSON escape: found "{ &quot;type&quot;:&quot"…'],
-  [`${documentCarry}\n<hr>\n`, 'a carry element holding the document stands alone, as the whole document: found "\\n<hr>\\n"'],
-  [`<hr>\n${documentCarry}\n`, 'a carry element holding the document stands alone, as the whole document: found "<div class=\\"adf-carry\\" d"…'],
-  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', 'an item\'s or cell\'s first paragraph holding content and no attribute stands bare on the line of the item\'s or cell\'s start tag, as in <li>Bolt</li>: found "<p>Bolt</p></li>\\n</ul>\\n"'],
-  ['<ul>\n<li><p></p></li>\n</ul>\n', 'an item\'s or cell\'s first paragraph holding neither content nor an attribute stands on a line of its own: found "<p></p></li>\\n</ul>\\n"'],
-  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', 'an item\'s or cell\'s first paragraph holding an attribute stands as its <p> straight after the item\'s or cell\'s start tag: found "<p data-local-id=\\"x\\"></p"…'],
-  ['<p><img src="a">b</p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "b</p>\\n"'],
-  ['<p><img src="a" alt=""></p>\n', 'an image stands alone in its paragraph as <img src="…" alt="…">, alt left out where it holds none, inside <a> where a link marks it: found "<img src=\\"a\\" alt=\\"\\"></p>"…'],
-  ['<ol start="03">\n<li>a</li>\n</ol>\n', 'an ordered list starts at an integer, written as JavaScript writes it: found "03\\">\\n<li>a</li>\\n</ol>\\n"'],
-  ['<p class="x">a</p>\n', '<p> takes no class attribute'],
-  ['<p data-color="x">a</p>\n', '<p> takes no data-color attribute'],
-  ['<ol data-local-id="x" start="2">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after data-local-id'],
-  ['<ol start="2" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes start once, before its data-* attributes: found start after start'],
-  ['<ol start="2" data-bogus="1" start="3">\n<li>a</li>\n</ol>\n', '<ol> takes no data-bogus attribute'],
-  ['<pre data-wrap="yes"><code>x</code></pre>\n', 'data-wrap holds no boolean written as compact JSON'],
-  ['<p><span class="adf-emoji"></span></p>\n', '<span class="adf-emoji"> holds its text, which is not empty: found "</span></p>\\n"'],
-  ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', '<a class="adf-inline-card"> holds one URL, as its href and as its text, or the URL its data-data holds as its href and its name, else that URL, as its text; to change the card, change them together: found "Spec</a></p>\\n"'],
-  [`<p><a class="adf-inline-card" href="https://example.org/plan" data-data="${planData}">Plan</a></p>\n`, '<a class="adf-inline-card"> holds one URL, as its href and as its text, or the URL its data-data holds as its href and its name, else that URL, as its text; to change the card, change them together: found "Plan</a></p>\\n"'],
-  ['<p><time class="adf-date" datetime="2025-08-26" data-timestamp="1756080000000">x</time></p>\n', '<time class="adf-date"> shows the day its data-timestamp names, in datetime and as its text; to change the date, change all three: found "x</time></p>\\n"'],
-  ['<p><span class="adf-emoji" data-size="big">a</span></p>\n', '<span class="adf-emoji"> takes no data-size attribute'],
-  ['<p><span class="adf-status">a&b</span></p>\n', 'text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "&b</span></p>\\n"'],
+const messages: readonly (readonly [string, readonly string[]])[] = [
+  ['<p>a<b>b</b></p>\n', ['<b>', 'found "<b>b</b></p>\\n"']],
+  ['<p>a > b</p>\n', ['& as &amp;', '< as &lt;', 'found "> b</p>\\n"']],
+  ['<p><a href="a"b">a</a></p>\n', ['<a>', '& as &amp;', '" as &quot;', 'found "b\\">a</a></p>\\n"']],
+  ['<p>&b</p>\n', ['& as &amp;', '< as &lt;', 'found "&b</p>\\n"']],
+  ['<pre><code>a&b</code></pre>\n', ['& as &amp;', '< as &lt;', 'found "&b</code></pre>\\n"']],
+  ['<p>a&nbsp</p>\n', ['& as &amp;', '< as &lt;', 'found "&nbsp</p>\\n"']],
+  ['<pre><code>a</code></pre\n', ['found "</code></pre\\n"']],
+  ['<pre><code class="hljs language-js">x</code></pre>\n', ['<code>', 'found "<code class=\\"hljs langua"…']],
+  ['<ul>\n<li>a</ul>\n', ['< as &lt;', 'found "</ul>\\n"']],
+  ['<ul>\n<li>a<b>b</b></li>\n</ul>\n', ['<b>', 'found "<b>b</b></li>\\n</ul>\\n"']],
+  ['<ul>\n<li>if a < b</li>\n</ul>\n', ['< as &lt;', 'found "< b</li>\\n</ul>\\n"']],
+  ['<ul>\n<li>see <a href="https://x.test/?a=1&b=2">x</a></li>\n</ul>\n', ['<a>', '& as &amp;', '" as &quot;', 'found "&b=2\\">x</a></li>\\n</ul>\\n"']],
+  ['<ul>\n<li><p>a</p><strong>x</strong></li>\n</ul>\n', ['found "<strong>x</strong></li>\\n"…']],
+  ['<ul>\n<li>Bolt<ul>\n<li>a</li>\n</ul></li>\n</ul>\n', ['found "<ul>\\n<li>a</li>\\n</ul></l"…']],
+  ['<ul>\n<li>a<li>b</li>\n</ul>\n', ['found "<li>b</li>\\n</ul>\\n"']],
+  ['<ul>\n<li>a\n<li>b</li>\n</ul>\n', ['found "<li>b</li>\\n</ul>\\n"']],
+  ['<p><strong><b>x</b></strong></p>\n', ['<b>', 'found "<b>x</b></strong></p>\\n"']],
+  ['<p><strong><br>x</strong></p>\n', ['<br>', 'found "<br>x</strong></p>\\n"']],
+  ['<p><em></em></p>\n', ['found "</em></p>\\n"']],
+  ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', ['<a>', '& as &amp;', '" as &quot;', 'found "&b=2\\">x</a></strong></p>"…']],
+  [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, ['to change the node, edit its ADF and write the HTML again', 'found "<b>collation</b>.</p></d"…']],
+  ['<p><span>a</span></p>\n', ['found "<span>a</span></p>\\n"']],
+  ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', ['found "{ &quot;type&quot;:&quot"…']],
+  [`${documentCarry}\n<hr>\n`, ['found "\\n<hr>\\n"']],
+  [`<hr>\n${documentCarry}\n`, ['found "<div class=\\"adf-carry\\" d"…']],
+  ['<ul>\n<li><p>Bolt</p></li>\n</ul>\n', ['found "<p>Bolt</p></li>\\n</ul>\\n"']],
+  ['<ul>\n<li><p></p></li>\n</ul>\n', ['found "<p></p></li>\\n</ul>\\n"']],
+  ['<ul>\n<li>\n<p data-local-id="x"></p>\n</li>\n</ul>\n', ['found "<p data-local-id=\\"x\\"></p"…']],
+  ['<p><img src="a">b</p>\n', ['found "b</p>\\n"']],
+  ['<p><img src="a" alt=""></p>\n', ['found "<img src=\\"a\\" alt=\\"\\"></p>"…']],
+  ['<ol start="03">\n<li>a</li>\n</ol>\n', ['found "03\\">\\n<li>a</li>\\n</ol>\\n"']],
+  ['<p class="x">a</p>\n', ['<p>', 'takes no class attribute']],
+  ['<p data-color="x">a</p>\n', ['<p>', 'takes no data-color attribute']],
+  ['<ol data-local-id="x" start="2">\n<li>a</li>\n</ol>\n', ['<ol>', 'found start after data-local-id']],
+  ['<ol start="2" start="3">\n<li>a</li>\n</ol>\n', ['<ol>', 'found start after start']],
+  ['<ol start="2" data-bogus="1" start="3">\n<li>a</li>\n</ol>\n', ['<ol>', 'takes no data-bogus attribute']],
+  ['<pre data-wrap="yes"><code>x</code></pre>\n', ['data-wrap', 'boolean']],
+  ['<p><span class="adf-emoji"></span></p>\n', ['<span class="adf-emoji">', 'found "</span></p>\\n"']],
+  ['<p><a class="adf-inline-card" href="https://example.com/">Spec</a></p>\n', ['<a class="adf-inline-card">', 'to change the card, change them together', 'found "Spec</a></p>\\n"']],
+  [`<p><a class="adf-inline-card" href="https://example.org/plan" data-data="${planData}">Plan</a></p>\n`, ['<a class="adf-inline-card">', 'to change the card, change them together', 'found "Plan</a></p>\\n"']],
+  ['<p><time class="adf-date" datetime="2025-08-26" data-timestamp="1756080000000">x</time></p>\n', ['<time class="adf-date">', 'to change the date, change all three', 'found "x</time></p>\\n"']],
+  ['<p><span class="adf-emoji" data-size="big">a</span></p>\n', ['<span class="adf-emoji">', 'takes no data-size attribute']],
+  ['<p><span class="adf-status">a&b</span></p>\n', ['& as &amp;', '< as &lt;', 'found "&b</span></p>\\n"']],
 ]
 
-for (const [html, expected] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => assert.equal(message(htmlToAdf(html)), expected))
+for (const [html, facts] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => names(htmlToAdf(html), ...facts))
 
 test('reads blocks nested 500 levels, and refuses the next level, a list\'s items one level below it', () => {
   const quotes = (levels: number): string => `${'<blockquote>\n'.repeat(levels)}<p>x</p>${'\n</blockquote>'.repeat(levels)}\n`
   assert.equal(refusal(htmlToAdf(quotes(500))), 'read')
   assert.equal(refusal(htmlToAdf(quotes(501))).startsWith(`unsupported-nesting-depth at /${'content/0/'.repeat(501)}content/0 line ${502}`), true)
-  assert.equal(message(htmlToAdf(quotes(501))), 'blocks nest deeper than 500 levels')
+  names(htmlToAdf(quotes(501)), 'blocks', '500 levels')
   const lists = (levels: number): string => `${'<ul>\n<li>x\n'.repeat(levels)}<hr>${'\n</li>\n</ul>'.repeat(levels)}\n`
   assert.equal(refusal(htmlToAdf(lists(500))), 'read')
   assert.equal(refusal(htmlToAdf(lists(501))).startsWith('unsupported-nesting-depth'), true)
