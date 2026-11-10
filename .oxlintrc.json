@@ -28,6 +28,12 @@
       }
     },
     {
+      "files": ["src/markdown/*.ts"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/html/**", "**/parse/**", "**/portable/**"], "message": "A root file of src/markdown/ is read by the writers and the readers and imports neither: docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
       "files": ["src/markdown/directive/**"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/html/**", "**/parse/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
@@ -36,7 +42,7 @@
     {
       "files": ["src/markdown/emit/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/parse/**", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     },
     {

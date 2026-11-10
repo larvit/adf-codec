@@ -13,12 +13,16 @@ src/adf/boundary-probe-html.ts ../html/emit/adf-to-html.ts
 src/html/boundary-probe.ts ../markdown/flavour.ts
 src/html/parse/boundary-probe.ts ../emit/adf-to-html.ts
 src/html/parse/boundary-probe-markdown.ts ../../markdown/flavour.ts
+src/markdown/boundary-probe-emit.ts ./emit/adf-to-markdown.ts
 src/markdown/boundary-probe-html.ts ../html/emit/adf-to-html.ts
+src/markdown/boundary-probe-parse.ts ./parse/blocks.ts
+src/markdown/boundary-probe-portable.ts ./portable/conventions.ts
 src/markdown/directive/boundary-probe.ts ../parse/blocks.ts
 src/markdown/directive/boundary-probe-emit.ts ../emit/image.ts
 src/markdown/directive/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
 src/markdown/emit/boundary-probe.ts ../portable/conventions.ts
 src/markdown/emit/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
+src/markdown/emit/boundary-probe-parse.ts ../parse/blocks.ts
 src/markdown/parse/boundary-probe.ts ../emit/adf-to-markdown.ts
 src/markdown/parse/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
 src/markdown/parse/boundary-probe-portable.ts ../portable/conventions.ts"
