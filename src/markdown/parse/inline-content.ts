@@ -6,7 +6,7 @@ import { failure, success } from '../../result.ts'
 import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'
 import { parseInlineContent, spellableLink } from '../inline-content.ts'
 
-// The only place a reader asks the writer: whether a spellable link opening the paragraph still needs its directive for the line it opens (spec/flavour.md, Marks).
+// The only place a reader asks the writer whether the link opening a paragraph still needs its directive (spec/flavour.md, Marks).
 export function readInlineContent(source: string, definitions: LinkDefinitions, path: ConvertErrorPath, container: LineContainer, flavour: Flavour): Result<InlineContent> {
   const content = parseInlineContent(source, definitions, path, container, flavour)
   if (!content.ok || !content.value.openingSpellableLink) return content
