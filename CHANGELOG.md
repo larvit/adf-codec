@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `readAdfDocument` and every converter name the node a `not-an-adf-document` refusal concerns:
+  `path` leads to it, and the message says what is wrong, such as which attribute holds a value
+  JSON cannot.
 - **Breaking:** `portableMarkdownToAdf` reads more of GFM's pipe table. A body row holding fewer
   cells than the header is padded with empty cells, where `0.3.1` returned `malformed-pipe-table`;
   a table whose padding would add more cells than the table holds is `malformed-pipe-table`.
