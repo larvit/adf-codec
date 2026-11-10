@@ -406,6 +406,12 @@ test('reads GFM\'s short row padded with empty cells, a line holding no pipe as 
   assert.deepEqual(read('a |\n:--- |\nb\n'), [column(['a', 'b'])])
   assert.deepEqual(read('| a |\n| --- |\nb\n'), [column(['a', 'b'])])
   assert.deepEqual(read('a\n--- |\n'), [said('a --- |')])
+  const wide = (rows: number): string => `a | b | c | d\n--- | --- | --- | ---\n${'x\n'.repeat(rows)}`
+  assert.ok(portableMarkdownToAdf(wide(4)).ok)
+  const padded = portableMarkdownToAdf(wide(5))
+  assert.deepEqual(padded.ok ? undefined : [padded.error.code, padded.error.position], ['malformed-pipe-table', { line: 1, offset: 0 }])
+  const amplified = portableMarkdownToAdf(`${'a|'.repeat(2000)}\n${'-|'.repeat(2000)}\n${'x\n'.repeat(2000)}`)
+  assert.deepEqual(amplified.ok ? undefined : amplified.error.code, 'malformed-pipe-table')
   for (const refused of ['a | b\n--- | ---\nc | d | e\n', '| a | b |\n| --- |\n']) {
     const result = portableMarkdownToAdf(refused)
     assert.deepEqual(result.ok ? undefined : result.error.code, 'malformed-pipe-table', refused)

@@ -551,6 +551,15 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
   const padsShortRows = claims.pipeTables === 'gfm'
   const ragged = [delimiter, ...body].find((row) => (padsShortRows && row !== delimiter ? row.length > header.length : row.length !== header.length))
   if (ragged !== undefined) return faultedBlock(`a pipe table row holds ${cellCount(ragged.length)} where its header holds ${cellCount(header.length)}`, position)
+  let held = header.length + delimiter.length
+  let padding = 0
+  for (const row of body) {
+    held += row.length
+    padding += header.length - row.length
+  }
+  if (padding > held) {
+    return faultedBlock(`a pipe table's short rows would pad ${cellCount(padding)}, more than the ${cellCount(held)} it holds: write the empty cells out`, position)
+  }
   const padded = body.map((row) => [...row, ...Array.from({ length: header.length - row.length }, () => '')])
   return { kind: 'table', position, rows: [header, ...padded] }
 }

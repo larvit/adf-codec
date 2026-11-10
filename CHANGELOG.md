@@ -3,7 +3,8 @@
 ## Unreleased
 
 - **Breaking:** `portableMarkdownToAdf` reads more of GFM's pipe table. A body row holding fewer
-  cells than the header is padded with empty cells, where `0.3.1` returned `malformed-pipe-table`.
+  cells than the header is padded with empty cells, where `0.3.1` returned `malformed-pipe-table`;
+  a table whose padding would add more cells than the table holds is `malformed-pipe-table`.
   A line after the table that holds no `|` and opens no other block is a row of one cell, where it
   was a paragraph. A row holding more cells stays an error result.
 - **Breaking:** `a |` over `--- |` is a one-column table. `portableMarkdownToAdf` reads it as one,
