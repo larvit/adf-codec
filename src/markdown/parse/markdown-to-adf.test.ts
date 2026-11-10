@@ -28,7 +28,6 @@ function position(result: Result<AdfDocument, ParseError>): SourcePosition | str
   return result.ok ? 'built' : result.error.position
 }
 
-// A message is free text: a refusal pins its code and only the facts the message must name.
 function refused(result: Result<AdfDocument>, errorCode: ConvertErrorCode, ...facts: string[]): void {
   assert.equal(code(result), errorCode)
   const message = result.ok ? '' : result.error.message
