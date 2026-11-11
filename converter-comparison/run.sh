@@ -3,7 +3,7 @@
 # --before reads a bare date as midnight UTC, so the day after the run date includes that day's publishes.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
-node_image=node:26.13.0-alpine3.24
+node_image=node:26.13.1-alpine3.24
 docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here:/comparison:ro" -w /tmp \
   "$node_image" sh -c '
     npm install --before=2026-11-06 --ignore-scripts --no-audit --no-fund --silent \
