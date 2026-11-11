@@ -4,7 +4,7 @@ bun_image=oven/bun:1.4.4-alpine
 deno_image=denoland/deno:2.9.8
 firefox_image=selenium/standalone-firefox:159.0.1
 floor_image=node:18.20.8-alpine3.21
-node_image=node:26.13.0-alpine3.24
+node_image=node:26.13.1-alpine3.24
 
 # The test legs peak near 4.2g (cgroup memory.peak); below that, the tests building strings near V8's longest string fail.
 container_memory=8g
