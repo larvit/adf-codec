@@ -4,7 +4,7 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd -P)
 raw=$(mkdir -p "$1" && cd "$1" && pwd -P)
 case "$raw/" in "$(cd "$here/.." && pwd -P)"/*) echo "run.sh: keep the raw folder outside the repo: its documents hold the sites' real text" >&2; exit 2 ;; esac
-fejkdata_image=larvit/fejkdata:0.4.2
+fejkdata_image=larvit/fejkdata:0.4.3
 node_image=node:26.13.1-alpine3.24
 
 in_node() {
