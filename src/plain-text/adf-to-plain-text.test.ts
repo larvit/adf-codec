@@ -278,6 +278,18 @@ test('writes a table inside a list item under the item\'s indent', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(line('t'), table(cells('a', 'b'), cells('c', 'd'))))))), '• t\n  a | b\n  c | d')
 })
 
+test('writes the text nodes of a cell without a space between them, and a list in a nested table behind its own marker', () => {
+  const marked: AdfNode = { marks: [{ type: 'strong' }], text: 'b', type: 'text' }
+  assert.equal(plain(adfToPlainText(document(table(row(cell(paragraph(text('a'), marked)), cell(line('c'))))))), 'ab | c')
+  const listed = row(cell(bullets(item(line('p')), item(line('q')))), cell(line('y')))
+  assert.equal(plain(adfToPlainText(document(bullets(item(line('t'), table(listed)))))), '• t\n  • p • q | y')
+})
+
+test('writes a blank line and a line feed ending a code fragment in a cell as one space each', () => {
+  const code = (...fragments: string[]): AdfNode => ({ content: fragments.map((fragment) => text(fragment)), type: 'codeBlock' })
+  assert.equal(plain(adfToPlainText(document(table(row(cell(code('c\n\nd')), cell(code('e\n', 'f'))))))), 'c d | e f')
+})
+
 const external: AdfNode = { attrs: { alt: 'Team photo', type: 'external', url: 'https://example.com/team.png' }, type: 'media' }
 const uploaded: AdfNode = { attrs: { alt: 'Quarterly chart', id: 'f', type: 'file' }, type: 'media' }
 
@@ -372,6 +384,10 @@ const refusedDocuments: Record<string, AdfDocument> = {
   'nesting past the limit after a block': document(line('a'), deepQuote(largestNesting + 1)),
   'a card with a link mark': document(paragraph(text('See '), { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })),
 }
+
+test('names the limit it refuses a document for', () => {
+  assert.equal(plain(adfToPlainText(document(deepQuote(largestNesting + 1)))), `unsupported-nesting-depth: the document nests deeper than the ${largestNesting} levels the writer carries`)
+})
 
 for (const [name, input] of Object.entries(refusedDocuments)) {
   test(`refuses ${name} as adfToHtml does, with the same code and path`, () => {

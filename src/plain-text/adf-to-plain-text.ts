@@ -116,7 +116,7 @@ function emit(writing: Writing, text: string): void {
     writing.gap = 0
     writing.lead = undefined
   }
-  writing.literal = (end > 0 ? 0 : writing.literal) + (writing.cell === undefined ? text.length - end : 0)
+  writing.literal = (end > 0 ? 0 : writing.literal) + (text.length - end)
 }
 
 function endBeforeLineFeeds(text: string): number {
@@ -149,9 +149,9 @@ function childSteps(nodes: readonly AdfNode[], layout: Layout, depth: number, pa
 
 // A card shows its address, or its name and then its address.
 function cardText(card: AdfNode): string {
-  const text = shownText(card)
+  const text = shownText(card) ?? ''
   const url = shownUrl(card)
-  return text === undefined || url === undefined || url === text ? text ?? '' : `${text} (${url})`
+  return url === undefined || url === text ? text : `${text} (${url})`
 }
 
 // An image shows its alt text, else its address, else `[image]`; then the target of the link around it, then its own address where the alt text stood in for it.
