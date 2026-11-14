@@ -156,7 +156,7 @@ export function spellingMemo(): SpellingMemo {
 }
 
 type ReadableSpelling = {
-  // The lossless flavour's spelling in words, for the refusal of a directive that CommonMark spells.
+  // The lossless spelling in words, named when the reader refuses a directive written for a node CommonMark spells.
   describe: (node: AdfNode) => string
   spell: (node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing) => Result<EmittedBlock> | undefined
 }
