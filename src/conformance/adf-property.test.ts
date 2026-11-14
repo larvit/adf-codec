@@ -6,6 +6,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../adf/docume
 import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
+import { adfToPlainText } from '../plain-text/adf-to-plain-text.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { centeredImage, externalMedia } from '../adf/plain-image.ts'
 import { htmlToAdf } from '../html/parse/html-to-adf.ts'
@@ -149,6 +150,24 @@ test('a generated document writes HTML holding no character HTML cannot hold, an
       let from = 0
       for (const text of documentTexts(document.content ?? [])) {
         const shown = text.replace(unshown, '')
+        const at = page.indexOf(shown, from)
+        assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
+        from = at + shown.length
+      }
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('a generated document writes plain text showing every text node\'s text in document order, whatever the whitespace between', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(adfDocument, (document) => {
+      const written = adfToPlainText(document)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+      const page = written.value.replaceAll(/\s/g, '')
+      let from = 0
+      for (const text of documentTexts(document.content ?? [])) {
+        const shown = text.replaceAll(/\s/g, '')
         const at = page.indexOf(shown, from)
         assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
         from = at + shown.length

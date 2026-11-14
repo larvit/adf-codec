@@ -85,11 +85,36 @@ test('writes blocks as their text, a blank line apart, with bullets, numbers and
   )
 })
 
-test('writes marks as the text they mark, and an empty document as nothing', () => {
-  const link: AdfMark = { attrs: { href: 'https://example.com/', title: 'Home' }, type: 'link' }
-  assert.equal(plain(adfToPlainText(document(paragraph(text('a ', { type: 'strong' }), text('b', link, { type: 'em' }), text(' c', { type: 'code' }))))), 'a b c')
+test('writes marks other than a link as the text they mark', () => {
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a ', { type: 'strong' }), text('b', { type: 'em' }), text(' c', { type: 'code' }))))), 'a b c')
+})
+
+test('writes an empty document as nothing', () => {
   assert.equal(plain(adfToPlainText(document())), '')
   assert.equal(plain(adfToPlainText({ type: 'doc', version: 1 })), '')
+})
+
+test('writes a link\'s address and title after the text it covers, once for a run of text nodes', () => {
+  const link = (href: string, title?: string): AdfMark => ({ attrs: title === undefined ? { href } : { href, title }, type: 'link' })
+  const written = adfToPlainText(
+    document(
+      paragraph(text('Read the '), text('do', link('https://example.com/docs', 'Guide')), text('cs', link('https://example.com/docs', 'Guide'), { type: 'strong' }), text(' and the '), text('changelog', link('https://example.com/changes')), text('.')),
+      paragraph(text('https://example.com/', link('https://example.com/'))),
+      paragraph(text('a', link('https://one.example/')), text('b', link('https://two.example/'))),
+    ),
+  )
+  assert.equal(plain(written), 'Read the docs (https://example.com/docs, "Guide") and the changelog (https://example.com/changes).\n\nhttps://example.com/\n\na (https://one.example/)b (https://two.example/)')
+})
+
+test('writes a link with a title after its address even where the text is the address', () => {
+  const link: AdfMark = { attrs: { href: 'https://example.com/', title: 'Home' }, type: 'link' }
+  assert.equal(plain(adfToPlainText(document(paragraph(text('https://example.com/', link))))), 'https://example.com/ (https://example.com/, "Home")')
+})
+
+test('writes a link whose text is empty as nothing, and a link mark with no address as its text', () => {
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a'), text('', link), text('b'))))), 'ab')
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a', { attrs: { title: 'x' }, type: 'link' }))))), 'a')
 })
 
 test('writes nothing for a block holding no text, and parts the blocks around it once', () => {
@@ -100,11 +125,23 @@ test('writes a text node holding nothing as nothing', () => {
   assert.equal(plain(adfToPlainText(document(line('a'), paragraph(text('')), line('b')))), 'a\n\nb')
 })
 
-test('keeps the text of a paragraph on its line, and an item\'s blocks a line apart, whatever they hold', () => {
+test('writes the text nodes of an item\'s paragraph on one line', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(paragraph(text('a'), text('b'))))))), '• ab')
+})
+
+test('writes the items of a list a line feed apart, whatever blocks they hold', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(line('a')), item({ content: [line('b')], type: 'blockquote' }))))), '• a\n• b')
+})
+
+test('writes the blocks of one item a line feed apart, under its marker', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item(line('x'))), line('z')))))), '• • x\n  z')
+})
+
+test('writes an item holding an empty list before its text as that text', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item()), line('x')))))), '• x')
+})
+
+test('writes the nodes of an unknown inline container on one line', () => {
   const inline: AdfNode = paragraph({ text: 'a', type: 'unknownInline' }, { text: 'b', type: 'unknownInline' })
   assert.equal(plain(adfToPlainText(document(inline))), 'ab')
 })
@@ -119,15 +156,29 @@ test('keeps a marker for an item whose first content is a nested list', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item(line('x')))), item(line('y')))))), '• • x\n• y')
 })
 
-test('writes a task item holding blocks as an item', () => {
-  const tasks: AdfNode = { content: [{ attrs: { localId: 'a', state: 'TODO' }, content: [line('a'), line('b')], type: 'blockTaskItem' }], type: 'taskList' }
-  assert.equal(plain(adfToPlainText(document(tasks))), '• a\n  b')
+test('writes a task list nested in a task list under its parent item, with no marker of its own', () => {
+  const task = (value: string): AdfNode => ({ attrs: { state: 'TODO' }, content: [text(value)], type: 'taskItem' })
+  const nested: AdfNode = { content: [task('a'), { content: [task('b')], type: 'taskList' }], type: 'taskList' }
+  assert.equal(plain(adfToPlainText(document(nested))), '☐ a\n  ☐ b')
 })
 
-test('writes a task list and a decision list as bullets', () => {
+test('writes two hard breaks in a row as a blank line', () => {
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a'), { type: 'hardBreak' }, { type: 'hardBreak' }, text('b'))))), 'a\n\nb')
+})
+
+test('writes a code block ending in a line feed as one block, a blank line from the next', () => {
+  assert.equal(plain(adfToPlainText(document({ content: [text('a\n')], type: 'codeBlock' }, line('b')))), 'a\n\nb')
+})
+
+test('writes a task item holding blocks as an item', () => {
+  const tasks: AdfNode = { content: [{ attrs: { localId: 'a', state: 'TODO' }, content: [line('a'), line('b')], type: 'blockTaskItem' }], type: 'taskList' }
+  assert.equal(plain(adfToPlainText(document(tasks))), '☐ a\n  b')
+})
+
+test('writes a task list with a box checked for a done item, and a decision list as bullets', () => {
   const tasks: AdfNode = { content: [{ attrs: { state: 'DONE' }, content: [text('Write the spec')], type: 'taskItem' }, { attrs: { state: 'TODO' }, content: [text('Ship')], type: 'taskItem' }], type: 'taskList' }
   const decisions: AdfNode = { content: [{ attrs: { state: 'DECIDED' }, content: [text('Use Node')], type: 'decisionItem' }], type: 'decisionList' }
-  assert.equal(plain(adfToPlainText(document(tasks, decisions))), '• Write the spec\n• Ship\n\n• Use Node')
+  assert.equal(plain(adfToPlainText(document(tasks, decisions))), '☑ Write the spec\n☐ Ship\n\n• Use Node')
 })
 
 test('writes a mention, an emoji, a date and a status as the text they show', () => {
@@ -162,41 +213,39 @@ test('writes a code block\'s lines and a list item\'s continuation lines under t
   assert.equal(plain(adfToPlainText(document(bullets(item(code))))), '• a\n\n  b')
 })
 
-test('refuses what adfToHtml refuses, with the same code and path', () => {
-  const deep = (levels: number): AdfNode => {
-    let node = line('x')
-    for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
-    return node
-  }
-  const refused: AdfDocument[] = [
-    { type: 'doc', version: Number.NaN },
-    { type: 'doc', version: 2 },
-    document(deep(largestNesting + 1)),
-    document(line('a'), deep(largestNesting + 1)),
-    document(paragraph(text('See '), { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })),
-  ]
-  for (const input of refused) {
+function deepQuote(levels: number): AdfNode {
+  let node = line('x')
+  for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
+  return node
+}
+
+const refusedDocuments: Record<string, AdfDocument> = {
+  'a document version that is no number': { type: 'doc', version: Number.NaN },
+  'a document version 2': { type: 'doc', version: 2 },
+  'nesting past the limit': document(deepQuote(largestNesting + 1)),
+  'nesting past the limit after a block': document(line('a'), deepQuote(largestNesting + 1)),
+  'a card with a link mark': document(paragraph(text('See '), { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })),
+}
+
+for (const [name, input] of Object.entries(refusedDocuments)) {
+  test(`refuses ${name} as adfToHtml does, with the same code and path`, () => {
     assert.notEqual(refusal(adfToHtml(input)), 'written')
     assert.equal(refusal(adfToPlainText(input)), refusal(adfToHtml(input)))
-  }
-})
+  })
+}
 
-test('counts a table\'s levels as adfToHtml does', () => {
-  const deep = (levels: number): AdfNode => {
-    let node = line('x')
-    for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
-    return node
+for (const cell of ['tableCell', 'tableHeader']) {
+  const table = (levels: number): AdfDocument => document({ content: [{ content: [{ content: [deepQuote(levels)], type: cell }], type: 'tableRow' }], type: 'table' })
+  for (let levels = largestNesting - 3; levels <= largestNesting + 1; levels += 1) {
+    test(`counts the levels of a ${cell} holding ${levels} levels as adfToHtml does`, () => {
+      assert.equal(refusal(adfToPlainText(table(levels))), refusal(adfToHtml(table(levels))))
+    })
   }
-  const outcomes = new Set<string>()
-  for (const cell of ['tableCell', 'tableHeader']) {
-    for (let levels = largestNesting - 3; levels <= largestNesting + 1; levels += 1) {
-      const table: AdfNode = { content: [{ content: [{ content: [deep(levels)], type: cell }], type: 'tableRow' }], type: 'table' }
-      assert.equal(refusal(adfToPlainText(document(table))), refusal(adfToHtml(document(table))))
-      outcomes.add(refusal(adfToPlainText(document(table))).slice(0, 12))
-    }
-  }
-  assert.deepEqual([...outcomes].sort(), ['unsupported-', 'written'])
-})
+  test(`writes a ${cell} just inside the limit and refuses one past it`, () => {
+    assert.equal(refusal(adfToPlainText(table(largestNesting - 3))), 'written')
+    assert.equal(refusal(adfToPlainText(table(largestNesting + 1))).startsWith('unsupported-nesting-depth'), true)
+  })
+}
 
 test('writes blocks nested 500 levels', () => {
   let node = line('x')
