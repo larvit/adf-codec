@@ -151,6 +151,11 @@ test('writes a node of an unknown type as the text it holds, its children a blan
   assert.equal(plain(adfToPlainText(document(unknown, { text: 'loose', type: 'unknownText' }, paragraph({ content: [text('in'), text(' line')], type: 'unknownInline' })))), 'one\n\ntwo three\n\nloose\n\nin line')
 })
 
+test('writes a node of an unknown type holding text and blocks as blocks, and a mention with nothing to show as nothing', () => {
+  assert.equal(plain(adfToPlainText(document({ content: [text('a'), line('b')], type: 'unknownContainer' }))), 'a\n\nb')
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a'), { type: 'mention' }, text('b'))))), 'ab')
+})
+
 test('writes a code block\'s lines and a list item\'s continuation lines under their indent, never a blank line with spaces', () => {
   const code: AdfNode = { content: [text('a\n\nb')], type: 'codeBlock' }
   assert.equal(plain(adfToPlainText(document(bullets(item(code))))), '• a\n\n  b')
