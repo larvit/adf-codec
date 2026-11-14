@@ -204,6 +204,10 @@ test('writes the line feeds of consecutive code fragments as the one fragment ho
   assert.equal(plain(adfToPlainText(document(split))), plain(adfToPlainText(document(whole))))
 })
 
+test('owes a line feed of a code fragment to the next fragment alone', () => {
+  assert.equal(plain(adfToPlainText(document({ content: [text('a\n'), text('b'), text('c')], type: 'codeBlock' }))), 'a\nbc')
+})
+
 test('writes a task item holding blocks as an item', () => {
   const tasks: AdfNode = { content: [{ attrs: { localId: 'a', state: 'TODO' }, content: [line('a'), line('b')], type: 'blockTaskItem' }], type: 'taskList' }
   assert.equal(plain(adfToPlainText(document(tasks))), '☐ a\n  b')
