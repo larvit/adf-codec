@@ -1076,3 +1076,20 @@ Read most (opens and searches):
 - `docs/score-anchors.md` 1
 - `src/adf/inline-nodes.ts` 1
 - `src/html/emit/adf-to-html.ts` 1
+
+## Reading cost, chunk 1529af18f07f, finished 2026-11-14T20:19:06Z
+
+535229 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 27
+- `docs/decisions.md` 10
+- `src/html/emit/adf-to-html.test.ts` 6
+- `ci.sh` 5
+- `src/adf/document.ts` 4
+- `todo.md` 4
+- `src/adf/block-nodes.ts` 3
+- `src/html/emit/adf-to-html.ts` 3
+- `src/index.ts` 3
+- `CHANGELOG.md` 2
