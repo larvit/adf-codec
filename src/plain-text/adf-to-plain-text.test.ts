@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
+import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
 import type { Result } from '../result.ts'
 import { adfToHtml, adfToPlainText } from '../index.ts'
 import { largestNesting } from '../nesting.ts'
@@ -319,7 +319,7 @@ test('writes the images of a group and an inline image on the line they stand in
 })
 
 test('writes a card as its address, or as its name then its address', () => {
-  const card = (attrs: Record<string, unknown>): AdfNode => ({ attrs, type: 'blockCard' })
+  const card = (attrs: AdfAttributes): AdfNode => ({ attrs, type: 'blockCard' })
   assert.equal(shown(card({ url: 'https://example.com/spec' })), 'Before\n\nhttps://example.com/spec\n\nAfter')
   assert.equal(shown(card({ data: { name: 'Design spec' }, url: 'https://example.com/spec' })), 'Before\n\nhttps://example.com/spec\n\nAfter')
   assert.equal(shown(card({ data: { name: 'Design spec' } })), 'Before\n\nDesign spec\n\nAfter')
