@@ -17,7 +17,7 @@ type Step =
   | { depth: number; kind: 'node'; marker: string | undefined; node: AdfNode; place: Place | undefined; suffix: string | undefined }
   | { kind: 'separator' }
 
-// The text written so far. `pieces`: its heads and bodies, `length` their total; `gap`: the line feeds the layout owes before the next text at least, and `literal` those the text before ended in, of which the larger is written; `lead`: the marker of the item the next text opens; `indent`: the margin of every line after that; `cell`: the table cell being written.
+// The text written so far. `pieces`: the text in order, `length` its total; `gap`: the line feeds the layout owes before the next text at least, and `literal` the line feeds the text before it ended in, of which the larger count is written; `lead`: the marker of the item the next text opens; `indent`: the margin of every line after that; `cell`: the table cell being written.
 type Writing = { cell: Cell | undefined; gap: number; indent: string; lead: string | undefined; length: number; literal: number; pieces: string[] }
 
 // A table cell being written: its text goes on the row's line, without the row's margin; `start` is the `length` where the cell began, and `owed` the line feeds owed there, the only ones its first text may write.

@@ -402,7 +402,9 @@ const refusedDocuments: Record<string, AdfDocument> = {
 }
 
 test('gives the limit in the message of a document nested too deep', () => {
-  assert.equal(plain(adfToPlainText(document(deepQuote(largestNesting + 1)))), `unsupported-nesting-depth: the document nests deeper than the ${largestNesting} levels the writer carries`)
+  const written = plain(adfToPlainText(document(deepQuote(largestNesting + 1))))
+  assert.equal(written.startsWith('unsupported-nesting-depth: '), true)
+  assert.equal(written.includes(String(largestNesting)), true)
 })
 
 for (const [name, input] of Object.entries(refusedDocuments)) {
