@@ -2,6 +2,7 @@
 const markElements: ReadonlyMap<string, string> = new Map([
   ['code', 'code'],
   ['em', 'em'],
+  ['strike', 'del'],
   ['strong', 'strong'],
 ])
 

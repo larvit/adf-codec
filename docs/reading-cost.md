@@ -1093,3 +1093,20 @@ Read most (opens and searches):
 - `src/html/emit/adf-to-html.ts` 3
 - `src/index.ts` 3
 - `CHANGELOG.md` 2
+
+## Reading cost, chunk 19fae36f9c33, finished 2026-11-14T22:07:18Z
+
+317879 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/plain-text/adf-to-plain-text.test.ts` 7
+- `README.md` 5
+- `docs/decisions.md` 5
+- `todo.md` 4
+- `ci.sh` 2
+- `src/adf/shown-text.ts` 2
+- `src/html/carry-content.ts` 2
+- `src/plain-text/adf-to-plain-text.ts` 2
+- `CHANGELOG.md` 1
+- `docker-runner.sh` 1

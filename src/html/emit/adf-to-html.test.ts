@@ -75,6 +75,11 @@ test('writes the marks CommonMark spells, the first mark outermost', () => {
   assert.equal(html(adfToHtml(document(paragraph(text('Line one'), { type: 'hardBreak' }, text('Line two'))))), '<p>Line one<br>Line two</p>\n')
 })
 
+test('writes a strike mark as <del>, a strike mark holding attributes as a carry element', () => {
+  assert.equal(html(adfToHtml(document(paragraph(text('old', { type: 'strike' }), text(' new', { type: 'strong' }, { type: 'strike' }))))), '<p><del>old</del><strong><del> new</del></strong></p>\n')
+  assert.match(html(adfToHtml(document(paragraph(text('old', { attrs: { x: 1 }, type: 'strike' }))))), /^<p><span class="adf-carry" data-adf=/)
+})
+
 test('escapes text, and keeps tabs, line feeds and form feeds', () => {
   assert.equal(html(adfToHtml(document(paragraph(text('a < b && c > "d" \'e\'\tf\ng\fh'))))), '<p>a &lt; b &amp;&amp; c &gt; &quot;d&quot; \'e\'\tf\ng\fh</p>\n')
 })

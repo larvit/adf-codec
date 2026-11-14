@@ -54,7 +54,7 @@ block's `data-*` attributes stand on its `<pre>`.
 | ADF | HTML |
 | --- | --- |
 | `date` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`, the day in UTC |
-| `em`, `strong`, `code` | `<em>`, `<strong>`, `<code>` around the text |
+| `em`, `strike`, `strong`, `code` | `<em>`, `<del>`, `<strong>`, `<code>` around the text |
 | `emoji` | `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its `text` the content |
 | `hardBreak` | `<br>` |
 | `inlineCard`, holding a `url` | `<a class="adf-inline-card" href="https://example.com/spec">https://example.com/spec</a>` |
