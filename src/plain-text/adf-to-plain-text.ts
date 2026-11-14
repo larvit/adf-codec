@@ -7,11 +7,11 @@ import { longestOutput, tooLong, withinEngineLimits } from '../length-bound.ts'
 import { nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../adf/document.ts'
 import { shownText } from '../adf/shown-text.ts'
 
-// `gap`: the line feeds the next text needs before it, at least; `leave`: the state a list item restores; `marker`: the list marker of the item a node is; `depth`: the nesting level, as `largestNesting` counts it; `parent`: the node holding this one, from which its path is built when a refusal needs it.
+// `gap`: the line feeds the next text needs before it, at least; `leave`: the state a list item restores, its `length` telling whether the item wrote anything; `marker`: the list marker of the item a node is; `depth`: the nesting level, as `largestNesting` counts it; `parent`: the node holding this one, from which its path is built when a refusal needs it.
 type Place = { index: number; parent: Place | undefined }
 type Step =
   | { kind: 'gap'; lines: number }
-  | { kind: 'leave'; indent: string; lead: string | undefined; written: number }
+  | { kind: 'leave'; indent: string; lead: string | undefined; length: number }
   | { depth: number; kind: 'node'; marker: string | undefined; node: AdfNode; place: Place | undefined }
 
 // `lines`: the line feeds between a node's children; `level`: how much deeper they nest.
@@ -37,19 +37,15 @@ function writeText(content: readonly AdfNode[]): Result<string> {
   let gap = 0
   let indent = ''
   let lead: string | undefined
-  let written = 0
 
   function emit(text: string): void {
     if (text === '') return
-    if (lead !== undefined && gap === 0) gap = 1
-    const atLineStart = written === 0 || gap > 0
-    const head = atLineStart ? `${written === 0 ? '' : '\n'.repeat(gap)}${lead ?? indent}` : ''
-    const body = indent === '' ? text : text.replaceAll(/\n(?=[^\n])/g, `\n${indent}`)
+    const head = length === 0 || gap > 0 ? `${length === 0 ? '' : '\n'.repeat(gap)}${lead ?? indent}` : ''
+    const body = text.replaceAll(/\n(?=[^\n])/g, `\n${indent}`)
     pieces.push(head, body)
     length += head.length + body.length
     gap = 0
     lead = undefined
-    written += 1
   }
 
   const pending: Step[] = childSteps(content, { level: 1, lines: 2 }, 0, undefined, () => undefined).reverse()
@@ -60,18 +56,17 @@ function writeText(content: readonly AdfNode[]): Result<string> {
     }
     if (step.kind === 'leave') {
       indent = step.indent
-      lead = step.written === written ? step.lead : undefined
+      lead = step.length === length ? step.lead : undefined
       continue
     }
     const { depth, marker, node, place } = step
     if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the writer carries`, pathTo(place))
     if (marker !== undefined) {
-      pending.push({ indent, kind: 'leave', lead, written })
+      pending.push({ indent, kind: 'leave', lead, length })
       lead = lead === undefined ? `${indent}${marker}` : `${lead}${marker}`
       indent = `${indent}${' '.repeat(marker.length)}`
     }
     if (node.type === 'hardBreak') gap = Math.max(gap, 1)
-    else if (node.type === 'text') emit(node.text ?? '')
     else if (shownTextTypes.includes(node.type)) emit(shownText(node) ?? '')
     else {
       if (typeof node.text === 'string') emit(node.text)
@@ -87,7 +82,7 @@ function writeText(content: readonly AdfNode[]): Result<string> {
 function childSteps(nodes: readonly AdfNode[], layout: Layout, depth: number, parent: Place | undefined, markerFor: (index: number) => string | undefined): Step[] {
   const steps: Step[] = []
   for (const [index, node] of nodes.entries()) {
-    if (index > 0 && layout.lines > 0) steps.push({ kind: 'gap', lines: layout.lines })
+    if (index > 0) steps.push({ kind: 'gap', lines: layout.lines })
     steps.push({ depth, kind: 'node', marker: markerFor(index), node, place: { index, parent } })
   }
   return steps

@@ -96,6 +96,19 @@ test('writes nothing for a block holding no text, and parts the blocks around it
   assert.equal(plain(adfToPlainText(document(paragraph(), line('a'), { type: 'rule' }, paragraph(), line('b'), bullets(item())))), 'a\n\nb')
 })
 
+test('writes a text node holding nothing as nothing', () => {
+  assert.equal(plain(adfToPlainText(document(line('a'), paragraph(text('')), line('b')))), 'a\n\nb')
+})
+
+test('keeps the text of a paragraph on its line, and an item\'s blocks a line apart, whatever they hold', () => {
+  assert.equal(plain(adfToPlainText(document(bullets(item(paragraph(text('a'), text('b'))))))), '• ab')
+  assert.equal(plain(adfToPlainText(document(bullets(item(line('a')), item({ content: [line('b')], type: 'blockquote' }))))), '• a\n• b')
+  assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item(line('x'))), line('z')))))), '• • x\n  z')
+  assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item()), line('x')))))), '• x')
+  const inline: AdfNode = paragraph({ text: 'a', type: 'unknownInline' }, { text: 'b', type: 'unknownInline' })
+  assert.equal(plain(adfToPlainText(document(inline))), 'ab')
+})
+
 test('numbers an ordered list from its first number, and widens the indent to the marker', () => {
   const list: AdfNode = { attrs: { order: 9 }, content: [item(line('nine'), paragraph(text('a'), { type: 'hardBreak' }), line('b')), item(line('ten'), bullets(item(line('x'))))], type: 'orderedList' }
   assert.equal(plain(adfToPlainText(document(list))), '9. nine\n   a\n   b\n10. ten\n    • x')
@@ -104,6 +117,11 @@ test('numbers an ordered list from its first number, and widens the indent to th
 
 test('keeps a marker for an item whose first content is a nested list', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item(line('x')))), item(line('y')))))), '• • x\n• y')
+})
+
+test('writes a task item holding blocks as an item', () => {
+  const tasks: AdfNode = { content: [{ attrs: { localId: 'a', state: 'TODO' }, content: [line('a'), line('b')], type: 'blockTaskItem' }], type: 'taskList' }
+  assert.equal(plain(adfToPlainText(document(tasks))), '• a\n  b')
 })
 
 test('writes a task list and a decision list as bullets', () => {
@@ -148,12 +166,30 @@ test('refuses what adfToHtml refuses, with the same code and path', () => {
     { type: 'doc', version: Number.NaN },
     { type: 'doc', version: 2 },
     document(deep(largestNesting + 1)),
+    document(line('a'), deep(largestNesting + 1)),
     document(paragraph(text('See '), { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })),
   ]
   for (const input of refused) {
     assert.notEqual(refusal(adfToHtml(input)), 'written')
     assert.equal(refusal(adfToPlainText(input)), refusal(adfToHtml(input)))
   }
+})
+
+test('counts a table\'s levels as adfToHtml does', () => {
+  const deep = (levels: number): AdfNode => {
+    let node = line('x')
+    for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
+    return node
+  }
+  const outcomes = new Set<string>()
+  for (const cell of ['tableCell', 'tableHeader']) {
+    for (let levels = largestNesting - 3; levels <= largestNesting + 1; levels += 1) {
+      const table: AdfNode = { content: [{ content: [{ content: [deep(levels)], type: cell }], type: 'tableRow' }], type: 'table' }
+      assert.equal(refusal(adfToPlainText(document(table))), refusal(adfToHtml(document(table))))
+      outcomes.add(refusal(adfToPlainText(document(table))).slice(0, 12))
+    }
+  }
+  assert.deepEqual([...outcomes].sort(), ['unsupported-', 'written'])
 })
 
 test('writes blocks nested 500 levels', () => {
@@ -170,7 +206,9 @@ test('writes blocks nested 500 levels', () => {
 test('refuses text past V8\'s longest string, which the indent of a deep list can add', () => {
   let list: AdfNode = { content: [text('a\n'.repeat(400000))], type: 'codeBlock' }
   for (let level = 0; level < 400; level += 1) list = bullets(item(list))
-  const refused = adfToPlainText(document(list, list))
+  let tooDeep: AdfNode = line('x')
+  for (let level = 0; level <= largestNesting; level += 1) tooDeep = { content: [tooDeep], type: 'blockquote' }
+  const refused = adfToPlainText(document(list, list, tooDeep))
   assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
   assert.equal(!refused.ok && refused.error.message.includes('536870888'), true)
 })
