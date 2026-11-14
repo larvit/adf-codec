@@ -6,13 +6,15 @@
 
 `Bar = 0.1`
 
-`Next ID = 179`
+`Next ID = 182`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
+| 179 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's text with its blocks parted by blank lines, under a README goal for plain text.** | 2 | 2 | 2 | 4 | 5 | 3 by 4, 6 by 2 | 3.7 |
+| 180 | 0.4.0 | 179 |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6 by 3 | 6.1 |
+| 181 | 0.4.0 | 179, 180 |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6 by 2 | 4.1 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
@@ -49,12 +51,35 @@
 
 ## Details
 
-### 147. Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.
+### 179. Ship `adfToPlainText`, writing a document's text with its blocks parted by blank lines, under a README goal for plain text.
 
 Asked on the Atlassian developer community for search indexing, notifications, emails and CSV
-exports, where markdown's markers are noise, and with a mention as `@Display Name` rather than an
-account id. Add the goal to the README's `## Goals` in the same change. Split into items before
-starting. The maintainer, 2026-10-28: ship what exists first, so this waits for 0.4.0.
+exports, where markdown's markers are noise. Add the goal to the README's `## Goals` in the same
+change. Its wording and rank among the goals are the maintainer's to approve in the PR.
+
+The call takes an `AdfDocument` and returns `Result<string>`, refusing as `adfToHtml` does. It is
+one-way, with no reader, so goal 1's round-trip doesn't bind it. Goal 7 does: it drops markup,
+never content. A node writes its text, and a container its children. A hard break is a newline. A
+mention is `@Display Name`, as `src/adf/shown-text.ts` shows it, never an account id. A node of an
+unknown type writes the text it holds, so no content is lost before items 180 and 181 refine the
+nodes.
+
+A reader panel (`AGENTS.md`, "Ask, don't guess") picks how blocks part and how a list's items read:
+markers, indentation or numbers. The verdict lands in `docs/decisions.md`. The maintainer,
+2026-10-28: ship what exists first, so this waits for 0.4.0.
+
+### 180. Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.
+
+A reader panel picks the cell separator, and what a header row, a merged cell and a block nested in
+a cell read as. The verdict lands in `docs/decisions.md`. Until this item, item 179 writes a
+table's cells as blocks.
+
+### 181. Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.
+
+`src/adf/shown-text.ts` already holds the text each of these shows in portable markdown and HTML:
+an image's alt text or its URL, a card's URL, an extension's key, an expand's title. A reader panel
+picks which of them plain text keeps, and whether a note such as `[image]` stands in for a node
+that shows no text. The verdict lands in `docs/decisions.md`.
 
 Once it ships, answer developer-community topic 41858, which asks for ADF as plain text (the
 maintainer, 2026-10-28).
