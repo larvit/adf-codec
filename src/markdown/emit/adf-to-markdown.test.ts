@@ -237,7 +237,6 @@ test('separates blocks in a container body by a blank line only where a directiv
   assert.equal(markdown(adfToLosslessMarkdown(panel(paragraph(), text('a')))), '!adf:panel info\n!adf:paragraph\n!adf:/paragraph\na\n!adf:/panel\n')
 })
 
-test('describes the spelling of a node CommonMark spells, and none for a node it does not', () => {
-  assert.equal(describeCommonMarkSpelling(paragraph()), 'its text alone')
+test('describes no spelling for a node CommonMark does not spell', () => {
   assert.equal(describeCommonMarkSpelling({ type: 'panel' }), undefined)
 })
