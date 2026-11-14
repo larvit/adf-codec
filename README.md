@@ -17,6 +17,7 @@ products store as ADF.
 * `adfToPortableMarkdown` — ADF to markdown that GitHub, GitLab and Obsidian render. Keeps the content and drops colours, layout and other attributes.
 * `adfToHtml` — ADF to HTML.
 * `htmlToAdf` — HTML to ADF.
+* `adfToPlainText` — ADF to text for an email, a notification or a search index: blocks a blank line apart, lists as `• ` and `1.`, no markup.
 
 ## Features and perks
 
@@ -164,6 +165,34 @@ const back = html.ok ? htmlToAdf(html.value) : undefined
 if (back?.ok) console.log(back.value) // deep-equals page
 ```
 
+### ADF to plain text
+
+```ts
+import { adfToPlainText, type AdfDocument } from '@larvit/adf-codec'
+
+const note: AdfDocument = {
+  content: [
+    { content: [{ text: 'Ship on Friday.', type: 'text' }], type: 'paragraph' },
+    {
+      content: [
+        { content: [{ content: [{ text: 'Fix login', type: 'text' }], type: 'paragraph' }], type: 'listItem' },
+        { content: [{ content: [{ text: 'Fix export', type: 'text' }], type: 'paragraph' }], type: 'listItem' },
+      ],
+      type: 'bulletList',
+    },
+  ],
+  type: 'doc',
+  version: 1,
+}
+
+const text = adfToPlainText(note)
+if (text.ok) console.log(text.value)
+// Ship on Friday.
+//
+// • Fix login
+// • Fix export
+```
+
 ### Handle a result's error
 
 Full reference: [The errors](#the-errors).
@@ -224,6 +253,10 @@ whatever it costs; the Achieve goals are weighed against each other in the order
 7. **Maintain:** Lossy conversion drops form, never content. A link's or an image's title counts as content.
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
+10. **Achieve:** Plain text reads like text written for people reading an email.
+    - Signal: readers shown the candidate texts pick the one the library already writes.
+    - Counter-signal: issues report plain text that reads as markup or runs blocks together.
+    - Why: a search index, a notification and an email each show the text as it is, with no renderer to tidy it.
 
 ## Audience
 
@@ -315,6 +348,8 @@ readAdfDocument(v: unknown): Result<AdfDocument>
 
 commonMarkToAdf(markdown: string): Result<AdfDocument, ParseError>
 
+adfToPlainText(doc: AdfDocument): Result<string>
+
 adfToPortableMarkdown(doc: AdfDocument): Result<string>
 portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError>
 
@@ -328,6 +363,7 @@ Each call's name says which format it reads or writes:
 | --- | --- | --- |
 | `adfToHtml` | writes HTML: the elements [HTML](#html) lists, and an `adf-carry` element holding everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToPlainText` | writes text with no markup: blocks a blank line apart, list items on a line each under `• ` or `1.`, nesting indented, a hard break a line feed, a mention, emoji, date and status as the text they show | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
@@ -609,7 +645,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 
 ### Emitting
 
-`adfToLosslessMarkdown`, `adfToPortableMarkdown` and `adfToHtml` raise these, and the codes under
+`adfToLosslessMarkdown`, `adfToPlainText`, `adfToPortableMarkdown` and `adfToHtml` raise these, and the codes under
 [Either direction](#either-direction). `readAdfDocument` raises `not-an-adf-document` and
 `unsupported-node-shape`, and `engine-limit`.
 
@@ -657,7 +693,7 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
 - **Writing, in `adfToLosslessMarkdown`**: a node not riding the carry that carries one mark type
   twice. Keep the ADF and show the document read-only; where you built the ADF, fix
   what the message names.
-- **Writing, in `adfToHtml`, `adfToLosslessMarkdown` and `adfToPortableMarkdown`**: a shape
+- **Writing, in `adfToHtml`, `adfToLosslessMarkdown`, `adfToPlainText` and `adfToPortableMarkdown`**: a shape
   Atlassian's schema forbids, even inside a node that rides the carry: an inline card a link marks,
   a known block holding `text`, a known non-text inline node holding `text` or non-empty `content`,
   or a known block that takes no content, such as `rule`, holding non-empty `content`. Keep the ADF
@@ -669,7 +705,7 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
   10,000,000 JSON values, each object, array, string, number, boolean and null counting one. Keep
   the ADF and pass the document over or show it read-only; where you built the ADF, split it.
 - **Past the engine's longest string**:
-  - a writer's markdown or HTML would pass 536870888 characters, V8's longest string, on every
+  - a writer's markdown, HTML or text would pass 536870888 characters, V8's longest string, on every
     engine;
   - in `adfToPortableMarkdown`, the document's text alone would, edge whitespace included;
   - in `losslessMarkdownToAdf`, a directive's plain CommonMark would;
@@ -778,6 +814,7 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 | `SourcePosition` | type | an error's place in the markdown or HTML read |
 | `adfToHtml` | function | ADF to HTML |
 | `adfToLosslessMarkdown` | function | ADF to the lossless flavour |
+| `adfToPlainText` | function | ADF to text with no markup |
 | `adfToPortableMarkdown` | function | ADF to portable markdown, lossy |
 | `commonMarkToAdf` | function | strict CommonMark to ADF |
 | `htmlToAdf` | function | `adfToHtml`'s HTML, read back to ADF |

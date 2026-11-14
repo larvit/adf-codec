@@ -4,6 +4,7 @@ export type { ConvertError, ConvertErrorCode, ConvertErrorPath, ParseError, Resu
 export type { JsonValue } from './json-value.ts'
 export { adfToHtml } from './html/emit/adf-to-html.ts'
 export { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
+export { adfToPlainText } from './plain-text/adf-to-plain-text.ts'
 export { adfToPortableMarkdown } from './markdown/portable/adf-to-portable-markdown.ts'
 export { commonMarkToAdf, losslessMarkdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 export { htmlToAdf } from './html/parse/html-to-adf.ts'

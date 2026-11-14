@@ -91,6 +91,7 @@ In `docs/decisions.md`:
 - The comparison tables list every ADF converter that starts and converts
 - The real-world corpus holds anonymized documents from sites whose licence it records
 - The feature table is a section per corpus example, led by a summary table
+- Plain text is blocks a blank line apart, with `• ` and `1.` markers and nesting indented
 
 ## 1. Nothing about any consumer in the library
 
