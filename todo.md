@@ -12,7 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 179 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's text with its blocks parted by blank lines, under a README goal for plain text.** | 2 | 2 | 2 | 4 | 5 | 3 by 4, 6 by 2 | 3.7 |
+| 179 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's text with no markup, under a README goal for plain text.** | 2 | 2 | 2 | 4 | 5 | 3 by 4, 6 by 2 | 3.7 |
 | 180 | 0.4.0 | 179 |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6 by 3 | 6.1 |
 | 181 | 0.4.0 | 179, 180 |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6 by 2 | 4.1 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
@@ -51,38 +51,40 @@
 
 ## Details
 
-### 179. Ship `adfToPlainText`, writing a document's text with its blocks parted by blank lines, under a README goal for plain text.
+### 179. Ship `adfToPlainText`, writing a document's text with no markup, under a README goal for plain text.
 
 Asked on the Atlassian developer community for search indexing, notifications, emails and CSV
 exports, where markdown's markers are noise. Add the goal to the README's `## Goals` in the same
-change. Its wording and rank among the goals are the maintainer's to approve in the PR.
+change. Its wording and rank among the goals are the maintainer's to approve in the PR. The
+maintainer chose 0.4.0 for it, to ship what exists first.
 
-The call takes an `AdfDocument` and returns `Result<string>`, refusing as `adfToHtml` does. It is
-one-way, with no reader, so goal 1's round-trip doesn't bind it. Goal 7 does: it drops markup,
-never content. A node writes its text, and a container its children. A hard break is a newline. A
-mention is `@Display Name`, as `src/adf/shown-text.ts` shows it, never an account id. A node of an
-unknown type writes the text it holds, so no content is lost before items 180 and 181 refine the
-nodes.
+The call takes an `AdfDocument` and returns `Result<string>`. It refuses what `adfToHtml` refuses,
+with the same codes: `engine-limit`, `not-an-adf-document`, `unsupported-document-version`,
+`unsupported-nesting-depth` and `unsupported-node-shape`. It has no reader, so goal 1's
+losslessness can't apply, but it still returns a result and never throws. Goal 7 applies: the call
+drops markup, never content. A node writes its text, and a container its children. A hard break is
+a newline. A mention writes `@Display Name` from its `text`, as `src/adf/shown-text.ts` does, which
+falls back to `@<id>` only where the mention has no text. A node of an unknown type writes the text
+it holds, so no content is lost before items 180 and 181 refine the nodes.
 
 A reader panel (`AGENTS.md`, "Ask, don't guess") picks how blocks part and how a list's items read:
-markers, indentation or numbers. The verdict lands in `docs/decisions.md`. The maintainer,
-2026-10-28: ship what exists first, so this waits for 0.4.0.
+markers, indentation or numbers. The verdict lands in `docs/decisions.md`.
 
 ### 180. Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.
 
 A reader panel picks the cell separator, and what a header row, a merged cell and a block nested in
-a cell read as. The verdict lands in `docs/decisions.md`. Until this item, item 179 writes a
-table's cells as blocks.
+a cell read as. The verdict lands in `docs/decisions.md`. Until this item ships, item 179
+writes a table's cells as blocks.
 
 ### 181. Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.
 
-`src/adf/shown-text.ts` already holds the text each of these shows in portable markdown and HTML:
-an image's alt text or its URL, a card's URL, an extension's key, an expand's title. A reader panel
-picks which of them plain text keeps, and whether a note such as `[image]` stands in for a node
-that shows no text. The verdict lands in `docs/decisions.md`.
+`src/adf/shown-text.ts` already holds what each of these shows in portable markdown and HTML: an
+image's alt text or URL, a card's URL or `data.name`, an extension's `text` and an expand's title.
+For a node that shows no text, its `shownNote` names the node instead, such as `image` or an
+extension's key. A reader panel picks which texts plain text keeps, and whether it writes those
+notes. The verdict lands in `docs/decisions.md`.
 
-Once it ships, answer developer-community topic 41858, which asks for ADF as plain text (the
-maintainer, 2026-10-28).
+Topic 41858 asks for ADF as plain text. Answer it once item 181 ships (the maintainer, 2026-10-28).
 
 ### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 
