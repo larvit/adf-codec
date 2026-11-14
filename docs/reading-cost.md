@@ -1031,3 +1031,20 @@ Read most (opens and searches):
 - `src/result.ts` 2
 - `MIGRATION.md` 1
 - `src/adf/plain-copy.ts` 1
+
+## Reading cost, chunk d1552a8c1f4c, finished 2026-11-14T09:55:35Z
+
+222598 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/parse/markdown-to-adf.test.ts` 69
+- `src/adf/document.test.ts` 25
+- `src/html/parse/html-to-adf.test.ts` 11
+- `todo.md` 7
+- `docs/decisions.md` 5
+- `src/result.ts` 3
+- `ci.sh` 2
+- `README.md` 1
+- `docker-runner.sh` 1
+- `package.json` 1
