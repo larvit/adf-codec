@@ -373,9 +373,15 @@ Weather permitting.
 `adfToHtml`, round-trip holds:
 
 ```html
-<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;panelType&quot;:&quot;warning&quot;},&quot;content&quot;:[{&quot;content&quot;:[{&quot;text&quot;:&quot;Check the collation before importing.&quot;,&quot;type&quot;:&quot;text&quot;}],&quot;type&quot;:&quot;paragraph&quot;}],&quot;type&quot;:&quot;panel&quot;}"><p>Check the collation before importing.</p></div>
-<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;localId&quot;:&quot;01a0337c-561a-75aa-b629-3801f68839ad&quot;,&quot;panelType&quot;:&quot;info&quot;},&quot;content&quot;:[{&quot;content&quot;:[{&quot;text&quot;:&quot;Backups run at 02:00.&quot;,&quot;type&quot;:&quot;text&quot;}],&quot;type&quot;:&quot;paragraph&quot;}],&quot;type&quot;:&quot;panel&quot;}"><p>Backups run at 02:00.</p></div>
-<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;panelColor&quot;:&quot;#c9372c&quot;,&quot;panelIcon&quot;:&quot;:rainbow:&quot;,&quot;panelIconId&quot;:&quot;1f308&quot;,&quot;panelIconText&quot;:&quot;🌈&quot;,&quot;panelType&quot;:&quot;custom&quot;},&quot;content&quot;:[{&quot;content&quot;:[{&quot;text&quot;:&quot;Weather permitting.&quot;,&quot;type&quot;:&quot;text&quot;}],&quot;type&quot;:&quot;paragraph&quot;}],&quot;type&quot;:&quot;panel&quot;}"><p>Weather permitting.</p></div>
+<div class="adf-panel" data-panel-type="warning">
+<p>Check the collation before importing.</p>
+</div>
+<div class="adf-panel" data-local-id="01a0337c-561a-75aa-b629-3801f68839ad" data-panel-type="info">
+<p>Backups run at 02:00.</p>
+</div>
+<div class="adf-panel" data-panel-color="#c9372c" data-panel-icon=":rainbow:" data-panel-icon-id="1f308" data-panel-icon-text="🌈" data-panel-type="custom">
+<p>Weather permitting.</p>
+</div>
 ```
 
 ## Task list
@@ -588,5 +594,8 @@ The card below has no spelling yet.
 
 ```html
 <div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;url&quot;:&quot;https://example.com/roadmap&quot;},&quot;type&quot;:&quot;blockCard&quot;}"><p><a href="https://example.com/roadmap">https://example.com/roadmap</a></p></div>
-<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;panelType&quot;:&quot;info&quot;},&quot;content&quot;:[{&quot;content&quot;:[{&quot;text&quot;:&quot;The card below has no spelling yet.&quot;,&quot;type&quot;:&quot;text&quot;}],&quot;type&quot;:&quot;paragraph&quot;},{&quot;attrs&quot;:{&quot;layout&quot;:&quot;wide&quot;,&quot;url&quot;:&quot;https://example.com/board&quot;,&quot;width&quot;:100},&quot;type&quot;:&quot;embedCard&quot;}],&quot;type&quot;:&quot;panel&quot;}"><p>The card below has no spelling yet.</p><p><a href="https://example.com/board">https://example.com/board</a></p></div>
+<div class="adf-panel" data-panel-type="info">
+<p>The card below has no spelling yet.</p>
+<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;layout&quot;:&quot;wide&quot;,&quot;url&quot;:&quot;https://example.com/board&quot;,&quot;width&quot;:100},&quot;type&quot;:&quot;embedCard&quot;}"><p><a href="https://example.com/board">https://example.com/board</a></p></div>
+</div>
 ```

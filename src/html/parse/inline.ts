@@ -3,7 +3,7 @@ import type { ParseError, Result } from '../../result.ts'
 import { foundAt, misread, misspelledText, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkMarkFrom } from '../../adf/mark-attributes.ts'
-import { markOfElement } from '../mark-elements.ts'
+import { markOfTag } from '../mark-elements.ts'
 import { misspelledAt, unescapedValue } from '../escaping.ts'
 import { readAnchorAttributes } from '../anchor-element.ts'
 import { readCarry } from './carry-element.ts'
@@ -31,8 +31,8 @@ function readTagged(html: string, index: number, place: Place): ReadNode | undef
   if (tag?.name === 'br' && tag.attributes.length === 0) return success({ end: tag.end, node: { type: 'hardBreak' } })
   const element = tag === undefined ? undefined : readNodeElement(html, tag, place)
   if (element !== undefined) return element
-  if (tag?.name === 'span') return readCarry(html, tag, 'span', largestNesting, place)
-  return tag !== undefined && markOf(tag) !== undefined ? readMarked(html, index, place) : undefined
+  if (tag !== undefined && markOf(tag) !== undefined) return readMarked(html, index, place)
+  return tag?.name === 'span' ? readCarry(html, tag, 'span', largestNesting, place) : undefined
 }
 
 // Each text node writes its own elements, one inside the other around its text, the first mark outermost.
@@ -77,6 +77,5 @@ function markOf(tag: StartTag): AdfMark | undefined {
     const link = readAnchorAttributes(tag.attributes)
     return link === undefined ? undefined : linkMarkFrom(link)
   }
-  const type = tag.attributes.length === 0 ? markOfElement(tag.name) : undefined
-  return type === undefined ? undefined : { type }
+  return markOfTag(tag.name, tag.attributes)
 }

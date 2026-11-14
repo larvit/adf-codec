@@ -2,6 +2,7 @@ import type { AdfAttributes, AdfNode } from '../adf/document.ts'
 import type { JsonValue } from '../json-value.ts'
 import type { Read } from '../result.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
+import { colourDeclaration, readColour } from './colour-style.ts'
 import { dataAttributes, dataValue, readDataAttributes } from './data-attributes.ts'
 import { isNumberList } from '../adf/attribute-vocabulary.ts'
 import { nodeAttrs } from '../adf/document.ts'
@@ -10,8 +11,6 @@ import { serializeCanonicalJson } from '../canonical-json.ts'
 const elementWritten = ['background', 'colspan', 'colwidth', 'rowspan']
 const leading = ['colspan', 'rowspan', 'style', 'data-colwidth']
 const span = /^[1-9][0-9]*$/
-// Letters and digits alone, so no value can end the `background-color` declaration or call `url()`.
-const styled = /^background-color:(#?[0-9a-zA-Z]+)$/
 
 export function isHeaderRow(row: { content?: AdfNode[] }): boolean {
   const cells = row.content ?? []
@@ -49,7 +48,8 @@ function spanAttribute(name: string, value: JsonValue | undefined): string | und
 
 function styleAttribute(background: JsonValue | undefined): string | undefined {
   if (background === undefined) return ''
-  return typeof background === 'string' && styled.test(`background-color:${background}`) ? ` style="background-color:${background}"` : undefined
+  const declaration = colourDeclaration('background-color', background)
+  return declaration === undefined ? undefined : ` style="${declaration}"`
 }
 
 function widthsAttribute(colwidth: JsonValue | undefined): string | undefined {
@@ -63,7 +63,7 @@ function ownKey(name: string): string {
 }
 
 function ownValue(name: string, spelled: string): JsonValue | undefined {
-  if (name === 'style') return styled.exec(spelled)?.[1]
+  if (name === 'style') return readColour('background-color', spelled)
   if (name === 'data-colwidth') return dataValue(`[${spelled}]`, 'numbers')
   const value = Number(spelled)
   return span.test(spelled) && Number.isSafeInteger(value) ? value : undefined

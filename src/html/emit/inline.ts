@@ -1,9 +1,9 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import { anchorOpener } from '../anchor-element.ts'
 import { carriedInline } from './carry-element.ts'
-import { elementOfMark } from '../mark-elements.ts'
 import { holdsOnlyAttributes, isSpellableText, isUnmarkedSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { linkAttrs } from '../../adf/mark-attributes.ts'
+import { markTag } from '../mark-elements.ts'
 import { nodeElement } from './node-element.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { writableValue } from '../escaping.ts'
@@ -49,10 +49,8 @@ export function writableText(text: string | undefined): string | undefined {
 }
 
 function markElement(mark: AdfMark): { closer: string; opener: string } | undefined {
-  const { type } = mark
-  const element = elementOfMark(type)
-  if (element !== undefined) return mark.attrs === undefined ? { closer: `</${element}>`, opener: `<${element}>` } : undefined
-  if (type !== 'link' || Object.keys(nodeAttrs(mark)).some((key) => key !== 'href' && key !== 'title')) return undefined
+  if (mark.type !== 'link') return markTag(mark)
+  if (Object.keys(nodeAttrs(mark)).some((key) => key !== 'href' && key !== 'title')) return undefined
   const link = linkAttrs(nodeAttrs(mark))
   const opener = link === undefined ? undefined : anchorOpener(link)
   return opener === undefined ? undefined : { closer: '</a>', opener }

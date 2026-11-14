@@ -420,7 +420,7 @@ for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the g
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
-The spellings, `spec/html.md`, are seven writer panels' (2026-10-23, -24, 2026-11-04, -05 and -14), each of a
+The spellings, `spec/html.md`, are eight writer panels' (2026-10-23, -24, 2026-11-04, -05 and -14), each of a
 product manager, an engineer and a support agent. The first picked each of these 3 of 3:
 
 - an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
@@ -494,6 +494,23 @@ table is a section per corpus example, led by a summary table expected `<s>` or 
 `<del>old</del>` for a `strike` mark, 3 of 3, over `<s>` and over a `<span>` styled
 `text-decoration:line-through`. They chose `<del>` because its name says the text is removed, and
 GFM's renderers write `<del>` for `~~`.
+
+An eighth panel (2026-11-14, three readers in the same roles; seven for indentation) picked, 3 of 3:
+
+- a `mediaSingle` as `<figure class="adf-media-single" data-*>` holding an `<img>`, inside `<a>` where
+  a link marks it, and a `<figcaption>`; a `mediaGroup` as `<div class="adf-media-group">` holding a
+  `<span class="adf-file" data-*>` for each file;
+- `<u>`, `<sub>` and `<sup>`, `<span style="color:…">` and `<mark style="background-color:…">`;
+- `style="text-align:center"` and `text-align:right` for an `alignment` of `center` and `end`;
+- `<details class="adf-expand">` and `<details class="adf-nested-expand">` with the `title` as the
+  `<summary>` and `<div class="adf-panel" data-panel-type="…">`;
+- a task list as `<ul class="adf-task-list">` of `<li class="adf-task" data-state="DONE">` holding
+  `<input type="checkbox" checked="" disabled="">` and the text, a decision list the same with
+  `adf-decision-list`, `adf-decision` and no checkbox. `checked=""` and `disabled=""` are spelled with
+  a value because the attribute grammar has no bare attribute.
+
+For an `indentation` mark, five of seven picked `data-indent-level`; whether a `margin-left` style
+goes with it split 4 to 3, so it rides the carry until `todo.md` item 184 is answered.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
@@ -1298,8 +1315,8 @@ the copy is refused as `unmappable-html` rather than saved. They expected:
 - The `strike` mark in Emphasis and strikethrough as `<s>relay</s>` or `<del>relay</del>`, which
   `adfToHtml` writes as `<del>` (§The HTML dialect).
 
-`todo.md` item 134 will write the rest; its writer panel picks the spelling with these
-expectations as input. The Date row drew 1 of 3 not reasonable, so four more readers (bot,
+The writer panel of §The HTML dialect picked the rest of the spellings with these
+expectations as input; `blockTaskItem` and a nested task list ride the carry. The Date row drew 1 of 3 not reasonable, so four more readers (bot,
 reader of the markdown, export/indexing, viewer/editor) read it, and 5 of 7 found it reasonable.
 `adfToLosslessMarkdown` keeps writing `!adf:date{timestamp=1756080000000}`. The two who rejected
 it wanted the day shown, as `!adf:date[2025-08-25]{timestamp=…}`.

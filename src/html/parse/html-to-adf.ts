@@ -1,8 +1,9 @@
-import type { AdfAttributes, AdfDocument, AdfNode } from '../../adf/document.ts'
-import type { AttributeVocabulary } from '../../adf/attribute-vocabulary.ts'
+import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { FirstParagraphForm } from '../first-paragraph.ts'
 import type { ParseError, Result } from '../../result.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
+import { expandClasses, expandOfClass, panelAttributes, panelClass, taskListOfClass, taskListOfType } from '../block-classes.ts'
+import { built, readInlineBlock } from './inline-block.ts'
 import { carryContent } from '../carry-content.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { isHeaderRow, readCellAttributes } from '../cell-element.ts'
@@ -19,8 +20,10 @@ import { readAnchorAttributes } from '../anchor-element.ts'
 import { readCarry } from './carry-element.ts'
 import { readCarryAttributes } from '../carry-attributes.ts'
 import { readDataAttributes, readDataAttributesAfter } from '../data-attributes.ts'
+import { readFigure, readMediaGroup } from './media-block.ts'
 import { readImageAttributes } from '../image-element.ts'
 import { readLanguageClass } from '../language-class.ts'
+import { readTaskItem } from './task-item.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
 import { withinEngineLimits } from '../../length-bound.ts'
 
@@ -39,9 +42,11 @@ type TableSection = 'body' | 'head'
 // No element name opens both a block and an inline node, so the name alone tells an item's line from its next block.
 const blockReaders: ReadonlyMap<string, BlockReader> = new Map([
   [containerElements.blockquote, containerReader('blockquote')],
-  [containerElements.bulletList, containerReader('bulletList')],
+  [containerElements.bulletList, readBulletList],
   [containerElements.orderedList, containerReader('orderedList')],
-  ['div', readBlockCarry],
+  ['details', readDetails],
+  ['div', readDiv],
+  ['figure', (html, tag, place) => asStep(readFigure(html, tag, place))],
   ['hr', readRule],
   ['p', readParagraph],
   ['pre', readCodeBlock],
@@ -137,7 +142,7 @@ function closerOf(open: Open): string {
 }
 
 function readStep(html: string, index: number, place: Place, open: Open): Result<BlockStep | RowStep, ParseError> {
-  if (open.kind === 'list') return readItem(html, index, place, open.depth)
+  if (open.kind === 'list') return readItem(html, index, place, open)
   if (open.kind === 'rows') return readRow(html, index, place, open)
   return open.kind === 'row' ? readCell(html, index, place, open.depth) : readBlock(html, index, place, open)
 }
@@ -169,21 +174,6 @@ function readParagraph(html: string, tag: StartTag, place: Place, open: Open): R
 function asFirstParagraph(read: { end: number; node: AdfNode }, found: FirstParagraphForm, html: string, index: number, place: Place): ReadNode {
   const form = firstParagraphForm(read.node)
   return form === found ? success(read) : refused('unmappable-html', `${formRefusals[form]}: ${foundAt(html, index)}`, html, index, place)
-}
-
-// `own`: the attributes the element itself writes, such as a heading's level.
-function readInlineBlock(html: string, tag: StartTag, type: string, vocabulary: AttributeVocabulary, own: AdfAttributes, place: Place): ReadNode {
-  const data = readDataAttributes(tag.attributes, tag.name, vocabulary, Object.keys(own))
-  if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
-  const inline = readInline(html, tag.end, place)
-  if (!inline.ok) return inline
-  const { end, nodes } = inline.value
-  const closer = `</${tag.name}>`
-  if (!html.startsWith(closer, end)) {
-    const stop = misread(html, end, `${closer} ends the ${type}, and its text spells < as &lt;`, 'no inline element of the dialect')
-    return refused('unmappable-html', stop.message, html, stop.at, place)
-  }
-  return success({ end: end + closer.length, node: built(type, { ...own, ...data.value }, nodes) })
 }
 
 // `undefined` where no image follows the `<p>`, so it opens a paragraph.
@@ -234,9 +224,59 @@ function readRule(html: string, tag: StartTag, place: Place): Result<BlockStep, 
   return data.fault === undefined ? success({ end: tag.end, kind: 'node', node: built('rule', data.value, []) }) : refused(data.fault.code, data.fault.message, html, tag.start, place)
 }
 
+function readDiv(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
+  const [first] = tag.attributes
+  const className = first?.[0] === 'class' ? first[1] : undefined
+  if (className === panelClass) return readPanel(html, tag, place, open)
+  return className === 'adf-media-group' ? asStep(readMediaGroup(html, tag, place)) : readBlockCarry(html, tag, place, open)
+}
+
+function readPanel(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
+  const data = readDataAttributes(tag.attributes.slice(1), tag.name, panelAttributes, [])
+  if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
+  return readContents(html, tag, built('panel', data.value, []), place, open, 'blocks')
+}
+
+// An expand's title stands in a `<summary>` on the first line, its blocks a line each after it.
+function readDetails(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
+  const [first, ...pairs] = tag.attributes
+  const type = first?.[0] === 'class' ? expandOfClass(first[1]) : undefined
+  if (type === undefined) return refused('unmappable-html', `<details> starts with class="${expandClasses.expand}" or class="${expandClasses.nestedExpand}": ${foundAt(html, tag.start)}`, html, tag.start, place)
+  const data = readDataAttributes(pairs, tag.name, blockNodes[type].attributes, ['title'])
+  if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
+  const summary = html.startsWith('\n<summary>', tag.end) ? readSummary(html, tag.end + 1, place) : undefined
+  if (summary?.ok === false) return summary
+  if (summary === undefined) return readContents(html, tag, built(type, data.value, []), place, open, 'blocks')
+  const node = built(type, { ...data.value, title: summary.value.title }, [])
+  const { end } = summary.value
+  if (html.startsWith('\n</details>', end)) return success({ end: end + '\n</details>'.length, kind: 'node', node })
+  if (!html.startsWith('\n', end)) return refused('unmappable-html', `<summary> holds the title, then a line feed and the first block, or a line feed and </details>: ${foundAt(html, end)}`, html, end, place)
+  return success({ end: end + 1, kind: 'opened', open: { closer: '\n</details>', content: [], depth: open.depth + 1, kind: 'blocks', node, place } })
+}
+
+function readSummary(html: string, index: number, place: Place): Result<{ end: number; title: string }, ParseError> {
+  const start = index + '<summary>'.length
+  const close = html.indexOf('</summary>', start)
+  if (close < 0) return refused('unmappable-html', `<summary> ends at </summary>: ${foundAt(html, start)}`, html, start, place)
+  const spelled = html.slice(start, close)
+  const title = unescapedValue(spelled, 'text')
+  if (title === undefined) return misspelledText(html, start + misspelledAt(spelled, 'text'), place)
+  return success({ end: close + '</summary>'.length, title })
+}
+
 function readBlockCarry(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
   if (readCarryAttributes(tag.attributes) === emptyDocument) return refused('unsupported-node-shape', `${documentCarryAlone}: ${foundAt(html, tag.start)}`, html, tag.start, place)
   return asStep(readCarry(html, tag, 'div', largestNesting - open.depth, place))
+}
+
+// A `<ul>` is a task or decision list where its class says so.
+function readBulletList(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
+  const [first, ...pairs] = tag.attributes
+  const type = first?.[0] === 'class' ? taskListOfClass(first[1]) : undefined
+  if (type === undefined) return readContainer(html, tag, 'bulletList', place, open)
+  const data = readDataAttributes(pairs, tag.name, blockNodes[type].attributes, [])
+  if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
+  return readContents(html, tag, built(type, data.value, []), place, open, 'list')
 }
 
 function containerReader(type: ContainerType): BlockReader {
@@ -256,11 +296,15 @@ function readContainer(html: string, tag: StartTag, type: ContainerType, place: 
   const vocabulary = blockNodes[type].attributes
   const data = ordered ? readDataAttributesAfter('start', tag.attributes, tag.name, vocabulary, ['order']) : readDataAttributes(tag.attributes, tag.name, vocabulary, [])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
-  const node = built(type, order === undefined ? data.value : { order, ...data.value }, [])
+  return readContents(html, tag, built(type, order === undefined ? data.value : { order, ...data.value }, []), place, open, type === 'blockquote' ? 'blocks' : 'list')
+}
+
+// The element holds nothing, or a line feed and its first block or item.
+function readContents(html: string, tag: StartTag, node: AdfNode, place: Place, open: Open, kind: 'blocks' | 'list'): Result<BlockStep, ParseError> {
   const closer = `</${tag.name}>`
   if (html.startsWith(closer, tag.end)) return success({ end: tag.end + closer.length, kind: 'node', node })
-  if (!html.startsWith('\n', tag.end)) return refused('unmappable-html', `<${tag.name}> holds ${closer} straight after it, or a line feed and its first ${type === 'blockquote' ? 'block' : 'item'}: ${foundAt(html, tag.end)}`, html, tag.end, place)
-  return success({ end: tag.end + 1, kind: 'opened', open: { closer: `\n${closer}`, content: [], depth: open.depth + 1, kind: type === 'blockquote' ? 'blocks' : 'list', node, place } })
+  if (!html.startsWith('\n', tag.end)) return refused('unmappable-html', `<${tag.name}> holds ${closer} straight after it, or a line feed and its first ${kind === 'blocks' ? 'block' : 'item'}: ${foundAt(html, tag.end)}`, html, tag.end, place)
+  return success({ end: tag.end + 1, kind: 'opened', open: { closer: `\n${closer}`, content: [], depth: open.depth + 1, kind, node, place } })
 }
 
 function readTable(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
@@ -306,7 +350,9 @@ function readCell(html: string, index: number, place: Place, depth: number): Res
   return readHolder(html, tag, built(tag.name === 'td' ? 'tableCell' : 'tableHeader', attrs.value, []), place, depth)
 }
 
-function readItem(html: string, index: number, place: Place, depth: number): Result<BlockStep, ParseError> {
+function readItem(html: string, index: number, place: Place, { depth, node: list }: Open): Result<BlockStep, ParseError> {
+  const tasks = taskListOfType(list.type)
+  if (tasks !== undefined) return asStep(readTaskItem(html, index, place, tasks))
   const tag = readStartTag(html, index)
   if (tag?.name !== 'li') {
     const stop = misread(html, index, 'a list holds <li> items, one to a line', 'no list item of the dialect')
@@ -372,9 +418,4 @@ function partedLine(html: string, end: number, nodes: AdfNode[]): AdfNode[] | un
 
 function isBlockStart(html: string, index: number): boolean {
   return blockReaders.has(startTagName(html, index) ?? '')
-}
-
-// The node an element holding no attribute or content reads as: `adfToHtml` writes a node holding an empty `attrs` or `content` as a carry.
-function built(type: string, attrs: AdfAttributes, content: AdfNode[]): AdfNode {
-  return { ...(Object.keys(attrs).length === 0 ? {} : { attrs }), ...(content.length === 0 ? {} : { content }), type }
 }
