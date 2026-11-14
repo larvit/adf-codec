@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 182`
+`Next ID = 183`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 182 | 0.4.0 |  | question | **Decide whether the audience names the people reading plain text, and whether goal 10 is a sub-goal of goal 6.** | 1 | 1 | 1 | 1 | 1 | 10 by 3 | 5.6 |
 | 180 | 0.4.0 |  |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6 by 3 | 4.9 |
 | 181 | 0.4.0 |  |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6 by 2 | 3.3 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 3.2 |
@@ -50,11 +51,22 @@
 
 ## Details
 
+### 182. Decide whether the audience names the people reading plain text, and whether goal 10 is a sub-goal of goal 6.
+
+`## Audience` lists no one who sends notifications or emails, and goal 10 reads like a narrower case of
+goal 6 (what output the audience expects), with the same signal. Two choices are the maintainer's:
+
+- Add the readers of an email, a notification and a search hit to `## Audience`, so goal 10's
+  readers are named there.
+- Keep goal 10 as it is, or make it goal 6.2 and cite 6.2 in the Moves of items 180 and 181.
+
+Raised by the product-owner and prose reviews of the chunk that shipped `adfToPlainText`.
+
 ### 180. Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.
 
 A reader panel picks the cell separator, and what a header row, a merged cell and a block nested in
-a cell read as. The verdict lands in `docs/decisions.md`. Until this item ships, item 179
-writes a table's cells as blocks.
+a cell read as. The verdict lands in `docs/decisions.md`. Until this item ships,
+`adfToPlainText` writes a table's cells as blocks.
 
 ### 181. Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.
 
@@ -64,8 +76,8 @@ For a node that shows no text, its `shownNote` names the node instead, such as `
 extension's key. A reader panel picks which texts plain text keeps, and whether it writes those
 notes. The verdict lands in `docs/decisions.md`.
 
-This item doesn't read item 180's table spelling, so the two land in either order. Both change item
-179's call, so the second to merge may meet a conflict; neither waits for the other.
+This item doesn't read item 180's table spelling, so the two land in either order. Both change
+`adfToPlainText`, so the second to merge may meet a conflict; neither waits for the other.
 
 Topic 41858 asks for ADF as plain text. Answer it once item 181 ships (the maintainer, 2026-10-28).
 

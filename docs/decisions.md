@@ -1300,24 +1300,34 @@ it wanted the day shown, as `!adf:date[2025-08-25]{timestamp=…}`.
 ## Plain text is blocks a blank line apart, with `• ` and `1.` markers and nesting indented
 
 2026-11-14, a reader panel of 7 (export/indexing, LLM/agent, support agent, viewer/editor, bot,
-product manager, engineer), then the maintainer. Goal 10. Valid while the audience of the text is
+product manager, engineer), then the maintainer; a second panel of 3 (support agent, product
+manager, export/indexing) for links and task state. Goal 10. Valid while the audience of the text is
 people reading an email.
 
-Each reader wrote the text they expected, then picked among six shuffled candidates. All seven
-expected a blank line between blocks, a hard break as one line feed and a mention as its display
-text. Three picked blank lines with no markers and no indent, three picked `• ` bullets with `1.`
-numbers kept and nesting indented, one picked `- ` and `1.` markers. Less than five of seven is a
-missing goal, so the maintainer chose the second and worded the goal for people reading an email.
+Each reader of the first panel wrote the text they expected, then picked among six shuffled
+candidates. All seven expected a blank line between blocks, a hard break as one line feed and a
+mention as its display text. Three picked blank lines with no markers and no indent, three picked
+`• ` bullets with `1.` numbers kept and nesting indented, one picked `- ` and `1.` markers. Fewer
+than five of seven is a missing goal, so the maintainer chose the `• ` bullets and worded the goal
+for people reading an email.
+
+The second panel's readers each wrote the text they expected, then picked among four shuffled
+candidates for the links and four for task state. All three picked a link's address in parentheses
+after its text, with the title after the address, and `☑` and `☐` in place of the bullet. All three
+had expected no title, and goal 7 counts a title as content, so every candidate kept it.
 
 `adfToPlainText` writes:
 
-- Blocks a blank line apart, an item's blocks and a list's items a line apart.
-- `• ` for a bullet list, a task list and a decision list, and `n. ` for an ordered list, counting
-  from its `order`. A nested list and an item's later lines are indented to the marker's width.
-- A hard break as a line feed, a mention, emoji, date and status as the text they show, and marks
-  as the text they mark.
+- Blocks a blank line apart; an item's blocks and a list's items one line feed apart.
+- `• ` for a bullet list and a decision list, and `n. ` for an ordered list, counting from its
+  `order`.
+- `☑ ` for a done task item and `☐ ` for any other, in place of the bullet.
+- A nested list and an item's later lines indented to the marker's width.
+- A list child that is no item, such as a task list nested in one, under the item before it.
+- A hard break as a line feed, two in a row as a blank line.
+- A mention, emoji, date and status as the text they show.
+- A link's text, then ` (address)` or ` (address, "title")`, once after a run of text nodes sharing
+  the link; nothing after a link whose text is its address and that holds no title.
+- Any other mark as the text it marks.
 - A block holding no text as nothing, with no extra blank line.
-- A table as its cells written as blocks, until a plan item gives it a spelling.
-
-The depth and length refusals are `adfToHtml`'s: a document nesting past 500 levels, or text past
-V8's longest string, indentation included.
+- A table as its cells written as blocks, until item 180 gives it a spelling.
