@@ -1048,3 +1048,15 @@ Read most (opens and searches):
 - `README.md` 1
 - `docker-runner.sh` 1
 - `package.json` 1
+
+## Reading cost, chunk 8f5a3de7b59f, finished 2026-11-14T10:21:13Z
+
+65214 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/emit/adf-to-markdown.ts` 6
+- `src/markdown/emit/spelling-questions.ts` 2
+- `README.md` 1
+- `docs/decisions.md` 1
+- `src/markdown/parse/markdown-to-adf.ts` 1
