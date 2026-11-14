@@ -1749,3 +1749,47 @@ Ruling: same
 |---|---|---|---|---|---|
 | Mid A | same | same | same | same | same |
 | Inherited architect | same | same | same | same | same |
+
+## 2026-11-14T09:49:34Z, PR #162 at fa8600f
+
+| Seat | Navigation | Locality | Shape | Self-sufficiency | Overall |
+|---|---|---|---|---|---|
+| Junior A | 7 | 5 | 6 | 5 | 5.5 |
+| Mid A | 7 | 5.5 | 6 | 5.5 | 6 |
+| Maintainability senior | 7 | 5.5 | 6 | 5.5 | 6 |
+| Inherited architect | 6 | 5.5 | 6 | 5.5 | 6 |
+| Mean | 6.75 | 5.38 | 6.00 | 5.38 | 5.88 |
+
+Junior A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding` / `pairVerdicts`: a forward and a backward sweep over three verdicts and four standings, whose case derivation lives only in the decision log
+- Self-sufficiency: `src/markdown/emit/line-escaping.ts:99` `readBack`: up to three escape passes running the reader inside the writer, with no statement of why three suffice
+- Locality: `src/markdown/emit/inline-line.ts:120` `settledLine`: a generic fallback loop whose state changes out of sight through the `LineFallbacks.carried` Set
+- Locality: `src/markdown/inline-content.ts:255` `directiveMarkPieces` / `closeBracket`: a mutable `Scan` shared across eight or more piece kinds
+- Shape: `src/markdown/emit/block-text.ts:109` `prefixedLine`: open, started and innermostQuote bookkeeping for lazy container prefixes
+
+Mid A, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding`: the only case analysis kept outside the code, in a locally coined vocabulary
+- Locality: `src/markdown/emit/inline-line.ts:120` `settledLine`: fallbacks mutate the `carried` Set and `openingLinkAsDirective` in place, and the 32-pass cap's termination is only named
+- Locality: `src/markdown/inline-content.ts:424` `closeBracket` / `applyClosing`: one mutable `Scan` shared by nine piece kinds in a 695-line file
+- Locality: `src/markdown/emit/adf-to-markdown.ts:138` `spellingMemo`: a reference-keyed memo with take, ask and depth rebasing, and headroom kept across three types
+- Shape: `src/markdown/portable/adf-to-portable-markdown.ts:126` `portableSequence`: whether a block is replaced turns on a reference comparison
+- Locality: `src/markdown/parse/markdown-to-adf.ts:126` `directiveNode`: the parser refuses a directive through a hand-kept map that must agree with the emitter
+
+Maintainability senior, hardest first:
+
+- Self-sufficiency, Overall: `src/markdown/emit/unspellable-runs.ts:223` `pairStanding` / `pairVerdicts`: two coined vocabularies and two sweeps, with the correctness argument in the decision log
+- Locality: `src/markdown/emit/line-escaping.ts:99` `readBack`: a fixpoint over escapes steered by a full re-parse, with per-character `Uint8Array` codes
+- Shape: `src/markdown/emit/inline-line.ts:120` `settledLine`: a three-type-parameter loop for two consumers, the `carried` Set mutated by helpers away from it
+- Navigation, Locality: `src/markdown/inline-content.ts:592` `pairingMarks`: scanner state written from several functions, in a file sharing its name with the 17-line `src/markdown/parse/inline-content.ts`
+- Locality: `src/markdown/emit/adf-to-markdown.ts:138` `spellingMemo`: drop-on-read entries with rebased headroom, whose staleness rules need proving before touching `walkBlocks`
+- Self-sufficiency: `src/markdown/emit/adf-to-markdown.ts:57` `writeMarkdown`: the writer's emit, re-parse, compare and fall back design is stated nowhere at its entry
+
+Inherited architect, would restructure first:
+
+- Navigation, Overall: `src/markdown/parse/inline-content.ts:10` `readInlineContent`: a 17-line shim sharing its name with the real reader at the markdown root, which no note explains, a wrong turn on the 3am path
+- Locality: `src/markdown/emit/line-escaping.ts:99` `readBack`: the writer's correctness depends on reading back through the reader
+- Shape: `src/adf/document.ts:38` `readAdfDocument`: the file holds the reader, the writer prechecks, the schema refusals and text merging
+- Shape: `src/markdown/emit/adf-to-markdown.ts:57` `writeMarkdown`: the shared writer lives in a file whose name means the lossless one
+- Self-sufficiency: `src/markdown/emit/unspellable-runs.ts:49` `pairVerdicts`: hands its reason to a decision title, as the 32-pass cap at `src/markdown/emit/inline-line.ts:61` does
