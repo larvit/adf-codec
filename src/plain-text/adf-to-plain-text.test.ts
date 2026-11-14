@@ -106,6 +106,26 @@ test('writes a link\'s address and title after the text it covers, once for a ru
   assert.equal(plain(written), 'Read the docs (https://example.com/docs, "Guide") and the changelog (https://example.com/changes).\n\nhttps://example.com/\n\na (https://one.example/)b (https://two.example/)')
 })
 
+test('writes no address after a link whose text, over several text nodes, is its address', () => {
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(plain(adfToPlainText(document(paragraph(text('https://exa', link), text('mple.com/', link))))), 'https://example.com/')
+})
+
+test('writes an address after each of two links to one address with different titles', () => {
+  const link = (title: string): AdfMark => ({ attrs: { href: 'https://example.com/', title }, type: 'link' })
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a', link('x')), text('b', link('y')))))), 'a (https://example.com/, "x")b (https://example.com/, "y")')
+})
+
+test('finds a link among the other marks of a text node', () => {
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a', { type: 'strong' }, link))))), 'a (https://example.com/)')
+})
+
+test('writes no address after a node that is no text node, whatever marks it holds', () => {
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(plain(adfToPlainText(document(paragraph({ marks: [link], text: 'a', type: 'unknownInline' })))), 'a')
+})
+
 test('writes a link with a title after its address even where the text is the address', () => {
   const link: AdfMark = { attrs: { href: 'https://example.com/', title: 'Home' }, type: 'link' }
   assert.equal(plain(adfToPlainText(document(paragraph(text('https://example.com/', link))))), 'https://example.com/ (https://example.com/, "Home")')
@@ -164,6 +184,14 @@ test('writes a task list nested in a task list under its parent item, with no ma
 
 test('writes two hard breaks in a row as a blank line', () => {
   assert.equal(plain(adfToPlainText(document(paragraph(text('a'), { type: 'hardBreak' }, { type: 'hardBreak' }, text('b'))))), 'a\n\nb')
+})
+
+test('keeps the larger of the line feeds a text ends in and the ones owed before it', () => {
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a'), { type: 'hardBreak' }, text('\n\n'), text('b'))))), 'a\n\nb')
+})
+
+test('writes a block that is no item in an ordered list under the item before it', () => {
+  assert.equal(plain(adfToPlainText(document(numbers(item(line('a')), bullets(item(line('b'))))))), '1. a\n   • b')
 })
 
 test('writes a code block ending in a line feed as one block, a blank line from the next', () => {
