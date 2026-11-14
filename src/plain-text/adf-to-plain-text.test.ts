@@ -254,13 +254,13 @@ test('writes a table a blank line from the blocks around it', () => {
   assert.equal(plain(adfToPlainText(document(line('Team'), table(cells('a', 'b'), cells('c', 'd')), line('End')))), 'Team\n\na | b\nc | d\n\nEnd')
 })
 
-test('writes a merged cell once, with no place for the cells it covers', () => {
+test('writes a merged cell once, with its covered cells left out', () => {
   const wide: AdfNode = { attrs: { colspan: 2 }, content: [line('Wide')], type: 'tableCell' }
   const tall: AdfNode = { attrs: { rowspan: 2 }, content: [line('Tall')], type: 'tableCell' }
   assert.equal(plain(adfToPlainText(document(table(row(wide, tall), cells('x', 'y'))))), 'Wide | Tall\nx | y')
 })
 
-test('writes an empty cell as an empty place between the bars, in any column', () => {
+test('writes an empty cell as nothing between the bars, in any column', () => {
   assert.equal(plain(adfToPlainText(document(table(row(cell(line('a')), cell(), cell(line('c'))), row(cell(), cell(line('e'))))))), 'a |  | c\n | e')
 })
 
@@ -278,11 +278,27 @@ test('writes a table inside a list item under the item\'s indent', () => {
   assert.equal(plain(adfToPlainText(document(bullets(item(line('t'), table(cells('a', 'b'), cells('c', 'd'))))))), '• t\n  a | b\n  c | d')
 })
 
-test('writes the text nodes of a cell without a space between them, and a list in a nested table behind its own marker', () => {
+test('writes the text nodes of a cell without a space between them', () => {
   const marked: AdfNode = { marks: [{ type: 'strong' }], text: 'b', type: 'text' }
   assert.equal(plain(adfToPlainText(document(table(row(cell(paragraph(text('a'), marked)), cell(line('c'))))))), 'ab | c')
+})
+
+test('writes a list in any cell of a table inside a list item behind its own marker, without the item\'s indent', () => {
   const listed = row(cell(bullets(item(line('p')), item(line('q')))), cell(line('y')))
   assert.equal(plain(adfToPlainText(document(bullets(item(line('t'), table(listed)))))), '• t\n  • p • q | y')
+  const later = row(cell(line('y')), cell(bullets(item(line('p')), item(line('q')))))
+  assert.equal(plain(adfToPlainText(document(bullets(item(line('t'), table(later)))))), '• t\n  y | • p • q')
+})
+
+test('writes the items of a list nested in a list in a cell a space apart, without the nesting margin', () => {
+  const nested = bullets(item(line('p'), bullets(item(line('q')))))
+  assert.equal(plain(adfToPlainText(document(table(row(cell(nested), cell(line('y'))))))), '• p • q | y')
+})
+
+test('keeps a row on its line when the first block of a cell holds no text', () => {
+  const code = (value: string): AdfNode => ({ content: [text(value)], type: 'codeBlock' })
+  const leading: AdfNode[] = [paragraph(), paragraph({ type: 'hardBreak' }), { type: 'rule' }, code('\n')]
+  for (const first of leading) assert.equal(plain(adfToPlainText(document(table(row(cell(line('a')), cell(first, line('b'))), row(cell(first, line('c')), cell(line('d'))))))), 'a | b\nc | d')
 })
 
 test('writes a blank line and a line feed ending a code fragment in a cell as one space each', () => {
@@ -320,12 +336,12 @@ test('writes the target of a link around an image, after its alt text and before
   assert.equal(shown({ content: [withLink({ attrs: { type: 'external', url: 'https://example.com/team.png' }, type: 'media' }, 'https://example.com/go')], type: 'mediaSingle' }), 'Before\n\nhttps://example.com/team.png (https://example.com/go)\n\nAfter')
 })
 
-test('writes a link\'s title around an image behind its target', () => {
+test('writes a link\'s title behind its target after an image', () => {
   const titled: AdfNode = { ...uploaded, marks: [{ attrs: { href: 'https://example.com/go', title: 'Go' }, type: 'link' }] }
   assert.equal(shown({ content: [titled], type: 'mediaSingle' }), 'Before\n\nQuarterly chart (https://example.com/go, "Go")\n\nAfter')
 })
 
-test('writes the images of a group and an inline image on the line they stand in', () => {
+test('writes the images of a group a blank line apart, and an inline image on the line it stands in', () => {
   assert.equal(shown({ content: [external, uploaded], type: 'mediaGroup' }), 'Before\n\nTeam photo (https://example.com/team.png)\n\nQuarterly chart\n\nAfter')
   assert.equal(plain(adfToPlainText(document(paragraph(text('See '), { attrs: { alt: 'logo', type: 'file' }, type: 'mediaInline' }, text(' here'))))), 'See logo here')
 })
@@ -342,7 +358,7 @@ test('writes a card as its address, or as its name then its address', () => {
   assert.equal(plain(adfToPlainText(document(paragraph(text('See '), { attrs: { data: { name: 'Spec', url: 'https://example.com/spec' } }, type: 'inlineCard' }, text('.'))))), 'See Spec (https://example.com/spec).')
 })
 
-test('writes an extension as the text it carries, and as nothing with none', () => {
+test('writes an extension as the text it carries, and as no text with none', () => {
   assert.equal(shown({ attrs: { extensionKey: 'chart', extensionType: 'com.example', text: 'Roadmap macro output' }, type: 'extension' }), 'Before\n\nRoadmap macro output\n\nAfter')
   assert.equal(shown({ attrs: { extensionKey: 'chart', extensionType: 'com.example' }, type: 'extension' }), 'Before\n\nAfter')
   assert.equal(plain(adfToPlainText(document(paragraph(text('a '), { attrs: { extensionKey: 'k', extensionType: 't', text: 'x' }, type: 'inlineExtension' }, text(' b'))))), 'a x b')
@@ -385,7 +401,7 @@ const refusedDocuments: Record<string, AdfDocument> = {
   'a card with a link mark': document(paragraph(text('See '), { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })),
 }
 
-test('names the limit it refuses a document for', () => {
+test('gives the limit in the message of a document nested too deep', () => {
   assert.equal(plain(adfToPlainText(document(deepQuote(largestNesting + 1)))), `unsupported-nesting-depth: the document nests deeper than the ${largestNesting} levels the writer carries`)
 })
 

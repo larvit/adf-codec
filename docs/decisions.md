@@ -1319,12 +1319,13 @@ had expected no title, and goal 7 counts a title as content, so every candidate 
 A third panel, of 3 then 7 (export/indexing, support agent and product manager first; then LLM/agent,
 engineer, viewer/editor and bot), wrote the text they expected, then picked among shuffled candidates
 for a table, an image, a card, an extension and an expand. All three agreed on one line per row with
-` | ` between cells, a header row like any other, a merged cell written once with no place for the
-cells it covers, a card as its address, an extension as its text, and an expand as its title, a blank
-line, then its body. Five of seven picked `[image]` for an image with nothing to show. Three splits
-went to the maintainer: a block in a cell (five of seven expected the blocks joined by a space, so
-that is the rule), and an image with an address (alt text then ` (address)`, as links do, since
-goal 7 counts the address as content; with no alt text the address alone).
+` | ` between cells, a header row like any other, a merged cell written once with its covered cells
+left out, a card as its address, an extension as its text, and an expand as its title, a blank
+line, then its body. Five of seven picked `[image]` for an image with nothing to show. The picks
+split on a block in a cell, where five of seven had expected the blocks joined by a space, so that is
+the rule. They split on an image with an address too; the maintainer chose alt text then
+` (address)`, as links do, since goal 7 counts the address as content, and the address alone with no
+alt text.
 
 `adfToPlainText` writes:
 
@@ -1340,12 +1341,12 @@ goal 7 counts the address as content; with no alt text the address alone).
   the link; nothing after a link whose text is its address and that holds no title.
 - Any other mark as the text it marks.
 - A block holding no text as nothing, with no extra blank line.
-- A table as a line per row, a line feed apart, its cells apart by ` | ` and an empty cell empty, a
-  header row like any other; a merged cell once, the cells it covers writing no place; a cell's
-  blocks, hard breaks and code lines on its line a space apart, a list item behind its marker.
+- A table as one line per row, its cells apart by ` | ` and an empty cell between the bars, a
+  header row like any other; a merged cell once, its covered cells left out; a cell's blocks, hard
+  breaks and code lines on the row's line a space apart, a list item behind its marker.
 - An image as its alt text, else its address, else `[image]`; then ` (address)` for the link around
-  it, titled as a link is, then ` (address)` for its own address where the alt text stood in for it.
-- A card as its address, or its name then ` (address)`; an extension as its `text`, and as nothing
-  with none; no other note is written, so a card, an extension or a synced block holding nothing
-  writes nothing.
+  it, titled as a link is, then ` (address)` for its own address where the alt text stood in for it,
+  unless that is the link's address.
+- A card as its address, or its name then ` (address)`, and an extension as its `text`. A card, an
+  extension or a synced block holding no text adds no note in its place.
 - An expand's title on a line, a blank line above its body.

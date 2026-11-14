@@ -6,8 +6,9 @@
   email: blocks a blank line apart; `• ` and `1.` list markers, `☑ ` and `☐ ` for a done and an open
   task, nesting indented; a link's address and title in parentheses after its text; a hard break as a
   line feed; a mention, emoji, date or status as the text it shows; a table as a line per row, its
-  cells apart by ` | `; an image as its alt text and address, `[image]` with neither; a card as its
-  address; an extension's text; and an expand's title above its body. It refuses what `adfToHtml`
+  cells apart by ` | `; an image as its alt text and address, the address alone with no alt text, `[image]`
+  with neither; a card as its address, or its name then its address; an extension as its text; and an
+  expand's title above its body. It refuses what `adfToHtml`
   refuses.
 - `readAdfDocument` and the four writers name the node `not-an-adf-document` refuses: `path` leads
   to a node that is not an ADF node, and the message says what is wrong with it, such as which
