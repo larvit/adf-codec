@@ -17,6 +17,9 @@ type Step =
   | { kind: 'separator' }
   | { depth: number; kind: 'node'; marker: string | undefined; node: AdfNode; place: Place | undefined; suffix: string | undefined }
 
+// The text written so far. `pieces`: its heads and bodies, `length` their total; `gap`: the line feeds the layout owes before the next text at least, and `literal` those the text before ended in, of which the larger is written; `lead`: the marker of the item the next text opens; `indent`: the margin of every line after that; `cell`: the table cell being written.
+type Writing = { cell: Cell | undefined; gap: number; indent: string; lead: string | undefined; length: number; literal: number; pieces: string[] }
+
 // A table cell being written: its text goes on the row's line, so `base`, the margin of the row, is not repeated; `start` is the `length` where the cell began.
 type Cell = { base: string; start: number }
 
@@ -41,82 +44,79 @@ export function adfToPlainText(document: AdfDocument): Result<string> {
   })
 }
 
-// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded). Text is written the moment it is met: `gap` holds the line feeds the layout owes first and `literal` those the text before ended in, of which the larger is written, `lead` the marker of the item it opens, `indent` the margin of every line after that.
+// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded). Text is written the moment it is met.
 function writeText(content: readonly AdfNode[]): Result<string> {
-  const pieces: string[] = []
-  let length = 0
-  let gap = 0
-  let indent = ''
-  let lead: string | undefined
-  let literal = 0
-  let cell: Cell | undefined
-
-  // Past its first text, a cell goes on the row's line: a line feed owed becomes a space, and a marker keeps its place without the row's margin.
-  function emit(text: string): void {
-    const end = endBeforeLineFeeds(text)
-    if (end > 0) {
-      const owed = Math.max(gap, literal)
-      const open = cell
-      let head = ''
-      if (open !== undefined && length > open.start) head = owed > 0 ? ` ${lead === undefined ? '' : lead.slice(open.base.length)}` : ''
-      else if (length === 0 || owed > 0 || lead !== undefined) head = `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}`
-      const kept = text.slice(0, end)
-      const body = open === undefined ? kept.replaceAll(/\n(?=[^\n])/g, `\n${indent}`) : kept.replaceAll(/\n+/g, ' ')
-      pieces.push(head, body)
-      length += head.length + body.length
-      gap = 0
-      lead = undefined
-    }
-    literal = (end > 0 ? 0 : literal) + (cell === undefined ? text.length - end : 0)
-  }
-
+  const writing: Writing = { cell: undefined, gap: 0, indent: '', lead: undefined, length: 0, literal: 0, pieces: [] }
   const pending: Step[] = childSteps(content, { level: 1, lines: 2 }, 0, undefined, () => undefined).reverse()
   for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
-    if (step.kind === 'gap') {
-      gap = Math.max(gap, step.lines)
-      continue
-    }
-    if (step.kind === 'leaveCell') {
-      const written = cell !== undefined && length > cell.start
-      gap = written ? 0 : step.gap
-      literal = written ? 0 : step.literal
-      cell = step.cell
-      continue
-    }
-    if (step.kind === 'separator') {
-      emit(' | ')
-      continue
-    }
-    if (step.kind === 'leave') {
-      indent = step.indent
-      lead = step.length === length ? step.lead : undefined
-      continue
-    }
-    const { depth, marker, node, place, suffix } = step
-    if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the writer carries`, pathTo(place))
-    if (cellTypes.includes(node.type)) {
-      pending.push({ cell, gap, kind: 'leaveCell', literal })
-      cell = { base: indent, start: length }
-    }
-    if (marker !== undefined) {
-      pending.push({ indent, kind: 'leave', lead, length })
-      lead = lead === undefined ? `${indent}${marker}` : `${lead}${marker}`
-      indent = `${indent}${' '.repeat(marker.length)}`
-    }
-    if (node.type === 'hardBreak') gap += 1
-    else if (shownTextTypes.includes(node.type)) emit(shownText(node) ?? '')
-    else if (cardTypes.includes(node.type)) emit(cardText(node))
-    else if (imageTypes.includes(node.type)) emit(imageText(node))
-    else {
-      const title = expandTypes.includes(node.type) ? shownText(node) : undefined
-      emit(`${node.text ?? title ?? ''}${suffix ?? ''}`)
-      const inner = stepsWithin(node, depth, place)
-      if (title !== undefined) inner.unshift({ kind: 'gap', lines: 2 })
-      for (const child of inner.reverse()) pending.push(child)
-    }
-    if (length > longestOutput) return tooLong()
+    if (step.kind === 'node') {
+      const refusal = openNode(writing, step, pending)
+      if (refusal !== undefined) return refusal
+    } else applyStep(writing, step)
+    if (writing.length > longestOutput) return tooLong()
   }
-  return success(pieces.join(''))
+  return success(writing.pieces.join(''))
+}
+
+// What a step that is no node does to the state.
+function applyStep(writing: Writing, step: Exclude<Step, { kind: 'node' }>): void {
+  if (step.kind === 'gap') writing.gap = Math.max(writing.gap, step.lines)
+  else if (step.kind === 'separator') emit(writing, ' | ')
+  else if (step.kind === 'leave') {
+    writing.indent = step.indent
+    writing.lead = step.length === writing.length ? step.lead : undefined
+  } else {
+    const written = writing.cell !== undefined && writing.length > writing.cell.start
+    writing.gap = written ? 0 : step.gap
+    writing.literal = written ? 0 : step.literal
+    writing.cell = step.cell
+  }
+}
+
+// Writes the text of a node, and pushes the steps for the nodes within it; refuses a node nested too deep.
+function openNode(writing: Writing, step: Extract<Step, { kind: 'node' }>, pending: Step[]): Result<string> | undefined {
+  const { depth, marker, node, place, suffix } = step
+  if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the writer carries`, pathTo(place))
+  if (cellTypes.includes(node.type)) {
+    pending.push({ cell: writing.cell, gap: writing.gap, kind: 'leaveCell', literal: writing.literal })
+    writing.cell = { base: writing.indent, start: writing.length }
+  }
+  if (marker !== undefined) {
+    pending.push({ indent: writing.indent, kind: 'leave', lead: writing.lead, length: writing.length })
+    writing.lead = writing.lead === undefined ? `${writing.indent}${marker}` : `${writing.lead}${marker}`
+    writing.indent = `${writing.indent}${' '.repeat(marker.length)}`
+  }
+  if (node.type === 'hardBreak') writing.gap += 1
+  else if (shownTextTypes.includes(node.type)) emit(writing, shownText(node) ?? '')
+  else if (cardTypes.includes(node.type)) emit(writing, cardText(node))
+  else if (imageTypes.includes(node.type)) emit(writing, imageText(node))
+  else {
+    const title = expandTypes.includes(node.type) ? shownText(node) : undefined
+    emit(writing, `${node.text ?? title ?? ''}${suffix ?? ''}`)
+    const inner = stepsWithin(node, depth, place)
+    if (title !== undefined) inner.unshift({ kind: 'gap', lines: 2 })
+    for (const child of inner.reverse()) pending.push(child)
+  }
+  return undefined
+}
+
+// Past its first text, a cell goes on the row's line: a line feed owed becomes a space, and a marker keeps its place without the row's margin.
+function emit(writing: Writing, text: string): void {
+  const end = endBeforeLineFeeds(text)
+  if (end > 0) {
+    const owed = Math.max(writing.gap, writing.literal)
+    const { cell, indent, lead, length } = writing
+    let head = ''
+    if (cell !== undefined && length > cell.start) head = owed > 0 ? ` ${lead === undefined ? '' : lead.slice(cell.base.length)}` : ''
+    else if (length === 0 || owed > 0 || lead !== undefined) head = `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}`
+    const kept = text.slice(0, end)
+    const body = cell === undefined ? kept.replaceAll(/\n(?=[^\n])/g, `\n${indent}`) : kept.replaceAll(/\n+/g, ' ')
+    writing.pieces.push(head, body)
+    writing.length += head.length + body.length
+    writing.gap = 0
+    writing.lead = undefined
+  }
+  writing.literal = (end > 0 ? 0 : writing.literal) + (writing.cell === undefined ? text.length - end : 0)
 }
 
 function endBeforeLineFeeds(text: string): number {
