@@ -1,11 +1,12 @@
 {
   "name": "@larvit/adf-codec",
   "version": "0.3.1",
-  "description": "Convert between ADF (Atlassian Document Format, the rich text of Jira and Confluence) and markdown or HTML.",
+  "description": "Convert between ADF (Atlassian Document Format, the rich text of Jira and Confluence) and markdown or HTML, or write it as plain text.",
   "keywords": [
     "adf",
     "adf-to-html",
     "adf-to-markdown",
+    "adf-to-plain-text",
     "atlassian",
     "atlassian-document-format",
     "atlassian-forge",
