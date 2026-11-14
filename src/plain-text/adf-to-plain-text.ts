@@ -76,10 +76,8 @@ function writeText(content: readonly AdfNode[]): Result<string> {
     if (node.type === 'hardBreak') gap += 1
     else if (shownTextTypes.includes(node.type)) emit(shownText(node) ?? '')
     else {
-      if (typeof node.text === 'string') emit(node.text)
-      if (suffix !== undefined) emit(suffix)
-      const layout = layoutOf(node)
-      for (const child of childSteps(nodeContent(node), layout, depth + layout.level, place, markerFor(node)).reverse()) pending.push(child)
+      emit(`${node.text ?? ''}${suffix ?? ''}`)
+      for (const child of stepsWithin(node, depth, place).reverse()) pending.push(child)
     }
     if (length > longestOutput) return tooLong()
   }
