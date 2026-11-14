@@ -32,26 +32,29 @@ export function adfToPlainText(document: AdfDocument): Result<string> {
   })
 }
 
-// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded). Text is written the moment it is met: `gap` holds the line feeds it owes first, `lead` the marker of the item it opens, `indent` the margin of every line after that.
+// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded). Text is written the moment it is met: `gap` holds the line feeds the layout owes first and `literal` those the text before ended in, of which the larger is written, `lead` the marker of the item it opens, `indent` the margin of every line after that.
 function writeText(content: readonly AdfNode[]): Result<string> {
   const pieces: string[] = []
   let length = 0
   let gap = 0
   let indent = ''
   let lead: string | undefined
+  let literal = 0
 
   function emit(text: string): void {
     let end = text.length
     while (end > 0 && text[end - 1] === '\n') end -= 1
     if (end > 0) {
-      const head = length === 0 || gap > 0 ? `${length === 0 ? '' : '\n'.repeat(gap)}${lead ?? indent}` : ''
+      const owed = Math.max(gap, literal)
+      const head = length === 0 || owed > 0 ? `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}` : ''
       const body = text.slice(0, end).replaceAll(/\n(?=[^\n])/g, `\n${indent}`)
       pieces.push(head, body)
       length += head.length + body.length
       gap = 0
       lead = undefined
+      literal = 0
     }
-    gap = Math.max(gap, text.length - end)
+    literal += text.length - end
   }
 
   const pending: Step[] = childSteps(content, { level: 1, lines: 2 }, 0, undefined, () => undefined).reverse()
