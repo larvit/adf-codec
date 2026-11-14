@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 179 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's text with no markup, under a README goal for plain text.** | 2 | 2 | 2 | 4 | 5 | 3 by 4, 6 by 2 | 3.7 |
 | 180 | 0.4.0 | 179 |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6 by 3 | 6.1 |
-| 181 | 0.4.0 | 179, 180 |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6 by 2 | 4.1 |
+| 181 | 0.4.0 | 179 |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6 by 2 | 4.1 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
 | 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
@@ -83,6 +83,9 @@ image's alt text or URL, a card's URL or `data.name`, an extension's `text` and 
 For a node that shows no text, its `shownNote` names the node instead, such as `image` or an
 extension's key. A reader panel picks which texts plain text keeps, and whether it writes those
 notes. The verdict lands in `docs/decisions.md`.
+
+This item reads nothing of item 180's table spelling, so the two land in either order. Both change
+item 179's call, which risks a merge conflict, not a dependency.
 
 Topic 41858 asks for ADF as plain text. Answer it once item 181 ships (the maintainer, 2026-10-28).
 
