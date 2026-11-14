@@ -5,6 +5,7 @@ import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/doc
 import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
 import { adfToLosslessMarkdown } from '../../index.ts'
+import { describeCommonMarkSpelling } from './spelling-questions.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
@@ -234,4 +235,9 @@ test('separates blocks in a container body by a blank line only where a directiv
   assert.equal(markdown(adfToLosslessMarkdown(panel(text('a'), caption))), '!adf:panel info\na\n!adf:caption\nc\n!adf:/caption\n!adf:/panel\n')
   assert.equal(markdown(adfToLosslessMarkdown(panel(caption, text('a')))), '!adf:panel info\n!adf:caption\nc\n!adf:/caption\na\n!adf:/panel\n')
   assert.equal(markdown(adfToLosslessMarkdown(panel(paragraph(), text('a')))), '!adf:panel info\n!adf:paragraph\n!adf:/paragraph\na\n!adf:/panel\n')
+})
+
+test('describes the spelling of a node CommonMark spells, and none for a node it does not', () => {
+  assert.equal(describeCommonMarkSpelling(paragraph()), 'its text alone')
+  assert.equal(describeCommonMarkSpelling({ type: 'panel' }), undefined)
 })
