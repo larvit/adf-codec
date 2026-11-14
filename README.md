@@ -575,7 +575,7 @@ content. No stylesheet ships. The complete dialect:
 | `paragraph` | `<p>` |
 | `rule` | `<hr>` |
 | `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
-| `text` marked `code`, `em`, `strong` | `<code>`, `<em>`, `<strong>`, the first mark outermost |
+| `text` marked `code`, `em`, `strike`, `strong` | `<code>`, `<em>`, `<del>`, `<strong>`, the first mark outermost |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot, except a shape Atlassian's schema forbids, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 

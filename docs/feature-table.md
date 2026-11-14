@@ -77,7 +77,7 @@ An un*real*istic goal.
 `adfToHtml`, round-trip holds:
 
 ```html
-<p>Read the <em>manual</em> before <strong>wiring</strong> the <span class="adf-carry" data-adf="{&quot;marks&quot;:[{&quot;type&quot;:&quot;strike&quot;}],&quot;text&quot;:&quot;relay&quot;,&quot;type&quot;:&quot;text&quot;}">relay</span>.</p>
+<p>Read the <em>manual</em> before <strong>wiring</strong> the <del>relay</del>.</p>
 <p>An un<em>real</em>istic goal.</p>
 ```
 

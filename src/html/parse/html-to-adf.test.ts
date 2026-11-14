@@ -80,6 +80,10 @@ test('reads text\'s marks from its elements, the outermost first, and each run o
   assert.deepEqual(read(htmlToAdf('<p><a href="x" title="">y</a></p>\n')), document(paragraph(text('y', { attrs: { href: 'x', title: '' }, type: 'link' }))))
 })
 
+test('reads <del> as a strike mark', () => {
+  assert.deepEqual(read(htmlToAdf('<p><del>old</del><strong><del> new</del></strong></p>\n')), document(paragraph(text('old', { type: 'strike' }), text(' new', { type: 'strong' }, { type: 'strike' }))))
+})
+
 test('reads escaped text, and keeps tabs, line feeds and form feeds', () => {
   assert.deepEqual(read(htmlToAdf('<p>a &lt; b &amp;&amp; c &gt; &quot;d&quot; \'e\'\tf\ng\fh &amp;lt;</p>\n')), document(paragraph(text('a < b && c > "d" \'e\'\tf\ng\fh &lt;'))))
 })

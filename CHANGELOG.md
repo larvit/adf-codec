@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `adfToHtml` writes a `strike` mark as `<del>`, where it wrote the carry element, and `htmlToAdf` reads
+  `<del>` as `strike`. A carry element written before still reads.
 - `adfToPlainText` writes a document as text with no markup, for a search index, a notification or an
   email: blocks a blank line apart; `• ` and `1.` list markers, `☑ ` and `☐ ` for a done and an open
   task, nesting indented; a link's address and title in parentheses after its text; a hard break as a

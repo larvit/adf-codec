@@ -489,6 +489,10 @@ A sixth panel (2026-11-05, three readers in the same roles) picked each of these
 - a cell's attributes as `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">`,
   over `data-*` for all four.
 
+A seventh panel (2026-11-14, three readers in the same roles, after a reader panel expected `<s>` or
+`<del>`) picked `<del>old</del>` for a `strike` mark, 3 of 3, over `<s>` and over a `<span>` styled
+`text-decoration:line-through`: its name says what the text is, and GFM's renderers write it for `~~`.
+
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
 2026-10-28, the maintainer. Goal 6. Valid while a viewer/editor app may show `adfToHtml`'s HTML in a
@@ -1289,9 +1293,10 @@ the copy is refused as `unmappable-html` rather than saved. They expected:
   `<li data-state="DONE" data-local-id="…"><input type="checkbox" checked disabled> Write the spec</li>`.
   A `blockTaskItem` is an `<li>` of two `<p>`, a nested list an inner `<ul>`, and an empty item
   an `<li data-state="TODO">`.
-- The `strike` mark in Emphasis and strikethrough as `<s>relay</s>` or `<del>relay</del>`.
+- The `strike` mark in Emphasis and strikethrough as `<s>relay</s>` or `<del>relay</del>`, which
+  `adfToHtml` writes as `<del>` (§The HTML dialect).
 
-`todo.md` items 134 and 141 will write these; their writer panels pick the spelling with these
+`todo.md` item 134 will write the rest; its writer panel picks the spelling with these
 expectations as input. The Date row drew 1 of 3 not reasonable, so four more readers (bot,
 reader of the markdown, export/indexing, viewer/editor) read it, and 5 of 7 found it reasonable.
 `adfToLosslessMarkdown` keeps writing `!adf:date{timestamp=1756080000000}`. The two who rejected
