@@ -1301,7 +1301,7 @@ it wanted the day shown, as `!adf:date[2025-08-25]{timestamp=…}`.
 
 2026-11-14, a reader panel of 7 (export/indexing, LLM/agent, support agent, viewer/editor, bot,
 product manager, engineer), then the maintainer; a second panel of 3 (support agent, product
-manager, export/indexing) for links and task state. Goal 10. Valid while the audience of the text is
+manager, export/indexing) for links and task state. Goal 6.2. Valid while the audience of the text is
 people reading an email.
 
 Each reader of the first panel wrote the text they expected, then picked among six shuffled

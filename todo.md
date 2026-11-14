@@ -12,9 +12,8 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 182 | 0.4.0 |  | question | **Decide whether the audience names the people reading plain text, and whether goal 10 is a sub-goal of goal 6.** | 1 | 1 | 1 | 1 | 1 | 10 by 3 | 5.6 |
-| 180 | 0.4.0 |  |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6 by 3 | 4.9 |
-| 181 | 0.4.0 |  |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6 by 2 | 3.3 |
+| 180 | 0.4.0 |  |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6.2 by 3 | 4.8 |
+| 181 | 0.4.0 |  |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6.2 by 2 | 3.3 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 3.2 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 1.6 |
 | 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 1.6 |
@@ -50,17 +49,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 182. Decide whether the audience names the people reading plain text, and whether goal 10 is a sub-goal of goal 6.
-
-`## Audience` lists no one who sends notifications or emails, and goal 10 reads like a narrower case of
-goal 6 (what output the audience expects), with the same signal. Two choices are the maintainer's:
-
-- Add the readers of an email, a notification and a search hit to `## Audience`, so goal 10's
-  readers are named there.
-- Keep goal 10 as it is, or make it goal 6.2 and cite 6.2 in the Moves of items 180 and 181.
-
-Raised by the product-owner and prose reviews of the chunk that shipped `adfToPlainText`.
 
 ### 180. Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.
 
