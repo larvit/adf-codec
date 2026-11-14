@@ -420,7 +420,7 @@ for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the g
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
-The spellings, `spec/html.md`, are six writer panels' (2026-10-23, -24, 2026-11-04 and -05), each of a
+The spellings, `spec/html.md`, are seven writer panels' (2026-10-23, -24, 2026-11-04, -05 and -14), each of a
 product manager, an engineer and a support agent. The first picked each of these 3 of 3:
 
 - an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
@@ -489,9 +489,11 @@ A sixth panel (2026-11-05, three readers in the same roles) picked each of these
 - a cell's attributes as `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">`,
   over `data-*` for all four.
 
-A seventh panel (2026-11-14, three readers in the same roles, after a reader panel expected `<s>` or
-`<del>`) picked `<del>old</del>` for a `strike` mark, 3 of 3, over `<s>` and over a `<span>` styled
-`text-decoration:line-through`: its name says what the text is, and GFM's renderers write it for `~~`.
+A seventh panel (2026-11-14, three readers in the same roles, after the reader panel of §The feature
+table is a section per corpus example, led by a summary table expected `<s>` or `<del>`) picked
+`<del>old</del>` for a `strike` mark, 3 of 3, over `<s>` and over a `<span>` styled
+`text-decoration:line-through`. They chose `<del>` because its name says the text is removed, and
+GFM's renderers write `<del>` for `~~`.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
@@ -1282,8 +1284,8 @@ wide pipe table and over one wide HTML table with a `<pre>` per cell. Examples c
 A reader panel (2026-11-05, goal 6) judged each of the page's fifteen rows. The same three personas
 first wrote what they expected of the three writers for every example, each in its own shuffled
 order, then saw the page's outputs and ruled each row reasonable or not. Eleven rows drew 3 of 3
-reasonable. Three drew 3 of 3 not reasonable, each because `adfToHtml` writes a node or mark it
-knows as an opaque `adf-carry` element. An editor shows that element's visible copy, and an edit to
+reasonable. Three drew 3 of 3 not reasonable, each because `adfToHtml` wrote a node or mark it
+knew as an opaque `adf-carry` element. An editor shows that element's visible copy, and an edit to
 the copy is refused as `unmappable-html` rather than saved. They expected:
 
 - A panel as `<div class="adf-panel" data-panel-type="warning"><p>…</p></div>`, with its `localId`,
