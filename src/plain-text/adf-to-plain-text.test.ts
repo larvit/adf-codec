@@ -1,0 +1,176 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+
+import type { AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
+import type { Result } from '../result.ts'
+import { adfToHtml, adfToPlainText } from '../index.ts'
+import { largestNesting } from '../nesting.ts'
+
+function document(...content: AdfNode[]): AdfDocument {
+  return { content, type: 'doc', version: 1 }
+}
+
+function plain(result: Result<string>): string {
+  return result.ok ? result.value : `${result.error.code}: ${result.error.message}`
+}
+
+function refusal(result: Result<unknown>): string {
+  return result.ok ? 'written' : `${result.error.code} at /${result.error.path.join('/')}`
+}
+
+function paragraph(...content: AdfNode[]): AdfNode {
+  return content.length === 0 ? { type: 'paragraph' } : { content, type: 'paragraph' }
+}
+
+function text(value: string, ...marks: AdfMark[]): AdfNode {
+  return marks.length === 0 ? { text: value, type: 'text' } : { marks, text: value, type: 'text' }
+}
+
+function item(...content: AdfNode[]): AdfNode {
+  return { content, type: 'listItem' }
+}
+
+function bullets(...items: AdfNode[]): AdfNode {
+  return { content: items, type: 'bulletList' }
+}
+
+function numbers(...items: AdfNode[]): AdfNode {
+  return { content: items, type: 'orderedList' }
+}
+
+function line(value: string): AdfNode {
+  return paragraph(text(value))
+}
+
+test('writes blocks as their text, a blank line apart, with bullets, numbers and nesting indented', () => {
+  const mention: AdfNode = { attrs: { id: '557058:ann', text: '@Ann Lee' }, type: 'mention' }
+  const written = adfToPlainText(
+    document(
+      { attrs: { level: 2 }, content: [text('Release notes')], type: 'heading' },
+      line('Ship on Friday.'),
+      paragraph(text('Ask '), mention, text(' first.'), { type: 'hardBreak' }, text('Then ship.')),
+      bullets(item(line('Fix login')), item(line('Fix export'), bullets(item(line('CSV')), item(line('JSON')))), item(line('Docs'))),
+      numbers(item(line('Build')), item(line('Test')), item(line('Ship'))),
+      { content: [line('Measure twice.')], type: 'blockquote' },
+      { content: [text('npm test')], type: 'codeBlock' },
+      line('Done.'),
+    ),
+  )
+  assert.equal(
+    plain(written),
+    [
+      'Release notes',
+      '',
+      'Ship on Friday.',
+      '',
+      'Ask @Ann Lee first.',
+      'Then ship.',
+      '',
+      '• Fix login',
+      '• Fix export',
+      '  • CSV',
+      '  • JSON',
+      '• Docs',
+      '',
+      '1. Build',
+      '2. Test',
+      '3. Ship',
+      '',
+      'Measure twice.',
+      '',
+      'npm test',
+      '',
+      'Done.',
+    ].join('\n'),
+  )
+})
+
+test('writes marks as the text they mark, and an empty document as nothing', () => {
+  const link: AdfMark = { attrs: { href: 'https://example.com/', title: 'Home' }, type: 'link' }
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a ', { type: 'strong' }), text('b', link, { type: 'em' }), text(' c', { type: 'code' }))))), 'a b c')
+  assert.equal(plain(adfToPlainText(document())), '')
+  assert.equal(plain(adfToPlainText({ type: 'doc', version: 1 })), '')
+})
+
+test('writes nothing for a block holding no text, and parts the blocks around it once', () => {
+  assert.equal(plain(adfToPlainText(document(paragraph(), line('a'), { type: 'rule' }, paragraph(), line('b'), bullets(item())))), 'a\n\nb')
+})
+
+test('numbers an ordered list from its first number, and widens the indent to the marker', () => {
+  const list: AdfNode = { attrs: { order: 9 }, content: [item(line('nine'), paragraph(text('a'), { type: 'hardBreak' }), line('b')), item(line('ten'), bullets(item(line('x'))))], type: 'orderedList' }
+  assert.equal(plain(adfToPlainText(document(list))), '9. nine\n   a\n   b\n10. ten\n    • x')
+  assert.equal(plain(adfToPlainText(document({ attrs: { order: 1.5 }, content: [item(line('a'))], type: 'orderedList' }))), '1. a')
+})
+
+test('keeps a marker for an item whose first content is a nested list', () => {
+  assert.equal(plain(adfToPlainText(document(bullets(item(bullets(item(line('x')))), item(line('y')))))), '• • x\n• y')
+})
+
+test('writes a task list and a decision list as bullets', () => {
+  const tasks: AdfNode = { content: [{ attrs: { state: 'DONE' }, content: [text('Write the spec')], type: 'taskItem' }, { attrs: { state: 'TODO' }, content: [text('Ship')], type: 'taskItem' }], type: 'taskList' }
+  const decisions: AdfNode = { content: [{ attrs: { state: 'DECIDED' }, content: [text('Use Node')], type: 'decisionItem' }], type: 'decisionList' }
+  assert.equal(plain(adfToPlainText(document(tasks, decisions))), '• Write the spec\n• Ship\n\n• Use Node')
+})
+
+test('writes a mention, an emoji, a date and a status as the text they show', () => {
+  const nodes: AdfNode[] = [
+    { attrs: { id: '557058:ann' }, type: 'mention' },
+    { attrs: { shortName: ':smile:', text: '😄' }, type: 'emoji' },
+    { attrs: { timestamp: '1756080000000' }, type: 'date' },
+    { attrs: { color: 'green', text: 'Done' }, type: 'status' },
+  ]
+  assert.equal(plain(adfToPlainText(document(paragraph(...nodes.flatMap((node) => [node, text(' ')]))))), '@557058:ann 😄 2025-08-25 Done ')
+})
+
+test('writes a table\'s cells as blocks, until a table has its own spelling', () => {
+  const cell = (value: string): AdfNode => ({ content: [line(value)], type: 'tableCell' })
+  const table: AdfNode = { content: [{ content: [cell('a'), cell('b')], type: 'tableRow' }, { content: [cell('c'), cell('d')], type: 'tableRow' }], type: 'table' }
+  assert.equal(plain(adfToPlainText(document(table))), 'a\n\nb\n\nc\n\nd')
+})
+
+test('writes a node of an unknown type as the text it holds, its children a blank line apart', () => {
+  const unknown: AdfNode = { content: [line('one'), { content: [text('two'), text(' three')], type: 'unknownBlock' }], type: 'unknownContainer' }
+  assert.equal(plain(adfToPlainText(document(unknown, { text: 'loose', type: 'unknownText' }, paragraph({ content: [text('in'), text(' line')], type: 'unknownInline' })))), 'one\n\ntwo three\n\nloose\n\nin line')
+})
+
+test('writes a code block\'s lines and a list item\'s continuation lines under their indent, never a blank line with spaces', () => {
+  const code: AdfNode = { content: [text('a\n\nb')], type: 'codeBlock' }
+  assert.equal(plain(adfToPlainText(document(bullets(item(code))))), '• a\n\n  b')
+})
+
+test('refuses what adfToHtml refuses, with the same code and path', () => {
+  const deep = (levels: number): AdfNode => {
+    let node = line('x')
+    for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
+    return node
+  }
+  const refused: AdfDocument[] = [
+    { type: 'doc', version: Number.NaN },
+    { type: 'doc', version: 2 },
+    document(deep(largestNesting + 1)),
+    document(paragraph(text('See '), { attrs: { url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' })),
+  ]
+  for (const input of refused) {
+    assert.notEqual(refusal(adfToHtml(input)), 'written')
+    assert.equal(refusal(adfToPlainText(input)), refusal(adfToHtml(input)))
+  }
+})
+
+test('writes blocks nested 500 levels', () => {
+  let node = line('x')
+  for (let level = 0; level < largestNesting; level += 1) node = { content: [node], type: 'blockquote' }
+  assert.equal(plain(adfToPlainText(document(node))), 'x')
+  let list = line('x')
+  for (let level = 0; level < largestNesting; level += 1) list = bullets(item(list))
+  assert.equal(plain(adfToPlainText(document(list))), `${'• '.repeat(largestNesting)}x`)
+  assert.equal(refusal(adfToPlainText(document(bullets(item(list))))), refusal(adfToHtml(document(bullets(item(list))))))
+  assert.equal(refusal(adfToPlainText(document(bullets(item(list))))).startsWith('unsupported-nesting-depth at /content/0/content/0/content/0'), true)
+})
+
+test('refuses text past V8\'s longest string, which the indent of a deep list can add', () => {
+  let list: AdfNode = { content: [text('a\n'.repeat(400000))], type: 'codeBlock' }
+  for (let level = 0; level < 400; level += 1) list = bullets(item(list))
+  const refused = adfToPlainText(document(list, list))
+  assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
+  assert.equal(!refused.ok && refused.error.message.includes('536870888'), true)
+})

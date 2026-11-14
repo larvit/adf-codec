@@ -1296,3 +1296,28 @@ expectations as input. The Date row drew 1 of 3 not reasonable, so four more rea
 reader of the markdown, export/indexing, viewer/editor) read it, and 5 of 7 found it reasonable.
 `adfToLosslessMarkdown` keeps writing `!adf:date{timestamp=1756080000000}`. The two who rejected
 it wanted the day shown, as `!adf:date[2025-08-25]{timestamp=…}`.
+
+## Plain text is blocks a blank line apart, with `• ` and `1.` markers and nesting indented
+
+2026-11-14, a reader panel of 7 (export/indexing, LLM/agent, support agent, viewer/editor, bot,
+product manager, engineer), then the maintainer. Goal 10. Valid while the audience of the text is
+people reading an email.
+
+Each reader wrote the text they expected, then picked among six shuffled candidates. All seven
+expected a blank line between blocks, a hard break as one line feed and a mention as its display
+text. Three picked blank lines with no markers and no indent, three picked `• ` bullets with `1.`
+numbers kept and nesting indented, one picked `- ` and `1.` markers. Less than five of seven is a
+missing goal, so the maintainer chose the second and worded the goal for people reading an email.
+
+`adfToPlainText` writes:
+
+- Blocks a blank line apart, an item's blocks and a list's items a line apart.
+- `• ` for a bullet list, a task list and a decision list, and `n. ` for an ordered list, counting
+  from its `order`. A nested list and an item's later lines are indented to the marker's width.
+- A hard break as a line feed, a mention, emoji, date and status as the text they show, and marks
+  as the text they mark.
+- A block holding no text as nothing, with no extra blank line.
+- A table as its cells written as blocks, until a plan item gives it a spelling.
+
+The depth and length refusals are `adfToHtml`'s: a document nesting past 500 levels, or text past
+V8's longest string, indentation included.

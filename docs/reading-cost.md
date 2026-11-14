@@ -1060,3 +1060,19 @@ Read most (opens and searches):
 - `README.md` 1
 - `docs/decisions.md` 1
 - `src/markdown/parse/markdown-to-adf.ts` 1
+
+## Reading cost, chunk 1125f4a3a4ad, finished 2026-11-14T10:38:41Z
+
+124303 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `todo.md` 10
+- `README.md` 5
+- `src/adf/shown-text.ts` 3
+- `docs/decisions.md` 2
+- `src/index.ts` 2
+- `AGENTS.md` 1
+- `docs/score-anchors.md` 1
+- `src/adf/inline-nodes.ts` 1
+- `src/html/emit/adf-to-html.ts` 1
