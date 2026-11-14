@@ -6,22 +6,31 @@ import { linkAttrs, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { largestNesting } from '../nesting.ts'
 import { longestOutput, tooLong, withinEngineLimits } from '../length-bound.ts'
 import { nodeAttrs, nodeContent, nodeMarks, readAdfDocument, writableContent } from '../adf/document.ts'
-import { shownText } from '../adf/shown-text.ts'
+import { shownLink, shownText, shownUrl, visibleText } from '../adf/shown-text.ts'
 
-// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
+// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell, `gap` and `literal` to restore after a table cell; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
 type Place = { index: number; parent: Place | undefined }
 type Step =
   | { kind: 'gap'; lines: number }
+  | { kind: 'leaveCell'; cell: Cell | undefined; gap: number; literal: number }
   | { kind: 'leave'; indent: string; lead: string | undefined; length: number }
+  | { kind: 'separator' }
   | { depth: number; kind: 'node'; marker: string | undefined; node: AdfNode; place: Place | undefined; suffix: string | undefined }
 
-// `lines`: the line feeds between a node's children; `level`: how much deeper they nest.
-type Layout = { level: number; lines: number }
+// A table cell being written: its text goes on the row's line, so `base`, the margin of the row, is not repeated; `start` is the `length` where the cell began.
+type Cell = { base: string; start: number }
+
+// `lines`: the line feeds between a node's children; `level`: how much deeper they nest; `cells`: they are bar-separated cells on one line.
+type Layout = { cells?: true; level: number; lines: number }
 
 const bulletLists = ['bulletList', 'decisionList', 'taskList']
 const itemTypes = ['blockTaskItem', 'listItem']
 const markedItems = ['blockTaskItem', 'decisionItem', 'listItem', 'taskItem']
-const shownTextTypes = ['date', 'emoji', 'mention', 'status']
+const cardTypes = ['blockCard', 'embedCard', 'inlineCard']
+const cellTypes = ['tableCell', 'tableHeader']
+const expandTypes = ['expand', 'nestedExpand']
+const imageTypes = ['media', 'mediaInline']
+const shownTextTypes = ['date', 'emoji', 'extension', 'inlineExtension', 'mention', 'status']
 
 export function adfToPlainText(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => {
@@ -40,25 +49,42 @@ function writeText(content: readonly AdfNode[]): Result<string> {
   let indent = ''
   let lead: string | undefined
   let literal = 0
+  let cell: Cell | undefined
 
+  // Past its first text, a cell goes on the row's line: a line feed owed becomes a space, and a marker keeps its place without the row's margin.
   function emit(text: string): void {
     const end = endBeforeLineFeeds(text)
     if (end > 0) {
       const owed = Math.max(gap, literal)
-      const head = length === 0 || owed > 0 ? `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}` : ''
-      const body = text.slice(0, end).replaceAll(/\n(?=[^\n])/g, `\n${indent}`)
+      const open = cell
+      let head = ''
+      if (open !== undefined && length > open.start) head = owed > 0 ? ` ${lead === undefined ? '' : lead.slice(open.base.length)}` : ''
+      else if (length === 0 || owed > 0 || lead !== undefined) head = `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}`
+      const kept = text.slice(0, end)
+      const body = open === undefined ? kept.replaceAll(/\n(?=[^\n])/g, `\n${indent}`) : kept.replaceAll(/\n+/g, ' ')
       pieces.push(head, body)
       length += head.length + body.length
       gap = 0
       lead = undefined
     }
-    literal = (end > 0 ? 0 : literal) + text.length - end
+    literal = (end > 0 ? 0 : literal) + (cell === undefined ? text.length - end : 0)
   }
 
   const pending: Step[] = childSteps(content, { level: 1, lines: 2 }, 0, undefined, () => undefined).reverse()
   for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
     if (step.kind === 'gap') {
       gap = Math.max(gap, step.lines)
+      continue
+    }
+    if (step.kind === 'leaveCell') {
+      const written = cell !== undefined && length > cell.start
+      gap = written ? 0 : step.gap
+      literal = written ? 0 : step.literal
+      cell = step.cell
+      continue
+    }
+    if (step.kind === 'separator') {
+      emit(' | ')
       continue
     }
     if (step.kind === 'leave') {
@@ -68,6 +94,10 @@ function writeText(content: readonly AdfNode[]): Result<string> {
     }
     const { depth, marker, node, place, suffix } = step
     if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the writer carries`, pathTo(place))
+    if (cellTypes.includes(node.type)) {
+      pending.push({ cell, gap, kind: 'leaveCell', literal })
+      cell = { base: indent, start: length }
+    }
     if (marker !== undefined) {
       pending.push({ indent, kind: 'leave', lead, length })
       lead = lead === undefined ? `${indent}${marker}` : `${lead}${marker}`
@@ -75,9 +105,14 @@ function writeText(content: readonly AdfNode[]): Result<string> {
     }
     if (node.type === 'hardBreak') gap += 1
     else if (shownTextTypes.includes(node.type)) emit(shownText(node) ?? '')
+    else if (cardTypes.includes(node.type)) emit(cardText(node))
+    else if (imageTypes.includes(node.type)) emit(imageText(node))
     else {
-      emit(`${node.text ?? ''}${suffix ?? ''}`)
-      for (const child of stepsWithin(node, depth, place).reverse()) pending.push(child)
+      const title = expandTypes.includes(node.type) ? shownText(node) : undefined
+      emit(`${node.text ?? title ?? ''}${suffix ?? ''}`)
+      const inner = stepsWithin(node, depth, place)
+      if (title !== undefined) inner.unshift({ kind: 'gap', lines: 2 })
+      for (const child of inner.reverse()) pending.push(child)
     }
     if (length > longestOutput) return tooLong()
   }
@@ -101,7 +136,7 @@ function childSteps(nodes: readonly AdfNode[], layout: Layout, depth: number, pa
   const links = nodes.map(linkOf)
   let run = ''
   for (const [index, node] of nodes.entries()) {
-    if (index > 0) steps.push({ kind: 'gap', lines: layout.lines })
+    if (index > 0) steps.push(layout.cells === true ? { kind: 'separator' } : { kind: 'gap', lines: layout.lines })
     const link = links[index]
     const before = links[index - 1]
     run = link !== undefined && before !== undefined && sameLink(link, before) ? `${run}${node.text ?? ''}` : node.text ?? ''
@@ -110,6 +145,24 @@ function childSteps(nodes: readonly AdfNode[], layout: Layout, depth: number, pa
     steps.push({ depth, kind: 'node', marker: markerFor(index, node), node, place: { index, parent }, suffix: ends && run !== '' ? linkSuffix(link, run) : undefined })
   }
   return steps
+}
+
+// A card shows its address, or its name and then its address.
+function cardText(card: AdfNode): string {
+  const text = shownText(card)
+  const url = shownUrl(card)
+  return text === undefined || url === undefined || url === text ? text ?? '' : `${text} (${url})`
+}
+
+// An image shows its alt text, else its address, else `[image]`; then the target of the link around it, then its own address where the alt text stood in for it.
+function imageText(media: AdfNode): string {
+  const alt = visibleText(nodeAttrs(media)['alt'])
+  const link = shownLink(media)
+  const url = shownUrl(media)
+  const shown = alt ?? url ?? '[image]'
+  const target = link === undefined ? undefined : linkSuffix(link, shown)
+  const own = alt !== undefined && url !== undefined && url !== link?.href ? ` (${url})` : ''
+  return `${shown}${target ?? ''}${own}`
 }
 
 function linkOf(node: AdfNode): LinkAttrs | undefined {
@@ -130,7 +183,9 @@ function linkSuffix(link: LinkAttrs, text: string): string | undefined {
 function layoutOf(node: AdfNode): Layout {
   if (bulletLists.includes(node.type) || node.type === 'orderedList') return { level: 1, lines: 1 }
   if (itemTypes.includes(node.type)) return { level: 0, lines: 1 }
-  if (node.type === 'tableCell' || node.type === 'tableHeader') return { level: 0, lines: 2 }
+  if (node.type === 'table') return { level: 1, lines: 1 }
+  if (node.type === 'tableRow') return { cells: true, level: 1, lines: 0 }
+  if (cellTypes.includes(node.type)) return { level: 0, lines: 2 }
   const model = blockNodeModel(node.type)
   if (model !== undefined) return model.contentModel === 'block' ? { level: 1, lines: 2 } : { level: 0, lines: 0 }
   return nodeContent(node).every((child) => child.type === 'text' || inlineNodeModel(child.type) !== undefined) ? { level: 0, lines: 0 } : { level: 1, lines: 2 }

@@ -12,8 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 180 | 0.4.0 |  |  | **Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.** | 2 | 2 | 2 | 4 | 3 | 3 by 1, 6.2 by 3 | 4.8 |
-| 181 | 0.4.0 |  |  | **Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.** | 2 | 2 | 2 | 4 | 4 | 3 by 2, 6.2 by 2 | 3.3 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 3.2 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 1.6 |
 | 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 1.6 |
@@ -49,25 +47,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 180. Write a table in `adfToPlainText` as one line per row, so a CSV export or a search index reads its cells.
-
-A reader panel picks the cell separator, and what a header row, a merged cell and a block nested in
-a cell read as. The verdict lands in `docs/decisions.md`. Until this item ships,
-`adfToPlainText` writes a table's cells as blocks.
-
-### 181. Write media, link cards, extensions and expand titles in `adfToPlainText` as the text each shows, and answer developer-community topic 41858.
-
-`src/adf/shown-text.ts` already holds what each of these shows in portable markdown and HTML: an
-image's alt text or URL, a card's URL or `data.name`, an extension's `text` and an expand's title.
-For a node that shows no text, its `shownNote` names the node instead, such as `image` or an
-extension's key. A reader panel picks which texts plain text keeps, and whether it writes those
-notes. The verdict lands in `docs/decisions.md`.
-
-This item doesn't read item 180's table spelling, so the two land in either order. Both change
-`adfToPlainText`, so the second to merge may meet a conflict; neither waits for the other.
-
-Topic 41858 asks for ADF as plain text. Answer it once item 181 ships (the maintainer, 2026-10-28).
 
 ### 141. Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.
 

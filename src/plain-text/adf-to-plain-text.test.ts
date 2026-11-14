@@ -229,10 +229,118 @@ test('writes a mention, an emoji, a date and a status as the text they show', ()
   assert.equal(plain(adfToPlainText(document(paragraph(...nodes.flatMap((node) => [node, text(' ')]))))), '@557058:ann 😄 2025-08-25 Done ')
 })
 
-test('writes a table\'s cells as blocks, until a table has its own spelling', () => {
-  const cell = (value: string): AdfNode => ({ content: [line(value)], type: 'tableCell' })
-  const table: AdfNode = { content: [{ content: [cell('a'), cell('b')], type: 'tableRow' }, { content: [cell('c'), cell('d')], type: 'tableRow' }], type: 'table' }
-  assert.equal(plain(adfToPlainText(document(table))), 'a\n\nb\n\nc\n\nd')
+function cell(...content: AdfNode[]): AdfNode {
+  return { content: content.length === 0 ? [paragraph()] : content, type: 'tableCell' }
+}
+
+function row(...cells: AdfNode[]): AdfNode {
+  return { content: cells, type: 'tableRow' }
+}
+
+function table(...rows: AdfNode[]): AdfNode {
+  return { content: rows, type: 'table' }
+}
+
+function cells(...values: string[]): AdfNode {
+  return row(...values.map((value) => cell(line(value))))
+}
+
+test('writes a table as one line per row, its cells apart by a bar, a header row like any other', () => {
+  const header = row(...['Name', 'Role'].map((value) => ({ content: [line(value)], type: 'tableHeader' })))
+  assert.equal(plain(adfToPlainText(document(table(header, cells('Ada', 'Engineer'), cells('Grace', 'Admiral'))))), 'Name | Role\nAda | Engineer\nGrace | Admiral')
+})
+
+test('writes a table a blank line from the blocks around it', () => {
+  assert.equal(plain(adfToPlainText(document(line('Team'), table(cells('a', 'b'), cells('c', 'd')), line('End')))), 'Team\n\na | b\nc | d\n\nEnd')
+})
+
+test('writes a merged cell once, with no place for the cells it covers', () => {
+  const wide: AdfNode = { attrs: { colspan: 2 }, content: [line('Wide')], type: 'tableCell' }
+  const tall: AdfNode = { attrs: { rowspan: 2 }, content: [line('Tall')], type: 'tableCell' }
+  assert.equal(plain(adfToPlainText(document(table(row(wide, tall), cells('x', 'y'))))), 'Wide | Tall\nx | y')
+})
+
+test('writes an empty cell as an empty place between the bars, in any column', () => {
+  assert.equal(plain(adfToPlainText(document(table(row(cell(line('a')), cell(), cell(line('c'))), row(cell(), cell(line('e'))))))), 'a |  | c\n | e')
+})
+
+test('writes the blocks of a cell on its line, a space apart, a list item behind its marker', () => {
+  const nested = row(cell(line('Line one'), line('Line two')), cell(bullets(item(line('p')), item(line('q')))))
+  assert.equal(plain(adfToPlainText(document(table(nested, cells('x', 'y'))))), 'Line one Line two | • p • q\nx | y')
+})
+
+test('writes a hard break and the lines of a code block in a cell as spaces, so the row stays one line', () => {
+  const broken = row(cell(paragraph(text('a'), { type: 'hardBreak' }, text('b'))), cell({ content: [text('c\nd\n')], type: 'codeBlock' }), cell(line('e')))
+  assert.equal(plain(adfToPlainText(document(table(broken)))), 'a b | c d | e')
+})
+
+test('writes a table inside a list item under the item\'s indent', () => {
+  assert.equal(plain(adfToPlainText(document(bullets(item(line('t'), table(cells('a', 'b'), cells('c', 'd'))))))), '• t\n  a | b\n  c | d')
+})
+
+const external: AdfNode = { attrs: { alt: 'Team photo', type: 'external', url: 'https://example.com/team.png' }, type: 'media' }
+const uploaded: AdfNode = { attrs: { alt: 'Quarterly chart', id: 'f', type: 'file' }, type: 'media' }
+
+function shown(...nodes: AdfNode[]): string {
+  return plain(adfToPlainText(document(paragraph(text('Before')), ...nodes, paragraph(text('After')))))
+}
+
+function withLink(media: AdfNode, href: string): AdfNode {
+  return { ...media, marks: [{ attrs: { href }, type: 'link' }] }
+}
+
+test('writes an external image as its alt text then its address, the address alone with no alt text', () => {
+  assert.equal(shown({ content: [external], type: 'mediaSingle' }), 'Before\n\nTeam photo (https://example.com/team.png)\n\nAfter')
+  assert.equal(shown({ content: [{ attrs: { type: 'external', url: 'https://example.com/team.png' }, type: 'media' }], type: 'mediaSingle' }), 'Before\n\nhttps://example.com/team.png\n\nAfter')
+})
+
+test('writes an uploaded image as its alt text, or as [image] with none', () => {
+  assert.equal(shown({ content: [uploaded], type: 'mediaSingle' }), 'Before\n\nQuarterly chart\n\nAfter')
+  assert.equal(shown({ content: [{ attrs: { id: 'f', type: 'file' }, type: 'media' }], type: 'mediaSingle' }), 'Before\n\n[image]\n\nAfter')
+  assert.equal(shown({ content: [{ attrs: { alt: ' ', id: 'f', type: 'file' }, type: 'media' }], type: 'mediaSingle' }), 'Before\n\n[image]\n\nAfter')
+})
+
+test('writes the target of a link around an image, after its alt text and before the image\'s own address', () => {
+  assert.equal(shown({ content: [withLink(external, 'https://example.com/go')], type: 'mediaSingle' }), 'Before\n\nTeam photo (https://example.com/go) (https://example.com/team.png)\n\nAfter')
+  assert.equal(shown({ content: [withLink(external, 'https://example.com/team.png')], type: 'mediaSingle' }), 'Before\n\nTeam photo (https://example.com/team.png)\n\nAfter')
+  assert.equal(shown({ content: [withLink(uploaded, 'https://example.com/go')], type: 'mediaSingle' }), 'Before\n\nQuarterly chart (https://example.com/go)\n\nAfter')
+  assert.equal(shown({ content: [withLink({ attrs: { id: 'f', type: 'file' }, type: 'media' }, 'https://example.com/go')], type: 'mediaSingle' }), 'Before\n\n[image] (https://example.com/go)\n\nAfter')
+  assert.equal(shown({ content: [withLink({ attrs: { type: 'external', url: 'https://example.com/team.png' }, type: 'media' }, 'https://example.com/go')], type: 'mediaSingle' }), 'Before\n\nhttps://example.com/team.png (https://example.com/go)\n\nAfter')
+})
+
+test('writes a link\'s title around an image behind its target', () => {
+  const titled: AdfNode = { ...uploaded, marks: [{ attrs: { href: 'https://example.com/go', title: 'Go' }, type: 'link' }] }
+  assert.equal(shown({ content: [titled], type: 'mediaSingle' }), 'Before\n\nQuarterly chart (https://example.com/go, "Go")\n\nAfter')
+})
+
+test('writes the images of a group and an inline image on the line they stand in', () => {
+  assert.equal(shown({ content: [external, uploaded], type: 'mediaGroup' }), 'Before\n\nTeam photo (https://example.com/team.png)\n\nQuarterly chart\n\nAfter')
+  assert.equal(plain(adfToPlainText(document(paragraph(text('See '), { attrs: { alt: 'logo', type: 'file' }, type: 'mediaInline' }, text(' here'))))), 'See logo here')
+})
+
+test('writes a card as its address, or as its name then its address', () => {
+  const card = (attrs: Record<string, unknown>): AdfNode => ({ attrs, type: 'blockCard' })
+  assert.equal(shown(card({ url: 'https://example.com/spec' })), 'Before\n\nhttps://example.com/spec\n\nAfter')
+  assert.equal(shown(card({ data: { name: 'Design spec' }, url: 'https://example.com/spec' })), 'Before\n\nhttps://example.com/spec\n\nAfter')
+  assert.equal(shown(card({ data: { name: 'Design spec' } })), 'Before\n\nDesign spec\n\nAfter')
+  assert.equal(shown(card({ data: { name: 'Design spec', url: 'https://example.com/spec' } })), 'Before\n\nDesign spec (https://example.com/spec)\n\nAfter')
+  assert.equal(shown(card({ data: { url: 'https://example.com/spec' } })), 'Before\n\nhttps://example.com/spec\n\nAfter')
+  assert.equal(shown(card({})), 'Before\n\nAfter')
+  assert.equal(shown({ attrs: { url: 'https://example.com/embed' }, type: 'embedCard' }), 'Before\n\nhttps://example.com/embed\n\nAfter')
+  assert.equal(plain(adfToPlainText(document(paragraph(text('See '), { attrs: { data: { name: 'Spec', url: 'https://example.com/spec' } }, type: 'inlineCard' }, text('.'))))), 'See Spec (https://example.com/spec).')
+})
+
+test('writes an extension as the text it carries, and as nothing with none', () => {
+  assert.equal(shown({ attrs: { extensionKey: 'chart', extensionType: 'com.example', text: 'Roadmap macro output' }, type: 'extension' }), 'Before\n\nRoadmap macro output\n\nAfter')
+  assert.equal(shown({ attrs: { extensionKey: 'chart', extensionType: 'com.example' }, type: 'extension' }), 'Before\n\nAfter')
+  assert.equal(plain(adfToPlainText(document(paragraph(text('a '), { attrs: { extensionKey: 'k', extensionType: 't', text: 'x' }, type: 'inlineExtension' }, text(' b'))))), 'a x b')
+})
+
+test('writes an expand\'s title on a line, a blank line above its body', () => {
+  assert.equal(shown({ attrs: { title: 'Details' }, content: [line('Hidden body')], type: 'expand' }), 'Before\n\nDetails\n\nHidden body\n\nAfter')
+  assert.equal(shown({ attrs: { title: 'Details' }, content: [line('Hidden body')], type: 'nestedExpand' }), 'Before\n\nDetails\n\nHidden body\n\nAfter')
+  assert.equal(shown({ content: [line('Hidden body')], type: 'expand' }), 'Before\n\nHidden body\n\nAfter')
+  assert.equal(shown({ attrs: { title: 'Details' }, content: [paragraph()], type: 'expand' }), 'Before\n\nDetails\n\nAfter')
 })
 
 test('writes a node of an unknown type as the text it holds, its children a blank line apart', () => {
