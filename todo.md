@@ -84,8 +84,8 @@ For a node that shows no text, its `shownNote` names the node instead, such as `
 extension's key. A reader panel picks which texts plain text keeps, and whether it writes those
 notes. The verdict lands in `docs/decisions.md`.
 
-This item reads nothing of item 180's table spelling, so the two land in either order. Both change
-item 179's call, which risks a merge conflict, not a dependency.
+This item doesn't read item 180's table spelling, so the two land in either order. Both change item
+179's call, so the second to merge may meet a conflict; neither waits for the other.
 
 Topic 41858 asks for ADF as plain text. Answer it once item 181 ships (the maintainer, 2026-10-28).
 
