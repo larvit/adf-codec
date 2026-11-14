@@ -8,31 +8,31 @@ import { longestOutput, tooLong, withinEngineLimits } from '../length-bound.ts'
 import { nodeAttrs, nodeContent, nodeMarks, readAdfDocument, writableContent } from '../adf/document.ts'
 import { shownLink, shownText, shownUrl, visibleText } from '../adf/shown-text.ts'
 
-// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell, `gap` and `literal` to restore after a table cell; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
+// `gap`: the line feeds the next text needs before it at least; `leave`: the state to restore after a list item, and its `length` at the start, which shows whether it wrote anything; `leaveCell`: the cell to restore after a table cell, with the `gap` and `literal` to restore too where the cell wrote no text; `separator`: the bar between two cells of a row; `marker`: the marker this node has in its list; `suffix`: text written right after this node; `depth`: the nesting level as `largestNesting` counts it; `parent`: the node holding this one, from which a refusal's path is built.
 type Place = { index: number; parent: Place | undefined }
 type Step =
   | { kind: 'gap'; lines: number }
-  | { kind: 'leaveCell'; cell: Cell | undefined; gap: number; literal: number }
   | { kind: 'leave'; indent: string; lead: string | undefined; length: number }
-  | { kind: 'separator' }
+  | { kind: 'leaveCell'; cell: Cell | undefined; gap: number; literal: number }
   | { depth: number; kind: 'node'; marker: string | undefined; node: AdfNode; place: Place | undefined; suffix: string | undefined }
+  | { kind: 'separator' }
 
 // The text written so far. `pieces`: its heads and bodies, `length` their total; `gap`: the line feeds the layout owes before the next text at least, and `literal` those the text before ended in, of which the larger is written; `lead`: the marker of the item the next text opens; `indent`: the margin of every line after that; `cell`: the table cell being written.
 type Writing = { cell: Cell | undefined; gap: number; indent: string; lead: string | undefined; length: number; literal: number; pieces: string[] }
 
-// A table cell being written: its text goes on the row's line, so `base`, the margin of the row, is not repeated; `start` is the `length` where the cell began.
-type Cell = { base: string; start: number }
+// A table cell being written: its text goes on the row's line, without the row's margin; `start` is the `length` where the cell began, and `owed` the line feeds owed there, the only ones its first text may write.
+type Cell = { owed: number; start: number }
 
 // `lines`: the line feeds between a node's children; `level`: how much deeper they nest; `cells`: they are bar-separated cells on one line.
 type Layout = { cells?: true; level: number; lines: number }
 
 const bulletLists = ['bulletList', 'decisionList', 'taskList']
-const itemTypes = ['blockTaskItem', 'listItem']
-const markedItems = ['blockTaskItem', 'decisionItem', 'listItem', 'taskItem']
 const cardTypes = ['blockCard', 'embedCard', 'inlineCard']
 const cellTypes = ['tableCell', 'tableHeader']
 const expandTypes = ['expand', 'nestedExpand']
 const imageTypes = ['media', 'mediaInline']
+const itemTypes = ['blockTaskItem', 'listItem']
+const markedItems = ['blockTaskItem', 'decisionItem', 'listItem', 'taskItem']
 const shownTextTypes = ['date', 'emoji', 'extension', 'inlineExtension', 'mention', 'status']
 
 export function adfToPlainText(document: AdfDocument): Result<string> {
@@ -58,7 +58,6 @@ function writeText(content: readonly AdfNode[]): Result<string> {
   return success(writing.pieces.join(''))
 }
 
-// What a step that is no node does to the state.
 function applyStep(writing: Writing, step: Exclude<Step, { kind: 'node' }>): void {
   if (step.kind === 'gap') writing.gap = Math.max(writing.gap, step.lines)
   else if (step.kind === 'separator') emit(writing, ' | ')
@@ -79,7 +78,7 @@ function openNode(writing: Writing, step: Extract<Step, { kind: 'node' }>, pendi
   if (depth > largestNesting) return failure('unsupported-nesting-depth', `the document nests deeper than the ${largestNesting} levels the writer carries`, pathTo(place))
   if (cellTypes.includes(node.type)) {
     pending.push({ cell: writing.cell, gap: writing.gap, kind: 'leaveCell', literal: writing.literal })
-    writing.cell = { base: writing.indent, start: writing.length }
+    writing.cell = { owed: Math.max(writing.gap, writing.literal), start: writing.length }
   }
   if (marker !== undefined) {
     pending.push({ indent: writing.indent, kind: 'leave', lead: writing.lead, length: writing.length })
@@ -100,14 +99,16 @@ function openNode(writing: Writing, step: Extract<Step, { kind: 'node' }>, pendi
   return undefined
 }
 
-// Past its first text, a cell goes on the row's line: a line feed owed becomes a space, and a marker keeps its place without the row's margin.
+// In a cell, the text goes on the row's line: before its first text only the line feeds owed at the cell's start are written, after it a line feed owed or in the text becomes a space, and a list marker keeps its place without any margin.
 function emit(writing: Writing, text: string): void {
   const end = endBeforeLineFeeds(text)
   if (end > 0) {
-    const owed = Math.max(writing.gap, writing.literal)
     const { cell, indent, lead, length } = writing
+    const started = cell !== undefined && length > cell.start
+    const owed = cell !== undefined && !started ? cell.owed : Math.max(writing.gap, writing.literal)
+    const marker = lead?.trimStart() ?? ''
     let head = ''
-    if (cell !== undefined && length > cell.start) head = owed > 0 ? ` ${lead === undefined ? '' : lead.slice(cell.base.length)}` : ''
+    if (cell !== undefined && (started || (owed === 0 && length > 0))) head = started ? (owed > 0 ? ` ${marker}` : '') : marker
     else if (length === 0 || owed > 0 || lead !== undefined) head = `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}`
     const kept = text.slice(0, end)
     const body = cell === undefined ? kept.replaceAll(/\n(?=[^\n])/g, `\n${indent}`) : kept.replaceAll(/\n+/g, ' ')
@@ -130,7 +131,7 @@ function stepsWithin(node: AdfNode, depth: number, place: Place | undefined): St
   return childSteps(nodeContent(node), layout, depth + layout.level, place, markerFor(node))
 }
 
-// The steps for `nodes` in document order, `layout.lines` line feeds apart.
+// The steps for `nodes` in document order, `layout.lines` line feeds apart, or bar-separated where the layout holds cells.
 function childSteps(nodes: readonly AdfNode[], layout: Layout, depth: number, parent: Place | undefined, markerFor: (index: number, node: AdfNode) => string | undefined): Step[] {
   const steps: Step[] = []
   const links = nodes.map(linkOf)
@@ -154,7 +155,7 @@ function cardText(card: AdfNode): string {
   return url === undefined || url === text ? text : `${text} (${url})`
 }
 
-// An image shows its alt text, else its address, else `[image]`; then the target of the link around it, then its own address where the alt text stood in for it.
+// An image shows its alt text, else its address, else `[image]`; then the target of the link around it, then its own address, unless that is the link's target or the image showed it already.
 function imageText(media: AdfNode): string {
   const alt = visibleText(nodeAttrs(media)['alt'])
   const link = shownLink(media)
@@ -179,7 +180,7 @@ function linkSuffix(link: LinkAttrs, text: string): string | undefined {
   return ` (${link.href}, "${link.title}")`
 }
 
-// Children stand on one line where they are inline, a line feed apart in a list and an item, a blank line apart between blocks. A list's items nest one level below it, an item's blocks at its own.
+// Children stand on one line where they are inline, a line feed apart in a list, an item and a table, a blank line apart between other blocks. A list's items nest one level below it, an item's blocks at its own.
 function layoutOf(node: AdfNode): Layout {
   if (bulletLists.includes(node.type) || node.type === 'orderedList') return { level: 1, lines: 1 }
   if (itemTypes.includes(node.type)) return { level: 0, lines: 1 }
