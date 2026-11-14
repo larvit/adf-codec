@@ -1,6 +1,7 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { anchorOpener } from '../anchor-element.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
+import { expandClasses, panelAttributes, panelClass, taskLists } from '../block-classes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
 import { carryContent } from '../carry-content.ts'
 import { cellAttributes, isHeaderRow } from '../cell-element.ts'
@@ -14,12 +15,15 @@ import { isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writa
 import { languageClass } from '../language-class.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
+import { mediaImage } from '../media-element.ts'
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
+import { itemOpener } from '../task-element.ts'
+import { textBlockAttributes } from '../alignment-element.ts'
 
-// depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s, `<td>`'s or `<th>`'s, built when its list or table checked it.
+// depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s, `<td>`'s or `<th>`'s, built when its list or table checked it; `lead`: what stands before the inline content of a task or decision item.
 type Block = { depth: number; kind: 'block'; node: AdfNode; path: ConvertErrorPath }
-type Item = { attributes: string; depth: number; kind: 'item'; node: AdfNode; path: ConvertErrorPath; tag: string }
+type Item = { attributes: string; depth: number; kind: 'item'; lead?: string; node: AdfNode; path: ConvertErrorPath; tag: string }
 type Row = { depth: number; kind: 'row'; path: ConvertErrorPath; pieces: Pending[] }
 type Pending = Block | Item | Row | string
 
@@ -63,10 +67,54 @@ function blockPieces(nodes: readonly AdfNode[], path: ConvertErrorPath, depth: n
 
 function writeBlock(block: Block): Result<Pending[]> {
   const { depth, node, path } = block
-  const container = node.type === 'blockquote' ? quotePieces(block) : node.type === 'table' ? tablePieces(block) : listPieces(block)
+  const container = blockContainer(block)
   if (container !== undefined) return success(container)
   const html = tryLeafBlock(node, path) ?? carriedBlock(node, path, depth)
   return html.ok ? success([html.value]) : html
+}
+
+// `undefined` where the node is no container the elements write, or holds what they cannot.
+function blockContainer(block: Block): Pending[] | undefined {
+  const { type } = block.node
+  if (type === 'blockquote') return quotePieces(block)
+  if (type === 'table') return tablePieces(block)
+  if (type === 'panel') return panelPieces(block)
+  if (type === 'expand' || type === 'nestedExpand') return expandPieces(block, type)
+  return type === 'decisionList' || type === 'taskList' ? taskPieces(block, type) : listPieces(block)
+}
+
+function panelPieces({ depth, node, path }: Block): Pending[] | undefined {
+  const attributes = dataAttributes(node, panelAttributes, [])
+  return attributes === undefined ? undefined : containerPieces('div', ` class="${panelClass}"${attributes}`, node.content === undefined ? undefined : blockPieces(node.content, path, depth + 1))
+}
+
+// The title stands on the first line, in a `<summary>` where the node holds one.
+function expandPieces({ depth, node, path }: Block, type: keyof typeof expandClasses): Pending[] | undefined {
+  const attributes = dataAttributes(node, blockNodes[type].attributes, ['title'])
+  const title = nodeAttrs(node)['title']
+  const summary = title === undefined ? '' : typeof title === 'string' ? summaryElement(title) : undefined
+  if (attributes === undefined || summary === undefined) return undefined
+  const blocks = node.content === undefined ? undefined : blockPieces(node.content, path, depth + 1)
+  const lines = summary === '' ? blocks : [summary, ...(blocks === undefined ? [] : ['\n', ...blocks])]
+  return containerPieces('details', ` class="${expandClasses[type]}"${attributes}`, lines)
+}
+
+function summaryElement(title: string): string | undefined {
+  const text = title === '' ? '' : writableText(title)
+  return text === undefined ? undefined : `<summary>${text}</summary>`
+}
+
+function taskPieces({ depth, node, path }: Block, type: keyof typeof taskLists): Pending[] | undefined {
+  const attributes = dataAttributes(node, blockNodes[type].attributes, [])
+  if (attributes === undefined) return undefined
+  const items: Pending[] = []
+  for (const [index, item] of nodeContent(node).entries()) {
+    const opener = itemOpener(type, item)
+    if (opener === undefined) return undefined
+    if (index > 0) items.push('\n')
+    items.push({ ...opener, depth: depth + 1, kind: 'item', node: item, path: [...path, 'content', index], tag: 'li' })
+  }
+  return containerPieces('ul', ` class="${taskLists[type].listClass}"${attributes}`, node.content === undefined ? undefined : items)
 }
 
 function quotePieces({ depth, node, path }: Block): Pending[] | undefined {
@@ -146,7 +194,8 @@ function containerPieces(tag: string, attributes: string, children: Pending[] | 
   return [`<${tag}${attributes}>\n`, ...children, `\n</${tag}>`]
 }
 
-function writeItem({ attributes, depth, node, path, tag }: Item): Result<Pending[]> {
+function writeItem({ attributes, depth, lead, node, path, tag }: Item): Result<Pending[]> {
+  if (lead !== undefined) return writeInlineItem(tag, attributes, lead, node, path)
   if (node.content === undefined) return success([`<${tag}${attributes}></${tag}>`])
   const blocks = blockPieces(node.content, path, depth)
   const [first] = node.content
@@ -157,6 +206,14 @@ function writeItem({ attributes, depth, node, path, tag }: Item): Result<Pending
   return success(blocks.length === 1 ? [`<${tag}${attributes}>${line.value}</${tag}>`] : [`<${tag}${attributes}>${line.value}`, ...blocks.slice(1), `\n</${tag}>`])
 }
 
+// An item holding inline content only, after its checkbox where it has one, a space apart.
+function writeInlineItem(tag: string, attributes: string, lead: string, node: AdfNode, path: ConvertErrorPath): Result<Pending[]> {
+  const inline = inlineHtml(nodeContent(node), path)
+  if (!inline.ok) return inline
+  const gap = lead === '' || inline.value === '' ? '' : ' '
+  return success([`<${tag}${attributes}>${lead}${gap}${inline.value}</${tag}>`])
+}
+
 // `undefined` where the paragraph takes a line of its own.
 function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
   const form = firstParagraphForm(paragraph)
@@ -165,11 +222,35 @@ function tryFirstParagraph(paragraph: AdfNode, path: ConvertErrorPath): Result<s
 }
 
 function tryLeafBlock(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
-  if (node.type === 'paragraph') return inlineElement('p', dataAttributes(node, blockNodes.paragraph.attributes, []), nodeContent(node), path)
+  if (node.type === 'paragraph') return inlineElement('p', textBlockAttributes(node, blockNodes.paragraph.attributes, []), nodeContent(node), path)
   const heading = node.type === 'heading' ? headingElement(nodeAttrs(node)['level']) : undefined
-  if (heading !== undefined) return inlineElement(heading, dataAttributes(node, blockNodes.heading.attributes, ['level']), nodeContent(node), path)
-  const html = tryCodeBlock(node) ?? tryImage(node) ?? tryRule(node)
-  return html === undefined ? undefined : success(html)
+  if (heading !== undefined) return inlineElement(heading, textBlockAttributes(node, blockNodes.heading.attributes, ['level']), nodeContent(node), path)
+  const html = tryCodeBlock(node) ?? tryImage(node) ?? tryMediaGroup(node) ?? tryRule(node)
+  return html === undefined ? tryFigure(node, path) : success(html)
+}
+
+// `undefined` where the `mediaSingle`, its media or its caption holds what the elements cannot, so the whole node rides the carry.
+function tryFigure(node: AdfNode, path: ConvertErrorPath): Result<string> | undefined {
+  if (node.type !== 'mediaSingle') return undefined
+  const [media, caption, ...others] = nodeContent(node)
+  const attributes = dataAttributes(node, blockNodes.mediaSingle.attributes, [])
+  const image = media?.type === 'media' ? mediaImage(media) : undefined
+  if (attributes === undefined || image === undefined || others.length > 0) return undefined
+  const figure = (inner: string): string => `<figure class="adf-media-single"${attributes}>${image}${inner}</figure>`
+  if (caption === undefined) return success(figure(''))
+  const figcaption = caption.type === 'caption' ? inlineElement('figcaption', dataAttributes(caption, blockNodes.caption.attributes, []), nodeContent(caption), [...path, 'content', 1]) : undefined
+  return figcaption?.ok === false ? figcaption : figcaption === undefined ? undefined : success(figure(figcaption.value))
+}
+
+function tryMediaGroup(node: AdfNode): string | undefined {
+  if (node.type !== 'mediaGroup' || dataAttributes(node, blockNodes.mediaGroup.attributes, []) === undefined) return undefined
+  let files = ''
+  for (const media of nodeContent(node)) {
+    const attributes = media.type === 'media' ? dataAttributes(media, blockNodes.media.attributes, []) : undefined
+    if (attributes === undefined) return undefined
+    files += `<span class="adf-file"${attributes}></span>`
+  }
+  return `<div class="adf-media-group">${files}</div>`
 }
 
 // `undefined` where `attributes` is undefined, so the node rides the carry.

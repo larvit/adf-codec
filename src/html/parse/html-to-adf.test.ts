@@ -48,7 +48,7 @@ function names(result: Result<AdfDocument, ParseError>, ...facts: readonly strin
 
 const documentCarry = carry('div', { type: 'doc', version: 1 }, '')
 const mention: AdfNode = { attrs: { id: ids.mention, text: '@Mikael' }, type: 'mention' }
-const panel: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'panel' }
+const bodied: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('Check the collation.'))], type: 'bodiedExtension' }
 const rule = JSON.stringify({ type: 'unknownBlock' }).replaceAll('"', '&quot;')
 
 // The carry element of `node`, showing `shown`.
@@ -101,7 +101,7 @@ test('reads a line ending of CRLF as a line feed wherever the dialect has one, a
   const crlf = (html: string): string => html.replaceAll('\n', '\r\n')
   assert.deepEqual(read(htmlToAdf(crlf('<p>a\nb</p>\n<hr>\n<pre><code>c\n  d</code></pre>\n'))), document(paragraph(text('a\nb')), { type: 'rule' }, { content: [text('c\n  d')], type: 'codeBlock' }))
   assert.deepEqual(read(htmlToAdf(crlf('<blockquote>\n<ul>\n<li>Bolt\n<p>b</p>\n</li>\n</ul>\n</blockquote>\n'))), document({ content: [{ content: [item(paragraph(text('Bolt')), paragraph(text('b')))], type: 'bulletList' }], type: 'blockquote' }))
-  assert.deepEqual(read(htmlToAdf(crlf(`${carry('div', panel, '<p>Check the collation.</p>')}\n`))), document(panel))
+  assert.deepEqual(read(htmlToAdf(crlf(`${carry('div', bodied, '<p>Check the collation.</p>')}\n`))), document(bodied))
   assert.deepEqual(read(htmlToAdf(crlf(`${documentCarry}\n`))), { type: 'doc', version: 1 })
   assert.deepEqual(read(htmlToAdf('<hr data-style="a\r\nb">\n')), document({ attrs: { style: 'a\nb' }, type: 'rule' }))
   for (const html of ['<p>a\r</p>\n', '<p>a</p>\r', '<p>a</p>\r\r\n', '<p>a\r\r\nb</p>\n']) assert.equal(refusal(htmlToAdf(html)).startsWith('unmappable-html'), true, JSON.stringify(html))
@@ -122,7 +122,7 @@ test('reads a carry element showing what a browser spells it as, in any mix with
   for (const opener of ['<a href="https://x.test/?a&lt;b&amp;c&gt;d" title="T&quot; ">', '<a href="https://x.test/?a<b&amp;c>d" title="T&quot;&nbsp;">']) {
     assert.deepEqual(read(htmlToAdf(`<p>${carry('span', underlined, `${opener}a&lt;b</a>`)}</p>\n`)), document(paragraph(underlined)), opener)
   }
-  const block: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('A "quote" here'))], type: 'panel' }
+  const block: AdfNode = { attrs: { panelType: 'info' }, content: [paragraph(text('A "quote" here'))], type: 'bodiedExtension' }
   assert.deepEqual(read(htmlToAdf(`${carry('div', block, '<p>A "quote"&nbsp;here</p>')}\r\n`)), document(block))
 })
 
@@ -183,6 +183,85 @@ test('reads an image standing alone in a paragraph, a link around it where one m
   assert.deepEqual(read(htmlToAdf('<p><img src="https://example.com/moon.jpg" alt="The moon"></p>\n')), document(image({ attrs: { alt: 'The moon', type: 'external', url: 'https://example.com/moon.jpg' }, type: 'media' })))
   const linked = image({ attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, marks: [{ attrs: { href: 'https://example.com/', title: 'Home' }, type: 'link' }], type: 'media' })
   assert.deepEqual(read(htmlToAdf('<p><a href="https://example.com/" title="Home"><img src="https://example.com/moon.jpg"></a></p>\n')), document(linked))
+})
+
+test('reads a figure back: its media from the image, its caption from the figcaption, a link around the image as a mark', () => {
+  const external: AdfNode = { attrs: { alt: 'The moon', height: 600, type: 'external', url: 'https://example.com/moon.jpg', width: 800 }, type: 'media' }
+  const caption: AdfNode = { attrs: { localId: ids.item }, content: [text('The moon, '), text('at night', { type: 'em' })], type: 'caption' }
+  const figure = `<figure class="adf-media-single" data-layout="center" data-local-id="${ids.list}" data-width="50" data-width-type="pixel"><img src="https://example.com/moon.jpg" alt="The moon" height="600" width="800"><figcaption data-local-id="${ids.item}">The moon, <em>at night</em></figcaption></figure>\n`
+  assert.deepEqual(read(htmlToAdf(figure)), document({ attrs: { layout: 'center', localId: ids.list, width: 50, widthType: 'pixel' }, content: [external, caption], type: 'mediaSingle' }))
+  assert.deepEqual(read(htmlToAdf('<figure class="adf-media-single"><img src="https://example.com/moon.jpg" alt=""><figcaption></figcaption></figure>\n')), document({ content: [{ attrs: { alt: '', type: 'external', url: 'https://example.com/moon.jpg' }, type: 'media' }, { type: 'caption' }], type: 'mediaSingle' }))
+  const linked: AdfNode = { attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, marks: [{ attrs: { href: 'https://example.com/', title: 'Home' }, type: 'link' }], type: 'media' }
+  assert.deepEqual(read(htmlToAdf('<figure class="adf-media-single" data-layout="wide"><a href="https://example.com/" title="Home"><img src="https://example.com/moon.jpg"></a></figure>\n')), document({ attrs: { layout: 'wide' }, content: [linked], type: 'mediaSingle' }))
+  const file: AdfNode = { attrs: { alt: 'Launch photo', collection: ids.list, height: 600, id: ids.item, occurrenceKey: ids.paragraph, type: 'file', width: 800 }, type: 'media' }
+  assert.deepEqual(read(htmlToAdf(`<figure class="adf-media-single"><img class="adf-media" alt="Launch photo" height="600" width="800" data-collection="${ids.list}" data-id="${ids.item}" data-occurrence-key="${ids.paragraph}" data-type="file"></figure>\n`)), document({ content: [file], type: 'mediaSingle' }))
+  assert.deepEqual(read(htmlToAdf('<figure class="adf-media-single"><img src="https://example.com/moon.jpg" data-type="file"></figure>\n')), document({ content: [{ attrs: { type: 'file', url: 'https://example.com/moon.jpg' }, type: 'media' }], type: 'mediaSingle' }))
+  assert.deepEqual(read(htmlToAdf('<figure class="adf-media-single"><img class="adf-media"></figure>\n')), document({ content: [{ type: 'media' }], type: 'mediaSingle' }))
+})
+
+test('reads a media group back from its spans', () => {
+  const group = `<div class="adf-media-group"><span class="adf-file" data-collection="${ids.list}" data-id="${ids.item}" data-type="file"></span><span class="adf-file" data-alt="Moon" data-height="600" data-type="external" data-url="https://example.com/moon.jpg"></span></div>\n`
+  assert.deepEqual(read(htmlToAdf(group)), document({ content: [{ attrs: { collection: ids.list, id: ids.item, type: 'file' }, type: 'media' }, { attrs: { alt: 'Moon', height: 600, type: 'external', url: 'https://example.com/moon.jpg' }, type: 'media' }], type: 'mediaGroup' }))
+  assert.deepEqual(read(htmlToAdf('<div class="adf-media-group"></div>\n')), document({ type: 'mediaGroup' }))
+  assert.deepEqual(read(htmlToAdf('<div class="adf-media-group"><span class="adf-file"></span></div>\n')), document({ content: [{ type: 'media' }], type: 'mediaGroup' }))
+})
+
+test('refuses a figure, an image or a media group the writer does not write', () => {
+  const figure = (inner: string, attributes = ' class="adf-media-single"'): string => `<figure${attributes}>${inner}</figure>\n`
+  const refused = (html: string, ...facts: readonly string[]): void => names(htmlToAdf(html), ...facts)
+  refused(figure('<img src="a">', ''), 'figure')
+  refused(figure('<img src="a">', ' data-layout="wide" class="adf-media-single"'), 'figure')
+  refused(figure('<img src="a">', ' class="adf-media-single" data-colour="red"'), 'data-colour')
+  refused(figure(''), 'img')
+  refused(figure('<img class="adf-media" src="a">'), 'both')
+  refused(figure('<img>'), 'src')
+  refused(figure('<img class="photo">'), 'class')
+  refused(figure('<img src="a" height="0">'), 'height')
+  refused(figure('<img src="a" width="08">'), 'width')
+  refused(figure('<img src="a" width="9007199254740993">'), 'width')
+  refused(figure('<img src="a" data-type="external">'), 'external')
+  refused(figure('<img src="a" data-colour="red">'), 'data-colour')
+  refused(figure('<img src="a" alt="x" alt="y">'), 'alt')
+  refused(figure('<img src="a"><figcaption>x</figcaption><figcaption>y</figcaption>'), '</figure>')
+  refused(figure('<img src="a"><p>x</p>'), '</figure>')
+  refused(figure('<a href="b"><img src="a"></figure>'), '</a>')
+  refused(figure('<a href="b" class="c"><img src="a"></a>'), 'img')
+  refused(figure('<img src="a"><figcaption>x</p></figcaption>'), 'figcaption')
+  refused('<div class="adf-media-group"><img src="a"></div>\n', 'adf-file')
+  refused('<div class="adf-media-group"><span class="adf-file" data-colour="red"></span></div>\n', 'data-colour')
+  refused('<div class="adf-media-group"><span class="adf-file">x</span></div>\n', '</span>')
+  refused('<div class="adf-media-group" data-id="x"></div>\n', 'adf-media-group')
+  refused('<div class="adf-media-group">\n</div>\n', 'adf-file')
+  refused('<div class="adf-media-group"><span class="adf-file">', 'adf-file')
+  refused('<div class="photo"></div>\n', 'div')
+})
+
+test('reads underline, subscript, superscript and the two colours from their elements', () => {
+  const marked = (inner: string): AdfDocument | string => read(htmlToAdf(`<p>${inner}</p>\n`))
+  assert.deepEqual(marked('<u>x</u>'), document(paragraph(text('x', { type: 'underline' }))))
+  assert.deepEqual(marked('<sub>x</sub>'), document(paragraph(text('x', { attrs: { type: 'sub' }, type: 'subsup' }))))
+  assert.deepEqual(marked('<sup>x</sup>'), document(paragraph(text('x', { attrs: { type: 'sup' }, type: 'subsup' }))))
+  assert.deepEqual(marked('<span style="color:#ff5630">x</span>'), document(paragraph(text('x', { attrs: { color: '#ff5630' }, type: 'textColor' }))))
+  assert.deepEqual(marked('<mark style="background-color:#fffae6">x</mark>'), document(paragraph(text('x', { attrs: { color: '#fffae6' }, type: 'backgroundColor' }))))
+  assert.deepEqual(marked('<strong><u><span style="color:red">x</span></u></strong>'), document(paragraph(text('x', { type: 'strong' }, { type: 'underline' }, { attrs: { color: 'red' }, type: 'textColor' }))))
+  assert.deepEqual(marked('a<span style="color:red">b</span>'), document(paragraph(text('a'), text('b', { attrs: { color: 'red' }, type: 'textColor' }))))
+})
+
+test('refuses a mark element the writer does not write', () => {
+  for (const inner of ['<span style="color:red;x:y">x</span>', '<span style="background-color:red">x</span>', '<mark style="color:red">x</mark>', '<mark>x</mark>', '<span style="color:">x</span>', '<span style="color:red" class="c">x</span>', '<u class="c">x</u>', '<sub style="color:red">x</sub>', '<span style="color:red"><span style="color:blue">x</span></span>']) {
+    assert.notEqual(refusal(htmlToAdf(`<p>${inner}</p>\n`)), 'read', inner)
+  }
+})
+
+test('reads a paragraph or heading with a style attribute as aligned, right as end', () => {
+  const alignment = (align: string): AdfMark => ({ attrs: { align }, type: 'alignment' })
+  assert.deepEqual(read(htmlToAdf('<p style="text-align:center">x</p>\n')), document({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<h2 style="text-align:right">x</h2>\n')), document({ attrs: { level: 2 }, content: [text('x')], marks: [alignment('end')], type: 'heading' }))
+  assert.deepEqual(read(htmlToAdf(`<p style="text-align:right" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [alignment('end')], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<ul>\n<li><p style="text-align:center">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' })], type: 'bulletList' }))
+  for (const html of ['<p style="text-align:left">x</p>\n', '<p style="text-align:center;color:red">x</p>\n', `<p data-local-id="${ids.paragraph}" style="text-align:center">x</p>\n`, '<figure class="adf-media-single" style="text-align:center"><img src="a"></figure>\n', '<blockquote style="text-align:center">\n<p>x</p>\n</blockquote>\n']) {
+    assert.notEqual(refusal(htmlToAdf(html)), 'read', html)
+  }
 })
 
 test('refuses a carry element holding an inline card a link marks, at any depth in the node it carries', () => {
@@ -281,7 +360,7 @@ test('counts a table and its rows each a level, and a cell none, as adfToHtml do
 })
 
 test('reads a carry element from its data-adf, what it shows read back as adfToHtml writes it', () => {
-  assert.deepEqual(read(htmlToAdf(`${carry('div', panel, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(panel, paragraph(text('Ask '), mention)))
+  assert.deepEqual(read(htmlToAdf(`${carry('div', bodied, '<p>Check the collation.</p>')}\n<p>Ask ${carry('span', mention, '@Mikael')}</p>\n`)), document(bodied, paragraph(text('Ask '), mention)))
   assert.deepEqual(read(htmlToAdf(`<p>${carry('span', text('a\u0085b', { type: 'underline' }), 'ab').replace('\u0085', '\\u0085')}</p>\n`)), document(paragraph(text('a\u0085b', { type: 'underline' }))))
 })
 
@@ -370,7 +449,7 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
     ['<p><strong><a href="https://x.test/?a\nb&c">x</a></strong></p>\n', 'unmappable-html at /content/0/content/0 line 2 offset 38'],
   ],
   'refuses an edit to what a carry element shows': [
-    [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, 'unmappable-html at /content/1 line 2 offset 9'],
+    [`<p>a</p>\n${carry('div', bodied, '<p>Check the <b>collation</b>.</p>')}\n`, 'unmappable-html at /content/1 line 2 offset 9'],
     [`<p>Ask ${carry('span', mention, '')}</p>\n`, 'unmappable-html at /content/0/content/1 line 1 offset 0'],
   ],
   'refuses an emoji, status, date or card holding a URL element that is not as adfToHtml writes it': [
@@ -513,7 +592,7 @@ const messages: readonly (readonly [string, readonly string[]])[] = [
   ['<p><strong><br>x</strong></p>\n', ['<br> as written here is no mark element of the dialect', 'found "<br>x</strong></p>\\n"']],
   ['<p><em></em></p>\n', ['a mark element holds text', 'found "</em></p>\\n"']],
   ['<p><strong><a href="https://x.test/?a=1&b=2">x</a></strong></p>\n', ['<a> holds its attributes as name="value"', '& as &amp;', '" as &quot;', 'found "&b=2\\">x</a></strong></p>"…']],
-  [`<p>a</p>\n${carry('div', panel, '<p>Check the <b>collation</b>.</p>')}\n`, ['a carry element shows what adfToHtml writes for its node', 'to change the node, edit its ADF and write the HTML again', 'found "<b>collation</b>.</p></d"…']],
+  [`<p>a</p>\n${carry('div', bodied, '<p>Check the <b>collation</b>.</p>')}\n`, ['a carry element shows what adfToHtml writes for its node', 'to change the node, edit its ADF and write the HTML again', 'found "<b>collation</b>.</p></d"…']],
   ['<p><span>a</span></p>\n', ['a <span> of the dialect is a carry element', 'found "<span>a</span></p>\\n"']],
   ['<div class="adf-carry" data-adf="{ &quot;type&quot;:&quot;x&quot;}"></div>\n', ['a carry element spells its node\'s JSON canonically', 'found "{ &quot;type&quot;:&quot"…']],
   [`${documentCarry}\n<hr>\n`, ['a carry element holding the document stands alone', 'found "\\n<hr>\\n"']],
@@ -573,3 +652,76 @@ for (const [holding, adf] of Object.entries(written)) {
     assert.deepEqual(read(htmlToAdf(html.value)), adf)
   })
 }
+
+test('reads a panel back from its div, the panel type and other attributes from its data-* attributes, its blocks a line each', () => {
+  const nestedPanel: AdfNode = { attrs: { panelType: 'warning' }, content: [paragraph(text('b'))], type: 'panel' }
+  assert.deepEqual(read(htmlToAdf('<div class="adf-panel" data-local-id="p1" data-panel-color="#fff" data-panel-type="custom">\n<p>a</p>\n<p>b</p>\n</div>\n')), document({ attrs: { localId: 'p1', panelColor: '#fff', panelType: 'custom' }, content: [paragraph(text('a')), paragraph(text('b'))], type: 'panel' }))
+  assert.deepEqual(read(htmlToAdf('<div class="adf-panel" data-panel-type="note"></div>\n')), document({ attrs: { panelType: 'note' }, type: 'panel' }))
+  assert.deepEqual(read(htmlToAdf('<div class="adf-panel">\n<p>a</p>\n</div>\n')), document({ content: [paragraph(text('a'))], type: 'panel' }))
+  assert.deepEqual(read(htmlToAdf('<div class="adf-panel" data-panel-type="info">\n<div class="adf-panel" data-panel-type="warning">\n<p>b</p>\n</div>\n<ul>\n<li>c</li>\n</ul>\n</div>\n')), document({ attrs: { panelType: 'info' }, content: [nestedPanel, { content: [item(paragraph(text('c')))], type: 'bulletList' }], type: 'panel' }))
+})
+
+test('refuses a panel the writer does not write', () => {
+  const refused = (source: string): string => refusal(htmlToAdf(source))
+  assert.equal(refused('<div class="adf-panel" data-panel-type="info" data-extra="1">\n<p>a</p>\n</div>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
+  assert.equal(refused('<div class="adf-panel" data-panel-type="info" data-local-id="p">\n<p>a</p>\n</div>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<div class="adf-panel" data-panel-type="info">\n</div>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 47')
+  assert.equal(refused('<div class="adf-panel" data-panel-type="info"><p>a</p></div>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<div id="x" class="adf-panel">\n<p>a</p>\n</div>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+})
+
+test('reads an expand and a nested expand back from their details, the title from the summary', () => {
+  const expand = (source: string): AdfDocument | string => read(htmlToAdf(source))
+  assert.deepEqual(expand('<details class="adf-expand" data-local-id="x1">\n<summary>Details &amp; more</summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { localId: 'x1', title: 'Details & more' }, content: [paragraph(text('Inside'))], type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-nested-expand">\n<summary>T</summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { title: 'T' }, content: [paragraph(text('Inside'))], type: 'nestedExpand' }))
+  assert.deepEqual(expand('<details class="adf-expand">\n<p>Inside</p>\n</details>\n'), document({ content: [paragraph(text('Inside'))], type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-expand">\n<summary></summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { title: '' }, content: [paragraph(text('Inside'))], type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-expand">\n<summary>T</summary>\n</details>\n'), document({ attrs: { title: 'T' }, type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-expand"></details>\n'), document({ type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-expand">\n<summary>a\nb</summary>\n<p>x</p>\n</details>\n'), document({ attrs: { title: 'a\nb' }, content: [paragraph(text('x'))], type: 'expand' }))
+})
+
+test('refuses an expand the writer does not write', () => {
+  const refused = (source: string): string => refusal(htmlToAdf(source))
+  assert.equal(refused('<details class="adf-expand" open="">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<details class="adf-expand" data-title="a">\n<p>a</p>\n</details>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
+  assert.equal(refused('<details>\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<details class="adf-expand">\n</details>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 29')
+  assert.equal(refused('<details class="adf-expand">\n<summary>a<b>x</b></summary>\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 2 offset 29')
+  assert.equal(refused('<details class="adf-expand">\n<summary>a</summary><p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 2 offset 29')
+  assert.equal(refused('<details class="adf-expand">\n<summary>a</summary>\n<summary>b</summary>\n</details>\n'), 'unmappable-html at /content/0/content/0 line 3 offset 50')
+  assert.equal(refused('<details class="adf-expand"><summary>a</summary></details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+})
+
+test('reads a task list back, each item\'s checkbox giving its state, and a decision list', () => {
+  const tasks = '<ul class="adf-task-list" data-local-id="l1">\n<li class="adf-task" data-local-id="t1" data-state="DONE"><input type="checkbox" checked="" disabled=""> Ship <strong>it</strong></li>\n<li class="adf-task" data-local-id="t2" data-state="TODO"><input type="checkbox" disabled=""></li>\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">  &lt;a&gt;</li>\n</ul>\n'
+  const done: AdfNode = { attrs: { localId: 't1', state: 'DONE' }, content: [text('Ship '), text('it', { type: 'strong' })], type: 'taskItem' }
+  const todo: AdfNode = { attrs: { localId: 't2', state: 'TODO' }, type: 'taskItem' }
+  assert.deepEqual(read(htmlToAdf(tasks)), document({ attrs: { localId: 'l1' }, content: [done, todo, { attrs: { state: 'TODO' }, content: [text(' <a>')], type: 'taskItem' }], type: 'taskList' }))
+  assert.deepEqual(read(htmlToAdf('<ul class="adf-task-list"></ul>\n')), document({ type: 'taskList' }))
+  const decisions = '<ul class="adf-decision-list" data-local-id="d1">\n<li class="adf-decision" data-local-id="d2" data-state="DECIDED">Use HTML</li>\n<li class="adf-decision" data-state="UNDECIDED"></li>\n</ul>\n'
+  assert.deepEqual(read(htmlToAdf(decisions)), document({ attrs: { localId: 'd1' }, content: [{ attrs: { localId: 'd2', state: 'DECIDED' }, content: [text('Use HTML')], type: 'decisionItem' }, { attrs: { state: 'UNDECIDED' }, type: 'decisionItem' }], type: 'decisionList' }))
+  assert.deepEqual(read(htmlToAdf('<ul class="adf-decision-list"></ul>\n')), document({ type: 'decisionList' }))
+})
+
+test('refuses a task or decision list the writer does not write', () => {
+  const refused = (source: string): string => refusal(htmlToAdf(source))
+  const box = '<input type="checkbox" disabled="">'
+  const list = (...items: string[]): string => `<ul class="adf-task-list">\n${items.join('\n')}\n</ul>\n`
+  assert.equal(refused(list(`<li class="adf-task" data-state="DONE">${box} a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO"><input type="checkbox" checked="" disabled=""> a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="MAYBE">${box} a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task">${box} a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li data-state="TODO">${box} a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list('<li data-state="TODO">a</li>')), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO">${box}a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO">${box} </li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO">a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO"><input type="checkbox"> a</li>`)), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO">${box} a</li>\n<li class="adf-decision" data-state="DECIDED">b</li>`)), 'unmappable-html at /content/0/content/1 line 3 offset 109')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO">${box} a\n<p>b</p></li>`)), 'unmappable-html at /content/0/content/0 line 3 offset 104')
+  assert.equal(refused(list(`<li class="adf-task" data-state="TODO" data-extra="1">${box} a</li>`)), 'unsupported-node-shape at /content/0/content/0 line 2 offset 27')
+  assert.equal(refused('<ul class="adf-task-list" data-extra="1"></ul>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
+  assert.equal(refused('<ul class="adf-decision-list">\n<li class="adf-decision">a</li>\n<li>b</li>\n</ul>\n'), 'unmappable-html at /content/0/content/1 line 3 offset 63')
+  assert.equal(refused('<ul class="adf-task-list">\n</ul>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+})

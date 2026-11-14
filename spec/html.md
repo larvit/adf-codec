@@ -16,17 +16,32 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `codeBlock` | `<pre><code class="language-js">…</code></pre>`, the language one token holding no ASCII whitespace (a tab, line feed, form feed, carriage return or space); no `class` where it holds no `language` |
 | `heading`, `level` 1 to 6 | `<h1>…</h1>` to `<h6>…</h6>` |
 | `listItem` | its first paragraph straight after `<li>`: bare where it holds content and no attribute, `<li>Bolt</li>`, and as its `<p>` element where it holds an attribute, `<li><p data-local-id="p1">Bolt</p></li>`; where other blocks follow, each after a line feed, and a line feed before `</li>`. Where the first block is no paragraph, holds neither content nor an attribute, or rides the carry: `<li>`, a line feed, its blocks, a line feed, `</li>` |
+| `decisionList` | `<ul class="adf-decision-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `decisionItem` is `<li class="adf-decision" data-state="DECIDED">` around its inline content |
+| `expand`, `nestedExpand` | `<details class="adf-expand">`, `<details class="adf-nested-expand">`, a line feed, a `<summary>` holding the `title` where there is one, its blocks, each after a line feed, a line feed, `</details>` |
+| `mediaGroup` | `<div class="adf-media-group">` holding a `<span class="adf-file" data-id="…" data-type="file"></span>` for each `media`, none between |
 | `mediaSingle`, centered, holding one external `media` | `<p><img src="…" alt="…"></p>`, no `alt` where the media holds none; `<p><a href="…"><img …></a></p>` where a link marks it |
+| `mediaSingle`, any other | `<figure class="adf-media-single" data-layout="wide">`, its `media` as the `<img>` below, then its caption as `<figcaption>…</figcaption>`, on one line, `</figure>`; the `<img>` inside `<a href="…">` where a link marks the media |
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
-| `paragraph` | `<p>…</p>` |
+| `panel` | `<div class="adf-panel" data-panel-type="info">`, a line feed, its blocks a line each, a line feed, `</div>` |
+| `paragraph` | `<p>…</p>`; `<p style="text-align:center">` for an `alignment` mark of `center` and `text-align:right` for `end`, as on a heading |
 | `rule` | `<hr>` |
+| `taskList` | `<ul class="adf-task-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `taskItem` is `<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">`, a space, then its inline content, the checkbox `checked=""` as well where `state` is `DONE`, and the space left out where it holds none |
 | `table` | `<table>`, a line feed, its sections parted by a line feed, a line feed, `</table>`: a `<thead>` where its first row holds cells that are all `tableHeader`, and a `<tbody>` for the other rows where there are any. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
 | `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `style="background-color:#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
 | `tableRow` | `<tr>`, its cells with no line feed between them, `</tr>` |
 
 A container holding no `content` key is its element holding nothing: `<blockquote></blockquote>`,
-`<ul></ul>`, `<li></li>`, `<table></table>`, `<tr></tr>`, `<td></td>`; so is a paragraph or heading,
-`<p></p>`.
+`<ul></ul>`, `<li></li>`, `<table></table>`, `<tr></tr>`, `<td></td>`, `<div class="adf-panel"></div>`,
+`<details class="adf-expand"></details>`; so is a paragraph or heading, `<p></p>`.
+
+A media is `<img src="…" alt="…" height="…" width="…">`: `src` its `url`, each other attribute left out where
+the media holds none, `height` and `width` a positive safe integer each. A media holding no `url` is
+`<img class="adf-media">` with no `src`. Its `type` is a `data-*` attribute, left out where the media is
+external and holds a `url`.
+
+A `<summary>` holds the escaped `title`, `<summary></summary>` for an empty one, and an expand with no
+`title` has none. `panelType` is `data-panel-type`, and a task item's or decision item's `state`
+is `data-state`, among the other attributes below.
 
 ```html
 <table>
@@ -42,9 +57,9 @@ A container holding no `content` key is its element holding nothing: `<blockquot
 
 A table and each of its rows count one nesting level; a cell doesn't count, nor does a list item.
 
-On a paragraph, heading, quote, list, list item, table, row, cell, code block or rule, each attribute its type holds
+On a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, or media group, each attribute its type holds
 (`spec/flavour.md` §Block nodes) that the element does not write as `level`, `order`, `language`,
-`colspan`, `rowspan`, `background` or `colwidth` is a `data-*` attribute, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the
+`colspan`, `rowspan`, `background`, `colwidth`, an expand's `title`, or an `<img>`'s `alt`, `height`, `url` and `width` is a `data-*` attribute, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the
 element's own attributes and sorted by name. A string is its value; any other value is its JSON,
 compact: `<ol start="3" data-local-id="91177a27-b0ff">`, `<pre data-wrap="true"><code>`. A code
 block's `data-*` attributes stand on its `<pre>`.
@@ -54,7 +69,8 @@ block's `data-*` attributes stand on its `<pre>`.
 | ADF | HTML |
 | --- | --- |
 | `date` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`, the day in UTC |
-| `code`, `em`, `strike`, `strong` | `<code>`, `<em>`, `<del>`, `<strong>` around the text |
+| `backgroundColor`, `textColor` | `<mark style="background-color:#fffae6">`, `<span style="color:#bf2600">` around the text; the colour a `#` and letters and digits, or letters and digits alone |
+| `code`, `em`, `strike`, `strong`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<u>` around the text |
 | `emoji` | `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its `text` the content |
 | `hardBreak` | `<br>` |
 | `inlineCard`, holding a `url` | `<a class="adf-inline-card" href="https://example.com/spec">https://example.com/spec</a>` |
@@ -62,6 +78,7 @@ block's `data-*` attributes stand on its `<pre>`.
 | `link`, holding `href` and an optional `title` | `<a href="…" title="…">` around the text |
 | `mention` | `<span class="adf-mention" data-access-level="CONTAINER" data-id="5b10a2" data-user-type="DEFAULT">@Mikael</span>`, its `text` the content |
 | `status` | `<span class="adf-status" data-color="yellow">In review</span>`, its `text` the content |
+| `subsup` | `<sub>` or `<sup>` around the text, for a `type` of `sub` or `sup` |
 | `text` | its text, escaped |
 
 A `date`, `emoji`, `inlineCard`, `mention` or `status` writes each other attribute its type holds as a
@@ -92,7 +109,7 @@ it reads back as the node it holds, so HTML stored while a node rode the carry r
 later release writes it as its own element.
 
 ```html
-<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;panelType&quot;:&quot;info&quot;},…,&quot;type&quot;:&quot;panel&quot;}"><p>Read the <a href="https://spec.commonmark.org/">CommonMark spec</a> first.</p><p>Then import.</p></div>
+<div class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;extensionKey&quot;:&quot;toc&quot;},…,&quot;type&quot;:&quot;bodiedExtension&quot;}"><p>Read the <a href="https://spec.commonmark.org/">CommonMark spec</a> first.</p><p>Then import.</p></div>
 <p>Ask <span class="adf-carry" data-adf="{&quot;attrs&quot;:{&quot;id&quot;:&quot;5b10a2&quot;},&quot;type&quot;:&quot;mention&quot;}">@5b10a2</span></p>
 ```
 
@@ -142,6 +159,14 @@ later release writes it as its own element.
   - a code block holding more than one text node, a marked one, or a language holding ASCII
     whitespace;
   - a hard break holding an attribute;
+  - a `mediaSingle` holding anything but one `media`, then at most one `caption`, or a `mediaGroup`
+    holding anything but `media`; a `media` holding more than one mark, a mark that is no link, or a
+    `height` or `width` that is not a positive safe integer;
+  - a paragraph or heading holding a mark besides one `center` or `end` alignment, a `textColor`
+    or `backgroundColor` whose `color` is not letters and digits after an optional `#`;
+  - a `panel` or `expand` holding an attribute its type does not hold as that kind; a `taskItem`
+    whose `state` is not `DONE` or `TODO`, or a task or decision list holding a node that is no
+    item of its own kind, `blockTaskItem` included: the whole list rides the carry;
   - a list holding a node that is no `listItem`, or an item holding a mark, an empty key or an
     attribute its type does not hold: the whole list rides the carry;
   - a table holding a node that is no `tableRow`, a row holding a node that is no cell, or a table,
@@ -183,6 +208,8 @@ that node in either spelling: an edit there would be lost, so it is `unmappable-
   is not the day its `data-timestamp` names, a card without `data-data` whose `href` and text are
   not one URL, and a card with `data-data` whose `href` is not the URL its `data` holds or whose
   text is not its name, else that URL, are `unmappable-html`.
+- A task item whose checkbox is checked where its `data-state` is `TODO`, or not where it is `DONE`,
+  and one whose `data-state` is neither, are `unmappable-html`.
 - A `data-*` attribute that its element does not take, such as `data-level` on `<h1>`, or that holds
   a value outside its attribute's kind or not written as compact JSON, is `unsupported-node-shape`.
 - A carry element's `data-adf` holding invalid JSON is `unmappable-html`. JSON that is no ADF node,

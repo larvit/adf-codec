@@ -472,6 +472,7 @@ Ping !adf:mention[@Mikael]{id=5b10a2} — !adf:status[In review]{color=yellow} �
 | `panel` | a container, the type its argument: `!adf:panel info` |
 | `subsup`, `textColor`, `underline` | inline directive marks around their text, `!adf:textColor[**Overdue**]{color="#ae2e24"}` |
 | `syncBlock`, `bodiedSyncBlock` | a leaf and a container |
+| `taskList`, `taskItem` | `<ul class="adf-task-list">`, `<li class="adf-task" data-state="DONE"><input type="checkbox" checked="" disabled=""> text</li>` |
 | `table`, `tableRow`, `tableCell`, `tableHeader` richer than a pipe table | containers nesting block content |
 | `taskList`, `taskItem`, `blockTaskItem` | containers, the state an argument: `!adf:taskItem DONE` |
 | any other node type, or a node where its spelling cannot stand | the opaque carry: a code fence ```` ```adf:<type> ```` holding the node's JSON, or inline `!adf:carry{json="…"}` |
@@ -567,15 +568,21 @@ content. No stylesheet ships. The complete dialect:
 | `bulletList`, `orderedList`, `listItem` | `<ul>`, `<ol>`, `<ol start="3">` for an `order` of 3, and `<li>`; an item's first paragraph stands bare, `<li>Bolt</li>`, or as `<li><p data-local-id="p1">Bolt</p></li>` where it holds an attribute |
 | `codeBlock` | `<pre><code class="language-js">`, no `class` without a language |
 | `date`, `emoji`, `mention`, `status` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="…">2025-08-25</time>`, `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, `<span class="adf-mention" data-id="5b10a2">@Mikael</span>`, `<span class="adf-status" data-color="yellow">In review</span>` |
+| `decisionList`, `decisionItem` | `<ul class="adf-decision-list">`, `<li class="adf-decision" data-state="DECIDED">` |
+| `expand`, `nestedExpand` | `<details class="adf-expand">`, `<details class="adf-nested-expand">`, a `<summary>` holding the `title` |
 | `hardBreak` | `<br>` |
-| `heading` | `<h1>` to `<h6>` |
+| `heading` | `<h1>` to `<h6>`; `style="text-align:center"` for a centered one, `text-align:right` for one aligned to the end |
 | `inlineCard` holding a `url`, or `data` and no `url` | `<a class="adf-inline-card" href="…">…</a>`; for `data`, `href` is the URL `data` holds, the text its name, else that URL, and `data-data` the whole `data` as JSON |
 | `link` | `<a href="…" title="…">` |
-| `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it; an image holding such an attribute, as editor-written ones do, rides the carry element |
-| `paragraph` | `<p>` |
+| `mediaGroup` | `<div class="adf-media-group">` holding a `<span class="adf-file" data-id="…" data-type="file"></span>` for each `media` |
+| `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it |
+| any other `mediaSingle` | `<figure class="adf-media-single" data-layout="wide">` holding the `<img>`, then the caption as `<figcaption>` |
+| `panel` | `<div class="adf-panel" data-panel-type="info">` |
+| `paragraph` | `<p>`; `style="text-align:center"` or `text-align:right`, as on a heading |
 | `rule` | `<hr>` |
 | `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
-| `text` marked `code`, `em`, `strike`, `strong` | `<code>`, `<em>`, `<del>`, `<strong>`, the first mark outermost |
+| `text` marked `code`, `em`, `strike`, `strong`, `subsup`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<sub>` or `<sup>`, `<u>`, the first mark outermost |
+| `text` marked `textColor`, `backgroundColor` | `<span style="color:#ae2e24">`, `<mark style="background-color:#fffae6">` |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot, except a shape Atlassian's schema forbids, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 

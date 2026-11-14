@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- `adfToHtml` writes a media single, a media group and a caption as `<figure class="adf-media-single">` holding an
+  `<img>` and a `<figcaption>`, and as `<div class="adf-media-group">` of `<span class="adf-file">` files, where
+  `0.3.1` wrote the carry element, and `htmlToAdf` reads them back. A link around the image is the media's link
+  mark. The carry element `0.3.1` wrote for them still reads.
+- `adfToHtml` writes underline as `<u>`, subscript and superscript as `<sub>` and `<sup>`, a text colour as
+  `<span style="color:…">`, a background colour as `<mark style="background-color:…">` and a paragraph's or
+  heading's alignment as `style="text-align:…"`, where `0.3.1` wrote the carry element, and `htmlToAdf` reads them
+  back. The carry element `0.3.1` wrote for them still reads. Indentation still rides the carry element.
+- `adfToHtml` writes a panel as `<div class="adf-panel">`, an expand and a nested expand as `<details>` with the
+  title in a `<summary>`, a task list as `<ul class="adf-task-list">` of items each a checkbox then its text, and a
+  decision list as `<ul class="adf-decision-list">`, where `0.3.1` wrote the carry element, and `htmlToAdf` reads
+  them back. The carry element `0.3.1` wrote for them still reads.
 - `adfToHtml` writes a `strike` mark as `<del>`, where `0.3.1` wrote the carry element, and `htmlToAdf` reads
   `<del>` as `strike`. The carry element `0.3.1` wrote for it still reads.
 - `adfToPlainText` writes a document as text with no markup, for a search index, a notification or an

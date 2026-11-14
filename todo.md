@@ -6,16 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 184`
+`Next ID = 185`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 1.6 |
-| 136 | 0.4.0 |  |  | **Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 1.6 |
-| 134 | 0.4.0 |  | decision | **Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 5 | 6 by 3 | 1.5 |
-| 46 | 0.4.0 | 134, 135, 136 |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
+| 184 | 0.4.0 |  | question | **Write indentation as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element, once the maintainer settles whether its element carries a `margin-left` style.** | 1 | 2 | 2 | 3 | 2 | 6 by 2 | 3.2 |
+| 46 | 0.4.0 |  |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
 | 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
@@ -48,23 +46,15 @@
 
 ## Details
 
-### 135. Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+### 184. Write indentation as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element, once the maintainer settles whether its element carries a `margin-left` style.
 
-A writer panel picks the spellings; a plain external image already has one, `<p><img …></p>`.
-Atlassian's editor puts `localId`, `width` and `widthType` on every `mediaSingle`, so every
-editor-written image rides the carry until this item.
+Item 136 wrote alignment, underline, colours, subscript and superscript as HTML and left indentation on the carry element, since the writer panel did not settle one spelling.
 
-### 136. Write underline, text and background colours, subscript, superscript, alignment and indentation as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
+A writer panel of seven picked `data-indent-level` for the attribute name, 5 of 7. It split on whether a `margin-left` style stands beside it: 4 readers wanted the style as well, so a browser shows the indent, and 3 wanted the data attribute alone, as the alignment style is the only presentation the dialect writes.
 
-A writer panel picks the spellings.
+Recommendation: the data attribute alone. The dialect writes no style the viewer needs to read the document, and a `margin-left` in some unit would be a second spelling of the level that has to agree with it. The level stays one value, `data-indent-level="2"`, and a block holding an indentation mark takes no other mark.
 
-### 134. Write panels, expands, task lists and decision lists as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
-
-An expand is `<details><summary>`, as `htmlToAdf` reads it (`docs/decisions.md` §Foreign HTML sorts
-three ways). A writer panel picks the rest. A reader panel (`docs/decisions.md`, the feature-table
-entry) expected a panel as `<div class="adf-panel" data-panel-type="…">` and a task list as
-`<ul class="adf-task-list">` of `<li data-state="DONE|TODO">` with a checkbox input, and the writer
-panel takes these as input.
+The gap to close in `docs/decisions.md`: the class is "which output the audience expects", settled by a panel, and this panel's split is less than five of seven, so it is a missing goal and the maintainer's to answer.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
