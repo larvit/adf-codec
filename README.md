@@ -1,9 +1,9 @@
-# @larvit/adf-codec — ADF to markdown and HTML, markdown to ADF
+# @larvit/adf-codec — ADF to markdown, HTML and plain text, markdown to ADF
 
 [![npm](https://img.shields.io/npm/v/@larvit/adf-codec)](https://www.npmjs.com/package/@larvit/adf-codec)
 [![CI](https://github.com/larvit/adf-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/adf-codec/actions/workflows/ci.yml)
 
-Convert between ADF (Atlassian Document Format, the rich text of Jira and Confluence) and markdown or HTML.
+Convert between ADF (Atlassian Document Format, the rich text of Jira and Confluence) and markdown or HTML, or write it as plain text.
 
 For application developers whose app shows, edits, exports or generates the rich text Atlassian
 products store as ADF.
@@ -167,6 +167,8 @@ if (back?.ok) console.log(back.value) // deep-equals page
 
 ### ADF to plain text
 
+Full reference: [The calls](#the-calls).
+
 ```ts
 import { adfToPlainText, type AdfDocument } from '@larvit/adf-codec'
 
@@ -256,7 +258,7 @@ whatever it costs; the Achieve goals are weighed against each other in the order
 10. **Achieve:** Plain text reads like text written for people reading an email.
     - Signal: readers shown the candidate texts pick the one the library already writes.
     - Counter-signal: issues report plain text that reads as markup or runs blocks together.
-    - Why: a search index, a notification and an email each show the text as it is, with no renderer to tidy it.
+    - Why: a spelling that looks tidy to its author can read as markup to its readers, and only their picks and reports show it.
 
 ## Audience
 
@@ -337,9 +339,9 @@ documentation says, on 2026-10-28.
 
 ## The calls
 
-Serves [Goals](#goals) 1, 2 and 8. Pure functions, each taking a whole document and returning a
+Serves [Goals](#goals) 1, 2, 8 and 10. Pure functions, each taking a whole document and returning a
 whole result; no I/O, no configuration. [What each call writes](https://github.com/larvit/adf-codec/blob/main/docs/feature-table.md)
-sets example documents beside each writer's output and says whether that output reads back the same.
+sets example documents beside the markdown and HTML writers' output and says whether that output reads back the same.
 
 ```ts
 adfToLosslessMarkdown(doc: AdfDocument): Result<string>
@@ -363,7 +365,7 @@ Each call's name says which format it reads or writes:
 | --- | --- | --- |
 | `adfToHtml` | writes HTML: the elements [HTML](#html) lists, and an `adf-carry` element holding everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToLosslessMarkdown` | writes the lossless flavour: CommonMark plus GFM's pipe tables and `~~`, with `!adf:` directives and `adf:` fences for everything else | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `adfToPlainText` | writes text with no markup: blocks a blank line apart, list items on a line each under `• ` or `1.`, nesting indented, a hard break a line feed, a mention, emoji, date and status as the text they show | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `adfToPlainText` | writes text with no markup: blocks a blank line apart; list items under `• ` or `1.`, a task item under `☑ ` or `☐ `, nesting indented; a link's address and title in parentheses after its text; a hard break a line feed; a mention, emoji, date and status as the text they show; a table as its cells written as blocks | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
@@ -373,7 +375,7 @@ Each call's name says which format it reads or writes:
 
 `readAdfDocument` reads the JSON you receive into an `AdfDocument`, copying it once. It copies own
 enumerable keys and data properties alone, so an accessor property or a Proxy that throws is
-`not-an-adf-document` and never a throw. The three writers read their document the same way. It checks the shape the converters require: `type: 'doc'`, a finite
+`not-an-adf-document` and never a throw. The four writers read their document the same way. It checks the shape the converters require: `type: 'doc'`, a finite
 `version` (the converters take only 1), nodes holding only `attrs`, `content`, `marks`, `text` and
 `type`, attribute values that are JSON values, and no object holding itself. It reads a document
 nesting past 500 levels; the converters refuse that one with `unsupported-nesting-depth`.
@@ -645,7 +647,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 
 ### Emitting
 
-`adfToLosslessMarkdown`, `adfToPlainText`, `adfToPortableMarkdown` and `adfToHtml` raise these, and the codes under
+`adfToHtml`, `adfToLosslessMarkdown`, `adfToPlainText` and `adfToPortableMarkdown` raise these, and the codes under
 [Either direction](#either-direction). `readAdfDocument` raises `not-an-adf-document` and
 `unsupported-node-shape`, and `engine-limit`.
 
@@ -701,7 +703,7 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
   `path` and message name.
 - **Writing, in `adfToPortableMarkdown`**: a line or task list the portable writer cannot spell.
   This is a bug in this library: report it.
-- **Reading a document, in `readAdfDocument` and the three writers**: the document holds more than
+- **Reading a document, in `readAdfDocument` and the four writers**: the document holds more than
   10,000,000 JSON values, each object, array, string, number, boolean and null counting one. Keep
   the ADF and pass the document over or show it read-only; where you built the ADF, split it.
 - **Past the engine's longest string**:

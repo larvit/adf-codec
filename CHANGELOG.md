@@ -2,8 +2,12 @@
 
 ## Unreleased
 
-- `adfToPlainText` writes a document as text with no markup, for a search index, a notification or an email: blocks a blank line apart, `• ` and `1.` list markers with nesting indented, a hard break as a line feed, and a mention, emoji, date or status as the text it shows. It refuses what `adfToHtml` refuses. A table writes its cells as blocks for now.
-- `readAdfDocument` and the three writers name the node `not-an-adf-document` refuses: `path` leads
+- `adfToPlainText` writes a document as text with no markup, for a search index, a notification or an
+  email: blocks a blank line apart; `• ` and `1.` list markers, `☑ ` and `☐ ` for a done and an open
+  task, nesting indented; a link's address and title in parentheses after its text; a hard break as a
+  line feed; and a mention, emoji, date or status as the text it shows. It refuses what `adfToHtml`
+  refuses. A table is written as its cells, as blocks, for now.
+- `readAdfDocument` and the four writers name the node `not-an-adf-document` refuses: `path` leads
   to a node that is not an ADF node, and the message says what is wrong with it, such as which
   attribute holds a value that is not JSON. A getter, an object holding itself, a throwing Proxy
   and a bad array length are still refused at the empty path.
