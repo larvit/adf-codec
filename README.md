@@ -252,13 +252,13 @@ whatever it costs; the Achieve goals are weighed against each other in the order
    - Counter-signal: `spec/flavour.md` gains a special case for each such pick.
    - Why: output fitted case by case is output no reader can predict.
    1. **Maintain:** A function's name says which markdown it reads or writes.
+   2. **Achieve:** Plain text reads like text written for people reading an email.
+      - Signal: readers shown the candidate texts pick the one the library already writes.
+      - Counter-signal: issues report plain text that reads as markup or runs blocks together.
+      - Why: a spelling that looks tidy to its author can read as markup to its readers, and only their picks and reports show it.
 7. **Maintain:** Lossy conversion drops form, never content. A link's or an image's title counts as content.
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
-10. **Achieve:** Plain text reads like text written for people reading an email.
-    - Signal: readers shown the candidate texts pick the one the library already writes.
-    - Counter-signal: issues report plain text that reads as markup or runs blocks together.
-    - Why: a spelling that looks tidy to its author can read as markup to its readers, and only their picks and reports show it.
 
 ## Audience
 
@@ -271,15 +271,16 @@ which is free text.
   refusal arriving before the save rather than after.
 - **Bot posting content** — turns generated markdown into ADF. Relies on CommonMark being valid
   input, so nothing upstream has to learn a flavour.
-- **Export/indexing tool** — converts ADF to markdown or HTML in bulk. Relies on readable output
-  and on every refusal but `engine-limit` being deterministic, so a document that fails fails the
-  same way next run.
+- **Export/indexing tool** — converts ADF to markdown, HTML or plain text in bulk. Relies on
+  readable output and on every refusal but `engine-limit` being deterministic, so a document that
+  fails fails the same way next run.
 - **LLM/agent pipeline** — hands documents to a model as markdown and writes the edits back.
   Relies on the round-trip and on markdown a reader half-knowing the lossless flavour can still edit.
 
 Behind those apps, the people who read and write the markdown and the HTML: product
 managers, engineers and support agents working in Atlassian products through a plugin or another
-UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
+UI. They know markdown and not ADF, and rely on every spelling saying what it means to them. Some
+never see markup: they read a document's plain text in an email, a notification or a search hit.
 
 Contributors, human or agent, who change the source. They rely on each concern having one obvious
 place, and on CI failing a change that breaks a guarantee.
@@ -339,7 +340,7 @@ documentation says, on 2026-10-28.
 
 ## The calls
 
-Serves [Goals](#goals) 1, 2, 8 and 10. Pure functions, each taking a whole document and returning a
+Serves [Goals](#goals) 1, 2, 6.2 and 8. Pure functions, each taking a whole document and returning a
 whole result; no I/O, no configuration. [What each call writes](https://github.com/larvit/adf-codec/blob/main/docs/feature-table.md)
 sets example documents beside the markdown and HTML writers' output and says whether that output reads back the same.
 
