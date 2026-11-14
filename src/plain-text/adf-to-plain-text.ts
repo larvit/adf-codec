@@ -108,8 +108,8 @@ function emit(writing: Writing, text: string): void {
     const owed = cell !== undefined && !started ? cell.owed : Math.max(writing.gap, writing.literal)
     const marker = lead?.trimStart() ?? ''
     let head = ''
-    if (cell !== undefined && (started || (owed === 0 && length > 0))) head = started ? (owed > 0 ? ` ${marker}` : '') : marker
-    else if (length === 0 || owed > 0 || lead !== undefined) head = `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}`
+    if (cell !== undefined && (started || owed === 0)) head = started ? (owed > 0 ? ` ${marker}` : '') : marker
+    else if (length === 0 || owed > 0) head = `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}`
     const kept = text.slice(0, end)
     const body = cell === undefined ? kept.replaceAll(/\n(?=[^\n])/g, `\n${indent}`) : kept.replaceAll(/\n+/g, ' ')
     writing.pieces.push(head, body)
