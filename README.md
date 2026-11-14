@@ -279,8 +279,11 @@ which is free text.
 
 Behind those apps, the people who read and write the markdown and the HTML: product
 managers, engineers and support agents working in Atlassian products through a plugin or another
-UI. They know markdown and not ADF, and rely on every spelling saying what it means to them. Some
-never see markup: they read a document's plain text in an email, a notification or a search hit.
+UI. They know markdown and not ADF, and rely on every spelling saying what it means to them.
+
+Also behind them, the people who read a document's plain text as they read an email, whether it
+arrives in an email, a notification or a search hit. They see no markup, and rely on text that
+reads as written for them.
 
 Contributors, human or agent, who change the source. They rely on each concern having one obvious
 place, and on CI failing a change that breaks a guarantee.
