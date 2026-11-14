@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 173 | 0.4.0 |  | principle | **Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.** | 2 | 1 | 1 | 2 | 4 | code health by 1 | 4.4 |
 | 147 | 0.4.0 |  |  | **Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.** | 2 | 2 | 1 | 3 | 4 | 3 by 4 | 4.2 |
 | 141 | 0.4.0 |  | decision | **Write `strike` as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element.** | 1 | 1 | 1 | 1 | 2 | 6 by 2 | 4.0 |
 | 135 | 0.4.0 |  |  | **Write media, media groups and captions as semantic HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 4 | 6 by 2 | 2.0 |
@@ -49,16 +48,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 173. Move each CommonMark spelling's description out of `commonMarkSpellings`, beside the emitter's spelling it describes.
-
-`commonMarkSpellings` (`src/markdown/parse/markdown-to-adf.ts`) restates in prose the spellings
-`spellReadableBlock` (`src/markdown/emit/adf-to-markdown.ts`) owns, such as "each item behind `- `,
-or behind `* ` where …". A changed spelling leaves the refusal naming the old one, and a node
-missing from the map is refused naming no spelling. Put each description beside the spelling and
-export it through `emit/spelling-questions.ts`, the one import `parse/` may take from `emit/`, and
-drop the comment at `markdown-to-adf.ts:145` that keeps them apart.
-Technical principle: DRY. Found by the principles audit of the release review of 0.3.0, 2026-11-08.
 
 ### 147. Ship `adfToPlainText`, writing a document's content with no markup, under a README goal for plain text.
 

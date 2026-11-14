@@ -155,18 +155,47 @@ export function spellingMemo(): SpellingMemo {
   return { ask, take }
 }
 
+type ReadableSpelling = {
+  // The lossless flavour's spelling in words, for the refusal of a directive that CommonMark spells.
+  describe: (node: AdfNode) => string
+  spell: (node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing) => Result<EmittedBlock> | undefined
+}
+
+const readableSpellings: ReadonlyMap<string, ReadableSpelling> = new Map<string, ReadableSpelling>([
+  ['blockquote', {
+    describe: () => 'each line behind `> `',
+    spell: (node, path, depth, writing) => holdsOnlyAttributes(node, []) ? quotedBlocks(node, path, depth, writing, (body) => alertEscaped(body, writing)) : undefined,
+  }],
+  ['bulletList', { describe: () => 'each item behind `- `, or behind `* ` where the list right before it takes `- `', spell: tryList }],
+  ['codeBlock', {
+    describe: () => 'its text in a fence of more backticks than any run it holds, its language after the opening fence',
+    spell: (node, _path, _depth, writing) => readableText(tryCodeBlock(node, writing.flavour)),
+  }],
+  ['heading', { describe: () => 'one `#` per level before its text, `## Title` at level 2', spell: (node, path, _depth, writing) => tryHeading(node, path, writing.flavour) }],
+  ['mediaSingle', {
+    describe: () => '`![alt](url)`, or `[![alt](url)](href)` when linked',
+    spell: (node, _path, _depth, writing) => readableText(tryImage(node, writing.flavour)),
+  }],
+  ['orderedList', {
+    describe: (node) => {
+      const order = String(nodeAttrs(node)['order'])
+      return `each item behind its number, counting up from \`${order}. \`, or from \`${order}) \` where the list right before it takes \`.\``
+    },
+    spell: tryList,
+  }],
+  ['paragraph', { describe: () => 'its text alone', spell: (node, path, _depth, writing) => tryParagraph(node, path, writing.flavour) }],
+  ['rule', { describe: () => '`---`', spell: (node) => readableText(tryRule(node)) }],
+  ['table', { describe: () => 'a pipe table', spell: (node, path, _depth, writing) => readableText(tryPipeTable(node, path, writing.flavour)) }],
+])
+
+export function describeCommonMarkSpelling(node: AdfNode): string | undefined {
+  return readableSpellings.get(node.type)?.describe(node)
+}
+
 function spellReadableBlock(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   const own = writing.flavour === 'portable' ? writing.blocks.spell(node, path, depth, writing) : undefined
   if (own !== undefined) return own
-  if (node.type === 'blockquote') return holdsOnlyAttributes(node, []) ? quotedBlocks(node, path, depth, writing, (body) => alertEscaped(body, writing)) : undefined
-  if (node.type === 'bulletList' || node.type === 'orderedList') return tryList(node, path, depth, writing)
-  if (node.type === 'codeBlock') return readableText(tryCodeBlock(node, writing.flavour))
-  if (node.type === 'heading') return tryHeading(node, path, writing.flavour)
-  if (node.type === 'mediaSingle') return readableText(tryImage(node, writing.flavour))
-  if (node.type === 'paragraph') return tryParagraph(node, path, writing.flavour)
-  if (node.type === 'rule') return readableText(tryRule(node))
-  if (node.type === 'table') return readableText(tryPipeTable(node, path, writing.flavour))
-  return undefined
+  return readableSpellings.get(node.type)?.spell(node, path, depth, writing)
 }
 
 function readableText(text: string | undefined): Result<EmittedBlock> | undefined {

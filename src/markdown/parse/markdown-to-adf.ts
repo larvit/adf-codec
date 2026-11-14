@@ -5,7 +5,7 @@ import type { ConvertFault } from '../../result.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { LinkDefinitions } from '../inline-content.ts'
 import { carryFenceType, readCarriedBlock } from '../opaque-carry.ts'
-import { commonMarkSpelling, spellingMemo, type SpellingMemo } from '../emit/spelling-questions.ts'
+import { commonMarkSpelling, describeCommonMarkSpelling, spellingMemo, type SpellingMemo } from '../emit/spelling-questions.ts'
 import { documentAttribute, documentName, documentSpelling } from '../directive/block.ts'
 import { emptyKeys, nodeAttrs } from '../../adf/document.ts'
 import { failure, faulted, positioned, success, type ConvertErrorPath, type ParseError, type Result } from '../../result.ts'
@@ -132,27 +132,9 @@ function directiveNode(block: DirectiveBlock, reading: Reading, path: ConvertErr
   const readable = withinEngineLimits(() => commonMarkSpelling(built.value, path, depth, { flavour: 'lossless', memo: reading.memo }))
   if (!readable.ok) return readable
   if (!readable.value) return built
-  const spelling = spellingToWrite(built.value)
+  const spelling = describeCommonMarkSpelling(built.value)
   return failure('unsupported-node-shape', `${built.value.type} takes the CommonMark spelling, not the directive form${spelling === undefined ? '' : `: write ${spelling}`}`, path)
 }
-
-function spellingToWrite(node: AdfNode): string | undefined {
-  if (node.type !== 'orderedList') return commonMarkSpellings.get(node.type)
-  const order = String(nodeAttrs(node)['order'])
-  return `each item behind its number, counting up from \`${order}. \`, or from \`${order}) \` where the list right before it takes \`.\``
-}
-
-// One entry per node `commonMarkSpelling` spells in the lossless flavour, kept here because this refusal is its only reader; a node missing here is refused naming no spelling.
-const commonMarkSpellings: ReadonlyMap<string, string> = new Map([
-  ['blockquote', 'each line behind `> `'],
-  ['bulletList', 'each item behind `- `, or behind `* ` where the list right before it takes `- `'],
-  ['codeBlock', 'its text in a fence of more backticks than any run it holds, its language after the opening fence'],
-  ['heading', 'one `#` per level before its text, `## Title` at level 2'],
-  ['mediaSingle', '`![alt](url)`, or `[![alt](url)](href)` when linked'],
-  ['paragraph', 'its text alone'],
-  ['rule', '`---`'],
-  ['table', 'a pipe table'],
-])
 
 function directiveBody(read: BlockDirectiveNode, blocks: Block[] | undefined, reading: Reading, path: ConvertErrorPath, depth: number): Result<AdfNode> {
   const { contentModel, node } = read
