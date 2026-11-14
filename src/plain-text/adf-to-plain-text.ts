@@ -42,8 +42,7 @@ function writeText(content: readonly AdfNode[]): Result<string> {
   let literal = 0
 
   function emit(text: string): void {
-    let end = text.length
-    while (end > 0 && text[end - 1] === '\n') end -= 1
+    const end = endBeforeLineFeeds(text)
     if (end > 0) {
       const owed = Math.max(gap, literal)
       const head = length === 0 || owed > 0 ? `${length === 0 ? '' : '\n'.repeat(owed)}${lead ?? indent}` : ''
@@ -52,9 +51,8 @@ function writeText(content: readonly AdfNode[]): Result<string> {
       length += head.length + body.length
       gap = 0
       lead = undefined
-      literal = 0
     }
-    literal += text.length - end
+    literal = (end > 0 ? 0 : literal) + text.length - end
   }
 
   const pending: Step[] = childSteps(content, { level: 1, lines: 2 }, 0, undefined, () => undefined).reverse()
@@ -86,6 +84,17 @@ function writeText(content: readonly AdfNode[]): Result<string> {
     if (length > longestOutput) return tooLong()
   }
   return success(pieces.join(''))
+}
+
+function endBeforeLineFeeds(text: string): number {
+  let end = text.length
+  while (end > 0 && text[end - 1] === '\n') end -= 1
+  return end
+}
+
+function stepsWithin(node: AdfNode, depth: number, place: Place | undefined): Step[] {
+  const layout = layoutOf(node)
+  return childSteps(nodeContent(node), layout, depth + layout.level, place, markerFor(node))
 }
 
 // The steps for `nodes` in document order, `layout.lines` line feeds apart.
