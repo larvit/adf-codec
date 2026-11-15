@@ -8,7 +8,7 @@ import type { PortableLineFallback } from '../emit/inline-line.ts'
 import type { RunGrouping, RunNode } from '../emit/inline-runs.ts'
 import { inlineRuns } from '../emit/inline-runs.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
-import { portableJudgement, portableLeaves, reduceInline, trimmedEdges, trimmingRuns, trimPass, withoutFallback } from './inline-reduction.ts'
+import { portableJudgement, portableLeaves, reduceInline, trimmedEdges, trimmedEdgesPass, trimmingRuns, trimPass, withoutFallback } from './inline-reduction.ts'
 import { success, type Result } from '../../result.ts'
 
 test('reduces a line alike dropping every run a pass may or the first alone', () => {
@@ -68,7 +68,7 @@ const trimMarks = fc.oneof(
   fc.constantFrom<AdfMark[]>([{ type: 'code' }], [link, { type: 'code' }]),
 )
 const trimLeaf = fc.oneof(
-  { arbitrary: fc.record({ marks: trimMarks, text: fc.string({ maxLength: 3, minLength: 1, unit: fc.constantFrom(' ', ' ', '\t', 'x') }) }).map((held): AdfNode => ({ ...held, type: 'text' })), weight: 6 },
+  { arbitrary: fc.record({ marks: trimMarks, text: fc.string({ maxLength: 3, minLength: 1, unit: fc.constantFrom(' ', ' ', '\t', 'x') }) }).map(({ marks, text }): AdfNode => (marks.length === 0 ? { text, type: 'text' } : { marks, text, type: 'text' })), weight: 6 },
   { arbitrary: fc.constant<AdfNode>({ type: 'hardBreak' }), weight: 1 },
 )
 const trimLine = fc.oneof(
@@ -80,8 +80,8 @@ for (const grouping of groupings) {
   test(`trims a ${grouping} line as the reference counts trim it, in no more passes`, () => {
     fc.assert(
       fc.property(trimLine, (line) => {
-        const peeled = trimmedWith(line, (leaves) => runsSharedWithNext(leaves, grouping))
-        const trimmed = trimmedWith(line, (leaves) => trimmingRuns(leaves, grouping))
+        const peeled = trimmedWith(line, (leaves) => trimPass(leaves, (held) => runsSharedWithNext(held, grouping)))
+        const trimmed = trimmedWith(line, (leaves) => trimmedEdgesPass(leaves, grouping))
         assert.deepEqual(trimmedEdges(line, grouping), peeled.line)
         assert.ok(trimmed.passes <= peeled.passes, `${trimmed.passes} passes against ${peeled.passes}`)
       }),
@@ -123,16 +123,34 @@ const alternatingLines: readonly [string, AdfNode, AdfNode][] = [
 for (const [name, code, emphasized] of alternatingLines) {
   test(`trims a line of ${name}, 1 000 leaves long, in as many passes as its 6-leaf form`, () => {
     const alternating = (pairs: number) => Array.from({ length: pairs }, () => [code, emphasized]).flat()
-    assert.equal(trimmedWith(alternating(500), (leaves) => trimmingRuns(leaves, 'spanned')).passes, trimmedWith(alternating(3), (leaves) => trimmingRuns(leaves, 'spanned')).passes)
+    assert.equal(trimmedWith(alternating(500), spannedPass).passes, trimmedWith(alternating(3), spannedPass).passes)
   })
 }
 
-// Runs `trimPass` on `shared`'s counts until it settles.
-function trimmedWith(leaves: readonly AdfNode[], shared: (leaves: readonly AdfNode[]) => readonly number[]): { line: AdfNode[]; passes: number } {
+const blankLines: readonly [string, (blanks: number) => AdfNode[]][] = [
+  ['blanks alternating linked and unmarked, then a hard break and a linked leaf', (blanks) => [...alternatingBlanks(blanks, marked(' ', link), marked(' ')), { type: 'hardBreak' }, marked('x', link)]],
+  ['an emphasized leaf and a hard break, then blanks alternating emphasized and linked, then an emphasized leaf', (blanks) => [marked('a', { type: 'em' }), { type: 'hardBreak' }, ...alternatingBlanks(blanks, marked(' ', { type: 'em' }), marked(' ', { type: 'em' }, link)), marked('b', { type: 'em' })]],
+]
+for (const [name, line] of blankLines) {
+  test(`trims ${name}, 1 000 blanks long, in as many passes as its 6-blank form`, () => {
+    assert.equal(trimmedWith(line(1000), spannedPass).passes, trimmedWith(line(6), spannedPass).passes)
+  })
+}
+
+function alternatingBlanks(blanks: number, first: AdfNode, second: AdfNode): AdfNode[] {
+  return Array.from({ length: blanks }, (_, index) => (index % 2 === 0 ? first : second))
+}
+
+function spannedPass(leaves: readonly AdfNode[]): { line: AdfNode[]; settled: boolean } {
+  return trimmedEdgesPass(leaves, 'spanned')
+}
+
+// Runs `pass` until it settles.
+function trimmedWith(leaves: readonly AdfNode[], pass: (leaves: readonly AdfNode[]) => { line: AdfNode[]; settled: boolean }): { line: AdfNode[]; passes: number } {
   for (let current = leaves, passes = 1; ; passes += 1) {
-    const pass = trimPass(current, shared)
-    if (pass.settled) return { line: pass.line, passes }
-    current = pass.line
+    const step = pass(current)
+    if (step.settled) return { line: step.line, passes }
+    current = step.line
   }
 }
 

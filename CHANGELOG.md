@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `adfToPortableMarkdown` writes a line of whitespace-only text nodes beside a hard break, alternating linked and plain or emphasized, in time linear in its length, where `0.3.1` took time quadratic in it.
 - `adfToPortableMarkdown` writes a line of code spans alternating with emphasized spaces in time linear in its length, where `0.3.1` took time quadratic in it.
 - `adfToHtml` writes a media single, a media group and a caption as `<figure class="adf-media-single">` holding an
   `<img>` and a `<figcaption>`, and as `<div class="adf-media-group">` of `<span class="adf-file">` files, where

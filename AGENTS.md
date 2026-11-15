@@ -83,6 +83,7 @@ In `docs/decisions.md`:
 - Readers scan by index
 - The spelling memo
 - Cost fixes are measured, never timed
+- After each trim pass, the reducer drops the edge whitespace the passes to come would drop, a round per pass
 - Only the hard break holds a raw newline
 - Emphasis follows CommonMark's matching
 - Where a text backtick or `[` opens a code span, a link or an image, every text backtick or `[` in its line escapes

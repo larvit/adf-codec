@@ -21,6 +21,9 @@ type Beside = { lineEdge: boolean; sharedRuns: number }
 // `keep`: how many of the leaf's marks its edge whitespace keeps; `drop`: the whitespace goes, at a line edge.
 type EdgeOutcome = { kind: 'drop' } | { depth: number; kind: 'keep' }
 
+// A leaf but a hard break in `withoutEdgeWhitespace`'s list, with the hard break between it and the leaf before it, if any.
+type LinkedLeaf = { breakBefore: AdfNode | undefined; dropped: boolean; leaf: AdfNode; next: number; previous: number }
+
 // Where a reduction stands: its path, counted in the caller's document by `sources`, and its level as the emitter counts it.
 export type ReductionPlace = { depth: number; path: ConvertErrorPath; sources: SourceIndexes }
 
@@ -185,10 +188,102 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 export function trimmedEdges(leaves: readonly AdfNode[], grouping: RunGrouping): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
-    const pass = trimPass(current, (line) => trimmingRuns(line, grouping))
+    const pass = trimmedEdgesPass(current, grouping)
     if (pass.settled) return pass.line
     current = pass.line
   }
+}
+
+// The replay follows the pass, never leads it: the first pass takes marks off whitespace by the line as it came.
+export function trimmedEdgesPass(leaves: readonly AdfNode[], grouping: RunGrouping): { line: AdfNode[]; settled: boolean } {
+  const pass = trimPass(leaves, (line) => trimmingRuns(line, grouping))
+  return pass.settled ? pass : { line: withoutEdgeWhitespace(mergeAdjacentText(pass.line, joinsWhenEditorNormal), grouping), settled: false }
+}
+
+// Drops the whitespace `trimPass` drops at line edges, a round per pass, each round judging only the leaves beside a leaf the round before dropped.
+function withoutEdgeWhitespace(leaves: readonly AdfNode[], grouping: RunGrouping): AdfNode[] {
+  const linked: LinkedLeaf[] = []
+  let gap: AdfNode | undefined
+  for (const leaf of leaves) {
+    if (leaf.type === 'hardBreak') gap = leaf
+    else {
+      linked.push({ breakBefore: gap, dropped: false, leaf, next: linked.length + 1, previous: linked.length - 1 })
+      gap = undefined
+    }
+  }
+  // Terminates: a round judges only leaves beside a leaf the round before dropped, and each leaf drops once.
+  for (let judged = new Set(linked.keys()); judged.size > 0; ) {
+    // Every leaf of a round is judged before any changes, as `trimPass` judges against one snapshot.
+    const outcomes = [...judged].flatMap((position) => {
+      const node = linked[position]
+      const leaf = node === undefined || node.dropped ? undefined : withoutLineEdges(node, linked, grouping)
+      return node === undefined || node.dropped || leaf === node.leaf ? [] : [{ leaf, node }]
+    })
+    judged = new Set()
+    for (const { leaf, node } of outcomes) {
+      if (leaf !== undefined) {
+        node.leaf = leaf
+        continue
+      }
+      unlink(node, linked)
+      judged.add(node.previous).add(node.next)
+    }
+    // `trimPass` merges before it judges, so leaves a drop brings together reach an edge as one.
+    for (const position of judged) {
+      const node = linked[position]
+      if (node === undefined || node.dropped) continue
+      for (let next = linked[node.next]; next !== undefined && next.breakBefore === undefined; next = linked[node.next]) {
+        const [merged, unmerged] = mergeAdjacentText([node.leaf, next.leaf], joinsWhenEditorNormal)
+        if (merged === undefined || unmerged !== undefined) break
+        node.leaf = merged
+        unlink(next, linked)
+      }
+    }
+  }
+  const kept: AdfNode[] = []
+  let position = 0
+  for (const leaf of leaves) {
+    if (leaf.type === 'hardBreak') {
+      kept.push(leaf)
+      continue
+    }
+    const node = linked[position]
+    position += 1
+    if (node !== undefined && !node.dropped) kept.push(node.leaf)
+  }
+  return kept
+}
+
+function unlink(node: LinkedLeaf, linked: readonly LinkedLeaf[]): void {
+  node.dropped = true
+  const previous = linked[node.previous]
+  const next = linked[node.next]
+  if (previous !== undefined) previous.next = node.next
+  if (next !== undefined) {
+    next.previous = node.previous
+    next.breakBefore ??= node.breakBefore
+  }
+}
+
+// The leaf without the whitespace that goes at a line edge, itself where none does, and `undefined` where all of it does.
+function withoutLineEdges(node: LinkedLeaf, linked: readonly LinkedLeaf[], grouping: RunGrouping): AdfNode | undefined {
+  const { breakBefore, leaf } = node
+  const marks = nodeMarks(leaf)
+  const text = leaf.text
+  if (text === undefined || marks.some((mark) => mark.type === 'code')) return leaf
+  const previous = linked[node.previous]
+  const next = linked[node.next]
+  const lead = text.slice(0, text.search(/[^ \t]|$/))
+  const trail = text.slice(text.search(/[ \t]*$/))
+  const leadGoes = (previous === undefined || breakBefore !== undefined) && edgeOutcome(marks, { lineEdge: true, sharedRuns: runsAcross(previous?.leaf, breakBefore, leaf, grouping) }, lead).kind === 'drop'
+  const trailGoes = (next === undefined || next.breakBefore !== undefined) && edgeOutcome(marks, { lineEdge: true, sharedRuns: runsAcross(leaf, next?.breakBefore, next?.leaf, grouping) }, trail).kind === 'drop'
+  if (!leadGoes && !trailGoes) return leaf
+  return lead === text ? undefined : textLeaf(text.slice(leadGoes ? lead.length : 0, text.length - (trailGoes ? trail.length : 0)), marks)
+}
+
+// The reducer's hard breaks are all alike, so one stands for every hard break between two leaves.
+function runsAcross(left: AdfNode | undefined, hardBreak: AdfNode | undefined, right: AdfNode | undefined, grouping: RunGrouping): number {
+  return left === undefined || hardBreak === undefined || right === undefined ? 0 : (trimmingRuns([left, hardBreak, right], grouping)[0] ?? 0)
 }
 
 // Judges every leaf against one snapshot of `shared`'s counts.
