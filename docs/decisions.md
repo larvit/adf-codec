@@ -813,7 +813,7 @@ grouping, with the span rule in one home. `inlineRuns` in `emit/inline-runs.ts` 
 says which node a run passes, and a run ends at its last holder. The writer tries the spanned line once and, where it needs any
 fallback, runs its fallback loop on the parted line, so `takeFallback` takes what it is handed; whether a node is carried is
 decided once per pass, on its `RunNode` (the restructure of 2026-11-04). The reducer judges the same two lines, each trimmed by
-its own runs, which `runsSharedWithNext` counts beside `inlineRuns`. `withoutOpeningLinkCode`
+its own runs, which `trimmingRuns` counts beside `inlineRuns`. `withoutOpeningLinkCode`
 stays on `insideRun` alone, since it answers the parted line. A refactor that merges as its own chunk took its own ruling,
 so the chunk's later rulings read against that merge, the commit `larv-review ruling-base` prints. A restructure past a
 pass's round cap still goes unreviewed, so the PR summary names it.

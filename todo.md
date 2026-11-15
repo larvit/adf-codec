@@ -52,8 +52,10 @@ edge, and only then is its neighbour at the edge. Blank leaves alternating linke
 a hard break, then a linked leaf, take n + 1 passes: 101, 1 001 and 10 001 at n = 100, 1 000 and
 10 000, so the trim is quadratic, against goal 9. An unmarked blank drops at the edge; a linked blank
 drops once the link run crosses the hard break to the linked leaf, which the unmarked blank between
-breaks until it drops. Item 174's truncated runs leave this cascade as it was, since a link doesn't
-strip edge whitespace. Count passes to measure, never time (§Cost fixes are measured, never timed).
+breaks until it drops. Any run crossing a hard break cascades the same way, one blank per pass, an em
+run too: `'a'` em, a hard break, blanks alternating em and `[em, link]`, then `'b'` em take 7, 101 and
+1 001 passes at n = 6, 100 and 1 000. Item 174's runs, counted between their non-blank holders, leave
+these blanks inside. Count passes to measure, never time (§Cost fixes are measured, never timed).
 Found by item 174's chunk, 2026-11-15.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
