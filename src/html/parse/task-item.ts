@@ -7,7 +7,7 @@ import { success, type Read } from '../../result.ts'
 import { taskLists, type TaskListType } from '../block-classes.ts'
 import { taskStates } from '../task-element.ts'
 
-// An item of a task or decision list as `adfToHtml` writes it: its checkbox, if a task, a space, then its inline content.
+// An item of a task or decision list as `adfToHtml` writes it: a task item's checkbox and a space, then its inline content.
 export function readTaskItem(html: string, index: number, place: Place, list: TaskListType): ReadNode {
   const tag = readStartTag(html, index)
   if (tag?.name !== 'li') {
@@ -33,7 +33,7 @@ export function readTaskItem(html: string, index: number, place: Place, list: Ta
   if (!inline.ok) return inline
   const { end, nodes } = inline.value
   if (nodes.length === 0 || !html.startsWith('</li>', end)) {
-    const stop = nodes.length === 0 ? { at: end, message: `a task item holds text where a space follows its checkbox: ${foundAt(html, end)}` } : misread(html, end, 'an item holds inline content, then </li>, as one line', 'no inline element of the dialect')
+    const stop = nodes.length === 0 && done !== undefined ? { at: end, message: `a task item holds text where a space follows its checkbox: ${foundAt(html, end)}` } : misread(html, end, 'an item holds inline content, then </li>, as one line', 'no inline element of the dialect')
     return refused('unmappable-html', stop.message, html, stop.at, place)
   }
   return success({ end: end + '</li>'.length, node: { ...node, content: nodes } })

@@ -426,7 +426,6 @@ document normalizes to it through the round-trip.
 | `paragraph` | one line, no soft wraps |
 | `rule` | `---` |
 | `table` of one header row and plain inline cells | a pipe table, every row opening and closing with a pipe |
-| `taskList`, `taskItem` | `<ul class="adf-task-list">`, `<li class="adf-task" data-state="DONE"><input type="checkbox" checked="" disabled=""> text</li>` |
 | `text` marked `code`, `em`, `strike`, `strong` | `` `code` ``, `_em_` (`*em*` inside a word), `~~strike~~`, `**strong**` |
 | `text` holding a carriage return | `&#13;` |
 | `text` holding a newline, a null character, or a space or tab CommonMark strips (a block's inline edges, either side of a hard break, a pipe cell's edges, an em, strong or strike spelling's inner edges) | that run as `!adf:text{text="…"}`, the rest plain: `!adf:text{text="  "}Two leading spaces` |
@@ -581,9 +580,10 @@ content. No stylesheet ships. The complete dialect:
 | `paragraph` | `<p>`; `style="text-align:center"` or `text-align:right`, as on a heading |
 | `rule` | `<hr>` |
 | `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
+| `taskList`, `taskItem` | `<ul class="adf-task-list">`, `<li class="adf-task" data-state="DONE"><input type="checkbox" checked="" disabled=""> text</li>` |
 | `text` marked `code`, `em`, `strike`, `strong`, `subsup`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<sub>` or `<sup>`, `<u>`, the first mark outermost |
-| `text` marked `textColor`, `backgroundColor` | `<span style="color:#ae2e24">`, `<mark style="background-color:#fffae6">` |
-| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media, media single, caption, media group, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
+| `text` marked `backgroundColor`, `textColor` | `<span style="color:#ae2e24">`, `<mark style="background-color:#fffae6">` |
+| an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media, media single, caption, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot, except a shape Atlassian's schema forbids, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
 - Every URL is written as the ADF holds it, `javascript:` included: a link's, an image's, a

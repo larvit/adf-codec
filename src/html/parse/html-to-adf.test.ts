@@ -640,6 +640,18 @@ test('reads panels, expands and nested expands nested 500 levels, and refuses th
   }
 })
 
+test('reads a task or decision list nested 499 levels, its items one level below it, and refuses the next level', () => {
+  const lists = [
+    '<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> x</li>\n</ul>',
+    '<ul class="adf-decision-list">\n<li class="adf-decision" data-state="DECIDED">x</li>\n</ul>',
+  ]
+  const panels = (levels: number, list: string): string => `${'<div class="adf-panel">\n'.repeat(levels)}${list}${'\n</div>'.repeat(levels)}\n`
+  for (const list of lists) {
+    assert.equal(refusal(htmlToAdf(panels(499, list))), 'read')
+    assert.equal(refusal(htmlToAdf(panels(500, list))).startsWith('unsupported-nesting-depth'), true)
+  }
+})
+
 test('reads a media of no url as an <img> of class adf-media', () => {
   const single = htmlToAdf('<figure class="adf-media-single"><img class="adf-media" data-type="external"></figure>\n')
   assert.deepEqual(read(single), document({ content: [{ attrs: { type: 'external' }, type: 'media' }], type: 'mediaSingle' }))
@@ -662,6 +674,7 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<ul class="adf-task-list">\n<li data-state="TODO"><input type="checkbox" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: an <li> of this list has class="adf-task" first'],
   ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item\'s text stands a space after its checkbox: found "a</li>\\n</ul>\\n"'],
   ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> </li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item holds text where a space follows its checkbox: found "</li>\\n</ul>\\n"'],
+  ['<ul class="adf-decision-list">\n<li class="adf-decision" data-state="DECIDED"><p>a</p></li>\n</ul>\n', 'unmappable-html at /content/0/content/0: <p> as written here is no inline element of the dialect: found "<p>a</p></li>\\n</ul>\\n"'],
   ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO">a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "a</li>\\n</ul>\\n"'],
   ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox"> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"checkbox\\"> "…'],
   ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="radio" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"radio\\" disa"…'],
