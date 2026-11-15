@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
 | 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.6 |
@@ -44,15 +43,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 51. Match a reference label to its definition under Unicode case folding.
-
-`link-syntax.ts` normalizes a label with `toLowerCase`, so `[ẞ]` misses its `[SS]` definition (spec
-example 540). Fold with Unicode's full case folding, `CaseFolding.txt`'s C and F mappings, shipped
-as data per §Standards ship as data: lowercasing and then uppercasing would also merge `ı` with
-`I`, which folding keeps apart, so add that pair as a fixture. Breaking: `MIGRATION.md`'s Readings table
-gains its row. Its `pending` exceptions go, and the README's guarantees drop the case-folding
-exception and count one fewer.
 
 ### 148. Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.
 

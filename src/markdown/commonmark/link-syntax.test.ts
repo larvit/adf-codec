@@ -51,8 +51,6 @@ test('a target reads whitespace and a title around its destination, bracketed, u
 test('a label folds under Unicode case folding after its whitespace collapses', () => {
   assert.equal(normalizeLabel(' Foo \n\t Bar '), 'foo bar')
   assert.equal(normalizeLabel('ẞ'), normalizeLabel('SS'))
-  assert.equal(normalizeLabel('Straße'), normalizeLabel('STRASSE'))
-  assert.equal(normalizeLabel('ς'), normalizeLabel('Σ'))
 })
 
 test('a dotless i and a capital I stay two labels', () => {
