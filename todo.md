@@ -6,13 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 189`
+`Next ID = 190`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 188 | 0.4.0 |  | defect | **Write no `style` attribute in `adfToHtml`: spell text and background colours, alignment and a cell's background with classes or `data-*` attributes, and read them back in `htmlToAdf`.** | 3 | 1 | 2 | 4 | 5 | 10 by 10 | 21.2 |
+| 189 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 15.9 |
 | 46 | 0.4.0 |  |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
 | 186 | 0.4.0 |  |  | **Name every spelling of the dialect's `<div>`, `<span>` and `<mark>` in the refusal of one that matches none.** | 1 | 1 | 1 | 1 | 1 | 6 by 1 | 1.9 |
 | 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
@@ -53,6 +54,14 @@
 The unreleased dialect writes four `style` attributes, which README goal 10 rules out: `style="text-align:center|right"` on a paragraph or heading, `<span style="color:…">`, `<mark style="background-color:…">` and a cell's `style="background-color:…"`.
 
 A colour is any run of letters and digits after an optional `#`, so a class per colour cannot spell it. The likely spelling is a `data-*` attribute holding the value beside a class naming the element, and for an alignment a class such as `adf-align-center`. Each spelling is settled by a writer panel (AGENTS.md §7), then written in `spec/html.md`, the README table, the `CHANGELOG.md` bullets that name the `style` spellings and `docs/decisions.md` §The HTML dialect, whose style lines this item replaces. The carry element `0.3.1` wrote still reads; the style spellings were never released, so `htmlToAdf` stops reading them.
+
+### 189. Lower the reading cost of the files a chunk reads most before its first commit.
+
+The last 5 chunks' median is 155854 new input tokens before their first commit, the 5 before them 92724 (`~/.claude/bin/reading-cost`, `docs/reading-cost.md`).
+
+Read most over the last 5 chunks (opens and searches): `README.md` 43, `docs/decisions.md` 29, `todo.md` 22, `CHANGELOG.md` 9, `ci.sh` 9, `src/html/emit/adf-to-html.test.ts` 9, `spec/html.md` 7.
+
+Cut what a chunk reads of those files: split or index the parts it reads whole, and run `~/.claude/bin/reading-cost --reset` in the chunk that ships this.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
