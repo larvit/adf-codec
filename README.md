@@ -556,8 +556,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
 
 ## HTML
 
-Serves [Goals](#goals) 1, 6, 7 and 10, which `adfToHtml` does not yet meet: it still writes the `style`
-attributes the table lists, and a later release replaces them. It writes the nodes and marks the table lists as their
+Serves [Goals](#goals) 1, 6, 7 and 10. It writes the nodes and marks the table lists as their
 HTML elements, and keeps every other node whole: an element of class `adf-carry` holds the node's JSON in
 `data-adf` and shows the node's content, its links included, so a reader of the page loses no
 content. No stylesheet ships. The complete dialect:
@@ -572,19 +571,19 @@ content. No stylesheet ships. The complete dialect:
 | `decisionList`, `decisionItem` | `<ul class="adf-decision-list">`, `<li class="adf-decision" data-state="DECIDED">` |
 | `expand`, `nestedExpand` | `<details class="adf-expand">`, `<details class="adf-nested-expand">`, a `<summary>` holding the `title` |
 | `hardBreak` | `<br>` |
-| `heading` | `<h1>` to `<h6>`; `style="text-align:center"` for a centered one, `text-align:right` for one aligned to the end, `data-indent-level="2"` for an indented one |
+| `heading` | `<h1>` to `<h6>`; `data-align="center"` for a centered one, `data-align="end"` for one aligned to the end, `data-indent-level="2"` for an indented one |
 | `inlineCard` holding a `url`, or `data` and no `url` | `<a class="adf-inline-card" href="…">…</a>`; for `data`, `href` is the URL `data` holds, the text its name, else that URL, and `data-data` the whole `data` as JSON |
 | `link` | `<a href="…" title="…">` |
 | `mediaGroup` | `<div class="adf-media-group">` holding a `<span class="adf-file" data-id="…" data-type="file"></span>` for each `media` |
 | `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it |
 | any other `mediaSingle` | `<figure class="adf-media-single" data-layout="wide">` holding the `<img>`, then the caption as `<figcaption>` |
 | `panel` | `<div class="adf-panel" data-panel-type="info">` |
-| `paragraph` | `<p>`; `style="text-align:center"`, `text-align:right` or `data-indent-level="2"`, as on a heading |
+| `paragraph` | `<p>`; `data-align="center"`, `data-align="end"` or `data-indent-level="2"`, as on a heading |
 | `rule` | `<hr>` |
-| `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
+| `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" data-background-color="#fffae6" data-colwidth="120,80">` writes its attributes |
 | `taskList`, `taskItem` | `<ul class="adf-task-list">`, `<li class="adf-task" data-state="DONE"><input type="checkbox" checked="" disabled=""> text</li>` |
 | `text` marked `code`, `em`, `strike`, `strong`, `subsup`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<sub>` or `<sup>`, `<u>`, the first mark outermost |
-| `text` marked `backgroundColor`, `textColor` | `<mark style="background-color:#fffae6">`, `<span style="color:#ae2e24">` |
+| `text` marked `backgroundColor`, `textColor` | `<mark data-background-color="#fffae6">`, `<span data-text-color="#ae2e24">` |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media, media single, caption, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot, except a shape Atlassian's schema forbids, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 

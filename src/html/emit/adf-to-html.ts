@@ -6,7 +6,7 @@ import { carryContent } from '../carry-content.ts'
 import { cellAttributes, isHeaderRow } from '../cell-element.ts'
 import { containerElements, headingElement, listStart } from '../block-elements.ts'
 import { dataAttributes } from '../data-attributes.ts'
-import { expandClasses, panelAttributes, panelClass, taskLists } from '../block-classes.ts'
+import { expandClasses, mediaGroupClass, panelAttributes, panelClass, taskLists } from '../block-classes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
 import { imageElement } from '../image-element.ts'
@@ -250,7 +250,7 @@ function tryMediaGroup(node: AdfNode): string | undefined {
     if (attributes === undefined) return undefined
     files += `<span class="adf-file"${attributes}></span>`
   }
-  return `<div class="adf-media-group">${files}</div>`
+  return `<div class="${mediaGroupClass}">${files}</div>`
 }
 
 // `undefined` where `attributes` is undefined, so the node rides the carry.

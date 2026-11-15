@@ -23,10 +23,10 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `mediaSingle`, any other | `<figure class="adf-media-single" data-layout="wide">`, its `media` as the `<img>` below, then its caption as `<figcaption>…</figcaption>`, on one line, `</figure>`; the `<img>` inside `<a href="…">` where a link marks the media |
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
 | `panel` | `<div class="adf-panel" data-panel-type="info">`, a line feed, its blocks a line each, a line feed, `</div>` |
-| `paragraph` | `<p>…</p>`; `<p style="text-align:center">` for an `alignment` mark of `center` and `text-align:right` for `end`, `<p data-indent-level="2">` for an `indentation` mark of `level` 2 |
+| `paragraph` | `<p>…</p>`; `<p data-align="center">` for an `alignment` mark of `center` and `data-align="end"` for `end`, `<p data-indent-level="2">` for an `indentation` mark of `level` 2 |
 | `rule` | `<hr>` |
 | `table` | `<table>`, a line feed, its sections parted by a line feed, a line feed, `</table>`: a `<thead>` where its first row holds cells that are all `tableHeader`, and a `<tbody>` for the other rows where there are any. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
-| `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `style="background-color:#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
+| `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `data-background-color="#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
 | `tableRow` | `<tr>`, its cells with no line feed between them, `</tr>` |
 | `taskList` | `<ul class="adf-task-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `taskItem` is `<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">`, a space, then its inline content, the checkbox `checked=""` as well where `state` is `DONE`, and the space left out where it holds none |
 
@@ -49,7 +49,7 @@ is `data-state`, among the other attributes below.
 <tr><th>Part</th><th>Stock</th><th>Bin</th></tr>
 </thead>
 <tbody>
-<tr><td rowspan="2">Bolt M8</td><td colspan="2" style="background-color:#fffae6" data-colwidth="120,80">Low</td></tr>
+<tr><td rowspan="2">Bolt M8</td><td colspan="2" data-background-color="#fffae6" data-colwidth="120,80">Low</td></tr>
 <tr><td>12</td><td>A4</td></tr>
 </tbody>
 </table>
@@ -68,7 +68,7 @@ block's `data-*` attributes stand on its `<pre>`.
 
 | ADF | HTML |
 | --- | --- |
-| `backgroundColor`, `textColor` | `<mark style="background-color:#fffae6">`, `<span style="color:#bf2600">` around the text; the colour a `#` and letters and digits, or letters and digits alone |
+| `backgroundColor`, `textColor` | `<mark data-background-color="#fffae6">`, `<span data-text-color="#bf2600">` around the text |
 | `code`, `em`, `strike`, `strong`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<u>` around the text |
 | `date` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`, the day in UTC |
 | `emoji` | `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its `text` the content |
@@ -162,7 +162,7 @@ later release writes it as its own element.
     holding anything but `media`; a `media` holding more than one mark, a mark that is no link, or a
     `height` or `width` that is not a positive safe integer;
   - a paragraph or heading holding two marks, or a mark besides a `center` or `end` alignment and an indentation of `level` 1 to 6;
-  - a `textColor` or `backgroundColor` whose `color` is not letters and digits after an optional `#`;
+  - a `textColor` or `backgroundColor` whose `color` is no string, or holds a character HTML cannot hold;
   - a `panel` or `expand` holding an attribute its type does not hold as that kind; a `taskItem`
     whose `state` is not `DONE` or `TODO`, or a task or decision list holding a node that is no
     item of its own kind, `blockTaskItem` included: the whole list rides the carry;
@@ -171,8 +171,7 @@ later release writes it as its own element.
   - a table holding a node that is no `tableRow`, a row holding a node that is no cell, or a table,
     row or cell holding a mark, an empty key or an attribute its type does not hold: the whole table
     rides the carry. So does a cell whose `colspan` or `rowspan` isn't a positive safe integer, whose
-    `colwidth` isn't a list of numbers, or whose `background` isn't a string of one or more letters
-    and digits, after an optional `#`;
+    `colwidth` isn't a list of numbers, or whose `background` isn't a string HTML can hold;
   - a `listItem`, `tableRow` or cell outside its parent, an inline node in block position and a block
     node inline.
 - An inline card a link marks, a known block holding `text`, a known non-text inline node holding
@@ -196,6 +195,9 @@ what it shows too:
 | `&lt;` and `&gt;` in an attribute value | a raw `<` and `>`, as older browsers write them |
 | a line feed | `\r\n` |
 | an expand's or nested expand's `<details>` | the same with `open=""` after its other attributes, which a browser writes for one its user opened; it reads as the same expand, the open state dropped |
+
+`htmlToAdf` also reads a cell's `background` as `0.3.1` wrote it, `style="background-color:#fffae6"` in
+the place of `data-background-color`, the colour a `#` and letters and digits, or letters and digits alone.
 
 A refusal's position counts the HTML as handed in. `htmlToAdf` reads a carry element's node from its
 `data-adf`, and what the element shows, through its closing tag, must be what `adfToHtml` shows for

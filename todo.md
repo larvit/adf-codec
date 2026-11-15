@@ -12,10 +12,8 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 188 | 0.4.0 |  | defect | **Write no `style` attribute in `adfToHtml`: spell text and background colours, alignment and a cell's background with classes or `data-*` attributes, and read them back in `htmlToAdf`.** | 3 | 1 | 2 | 4 | 5 | 10 by 10 | 21.2 |
 | 189 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 15.9 |
 | 46 | 0.4.0 |  |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
-| 186 | 0.4.0 |  |  | **Name every spelling of the dialect's `<div>`, `<span>` and `<mark>` in the refusal of one that matches none.** | 1 | 1 | 1 | 1 | 1 | 6 by 1 | 1.9 |
 | 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
@@ -49,12 +47,6 @@
 
 ## Details
 
-### 188. Write no `style` attribute in `adfToHtml`: spell text and background colours, alignment and a cell's background with classes or `data-*` attributes, and read them back in `htmlToAdf`.
-
-The unreleased dialect writes four `style` attributes, which README goal 10 rules out: `style="text-align:center|right"` on a paragraph or heading, `<span style="color:…">`, `<mark style="background-color:…">` and a cell's `style="background-color:…"`.
-
-A colour is any run of letters and digits after an optional `#`, so a class per colour cannot spell it. The likely spelling is a `data-*` attribute holding the value beside a class naming the element, and for an alignment a class such as `adf-align-center`. Each spelling is settled by a writer panel (AGENTS.md §7), then written in `spec/html.md`, the README table, the `CHANGELOG.md` bullets that name the `style` spellings and `docs/decisions.md` §The HTML dialect, whose style lines this item replaces. The carry element `0.3.1` wrote still reads; the style spellings were never released, so `htmlToAdf` stops reading them.
-
 ### 189. Lower the reading cost of the files a chunk reads most before its first commit.
 
 The last 5 chunks' median is 155854 new input tokens before their first commit, the 5 before them 92724 (`~/.claude/bin/reading-cost`, `docs/reading-cost.md`).
@@ -72,10 +64,6 @@ ours ships tsc's unminified output and no minifier yet (decide here whether to m
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim, and in a size column of the comparison table. Measured today,
 unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
-
-### 186. Name every spelling of the dialect's `<div>`, `<span>` and `<mark>` in the refusal of one that matches none.
-
-A `<div>` or `<span>` of the dialect that is no carry element is refused with a message naming the carry element and the classes of `nodeElements`, which leaves out the panel, the media group, the file `<span>` and the colour spans. A reader who writes `<span style="color: red">`, `<mark style="background-color: #fffae6">` or a bare `<mark>` gets that message or "no inline element of the dialect", neither of which names the spelling `adfToHtml` writes: `style="color:#rrggbb"`, no space, and `<mark style="background-color:#rrggbb">`. Name each spelling in the message of `readCarry` and in the one `readTagged` gives a `mark`, each pinned in `pinnedRefusals`.
 
 ### 174. Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.
 

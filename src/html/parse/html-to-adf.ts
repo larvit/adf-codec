@@ -6,7 +6,7 @@ import { built, readInlineBlock } from './inline-block.ts'
 import { carryContent } from '../carry-content.ts'
 import { centeredImage, externalMedia } from '../../adf/plain-image.ts'
 import { containerElements, headingElements, headingLevel, readListStart, type ContainerType } from '../block-elements.ts'
-import { expandClasses, expandOfClass, panelAttributes, panelClass, taskListOfClass, taskListOfType } from '../block-classes.ts'
+import { expandClasses, expandOfClass, mediaGroupClass, panelAttributes, panelClass, taskListOfClass, taskListOfType } from '../block-classes.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
 import { foundAt, misread, misspelledText, positionIn, readStartTag, refused, startTagName, type Place, type ReadNode, type StartTag } from './source.ts'
 import { isHeaderRow, readCellAttributes } from '../cell-element.ts'
@@ -228,7 +228,7 @@ function readDiv(html: string, tag: StartTag, place: Place, open: Open): Result<
   const [first] = tag.attributes
   const className = first?.[0] === 'class' ? first[1] : undefined
   if (className === panelClass) return readPanel(html, tag, place, open)
-  return className === 'adf-media-group' ? asStep(readMediaGroup(html, tag, place)) : readBlockCarry(html, tag, place, open)
+  return className === mediaGroupClass ? asStep(readMediaGroup(html, tag, place)) : readBlockCarry(html, tag, place, open)
 }
 
 function readPanel(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {

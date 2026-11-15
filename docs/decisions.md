@@ -420,7 +420,7 @@ for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the g
 The HTML dialect mirrors the markdown flavour: semantic elements, stable `adf-*` classes, `data-*`
 for what HTML cannot express, text always escaped. No stylesheet ships.
 
-The spellings, `spec/html.md`, are eight writer panels' (2026-10-23, -24, 2026-11-04, -05 and -14), each of a
+The spellings, `spec/html.md`, are nine writer panels' (2026-10-23, -24, 2026-11-04, -05, -14 and -15), each of a
 product manager, an engineer and a support agent. The first picked each of these 3 of 3:
 
 - an image standing alone as `<p><img …></p>`, over `<figure>` and a bare `<img>`;
@@ -486,8 +486,9 @@ A sixth panel (2026-11-05, three readers in the same roles) picked each of these
 - a first row of header cells alone in `<thead>` and the rest in `<tbody>`, a row to a line, over a
   bare `<table>` of `<tr>` rows and over a line per cell;
 - a cell's first paragraph bare, `<td>Bolt M8</td>`, as a list item's;
-- a cell's attributes as `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">`,
-  over `data-*` for all four.
+- a cell's attributes as `<td colspan="2" rowspan="2">` and `data-*` attributes, over `data-*` for all four; its
+  `style="background-color:…"` gave way to the ninth panel's spelling, and `htmlToAdf` still reads it, since
+  `0.3.1` wrote it and every other spelling `0.3.1` wrote still reads.
 
 A seventh panel (2026-11-14, three readers in the same roles, after the reader panel of §The feature
 table is a section per corpus example, led by a summary table expected `<s>` or `<del>`) picked
@@ -500,8 +501,7 @@ An eighth panel (2026-11-14, three readers in the same roles; seven for indentat
 - a `mediaSingle` as `<figure class="adf-media-single" data-*>` holding an `<img>`, inside `<a>` where
   a link marks it, and a `<figcaption>`; a `mediaGroup` as `<div class="adf-media-group">` holding a
   `<span class="adf-file" data-*>` for each file;
-- `<u>`, `<sub>` and `<sup>`, `<span style="color:…">` and `<mark style="background-color:…">`;
-- `style="text-align:center"` and `text-align:right` for an `alignment` of `center` and `end`;
+- `<u>`, `<sub>` and `<sup>`, a `<span>` for a text colour and a `<mark>` for a background colour;
 - `<details class="adf-expand">` and `<details class="adf-nested-expand">` with the `title` as the
   `<summary>` and `<div class="adf-panel" data-panel-type="…">`;
 - a task list as `<ul class="adf-task-list">` of `<li class="adf-task" data-state="DONE">` holding
@@ -512,9 +512,18 @@ An eighth panel (2026-11-14, three readers in the same roles; seven for indentat
 For an `indentation` mark, five of seven picked `data-indent-level`; whether a `margin-left` style
 goes with it split 4 to 3. The maintainer answered on 2026-11-15 that the dialect holds no style at
 all (README goal 10), so an indentation is `data-indent-level="2"` alone, on a paragraph or heading
-holding no other mark. The `style` attributes above work against that goal: a text colour, a
-background colour, an alignment and a cell's `background`. They stand until `todo.md` item 188 spells
-each without one.
+holding no other mark.
+
+A ninth panel (2026-11-15, three readers in the same roles) picked, 3 of 3, a plain `data-*` attribute
+naming what it holds, over a class beside it and over a class per value:
+
+- `data-align="center"` and `data-align="end"` for an `alignment`, ADF's own values;
+- `<span data-text-color="#bf2600">` and `<mark data-background-color="#fffae6">`, over a bare
+  `data-color` that could name either;
+- `<td data-background-color="#fffae6">` for a cell's `background`, the highlight's name over ADF's.
+
+Out of `style`, a colour needs no restriction to stay in its attribute, so any string HTML can hold
+is one.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 

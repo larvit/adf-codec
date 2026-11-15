@@ -191,17 +191,18 @@ test('carries a media node HTML cannot spell: a width that is no whole number, a
   assert.equal(carriedBlock({ content: [{ content: [text('a')], type: 'paragraph' }], type: 'mediaGroup' }), true)
 })
 
-test('writes underline, subscript, superscript and the two colours as elements, a colour in a style attribute', () => {
+test('writes underline, subscript, superscript and the two colours as elements, a colour in a data-* attribute', () => {
   const marked = (...marks: AdfMark[]): string => html(adfToHtml(document(paragraph(text('x', ...marks)))))
   assert.equal(marked({ type: 'underline' }), '<p><u>x</u></p>\n')
   assert.equal(marked({ attrs: { type: 'sub' }, type: 'subsup' }), '<p><sub>x</sub></p>\n')
   assert.equal(marked({ attrs: { type: 'sup' }, type: 'subsup' }), '<p><sup>x</sup></p>\n')
-  assert.equal(marked({ attrs: { color: '#ff5630' }, type: 'textColor' }), '<p><span style="color:#ff5630">x</span></p>\n')
-  assert.equal(marked({ attrs: { color: '#fffae6' }, type: 'backgroundColor' }), '<p><mark style="background-color:#fffae6">x</mark></p>\n')
-  assert.equal(marked({ type: 'strong' }, { type: 'underline' }, { attrs: { color: 'red' }, type: 'textColor' }), '<p><strong><u><span style="color:red">x</span></u></strong></p>\n')
+  assert.equal(marked({ attrs: { color: '#ff5630' }, type: 'textColor' }), '<p><span data-text-color="#ff5630">x</span></p>\n')
+  assert.equal(marked({ attrs: { color: '#fffae6' }, type: 'backgroundColor' }), '<p><mark data-background-color="#fffae6">x</mark></p>\n')
+  assert.equal(marked({ type: 'strong' }, { type: 'underline' }, { attrs: { color: 'red' }, type: 'textColor' }), '<p><strong><u><span data-text-color="red">x</span></u></strong></p>\n')
+  assert.equal(marked({ attrs: { color: 'rgb(1, 2, 3) "x"' }, type: 'backgroundColor' }), '<p><mark data-background-color="rgb(1, 2, 3) &quot;x&quot;">x</mark></p>\n')
 })
 
-test('carries text holding a mark HTML cannot spell: attributes besides those the element takes, a colour that is no plain value, or a type that is neither sub nor sup', () => {
+test('carries text holding a mark HTML cannot spell: attributes besides those the element takes, a colour that is no string, or a type that is neither sub nor sup', () => {
   const carriedText = (mark: AdfMark): boolean => html(adfToHtml(document(paragraph(text('x', mark))))).includes('adf-carry')
   for (const mark of [
     { attrs: {}, type: 'underline' },
@@ -212,21 +213,17 @@ test('carries text holding a mark HTML cannot spell: attributes besides those th
     { type: 'textColor' },
     { attrs: { color: 'red', x: 1 }, type: 'textColor' },
     { attrs: { color: 7 }, type: 'textColor' },
-    { attrs: { color: '' }, type: 'textColor' },
-    { attrs: { color: 'red;x:y' }, type: 'textColor' },
-    { attrs: { color: 'rgb(1,2,3)' }, type: 'backgroundColor' },
-    { attrs: { color: '#fff\n' }, type: 'backgroundColor' },
     { type: 'backgroundColor' },
   ]) assert.equal(carriedText(mark), true, JSON.stringify(mark))
 })
 
-test('writes a paragraph or heading marked with center or end alignment as a style attribute, end as right', () => {
+test('writes a paragraph or heading marked with center or end alignment as a data-align attribute', () => {
   const aligned = (align: string, node: AdfNode = paragraph(text('x'))): string => html(adfToHtml(document({ ...node, marks: [{ attrs: { align }, type: 'alignment' }] })))
-  assert.equal(aligned('center'), '<p style="text-align:center">x</p>\n')
-  assert.equal(aligned('end'), '<p style="text-align:right">x</p>\n')
-  assert.equal(aligned('center', { attrs: { level: 2 }, content: [text('x')], type: 'heading' }), '<h2 style="text-align:center">x</h2>\n')
-  assert.equal(aligned('end', { attrs: { localId: ids.paragraph }, type: 'paragraph' }), `<p style="text-align:right" data-local-id="${ids.paragraph}"></p>\n`)
-  assert.equal(html(adfToHtml(document({ content: [item({ content: [text('x')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' })], type: 'bulletList' }))), '<ul>\n<li><p style="text-align:center">x</p></li>\n</ul>\n')
+  assert.equal(aligned('center'), '<p data-align="center">x</p>\n')
+  assert.equal(aligned('end'), '<p data-align="end">x</p>\n')
+  assert.equal(aligned('center', { attrs: { level: 2 }, content: [text('x')], type: 'heading' }), '<h2 data-align="center">x</h2>\n')
+  assert.equal(aligned('end', { attrs: { localId: ids.paragraph }, type: 'paragraph' }), `<p data-align="end" data-local-id="${ids.paragraph}"></p>\n`)
+  assert.equal(html(adfToHtml(document({ content: [item({ content: [text('x')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' })], type: 'bulletList' }))), '<ul>\n<li><p data-align="center">x</p></li>\n</ul>\n')
 })
 
 test('carries a paragraph or heading holding an alignment HTML cannot spell, or a mark besides it', () => {
@@ -445,12 +442,13 @@ test('writes a table\'s attributes as the writer panel picked them', () => {
   const table: AdfNode = { attrs: { isNumberColumnEnabled: true, layout: 'wide', width: 760 }, content: [{ attrs: { localId: 'r1' }, content: [{ attrs, content: [paragraph(text('Sold as a pair'))], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }
   assert.equal(
     html(adfToHtml(document(table))),
-    '<table data-is-number-column-enabled="true" data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" style="background-color:#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">Sold as a pair</td></tr>\n</tbody>\n</table>\n',
+    '<table data-is-number-column-enabled="true" data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" data-background-color="#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">Sold as a pair</td></tr>\n</tbody>\n</table>\n',
   )
-  assert.equal(html(adfToHtml(document({ content: [{ content: [{ attrs: { background: 'red', colwidth: [0.5] }, type: 'tableHeader' }], type: 'tableRow' }], type: 'table' }))), '<table>\n<thead>\n<tr><th style="background-color:red" data-colwidth="0.5"></th></tr>\n</thead>\n</table>\n')
+  assert.equal(html(adfToHtml(document({ content: [{ content: [{ attrs: { background: 'red', colwidth: [0.5] }, type: 'tableHeader' }], type: 'tableRow' }], type: 'table' }))), '<table>\n<thead>\n<tr><th data-background-color="red" data-colwidth="0.5"></th></tr>\n</thead>\n</table>\n')
+  assert.equal(html(adfToHtml(document({ content: [{ content: [{ attrs: { background: 'url("x")' }, type: 'tableCell' }], type: 'tableRow' }], type: 'table' }))), '<table>\n<tbody>\n<tr><td data-background-color="url(&quot;x&quot;)"></td></tr>\n</tbody>\n</table>\n')
 })
 
-const carriedCellAttrs: readonly AdfAttributes[] = [{ background: 'url(x)' }, { background: 'red;color:blue' }, { background: '' }, { background: 7 }, { colspan: 0 }, { colspan: 1.5 }, { colspan: '2' }, { rowspan: -1 }, { colwidth: [] }, { colwidth: ['1'] }, { colwidth: 120 }, { valign: 7 }, { size: 'big' }]
+const carriedCellAttrs: readonly AdfAttributes[] = [{ background: 7 }, { colspan: 0 }, { colspan: 1.5 }, { colspan: '2' }, { rowspan: -1 }, { colwidth: [] }, { colwidth: ['1'] }, { colwidth: 120 }, { valign: 7 }, { size: 'big' }]
 
 for (const attrs of carriedCellAttrs) {
   test(`carries the whole table where a cell holds ${JSON.stringify(attrs)}`, () => {
