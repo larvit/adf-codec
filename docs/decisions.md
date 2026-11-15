@@ -558,7 +558,8 @@ and HTML parsers are written in this repo.
 
 ## Standards ship as data
 
-2026-08-30, the CommonMark suite 2026-09-05 and ADF's schemas 2026-09-13, the maintainer. Goals 1,
+2026-08-30, the CommonMark suite 2026-09-05 and ADF's schemas 2026-09-13, the maintainer;
+Unicode's case folding 2026-11-15, the maintainer's plan. Goals 1,
 5 and 8. Valid while each table is fixed data a dependency would only wrap.
 
 A table a standard fixes is data rather than a dependency: HTML5's 2125 semicolon-terminated
@@ -570,9 +571,10 @@ renumbered suite. A spec bump is a deliberate re-pin, exceptions re-derived by h
 Atlassian's ADF JSON Schemas ship vendored the same way, at `spec/adf-schema/`, rather than as the
 `@atlaskit/adf-schema` dev dependency — CommonJS-only, some fifty packages with React among them,
 and a release most days for Renovate to automerge — re-pinned by hand when a payload or a report
-shows the need. Unicode's `CaseFolding.txt` (18.0.0) is vendored at `spec/unicode/` and packed in
-`src/markdown/commonmark/case-folding.ts` the same way; its test holds every C and F mapping to the
-file, so a re-pin is a new file and a green test.
+shows the need. Unicode's `CaseFolding.txt` (18.0.0), whose common (C) and full (F) mappings
+CommonMark folds a link label by, is vendored at `spec/unicode/` and packed in
+`src/markdown/commonmark/case-folding.ts`, like the character references. Its test holds every
+mapping to the file. A re-pin replaces the file, repacks the data and updates the test's count.
 
 ## fast-check
 

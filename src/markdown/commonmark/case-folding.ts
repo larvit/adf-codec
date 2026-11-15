@@ -1,7 +1,9 @@
-// Unicode's `CaseFolding.txt` (vendored at `spec/unicode/`), the common (C) and full (F) mappings that CommonMark
-// folds a link label by. The Turkic (T) and simple (S) mappings stay out: the full ones supersede the simple.
+// Unicode's `CaseFolding.txt`, vendored at `spec/unicode/`, which CommonMark folds a link label by. Only its common
+// (C) and full (F) mappings are here: the simple (S) ones are superseded by the full ones, and the Turkic (T) ones
+// apply to a language CommonMark does not name.
 // A common run reads `first:count:stride:delta` in hex: `count` code points from `first`, `stride` apart, each
-// folding to its own plus `delta`. A full folding reads `code point=code points` in hex.
+// folding to its own code point plus `delta` (`+` or `-`). A full folding reads `code point=code point,code point…`
+// in hex.
 const commonRuns = [
   '41:1a:1:+20 b5:1:1:+307 c0:17:1:+20 d8:7:1:+20 100:18:2:+1 132:3:2:+1 139:8:2:+1 14a:17:2:+1 178:1:1:-79',
   '179:3:2:+1 17f:1:1:-10c 181:1:1:+d2 182:2:2:+1 186:1:1:+ce 187:1:1:+1 189:2:1:+cd 18b:1:1:+1 18e:1:1:+4f',
