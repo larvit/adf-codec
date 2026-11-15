@@ -94,6 +94,8 @@ In `docs/decisions.md`:
 - The real-world corpus holds anonymized documents from sites whose licence it records
 - The feature table is a section per corpus example, led by a summary table
 - Plain text is blocks a blank line apart, with `• ` and `1.` markers and nesting indented
+- Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer drops it instead
+- `htmlToAdf` reads any HTML, with no option and no second call
 
 ## 1. Nothing about any consumer in the library
 

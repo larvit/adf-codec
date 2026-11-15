@@ -1447,3 +1447,23 @@ alt text.
 - A card as its address, or its name then ` (address)`, and an extension as its `text`. A card, an
   extension or a synced block holding no text adds no note in its place.
 - An expand's title on a line, a blank line above its body.
+
+## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer drops it instead
+
+2026-11-15, the maintainer. Goals 1, 7 and 11. Valid while Jira's renderer reads the `{adf}` macro.
+Lands with `todo.md` items 192 to 196.
+
+The lossless wiki writer spells a node or mark wiki markup has no spelling for as Jira's own
+`{adf:display=block}` or `{adf:display=inline}` macro around the node's ADF JSON, so the round-trip
+holds and Jira still renders the document. The lossy wiki writer ships beside it for consumers who
+want wiki markup alone: it drops the form of what wiki markup cannot spell and keeps its content.
+
+## `htmlToAdf` reads any HTML, with no option and no second call
+
+2026-11-15, a developer panel. Goals 6, 8 and 12. Valid while the dialect and foreign HTML read
+without ambiguity in one reader.
+
+HTML from an email, a CMS or an editor reads through `htmlToAdf(html)`, as the dialect does; foreign
+elements sort as §Foreign HTML sorts three ways says. The bot, viewer/editor and LLM-pipeline
+readers each picked it 3 of 3 over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`:
+none of them knows up front whether HTML is foreign, and a flag or a second name makes them guess.
