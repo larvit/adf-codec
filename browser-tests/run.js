@@ -70,7 +70,7 @@ async function whenDriverAnswers() {
   }
 }
 
-// Documents holding what a browser's innerHTML spells other than adfToHtml does (WHATWG HTML §13.3): a raw ", &nbsp;, and in an attribute value < and > escaped or not, by version.
+// Documents holding what a browser's innerHTML spells other than adfToHtml does (WHATWG HTML §13.3): a raw ", &nbsp;, and in an attribute value < and > escaped or not, by version. convert-corpus.js opens every expand before it reads innerHTML.
 const text = (value, ...marks) => (marks.length === 0 ? { text: value, type: 'text' } : { marks, text: value, type: 'text' })
 const browserDocuments = [
   {
@@ -85,6 +85,14 @@ const browserDocuments = [
       version: 1,
     }),
     name: 'quotes, no-break spaces and angle brackets',
+  },
+  {
+    json: JSON.stringify({
+      content: [{ attrs: { localId: '0199f4c2-8b1e-7d03-9a6f-2c5e8d71b4a0', title: 'More' }, content: [{ content: [text('Hidden')], type: 'paragraph' }], type: 'expand' }],
+      type: 'doc',
+      version: 1,
+    }),
+    name: 'an expand its user opened',
   },
 ]
 const corpus = {
