@@ -7,7 +7,7 @@ import { codeTextMarkTypes } from '../../adf/inline-nodes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { identicalMark, mergeAdjacentText, nodeAttrs, nodeContent, nodeMarks } from '../../adf/document.ts'
 import { imageAside } from '../image-aside.ts'
-import { insideRun, runsSharedWithNext } from '../emit/inline-runs.ts'
+import { inlineRuns, insideRun, type RunNode } from '../emit/inline-runs.ts'
 import { isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal, sourceIndex, type SourceIndexes } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -20,8 +20,6 @@ type Beside = { lineEdge: boolean; sharedRuns: number }
 
 // `keep`: how many of the leaf's marks its edge whitespace keeps; `drop`: the whitespace goes, at a line edge.
 type EdgeOutcome = { kind: 'drop' } | { depth: number; kind: 'keep' }
-
-type PlacedLeaf = { after: Beside; before: Beside; leaf: AdfNode }
 
 // Where a reduction stands: its path, counted in the caller's document by `sources`, and its level as the emitter counts it.
 export type ReductionPlace = { depth: number; path: ConvertErrorPath; sources: SourceIndexes }
@@ -187,21 +185,28 @@ function withMarks(leaf: AdfNode, marks: readonly AdfMark[]): AdfNode {
 export function trimmedEdges(leaves: readonly AdfNode[], grouping: RunGrouping): AdfNode[] {
   // Terminates: a pass that changes a leaf drops whitespace from the leaf's edge or takes a mark off that whitespace, and merging adds no whitespace or mark.
   for (let current = leaves; ; ) {
-    const merged = withoutEdgeBreaks(mergeAdjacentText(current, joinsWhenEditorNormal))
-    let changed = false
-    const trimmed: AdfNode[] = []
-    for (const { after, before, leaf } of placedLeaves(merged, grouping)) {
-      const edges = leafEdges(leaf, before, after)
-      if (edges === undefined) {
-        trimmed.push(leaf)
-        continue
-      }
-      changed = true
-      for (const edge of edges) trimmed.push(edge)
-    }
-    if (!changed) return merged
-    current = trimmed
+    const pass = trimPass(current, (line) => trimmingRuns(line, grouping))
+    if (pass.settled) return pass.line
+    current = pass.line
   }
+}
+
+// Judges every leaf against one snapshot of `shared`'s counts; `settled`, with the merged line, where no leaf changes.
+export function trimPass(leaves: readonly AdfNode[], shared: (line: readonly AdfNode[]) => readonly number[]): { line: AdfNode[]; settled: boolean } {
+  const merged = withoutEdgeBreaks(mergeAdjacentText(leaves, joinsWhenEditorNormal))
+  const counts = shared(merged)
+  let changed = false
+  const trimmed: AdfNode[] = []
+  for (const [index, leaf] of merged.entries()) {
+    const edges = leafEdges(leaf, beside(merged[index - 1], counts[index - 1]), beside(merged[index + 1], counts[index]))
+    if (edges === undefined) {
+      trimmed.push(leaf)
+      continue
+    }
+    changed = true
+    for (const edge of edges) trimmed.push(edge)
+  }
+  return changed ? { line: trimmed, settled: false } : { line: merged, settled: true }
 }
 
 function withoutEdgeBreaks(leaves: readonly AdfNode[]): AdfNode[] {
@@ -210,11 +215,6 @@ function withoutEdgeBreaks(leaves: readonly AdfNode[]): AdfNode[] {
   while (leaves[first]?.type === 'hardBreak') first += 1
   while (last >= first && leaves[last]?.type === 'hardBreak') last -= 1
   return leaves.slice(first, last + 1)
-}
-
-function placedLeaves(leaves: readonly AdfNode[], grouping: RunGrouping): PlacedLeaf[] {
-  const shared = runsSharedWithNext(leaves, grouping)
-  return leaves.map((leaf, index) => ({ after: beside(leaves[index + 1], shared[index]), before: beside(leaves[index - 1], shared[index - 1]), leaf }))
 }
 
 function beside(neighbour: AdfNode | undefined, sharedRuns = 0): Beside {
@@ -248,6 +248,27 @@ function edgeOutcome(marks: readonly AdfMark[], { lineEdge, sharedRuns }: Beside
   const stripping = marks.findIndex((mark, index) => index >= sharedRuns && edgeStrippingMarks.includes(mark.type))
   const depth = stripping === -1 ? marks.length : stripping
   return depth === 0 && lineEdge ? { kind: 'drop' } : { depth, kind: 'keep' }
+}
+
+// For each leaf but the last, how many of `grouping`'s runs hold it and the next leaf; an edge-stripping mark's run spans only its leaves holding more than spaces and tabs, as the trim strips the mark off blank leaves past them, else one pass each.
+export function trimmingRuns(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
+  const shared = leaves.map(() => 0)
+  countTrimmingRuns(leaves.map((node) => ({ carried: false, node, outer: 0 })), 0, grouping, shared)
+  return shared
+}
+
+// Recurses once per mark of a leaf, and the reducer's leaves hold one mark of each kept type.
+function countTrimmingRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping, shared: number[]): void {
+  for (const run of inlineRuns(nodes, firstIndex, grouping)) {
+    if (run.kind === 'plain') continue
+    const holds = edgeStrippingMarks.includes(run.mark.type) ? ({ node }: RunNode) => nodeMarks(node).some((mark) => identicalMark(mark, run.mark)) && /[^ \t]/.test(node.text ?? '') : () => true
+    const holders = run.nodes.flatMap((runNode, offset) => (holds(runNode) ? [offset] : []))
+    const first = holders[0]
+    const last = holders.at(-1)
+    if (first === undefined || last === undefined) continue
+    for (let index = first; index < last; index += 1) shared[run.index + index] = (shared[run.index + index] ?? 0) + 1
+    countTrimmingRuns(run.nodes.slice(first, last + 1), run.index + first, grouping, shared)
+  }
 }
 
 // Trims the line by `grouping`'s runs and judges it; a fallback's indexes name the trimmed line.

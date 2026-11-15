@@ -1180,3 +1180,20 @@ Read most (opens and searches):
 - `docs/reading-cost.md` 1
 - `package.json` 1
 - `todo.md` 1
+
+## Reading cost, chunk 2dc66dc1c2fd, finished 2026-11-15T13:02:04Z
+
+81039 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 11
+- `docs/decisions.md` 8
+- `ci.sh` 4
+- `converter-comparison/compare.mjs` 4
+- `todo.md` 4
+- `AGENTS.md` 3
+- `publish.sh` 3
+- `converter-comparison/run.sh` 2
+- `.github/workflows/ci.yml` 1
+- `.gitignore` 1

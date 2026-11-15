@@ -6,13 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 190`
+`Next ID = 191`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
+| 190 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so blank leaves dropping one by one at a hard break trim in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
 | 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
@@ -45,26 +45,16 @@
 
 ## Details
 
-### 174. Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.
+### 190. Bound the passes `trimmedEdges` takes by a constant, so blank leaves dropping one by one at a hard break trim in linear time.
 
-`trimmedEdges` (`src/markdown/portable/inline-reduction.ts`) repeats a pass until nothing changes, and
-each pass costs O(leaves) while leaf text is short; the trailing-blank scan inside one long leaf is
-item 42's. Leaves alternating `' '` marked code with `' '` marked em take
-ceil(n/4) + 1 passes: 26, 251 and 2 501 at n = 100, 1 000 and 10 000, so the trim is quadratic,
-against goal 9. The same holds for `'x'` code beside `' '` em, and for `[link, code] 'x'` beside
-`[link, em] ' '`. The smallest line is six leaves `' '` marked code, em, code, em, code, em, which
-takes 3 passes. The passes in a random search of 20 000 short lines never went above 4.
-
-The cause: under `spanned` grouping an em or link run crosses the code leaves, which can't hold
-it, so one run spans the line and only its two end leaves stand beside a neighbour outside it. Each
-pass strips em from those two, and the next pair is exposed. A single pass cannot take the fixpoint
-directly: every pass judges all leaves against one snapshot, and `edgeOutcome` (drop at a line edge
-while a run is shared, keep when not) isn't monotone. A hard break between `[link, em] ' '` and
-`[link, em] ' b'` trims to `b` today, but to a linked space and `b` if the first leaf's drop is seen
-first. Two ways forward: make the edge rule monotone, which changes output in edge cases and
-needs a decision and a writer panel; keep run extents under truncation in `runsSharedWithNext`
-(`emit/inline-runs.ts`), exact but large. Count passes
-to measure, never time (§Cost fixes are measured, never timed). Found by the principles audit of the release review of 0.3.0, 2026-11-08.
+Each pass of `trimmedEdges` (`src/markdown/portable/inline-reduction.ts`) drops a blank leaf at a line
+edge, and only then is its neighbour at the edge. Blank leaves alternating linked and unmarked before
+a hard break, then a linked leaf, take n + 1 passes: 101, 1 001 and 10 001 at n = 100, 1 000 and
+10 000, so the trim is quadratic, against goal 9. An unmarked blank drops at the edge; a linked blank
+drops once the link run crosses the hard break to the linked leaf, which the unmarked blank between
+breaks until it drops. Item 174's truncated runs leave this cascade as it was, since a link doesn't
+strip edge whitespace. Count passes to measure, never time (§Cost fixes are measured, never timed).
+Found by item 174's chunk, 2026-11-15.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 

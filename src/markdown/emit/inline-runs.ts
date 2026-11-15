@@ -55,19 +55,3 @@ function runCrosses(node: AdfNode, mark: AdfMark): boolean {
   const kind = markSpelling(mark.type)?.kind
   return (kind === 'emphasis' || kind === 'link') && !takesMark(node, mark.type) && node.marks?.length !== 0
 }
-
-// For each leaf but the last, how many runs hold both it and the next leaf, grouped as the writers group them, so the reducer trims edge whitespace by runs they spell.
-export function runsSharedWithNext(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
-  const shared = leaves.map(() => 0)
-  countSharedRuns(leaves.map((node) => ({ carried: false, node, outer: 0 })), 0, grouping, shared)
-  return shared
-}
-
-// Recurses once per mark of a leaf, and the reducer's leaves hold one mark of each kept type.
-function countSharedRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping, shared: number[]): void {
-  for (const run of inlineRuns(nodes, firstIndex, grouping)) {
-    if (run.kind === 'plain') continue
-    for (let index = run.index; index < run.index + run.nodes.length - 1; index += 1) shared[index] = (shared[index] ?? 0) + 1
-    countSharedRuns(run.nodes, run.index, grouping, shared)
-  }
-}
