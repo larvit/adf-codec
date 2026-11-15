@@ -22,6 +22,17 @@ class that keeps its fields behind getters (Vue 2, MobX) is refused too: hand in
 `JSON.parse(JSON.stringify(document))`. A document holding more than 10,000,000 JSON values is
 `unsupported-node-shape`.
 
+`adfToHtml` writes a table cell's background as `data-background-color="…"`, where `0.3.1` wrote
+`style="background-color:…"`. A page that shows the HTML loses the cell's colour unless it sets the colour from
+the attribute, as this script does for cells and for colour marks:
+
+```js
+for (const element of document.querySelectorAll('[data-background-color]')) element.style.backgroundColor = element.dataset.backgroundColor
+for (const element of document.querySelectorAll('[data-text-color]')) element.style.color = element.dataset.textColor
+```
+
+`htmlToAdf` still reads the HTML `0.3.1` wrote.
+
 `portableMarkdownToAdf` reads more of GFM's pipe table:
 
 - A body row holding fewer cells than the header is padded with empty cells, where `0.3.1`

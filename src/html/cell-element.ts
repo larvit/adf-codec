@@ -34,7 +34,7 @@ export function readCellAttributes(pairs: readonly (readonly [string, string])[]
     const released = name === 'data-background-color' && first?.[0] === 'style'
     if (first?.[0] !== name && !released) continue
     const value = released ? releasedBackground.exec(first[1])?.[1] : ownValue(name, first[1])
-    if (value === undefined) return { fault: { code: name === 'data-colwidth' ? 'unsupported-node-shape' : 'unmappable-html', message: `${first[0]} on <${element}> spells no value adfToHtml writes there` } }
+    if (value === undefined) return { fault: { code: name === 'data-colwidth' ? 'unsupported-node-shape' : 'unmappable-html', message: released ? `style on <${element}> holds background-color:, then letters and digits after an optional #, as 0.3.1 wrote it; adfToHtml writes data-background-color` : `${name} on <${element}> spells no value adfToHtml writes there` } }
     attrs[ownKey(name)] = value
     rest = rest.slice(1)
   }
