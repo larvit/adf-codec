@@ -191,7 +191,7 @@ export function trimmedEdges(leaves: readonly AdfNode[], grouping: RunGrouping):
   }
 }
 
-// Judges every leaf against one snapshot of `shared`'s counts; `settled`, with the merged line, where no leaf changes.
+// Judges every leaf against one snapshot of `shared`'s counts.
 export function trimPass(leaves: readonly AdfNode[], shared: (line: readonly AdfNode[]) => readonly number[]): { line: AdfNode[]; settled: boolean } {
   const merged = withoutEdgeBreaks(mergeAdjacentText(leaves, joinsWhenEditorNormal))
   const counts = shared(merged)
