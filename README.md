@@ -301,16 +301,16 @@ On 2026-11-05, [`converter-comparison/`](https://github.com/larvit/adf-codec/tre
 ran each other package's published code at the version the table names, and this package's latest
 release, with default options. A package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
-holding the same marks and link. The last column is what a bundler ships for the package: esbuild 0.28.2
-bundles the package and its dependencies for Node, minifies the bundle and gzips it at level 9. The figure
-for this package is the current source's.
+holding the same marks and link. The last column is the whole package as a bundler ships it: esbuild bundles it with its dependencies for Node,
+minifies the bundle and gzips it at level 9. Where a row's figure leaves out a package or module its row needs, the
+cell adds it. This package's figure is the current source's.
 
-| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Direct runtime dependencies | Minified and gzipped, with its dependencies |
+| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Direct runtime dependencies | Minified and gzipped, the whole package with its dependencies |
 | --- | --- | --- | --- | --- | --- | --- |
 | `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 | 71 kB |
-| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB |
+| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB, or 211 kB with `@atlaskit/editor-json-transformer` |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 | 99 kB |
-| `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.8 kB, and a WebAssembly module of 6.8 MB gzipped |
+| `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.8 kB, and a WebAssembly module of 6.9 MB gzipped |
 | `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; fails ordinary input: `***bold italic***` comes out as italic text holding asterisks, and a paragraph holding a hard break stands between blocks | – | – | markdown | 2 | 21 kB |
 | `adf-converter` 0.1.0 | ADF to markdown; writes a mention as `@@Ann` | – | its text kept, with a console message | markdown | 0 | 1.8 kB |
 | `adf-md` 0.2.0 | both ways | a different document: the status without its `localId`, the marks in the other order | dropped with its text | markdown with MDX tags for panels, mentions and statuses | 6 | 137 kB |
@@ -808,7 +808,7 @@ Serves [Goals](#goals) 8.
 | Host APIs | none: pure ECMAScript, no DOM, no `node:` import |
 | Module format | ESM only, one entrypoint |
 | Registry | public npm, `@larvit/adf-codec` |
-| Size | 71 kB minified and gzipped, as a bundler ships it; 161 kB tarball, 601 kB unpacked. The gate fails when a figure is more than a tenth off |
+| Size | 71 kB minified and gzipped, the whole package bundled with its dependencies; 161 kB tarball, 601 kB unpacked |
 | Types | built JavaScript with `.d.ts` beside it |
 
 Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine),
@@ -843,8 +843,8 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 
 All three commands need only Docker, git and bash 5.
 
-- `./ci.sh` runs every check CI runs. It fails where the size figures in [The package](#the-package) and the
-  comparison table are more than a tenth off the build's, and names the measured figures.
+- `./ci.sh` runs every check CI runs. It fails where this package's size figures, in [The package](#the-package)
+  and in its row of the comparison table, are more than a tenth off the build's, and names the measured figures.
 - `./feature-table/write.sh` rewrites `docs/feature-table.md` from `feature-table/examples.json` and
   the build. `./ci.sh` fails where a change leaves that page stale.
 - `./mutation-tests/run.sh [<base>]` mutation-tests the lines changed since `<base>`, `origin/main`
