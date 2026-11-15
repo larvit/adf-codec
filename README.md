@@ -556,7 +556,8 @@ saving what this pair read replaces mentions, attachments and macros with text.
 
 ## HTML
 
-Serves [Goals](#goals) 1, 6, 7 and 10. `adfToHtml` writes the nodes and marks the table lists as their
+Serves [Goals](#goals) 1, 6, 7 and 10, which `adfToHtml` does not yet meet: it still writes the `style`
+attributes the table lists, and a later release replaces them. It writes the nodes and marks the table lists as their
 HTML elements, and keeps every other node whole: an element of class `adf-carry` holds the node's JSON in
 `data-adf` and shows the node's content, its links included, so a reader of the page loses no
 content. No stylesheet ships. The complete dialect:
