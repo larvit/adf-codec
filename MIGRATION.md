@@ -49,11 +49,12 @@ for (const element of document.querySelectorAll('[data-text-color]')) element.st
 
 ### Readings
 
-Markdown that `0.4.0` reads as a different document.
+Reference labels that every reader matches differently in `0.4.0`.
 
 | Input | `0.3.1` | `0.4.0` |
 | --- | --- | --- |
-| a reference matching its definition only under Unicode case folding (`[ẞ]` with `[SS]: /url`, `[Straße]` with `[STRASSE]: /url`) | literal text, the definition dropped | the link; escape the opening bracket (`\[ẞ]`) to keep the text literal |
+| a reference matching its definition only under Unicode case folding (`[ẞ]` with `[SS]: /url`, `[Straße]` with `[STRASSE]: /url`) | literal text | the link; escape the opening bracket (`\[ẞ]`) to keep the text literal |
+| two definitions whose labels differ only under case folding (`[ss]: /a` then `[ß]: /b`), and a reference to either (`[ß]`) | the reference takes the definition of its own spelling | the first definition, as CommonMark has it: `/a` |
 
 ## From `0.2.0` to `0.3.0`
 
