@@ -1199,7 +1199,9 @@ outermost mark, the outermost mark of the leaf across the hard break, and whethe
 between. Three things keep it so, each found by the property test against the one-leaf-per-pass
 reference: a round judges all its leaves before it changes any, since a leaf goes by a neighbour
 that goes in the same pass; a round also judges the edge whitespace of a leaf holding text; and the
-replay merges as `trimPass` does, since merged leaves reach an edge as one. The replay runs after a
+replay reads the pass's line merged, as `trimPass` merges before it judges. No round merges again:
+a leaf that goes has a hard break or a line edge beside it, so it brings no two leaves together.
+The replay runs after a
 pass, never before the first: a pass also takes marks off whitespace by the line as it stands, and
 the first pass must see the line as it came. Measured in passes
 (§Cost fixes are measured, never timed): both of item 190's lines took 7, 101 and 1 001 passes at

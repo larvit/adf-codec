@@ -137,6 +137,19 @@ for (const [name, line] of blankLines) {
   })
 }
 
+const em: AdfMark = { type: 'em' }
+const replayedLines: readonly [string, AdfNode[], AdfNode[]][] = [
+  ['the lead whitespace a dropped blank leaves at the line start', [marked(' ', em), marked(' x')], [{ text: 'x', type: 'text' }]],
+  ['the trail whitespace dropped blanks leave before a hard break', [marked('x ', link), marked(' ', em, link), marked(' ', link), marked(' ', em, link), { type: 'hardBreak' }, marked('y', link)], [marked('x', link), { type: 'hardBreak' }, marked('y', link)]],
+  ['the lead whitespace dropped blanks leave after a hard break', [marked('y', link), { type: 'hardBreak' }, marked(' ', em, link), marked(' ', link), marked(' ', em, link), marked(' x', link)], [marked('y', link), { type: 'hardBreak' }, marked('x', link)]],
+  ['a blank beside a leaf holding no text', [marked(' ', em), { attrs: { id: 'a' }, type: 'mention' }], [{ attrs: { id: 'a' }, type: 'mention' }]],
+]
+for (const [name, line, trimmed] of replayedLines) {
+  test(`trims ${name} in 2 passes`, () => {
+    assert.deepEqual(trimmedWith(line, spannedPass), { line: trimmed, passes: 2 })
+  })
+}
+
 function alternatingBlanks(blanks: number, first: AdfNode, second: AdfNode): AdfNode[] {
   return Array.from({ length: blanks }, (_, index) => (index % 2 === 0 ? first : second))
 }

@@ -216,8 +216,7 @@ function withoutEdgeWhitespace(leaves: readonly AdfNode[], grouping: RunGrouping
     // Every leaf of a round is judged before any changes, as `trimPass` judges against one snapshot.
     const outcomes = [...judged].flatMap((position) => {
       const node = linked[position]
-      const leaf = node === undefined || node.dropped ? undefined : withoutLineEdges(node, linked, grouping)
-      return node === undefined || node.dropped || leaf === node.leaf ? [] : [{ leaf, node }]
+      return node === undefined || node.dropped ? [] : [{ leaf: withoutLineEdges(node, linked, grouping), node }]
     })
     judged = new Set()
     for (const { leaf, node } of outcomes) {
@@ -227,17 +226,6 @@ function withoutEdgeWhitespace(leaves: readonly AdfNode[], grouping: RunGrouping
       }
       unlink(node, linked)
       judged.add(node.previous).add(node.next)
-    }
-    // `trimPass` merges before it judges, so leaves a drop brings together reach an edge as one.
-    for (const position of judged) {
-      const node = linked[position]
-      if (node === undefined || node.dropped) continue
-      for (let next = linked[node.next]; next !== undefined && next.breakBefore === undefined; next = linked[node.next]) {
-        const [merged, unmerged] = mergeAdjacentText([node.leaf, next.leaf], joinsWhenEditorNormal)
-        if (merged === undefined || unmerged !== undefined) break
-        node.leaf = merged
-        unlink(next, linked)
-      }
     }
   }
   const kept: AdfNode[] = []
