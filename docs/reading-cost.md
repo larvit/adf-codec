@@ -1229,3 +1229,20 @@ Read most (opens and searches):
 - `docker-runner.sh` 1
 - `src/adf/document.ts` 1
 - `src/markdown/emit/inline-runs.ts` 1
+
+## Reading cost, chunk 33d8d4c6ebde, finished 2026-11-15T21:43:48Z
+
+88660 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 9
+- `MIGRATION.md` 8
+- `docs/decisions.md` 5
+- `CHANGELOG.md` 4
+- `ci.sh` 4
+- `src/markdown/parse/markdown-to-adf.test.ts` 4
+- `package.json` 3
+- `spec/unicode/CaseFolding.txt` 3
+- `corpus/README.md` 2
+- `docker-runner.sh` 2

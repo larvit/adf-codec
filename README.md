@@ -260,6 +260,14 @@ whatever it costs; the Achieve goals are weighed against each other in the order
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
 10. **Maintain:** HTML output holds no style: elements, classes, ids and `data-*` attributes name what a node is. Styling is the consumer's, in a stylesheet of their own.
+11. **Achieve:** Converts Jira wiki markup both ways, reading it as Jira renders it.
+    - Signal: every element in Atlassian's text formatting notation help reads into ADF and writes back.
+    - Counter-signal: issues report wiki markup that Jira renders differently after a round-trip.
+    - Why: a converter that skips what Jira renders loses the expands and marks that `WikiMarkupTransformer` loses today.
+12. **Achieve:** Reads any HTML into ADF, whatever wrote it.
+    - Signal: HTML from emails, CMSs and editors reads into ADF without a refusal.
+    - Counter-signal: `htmlToAdf` gains a special case per source.
+    - Why: HTML fitted source by source is a reader no developer can predict.
 
 ## Audience
 
