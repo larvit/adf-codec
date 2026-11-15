@@ -582,7 +582,7 @@ content. No stylesheet ships. The complete dialect:
 | `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
 | `taskList`, `taskItem` | `<ul class="adf-task-list">`, `<li class="adf-task" data-state="DONE"><input type="checkbox" checked="" disabled=""> text</li>` |
 | `text` marked `code`, `em`, `strike`, `strong`, `subsup`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<sub>` or `<sup>`, `<u>`, the first mark outermost |
-| `text` marked `backgroundColor`, `textColor` | `<span style="color:#ae2e24">`, `<mark style="background-color:#fffae6">` |
+| `text` marked `backgroundColor`, `textColor` | `<mark style="background-color:#fffae6">`, `<span style="color:#ae2e24">` |
 | an attribute its type holds that its element does not write, such as `localId`, on a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media, media single, caption, emoji, mention, status, date or card | `data-*` named as HTML's `dataset` names it: `<p data-local-id="a1f3">` |
 | any other node, or a node holding what its element cannot, except a shape Atlassian's schema forbids, which is refused ([The errors](#the-errors)) | `<div class="adf-carry" data-adf="{…}"><p>its content</p></div>`, a `<span>` inline |
 
