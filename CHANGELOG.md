@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `adfToPortableMarkdown` writes a line of code spans alternating with emphasized spaces in time linear in its length, where `0.3.1` took time quadratic in it.
 - `adfToHtml` writes a media single, a media group and a caption as `<figure class="adf-media-single">` holding an
   `<img>` and a `<figcaption>`, and as `<div class="adf-media-group">` of `<span class="adf-file">` files, where
   `0.3.1` wrote the carry element, and `htmlToAdf` reads them back. A link around the image is the media's link
