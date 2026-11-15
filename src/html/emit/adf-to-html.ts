@@ -1,24 +1,24 @@
 import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import { anchorOpener } from '../anchor-element.ts'
 import { blockNodes } from '../../adf/block-nodes.ts'
-import { expandClasses, panelAttributes, panelClass, taskLists } from '../block-classes.ts'
 import { carriedBlock, carryElement } from './carry-element.ts'
 import { carryContent } from '../carry-content.ts'
 import { cellAttributes, isHeaderRow } from '../cell-element.ts'
 import { containerElements, headingElement, listStart } from '../block-elements.ts'
 import { dataAttributes } from '../data-attributes.ts'
+import { expandClasses, panelAttributes, panelClass, taskLists } from '../block-classes.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { firstParagraphForm } from '../first-paragraph.ts'
 import { imageElement } from '../image-element.ts'
 import { inlineHtml, writableText } from './inline.ts'
 import { isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
+import { itemOpener } from '../task-element.ts'
 import { languageClass } from '../language-class.ts'
 import { largestNesting } from '../../nesting.ts'
 import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.ts'
 import { mediaImage } from '../media-element.ts'
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
-import { itemOpener } from '../task-element.ts'
 import { textBlockAttributes } from '../alignment-element.ts'
 
 // depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s, `<td>`'s or `<th>`'s, built when its list or table checked it; `lead`: what stands before the inline content of a task or decision item.
@@ -112,7 +112,7 @@ function taskPieces({ depth, node, path }: Block, type: keyof typeof taskLists):
     const opener = itemOpener(type, item)
     if (opener === undefined) return undefined
     if (index > 0) items.push('\n')
-    items.push({ ...opener, depth, kind: 'item', node: item, path: [...path, 'content', index], tag: 'li' })
+    items.push({ ...opener, depth: depth + 1, kind: 'item', node: item, path: [...path, 'content', index], tag: 'li' })
   }
   return containerPieces('ul', ` class="${taskLists[type].listClass}"${attributes}`, node.content === undefined ? undefined : items)
 }

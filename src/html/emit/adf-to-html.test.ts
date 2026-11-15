@@ -689,6 +689,18 @@ test('writes panels, expands and nested expands nested 500 levels, and refuses t
   }
 })
 
+test('writes a task or decision list nested 499 levels, its items one level below it, and refuses the next level', () => {
+  const lists: AdfNode[] = [
+    { content: [{ attrs: { state: 'TODO' }, content: [text('x')], type: 'taskItem' }], type: 'taskList' },
+    { content: [{ attrs: { state: 'DECIDED' }, content: [text('x')], type: 'decisionItem' }], type: 'decisionList' },
+  ]
+  for (const list of lists) {
+    assert.equal(refusal(adfToHtml(document(nested('panel', largestNesting - 1, list)))), 'written')
+    const deep = adfToHtml(document(nested('panel', largestNesting, list)))
+    assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)
+  }
+})
+
 test('writes a caption as a figcaption, refuses an inline carry nested past 500 in it, and carries what is no caption', () => {
   const media: AdfNode = { attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, type: 'media' }
   const deep = nested('unknownInline', largestNesting, text('x'))
@@ -709,6 +721,8 @@ test('carries a media or a paragraph whose marks only look like the ones HTML sp
   assert.equal(carriedBlock(single({ attrs: { ...external, height: 0 }, type: 'media' })), true)
   assert.equal(carriedBlock(single({ attrs: { ...external, width: 0 }, type: 'media' })), true)
   assert.equal(carriedBlock({ content: [text('x')], marks: [{ attrs: { align: 'center' }, type: 'indentation' }], type: 'paragraph' }), true)
+  assert.equal(carriedBlock({ content: [text('x')], marks: [{ attrs: { align: ['center'] }, type: 'alignment' }], type: 'paragraph' }), true)
+  assert.equal(carriedBlock({ attrs: { level: 1 }, content: [text('x')], marks: [{ attrs: { align: [['end']] }, type: 'alignment' }], type: 'heading' }), true)
 })
 
 test('refuses, at the item\'s text, a card a link marks in a task item', () => {

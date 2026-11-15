@@ -17,7 +17,8 @@ export function textBlockAttributes(node: AdfNode, vocabulary: AttributeVocabula
   const [mark, ...others] = nodeMarks(node)
   if (mark === undefined) return dataAttributes(node, vocabulary, written)
   const attrs = nodeAttrs(mark)
-  const textAlign = others.length === 0 && mark.type === 'alignment' && Object.keys(attrs).length === 1 ? alignments().get(String(attrs['align'])) : undefined
+  const align = attrs['align']
+  const textAlign = others.length === 0 && mark.type === 'alignment' && Object.keys(attrs).length === 1 && typeof align === 'string' ? alignments().get(align) : undefined
   const bare: AdfNode = { ...node }
   delete bare.marks
   const data = textAlign === undefined ? undefined : dataAttributes(bare, vocabulary, written)
