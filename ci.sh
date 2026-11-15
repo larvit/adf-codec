@@ -102,6 +102,9 @@ in_image_memory=1g leg "release tooling tests ($node_image)" in_image "$node_ima
 
 leg "build ($node_image)" in_image "$node_image" npm run build
 leg "feature table is current ($node_image)" in_image "$node_image" node feature-table/build.mjs --check
+leg "install the bundle size tool ($node_image)" in_image "$node_image" npm ci --no-audit --no-fund --prefix bundle-size
+leg "bundle size tests ($node_image)" in_image "$node_image" node --test bundle-size/
+leg "README's size figures are current ($node_image)" in_image "$node_image" node bundle-size/run.mjs --check
 leg "pack and install the tarball ($node_image)" in_image "$node_image" sh -c 'set -e
   rm -rf package-tests/node_modules
   npm pack --pack-destination /tmp

@@ -66,6 +66,7 @@ In `docs/decisions.md`:
 - Firefox reads the build
 - The coverage floors
 - The size ratchet
+- The published size is a bundler's output, checked within a tenth
 - Properties on a fixed seed
 - The CommonMark suite checks three ways
 - The flavour spec is read as a source

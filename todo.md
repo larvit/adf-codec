@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 46 | 0.4.0 |  |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
 | 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
@@ -45,16 +44,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
-
-The HTML items change the size. The quantity is what a consumer downloads and loads: the
-tarball `npm pack` produces, its unpacked `dist`, and the built JavaScript minified + gzipped — the
-figure the competitors advertise (marklassian's "12kb") and the only apples-to-apples one, since
-ours ships tsc's unminified output and no minifier yet (decide here whether to minify for the build
-or report the unminified gzip). The figure lands in README §The package beside the "no runtime
-dependencies" claim, and in a size column of the comparison table. Measured today,
-unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
 
 ### 174. Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.
 
@@ -133,7 +122,7 @@ package, as Stryker does (§Stryker in its own package), with pinned versions. B
 image the gate already pulls. No leg needs an account or a network beyond the install.
 
 Once the leg holds, the README may say the package bundles with those four; it says nothing about
-Forge's runtime, which no leg tests. Item 46 may take its bundle size from this leg.
+Forge's runtime, which no leg tests. The bundlers join esbuild in `bundle-size/`'s package.
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
