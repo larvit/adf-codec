@@ -62,8 +62,8 @@ for (const run of commonRuns.split(' ')) {
   }
 }
 for (const folding of fullFoldings.split(' ')) {
-  const equals = folding.indexOf('=')
-  foldings.set(String.fromCodePoint(parseInt(folding.slice(0, equals), 16)), codePoints(folding.slice(equals + 1)))
+  // parseInt stops at the `=`.
+  foldings.set(String.fromCodePoint(parseInt(folding, 16)), codePoints(folding.slice(folding.indexOf('=') + 1)))
 }
 
 export function foldCase(text: string): string {
