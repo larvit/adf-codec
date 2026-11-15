@@ -106,6 +106,15 @@ test('counts an emphasis run from its first to its last leaf holding more than s
   assert.deepEqual(trimmingRuns(line, 'spanned'), [1, 1, 2, 2, 1, 1, 0])
 })
 
+test('counts a run nested in an emphasis run from the emphasis run\'s first leaf holding more than spaces and tabs', () => {
+  const line = [marked(' ', { type: 'em' }), marked('x', { type: 'code' }), marked('a', { type: 'em' }, { type: 'strong' }), marked('x', { type: 'code' }), marked('b', { type: 'em' }, { type: 'strong' })]
+  assert.deepEqual(trimmingRuns(line, 'spanned'), [0, 0, 2, 2, 0])
+})
+
+test('counts an emphasis run to a leaf holding it and no text, which the trim never changes', () => {
+  assert.deepEqual(trimmingRuns([marked('a', { type: 'em' }), marked('x', { type: 'code' }), { attrs: { id: 'a' }, marks: [{ type: 'em' }], type: 'mention' }], 'spanned'), [1, 1, 0])
+})
+
 const alternatingLines: readonly [string, AdfNode, AdfNode][] = [
   ['a code space beside an emphasized space', marked(' ', { type: 'code' }), marked(' ', { type: 'em' })],
   ['code x beside an emphasized space', marked('x', { type: 'code' }), marked(' ', { type: 'em' })],
