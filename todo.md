@@ -108,12 +108,12 @@ Forge's runtime, which no leg tests.
 
 `portable/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`,
 quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
-`adfToPortableMarkdown`. Scan backward, as the expand title's trim does. `withoutLineEdges`, in the
-same file, finds its trail with the same expression.
+`adfToPortableMarkdown`. Scan backward, as the expand title's trim does. `edgeWhitespace`, in the
+same file, counts a leaf's lead and trail by index.
 
 ### 191. Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.
 
-Found while shipping item 190, on `origin/main`'s trim as well as on that chunk's: fast-check seed 578490788, path `94554:1:8:16:15:15:16:16:16:16`, in `trims a spanned line as the reference counts trim it, in no more passes` (`src/markdown/portable/inline-reduction.test.ts`), about one random line in 100 000, so the gate's 3 000 runs on a fixed seed pass. The line, with `held` a link to `v` and `strong`: `'x '` holding `held` and `backgroundColor`, `' '` holding `held`, `' '` unmarked, a hard break, `' '` holding `held`, `' '` unmarked, a hard break. `trimmedEdges` returns the one leaf `'x'`; the reference, `trimPass` on `runsSharedWithNext`'s counts, also keeps a linked `' '`. Decide which is right by `docs/decisions.md` → "After 32 passes…" and the trim's entries, then fix the other and pin the line as a fixed test.
+Found while shipping item 190, on `origin/main`'s trim as well as on that chunk's: fast-check seed 578490788, path `94554:1:8:16:15:15:16:16:16:16`, in `trims a spanned line as the reference counts trim it, in no more passes` (`src/markdown/portable/inline-reduction.test.ts`), about one random line in 100 000, so the gate's 3 000 runs on a fixed seed pass. The line, with `held` a link to `v` and `strong`: `'x '` holding `held` and `backgroundColor`, `' '` holding `held`, `' '` unmarked, a hard break, `' '` holding `held`, `' '` unmarked, a hard break. `trimmedEdges` returns the one leaf `'x'`; the reference, `trimPass` on `runsSharedWithNext`'s counts, also keeps a linked `' '`. Decide which is right by `docs/decisions.md` → "After 32 passes…" and the trim's entries, then fix the other and pin the line as a fixed test. A second line of the class, with no link and one hard break: seed -1783810909, path `201490:2:4:5:9:9:9:15:14:18:18:18:18:22:23:23`, the line `'x '` strong, `' '` code, `' '` strong, a hard break, `' '` unmarked, `'x '` strong, `' '` unmarked; the trim gives `x`, `' '`, `' '`, hard break, `x`, the reference `'x '`, `' '`, hard break, `x`.
 
 ### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
 
