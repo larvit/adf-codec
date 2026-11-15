@@ -56,6 +56,6 @@ function readItemAttributes(list: TaskListType, pairs: readonly (readonly [strin
 function checkbox(html: string, index: number, done: boolean): number | undefined {
   const input = readStartTag(html, index)
   const expected = [['type', 'checkbox'], ...(done ? [['checked', '']] : []), ['disabled', '']]
-  const same = input?.name === 'input' && input.attributes.length === expected.length && input.attributes.every(([name, value], at) => name === expected[at]?.[0] && value === expected[at]?.[1])
+  const same = input?.name === 'input' && JSON.stringify(input.attributes) === JSON.stringify(expected)
   return same ? input.end : undefined
 }

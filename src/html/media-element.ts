@@ -61,7 +61,7 @@ export function readMediaImage(pairs: readonly (readonly [string, string])[]): R
 // The attributes of the `<img>` a media is, `undefined` where a value has no spelling there.
 function imageAttributes(media: AdfNode): string | undefined {
   const { alt, height, type, url, width } = nodeAttrs(media)
-  const src = url === undefined ? '' : typeof url === 'string' ? srcAttribute(url) : undefined
+  const src = typeof url === 'string' ? srcAttribute(url) : undefined
   const own = [url === undefined ? ` class="${imageClass}"` : src, altAttribute(alt), sizeAttribute('height', height), sizeAttribute('width', width)]
   // A url without a type reads back as external, so only an external media may leave its type out.
   const written = url !== undefined && type === 'external' ? [...imageWritten, 'type'] : imageWritten
@@ -87,7 +87,6 @@ function sizeAttribute(name: string, value: JsonValue | undefined): string | und
 
 function markedLink(mark: { attrs?: AdfAttributes; type: string }): { href: string; title?: string } | undefined {
   const attrs = nodeAttrs(mark)
-  const keys = Object.keys(attrs)
-  if (mark.type !== 'link' || keys.length === 0 || keys.some((key) => key !== 'href' && key !== 'title')) return undefined
+  if (mark.type !== 'link' || Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   return linkAttrs(attrs)
 }

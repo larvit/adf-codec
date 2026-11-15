@@ -716,6 +716,12 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<p style="color:red">a</p>\n', 'unmappable-html at /content/0: style on <p> holds text-align:center or text-align:right'],
   ['<h1 style="text-align:left">a</h1>\n', 'unmappable-html at /content/0: style on <h1> holds text-align:center or text-align:right'],
   ['<p>a <span title="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji", "adf-mention" or "adf-status": found "<span title=\\"color:red\\">"…'],
+  ['<blockquote><p>a</p></blockquote>\n', 'unmappable-html at /content/0: <blockquote> holds </blockquote> straight after it, or a line feed and its first block: found "<p>a</p></blockquote>\\n"'],
+  ['<ul><li>a</li></ul>\n', 'unmappable-html at /content/0: <ul> holds </ul> straight after it, or a line feed and its first item: found "<li>a</li></ul>\\n"'],
+  ['<details class="adf-expand">\n<summary>a\n</details>\n', 'unmappable-html at /content/0: <summary> ends at </summary>: found "a\\n</details>\\n"'],
+  ['<p>a < b</p>\n', 'unmappable-html at /content/0: </p> ends the paragraph, and its text spells < as &lt;: found "< b</p>\\n"'],
+  ['<ul class="adf-task-list">\n<b>x</b>\n</ul>\n', 'unmappable-html at /content/0/content/0: <b> as written here is no list item of the dialect: found "<b>x</b>\\n</ul>\\n"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> a<b>x</b></li>\n</ul>\n', 'unmappable-html at /content/0/content/0: <b> as written here is no inline element of the dialect: found "<b>x</b></li>\\n</ul>\\n"'],
 ]
 
 for (const [html, expected] of pinnedRefusals) {

@@ -689,6 +689,13 @@ test('writes panels, expands and nested expands nested 500 levels, and refuses t
   }
 })
 
+test('writes a caption as a figcaption, refuses an inline carry nested past 500 in it, and carries what is no caption', () => {
+  const media: AdfNode = { attrs: { type: 'external', url: 'https://example.com/moon.jpg' }, type: 'media' }
+  const deep = nested('unknownInline', largestNesting, text('x'))
+  assert.equal(refusal(adfToHtml(document({ content: [media, { content: [deep], type: 'caption' }], type: 'mediaSingle' }))), 'unsupported-nesting-depth at /content/0/content/1/content/0')
+  assert.equal(carriedBlock({ content: [media, paragraph(text('a'))], type: 'mediaSingle' }), true)
+})
+
 test('carries a media or a paragraph whose marks only look like the ones HTML spells', () => {
   const external: AdfAttributes = { type: 'external', url: 'https://example.com/moon.jpg' }
   const single = (media: AdfNode): AdfNode => ({ content: [media], type: 'mediaSingle' })
