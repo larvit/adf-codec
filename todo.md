@@ -108,7 +108,8 @@ Forge's runtime, which no leg tests.
 
 `portable/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`,
 quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
-`adfToPortableMarkdown`. Scan backward, as the expand title's trim does.
+`adfToPortableMarkdown`. Scan backward, as the expand title's trim does. `withoutLineEdges`, in the
+same file, finds its trail with the same expression.
 
 ### 191. Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.
 
