@@ -77,7 +77,7 @@ const trimLine = fc.oneof(
 )
 
 for (const grouping of groupings) {
-  test(`trims a line ${grouping} as peeling each run's end leaf by leaf does, in no more passes`, () => {
+  test(`trims a ${grouping} line as the reference counts trim it, in no more passes`, () => {
     fc.assert(
       fc.property(trimLine, (line) => {
         const peeled = trimmedWith(line, (leaves) => runsSharedWithNext(leaves, grouping))
@@ -96,7 +96,7 @@ test('counts a run crossing a code span to its next holder where the line is spa
   assert.deepEqual(trimmingRuns(line, 'parted'), [0, 0, 0])
 })
 
-test('counts every nested run crossing a hard break, and none crossing a hard break holding an empty marks', () => {
+test('counts every nested run crossing a hard break, and none crossing a hard break whose marks are empty', () => {
   assert.deepEqual(trimmingRuns([marked('a', { type: 'em' }, { type: 'strong' }), { type: 'hardBreak' }, marked('b', { type: 'em' }, { type: 'strong' })], 'spanned'), [2, 2, 0])
   assert.deepEqual(trimmingRuns([marked('a', { type: 'em' }), { marks: [], type: 'hardBreak' }, marked('b', { type: 'em' })], 'spanned'), [0, 0, 0])
 })
@@ -121,13 +121,13 @@ const alternatingLines: readonly [string, AdfNode, AdfNode][] = [
   ['linked code x beside a linked emphasized space', marked('x', link, { type: 'code' }), marked(' ', link, { type: 'em' })],
 ]
 for (const [name, code, emphasized] of alternatingLines) {
-  test(`trims a line of ${name}, 1 000 leaves long, in the passes its 6-leaf form takes`, () => {
+  test(`trims a line of ${name}, 1 000 leaves long, in as many passes as its 6-leaf form`, () => {
     const alternating = (pairs: number) => Array.from({ length: pairs }, () => [code, emphasized]).flat()
     assert.equal(trimmedWith(alternating(500), (leaves) => trimmingRuns(leaves, 'spanned')).passes, trimmedWith(alternating(3), (leaves) => trimmingRuns(leaves, 'spanned')).passes)
   })
 }
 
-// The trim's passes and line where each pass judges every leaf against `shared`'s counts.
+// Runs `trimPass` on `shared`'s counts until it settles.
 function trimmedWith(leaves: readonly AdfNode[], shared: (leaves: readonly AdfNode[]) => readonly number[]): { line: AdfNode[]; passes: number } {
   for (let current = leaves, passes = 1; ; passes += 1) {
     const pass = trimPass(current, shared)
@@ -136,7 +136,7 @@ function trimmedWith(leaves: readonly AdfNode[], shared: (leaves: readonly AdfNo
   }
 }
 
-// The reference counts: every run reaches its last leaf holding its mark, so the trim peels a run's end leaves one pass each.
+// The reference counts: every run reaches its last leaf holding its mark, so the trim peels a run's blank end leaves one pass each.
 function runsSharedWithNext(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
   const shared = leaves.map(() => 0)
   countSharedRuns(leaves.map((node) => ({ carried: false, node, outer: 0 })), 0, grouping, shared)
