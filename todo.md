@@ -15,9 +15,9 @@
 | 192 | 0.4.0 |  | owner | **Spec each ADF node's and mark's Jira wiki spelling in `spec/wiki.md`, sourced from Atlassian's text formatting notation help, with the wiki calls' names a developer panel picks.** | 2 | 2 | 1 | 3 | 3 | 11 by 3 | 2.5 |
 | 193 | 0.4.0 | 192 | owner | **Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.** | 3 | 1 | 2 | 4 | 7 | 11 by 4 | 0.4 |
 | 194 | 0.4.0 | 193 | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
-| 195 | 0.4.0 | 193 | owner | **Read Jira wiki markup into ADF, `{adf}` carries included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
+| 195 | 0.4.0 | 193 | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
-| 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
+| 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -49,13 +49,16 @@
 
 ### 192. Spec each ADF node's and mark's Jira wiki spelling in `spec/wiki.md`, sourced from Atlassian's text formatting notation help, with the wiki calls' names a developer panel picks.
 
-First of the items splitting item 148, under README goal 11. Confirm against a real Jira site that
-the renderer reads `{adf:display=block}` and `{adf:display=inline}` around ADF JSON, the carry
-docs/decisions.md §Jira wiki markup carries what it cannot spell names; where it does not, ask
-before building the writers. The spec names, per node and mark, the lossless writer's spelling, the
-lossy writer's, and what the reader reads. A developer panel picks the names of the reader and both
-writers, and whether the lossy writer is a call or an option (Goal 6.1, Goal 8's "nothing to
-configure"); a writer panel of wiki-markup authors benches each spelling Jira's help leaves open.
+Goal 11. The lossless writer carries what wiki markup cannot spell in Jira's `{adf}` macro, as
+`docs/decisions.md` records. First confirm on a real Jira site that the renderer reads that macro
+around ADF JSON; where it does not, ask before building the writers.
+
+The spec names, per node and mark, the lossless writer's spelling, the lossy writer's, and what the
+reader reads. A developer panel picks the names of the reader and both writers, and whether the
+lossy writer is a call or an option, under Goals 6.1 and 8. Its brief names the trap a wrong pick
+sets: an app that saves through the lossy writer loses form on every save, with no refusal. A writer
+panel of the wiki-markup authors in the README's `## Audience` settles each spelling Jira's help
+leaves open.
 
 ### 193. Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.
 
@@ -64,25 +67,25 @@ mark; item 195's reader adds the round-trip property.
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
-The lossy wiki writer the maintainer asked for beside the lossless one, 2026-11-15, under Goal 7.
-It shares the lossless writer's spellings and differs only where that writer would carry.
+Goal 7. The maintainer asked for it beside the lossless writer, 2026-11-15. It spells as the
+lossless writer does, except where that writer would use the `{adf}` macro.
 
-### 195. Read Jira wiki markup into ADF, `{adf}` carries included, as `spec/wiki.md` says.
+### 195. Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.
 
 A hand-written reader, as `htmlToAdf` is. Ships with the property that what the lossless writer of
 item 193 writes reads back deep-equal, and with refusals whose codes come from the closed list.
 
 ### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 
-Last of the items splitting item 148: a Quick start section per direction, the calls table, the
-guarantees, and a row in the comparison tables per docs/decisions.md §The comparison tables list
-every ADF converter that starts and converts.
+A Quick start section per direction, the calls table and the guarantees. The comparison tables
+gain a row, as the decision "The comparison tables list every ADF converter that starts and
+converts" asks.
 
-### 137. Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.
+### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
 
-HTML from emails, CMSs and editors into ADF is the most asked need on the Atlassian developer
-community, README goal 12. It reads through `htmlToAdf` alone, with no option, as docs/decisions.md
-§`htmlToAdf` reads any HTML, with no option and no second call records.
+Reading HTML from emails, CMSs and editors is the most asked need on the Atlassian developer
+community. A developer panel picked `htmlToAdf` itself, with no option, as `docs/decisions.md`
+records.
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 

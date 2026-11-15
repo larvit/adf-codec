@@ -50,8 +50,8 @@ diagrams drawn into images.
 Our directives written to `mark` come out as text: every `!adf:` line of the 14 fixtures is
 published as a paragraph holding it. `commonMarkToAdf` refuses a `mark` document that opens with
 `<!-- Space: DOCS -->` as `unmappable-html`, and refuses `<!-- Include: -->` the same way, because
-a comment is content ADF cannot hold (`docs/decisions.md` §Foreign HTML sorts three ways). Both
-refusals follow that entry.
+the markdown readers refuse raw HTML today. Once `todo.md` item 138 reads it through `htmlToAdf`,
+both comments drop (`docs/decisions.md` §Foreign HTML reads best effort and is never refused).
 
 ## What the audience would expect
 
