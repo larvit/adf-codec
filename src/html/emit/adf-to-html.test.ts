@@ -240,6 +240,7 @@ test('carries a paragraph or heading holding an alignment HTML cannot spell, or 
   assert.equal(carriedBlockOf({ attrs: { level: '2' }, type: 'indentation' }), true)
   assert.equal(carriedBlockOf({ attrs: { level: 1, x: 1 }, type: 'indentation' }), true)
   assert.equal(carriedBlockOf({ type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: 2 }, type: 'strong' }), true)
   assert.equal(carriedBlockOf({ attrs: { level: 1 }, type: 'indentation' }, { attrs: { level: 2 }, type: 'indentation' }), true)
   assert.equal(carriedBlockOf({ attrs: { align: 'center' }, type: 'alignment' }, { attrs: { align: 'end' }, type: 'alignment' }), true)
   assert.equal(carriedBlockOf({ attrs: { align: 'center' }, type: 'alignment' }, { attrs: { level: 1 }, type: 'indentation' }), true)
