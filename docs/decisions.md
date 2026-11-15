@@ -937,9 +937,9 @@ package with the same function. The README also states the tarball and the unpac
 
 The build stays tsc's unminified output: a consumer has to add no step to read a stack trace or step
 through the package in a debugger, and the build takes no minifier. The gate fails where a stated figure
-for this package is more than a tenth off the measure. A tighter bound fails most pull requests, while a
-tenth still fails a release in which the package has grown by a tenth since its figure was last stated.
-The release job needs the gate, so a stale figure stops a release.
+for this package is more than a tenth off the measure. A tighter bound fails most pull requests, and a
+looser one lets a stated figure drift far from the build. The release job needs the gate, so a stale
+figure stops a release.
 
 ## Properties on a fixed seed
 

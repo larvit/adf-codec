@@ -34,6 +34,17 @@ test("minified size counts every package it is given", async () => {
   assert.ok(await minifiedGzippedBytes(dir, ["./one.js", "./two.js"]) > await minifiedGzippedBytes(dir, ["./one.js"]) + 500);
 });
 
+test("minified size counts a default export and exports two packages share by name", async () => {
+  const dir = fixture({
+    "first.js": `export const same = ${JSON.stringify(Array.from({ length: 200 }, (_, i) => (i * 2654435761 % 4294967296).toString(36)))};`,
+    "second.js": `export const same = ${JSON.stringify(Array.from({ length: 200 }, (_, i) => (i * 40503 % 4294967296 * 65537).toString(36)))};`,
+    "only-default.js": `export default ${JSON.stringify(Array.from({ length: 200 }, (_, i) => (i * 69069 % 4294967296 * 97).toString(36)))};`,
+  });
+  const first = await minifiedGzippedBytes(dir, ["./first.js"]);
+  assert.ok(await minifiedGzippedBytes(dir, ["./first.js", "./second.js"]) > first + 500);
+  assert.ok(await minifiedGzippedBytes(dir, ["./only-default.js"]) > 500);
+});
+
 test("minified size counts the dependencies a bundler pulls in", async () => {
   const alone = fixture({ "entry.js": "export const a = 1;" });
   const withDependency = fixture({

@@ -4,6 +4,7 @@ import { gzipSync } from "node:zlib";
 
 const bytesPerKilobyte = 1000;
 
+// A namespace export keeps default exports and same-named exports, which a star re-export drops.
 // What a consumer's bundler ships for the whole of the packages: their code and dependencies, minified, gzipped.
 export const minifiedGzippedBytes = async (resolveDir, specifiers) => {
   const { outputFiles } = await build({
@@ -12,7 +13,7 @@ export const minifiedGzippedBytes = async (resolveDir, specifiers) => {
     logLevel: "silent",
     minify: true,
     platform: "node",
-    stdin: { contents: specifiers.map((specifier) => `export * from ${JSON.stringify(specifier)};`).join("\n"), resolveDir },
+    stdin: { contents: specifiers.map((specifier, i) => `import * as m${i} from ${JSON.stringify(specifier)}; export { m${i} };`).join("\n"), resolveDir },
     write: false,
   });
   return gzipSync(outputFiles[0].contents, { level: 9 }).length;
