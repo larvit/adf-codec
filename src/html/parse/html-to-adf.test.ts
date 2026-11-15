@@ -722,6 +722,9 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<p>a < b</p>\n', 'unmappable-html at /content/0: </p> ends the paragraph, and its text spells < as &lt;: found "< b</p>\\n"'],
   ['<ul class="adf-task-list">\n<b>x</b>\n</ul>\n', 'unmappable-html at /content/0/content/0: <b> as written here is no list item of the dialect: found "<b>x</b>\\n</ul>\\n"'],
   ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> a<b>x</b></li>\n</ul>\n', 'unmappable-html at /content/0/content/0: <b> as written here is no inline element of the dialect: found "<b>x</b></li>\\n</ul>\\n"'],
+  ['<figure class="adf-media-single"><img src="u" height="1e2"></figure>\n', 'unmappable-html at /content/0/content/0: height on <img> holds a positive whole number written as JavaScript writes it'],
+  ['<figure class="adf-media-single"><img src="u" width="12 "></figure>\n', 'unmappable-html at /content/0/content/0: width on <img> holds a positive whole number written as JavaScript writes it'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> a < b</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: an item holds inline content, then </li>, as one line: found "< b</li>\\n</ul>\\n"'],
 ]
 
 for (const [html, expected] of pinnedRefusals) {
