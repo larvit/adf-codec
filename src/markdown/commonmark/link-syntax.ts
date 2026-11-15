@@ -1,4 +1,5 @@
 import { backslashEscape, controlCharacterRange, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
+import { foldCase } from './case-folding.ts'
 import { holdsEntityReference, readEntityReference } from './entity-references.ts'
 
 export type InlineTarget = { definition: () => LinkDefinition; length: number }
@@ -36,7 +37,7 @@ export function normalizeLabel(raw: string): string {
   const collapsed = raw.replace(/[ \t\n]+/g, ' ')
   const start = collapsed.startsWith(' ') ? 1 : 0
   const end = collapsed.endsWith(' ') ? collapsed.length - 1 : collapsed.length
-  return collapsed.slice(start, end).toLowerCase()
+  return foldCase(collapsed.slice(start, end))
 }
 
 export function readDestination(text: string, offset: number): LinkPart | undefined {

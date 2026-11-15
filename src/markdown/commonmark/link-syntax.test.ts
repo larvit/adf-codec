@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { readDestination, readInlineTarget, targetMemo } from './link-syntax.ts'
+import { normalizeLabel, readDestination, readInlineTarget, targetMemo } from './link-syntax.ts'
 
 // Every `](` of the text, read in order through one memo, as a reader closes its brackets.
 function targets(text: string): unknown[] {
@@ -46,4 +46,15 @@ test('a target reads whitespace and a title around its destination, bracketed, u
     { destination: '', length: 2 },
   ])
   assert.deepEqual(targets('[a](<b>"t")'), [undefined])
+})
+
+test('a label folds under Unicode case folding after its whitespace collapses', () => {
+  assert.equal(normalizeLabel(' Foo \n\t Bar '), 'foo bar')
+  assert.equal(normalizeLabel('ẞ'), normalizeLabel('SS'))
+  assert.equal(normalizeLabel('Straße'), normalizeLabel('STRASSE'))
+  assert.equal(normalizeLabel('ς'), normalizeLabel('Σ'))
+})
+
+test('a dotless i and a capital I stay two labels', () => {
+  assert.notEqual(normalizeLabel('ı'), normalizeLabel('I'))
 })

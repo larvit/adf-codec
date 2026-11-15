@@ -1214,3 +1214,18 @@ Read most (opens and searches):
 - `ci.sh` 1
 - `docs/decisions.md` 1
 - `package.json` 1
+
+## Reading cost, chunk 2bba00ce50cb, finished 2026-11-15T21:01:07Z
+
+117645 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/portable/inline-reduction.ts` 6
+- `src/markdown/portable/inline-reduction.test.ts` 5
+- `ci.sh` 2
+- `.gitignore` 1
+- `README.md` 1
+- `docker-runner.sh` 1
+- `src/adf/document.ts` 1
+- `src/markdown/emit/inline-runs.ts` 1

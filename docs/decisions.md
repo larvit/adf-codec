@@ -570,7 +570,9 @@ renumbered suite. A spec bump is a deliberate re-pin, exceptions re-derived by h
 Atlassian's ADF JSON Schemas ship vendored the same way, at `spec/adf-schema/`, rather than as the
 `@atlaskit/adf-schema` dev dependency — CommonJS-only, some fifty packages with React among them,
 and a release most days for Renovate to automerge — re-pinned by hand when a payload or a report
-shows the need.
+shows the need. Unicode's `CaseFolding.txt` (18.0.0) is vendored at `spec/unicode/` and packed in
+`src/markdown/commonmark/case-folding.ts` the same way; its test holds every C and F mapping to the
+file, so a re-pin is a new file and a green test.
 
 ## fast-check
 

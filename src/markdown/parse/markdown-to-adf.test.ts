@@ -1080,6 +1080,18 @@ test('reads the reference links a definition resolves, and leaves the rest liter
   assert.deepEqual(content(losslessMarkdownToAdf('[][]\n')), [paragraph('[][]')])
 })
 
+for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+  test(`matches a reference to its definition under Unicode case folding in ${read.name}`, () => {
+    assert.deepEqual(content(read('[ẞ]\n\n[SS]: /url\n')), [{ content: [marked('ẞ', link('/url'))], type: 'paragraph' }])
+    assert.deepEqual(content(read('[Straße][]\n\n[STRASSE]: /url\n')), [{ content: [marked('Straße', link('/url'))], type: 'paragraph' }])
+    assert.deepEqual(content(read('[a][ς]\n\n[Σ]: /url\n')), [{ content: [marked('a', link('/url'))], type: 'paragraph' }])
+  })
+
+  test(`keeps a dotless i and a capital I two labels in ${read.name}`, () => {
+    assert.deepEqual(content(read('[ı]\n\n[I]: /url\n')), [paragraph('[ı]')])
+  })
+}
+
 test('leaves a link label past 999 characters literal, an escape counting as two, in every reader', () => {
   const longest = `foo${' '.repeat(993)}bar`
   const tooLong = `foo${' '.repeat(994)}bar`

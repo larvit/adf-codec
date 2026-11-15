@@ -47,6 +47,14 @@ for (const element of document.querySelectorAll('[data-text-color]')) element.st
 
 `losslessMarkdownToAdf` reads the first two as before.
 
+### Readings
+
+Markdown that `0.4.0` reads as a different document.
+
+| Input | `0.3.1` | `0.4.0` |
+| --- | --- | --- |
+| a reference matching its definition only under Unicode case folding (`[ẞ]` with `[SS]: /url`, `[Straße]` with `[STRASSE]: /url`) | literal text, the definition dropped | the link; escape the opening bracket (`\[ẞ]`) to keep the text literal |
+
 ## From `0.2.0` to `0.3.0`
 
 Every reader skips code text when it spells a mark other than a link, and `losslessMarkdownToAdf`
