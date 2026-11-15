@@ -11,6 +11,7 @@ import * as extendedParser from "extended-markdown-adf-parser";
 import * as faulander from "@faulander/md2adf";
 import { fromADF } from "mdast-util-from-adf";
 import * as githubMarkdownAdf from "github-markdown-adf";
+import { gzipSync } from "node:zlib";
 import { isDeepStrictEqual } from "node:util";
 import { loadAdf4j } from "@nthings.dev/adf4j-wasm";
 import * as markdownToAdf from "markdown-to-adf";
@@ -104,6 +105,19 @@ const converters = {
   "mdast-util-from-adf": { toMarkdown: (doc) => mdastToMarkdown(fromADF(doc)) },
 };
 
+// The sizes a row's figure leaves out, which the README states beside it.
+const companions = {
+  "@atlaskit/editor-markdown-transformer": {
+    "minified and gzipped bytes with @atlaskit/editor-json-transformer": () => minifiedGzippedBytes(process.cwd(), ["@atlaskit/editor-markdown-transformer", "@atlaskit/editor-json-transformer"]),
+  },
+  "@nthings.dev/adf4j-wasm": {
+    "WebAssembly module gzipped bytes": () => gzipSync(readFileSync("node_modules/@nthings.dev/adf4j-wasm/adf4j-wasm.js.wasm"), { level: 9 }).length,
+  },
+  "mdast-util-from-adf": {
+    "minified and gzipped bytes with mdast-util-to-markdown": () => minifiedGzippedBytes(process.cwd(), ["mdast-util-from-adf", "mdast-util-to-markdown"]),
+  },
+};
+
 const show = (label, call) => {
   try {
     const value = call();
@@ -118,10 +132,11 @@ for (const [name, { toAdf, toMarkdown }] of Object.entries(converters)) {
   console.log(`\n## ${name} ${manifest.version}`);
   console.log("direct runtime dependencies:", Object.keys(manifest.dependencies ?? {}).length);
   try {
-    console.log("minified and gzipped bytes:", await minifiedGzippedBytes(process.cwd(), name));
+    console.log("minified and gzipped bytes:", await minifiedGzippedBytes(process.cwd(), [name]));
   } catch (error) {
-    console.log("minified and gzipped bytes failed:", error.message.split("\n")[0]);
+    console.log("bundling failed:", error.message.split("\n")[0]);
   }
+  for (const [label, measure] of Object.entries(companions[name] ?? {})) console.log(`${label}:`, await measure());
   const written = toMarkdown && show("ADF to markdown", () => toMarkdown(roundTripDoc));
   if (written !== undefined && toAdf) {
     const readBack = show("read back", () => toAdf(written));
