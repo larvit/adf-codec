@@ -191,10 +191,9 @@ is the fence.
 
 ## Raw HTML in input
 
-CommonMark input may contain raw HTML. Every markdown reader routes each construct through the
-foreign HTML element mapping (`docs/decisions.md` §Foreign HTML reads best effort and is never refused) — ADF has no
-raw-HTML node, so a construct without a mapping, comments and processing instructions included, is
-an error result naming it. The flavour never emits raw HTML.
+CommonMark input may contain raw HTML. ADF has no raw-HTML node, and every markdown reader refuses
+each raw HTML construct, comments and processing instructions included, as `unmappable-html`. The
+flavour never emits raw HTML.
 
 ## Block nodes
 
