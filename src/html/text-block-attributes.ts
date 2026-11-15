@@ -35,7 +35,7 @@ export function readTextBlockAttributes(pairs: readonly (readonly [string, strin
   const mark = first === undefined ? undefined : readMark(first, element)
   if (mark?.fault !== undefined) return mark
   const rest = mark === undefined ? pairs : pairs.slice(1)
-  if (rest.some(([name]) => name === alignAttribute || name === indentAttribute)) return { fault: { code: 'unmappable-html', message: `<${element}> takes one of ${alignAttribute} and ${indentAttribute}, first, before its data-* attributes` } }
+  if (rest.some(([name]) => name === alignAttribute || name === indentAttribute)) return { fault: { code: 'unmappable-html', message: `<${element}> holds at most one of ${alignAttribute} and ${indentAttribute}, as its first attribute` } }
   const data = readDataAttributes(rest, element, vocabulary, written)
   if (data.fault !== undefined) return data
   return { value: { attrs: data.value, marks: mark === undefined ? [] : [mark.value] } }

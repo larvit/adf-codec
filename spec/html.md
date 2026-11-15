@@ -196,8 +196,8 @@ what it shows too:
 | a line feed | `\r\n` |
 | an expand's or nested expand's `<details>` | the same with `open=""` after its other attributes, which a browser writes for one its user opened; it reads as the same expand, the open state dropped |
 
-`htmlToAdf` also reads a cell's `background` as `0.3.1` wrote it, `style="background-color:#fffae6"` in
-the place of `data-background-color`, the colour a `#` and letters and digits, or letters and digits alone.
+`htmlToAdf` also reads a cell's `background` as `0.3.1` wrote it: `style="background-color:#fffae6"`, where
+`data-background-color` stands. The colour is letters and digits after an optional `#`.
 
 A refusal's position counts the HTML as handed in. `htmlToAdf` reads a carry element's node from its
 `data-adf`, and what the element shows, through its closing tag, must be what `adfToHtml` shows for
