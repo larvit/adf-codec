@@ -6,37 +6,40 @@
 
 `Bar = 0.1`
 
-`Next ID = 192`
+`Next ID = 197`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
-| 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
-| 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.6 |
+| 192 | 0.4.0 |  | owner | **Spec each ADF node's and mark's Jira wiki spelling in `spec/wiki.md`, sourced from Atlassian's text formatting notation help, with the wiki calls' names a developer panel picks.** | 2 | 2 | 1 | 3 | 3 | 11 by 3 | 2.5 |
+| 193 | 0.4.0 | 192 | owner | **Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.** | 3 | 1 | 2 | 4 | 7 | 11 by 4 | 0.4 |
+| 194 | 0.4.0 | 193 | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
+| 195 | 0.4.0 | 193 | owner | **Read Jira wiki markup into ADF, `{adf}` carries included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
+| 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
+| 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
+| 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
-| 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 21.2 |
-| 191 | 0.5.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 21.2 |
-| 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 15.9 |
-| 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 15.9 |
-| 38 | 0.5.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 14.2 |
-| 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 14.2 |
-| 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 10.6 |
-| 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 8.5 |
-| 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 7.9 |
-| 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 5.3 |
-| 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 5.0 |
-| 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 3.5 |
-| 187 | 0.5.0 |  |  | **Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 3 | 6 by 2 | 2.4 |
-| 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.7 |
-| 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 1.2 |
+| 42 | 0.5.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 15.6 |
+| 191 | 0.5.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
+| 31 | 0.5.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 11.7 |
+| 57 | 0.5.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 11.7 |
+| 38 | 0.5.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
+| 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
+| 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
+| 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
+| 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
+| 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
+| 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
+| 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
+| 187 | 0.5.0 |  |  | **Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 3 | 6 by 2 | 1.8 |
+| 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.3 |
+| 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 0.9 |
 | 74 | 0.5.0 |  | owner | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 3 | 2 | 4 | 7 | 4 |  | 0.0 |
 | 8 | 0.6.0 |  | owner | **Ship a CLI.** | 3 | 2 | 1 | 4 | 7 |  | 0.0 |
-| 139 | 0.7.0 |  | decision | **Ship the calls between markdown and HTML, composed through ADF and each named by its flavour.** | 2 | 1 | 2 | 3 | 4 | 3 by 3 | 2.6 |
-| 137 | 0.7.0 |  | decision | **Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
-| 138 | 0.7.0 | 137 |  | **Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.** | 3 | 1 | 3 | 5 | 5 | 4 by 4 | 2.0 |
+| 139 | 0.7.0 |  | decision | **Ship the calls between markdown and HTML, composed through ADF and each named by its flavour.** | 2 | 1 | 2 | 3 | 4 | 3 by 3 | 1.9 |
+| 138 | 0.7.0 | 137 |  | **Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.** | 3 | 1 | 3 | 5 | 5 | 4 by 4 | 1.5 |
 
 ## Renamed
 
@@ -44,22 +47,42 @@
 
 ## Details
 
-### 148. Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.
+### 192. Spec each ADF node's and mark's Jira wiki spelling in `spec/wiki.md`, sourced from Atlassian's text formatting notation help, with the wiki calls' names a developer panel picks.
 
-Jira's REST API v2 and its changelogs carry wiki markup, and Atlassian's
-`WikiMarkupTransformer` is the only converter; community threads report its round-trip losing
-expands, layouts and some marks. Add the goal to the README's `## Goals` in the same change. Split
-into items before starting. The maintainer, 2026-10-28: ship what exists first, so this waits for
-0.4.0.
+First of the items splitting item 148, under README goal 11. Confirm against a real Jira site that
+the renderer reads `{adf:display=block}` and `{adf:display=inline}` around ADF JSON, the carry
+docs/decisions.md §Jira wiki markup carries what it cannot spell names; where it does not, ask
+before building the writers. The spec names, per node and mark, the lossless writer's spelling, the
+lossy writer's, and what the reader reads. A developer panel picks the names of the reader and both
+writers, and whether the lossy writer is a call or an option (Goal 6.1, Goal 8's "nothing to
+configure"); a writer panel of wiki-markup authors benches each spelling Jira's help leaves open.
 
-### 149. Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.
+### 193. Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.
 
-`htmlToAdf` reads only what `adfToHtml` writes. The most asked need on the Atlassian
-developer community is HTML from emails, CMSs and editors into ADF. The maintainer, 2026-10-28:
-reading foreign HTML is a separate goal, added to the README in this change. Before building, a
-panel of the developer personas picks the API among those the goals allow: a parameter on
-`htmlToAdf` or a separate call; Goal 8's "nothing to configure" and Goal 6.1's naming bear on the
-choice. Split into items once the API is picked.
+The lossless wiki writer, as `spec/wiki.md` spells each node. Ships with a fixture per node and
+mark; item 195's reader adds the round-trip property.
+
+### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
+
+The lossy wiki writer the maintainer asked for beside the lossless one, 2026-11-15, under Goal 7.
+It shares the lossless writer's spellings and differs only where that writer would carry.
+
+### 195. Read Jira wiki markup into ADF, `{adf}` carries included, as `spec/wiki.md` says.
+
+A hand-written reader, as `htmlToAdf` is. Ships with the property that what the lossless writer of
+item 193 writes reads back deep-equal, and with refusals whose codes come from the closed list.
+
+### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
+
+Last of the items splitting item 148: a Quick start section per direction, the calls table, the
+guarantees, and a row in the comparison tables per docs/decisions.md §The comparison tables list
+every ADF converter that starts and converts.
+
+### 137. Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.
+
+HTML from emails, CMSs and editors into ADF is the most asked need on the Atlassian developer
+community, README goal 12. It reads through `htmlToAdf` alone, with no option, as docs/decisions.md
+§`htmlToAdf` reads any HTML, with no option and no second call records.
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 
@@ -225,10 +248,6 @@ Audience` with the CLI.
 Waits until a consumer needs it. Which flavours get a composed call is this item's to settle; the
 CommonMark spec suite runs against the one reading CommonMark, checked against the spec's expected
 HTML. Where a composed call naming a markdown `Flavour` sits is this item's to settle.
-
-### 137. Read foreign HTML in `htmlToAdf` the three ways `docs/decisions.md` §Foreign HTML sorts three ways states.
-
-Waits until a consumer needs `htmlToAdf` to read HTML that `adfToHtml` did not write.
 
 ### 138. Read raw HTML in every markdown reader through `htmlToAdf`'s foreign-element mapping, in place of refusing it as `unmappable-html`.
 
