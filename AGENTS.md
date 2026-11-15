@@ -40,7 +40,7 @@ In `docs/decisions.md`:
 - The portable reader refuses what GFM's reading would drop
 - The portable reader reads what GFM's reading keeps
 - The HTML dialect
-- `htmlToAdf` also reads the dialect as a browser serializes it
+- `htmlToAdf` also reads the dialect as a browser serializes it, and an opened `<details>` as the same expand
 - No runtime dependencies
 - Standards ship as data
 - fast-check

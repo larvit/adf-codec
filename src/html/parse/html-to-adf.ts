@@ -237,12 +237,13 @@ function readPanel(html: string, tag: StartTag, place: Place, open: Open): Resul
   return readContents(html, tag, built('panel', data.value, []), place, open, 'blocks')
 }
 
-// An expand's title stands in a `<summary>` on the first line, its blocks a line each after it.
+// An expand's title stands in a `<summary>` on the first line, its blocks a line each after it. A browser appends `open=""` to a `<details>` its user opened: the state is the viewer's, so it reads as the same expand.
 function readDetails(html: string, tag: StartTag, place: Place, open: Open): Result<BlockStep, ParseError> {
   const [first, ...pairs] = tag.attributes
   const type = first?.[0] === 'class' ? expandOfClass(first[1]) : undefined
   if (type === undefined) return refused('unmappable-html', `<details> starts with class="${expandClasses.expand}" or class="${expandClasses.nestedExpand}": ${foundAt(html, tag.start)}`, html, tag.start, place)
-  const data = readDataAttributes(pairs, tag.name, blockNodes[type].attributes, ['title'])
+  const opened = pairs.at(-1)?.[0] === 'open' && pairs.at(-1)?.[1] === ''
+  const data = readDataAttributes(opened ? pairs.slice(0, -1) : pairs, tag.name, blockNodes[type].attributes, ['title'])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const summary = html.startsWith('\n<summary>', tag.end) ? readSummary(html, tag.end + 1, place) : undefined
   if (summary?.ok === false) return summary

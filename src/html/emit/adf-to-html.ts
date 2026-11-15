@@ -19,7 +19,7 @@ import { longestOutput, tooLong, withinEngineLimits } from '../../length-bound.t
 import { mediaImage } from '../media-element.ts'
 import { plainImage } from '../../adf/plain-image.ts'
 import { serializeCanonicalJson } from '../../canonical-json.ts'
-import { textBlockAttributes } from '../alignment-element.ts'
+import { textBlockAttributes } from '../text-block-attributes.ts'
 
 // depth: the nesting level of the block list holding the node, as `largestNesting` counts it; `attributes`: the `<li>`'s, `<td>`'s or `<th>`'s, built when its list or table checked it; `lead`: what stands before the inline content of a task or decision item.
 type Block = { depth: number; kind: 'block'; node: AdfNode; path: ConvertErrorPath }

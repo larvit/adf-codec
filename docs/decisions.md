@@ -413,7 +413,7 @@ its own.
 
 ## The HTML dialect
 
-2026-08-23, the maintainer; Atlassian's HTML+ 2026-10-28, the maintainer. Goals 6 and 8. Valid
+2026-08-23, the maintainer; Atlassian's HTML+ 2026-10-28, the maintainer. Goals 6, 8 and 10. Valid
 while HTML output is read by consumers styling it themselves, and while Atlassian publishes no spec
 for HTML+, its Rovo MCP server's HTML for agents; a published spec reopens the goals.
 
@@ -510,7 +510,10 @@ An eighth panel (2026-11-14, three readers in the same roles; seven for indentat
   a value because the attribute grammar has no bare attribute.
 
 For an `indentation` mark, five of seven picked `data-indent-level`; whether a `margin-left` style
-goes with it split 4 to 3, so it rides the carry until `todo.md` item 184 is answered.
+goes with it split 4 to 3. The maintainer answered on 2026-11-15 that the dialect holds no style at
+all (README goal 10), so an indentation is `data-indent-level="2"` alone, on a paragraph or heading
+holding no other mark. The `style` attributes above, a text and a background colour, an alignment and
+a cell's `background`, work against that goal until `todo.md` item 188 spells each without one.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
@@ -524,8 +527,10 @@ or `>` reads as `&lt;` or `&gt;` (a browser from before the algorithm escaped th
 in both, `&nbsp;` reads as a no-break space; and `\r\n` reads as a line feed. All of it holds in what
 a carry element shows too. These are every difference the algorithm leaves between a browser's HTML
 and `adfToHtml`'s, checked against Firefox's own `innerHTML` in the browser leg, and they hold for
-every element the dialect writes, later ones included. Other HTML stays refused, a lone `\r` among
-it. A refusal's position counts the HTML as handed in.
+every element the dialect writes, later ones included. One difference is DOM state, not the
+algorithm's: a `<details>` its user opened carries `open=""` after its other attributes, and
+`htmlToAdf` reads it as the same expand (the maintainer, 2026-11-15), since ADF's `expand` holds no
+open state and the state is the viewer's. Other HTML stays refused, a lone `\r` among it. A refusal's position counts the HTML as handed in.
 
 ## No runtime dependencies
 

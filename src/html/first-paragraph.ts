@@ -1,7 +1,7 @@
 import type { AdfNode } from '../adf/document.ts'
 import { blockNodes } from '../adf/block-nodes.ts'
 import { nodeContent } from '../adf/document.ts'
-import { textBlockAttributes } from './alignment-element.ts'
+import { textBlockAttributes } from './text-block-attributes.ts'
 
 // Where a list item's first paragraph stands: `bare` on the item's line, its `element` there, or a `block` on a line of its own.
 export type FirstParagraphForm = 'bare' | 'block' | 'element'
