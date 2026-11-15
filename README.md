@@ -310,20 +310,20 @@ cell adds it. This package's figure is the current source's.
 | `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 | 71 kB |
 | `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB, or 211 kB with `@atlaskit/editor-json-transformer` |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 | 99 kB |
-| `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.8 kB, and a WebAssembly module of 6.9 MB gzipped |
+| `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.9 kB, plus 7.5 kB of JavaScript it loads and a WebAssembly module of 6.9 MB |
 | `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; fails ordinary input: `***bold italic***` comes out as italic text holding asterisks, and a paragraph holding a hard break stands between blocks | – | – | markdown | 2 | 21 kB |
 | `adf-converter` 0.1.0 | ADF to markdown; writes a mention as `@@Ann` | – | its text kept, with a console message | markdown | 0 | 1.8 kB |
 | `adf-md` 0.2.0 | both ways | a different document: the status without its `localId`, the marks in the other order | dropped with its text | markdown with MDX tags for panels, mentions and statuses | 6 | 137 kB |
 | `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 | 2.4 kB |
-| `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 | 1.2 kB |
-| `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 | 1.1 kB |
+| `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 | 1.1 kB |
+| `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 | 1.2 kB |
 | `extended-markdown-adf-parser` 2.4.0 | both ways | a different document: the mention comes back as linked text, the status without its `localId` | written as JSON, read back as a paragraph of that JSON's text | markdown | 9 | 131 kB |
 | `github-markdown-adf` 1.3.0 | both ways | a different document: the mention comes back as text, the status as inline code, the marks in the other order | dropped with its text | markdown | 3 | 40 kB |
 | `markdown-to-adf` 0.2.20 | markdown to ADF; fails ordinary input: a quote is written as the node type `blockQuote`, which ADF spells `blockquote` | – | – | markdown | 3 | 58 kB |
 | `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 | 13 kB |
 | `md-adf` 0.2.2 | both ways, with a warning for each fallback | a different document: the mention and the status come back as text, the marks in the other order, the panel as a quote | dropped with its text, with a warning | markdown | 5 | 54 kB |
 | `md-to-adf` 0.6.4 | markdown to ADF; fails ordinary input: each list item is written as a list of its own | – | – | markdown | 2 | 6.8 kB |
-| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.2 writes as markdown; throws on a status | – | throws | markdown | 3 | 1.3 kB, or 24 kB with `mdast-util-to-markdown` |
+| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.2 writes as markdown; throws on a status | – | throws | markdown | 3 | 1.4 kB, or 24 kB with `mdast-util-to-markdown` |
 
 The next table lists converters this comparison does not run: other ecosystems' libraries,
 Atlassian's own paths, and one npm package that needs a browser. Each row is what the project's

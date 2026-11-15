@@ -111,7 +111,10 @@ const companions = {
     "minified and gzipped bytes with @atlaskit/editor-json-transformer": () => minifiedGzippedBytes(process.cwd(), ["@atlaskit/editor-markdown-transformer", "@atlaskit/editor-json-transformer"]),
   },
   "@nthings.dev/adf4j-wasm": {
-    "WebAssembly module gzipped bytes": () => gzipSync(readFileSync("node_modules/@nthings.dev/adf4j-wasm/adf4j-wasm.js.wasm"), { level: 9 }).length,
+    "bytes of its loaded JavaScript, minified and gzipped, and of its WebAssembly module, gzipped": async () => [
+      await minifiedGzippedBytes(process.cwd(), ["./node_modules/@nthings.dev/adf4j-wasm/adf4j-wasm.js"]),
+      gzipSync(readFileSync("node_modules/@nthings.dev/adf4j-wasm/adf4j-wasm.js.wasm"), { level: 9 }).length,
+    ].join(" and "),
   },
   "mdast-util-from-adf": {
     "minified and gzipped bytes with mdast-util-to-markdown": () => minifiedGzippedBytes(process.cwd(), ["mdast-util-from-adf", "mdast-util-to-markdown"]),
