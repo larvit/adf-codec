@@ -302,20 +302,6 @@
   },
   {
     "check": "count",
-    "divergence": "a 1/0",
-    "example": 540,
-    "kind": "pending",
-    "reason": "The case-folding shortcut reference is unresolved; CommonMark folds case and links."
-  },
-  {
-    "check": "text",
-    "divergence": "\"ẞ\" against \"[ẞ]\"",
-    "example": 540,
-    "kind": "pending",
-    "reason": "A case-folding shortcut reference is unresolved; CommonMark folds case and links."
-  },
-  {
-    "check": "count",
     "divergence": "a 1/2",
     "example": 554,
     "kind": "mark-model",

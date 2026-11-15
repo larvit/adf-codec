@@ -771,8 +771,7 @@ Serves [Goals](#goals) 1, 4 and 5.
   - An image's title becomes its caption when the image stays an image, and otherwise the title of
     the link to the image.
 
-  And these, for other reasons: a shortcut reference matching its definition only under Unicode case
-  folding stays unresolved, and a link whose text holds an autolink keeps the inner link and leaves
+  And this, for another reason: a link whose text holds an autolink keeps the inner link and leaves
   the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
   one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500

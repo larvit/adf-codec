@@ -11,7 +11,7 @@ import { commonMarkToAdf, losslessMarkdownToAdf } from '../markdown/parse/markdo
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'corpus', 'commonmark-spec')
 const checks = ['count', 'fixpoint', 'text'] as const
-const kinds = ['mark-model', 'node-model', 'pending'] as const
+const kinds = ['mark-model', 'node-model'] as const
 
 type Check = (typeof checks)[number]
 type ExceptionKind = (typeof kinds)[number]
