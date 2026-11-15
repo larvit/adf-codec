@@ -771,9 +771,9 @@ Serves [Goals](#goals) 1, 4 and 5.
   - An image's title becomes its caption when the image stays an image, and otherwise the title of
     the link to the image.
 
-  And this, for another reason: a link whose text holds an autolink keeps the inner link and leaves
-  the outer brackets literal text, which the spec requires and the reference itself breaks, nesting
-  one `<a>` in the other.
+  And one more, for another reason: a link whose text holds an autolink keeps the inner link and
+  leaves the outer brackets literal text. The spec requires that; the reference implementation
+  nests one `<a>` in the other.
 - Not every document converts back: `adfToLosslessMarkdown` refuses a document nesting past 500
   levels, a document meeting an `unsupported-node-shape` cause listed for it, for a writer or for
   every call, and a conversion `engine-limit` stops. Show the refusal and keep the document read-only; saving
