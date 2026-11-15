@@ -739,6 +739,8 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file"></span>x</div>\n', 'unmappable-html at /content/0: <div> holds its <span class="adf-file"> files, then </div>: found "x</div>\\n"'],
   ['<p style="color:red">a</p>\n', 'unmappable-html at /content/0: style on <p> holds text-align:center or text-align:right'],
   ['<h1 style="text-align:left">a</h1>\n', 'unmappable-html at /content/0: style on <h1> holds text-align:center or text-align:right'],
+  ['<p data-indent-level="7">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
+  ['<h3 data-indent-level="">a</h3>\n', 'unmappable-html at /content/0: data-indent-level on <h3> holds a whole number from 1 to 6'],
   ['<p>a <span title="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji", "adf-mention" or "adf-status": found "<span title=\\"color:red\\">"…'],
   ['<blockquote><p>a</p></blockquote>\n', 'unmappable-html at /content/0: <blockquote> holds </blockquote> straight after it, or a line feed and its first block: found "<p>a</p></blockquote>\\n"'],
   ['<ul><li>a</li></ul>\n', 'unmappable-html at /content/0: <ul> holds </ul> straight after it, or a line feed and its first item: found "<li>a</li></ul>\\n"'],

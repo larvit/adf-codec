@@ -242,7 +242,8 @@ function readDetails(html: string, tag: StartTag, place: Place, open: Open): Res
   const [first, ...pairs] = tag.attributes
   const type = first?.[0] === 'class' ? expandOfClass(first[1]) : undefined
   if (type === undefined) return refused('unmappable-html', `<details> starts with class="${expandClasses.expand}" or class="${expandClasses.nestedExpand}": ${foundAt(html, tag.start)}`, html, tag.start, place)
-  const opened = pairs.at(-1)?.[0] === 'open' && pairs.at(-1)?.[1] === ''
+  const last = pairs.at(-1)
+  const opened = last?.[0] === 'open' && last[1] === ''
   const data = readDataAttributes(opened ? pairs.slice(0, -1) : pairs, tag.name, blockNodes[type].attributes, ['title'])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const summary = html.startsWith('\n<summary>', tag.end) ? readSummary(html, tag.end + 1, place) : undefined
