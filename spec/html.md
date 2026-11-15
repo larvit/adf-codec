@@ -57,7 +57,7 @@ is `data-state`, among the other attributes below.
 
 A table and each of its rows count one nesting level; a cell doesn't count, nor does a list item.
 
-On a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, or media group, each attribute its type holds
+On a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media single, caption, media group or the media they hold, each attribute its type holds
 (`spec/flavour.md` §Block nodes) that the element does not write as `level`, `order`, `language`,
 `colspan`, `rowspan`, `background`, `colwidth`, an expand's `title`, or an `<img>`'s `alt`, `height`, `url` and `width` is a `data-*` attribute, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the
 element's own attributes and sorted by name. A string is its value; any other value is its JSON,

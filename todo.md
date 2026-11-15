@@ -6,14 +6,16 @@
 
 `Bar = 0.1`
 
-`Next ID = 185`
+`Next ID = 187`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 184 | 0.4.0 |  | question | **Write indentation as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element, once the maintainer settles whether its element carries a `margin-left` style.** | 1 | 2 | 2 | 3 | 2 | 6 by 2 | 3.2 |
+| 185 | 0.4.0 |  | question | **Read `<details class="adf-expand" open="">` as the same expand, or keep refusing it, once the maintainer settles which.** | 1 | 1 | 2 | 2 | 2 | 6 by 1 | 1.6 |
 | 46 | 0.4.0 |  |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
+| 186 | 0.4.0 |  |  | **Name the colour spelling `style="color:#rrggbb"` in the refusal of a `<span>` or `<mark>` whose style differs from it.** | 1 | 1 | 1 | 1 | 1 | 6 by 1 | 1.9 |
 | 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
@@ -56,6 +58,14 @@ Recommendation: the data attribute alone. The dialect writes no style the viewer
 
 The gap to close in `docs/decisions.md`: the class is "which output the audience expects", settled by a panel, and this panel's split is less than five of seven, so it is a missing goal and the maintainer's to answer.
 
+### 185. Read `<details class="adf-expand" open="">` as the same expand, or keep refusing it, once the maintainer settles which.
+
+A browser serializes a `<details>` its user opened as `<details open="">`, so a document read from a browser's DOM refuses at the expand, naming the attribute.
+
+The gap to close in `docs/decisions.md`: the class is browser-set DOM state, which is not a difference of the innerHTML algorithm, so §`htmlToAdf` also reads the dialect as a browser serializes it, which lists every difference that algorithm leaves, does not decide it.
+
+Recommendation: read `open=""` as the same expand and drop the state, since ADF's `expand` has no open state and the state is the viewer's, not the document's. The entry then names `open` as one more difference a browser leaves.
+
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
 The HTML items change the size. The quantity is what a consumer downloads and loads: the
@@ -65,6 +75,10 @@ ours ships tsc's unminified output and no minifier yet (decide here whether to m
 or report the unminified gzip). The figure lands in README §The package beside the "no runtime
 dependencies" claim, and in a size column of the comparison table. Measured today,
 unminified: tarball 60.4 kB, unpacked 221.5 kB, JS gzipped 45.6 kB.
+
+### 186. Name the colour spelling `style="color:#rrggbb"` in the refusal of a `<span>` or `<mark>` whose style differs from it.
+
+A reader who writes `<span style="color: red">`, `<mark style="background-color: #fffae6">` or a bare `<mark>` gets the carry element's refusal or "no inline element of the dialect", neither of which names the spelling `adfToHtml` writes: `style="color:#rrggbb"`, no space, six lowercase hex digits, and `<mark style="background-color:#rrggbb">`. Add the spelling to the message of `readCarry` for a `span` and to the one `readTagged` gives a `mark`, each pinned in `pinnedRefusals`.
 
 ### 174. Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.
 
