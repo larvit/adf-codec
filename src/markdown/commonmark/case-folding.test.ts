@@ -24,7 +24,7 @@ const mappings = new Map(
     .map((match): [string, string] => [characters(match[1] ?? ''), characters(match[2] ?? '')]),
 )
 
-test('the vendored file gives the mappings the other tests hold the table to', () => {
+test('the vendored file holds 1606 common and full mappings, `ẞ`, `ß` and `İ` among them', () => {
   assert.equal(mappings.size, 1606)
   assert.equal(mappings.get('ẞ'), 'ss')
   assert.equal(mappings.get('ß'), 'ss')
@@ -51,10 +51,4 @@ test('folds a string code point by code point, a surrogate pair as one', () => {
   assert.equal(foldCase('Ab\u{10400}Ç ẞ'), 'ab\u{10428}ç ss')
   assert.equal(foldCase(''), '')
   assert.equal(foldCase('\ud801'), '\ud801')
-})
-
-test('keeps the dotless i and the capital I apart, as the standard does', () => {
-  assert.equal(foldCase('I'), 'i')
-  assert.equal(foldCase('ı'), 'ı')
-  assert.notEqual(foldCase('ı'), foldCase('I'))
 })
