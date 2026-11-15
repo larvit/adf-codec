@@ -129,7 +129,7 @@ for (const [name, code, emphasized] of alternatingLines) {
 
 const blankLines: readonly [string, (blanks: number) => AdfNode[]][] = [
   ['blanks alternating linked and unmarked, then a hard break and a linked leaf', (blanks) => [...alternatingBlanks(blanks, marked(' ', link), marked(' ')), { type: 'hardBreak' }, marked('x', link)]],
-  ['an emphasized leaf and a hard break, then blanks alternating emphasized and linked, then an emphasized leaf', (blanks) => [marked('a', { type: 'em' }), { type: 'hardBreak' }, ...alternatingBlanks(blanks, marked(' ', { type: 'em' }), marked(' ', { type: 'em' }, link)), marked('b', { type: 'em' })]],
+  ['an emphasized leaf and a hard break, then blanks alternating emphasized and emphasized linked, then an emphasized leaf', (blanks) => [marked('a', { type: 'em' }), { type: 'hardBreak' }, ...alternatingBlanks(blanks, marked(' ', { type: 'em' }), marked(' ', { type: 'em' }, link)), marked('b', { type: 'em' })]],
 ]
 for (const [name, line] of blankLines) {
   test(`trims ${name}, 1 000 blanks long, in as many passes as its 6-blank form`, () => {
@@ -142,7 +142,6 @@ const replayedLines: readonly [string, AdfNode[], AdfNode[]][] = [
   ['the lead whitespace a dropped blank leaves at the line start', [marked(' ', em), marked(' x')], [{ text: 'x', type: 'text' }]],
   ['the trail whitespace dropped blanks leave before a hard break', [marked('x ', link), marked(' ', em, link), marked(' ', link), marked(' ', em, link), { type: 'hardBreak' }, marked('y', link)], [marked('x', link), { type: 'hardBreak' }, marked('y', link)]],
   ['the lead whitespace dropped blanks leave after a hard break', [marked('y', link), { type: 'hardBreak' }, marked(' ', em, link), marked(' ', link), marked(' ', em, link), marked(' x', link)], [marked('y', link), { type: 'hardBreak' }, marked('x', link)]],
-  ['a blank beside a leaf holding no text', [marked(' ', em), { attrs: { id: 'a' }, type: 'mention' }], [{ attrs: { id: 'a' }, type: 'mention' }]],
 ]
 for (const [name, line, trimmed] of replayedLines) {
   test(`trims ${name} in 2 passes`, () => {
@@ -150,8 +149,38 @@ for (const [name, line, trimmed] of replayedLines) {
   })
 }
 
+for (const [name, line] of blankLines) {
+  test(`reads the text of each leaf it keeps in ${name}, 1 000 blanks long, as often as in its 6-blank form`, () => {
+    assert.equal(keptTextReads(line(1000)), keptTextReads(line(6)))
+  })
+}
+
+test('trims a line whose link run crosses a leaf holding no text as a leaf a pass would', () => {
+  const mention: AdfNode = { attrs: { id: 'a' }, type: 'mention' }
+  const line = [marked(' ', link), marked(' '), { type: 'hardBreak' }, marked(' ', link), mention, marked(' '), { type: 'hardBreak' }, marked(' x', link)]
+  assert.deepEqual(trimmedEdges(line, 'spanned'), [mention, { type: 'hardBreak' }, marked('x', link)])
+})
+
 function alternatingBlanks(blanks: number, first: AdfNode, second: AdfNode): AdfNode[] {
   return Array.from({ length: blanks }, (_, index) => (index % 2 === 0 ? first : second))
+}
+
+// How often a spanned trim reads the text of the line's leaves holding more than spaces and tabs.
+function keptTextReads(line: readonly AdfNode[]): number {
+  let reads = 0
+  const counted = line.map((leaf): AdfNode => {
+    const text = leaf.text
+    if (text === undefined || text.trim() === '') return leaf
+    return {
+      ...leaf,
+      get text() {
+        reads += 1
+        return text
+      },
+    }
+  })
+  trimmedEdges(counted, 'spanned')
+  return reads
 }
 
 function spannedPass(leaves: readonly AdfNode[]): { line: AdfNode[]; settled: boolean } {
