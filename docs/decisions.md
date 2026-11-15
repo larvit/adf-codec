@@ -161,25 +161,23 @@ node, so each node keeps its own text. The fences carry one info string, since A
 language, and none is empty beside another, since a text node holds text. The grammar:
 `spec/flavour.md` §The CommonMark blocks, the `codeBlock` bullet.
 
-## Foreign HTML sorts three ways
+## Foreign HTML reads best effort and is never refused
 
-2026-08-23, the sort 2026-09-20, the maintainer. Goals 1 and 5. Valid while ADF holds no node
-for a bare container, a comment or a script. Lands with `todo.md` item 137.
+2026-08-23, the sort 2026-09-20, best effort 2026-11-15, the maintainer. Goals 7 and 12. Valid while
+ADF holds no node for a bare container, a comment or a script. Lands with `todo.md` item 137.
 
-Every foreign element `htmlToAdf` and the markdown readers read sorts one of three ways, never a
-silent drop of content:
+HTML from emails, CMSs and editors guarantees nothing, so no foreign element is refused. Each reads
+one of two ways:
 
 - A container around document content that ADF has no node for unwraps to its children, its own
   attributes dropped: `<div align="center">text</div>` keeps `text`, losing the alignment.
-- Content ADF cannot hold is an error result naming it. A comment is one: a person wrote those
-  words, and neither of Atlassian's schemas holds them — `annotation`'s `inlineComment` carries an
-  id, `placeholder` is the editor's own hint, `extension` names a vendor app.
-- What is not document content drops whole: `<script>` and `<style>`, their text with them.
+- What no reader sees drops whole: `<script>` and `<style>` with their text, and a comment, since a
+  browser shows none of it and an email's conditional comments are markup.
 
 `<details><summary>Title</summary>…</details>` is an `expand` titled by its summary, a
-`nestedExpand` inside another; an empty one is refused, since `expand` requires content. A `style`
-attribute is not read at `0.4.0`: the `textColor` and `backgroundColor` it could reach cost more
-than they buy.
+`nestedExpand` inside another; an empty one holds an empty paragraph, since `expand` requires
+content. A `style` attribute is not read at `0.4.0`: the `textColor` and `backgroundColor` it could
+reach cost more than they buy.
 The three markdown readers share one parser, so they take the same set.
 
 ## Names stay text
@@ -1448,22 +1446,28 @@ alt text.
   extension or a synced block holding no text adds no note in its place.
 - An expand's title on a line, a blank line above its body.
 
-## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer drops it instead
+## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its content
 
 2026-11-15, the maintainer. Goals 1, 7 and 11. Valid while Jira's renderer reads the `{adf}` macro.
 Lands with `todo.md` items 192 to 196.
 
-The lossless wiki writer spells a node or mark wiki markup has no spelling for as Jira's own
-`{adf:display=block}` or `{adf:display=inline}` macro around the node's ADF JSON, so the round-trip
-holds and Jira still renders the document. The lossy wiki writer ships beside it for consumers who
-want wiki markup alone: it drops the form of what wiki markup cannot spell and keeps its content.
+Wiki markup has no spelling for some nodes and marks, a layout among them. The lossless wiki
+writer wraps each such node's ADF JSON in Jira's own `{adf}` macro: `{adf:display=block}` for a
+block node, `{adf:display=inline}` for an inline node or a marked run. The round-trip holds, and
+Jira still renders the document. The lossy wiki writer ships beside it for consumers who want wiki
+markup alone: it drops the form of what wiki markup cannot spell and keeps its content.
 
 ## `htmlToAdf` reads any HTML, with no option and no second call
 
 2026-11-15, a developer panel. Goals 6, 8 and 12. Valid while the dialect and foreign HTML read
-without ambiguity in one reader.
+without ambiguity in one reader. Lands with `todo.md` item 137, which ends "Other HTML stays
+refused" in §`htmlToAdf` also reads the dialect as a browser serializes it.
 
-HTML from an email, a CMS or an editor reads through `htmlToAdf(html)`, as the dialect does; foreign
-elements sort as §Foreign HTML sorts three ways says. The bot, viewer/editor and LLM-pipeline
-readers each picked it 3 of 3 over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`:
-none of them knows up front whether HTML is foreign, and a flag or a second name makes them guess.
+HTML from an email, a CMS or an editor will read through `htmlToAdf(html)`. An element that claims
+the dialect, by a `data-adf` attribute or an `adf-` class, reads only as the dialect, and stays
+refused where that reading fails, so an edited carry element is still `unmappable-html`. Every other
+element sorts as §Foreign HTML reads best effort and is never refused says.
+
+A panel of three developers, one each for the bot, the viewer/editor app and the LLM pipeline, all
+picked this over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`. None of them knows
+up front whether HTML is foreign, so a flag or a second name makes them guess.
