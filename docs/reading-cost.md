@@ -1163,3 +1163,20 @@ Read most (opens and searches):
 - `src/html/mark-elements.ts` 3
 
 ## Reading cost reset, 2026-11-15T12:26:57Z
+
+## Reading cost, chunk 1cf1c505f613, finished 2026-11-15T12:33:26Z
+
+63411 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 5
+- `README.md` 4
+- `ci.sh` 4
+- `AGENTS.md` 2
+- `spec/html.md` 2
+- `src/html/emit/adf-to-html.test.ts` 2
+- `CHANGELOG.md` 1
+- `docs/reading-cost.md` 1
+- `package.json` 1
+- `todo.md` 1

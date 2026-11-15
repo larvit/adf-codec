@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The README states the package's size: 71 kB minified and gzipped as a bundler ships it, 161 kB packed and 601 kB unpacked, and a size column in the comparison table; the release pipeline fails where a figure is a tenth off.
 - `adfToHtml` writes a media single, a media group and a caption as `<figure class="adf-media-single">` holding an
   `<img>` and a `<figcaption>`, and as `<div class="adf-media-group">` of `<span class="adf-file">` files, where
   `0.3.1` wrote the carry element, and `htmlToAdf` reads them back. A link around the image is the media's link

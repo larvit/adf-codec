@@ -19,6 +19,7 @@ import * as marklassian from "marklassian";
 import * as mdAdf from "md-adf";
 import mdToAdf from "md-to-adf";
 import { toMarkdown as mdastToMarkdown } from "mdast-util-to-markdown";
+import { minifiedGzippedBytes } from "./figures.mjs";
 import { readFileSync } from "node:fs";
 
 const { defaultSchema } = createRequire(import.meta.url)("@atlaskit/adf-schema/schema-default");
@@ -116,6 +117,11 @@ for (const [name, { toAdf, toMarkdown }] of Object.entries(converters)) {
   const manifest = JSON.parse(readFileSync(`node_modules/${name}/package.json`, "utf8"));
   console.log(`\n## ${name} ${manifest.version}`);
   console.log("direct runtime dependencies:", Object.keys(manifest.dependencies ?? {}).length);
+  try {
+    console.log("minified and gzipped bytes:", await minifiedGzippedBytes(process.cwd(), name));
+  } catch (error) {
+    console.log("minified and gzipped bytes failed:", error.message.split("\n")[0]);
+  }
   const written = toMarkdown && show("ADF to markdown", () => toMarkdown(roundTripDoc));
   if (written !== undefined && toAdf) {
     const readBack = show("read back", () => toAdf(written));

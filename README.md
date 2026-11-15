@@ -301,27 +301,29 @@ On 2026-11-05, [`converter-comparison/`](https://github.com/larvit/adf-codec/tre
 ran each other package's published code at the version the table names, and this package's latest
 release, with default options. A package writing markdown got a document holding marks, a link, a mention, a status, a panel and a
 list, and a document holding a node type it cannot know. A package reading markdown got markdown
-holding the same marks and link.
+holding the same marks and link. The last column is what a bundler ships for the package: esbuild 0.28.2
+bundles the package and its dependencies for Node, minifies the bundle and gzips it at level 9. The figure
+for this package is the current source's.
 
-| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Direct runtime dependencies |
-| --- | --- | --- | --- | --- | --- |
-| `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 |
-| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 |
-| `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 |
-| `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 |
-| `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; fails ordinary input: `***bold italic***` comes out as italic text holding asterisks, and a paragraph holding a hard break stands between blocks | – | – | markdown | 2 |
-| `adf-converter` 0.1.0 | ADF to markdown; writes a mention as `@@Ann` | – | its text kept, with a console message | markdown | 0 |
-| `adf-md` 0.2.0 | both ways | a different document: the status without its `localId`, the marks in the other order | dropped with its text | markdown with MDX tags for panels, mentions and statuses | 6 |
-| `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 |
-| `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 |
-| `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 |
-| `extended-markdown-adf-parser` 2.4.0 | both ways | a different document: the mention comes back as linked text, the status without its `localId` | written as JSON, read back as a paragraph of that JSON's text | markdown | 9 |
-| `github-markdown-adf` 1.3.0 | both ways | a different document: the mention comes back as text, the status as inline code, the marks in the other order | dropped with its text | markdown | 3 |
-| `markdown-to-adf` 0.2.20 | markdown to ADF; fails ordinary input: a quote is written as the node type `blockQuote`, which ADF spells `blockquote` | – | – | markdown | 3 |
-| `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 |
-| `md-adf` 0.2.2 | both ways, with a warning for each fallback | a different document: the mention and the status come back as text, the marks in the other order, the panel as a quote | dropped with its text, with a warning | markdown | 5 |
-| `md-to-adf` 0.6.4 | markdown to ADF; fails ordinary input: each list item is written as a list of its own | – | – | markdown | 2 |
-| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.2 writes as markdown; throws on a status | – | throws | markdown | 3 |
+| Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Direct runtime dependencies | Minified and gzipped, with its dependencies |
+| --- | --- | --- | --- | --- | --- | --- |
+| `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 | 71 kB |
+| `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB |
+| `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 | 99 kB |
+| `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.8 kB, and a WebAssembly module of 6.8 MB gzipped |
+| `@wrtnlabs/markdown-to-adf` 1.0.2 | markdown to a list of blocks, not a document; fails ordinary input: `***bold italic***` comes out as italic text holding asterisks, and a paragraph holding a hard break stands between blocks | – | – | markdown | 2 | 21 kB |
+| `adf-converter` 0.1.0 | ADF to markdown; writes a mention as `@@Ann` | – | its text kept, with a console message | markdown | 0 | 1.8 kB |
+| `adf-md` 0.2.0 | both ways | a different document: the status without its `localId`, the marks in the other order | dropped with its text | markdown with MDX tags for panels, mentions and statuses | 6 | 137 kB |
+| `adf-to-markdown` 1.0.1 | ADF to markdown | – | dropped with its text | markdown | 0 | 2.4 kB |
+| `adf-to-md` 1.2.1 | ADF to markdown | – | dropped with its text, as are mentions, statuses and panels | markdown | 1 | 1.2 kB |
+| `adf2markdown` 1.2.0 | ADF to markdown | – | its text kept | markdown | 0 | 1.1 kB |
+| `extended-markdown-adf-parser` 2.4.0 | both ways | a different document: the mention comes back as linked text, the status without its `localId` | written as JSON, read back as a paragraph of that JSON's text | markdown | 9 | 131 kB |
+| `github-markdown-adf` 1.3.0 | both ways | a different document: the mention comes back as text, the status as inline code, the marks in the other order | dropped with its text | markdown | 3 | 40 kB |
+| `markdown-to-adf` 0.2.20 | markdown to ADF; fails ordinary input: a quote is written as the node type `blockQuote`, which ADF spells `blockquote` | – | – | markdown | 3 | 58 kB |
+| `marklassian` 1.2.1 | markdown to ADF | – | – | markdown | 1 | 13 kB |
+| `md-adf` 0.2.2 | both ways, with a warning for each fallback | a different document: the mention and the status come back as text, the marks in the other order, the panel as a quote | dropped with its text, with a warning | markdown | 5 | 54 kB |
+| `md-to-adf` 0.6.4 | markdown to ADF; fails ordinary input: each list item is written as a list of its own | – | – | markdown | 2 | 6.8 kB |
+| `mdast-util-from-adf` 2.3.0 | ADF to an mdast tree, which `mdast-util-to-markdown` 2.2.2 writes as markdown; throws on a status | – | throws | markdown | 3 | 1.3 kB, or 24 kB with `mdast-util-to-markdown` |
 
 The next table lists converters this comparison does not run: other ecosystems' libraries,
 Atlassian's own paths, and one npm package that needs a browser. Each row is what the project's
@@ -806,6 +808,7 @@ Serves [Goals](#goals) 8.
 | Host APIs | none: pure ECMAScript, no DOM, no `node:` import |
 | Module format | ESM only, one entrypoint |
 | Registry | public npm, `@larvit/adf-codec` |
+| Size | 71 kB minified and gzipped, as a bundler ships it; 161 kB tarball, 601 kB unpacked. The gate fails when a figure is more than a tenth off |
 | Types | built JavaScript with `.d.ts` beside it |
 
 Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine),
@@ -840,7 +843,8 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 
 All three commands need only Docker, git and bash 5.
 
-- `./ci.sh` runs every check CI runs.
+- `./ci.sh` runs every check CI runs. It fails where the size figures in [The package](#the-package) and the
+  comparison table are more than a tenth off the build's, and names the measured figures.
 - `./feature-table/write.sh` rewrites `docs/feature-table.md` from `feature-table/examples.json` and
   the build. `./ci.sh` fails where a change leaves that page stale.
 - `./mutation-tests/run.sh [<base>]` mutation-tests the lines changed since `<base>`, `origin/main`

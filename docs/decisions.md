@@ -924,6 +924,21 @@ config gone missing fails the leg instead of falling back to oxlint's own defaul
 `--deny-warnings`, since a rule from a category this config never names arrives as a warning it
 exits 0 on.
 
+## The published size is a bundler's output, checked within a tenth
+
+2026-11-15, the implementer's recommendation, open to the maintainer. Goal 3. Valid while competitors advertise a minified and gzipped figure.
+
+The README states the package's size as what a bundler ships, minified and gzipped, beside the tarball
+and the unpacked size, and in a column of the comparison table. That is the figure the other packages
+advertise (marklassian's "12kb" measures 13 kB here). `bundle-size/` measures it with esbuild, in its own
+package as §Stryker in its own package has it: the bundle of `export * from` the entry, dependencies
+included, for Node. The comparison measures every package with the same call.
+
+The build stays tsc's unminified output, since goal 8 asks nothing of a consumer, and a minified build
+leaves their debugger and stack traces nothing to read. The gate fails where a README figure is more than
+a tenth off the measure: a tighter bound fails most pull requests, and a tenth still catches a feature
+that doubles a part of the package. The release job needs the gate, so a stale figure stops a release.
+
 ## Properties on a fixed seed
 
 2026-09-14, the maintainer. Goal 1. Valid while a red gate must reproduce.

@@ -1,10 +1,10 @@
 #!/bin/sh
-# Keep these versions and --before in step with the README's comparison table.
+# Keep these versions and --before in step with the README's comparison table, and esbuild's with ../bundle-size/package.json.
 # --before reads a bare date as midnight UTC, so the day after the run date includes that day's publishes.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 node_image=node:26.13.1-alpine3.24
-docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here:/comparison:ro" -w /tmp \
+docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$here:/comparison:ro" -v "$here/../bundle-size:/bundle-size:ro" -w /tmp \
   "$node_image" sh -c '
     npm install --before=2026-11-06 --ignore-scripts --no-audit --no-fund --silent \
       @atlaskit/editor-json-transformer@10.0.0 \
@@ -18,6 +18,7 @@ docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -
       adf-to-markdown@1.0.1 \
       adf-to-md@1.2.1 \
       adf2markdown@1.2.0 \
+      esbuild@0.28.2 \
       extended-markdown-adf-parser@2.4.0 \
       github-markdown-adf@1.3.0 \
       markdown-to-adf@0.2.20 \
@@ -26,4 +27,4 @@ docker run --rm --memory 2g --memory-swap 2g --ulimit core=0 -u "$(id -u):$(id -
       md-to-adf@0.6.4 \
       mdast-util-from-adf@2.3.0 \
       mdast-util-to-markdown@2.2.2 &&
-    cp /comparison/compare.mjs . && node compare.mjs'
+    cp /comparison/compare.mjs /bundle-size/figures.mjs . && node compare.mjs'
