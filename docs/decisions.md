@@ -1187,25 +1187,34 @@ so it doesn't bound the walk's cost.
 
 ## After each trim pass, the reducer drops the edge whitespace the passes to come would drop, a round per pass
 
-2026-11-15, item 190's chunk. Goal 9. Valid while `link` is the only kept mark that is not
-edge-stripping, and every hard break the reducer hands the trim is alike.
+2026-11-15, item 190's chunk. Goal 9. Valid while `link` is the only kept mark besides `code` that is
+not edge-stripping, the trim leaves a `code` leaf as it is, every hard break the reducer hands the
+trim is alike, and every leaf it hands the trim is text or a hard break.
 
 `trimPass` judges every leaf against one snapshot, so a blank leaf reaches a line edge only the
 pass after its neighbour dropped there: n blanks at a hard break took n + 1 passes, each linear.
-`withoutEdgeWhitespace` replays those drops in rounds, one per pass to come, and a round judges only
-the leaves beside a leaf the round before dropped, so all rounds together are linear. A round is
-exact because whitespace at a line edge goes or stays by three facts no pass changes: its leaf's
-outermost mark, the outermost mark of the leaf across the hard break, and whether a hard break lies
-between. Three things keep it so, each found by the property test against the one-leaf-per-pass
-reference: a round judges all its leaves before it changes any, since a leaf goes by a neighbour
-that goes in the same pass; a round also judges the edge whitespace of a leaf holding text; and the
-replay reads the pass's line merged, as `trimPass` merges before it judges. No round merges again:
-a leaf that goes has a hard break or a line edge beside it, so it brings no two leaves together.
-The replay runs after a
-pass, never before the first: a pass also takes marks off whitespace by the line as it stands, and
-the first pass must see the line as it came. Measured in passes
-(§Cost fixes are measured, never timed): both of item 190's lines took 7, 101 and 1 001 passes at
-6, 100 and 1 000 blanks, and take 2 at each, as at 100 000.
+`withoutEdgeWhitespace` replays those drops in rounds, one per pass to come. A round after the
+first judges only the leaves beside a leaf the round before dropped, and no judging reads a leaf's
+text: each leaf's edge whitespace is counted once, and `trimmingRuns` is handed a one-character
+stand-in. So all rounds together are linear. A line holding any other leaf, such as a mention, is
+left to the passes, since a link run crosses such a leaf and a round reads only the leaves beside
+an edge.
+
+A round judges whitespace at a line edge by its leaf's marks, the marks of the leaf across the hard
+break, and whether a hard break lies between. That it drops what the passes would is held by the
+property test against its reference counts (`runsSharedWithNext`), which found three things a
+round owes: it judges all its leaves before it changes any, since `trimPass` judges a leaf by its
+neighbour as that stood before the pass, even where the neighbour goes in the same pass; it also
+judges the edge whitespace of a leaf holding more than whitespace, such as `'x '`; and it reads
+the pass's line merged, as `trimPass` merges before it judges. No round merges again: a leaf that
+goes has a hard break or a line edge beside it, so it brings no two leaves together.
+`withoutEdgeWhitespace` runs after a pass, never before the first: a pass also takes marks off
+whitespace, and the first pass must see the line as it came.
+
+Measured in counts (§Cost fixes are measured, never timed): both lines of `blankLines`
+(`src/markdown/portable/inline-reduction.test.ts`) took 7, 101 and 1 001 passes at 6, 100 and 1 000
+blanks, and take 2 at each, as at 100 000; and the trim reads the text of each leaf it keeps as
+often at 1 000 blanks as at 6.
 
 ## Only the hard break holds a raw newline
 
