@@ -10,6 +10,7 @@ export function colourDeclaration(property: string, value: JsonValue | undefined
 
 // The colour a `property:colour` declaration holds, `undefined` where it holds another property or no such colour.
 export function readColour(property: string, declaration: string): string | undefined {
-  const value = declaration.slice(property.length + 1)
-  return declaration.startsWith(`${property}:`) && colour.test(value) ? value : undefined
+  const prefix = `${property}:`
+  const value = declaration.slice(prefix.length)
+  return declaration.startsWith(prefix) && colour.test(value) ? value : undefined
 }
