@@ -261,7 +261,7 @@ export function trimmingRuns(leaves: readonly AdfNode[], grouping: RunGrouping):
 function countTrimmingRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping, shared: number[]): void {
   for (const run of inlineRuns(nodes, firstIndex, grouping)) {
     if (run.kind === 'plain') continue
-    const holds = edgeStrippingMarks.includes(run.mark.type) ? ({ node }: RunNode) => nodeMarks(node).some((mark) => identicalMark(mark, run.mark)) && /[^ \t]/.test(node.text ?? '') : () => true
+    const holds = edgeStrippingMarks.includes(run.mark.type) ? ({ node }: RunNode) => nodeMarks(node).some((mark) => identicalMark(mark, run.mark)) && (node.text === undefined || /[^ \t]/.test(node.text)) : () => true
     const holders = run.nodes.flatMap((runNode, offset) => (holds(runNode) ? [offset] : []))
     const first = holders[0]
     const last = holders.at(-1)
