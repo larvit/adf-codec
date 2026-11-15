@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- The README states the package's size: 71 kB minified and gzipped as a bundler ships it, 161 kB packed and 601 kB unpacked, and a size column in the comparison table; the release pipeline fails where a figure is a tenth off.
 - `adfToHtml` writes a media single, a media group and a caption as `<figure class="adf-media-single">` holding an
   `<img>` and a `<figcaption>`, and as `<div class="adf-media-group">` of `<span class="adf-file">` files, where
   `0.3.1` wrote the carry element, and `htmlToAdf` reads them back. A link around the image is the media's link
@@ -55,6 +54,7 @@
   returns `not-an-adf-document`, where `0.3.1` ran the getter, looped or threw. The copy keeps own
   enumerable keys alone, so an inherited or non-enumerable key drops. A document of more than
   10,000,000 JSON values returns `unsupported-node-shape`.
+- The README states the package's minified and gzipped size, its tarball and its unpacked size, and gives each compared converter's minified and gzipped size in a column of the comparison table. The release fails where the package's stated size is more than a tenth off the build's.
 
 ## 0.3.1
 

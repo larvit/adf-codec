@@ -117,12 +117,13 @@ Consumers bundle the package, Forge apps with webpack among them, and one report
 dependency" warning from another converter. Nothing in the gate bundles it today. Install the
 tarball as `package-tests` does, bundle an entry file that round-trips one document through
 `adfToLosslessMarkdown` and `losslessMarkdownToAdf`, and run each bundle in Node. A warning fails the
-leg as an error does: webpack's "Critical dependency" is a warning. The bundlers live in their own
-package, as Stryker does (§Stryker in its own package), with pinned versions. Bun builds from the
+leg as an error does: webpack's "Critical dependency" is a warning. The bundlers live in
+`bundle-size/`'s package, beside esbuild, as Stryker lives in its own (§Stryker in its own package), with
+pinned versions. Bun builds from the
 image the gate already pulls. No leg needs an account or a network beyond the install.
 
 Once the leg holds, the README may say the package bundles with those four; it says nothing about
-Forge's runtime, which no leg tests. The bundlers join esbuild in `bundle-size/`'s package.
+Forge's runtime, which no leg tests.
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
