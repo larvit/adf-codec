@@ -142,6 +142,8 @@ const replayedLines: readonly [string, AdfNode[], AdfNode[]][] = [
   ['the lead whitespace a dropped blank leaves at the line start', [marked(' ', em), marked(' x')], [{ text: 'x', type: 'text' }]],
   ['the trail whitespace dropped blanks leave before a hard break', [marked('x ', link), marked(' ', em, link), marked(' ', link), marked(' ', em, link), { type: 'hardBreak' }, marked('y', link)], [marked('x', link), { type: 'hardBreak' }, marked('y', link)]],
   ['the lead whitespace dropped blanks leave after a hard break', [marked('y', link), { type: 'hardBreak' }, marked(' ', em, link), marked(' ', link), marked(' ', em, link), marked(' x', link)], [marked('y', link), { type: 'hardBreak' }, marked('x', link)]],
+  ['both edges of a leaf whose lead whitespace reaches a line edge two rounds before its trail whitespace', [marked('y', link), { type: 'hardBreak' }, marked(' ', link), { text: '  x  ', type: 'text' }, marked(' ', link), { text: ' ', type: 'text' }, marked(' ', link), { type: 'hardBreak' }, marked('y', link)], [marked('y', link), { type: 'hardBreak' }, { text: 'x', type: 'text' }, { type: 'hardBreak' }, marked('y', link)]],
+  ['both edges of a leaf whose trail whitespace reaches a line edge two rounds before its lead whitespace', [marked('y', link), { type: 'hardBreak' }, marked(' ', link), { text: ' ', type: 'text' }, marked(' ', link), { text: '  x  ', type: 'text' }, marked(' ', link), { type: 'hardBreak' }, marked('y', link)], [marked('y', link), { type: 'hardBreak' }, { text: 'x', type: 'text' }, { type: 'hardBreak' }, marked('y', link)]],
 ]
 for (const [name, line, trimmed] of replayedLines) {
   test(`trims ${name} in 2 passes`, () => {
