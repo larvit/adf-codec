@@ -630,6 +630,21 @@ test('reads blocks nested 500 levels, and refuses the next level, a list\'s item
   assert.equal(refusal(htmlToAdf('<blockquote>\n'.repeat(1_000_000))).startsWith('unsupported-nesting-depth'), true)
 })
 
+test('reads panels, expands and nested expands nested 500 levels, and refuses the next level', () => {
+  const panels = (levels: number): string => `${'<div class="adf-panel">\n'.repeat(levels)}<p>x</p>${'\n</div>'.repeat(levels)}\n`
+  const expands = (levels: number): string => `${'<details class="adf-expand">\n<summary>t</summary>\n'.repeat(levels)}<p>x</p>${'\n</details>'.repeat(levels)}\n`
+  const bare = (levels: number): string => `${'<details class="adf-nested-expand">\n'.repeat(levels)}<p>x</p>${'\n</details>'.repeat(levels)}\n`
+  for (const build of [panels, expands, bare]) {
+    assert.equal(refusal(htmlToAdf(build(500))), 'read')
+    assert.equal(refusal(htmlToAdf(build(501))).startsWith('unsupported-nesting-depth'), true)
+  }
+})
+
+test('reads a media of no url as an <img> of class adf-media', () => {
+  const single = htmlToAdf('<figure class="adf-media-single"><img class="adf-media" data-type="external"></figure>\n')
+  assert.deepEqual(read(single), document({ content: [{ attrs: { type: 'external' }, type: 'media' }], type: 'mediaSingle' }))
+})
+
 test('refuses a carried node whose JSON nests past the levels its depth leaves, and an inline carry past 500', () => {
   const carried = carry('div', { attrs: { a: nested(1, 498, (inner) => [inner]) }, type: 'unknownBlock' }, '')
   assert.equal(refusal(htmlToAdf(`${carried}\n`)), 'read')
@@ -637,6 +652,78 @@ test('refuses a carried node whose JSON nests past the levels its depth leaves, 
   const inline = nested({ text: 'x', type: 'text' }, 500, (inner) => ({ content: [inner], type: 'unknownInline' }))
   assert.equal(refusal(htmlToAdf(`<p>${carry('span', inline, '')}</p>\n`)), 'unsupported-nesting-depth at /content/0/content/0 line 1 offset 0')
 })
+
+// Each refusal of the blocks and marks adfToHtml writes as HTML, by its code, path and message: the faults of one line share a position.
+const pinnedRefusals: readonly (readonly [string, string])[] = [
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="DONE"><input type="checkbox" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" checked="" disabled="">, checked where its data-state is DONE: found "<input type=\\"checkbox\\" d"…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" checked="" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"checkbox\\" c"…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="MAYBE"><input type="checkbox" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: an <li> of a task list has data-state="DONE" or data-state="TODO"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task"><input type="checkbox" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: an <li> of a task list has data-state="DONE" or data-state="TODO"'],
+  ['<ul class="adf-task-list">\n<li data-state="TODO"><input type="checkbox" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: an <li> of this list has class="adf-task" first'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item\'s text stands a space after its checkbox: found "a</li>\\n</ul>\\n"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> </li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item holds text where a space follows its checkbox: found "</li>\\n</ul>\\n"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO">a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "a</li>\\n</ul>\\n"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox"> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"checkbox\\"> "…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="radio" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"radio\\" disa"…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="x"> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"checkbox\\" d"…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" required="" disabled=""> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input type=\\"checkbox\\" r"…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input disabled="" type="checkbox"> a</li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<input disabled=\\"\\" type="…'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><b>x</b></li>\n</ul>\n', 'unmappable-html at /content/0/content/0: a task item starts with <input type="checkbox" disabled="">, checked where its data-state is DONE: found "<b>x</b></li>\\n</ul>\\n"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> a\n<p>b</p></li>\n</ul>\n', 'unmappable-html at /content/0/content/0: <p> as written here is no inline element of the dialect: found "<p>b</p></li>\\n</ul>\\n"'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO" data-extra="1"><input type="checkbox" disabled=""> a</li>\n</ul>\n', 'unsupported-node-shape at /content/0/content/0: <li> takes no data-extra attribute'],
+  ['<ul class="adf-task-list">\n<li class="adf-task" data-state="TODO"><input type="checkbox" disabled=""> a</li>\n<li class="adf-decision" data-state="DECIDED">b</li>\n</ul>\n', 'unmappable-html at /content/0/content/1: an <li> of this list has class="adf-task" first'],
+  ['<ul class="adf-decision-list">\n<li class="adf-decision" data-state="DECIDED">a</li>\n<li>b</li>\n</ul>\n', 'unmappable-html at /content/0/content/1: an <li> of this list has class="adf-decision" first'],
+  ['<ul class="adf-decision-list">\n<li class="adf-decision" data-state="DECIDED" data-extra="1">a</li>\n</ul>\n', 'unsupported-node-shape at /content/0/content/0: <li> takes no data-extra attribute'],
+  ['<ul class="adf-task-list" data-extra="1"></ul>\n', 'unsupported-node-shape at /content/0: <ul> takes no data-extra attribute'],
+  ['<ul class="adf-task-list">\n</ul>\n', 'unmappable-html at /content/0/content/0: a list holds <li> items, one to a line: found "</ul>\\n"'],
+  ['<div class="adf-panel" data-panel-type="info" data-extra="1">\n<p>a</p>\n</div>\n', 'unsupported-node-shape at /content/0: <div> takes no data-extra attribute'],
+  ['<div class="adf-panel" data-panel-type="info" data-local-id="p">\n<p>a</p>\n</div>\n', 'unmappable-html at /content/0: the data-* attributes stand once each, sorted by the attribute they name: found data-local-id after data-panel-type'],
+  ['<div class="adf-panel" data-panel-type="info">\n</div>\n', 'unmappable-html at /content/0/content/0: a block element of the dialect stands here: found "</div>\\n"'],
+  ['<div class="adf-panel" data-panel-type="info"><p>a</p></div>\n', 'unmappable-html at /content/0: <div> holds </div> straight after it, or a line feed and its first block: found "<p>a</p></div>\\n"'],
+  ['<div id="x" class="adf-panel">\n<p>a</p>\n</div>\n', 'unmappable-html at /content/0: a <div> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone: found "<div id=\\"x\\" class=\\"adf-p"…'],
+  ['<details class="adf-expand" open="">\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> takes no open attribute'],
+  ['<details class="adf-expand" data-title="a">\n<p>a</p>\n</details>\n', 'unsupported-node-shape at /content/0: <details> takes no data-title attribute'],
+  ['<details>\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> starts with class="adf-expand" or class="adf-nested-expand": found "<details>\\n<p>a</p>\\n</det"…'],
+  ['<details class="adf-expand">\n</details>\n', 'unmappable-html at /content/0/content/0: a block element of the dialect stands here: found "</details>\\n"'],
+  ['<details class="adf-expand">\n<summary>a<b>x</b></summary>\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: text escapes & as &amp;, < as &lt; and > as &gt;, and holds no character HTML cannot hold: found "<b>x</b></summary>\\n<p>a<"…'],
+  ['<details class="adf-expand">\n<summary>a</summary><p>a</p>\n</details>\n', 'unmappable-html at /content/0: <summary> holds the title, then a line feed and the first block, or a line feed and </details>: found "<p>a</p>\\n</details>\\n"'],
+  ['<details class="adf-expand">\n<summary>a</summary>\n<summary>b</summary>\n</details>\n', 'unmappable-html at /content/0/content/0: <summary> as written here is no block element of the dialect: found "<summary>b</summary>\\n</d"…'],
+  ['<details class="adf-expand"><summary>a</summary></details>\n', 'unmappable-html at /content/0: <details> holds </details> straight after it, or a line feed and its first block: found "<summary>a</summary></de"…'],
+  ['<figure>\n</figure>\n', 'unmappable-html at /content/0: <figure> starts with class="adf-media-single": found "<figure>\\n</figure>\\n"'],
+  ['<figure class="x"><img src="u"></figure>\n', 'unmappable-html at /content/0: <figure> starts with class="adf-media-single": found "<figure class=\\"x\\"><img s"…'],
+  ['<figure class="adf-media-single" data-extra="1"><img src="u"></figure>\n', 'unsupported-node-shape at /content/0: <figure> takes no data-extra attribute'],
+  ['<figure class="adf-media-single"><p>x</p></figure>\n', 'unmappable-html at /content/0/content/0: a <figure> holds an <img>, inside <a href="…"> where a link marks it: found "<p>x</p></figure>\\n"'],
+  ['<figure class="adf-media-single"><a><img src="u"></a></figure>\n', 'unmappable-html at /content/0/content/0: a <figure> holds an <img>, inside <a href="…"> where a link marks it: found "<a><img src=\\"u\\"></a></fi"…'],
+  ['<figure class="adf-media-single"><a href="u"><img src="u">x</a></figure>\n', 'unmappable-html at /content/0/content/0: <a> around an image ends at </a>: found "x</a></figure>\\n"'],
+  ['<figure class="adf-media-single"><img src="u" height="12a"></figure>\n', 'unmappable-html at /content/0/content/0: height on <img> holds a positive whole number written as JavaScript writes it'],
+  ['<figure class="adf-media-single"><img src="u" height="0"></figure>\n', 'unmappable-html at /content/0/content/0: height on <img> holds a positive whole number written as JavaScript writes it'],
+  ['<figure class="adf-media-single"><img src="u">x</figure>\n', 'unmappable-html at /content/0: <figure> holds its image, then its <figcaption>, then </figure>: found "x</figure>\\n"'],
+  ['<figure class="adf-media-single"><img src="u"><figcaption>c</figcaption>x</figure>\n', 'unmappable-html at /content/0: <figure> holds its image, then its <figcaption>, then </figure>: found "x</figure>\\n"'],
+  ['<figure class="adf-media-single"><img src="u"><figcaption data-bogus="1">c</figcaption></figure>\n', 'unsupported-node-shape at /content/0/content/1: <figcaption> takes no data-bogus attribute'],
+  ['<figure class="adf-media-single"><img src="u"><figcaption style="text-align:center">c</figcaption></figure>\n', 'unmappable-html at /content/0/content/1: <figcaption> takes no style attribute'],
+  ['<figure class="adf-media-single"><img src="u"><figcaption>c<p>d</p></figcaption></figure>\n', 'unmappable-html at /content/0/content/1: <p> as written here is no inline element of the dialect: found "<p>d</p></figcaption></f"…'],
+  ['<figure class="adf-media-single"><img src="u" class="adf-media"></figure>\n', 'unmappable-html at /content/0/content/0: <img> takes no class attribute'],
+  ['<figure class="adf-media-single"><img></figure>\n', 'unmappable-html at /content/0/content/0: an <img> holds src, or class="adf-media" where its media holds no url, and never both'],
+  ['<figure class="adf-media-single"><img class="x"></figure>\n', 'unmappable-html at /content/0/content/0: an <img> in the dialect has class="adf-media" or none'],
+  ['<figure class="adf-media-single"><img src="u" data-type="external"></figure>\n', 'unmappable-html at /content/0/content/0: an <img> with src leaves out data-type where its media is external'],
+  ['<figure class="adf-media-single"><img src="u" data-bogus="1"></figure>\n', 'unsupported-node-shape at /content/0/content/0: <img> takes no data-bogus attribute'],
+  ['<div class="adf-media-group" data-x="1"></div>\n', 'unmappable-html at /content/0: <div class="adf-media-group"> takes no other attribute: found "<div class=\\"adf-media-gr"…'],
+  ['<div class="adf-media-group"><span></span></div>\n', 'unmappable-html at /content/0/content/0: a media group holds <span class="adf-file"> files: found "<span></span></div>\\n"'],
+  ['<div class="adf-media-group"><span class="x"></span></div>\n', 'unmappable-html at /content/0/content/0: a media group holds <span class="adf-file"> files: found "<span class=\\"x\\"></span><"…'],
+  ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file"></span><span class="adf-file" data-bogus="1"></span></div>\n', 'unsupported-node-shape at /content/0/content/1: <span> takes no data-bogus attribute'],
+  ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file">x</span></div>\n', 'unmappable-html at /content/0/content/0: <span class="adf-file"> holds nothing, and ends at </span>: found "x</span></div>\\n"'],
+  ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file"></span>x</div>\n', 'unmappable-html at /content/0: <div> holds its <span class="adf-file"> files, then </div>: found "x</div>\\n"'],
+  ['<p style="color:red">a</p>\n', 'unmappable-html at /content/0: style on <p> holds text-align:center or text-align:right'],
+  ['<h1 style="text-align:left">a</h1>\n', 'unmappable-html at /content/0: style on <h1> holds text-align:center or text-align:right'],
+  ['<p>a <span title="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji", "adf-mention" or "adf-status": found "<span title=\\"color:red\\">"…'],
+]
+
+for (const [html, expected] of pinnedRefusals) {
+  test(`refuses with its code, path and message: ${JSON.stringify(html)}`, () => {
+    const result = htmlToAdf(html)
+    assert.equal(result.ok ? 'read' : `${result.error.code} at /${result.error.path.join('/')}: ${result.error.message}`, expected)
+  })
+}
 
 // The documents adfToHtml's own tests write, by what each holds.
 const written: Readonly<Record<string, AdfDocument>> = {

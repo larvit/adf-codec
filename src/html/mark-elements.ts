@@ -1,4 +1,5 @@
 import type { AdfMark } from '../adf/document.ts'
+import type { JsonValue } from '../json-value.ts'
 import { colourDeclaration, readColour } from './colour-style.ts'
 import { nodeAttrs } from '../adf/document.ts'
 
@@ -17,18 +18,24 @@ const colourElements: ReadonlyMap<string, { element: string; property: string }>
   ['backgroundColor', { element: 'mark', property: 'background-color' }],
   ['textColor', { element: 'span', property: 'color' }],
 ])
-const scripts = ['sub', 'sup']
+const scripts: ReadonlyMap<JsonValue | undefined, 'sub' | 'sup'> = new Map<JsonValue | undefined, 'sub' | 'sup'>([
+  ['sub', 'sub'],
+  ['sup', 'sup'],
+])
 
 // The element a mark but a link writes around text; `undefined` where the mark holds what no element spells.
 export function markTag(mark: AdfMark): MarkTag | undefined {
   const attrs = nodeAttrs(mark)
   const plain = markElements.get(mark.type)
   if (plain !== undefined) return mark.attrs === undefined ? tagOf(plain, '') : undefined
-  const { type } = attrs
-  if (mark.type === 'subsup') return Object.keys(attrs).length === 1 && typeof type === 'string' && scripts.includes(type) ? tagOf(type, '') : undefined
+  if (mark.type === 'subsup') {
+    const script = scripts.get(attrs['type'])
+    return Object.keys(attrs).length === 1 && script !== undefined ? tagOf(script, '') : undefined
+  }
   const colour = colourElements.get(mark.type)
-  const declaration = colour === undefined || Object.keys(attrs).length !== 1 ? undefined : colourDeclaration(colour.property, attrs['color'])
-  return colour === undefined || declaration === undefined ? undefined : tagOf(colour.element, ` style="${declaration}"`)
+  if (colour === undefined) return undefined
+  const declaration = Object.keys(attrs).length === 1 ? colourDeclaration(colour.property, attrs['color']) : undefined
+  return declaration === undefined ? undefined : tagOf(colour.element, ` style="${declaration}"`)
 }
 
 // The mark a start tag but an `<a>` opens, as `markTag` writes it; `undefined` where it opens none.
@@ -45,7 +52,7 @@ export function markOfTag(name: string, attributes: readonly (readonly [string, 
 
 function markOfElement(name: string): AdfMark | undefined {
   for (const [type, element] of markElements) if (element === name) return { type }
-  return scripts.includes(name) ? { attrs: { type: name }, type: 'subsup' } : undefined
+  return scripts.has(name) ? { attrs: { type: name }, type: 'subsup' } : undefined
 }
 
 function tagOf(element: string, attributes: string): MarkTag {

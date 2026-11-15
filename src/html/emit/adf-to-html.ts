@@ -112,7 +112,7 @@ function taskPieces({ depth, node, path }: Block, type: keyof typeof taskLists):
     const opener = itemOpener(type, item)
     if (opener === undefined) return undefined
     if (index > 0) items.push('\n')
-    items.push({ ...opener, depth: depth + 1, kind: 'item', node: item, path: [...path, 'content', index], tag: 'li' })
+    items.push({ ...opener, depth, kind: 'item', node: item, path: [...path, 'content', index], tag: 'li' })
   }
   return containerPieces('ul', ` class="${taskLists[type].listClass}"${attributes}`, node.content === undefined ? undefined : items)
 }
