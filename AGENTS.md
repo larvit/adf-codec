@@ -181,13 +181,16 @@ Per chunk:
    the PR summary names each fix no round reviewed.
 3. Merge the PR (standing authorization, this repo only, granted by the maintainer), report, stop.
 
-A chunk reads these files in part, with `grep -n '^#'` for the headings and a ranged read for
-the rest:
+A chunk reads these files in part. One call prints a `## ` section by a fragment of its title:
+`awk -v h='<title>' '/^## /{p=index($0,h)>0} p' <file> | head -80`.
 
 - `CHANGELOG.md`: `## Unreleased` only, the one section a chunk edits.
 - `MIGRATION.md`: the top `## From` section, the release being built.
 - `README.md`: `## Goals`, `## Audience` and the sections the chunk changes or cites.
-- `spec/flavour.md`: the sections the chunk changes or cites.
+- `docs/decisions.md`: the entries the chunk cites, found by the titles indexed above, never the file.
+- `spec/flavour.md`, `spec/html.md`: the sections the chunk changes or cites.
+- A test file or `ci.sh`: its titles or legs, from `grep -n '^test(\|^leg' <file> | cut -c1-110`,
+  then a ranged read of the ones the chunk touches.
 
 Reserved for the maintainer whatever any rule here says: changing `version` in `package.json` (a
 bump on `main` publishes, `docs/decisions.md` §Publish on a version bump — every release is the
