@@ -672,6 +672,38 @@ test('carries a task or decision list holding what its elements cannot', () => {
   assert.equal(carriedList({ content: [{ attrs: { state: 'DECIDED' }, content: [], type: 'decisionItem' }], type: 'decisionList' }), true)
 })
 
+test('refuses, at the item\'s text, an inline carry nested past 500 in a task or decision item', () => {
+  const deep = nested('unknownInline', largestNesting, text('x'))
+  const task: AdfNode = { attrs: { state: 'TODO' }, content: [deep], type: 'taskItem' }
+  assert.equal(refusal(adfToHtml(document({ content: [task], type: 'taskList' }))), 'unsupported-nesting-depth at /content/0/content/0/content/0')
+  const decision: AdfNode = { attrs: { state: 'DECIDED' }, content: [deep], type: 'decisionItem' }
+  assert.equal(refusal(adfToHtml(document({ content: [decision], type: 'decisionList' }))), 'unsupported-nesting-depth at /content/0/content/0/content/0')
+})
+
+test('writes panels, expands and nested expands nested 500 levels, and refuses the next level', () => {
+  for (const type of ['panel', 'expand', 'nestedExpand']) {
+    assert.equal(refusal(adfToHtml(document(nested(type, largestNesting, paragraph(text('x')))))), 'written')
+    const deep = adfToHtml(document(nested(type, largestNesting + 1, paragraph(text('x')))))
+    assert.equal(refusal(deep).startsWith('unsupported-nesting-depth at /'), true)
+    assert.equal(!deep.ok && deep.error.message.includes('500'), true)
+  }
+})
+
+test('carries a media or a paragraph whose marks only look like the ones HTML spells', () => {
+  const external: AdfAttributes = { type: 'external', url: 'https://example.com/moon.jpg' }
+  const single = (media: AdfNode): AdfNode => ({ content: [media], type: 'mediaSingle' })
+  const link: AdfMark = { attrs: { href: 'https://example.com/' }, type: 'link' }
+  assert.equal(carriedBlock(single({ attrs: external, marks: [], type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: external, marks: [link, link], type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: external, marks: [{ attrs: { href: 'https://example.com/' }, type: 'border' }], type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: external, marks: [{ type: 'link' }], type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: external, marks: [{ attrs: {}, type: 'link' }], type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: { ...external, alt: 5 }, type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: { ...external, height: 0 }, type: 'media' })), true)
+  assert.equal(carriedBlock(single({ attrs: { ...external, width: 0 }, type: 'media' })), true)
+  assert.equal(carriedBlock({ content: [text('x')], marks: [{ attrs: { align: 'center' }, type: 'indentation' }], type: 'paragraph' }), true)
+})
+
 test('refuses, at the item\'s text, a card a link marks in a task item', () => {
   const card: AdfNode = { attrs: { data: { url: 'https://example.com/' }, url: 'https://example.com/' }, marks: [{ attrs: { href: 'https://example.com/' }, type: 'link' }], type: 'inlineCard' }
   const refused = adfToHtml(document({ content: [{ attrs: { state: 'TODO' }, content: [card], type: 'taskItem' }], type: 'taskList' }))

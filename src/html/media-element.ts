@@ -30,12 +30,13 @@ export function mediaImage(media: AdfNode): string | undefined {
 export function readMediaImage(pairs: readonly (readonly [string, string])[]): Read<AdfAttributes> {
   let rest = pairs
   const attrs: AdfAttributes = {}
-  const classed = rest[0]?.[0] === 'class'
-  if (classed && rest[0]?.[1] !== imageClass) return { fault: { code: 'unmappable-html', message: `an <img> in the dialect has class="${imageClass}" or none` } }
-  if (classed) rest = rest.slice(1)
+  const [first] = rest
+  const classed = first?.[0] === 'class' ? first : undefined
+  if (classed !== undefined && classed[1] !== imageClass) return { fault: { code: 'unmappable-html', message: `an <img> in the dialect has class="${imageClass}" or none` } }
+  if (classed !== undefined) rest = rest.slice(1)
   const src = rest[0]?.[0] === 'src' ? rest[0][1] : undefined
   if (src !== undefined) rest = rest.slice(1)
-  if (classed === (src !== undefined)) return { fault: { code: 'unmappable-html', message: `an <img> holds src, or class="${imageClass}" where its media holds no url, and never both` } }
+  if ((classed !== undefined) === (src !== undefined)) return { fault: { code: 'unmappable-html', message: `an <img> holds src, or class="${imageClass}" where its media holds no url, and never both` } }
   if (src !== undefined) attrs['url'] = src
   const alt = rest[0]?.[0] === 'alt' ? rest[0][1] : undefined
   if (alt !== undefined) {

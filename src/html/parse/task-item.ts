@@ -47,8 +47,7 @@ function readItemAttributes(list: TaskListType, pairs: readonly (readonly [strin
   const data = readDataAttributes(rest, 'li', itemAttributes, [])
   if (data.fault !== undefined) return { fault: data.fault }
   if (list === 'decisionList') return { value: { attrs: data.value, done: undefined } }
-  const state = data.value['state']
-  const done = typeof state === 'string' ? taskStates.get(state) : undefined
+  const done = taskStates.get(data.value['state'])
   if (done === undefined) return { fault: { code: 'unmappable-html', message: 'an <li> of a task list has data-state="DONE" or data-state="TODO"' } }
   return { value: { attrs: data.value, done } }
 }
