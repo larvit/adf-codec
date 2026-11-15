@@ -253,6 +253,17 @@ test('refuses a mark element the writer does not write', () => {
   }
 })
 
+test('reads a paragraph or heading with a data-indent-level attribute as indented', () => {
+  const indentation = (level: number): AdfMark => ({ attrs: { level }, type: 'indentation' })
+  assert.deepEqual(read(htmlToAdf('<p data-indent-level="2">x</p>\n')), document({ content: [text('x')], marks: [indentation(2)], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<h2 data-indent-level="6">x</h2>\n')), document({ attrs: { level: 2 }, content: [text('x')], marks: [indentation(6)], type: 'heading' }))
+  assert.deepEqual(read(htmlToAdf(`<p data-indent-level="1" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [indentation(1)], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<ul>\n<li><p data-indent-level="3">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [indentation(3)], type: 'paragraph' })], type: 'bulletList' }))
+  for (const html of ['<p data-indent-level="0">x</p>\n', '<p data-indent-level="7">x</p>\n', '<p data-indent-level="02">x</p>\n', '<p data-indent-level="1.5">x</p>\n', '<p data-indent-level="">x</p>\n', '<p data-indent-level="2" style="text-align:center">x</p>\n', '<p style="text-align:center" data-indent-level="2">x</p>\n', `<p data-local-id="${ids.paragraph}" data-indent-level="2">x</p>\n`, '<p data-indent-level="2" data-indent-level="2">x</p>\n', '<blockquote data-indent-level="2">\n<p>x</p>\n</blockquote>\n']) {
+    assert.notEqual(refusal(htmlToAdf(html)), 'read', html)
+  }
+})
+
 test('reads a paragraph or heading with a style attribute as aligned, right as end', () => {
   const alignment = (align: string): AdfMark => ({ attrs: { align }, type: 'alignment' })
   assert.deepEqual(read(htmlToAdf('<p style="text-align:center">x</p>\n')), document({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' }))
@@ -694,7 +705,7 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<div class="adf-panel" data-panel-type="info">\n</div>\n', 'unmappable-html at /content/0/content/0: a block element of the dialect stands here: found "</div>\\n"'],
   ['<div class="adf-panel" data-panel-type="info"><p>a</p></div>\n', 'unmappable-html at /content/0: <div> holds </div> straight after it, or a line feed and its first block: found "<p>a</p></div>\\n"'],
   ['<div id="x" class="adf-panel">\n<p>a</p>\n</div>\n', 'unmappable-html at /content/0: a <div> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone: found "<div id=\\"x\\" class=\\"adf-p"…'],
-  ['<details class="adf-expand" open="">\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> takes no open attribute'],
+  ['<details class="adf-expand" open="x">\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> takes no open attribute'],
   ['<details class="adf-expand" data-title="a">\n<p>a</p>\n</details>\n', 'unsupported-node-shape at /content/0: <details> takes no data-title attribute'],
   ['<details>\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> starts with class="adf-expand" or class="adf-nested-expand": found "<details>\\n<p>a</p>\\n</det"…'],
   ['<details class="adf-expand">\n</details>\n', 'unmappable-html at /content/0/content/0: a block element of the dialect stands here: found "</details>\\n"'],
@@ -784,6 +795,8 @@ test('reads an expand and a nested expand back from their details, the title fro
   assert.deepEqual(expand('<details class="adf-expand" data-local-id="x1">\n<summary>Details &amp; more</summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { localId: 'x1', title: 'Details & more' }, content: [paragraph(text('Inside'))], type: 'expand' }))
   assert.deepEqual(expand('<details class="adf-nested-expand">\n<summary>T</summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { title: 'T' }, content: [paragraph(text('Inside'))], type: 'nestedExpand' }))
   assert.deepEqual(expand('<details class="adf-expand">\n<p>Inside</p>\n</details>\n'), document({ content: [paragraph(text('Inside'))], type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-expand" data-local-id="x1" open="">\n<summary>T</summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { localId: 'x1', title: 'T' }, content: [paragraph(text('Inside'))], type: 'expand' }))
+  assert.deepEqual(expand('<details class="adf-nested-expand" open="">\n<p>Inside</p>\n</details>\n'), document({ content: [paragraph(text('Inside'))], type: 'nestedExpand' }))
   assert.deepEqual(expand('<details class="adf-expand">\n<summary></summary>\n<p>Inside</p>\n</details>\n'), document({ attrs: { title: '' }, content: [paragraph(text('Inside'))], type: 'expand' }))
   assert.deepEqual(expand('<details class="adf-expand">\n<summary>T</summary>\n</details>\n'), document({ attrs: { title: 'T' }, type: 'expand' }))
   assert.deepEqual(expand('<details class="adf-expand"></details>\n'), document({ type: 'expand' }))
@@ -792,7 +805,9 @@ test('reads an expand and a nested expand back from their details, the title fro
 
 test('refuses an expand the writer does not write', () => {
   const refused = (source: string): string => refusal(htmlToAdf(source))
-  assert.equal(refused('<details class="adf-expand" open="">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<details class="adf-expand" open="x">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<details class="adf-expand" open="" data-local-id="x1">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refused('<details class="adf-expand" open="" open="">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
   assert.equal(refused('<details class="adf-expand" data-title="a">\n<p>a</p>\n</details>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
   assert.equal(refused('<details>\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
   assert.equal(refused('<details class="adf-expand">\n</details>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 29')

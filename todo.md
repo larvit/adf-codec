@@ -6,14 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 188`
+`Next ID = 189`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 184 | 0.4.0 |  | question | **Write indentation as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element, once the maintainer settles whether its element carries a `margin-left` style.** | 1 | 2 | 2 | 3 | 2 | 6 by 2 | 3.2 |
-| 185 | 0.4.0 |  | question | **Read `<details class="adf-expand" open="">` as the same expand, or keep refusing it, once the maintainer settles which.** | 1 | 1 | 2 | 2 | 2 | 6 by 1 | 1.6 |
+| 188 | 0.4.0 |  | defect | **Write no `style` attribute in `adfToHtml`: spell text and background colours, alignment and a cell's background with classes or `data-*` attributes, and read them back in `htmlToAdf`.** | 3 | 1 | 2 | 4 | 5 | 10 by 10 | 21.2 |
 | 46 | 0.4.0 |  |  | **Publish the bundle size in the README, failing the release pipeline when it drifts.** | 2 | 2 | 1 | 3 | 4 | 3 by 3 | 2.6 |
 | 186 | 0.4.0 |  |  | **Name every spelling of the dialect's `<div>`, `<span>` and `<mark>` in the refusal of one that matches none.** | 1 | 1 | 1 | 1 | 1 | 6 by 1 | 1.9 |
 | 174 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so a line of alternating code and emphasized blanks trims in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
@@ -49,23 +48,13 @@
 
 ## Details
 
-### 184. Write indentation as HTML in `adfToHtml` and read it back in `htmlToAdf`, in place of the carry element, once the maintainer settles whether its element carries a `margin-left` style.
+### 188. Write no `style` attribute in `adfToHtml`: spell text and background colours, alignment and a cell's background with classes or `data-*` attributes, and read them back in `htmlToAdf`.
 
-Alignment, underline, colours, subscript and superscript are written as HTML, and indentation stays on the carry element, since the writer panel did not settle one spelling.
+README goal 10 holds the dialect to semantic names, classes, ids and `data-*` attributes, never a style; styling is the consumer's, in a stylesheet of their own. The unreleased dialect writes four: `style="text-align:center|right"` on a paragraph or heading, `<span style="color:…">`, `<mark style="background-color:…">` and a cell's `style="background-color:…"`.
 
-A writer panel of seven picked `data-indent-level` for the attribute name, 5 of 7. It split on whether a `margin-left` style stands beside it: 4 readers wanted the style as well, so a browser shows the indent, and 3 wanted the data attribute alone, as the alignment and colour styles are the only presentation the dialect writes.
+Colours are arbitrary hex values, so a class per colour cannot spell them; a `data-*` attribute holding the value, beside a class naming the element, is the likely spelling, and an alignment a class such as `adf-align-center`. Each spelling is settled by a writer panel (AGENTS.md §7), then written in `spec/html.md`, the README table and `docs/decisions.md` §The HTML dialect, whose style-spelling lines this item replaces. The carry element `0.3.1` wrote still reads; the style spellings were never released, so `htmlToAdf` stops reading them.
 
-Recommendation: the data attribute alone. The dialect writes no style the viewer needs to read the document, and a `margin-left` in some unit would be a second spelling of the level that has to agree with it. The level stays one value, `data-indent-level="2"`, and a block holding an indentation mark takes no other mark.
-
-The gap to close in `docs/decisions.md`: the class is "which output the audience expects", settled by a panel, and this panel's split is less than five of seven, so it is a missing goal and the maintainer's to answer.
-
-### 185. Read `<details class="adf-expand" open="">` as the same expand, or keep refusing it, once the maintainer settles which.
-
-A browser serializes a `<details>` its user opened as `<details open="">`, so a document read from a browser's DOM refuses at the expand, naming the attribute.
-
-The gap to close in `docs/decisions.md`: the difference is browser-set DOM state, which is not a difference of the innerHTML algorithm, so §`htmlToAdf` also reads the dialect as a browser serializes it, which lists every difference that algorithm leaves, does not decide it.
-
-Recommendation: read `open=""` as the same expand and drop the state, since ADF's `expand` has no open state and the state is the viewer's, not the document's. The entry then names `open` as one more difference a browser leaves.
+Release 0.4.0 holds this item, so it is not ready to cut before this lands; the release's contents are the maintainer's, and this item is filed under the goal they stated on 2026-11-15.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 

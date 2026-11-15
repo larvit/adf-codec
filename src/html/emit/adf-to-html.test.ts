@@ -106,7 +106,7 @@ test('writes an item\'s first paragraph as its element on the item\'s line where
   assert.equal(listed(held), `<ul>\n<li><p data-local-id="${ids.paragraph}">Bolt</p></li>\n</ul>\n`)
   assert.equal(listed(held, { content: [item(paragraph(text('M8')))], type: 'bulletList' }), `<ul>\n<li><p data-local-id="${ids.paragraph}">Bolt</p>\n<ul>\n<li>M8</li>\n</ul>\n</li>\n</ul>\n`)
   assert.equal(listed({ attrs: { localId: ids.paragraph }, type: 'paragraph' }), `<ul>\n<li><p data-local-id="${ids.paragraph}"></p></li>\n</ul>\n`)
-  assert.equal(listed({ content: [text('Bolt')], marks: [{ attrs: { level: 1 }, type: 'indentation' }], type: 'paragraph' }).startsWith('<ul>\n<li>\n<div class="adf-carry"'), true)
+  assert.equal(listed({ content: [text('Bolt')], marks: [{ attrs: { level: 1 }, type: 'alignment' }], type: 'paragraph' }).startsWith('<ul>\n<li>\n<div class="adf-carry"'), true)
 })
 
 test('writes the attributes an element cannot express as data-* attributes on it, sorted, a value that is no string as JSON', () => {
@@ -234,10 +234,24 @@ test('carries a paragraph or heading holding an alignment HTML cannot spell, or 
   assert.equal(carriedBlockOf({ attrs: { align: 'start' }, type: 'alignment' }), true)
   assert.equal(carriedBlockOf({ attrs: { align: 'center', x: 1 }, type: 'alignment' }), true)
   assert.equal(carriedBlockOf({ type: 'alignment' }), true)
-  assert.equal(carriedBlockOf({ attrs: { level: 1 }, type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: 7 }, type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: 0 }, type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: 1.5 }, type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: '2' }, type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: 1, x: 1 }, type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ type: 'indentation' }), true)
+  assert.equal(carriedBlockOf({ attrs: { level: 1 }, type: 'indentation' }, { attrs: { level: 2 }, type: 'indentation' }), true)
   assert.equal(carriedBlockOf({ attrs: { align: 'center' }, type: 'alignment' }, { attrs: { align: 'end' }, type: 'alignment' }), true)
   assert.equal(carriedBlockOf({ attrs: { align: 'center' }, type: 'alignment' }, { attrs: { level: 1 }, type: 'indentation' }), true)
-  assert.equal(carriedBlock({ attrs: { level: 1 }, content: [text('x')], marks: [{ attrs: { level: 1 }, type: 'indentation' }], type: 'heading' }), true)
+  assert.equal(carriedBlock({ attrs: { level: 1 }, content: [text('x')], marks: [{ attrs: { level: 7 }, type: 'indentation' }], type: 'heading' }), true)
+})
+
+test('writes a paragraph or heading marked with an indentation of 1 to 6 as a data-indent-level attribute', () => {
+  const indented = (level: number, node: AdfNode = paragraph(text('x'))): string => html(adfToHtml(document({ ...node, marks: [{ attrs: { level }, type: 'indentation' }] })))
+  assert.equal(indented(2), '<p data-indent-level="2">x</p>\n')
+  assert.equal(indented(6, { attrs: { level: 2 }, content: [text('x')], type: 'heading' }), '<h2 data-indent-level="6">x</h2>\n')
+  assert.equal(indented(1, { attrs: { localId: ids.paragraph }, type: 'paragraph' }), `<p data-indent-level="1" data-local-id="${ids.paragraph}"></p>\n`)
+  assert.equal(html(adfToHtml(document({ content: [item({ content: [text('x')], marks: [{ attrs: { level: 3 }, type: 'indentation' }], type: 'paragraph' })], type: 'bulletList' }))), '<ul>\n<li><p data-indent-level="3">x</p></li>\n</ul>\n')
 })
 
 test('carries every other node in an adf-carry element holding its JSON', () => {

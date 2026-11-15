@@ -259,6 +259,7 @@ whatever it costs; the Achieve goals are weighed against each other in the order
 7. **Maintain:** Lossy conversion drops form, never content. A link's or an image's title counts as content.
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
+10. **Maintain:** HTML output carries semantic names, classes, ids and `data-*` attributes, never a style. Styling is the consumer's, in a stylesheet of their own.
 
 ## Audience
 
@@ -570,14 +571,14 @@ content. No stylesheet ships. The complete dialect:
 | `decisionList`, `decisionItem` | `<ul class="adf-decision-list">`, `<li class="adf-decision" data-state="DECIDED">` |
 | `expand`, `nestedExpand` | `<details class="adf-expand">`, `<details class="adf-nested-expand">`, a `<summary>` holding the `title` |
 | `hardBreak` | `<br>` |
-| `heading` | `<h1>` to `<h6>`; `style="text-align:center"` for a centered one, `text-align:right` for one aligned to the end |
+| `heading` | `<h1>` to `<h6>`; `style="text-align:center"` for a centered one, `text-align:right` for one aligned to the end, `data-indent-level="2"` for an indented one |
 | `inlineCard` holding a `url`, or `data` and no `url` | `<a class="adf-inline-card" href="…">…</a>`; for `data`, `href` is the URL `data` holds, the text its name, else that URL, and `data-data` the whole `data` as JSON |
 | `link` | `<a href="…" title="…">` |
 | `mediaGroup` | `<div class="adf-media-group">` holding a `<span class="adf-file" data-id="…" data-type="file"></span>` for each `media` |
 | `mediaSingle` holding an external `media`, centered, uncaptioned, holding no other attribute such as `width` or `localId` | `<p><img src="…" alt="…"></p>`, the image inside `<a>` where a link marks it |
 | any other `mediaSingle` | `<figure class="adf-media-single" data-layout="wide">` holding the `<img>`, then the caption as `<figcaption>` |
 | `panel` | `<div class="adf-panel" data-panel-type="info">` |
-| `paragraph` | `<p>`; `style="text-align:center"` or `text-align:right`, as on a heading |
+| `paragraph` | `<p>`; `style="text-align:center"`, `text-align:right` or `data-indent-level="2"`, as on a heading |
 | `rule` | `<hr>` |
 | `table`, `tableRow`, `tableCell`, `tableHeader` | `<table>`, `<thead>` for a first row of `tableHeader` cells alone, `<tbody>`, `<tr>`, `<td>` and `<th>`; a cell's first paragraph stands as an item's does, and `<td colspan="2" rowspan="2" style="background-color:#fffae6" data-colwidth="120,80">` writes its attributes |
 | `taskList`, `taskItem` | `<ul class="adf-task-list">`, `<li class="adf-task" data-state="DONE"><input type="checkbox" checked="" disabled=""> text</li>` |

@@ -4,13 +4,13 @@ import type { Read } from '../../result.ts'
 import { misread, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { readDataAttributes } from '../data-attributes.ts'
 import { readInline } from './inline.ts'
-import { readTextBlockAttributes } from '../alignment-element.ts'
+import { readTextBlockAttributes } from '../text-block-attributes.ts'
 import { success } from '../../result.ts'
 
 // `own`: the attributes the element itself writes, such as a heading's level.
 export function readInlineBlock(html: string, tag: StartTag, type: string, vocabulary: AttributeVocabulary, own: AdfAttributes, place: Place): ReadNode {
   const written = Object.keys(own)
-  // Only a paragraph or heading takes an alignment, as a `style` attribute.
+  // Only a paragraph or heading takes an alignment or an indentation, as the attribute that spells it.
   const aligned = type === 'paragraph' || type === 'heading'
   const held = aligned ? readTextBlockAttributes(tag.attributes, tag.name, vocabulary, written) : readUnmarked(tag, vocabulary, written)
   if (held.fault !== undefined) return refused(held.fault.code, held.fault.message, html, tag.start, place)
