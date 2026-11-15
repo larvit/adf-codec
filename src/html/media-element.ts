@@ -26,7 +26,7 @@ export function mediaImage(media: AdfNode): string | undefined {
   return `${anchor}<img${attributes}>${link === undefined ? '' : '</a>'}`
 }
 
-// The attributes an `<img>` of the dialect holds, read as `readMediaImage` reads them; `fault` names no `src`, or a `class` besides one.
+// The media attributes an `<img>` of the dialect holds; `fault` where its `src`, `class`, `alt`, size or `data-*` attributes are not the ones `imageAttributes` writes.
 export function readMediaImage(pairs: readonly (readonly [string, string])[]): Read<AdfAttributes> {
   let rest = pairs
   const attrs: AdfAttributes = {}

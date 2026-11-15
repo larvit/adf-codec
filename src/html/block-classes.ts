@@ -10,7 +10,7 @@ const listTypes: readonly TaskListType[] = ['decisionList', 'taskList']
 
 export const expandClasses: Readonly<Record<ExpandType, string>> = { expand: 'adf-expand', nestedExpand: 'adf-nested-expand' }
 export const panelClass = 'adf-panel'
-// The panel type and an item's state are no attribute of the vocabularies, which a directive spells as its argument; here each is a data-* attribute like the rest.
+// A panel's type is no attribute of the vocabularies, since a directive spells it as its argument; here it is a data-* attribute like the rest.
 export const panelAttributes: AttributeVocabulary = { ...blockNodes.panel.attributes, panelType: 'string' }
 
 // A task or decision list, its items' type, class and attributes.

@@ -14,10 +14,10 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `blockquote` | `<blockquote>`, a line feed, its blocks, a line feed, `</blockquote>` |
 | `bulletList` | `<ul>`, a line feed, its items a line each, a line feed, `</ul>` |
 | `codeBlock` | `<pre><code class="language-js">…</code></pre>`, the language one token holding no ASCII whitespace (a tab, line feed, form feed, carriage return or space); no `class` where it holds no `language` |
-| `heading`, `level` 1 to 6 | `<h1>…</h1>` to `<h6>…</h6>` |
-| `listItem` | its first paragraph straight after `<li>`: bare where it holds content and no attribute, `<li>Bolt</li>`, and as its `<p>` element where it holds an attribute, `<li><p data-local-id="p1">Bolt</p></li>`; where other blocks follow, each after a line feed, and a line feed before `</li>`. Where the first block is no paragraph, holds neither content nor an attribute, or rides the carry: `<li>`, a line feed, its blocks, a line feed, `</li>` |
 | `decisionList` | `<ul class="adf-decision-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `decisionItem` is `<li class="adf-decision" data-state="DECIDED">` around its inline content |
 | `expand`, `nestedExpand` | `<details class="adf-expand">`, `<details class="adf-nested-expand">`, a line feed, a `<summary>` holding the `title` where there is one, its blocks, each after a line feed, a line feed, `</details>` |
+| `heading`, `level` 1 to 6 | `<h1>…</h1>` to `<h6>…</h6>` |
+| `listItem` | its first paragraph straight after `<li>`: bare where it holds content and no attribute, `<li>Bolt</li>`, and as its `<p>` element where it holds an attribute, `<li><p data-local-id="p1">Bolt</p></li>`; where other blocks follow, each after a line feed, and a line feed before `</li>`. Where the first block is no paragraph, holds neither content nor an attribute, or rides the carry: `<li>`, a line feed, its blocks, a line feed, `</li>` |
 | `mediaGroup` | `<div class="adf-media-group">` holding a `<span class="adf-file" data-id="…" data-type="file"></span>` for each `media`, none between |
 | `mediaSingle`, centered, holding one external `media` | `<p><img src="…" alt="…"></p>`, no `alt` where the media holds none; `<p><a href="…"><img …></a></p>` where a link marks it |
 | `mediaSingle`, any other | `<figure class="adf-media-single" data-layout="wide">`, its `media` as the `<img>` below, then its caption as `<figcaption>…</figcaption>`, on one line, `</figure>`; the `<img>` inside `<a href="…">` where a link marks the media |
@@ -25,10 +25,10 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `panel` | `<div class="adf-panel" data-panel-type="info">`, a line feed, its blocks a line each, a line feed, `</div>` |
 | `paragraph` | `<p>…</p>`; `<p style="text-align:center">` for an `alignment` mark of `center` and `text-align:right` for `end`, as on a heading |
 | `rule` | `<hr>` |
-| `taskList` | `<ul class="adf-task-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `taskItem` is `<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">`, a space, then its inline content, the checkbox `checked=""` as well where `state` is `DONE`, and the space left out where it holds none |
 | `table` | `<table>`, a line feed, its sections parted by a line feed, a line feed, `</table>`: a `<thead>` where its first row holds cells that are all `tableHeader`, and a `<tbody>` for the other rows where there are any. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
 | `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `style="background-color:#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
 | `tableRow` | `<tr>`, its cells with no line feed between them, `</tr>` |
+| `taskList` | `<ul class="adf-task-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `taskItem` is `<li class="adf-task" data-state="TODO"><input type="checkbox" disabled="">`, a space, then its inline content, the checkbox `checked=""` as well where `state` is `DONE`, and the space left out where it holds none |
 
 A container holding no `content` key is its element holding nothing: `<blockquote></blockquote>`,
 `<ul></ul>`, `<li></li>`, `<table></table>`, `<tr></tr>`, `<td></td>`, `<div class="adf-panel"></div>`,
@@ -57,7 +57,7 @@ is `data-state`, among the other attributes below.
 
 A table and each of its rows count one nesting level; a cell doesn't count, nor does a list item.
 
-On a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media single, caption, media group or the media they hold, each attribute its type holds
+On a paragraph, heading, quote, list, list item, table, row, cell, code block, rule, panel, expand, task or decision list or item, media single, caption or media, each attribute its type holds
 (`spec/flavour.md` §Block nodes) that the element does not write as `level`, `order`, `language`,
 `colspan`, `rowspan`, `background`, `colwidth`, an expand's `title`, or an `<img>`'s `alt`, `height`, `url` and `width` is a `data-*` attribute, named as HTML's `dataset` names it, `localId` as `data-local-id`, after the
 element's own attributes and sorted by name. A string is its value; any other value is its JSON,
@@ -68,9 +68,9 @@ block's `data-*` attributes stand on its `<pre>`.
 
 | ADF | HTML |
 | --- | --- |
-| `date` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`, the day in UTC |
 | `backgroundColor`, `textColor` | `<mark style="background-color:#fffae6">`, `<span style="color:#bf2600">` around the text; the colour a `#` and letters and digits, or letters and digits alone |
 | `code`, `em`, `strike`, `strong`, `underline` | `<code>`, `<em>`, `<del>`, `<strong>`, `<u>` around the text |
+| `date` | `<time class="adf-date" datetime="2025-08-25" data-timestamp="1756080000000">2025-08-25</time>`, the day in UTC |
 | `emoji` | `<span class="adf-emoji" data-id="1f389" data-short-name=":tada:">🎉</span>`, its `text` the content |
 | `hardBreak` | `<br>` |
 | `inlineCard`, holding a `url` | `<a class="adf-inline-card" href="https://example.com/spec">https://example.com/spec</a>` |
@@ -143,13 +143,12 @@ later release writes it as its own element.
 - A node rides the carry where it holds a mark or a key its element does not write, an attribute
   its type does not hold as that kind, an empty `attrs`, `content` or `marks`, or a value its
   element cannot hold:
-  - text holding no character, or a character HTML cannot hold; text holding a mark twice, or a
-    mark with attributes besides a link's `href` and `title`;
+  - text holding no character, or a character HTML cannot hold; text holding a mark twice, a link
+    with attributes besides `href` and `title`, or a mark with an attribute its element does not
+    write;
   - an unmarked text node straight after one written as plain text, which would read back as one;
   - a link whose `href` or `title` holds a character HTML cannot hold, and an image whose `url` or
     `alt` holds one or whose link's `href` or `title` does;
-  - an image holding an attribute besides its `center` layout and its media's `type`, `url` and
-    non-empty `alt`;
   - a heading whose `level` is not 1 to 6, and an ordered list whose `order` is not a safe integer
     or is `-0`;
   - an emoji, mention or status with no `text`, and a date whose `timestamp` names no day from year
@@ -162,8 +161,8 @@ later release writes it as its own element.
   - a `mediaSingle` holding anything but one `media`, then at most one `caption`, or a `mediaGroup`
     holding anything but `media`; a `media` holding more than one mark, a mark that is no link, or a
     `height` or `width` that is not a positive safe integer;
-  - a paragraph or heading holding a mark besides one `center` or `end` alignment, a `textColor`
-    or `backgroundColor` whose `color` is not letters and digits after an optional `#`;
+  - a paragraph or heading holding a mark besides one `center` or `end` alignment;
+  - a `textColor` or `backgroundColor` whose `color` is not letters and digits after an optional `#`;
   - a `panel` or `expand` holding an attribute its type does not hold as that kind; a `taskItem`
     whose `state` is not `DONE` or `TODO`, or a task or decision list holding a node that is no
     item of its own kind, `blockTaskItem` included: the whole list rides the carry;
