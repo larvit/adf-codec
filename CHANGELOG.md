@@ -8,11 +8,12 @@
   mark. The carry element `0.3.1` wrote for them still reads.
 - `adfToHtml` writes underline as `<u>`, subscript and superscript as `<sub>` and `<sup>`, a text colour as
   `<span data-text-color="…">`, a background colour as `<mark data-background-color="…">` and a paragraph's or
-  heading's alignment as `data-align="center"` or `data-align="end"`, where `0.3.1` wrote the carry element, and `htmlToAdf` reads them
-  back. The carry element `0.3.1` wrote for them still reads.
-- `adfToHtml` writes a table cell's background as `data-background-color="…"`, where `0.3.1` wrote
-  `style="background-color:…"`, so the HTML holds no `style` attribute. `htmlToAdf` still reads the `0.3.1` spelling.
-  A background that isn't letters and digits after an optional `#` is written too, where it rode the carry element.
+  heading's alignment as `data-align="center"` or `data-align="end"`, where `0.3.1` wrote the carry element,
+  and `htmlToAdf` reads them back. The carry element `0.3.1` wrote for them still reads.
+- **Breaking:** `adfToHtml` writes a table cell's background as `data-background-color="…"`, where `0.3.1` wrote
+  `style="background-color:…"`, so the HTML holds no `style` attribute and a browser no longer shows the colour
+  unaided. `htmlToAdf` still reads the `0.3.1` spelling. A table whose cell background isn't letters and digits after
+  an optional `#` is written too, where `0.3.1` wrote the whole table as the carry element.
 - `htmlToAdf` names every spelling of the dialect's `<div>`, `<span>` and `<mark>` in the refusal of one it can't
   read.
 - `adfToHtml` writes a paragraph's or heading's indentation as `data-indent-level="2"`, where `0.3.1` wrote the carry

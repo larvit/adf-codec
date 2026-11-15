@@ -486,9 +486,10 @@ A sixth panel (2026-11-05, three readers in the same roles) picked each of these
 - a first row of header cells alone in `<thead>` and the rest in `<tbody>`, a row to a line, over a
   bare `<table>` of `<tr>` rows and over a line per cell;
 - a cell's first paragraph bare, `<td>Bolt M8</td>`, as a list item's;
-- a cell's attributes as `<td colspan="2" rowspan="2">` and `data-*` attributes, over `data-*` for all four; its
-  `style="background-color:…"` gave way to the ninth panel's spelling, and `htmlToAdf` still reads it, since
-  `0.3.1` wrote it and every other spelling `0.3.1` wrote still reads.
+- a cell's `colspan` and `rowspan` as `<td colspan="2" rowspan="2">`, over `data-*` attributes for them.
+
+The sixth panel also picked `style="background-color:…"` for a cell's background. The ninth panel's spelling
+replaced it. `htmlToAdf` still reads it, since `0.3.1` wrote it and every other spelling `0.3.1` wrote still reads.
 
 A seventh panel (2026-11-14, three readers in the same roles, after the reader panel of §The feature
 table is a section per corpus example, led by a summary table expected `<s>` or `<del>`) picked
@@ -520,10 +521,11 @@ naming what it holds, over a class beside it and over a class per value:
 - `data-align="center"` and `data-align="end"` for an `alignment`, ADF's own values;
 - `<span data-text-color="#bf2600">` and `<mark data-background-color="#fffae6">`, over a bare
   `data-color` that could name either;
-- `<td data-background-color="#fffae6">` for a cell's `background`, the highlight's name over ADF's.
+- `<td data-background-color="#fffae6">` for a cell's `background`, the name the background colour mark takes,
+  over ADF's attribute name.
 
-Out of `style`, a colour needs no restriction to stay in its attribute, so any string HTML can hold
-is one.
+A colour outside `style` cannot break out of its attribute, so `adfToHtml` writes any colour string HTML can
+hold.
 
 ## `htmlToAdf` also reads the dialect as a browser serializes it
 
