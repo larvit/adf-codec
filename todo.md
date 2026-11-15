@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 190 | 0.4.0 |  | defect | **Bound the passes `trimmedEdges` takes by a constant, so blank leaves dropping one by one at a hard break trim in linear time.** | 3 | 1 | 2 | 4 | 7 | 9 by 3 | 1.9 |
 | 51 | 0.4.0 |  |  | **Match a reference label to its definition under Unicode case folding.** | 2 | 1 | 2 | 3 | 4 | 4 by 2 | 1.7 |
 | 148 | 0.4.0 |  |  | **Ship conversion between ADF and Jira wiki markup both ways, under a README goal for wiki markup.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
 | 149 | 0.4.0 |  |  | **Read any HTML into ADF, in a call or option a developer panel picks, under a README goal for foreign HTML.** | 3 | 2 | 2 | 5 | 7 | 3 by 5 | 0.8 |
@@ -44,19 +43,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 190. Bound the passes `trimmedEdges` takes by a constant, so blank leaves dropping one by one at a hard break trim in linear time.
-
-Each pass of `trimmedEdges` (`src/markdown/portable/inline-reduction.ts`) drops a blank leaf at a line
-edge, and only then is its neighbour at the edge. Blank leaves alternating linked and unmarked before
-a hard break, then a linked leaf, take n + 1 passes: 101, 1 001 and 10 001 at n = 100, 1 000 and
-10 000, so the trim is quadratic, against goal 9. An unmarked blank drops at the edge; a linked blank
-drops once the link run crosses the hard break to the linked leaf, which the unmarked blank between
-breaks until it drops. Any run crossing a hard break cascades the same way, one blank per pass, an em
-run too: `'a'` em, a hard break, blanks alternating em and `[em, link]`, then `'b'` em take 7, 101 and
-1 001 passes at n = 6, 100 and 1 000. Item 174's runs, counted between their non-blank holders, leave
-these blanks inside. Count passes to measure, never time (§Cost fixes are measured, never timed).
-Found by item 174's chunk, 2026-11-15.
 
 ### 51. Match a reference label to its definition under Unicode case folding.
 

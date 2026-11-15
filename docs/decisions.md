@@ -1185,6 +1185,26 @@ The shape walk of `readAdfDocument` and the depth walk of `writableContent` stay
 gives depth its own code — at 52 ms for a 9 MB document the emit takes 314 ms over. The 500-level guard runs after the block walk,
 so it doesn't bound the walk's cost.
 
+## After each trim pass, the reducer drops the edge whitespace the passes to come would drop, a round per pass
+
+2026-11-15, item 190's chunk. Goal 9. Valid while `link` is the only kept mark that is not
+edge-stripping, and every hard break the reducer hands the trim is alike.
+
+`trimPass` judges every leaf against one snapshot, so a blank leaf reaches a line edge only the
+pass after its neighbour dropped there: n blanks at a hard break took n + 1 passes, each linear.
+`withoutEdgeWhitespace` replays those drops in rounds, one per pass to come, and a round judges only
+the leaves beside a leaf the round before dropped, so all rounds together are linear. A round is
+exact because whitespace at a line edge goes or stays by three facts no pass changes: its leaf's
+outermost mark, the outermost mark of the leaf across the hard break, and whether a hard break lies
+between. Three things keep it so, each found by the property test against the one-leaf-per-pass
+reference: a round judges all its leaves before it changes any, since a leaf goes by a neighbour
+that goes in the same pass; a round also judges the edge whitespace of a leaf holding text; and the
+replay merges as `trimPass` does, since merged leaves reach an edge as one. The replay runs after a
+pass, never before the first: a pass also takes marks off whitespace by the line as it stands, and
+the first pass must see the line as it came. Measured in passes
+(§Cost fixes are measured, never timed): both of item 190's lines took 7, 101 and 1 001 passes at
+6, 100 and 1 000 blanks, and take 2 at each, as at 100 000.
+
 ## Only the hard break holds a raw newline
 
 2026-08-26, the maintainer. Goal 1. Valid while the whitespace carry finds a line edge by its raw

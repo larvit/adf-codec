@@ -1197,3 +1197,20 @@ Read most (opens and searches):
 - `converter-comparison/run.sh` 2
 - `.github/workflows/ci.yml` 1
 - `.gitignore` 1
+
+## Reading cost, chunk 3f3fce26685e, finished 2026-11-15T13:55:18Z
+
+104756 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/portable/inline-reduction.ts` 5
+- `src/conformance/property-harness.ts` 4
+- `src/markdown/emit/inline-runs.ts` 4
+- `src/markdown/portable/inline-reduction.test.ts` 4
+- `todo.md` 3
+- `README.md` 2
+- `CHANGELOG.md` 1
+- `ci.sh` 1
+- `docs/decisions.md` 1
+- `package.json` 1
