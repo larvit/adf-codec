@@ -244,7 +244,9 @@ function readDetails(html: string, tag: StartTag, place: Place, open: Open): Res
   if (type === undefined) return refused('unmappable-html', `<details> starts with class="${expandClasses.expand}" or class="${expandClasses.nestedExpand}": ${foundAt(html, tag.start)}`, html, tag.start, place)
   const last = pairs.at(-1)
   const opened = last?.[0] === 'open' && last[1] === ''
-  const data = readDataAttributes(opened ? pairs.slice(0, -1) : pairs, tag.name, blockNodes[type].attributes, ['title'])
+  const rest = opened ? pairs.slice(0, -1) : pairs
+  if (rest.some(([name]) => name === 'open')) return refused('unmappable-html', '<details> takes open="" once, after its other attributes', html, tag.start, place)
+  const data = readDataAttributes(rest, tag.name, blockNodes[type].attributes, ['title'])
   if (data.fault !== undefined) return refused(data.fault.code, data.fault.message, html, tag.start, place)
   const summary = html.startsWith('\n<summary>', tag.end) ? readSummary(html, tag.end + 1, place) : undefined
   if (summary?.ok === false) return summary

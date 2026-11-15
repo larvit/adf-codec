@@ -15,7 +15,7 @@ function alignments(): ReadonlyMap<string, string> {
 const indentAttribute = 'data-indent-level'
 const indentLevels = ['1', '2', '3', '4', '5', '6']
 
-// A paragraph's or heading's attributes: its one alignment or indentation mark as the attribute that spells it, then the rest as `dataAttributes` writes them; `undefined` where it holds a mark the attribute does not spell, or a second one.
+// A paragraph's or heading's attributes: its one alignment or indentation mark as the attribute that spells it, then the rest as `dataAttributes` writes them; `undefined` where it holds a second mark, or a mark that no such attribute spells.
 export function textBlockAttributes(node: AdfNode, vocabulary: AttributeVocabulary, written: readonly string[]): string | undefined {
   const [mark, ...others] = nodeMarks(node)
   if (mark === undefined) return dataAttributes(node, vocabulary, written)
@@ -40,7 +40,9 @@ export function readTextBlockAttributes(pairs: readonly (readonly [string, strin
   const [first] = pairs
   const mark = first === undefined ? undefined : readMark(first, element)
   if (mark?.fault !== undefined) return mark
-  const data = readDataAttributes(mark === undefined ? pairs : pairs.slice(1), element, vocabulary, written)
+  const rest = mark === undefined ? pairs : pairs.slice(1)
+  if (rest.some(([name]) => name === indentAttribute)) return { fault: { code: 'unmappable-html', message: `<${element}> takes ${indentAttribute} once, first, before its data-* attributes` } }
+  const data = readDataAttributes(rest, element, vocabulary, written)
   if (data.fault !== undefined) return data
   return { value: { attrs: data.value, marks: mark === undefined ? [] : [mark.value] } }
 }

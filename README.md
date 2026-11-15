@@ -259,7 +259,7 @@ whatever it costs; the Achieve goals are weighed against each other in the order
 7. **Maintain:** Lossy conversion drops form, never content. A link's or an image's title counts as content.
 8. **Maintain:** Runs in any JavaScript engine, with no runtime dependencies and nothing to configure or connect.
 9. **Maintain:** Fast, and linear in the document's size as JSON.
-10. **Maintain:** HTML output carries semantic names, classes, ids and `data-*` attributes, never a style. Styling is the consumer's, in a stylesheet of their own.
+10. **Maintain:** HTML output holds no style: elements, classes, ids and `data-*` attributes name what a node is. Styling is the consumer's, in a stylesheet of their own.
 
 ## Audience
 
@@ -556,7 +556,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
 
 ## HTML
 
-Serves [Goals](#goals) 1, 6 and 7. `adfToHtml` writes the nodes and marks the table lists as their
+Serves [Goals](#goals) 1, 6, 7 and 10. `adfToHtml` writes the nodes and marks the table lists as their
 HTML elements, and keeps every other node whole: an element of class `adf-carry` holds the node's JSON in
 `data-adf` and shows the node's content, its links included, so a reader of the page loses no
 content. No stylesheet ships. The complete dialect:
@@ -602,7 +602,7 @@ content. No stylesheet ships. The complete dialect:
 `htmlToAdf` reads that HTML back. It reads a carry element's node from its `data-adf`, and what the
 element shows must be what `adfToHtml` shows for that node: an edit there would be lost, so it is
 refused. It reads the HTML as a browser's `innerHTML` writes it too, and as a form post sends it: a raw `"` in text, `&nbsp;` for a no-break space, a raw `<` or `>` in an attribute value,
-and `\r\n` for a line feed. Other HTML is refused as `unmappable-html`: another element, attribute or
+`\r\n` for a line feed, and `open=""` on an expand's `<details>`, which reads as the same expand. Other HTML is refused as `unmappable-html`: another element, attribute or
 escape, such as `<b>`, `<br/>` or `&#39;`, a lone `\r`, and HTML missing its final line feed.
 A few causes, such as a `data-*` attribute its element does not take, are `unsupported-node-shape`
 instead, and nesting past 500 levels is `unsupported-nesting-depth`. [Either

@@ -16,14 +16,14 @@ Blocks are separated by a line feed, and a document holding any ends with one. A
 | `codeBlock` | `<pre><code class="language-js">…</code></pre>`, the language one token holding no ASCII whitespace (a tab, line feed, form feed, carriage return or space); no `class` where it holds no `language` |
 | `decisionList` | `<ul class="adf-decision-list">`, a line feed, its items a line each, a line feed, `</ul>`; each `decisionItem` is `<li class="adf-decision" data-state="DECIDED">` around its inline content |
 | `expand`, `nestedExpand` | `<details class="adf-expand">`, `<details class="adf-nested-expand">`, a line feed, a `<summary>` holding the `title` where there is one, its blocks, each after a line feed, a line feed, `</details>` |
-| `heading`, `level` 1 to 6 | `<h1>…</h1>` to `<h6>…</h6>`; the `alignment` and `indentation` marks as on a paragraph |
+| `heading`, `level` 1 to 6 | `<h1>…</h1>` to `<h6>…</h6>`, its `alignment` and `indentation` marks as a paragraph's |
 | `listItem` | its first paragraph straight after `<li>`: bare where it holds content and no attribute, `<li>Bolt</li>`, and as its `<p>` element where it holds an attribute, `<li><p data-local-id="p1">Bolt</p></li>`; where other blocks follow, each after a line feed, and a line feed before `</li>`. Where the first block is no paragraph, holds neither content nor an attribute, or rides the carry: `<li>`, a line feed, its blocks, a line feed, `</li>` |
 | `mediaGroup` | `<div class="adf-media-group">` holding a `<span class="adf-file" data-id="…" data-type="file"></span>` for each `media`, none between |
 | `mediaSingle`, centered, holding one external `media` | `<p><img src="…" alt="…"></p>`, no `alt` where the media holds none; `<p><a href="…"><img …></a></p>` where a link marks it |
 | `mediaSingle`, any other | `<figure class="adf-media-single" data-layout="wide">`, its `media` as the `<img>` below, then its caption as `<figcaption>…</figcaption>`, on one line, `</figure>`; the `<img>` inside `<a href="…">` where a link marks the media |
 | `orderedList` | as `bulletList` with `<ol>`; `<ol start="3">` for an `order` of 3, a safe integer other than `-0`; no `start` where the list holds no `order` |
 | `panel` | `<div class="adf-panel" data-panel-type="info">`, a line feed, its blocks a line each, a line feed, `</div>` |
-| `paragraph` | `<p>…</p>`; `<p style="text-align:center">` for an `alignment` mark of `center` and `text-align:right` for `end`, `<p data-indent-level="2">` for an `indentation` mark of `level` 2, as on a heading |
+| `paragraph` | `<p>…</p>`; `<p style="text-align:center">` for an `alignment` mark of `center` and `text-align:right` for `end`, `<p data-indent-level="2">` for an `indentation` mark of `level` 2 |
 | `rule` | `<hr>` |
 | `table` | `<table>`, a line feed, its sections parted by a line feed, a line feed, `</table>`: a `<thead>` where its first row holds cells that are all `tableHeader`, and a `<tbody>` for the other rows where there are any. Each section is its tag, a line feed, its rows a line each, a line feed, its closing tag |
 | `tableCell`, `tableHeader` | `<td>`, `<th>`, each holding its blocks as a `listItem` does: `<td>Bolt M8</td>`; attributes `colspan`, `rowspan`, `style="background-color:#fffae6"` for `background`, and `data-colwidth="120,80"` for `colwidth`, first and in that order |
@@ -161,7 +161,7 @@ later release writes it as its own element.
   - a `mediaSingle` holding anything but one `media`, then at most one `caption`, or a `mediaGroup`
     holding anything but `media`; a `media` holding more than one mark, a mark that is no link, or a
     `height` or `width` that is not a positive safe integer;
-  - a paragraph or heading holding a mark besides one `center` or `end` alignment or one indentation of `level` 1 to 6;
+  - a paragraph or heading holding two marks, or a mark besides a `center` or `end` alignment and an indentation of `level` 1 to 6;
   - a `textColor` or `backgroundColor` whose `color` is not letters and digits after an optional `#`;
   - a `panel` or `expand` holding an attribute its type does not hold as that kind; a `taskItem`
     whose `state` is not `DONE` or `TODO`, or a task or decision list holding a node that is no
@@ -195,7 +195,7 @@ what it shows too:
 | a no-break space | `&nbsp;` |
 | `&lt;` and `&gt;` in an attribute value | a raw `<` and `>`, as older browsers write them |
 | a line feed | `\r\n` |
-| an expand's `<details>` | the same with `open=""` after its other attributes, the state of a `<details>` its user opened, dropped |
+| an expand's or nested expand's `<details>` | the same with `open=""` after its other attributes, which a browser writes for one its user opened; it reads as the same expand, the open state dropped |
 
 A refusal's position counts the HTML as handed in. `htmlToAdf` reads a carry element's node from its
 `data-adf`, and what the element shows, through its closing tag, must be what `adfToHtml` shows for

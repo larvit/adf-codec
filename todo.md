@@ -50,11 +50,9 @@
 
 ### 188. Write no `style` attribute in `adfToHtml`: spell text and background colours, alignment and a cell's background with classes or `data-*` attributes, and read them back in `htmlToAdf`.
 
-README goal 10 holds the dialect to semantic names, classes, ids and `data-*` attributes, never a style; styling is the consumer's, in a stylesheet of their own. The unreleased dialect writes four: `style="text-align:center|right"` on a paragraph or heading, `<span style="color:…">`, `<mark style="background-color:…">` and a cell's `style="background-color:…"`.
+The unreleased dialect writes four `style` attributes, which README goal 10 rules out: `style="text-align:center|right"` on a paragraph or heading, `<span style="color:…">`, `<mark style="background-color:…">` and a cell's `style="background-color:…"`.
 
-Colours are arbitrary hex values, so a class per colour cannot spell them; a `data-*` attribute holding the value, beside a class naming the element, is the likely spelling, and an alignment a class such as `adf-align-center`. Each spelling is settled by a writer panel (AGENTS.md §7), then written in `spec/html.md`, the README table and `docs/decisions.md` §The HTML dialect, whose style-spelling lines this item replaces. The carry element `0.3.1` wrote still reads; the style spellings were never released, so `htmlToAdf` stops reading them.
-
-Release 0.4.0 holds this item, so it is not ready to cut before this lands; the release's contents are the maintainer's, and this item is filed under the goal they stated on 2026-11-15.
+A colour is any run of letters and digits after an optional `#`, so a class per colour cannot spell it. The likely spelling is a `data-*` attribute holding the value beside a class naming the element, and for an alignment a class such as `adf-align-center`. Each spelling is settled by a writer panel (AGENTS.md §7), then written in `spec/html.md`, the README table, the `CHANGELOG.md` bullets that name the `style` spellings and `docs/decisions.md` §The HTML dialect, whose style lines this item replaces. The carry element `0.3.1` wrote still reads; the style spellings were never released, so `htmlToAdf` stops reading them.
 
 ### 46. Publish the bundle size in the README, failing the release pipeline when it drifts.
 
