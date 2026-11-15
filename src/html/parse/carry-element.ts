@@ -30,12 +30,10 @@ export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', 
 
 // Every way the dialect spells the element, so a refusal names the one meant.
 function spellings(element: 'div' | 'span'): string {
-  const classes = [...classesOfElement(element), ...(element === 'div' ? [mediaGroupClass, panelClass] : [])].sort().map((name) => `"${name}"`)
-  const last = classes.pop()
-  const opens = last === undefined ? [] : [`opens with class=${classes.length === 0 ? last : `${classes.join(', ')} or ${last}`}`]
-  const others = [...opens, ...(element === 'span' ? [`holds ${colourAttributeOn(element)} alone`] : [])]
-  const final = others.pop()
-  return `is a carry element, holding class="adf-carry" and then data-adf alone${others.map((other) => `, ${other}`).join('')}${final === undefined ? '' : `, or ${final}`}`
+  const carry = 'is a carry element, holding class="adf-carry" and then data-adf alone'
+  if (element === 'div') return `${carry}, or opens with class="${mediaGroupClass}" or "${panelClass}"`
+  const classes = classesOfElement(element).map((name) => `"${name}"`).join(', ').replace(/, (?=[^,]*$)/, ' or ')
+  return `${carry}, opens with class=${classes}, or holds ${colourAttributeOn(element)} alone`
 }
 
 function heldNode(json: string, levels: number, html: string, jsonAt: number): Read<AdfNode> {

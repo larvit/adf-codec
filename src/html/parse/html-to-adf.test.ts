@@ -308,7 +308,7 @@ test('reads a table back, its rows, cells and attributes as adfToHtml writes the
     read(htmlToAdf('<table data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" data-background-color="#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">x</td></tr>\n</tbody>\n</table>\n')),
     document({ attrs: { layout: 'wide', width: 760 }, content: [{ attrs: { localId: 'r1' }, content: [{ attrs: { background: '#fffae6', colspan: 2, colwidth: [120, 80], localId: 'c1', rowspan: 3, valign: 'top' }, content: [paragraph(text('x'))], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }),
   )
-  assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td colspan="2" style="background-color:#fffae6" data-colwidth="120">x</td></tr>\n</tbody>\n</table>\n')), document({ content: [row({ attrs: { background: '#fffae6', colspan: 2, colwidth: [120] }, content: [paragraph(text('x'))], type: 'tableCell' })], type: 'table' }))
+  assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td colspan="2" style="background-color:yellow" data-colwidth="120">x</td></tr>\n</tbody>\n</table>\n')), document({ content: [row({ attrs: { background: 'yellow', colspan: 2, colwidth: [120] }, content: [paragraph(text('x'))], type: 'tableCell' })], type: 'table' }))
   assert.deepEqual(read(htmlToAdf('<ul>\n<li>\n<table></table>\n</li>\n</ul>\n')), document({ content: [item({ type: 'table' })], type: 'bulletList' }))
 })
 
@@ -334,6 +334,7 @@ const tableRefusals: readonly (readonly [string, string])[] = [
   ['<table>\n<tbody>\n<tr><td colspan="02">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td rowspan="x">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td style="color:red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td style="x background-color:red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td style="background-color:url(x)">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td style="background-color:red" data-background-color="red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td data-colwidth="1" data-background-color="red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
@@ -754,6 +755,8 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<p>a <span title="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, opens with class="adf-emoji", "adf-mention" or "adf-status", or holds data-text-color alone: found "<span title=\\"color:red\\">"…'],
   ['<p>a <span style="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, opens with class="adf-emoji", "adf-mention" or "adf-status", or holds data-text-color alone: found "<span style=\\"color:red\\">"…'],
   ['<p>a <mark style="background-color:red">b</mark></p>\n', 'unmappable-html at /content/0/content/1: a <mark> of the dialect holds data-background-color alone: found "<mark style=\\"background-"…'],
+  ['<table>\n<tbody>\n<tr><td style="background-color:url(x)">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html at /content/0/content/0/content/0: style on <td> spells no value adfToHtml writes there'],
+  ['<table>\n<tbody>\n<tr><td data-colwidth="1" data-background-color="red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html at /content/0/content/0/content/0: <td> takes colspan, rowspan, data-background-color and data-colwidth first, each once and in that order: found data-background-color out of place'],
   ['<p>a <mark>b</mark></p>\n', 'unmappable-html at /content/0/content/1: a <mark> of the dialect holds data-background-color alone: found "<mark>b</mark></p>\\n"'],
   ['<blockquote><p>a</p></blockquote>\n', 'unmappable-html at /content/0: <blockquote> holds </blockquote> straight after it, or a line feed and its first block: found "<p>a</p></blockquote>\\n"'],
   ['<ul><li>a</li></ul>\n', 'unmappable-html at /content/0: <ul> holds </ul> straight after it, or a line feed and its first item: found "<li>a</li></ul>\\n"'],

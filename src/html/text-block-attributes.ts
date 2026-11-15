@@ -24,7 +24,8 @@ function markAttribute(mark: AdfMark): string | undefined {
   const attrs = nodeAttrs(mark)
   if (Object.keys(attrs).length !== 1) return undefined
   const { align, level } = attrs
-  if (mark.type === 'alignment') return typeof align === 'string' && alignments.includes(align) ? ` ${alignAttribute}="${align}"` : undefined
+  const alignment = alignments.find((name) => name === align)
+  if (mark.type === 'alignment') return alignment === undefined ? undefined : ` ${alignAttribute}="${alignment}"`
   return mark.type === 'indentation' && typeof level === 'number' && indentLevels.includes(String(level)) ? ` ${indentAttribute}="${level}"` : undefined
 }
 
