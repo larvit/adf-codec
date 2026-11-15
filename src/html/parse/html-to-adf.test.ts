@@ -259,9 +259,6 @@ test('reads a paragraph or heading with a data-indent-level attribute as indente
   assert.deepEqual(read(htmlToAdf('<h2 data-indent-level="6">x</h2>\n')), document({ attrs: { level: 2 }, content: [text('x')], marks: [indentation(6)], type: 'heading' }))
   assert.deepEqual(read(htmlToAdf(`<p data-indent-level="1" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [indentation(1)], type: 'paragraph' }))
   assert.deepEqual(read(htmlToAdf('<ul>\n<li><p data-indent-level="3">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [indentation(3)], type: 'paragraph' })], type: 'bulletList' }))
-  for (const html of ['<p data-indent-level="0">x</p>\n', '<p data-indent-level="7">x</p>\n', '<p data-indent-level="02">x</p>\n', '<p data-indent-level="1.5">x</p>\n', '<p data-indent-level="">x</p>\n', '<p data-indent-level="2" style="text-align:center">x</p>\n', '<p style="text-align:center" data-indent-level="2">x</p>\n', `<p data-local-id="${ids.paragraph}" data-indent-level="2">x</p>\n`, '<p data-indent-level="2" data-indent-level="2">x</p>\n', '<blockquote data-indent-level="2">\n<p>x</p>\n</blockquote>\n']) {
-    assert.notEqual(refusal(htmlToAdf(html)), 'read', html)
-  }
 })
 
 test('reads a paragraph or heading with a style attribute as aligned, right as end', () => {
@@ -740,6 +737,11 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<p style="color:red">a</p>\n', 'unmappable-html at /content/0: style on <p> holds text-align:center or text-align:right'],
   ['<h1 style="text-align:left">a</h1>\n', 'unmappable-html at /content/0: style on <h1> holds text-align:center or text-align:right'],
   ['<p data-indent-level="7">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
+  ['<p data-indent-level="0">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
+  ['<p data-indent-level="02">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
+  ['<p data-indent-level="1.5">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
+  ['<p data-indent-level="2" style="text-align:center">a</p>\n', 'unmappable-html at /content/0: <p> takes no style attribute'],
+  ['<blockquote data-indent-level="2">\n<p>a</p>\n</blockquote>\n', 'unsupported-node-shape at /content/0: <blockquote> takes no data-indent-level attribute'],
   ['<h3 data-indent-level="">a</h3>\n', 'unmappable-html at /content/0: data-indent-level on <h3> holds a whole number from 1 to 6'],
   ['<p data-local-id="p1" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes data-indent-level once, first, before its data-* attributes'],
   ['<p data-indent-level="2" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes data-indent-level once, first, before its data-* attributes'],
