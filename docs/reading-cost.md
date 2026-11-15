@@ -1144,3 +1144,22 @@ Read most (opens and searches):
 - `README.md` 8
 - `docs/feature-table.md` 8
 - `src/html/emit/adf-to-html.ts` 7
+
+## Reading cost, chunk 8c9a535ea3b1, finished 2026-11-15T12:25:26Z
+
+200626 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 9
+- `src/html/parse/html-to-adf.test.ts` 9
+- `spec/html.md` 8
+- `README.md` 7
+- `MIGRATION.md` 6
+- `src/html/parse/inline.ts` 4
+- `CHANGELOG.md` 3
+- `src/html/cell-element.ts` 3
+- `src/html/escaping.ts` 3
+- `src/html/mark-elements.ts` 3
+
+## Reading cost reset, 2026-11-15T12:26:57Z
