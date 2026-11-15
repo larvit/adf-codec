@@ -250,7 +250,7 @@ function edgeOutcome(marks: readonly AdfMark[], { lineEdge, sharedRuns }: Beside
   return depth === 0 && lineEdge ? { kind: 'drop' } : { depth, kind: 'keep' }
 }
 
-// For each leaf but the last, how many of `grouping`'s runs hold it and the next leaf; an edge-stripping mark's run spans only its leaves holding more than spaces and tabs, as the trim strips the mark off blank leaves past them, else one pass each.
+// For each leaf but the last, how many of `grouping`'s runs hold it and the next leaf; an edge-stripping mark's run reaches only from its first to its last non-blank holder, since the trim strips the mark off the blank holders outside, one pass each if they counted.
 export function trimmingRuns(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
   const shared = leaves.map(() => 0)
   countTrimmingRuns(leaves.map((node) => ({ carried: false, node, outer: 0 })), 0, grouping, shared)
