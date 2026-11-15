@@ -3,6 +3,7 @@ import { blockNodes } from '../../adf/block-nodes.ts'
 import { built, readInlineBlock } from './inline-block.ts'
 import { foundAt, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { linkMarkFrom } from '../../adf/mark-attributes.ts'
+import { mediaGroupClass } from '../block-classes.ts'
 import { readAnchorAttributes } from '../anchor-element.ts'
 import { readDataAttributes } from '../data-attributes.ts'
 import { readMediaImage } from '../media-element.ts'
@@ -10,7 +11,6 @@ import { success } from '../../result.ts'
 
 const figureClass = 'adf-media-single'
 const fileClass = 'adf-file'
-const groupClass = 'adf-media-group'
 
 // A `mediaSingle` as `adfToHtml` writes it: its media's image, then its caption, on one line.
 export function readFigure(html: string, tag: StartTag, place: Place): ReadNode {
@@ -34,7 +34,7 @@ export function readFigure(html: string, tag: StartTag, place: Place): ReadNode 
 
 // A `mediaGroup` as `adfToHtml` writes it: a span for each media, none between.
 export function readMediaGroup(html: string, tag: StartTag, place: Place): ReadNode {
-  if (tag.attributes.length !== 1) return refused('unmappable-html', `<div class="${groupClass}"> takes no other attribute: ${foundAt(html, tag.start)}`, html, tag.start, place)
+  if (tag.attributes.length !== 1) return refused('unmappable-html', `<div class="${mediaGroupClass}"> takes no other attribute: ${foundAt(html, tag.start)}`, html, tag.start, place)
   const content: AdfNode[] = []
   let at = tag.end
   for (let span = readStartTag(html, at); span?.name === 'span'; span = readStartTag(html, at)) {

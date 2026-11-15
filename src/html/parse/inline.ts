@@ -1,9 +1,9 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result } from '../../result.ts'
+import { colourAttributeOn, markOfTag } from '../mark-elements.ts'
 import { foundAt, misread, misspelledText, readStartTag, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { largestNesting } from '../../nesting.ts'
 import { linkMarkFrom } from '../../adf/mark-attributes.ts'
-import { markOfTag } from '../mark-elements.ts'
 import { misspelledAt, unescapedValue } from '../escaping.ts'
 import { readAnchorAttributes } from '../anchor-element.ts'
 import { readCarry } from './carry-element.ts'
@@ -32,6 +32,7 @@ function readTagged(html: string, index: number, place: Place): ReadNode | undef
   const element = tag === undefined ? undefined : readNodeElement(html, tag, place)
   if (element !== undefined) return element
   if (tag !== undefined && markOf(tag) !== undefined) return readMarked(html, index, place)
+  if (tag?.name === 'mark') return refused('unmappable-html', `a <mark> of the dialect holds ${colourAttributeOn('mark')} alone: ${foundAt(html, index)}`, html, index, place)
   return tag?.name === 'span' ? readCarry(html, tag, 'span', largestNesting, place) : undefined
 }
 

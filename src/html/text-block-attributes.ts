@@ -4,14 +4,8 @@ import type { Read } from '../result.ts'
 import { dataAttributes, readDataAttributes } from './data-attributes.ts'
 import { nodeAttrs, nodeMarks } from '../adf/document.ts'
 
-// The `text-align` value each alignment names.
-function alignments(): ReadonlyMap<string, string> {
-  return new Map([
-    ['center', 'center'],
-    ['end', 'right'],
-  ])
-}
-
+const alignAttribute = 'data-align'
+const alignments = ['center', 'end']
 const indentAttribute = 'data-indent-level'
 const indentLevels = ['1', '2', '3', '4', '5', '6']
 
@@ -30,8 +24,7 @@ function markAttribute(mark: AdfMark): string | undefined {
   const attrs = nodeAttrs(mark)
   if (Object.keys(attrs).length !== 1) return undefined
   const { align, level } = attrs
-  const textAlign = [...alignments()].find(([name]) => name === align)?.[1]
-  if (mark.type === 'alignment') return textAlign === undefined ? undefined : ` style="text-align:${textAlign}"`
+  if (mark.type === 'alignment') return typeof align === 'string' && alignments.includes(align) ? ` ${alignAttribute}="${align}"` : undefined
   return mark.type === 'indentation' && typeof level === 'number' && indentLevels.includes(String(level)) ? ` ${indentAttribute}="${level}"` : undefined
 }
 
@@ -41,7 +34,7 @@ export function readTextBlockAttributes(pairs: readonly (readonly [string, strin
   const mark = first === undefined ? undefined : readMark(first, element)
   if (mark?.fault !== undefined) return mark
   const rest = mark === undefined ? pairs : pairs.slice(1)
-  if (rest.some(([name]) => name === indentAttribute)) return { fault: { code: 'unmappable-html', message: `<${element}> takes ${indentAttribute} once, first, before its data-* attributes` } }
+  if (rest.some(([name]) => name === alignAttribute || name === indentAttribute)) return { fault: { code: 'unmappable-html', message: `<${element}> takes one of ${alignAttribute} and ${indentAttribute}, first, before its data-* attributes` } }
   const data = readDataAttributes(rest, element, vocabulary, written)
   if (data.fault !== undefined) return data
   return { value: { attrs: data.value, marks: mark === undefined ? [] : [mark.value] } }
@@ -51,7 +44,6 @@ function readMark([name, spelled]: readonly [string, string], element: string): 
   if (name === indentAttribute) {
     return indentLevels.includes(spelled) ? { value: { attrs: { level: Number(spelled) }, type: 'indentation' } } : { fault: { code: 'unmappable-html', message: `${indentAttribute} on <${element}> holds a whole number from 1 to 6` } }
   }
-  if (name !== 'style') return undefined
-  const align = [...alignments()].find(([, textAlign]) => spelled === `text-align:${textAlign}`)?.[0]
-  return align === undefined ? { fault: { code: 'unmappable-html', message: `style on <${element}> holds text-align:center or text-align:right` } } : { value: { attrs: { align }, type: 'alignment' } }
+  if (name !== alignAttribute) return undefined
+  return alignments.includes(spelled) ? { value: { attrs: { align: spelled }, type: 'alignment' } } : { fault: { code: 'unmappable-html', message: `${alignAttribute} on <${element}> holds center or end` } }
 }

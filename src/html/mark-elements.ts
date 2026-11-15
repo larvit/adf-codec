@@ -1,7 +1,7 @@
 import type { AdfMark } from '../adf/document.ts'
 import type { JsonValue } from '../json-value.ts'
-import { colourDeclaration, readColour } from './colour-style.ts'
 import { nodeAttrs } from '../adf/document.ts'
+import { optionalAttribute } from './escaping.ts'
 
 type MarkTag = { closer: string; opener: string }
 
@@ -13,10 +13,10 @@ const markElements: ReadonlyMap<string, string> = new Map([
   ['strong', 'strong'],
   ['underline', 'u'],
 ])
-// The element and CSS property each colour mark writes around text, its colour in a `style` attribute.
-const colourElements: ReadonlyMap<string, { element: string; property: string }> = new Map([
-  ['backgroundColor', { element: 'mark', property: 'background-color' }],
-  ['textColor', { element: 'span', property: 'color' }],
+// The element each colour mark writes around text, its colour in the attribute `colourAttributeOn` names.
+const colourElements: ReadonlyMap<string, 'mark' | 'span'> = new Map<string, 'mark' | 'span'>([
+  ['backgroundColor', 'mark'],
+  ['textColor', 'span'],
 ])
 const scripts: ReadonlyMap<JsonValue | undefined, 'sub' | 'sup'> = new Map<JsonValue | undefined, 'sub' | 'sup'>([
   ['sub', 'sub'],
@@ -34,20 +34,22 @@ export function markTag(mark: AdfMark): MarkTag | undefined {
   }
   const colour = colourElements.get(mark.type)
   if (colour === undefined) return undefined
-  const declaration = Object.keys(attrs).length === 1 ? colourDeclaration(colour.property, attrs['color']) : undefined
-  return declaration === undefined ? undefined : tagOf(colour.element, ` style="${declaration}"`)
+  const { color } = attrs
+  const attribute = Object.keys(attrs).length === 1 && typeof color === 'string' ? optionalAttribute(colourAttributeOn(colour), color) : undefined
+  return attribute === undefined ? undefined : tagOf(colour, attribute)
 }
 
 // The mark a start tag but an `<a>` opens, as `markTag` writes it; `undefined` where it opens none.
 export function markOfTag(name: string, attributes: readonly (readonly [string, string])[]): AdfMark | undefined {
-  const [style, ...others] = attributes
-  if (style === undefined) return markOfElement(name)
-  if (style[0] !== 'style' || others.length > 0) return undefined
-  for (const [type, { element, property }] of colourElements) {
-    const color = element === name ? readColour(property, style[1]) : undefined
-    if (color !== undefined) return { attrs: { color }, type }
-  }
+  const [colour, ...others] = attributes
+  if (colour === undefined) return markOfElement(name)
+  if (others.length > 0) return undefined
+  for (const [type, element] of colourElements) if (element === name && colourAttributeOn(element) === colour[0]) return { attrs: { color: colour[1] }, type }
   return undefined
+}
+
+export function colourAttributeOn(element: 'mark' | 'span'): string {
+  return element === 'mark' ? 'data-background-color' : 'data-text-color'
 }
 
 function markOfElement(name: string): AdfMark | undefined {

@@ -241,14 +241,14 @@ test('reads underline, subscript, superscript and the two colours from their ele
   assert.deepEqual(marked('<u>x</u>'), document(paragraph(text('x', { type: 'underline' }))))
   assert.deepEqual(marked('<sub>x</sub>'), document(paragraph(text('x', { attrs: { type: 'sub' }, type: 'subsup' }))))
   assert.deepEqual(marked('<sup>x</sup>'), document(paragraph(text('x', { attrs: { type: 'sup' }, type: 'subsup' }))))
-  assert.deepEqual(marked('<span style="color:#ff5630">x</span>'), document(paragraph(text('x', { attrs: { color: '#ff5630' }, type: 'textColor' }))))
-  assert.deepEqual(marked('<mark style="background-color:#fffae6">x</mark>'), document(paragraph(text('x', { attrs: { color: '#fffae6' }, type: 'backgroundColor' }))))
-  assert.deepEqual(marked('<strong><u><span style="color:red">x</span></u></strong>'), document(paragraph(text('x', { type: 'strong' }, { type: 'underline' }, { attrs: { color: 'red' }, type: 'textColor' }))))
-  assert.deepEqual(marked('a<span style="color:red">b</span>'), document(paragraph(text('a'), text('b', { attrs: { color: 'red' }, type: 'textColor' }))))
+  assert.deepEqual(marked('<span data-text-color="#ff5630">x</span>'), document(paragraph(text('x', { attrs: { color: '#ff5630' }, type: 'textColor' }))))
+  assert.deepEqual(marked('<mark data-background-color="#fffae6">x</mark>'), document(paragraph(text('x', { attrs: { color: '#fffae6' }, type: 'backgroundColor' }))))
+  assert.deepEqual(marked('<strong><u><span data-text-color="red">x</span></u></strong>'), document(paragraph(text('x', { type: 'strong' }, { type: 'underline' }, { attrs: { color: 'red' }, type: 'textColor' }))))
+  assert.deepEqual(marked('a<span data-text-color="red">b</span>'), document(paragraph(text('a'), text('b', { attrs: { color: 'red' }, type: 'textColor' }))))
 })
 
 test('refuses a mark element the writer does not write', () => {
-  for (const inner of ['<span style="color:red;x:y">x</span>', '<span style="background-color:red">x</span>', '<mark style="color:red">x</mark>', '<mark>x</mark>', '<span style="color:">x</span>', '<span style="color:red" class="c">x</span>', '<u class="c">x</u>', '<sub style="color:red">x</sub>', '<span style="color:red"><span style="color:blue">x</span></span>']) {
+  for (const inner of ['<span style="color:red">x</span>', '<mark style="background-color:red">x</mark>', '<span data-background-color="red">x</span>', '<mark data-text-color="red">x</mark>', '<mark>x</mark>', '<span data-text-color="red" class="c">x</span>', '<span data-text-color="red" data-background-color="red">x</span>', '<u class="c">x</u>', '<sub data-text-color="red">x</sub>', '<span data-text-color="red"><span data-text-color="blue">x</span></span>']) {
     assert.notEqual(refusal(htmlToAdf(`<p>${inner}</p>\n`)), 'read', inner)
   }
 })
@@ -261,13 +261,13 @@ test('reads a paragraph or heading with a data-indent-level attribute as indente
   assert.deepEqual(read(htmlToAdf('<ul>\n<li><p data-indent-level="3">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [indentation(3)], type: 'paragraph' })], type: 'bulletList' }))
 })
 
-test('reads a paragraph or heading with a style attribute as aligned, right as end', () => {
+test('reads a paragraph or heading with a data-align attribute as aligned', () => {
   const alignment = (align: string): AdfMark => ({ attrs: { align }, type: 'alignment' })
-  assert.deepEqual(read(htmlToAdf('<p style="text-align:center">x</p>\n')), document({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' }))
-  assert.deepEqual(read(htmlToAdf('<h2 style="text-align:right">x</h2>\n')), document({ attrs: { level: 2 }, content: [text('x')], marks: [alignment('end')], type: 'heading' }))
-  assert.deepEqual(read(htmlToAdf(`<p style="text-align:right" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [alignment('end')], type: 'paragraph' }))
-  assert.deepEqual(read(htmlToAdf('<ul>\n<li><p style="text-align:center">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' })], type: 'bulletList' }))
-  for (const html of ['<p style="text-align:left">x</p>\n', '<p style="text-align:center;color:red">x</p>\n', `<p data-local-id="${ids.paragraph}" style="text-align:center">x</p>\n`, '<figure class="adf-media-single" style="text-align:center"><img src="a"></figure>\n', '<blockquote style="text-align:center">\n<p>x</p>\n</blockquote>\n']) {
+  assert.deepEqual(read(htmlToAdf('<p data-align="center">x</p>\n')), document({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<h2 data-align="end">x</h2>\n')), document({ attrs: { level: 2 }, content: [text('x')], marks: [alignment('end')], type: 'heading' }))
+  assert.deepEqual(read(htmlToAdf(`<p data-align="end" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [alignment('end')], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<ul>\n<li><p data-align="center">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' })], type: 'bulletList' }))
+  for (const html of ['<p style="text-align:center">x</p>\n', '<p data-align="left">x</p>\n', '<p data-align="right">x</p>\n', '<p data-align="">x</p>\n', `<p data-local-id="${ids.paragraph}" data-align="center">x</p>\n`, '<p data-align="center" data-align="end">x</p>\n', '<figure class="adf-media-single" data-align="center"><img src="a"></figure>\n', '<blockquote data-align="center">\n<p>x</p>\n</blockquote>\n']) {
     assert.notEqual(refusal(htmlToAdf(html)), 'read', html)
   }
 })
@@ -305,9 +305,10 @@ test('reads a table back, its rows, cells and attributes as adfToHtml writes the
   assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td></td><th></th></tr>\n</tbody>\n</table>\n')), document({ content: [row({ type: 'tableCell' }, { type: 'tableHeader' })], type: 'table' }))
   assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td>a\n<p>b</p>\n</td><td>\n<hr>\n</td></tr>\n</tbody>\n</table>\n')), document({ content: [row({ content: [paragraph(text('a')), paragraph(text('b'))], type: 'tableCell' }, { content: [{ type: 'rule' }], type: 'tableCell' })], type: 'table' }))
   assert.deepEqual(
-    read(htmlToAdf('<table data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" style="background-color:#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">x</td></tr>\n</tbody>\n</table>\n')),
+    read(htmlToAdf('<table data-layout="wide" data-width="760">\n<tbody>\n<tr data-local-id="r1"><td colspan="2" rowspan="3" data-background-color="#fffae6" data-colwidth="120,80" data-local-id="c1" data-valign="top">x</td></tr>\n</tbody>\n</table>\n')),
     document({ attrs: { layout: 'wide', width: 760 }, content: [{ attrs: { localId: 'r1' }, content: [{ attrs: { background: '#fffae6', colspan: 2, colwidth: [120, 80], localId: 'c1', rowspan: 3, valign: 'top' }, content: [paragraph(text('x'))], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }),
   )
+  assert.deepEqual(read(htmlToAdf('<table>\n<tbody>\n<tr><td colspan="2" style="background-color:#fffae6" data-colwidth="120">x</td></tr>\n</tbody>\n</table>\n')), document({ content: [row({ attrs: { background: '#fffae6', colspan: 2, colwidth: [120] }, content: [paragraph(text('x'))], type: 'tableCell' })], type: 'table' }))
   assert.deepEqual(read(htmlToAdf('<ul>\n<li>\n<table></table>\n</li>\n</ul>\n')), document({ content: [item({ type: 'table' })], type: 'bulletList' }))
 })
 
@@ -334,6 +335,8 @@ const tableRefusals: readonly (readonly [string, string])[] = [
   ['<table>\n<tbody>\n<tr><td rowspan="x">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td style="color:red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td style="background-color:url(x)">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td style="background-color:red" data-background-color="red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td data-colwidth="1" data-background-color="red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td data-colwidth="[1]">a</td></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
   ['<table>\n<tbody>\n<tr><td data-colwidth="01">a</td></tr>\n</tbody>\n</table>\n', 'unsupported-node-shape'],
   ['<table data-size="big"></table>\n', 'unsupported-node-shape'],
@@ -342,7 +345,7 @@ const tableRefusals: readonly (readonly [string, string])[] = [
   ['<table>\n<tfoot>\n<tr></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<thead>\n<tr><th>a</th></tr>\n</tfoot>\n<tbody>\n<tr></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td colspan="2x">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
-  ['<table>\n<tbody>\n<tr><td style="color:red;background-color:red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
+  ['<table>\n<tbody>\n<tr><td data-background-color="red" data-background-color="red">a</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
   ['<table>\n<tbody>\n<tr><td>a<hr>\n</td></tr>\n</tbody>\n</table>\n', 'unmappable-html'],
 ]
 
@@ -701,7 +704,7 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<div class="adf-panel" data-panel-type="info" data-local-id="p">\n<p>a</p>\n</div>\n', 'unmappable-html at /content/0: the data-* attributes stand once each, sorted by the attribute they name: found data-local-id after data-panel-type'],
   ['<div class="adf-panel" data-panel-type="info">\n</div>\n', 'unmappable-html at /content/0/content/0: a block element of the dialect stands here: found "</div>\\n"'],
   ['<div class="adf-panel" data-panel-type="info"><p>a</p></div>\n', 'unmappable-html at /content/0: <div> holds </div> straight after it, or a line feed and its first block: found "<p>a</p></div>\\n"'],
-  ['<div id="x" class="adf-panel">\n<p>a</p>\n</div>\n', 'unmappable-html at /content/0: a <div> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone: found "<div id=\\"x\\" class=\\"adf-p"…'],
+  ['<div id="x" class="adf-panel">\n<p>a</p>\n</div>\n', 'unmappable-html at /content/0: a <div> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-media-group" or "adf-panel": found "<div id=\\"x\\" class=\\"adf-p"…'],
   ['<details class="adf-expand" open="x">\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> takes open="" once, after its other attributes'],
   ['<details class="adf-expand" data-title="a">\n<p>a</p>\n</details>\n', 'unsupported-node-shape at /content/0: <details> takes no data-title attribute'],
   ['<details>\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> starts with class="adf-expand" or class="adf-nested-expand": found "<details>\\n<p>a</p>\\n</det"…'],
@@ -734,20 +737,24 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
   ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file"></span><span class="adf-file" data-bogus="1"></span></div>\n', 'unsupported-node-shape at /content/0/content/1: <span> takes no data-bogus attribute'],
   ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file">x</span></div>\n', 'unmappable-html at /content/0/content/0: <span class="adf-file"> holds nothing, and ends at </span>: found "x</span></div>\\n"'],
   ['<div class="adf-media-group"><span class="adf-file" data-id="a" data-type="file"></span>x</div>\n', 'unmappable-html at /content/0: <div> holds its <span class="adf-file"> files, then </div>: found "x</div>\\n"'],
-  ['<p style="color:red">a</p>\n', 'unmappable-html at /content/0: style on <p> holds text-align:center or text-align:right'],
-  ['<h1 style="text-align:left">a</h1>\n', 'unmappable-html at /content/0: style on <h1> holds text-align:center or text-align:right'],
+  ['<p data-align="left">a</p>\n', 'unmappable-html at /content/0: data-align on <p> holds center or end'],
+  ['<p style="text-align:center">a</p>\n', 'unmappable-html at /content/0: <p> takes no style attribute'],
+  ['<h1 data-align="right">a</h1>\n', 'unmappable-html at /content/0: data-align on <h1> holds center or end'],
   ['<p data-indent-level="7">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
   ['<p data-indent-level="0">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
   ['<p data-indent-level="02">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
   ['<p data-indent-level="1.5">a</p>\n', 'unmappable-html at /content/0: data-indent-level on <p> holds a whole number from 1 to 6'],
-  ['<p data-indent-level="2" style="text-align:center">a</p>\n', 'unmappable-html at /content/0: <p> takes no style attribute'],
+  ['<p data-indent-level="2" data-align="center">a</p>\n', 'unmappable-html at /content/0: <p> takes one of data-align and data-indent-level, first, before its data-* attributes'],
   ['<blockquote data-indent-level="2">\n<p>a</p>\n</blockquote>\n', 'unsupported-node-shape at /content/0: <blockquote> takes no data-indent-level attribute'],
   ['<h3 data-indent-level="">a</h3>\n', 'unmappable-html at /content/0: data-indent-level on <h3> holds a whole number from 1 to 6'],
-  ['<p data-local-id="p1" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes data-indent-level once, first, before its data-* attributes'],
-  ['<p data-indent-level="2" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes data-indent-level once, first, before its data-* attributes'],
-  ['<p style="text-align:center" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes data-indent-level once, first, before its data-* attributes'],
+  ['<p data-local-id="p1" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes one of data-align and data-indent-level, first, before its data-* attributes'],
+  ['<p data-indent-level="2" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes one of data-align and data-indent-level, first, before its data-* attributes'],
+  ['<p data-align="center" data-indent-level="2">a</p>\n', 'unmappable-html at /content/0: <p> takes one of data-align and data-indent-level, first, before its data-* attributes'],
   ['<details class="adf-expand" open="" open="">\n<p>a</p>\n</details>\n', 'unmappable-html at /content/0: <details> takes open="" once, after its other attributes'],
-  ['<p>a <span title="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, or opens with class="adf-emoji", "adf-mention" or "adf-status": found "<span title=\\"color:red\\">"…'],
+  ['<p>a <span title="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, opens with class="adf-emoji", "adf-mention" or "adf-status", or holds data-text-color alone: found "<span title=\\"color:red\\">"…'],
+  ['<p>a <span style="color:red">b</span></p>\n', 'unmappable-html at /content/0/content/1: a <span> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone, opens with class="adf-emoji", "adf-mention" or "adf-status", or holds data-text-color alone: found "<span style=\\"color:red\\">"…'],
+  ['<p>a <mark style="background-color:red">b</mark></p>\n', 'unmappable-html at /content/0/content/1: a <mark> of the dialect holds data-background-color alone: found "<mark style=\\"background-"…'],
+  ['<p>a <mark>b</mark></p>\n', 'unmappable-html at /content/0/content/1: a <mark> of the dialect holds data-background-color alone: found "<mark>b</mark></p>\\n"'],
   ['<blockquote><p>a</p></blockquote>\n', 'unmappable-html at /content/0: <blockquote> holds </blockquote> straight after it, or a line feed and its first block: found "<p>a</p></blockquote>\\n"'],
   ['<ul><li>a</li></ul>\n', 'unmappable-html at /content/0: <ul> holds </ul> straight after it, or a line feed and its first item: found "<li>a</li></ul>\\n"'],
   ['<details class="adf-expand">\n<summary>a\n</details>\n', 'unmappable-html at /content/0: <summary> ends at </summary>: found "a\\n</details>\\n"'],

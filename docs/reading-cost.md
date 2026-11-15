@@ -1127,3 +1127,20 @@ Read most (opens and searches):
 - `src/html/parse/html-to-adf.test.ts` 2
 - `.gitignore` 1
 - `AGENTS.md` 1
+
+## Reading cost, chunk d23ee0f1e8e2, finished 2026-11-15T11:45:38Z
+
+714516 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/html/emit/adf-to-html.test.ts` 18
+- `spec/html.md` 16
+- `src/html/parse/html-to-adf.test.ts` 16
+- `docs/decisions.md` 15
+- `src/html/parse/html-to-adf.ts` 14
+- `src/adf/block-nodes.ts` 11
+- `src/adf/document.ts` 9
+- `README.md` 8
+- `docs/feature-table.md` 8
+- `src/html/emit/adf-to-html.ts` 7

@@ -4,8 +4,10 @@ import { carriedNesting, carriedNode, carriedValue } from '../../adf/carried-jso
 import { carryContent } from '../carry-content.ts'
 import { carryJsonOffset, readCarryAttributes } from '../carry-attributes.ts'
 import { classesOfElement } from '../node-element.ts'
+import { colourAttributeOn } from '../mark-elements.ts'
 import { foundAt, refused, type Place, type ReadNode, type StartTag } from './source.ts'
 import { holdableJson, readsAsShown } from '../escaping.ts'
+import { mediaGroupClass, panelClass } from '../block-classes.ts'
 import { spellsCanonicalJson } from '../../canonical-json.ts'
 import { success } from '../../result.ts'
 
@@ -15,10 +17,7 @@ const holder = "a carry element's data-adf"
 export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', levels: number, place: Place): ReadNode {
   const json = readCarryAttributes(tag.attributes)
   if (json === undefined) {
-    const others = classesOfElement(tag.name).map((name) => `"${name}"`)
-    const last = others.pop()
-    const alternative = last === undefined ? '' : `, or opens with class=${others.length === 0 ? last : `${others.join(', ')} or ${last}`}`
-    return refused('unmappable-html', `a <${tag.name}> of the dialect is a carry element, holding class="adf-carry" and then data-adf alone${alternative}: ${foundAt(html, tag.start)}`, html, tag.start, place)
+    return refused('unmappable-html', `a <${element}> of the dialect ${spellings(element)}: ${foundAt(html, tag.start)}`, html, tag.start, place)
   }
   const jsonAt = tag.start + carryJsonOffset(tag.name)
   const node = heldNode(json, levels, html, jsonAt)
@@ -27,6 +26,16 @@ export function readCarry(html: string, tag: StartTag, element: 'div' | 'span', 
   const read = readsAsShown(html, tag.end, shown)
   if (read.whole) return success({ end: read.at, node: node.value })
   return refused('unmappable-html', `a carry element shows what adfToHtml writes for its node, as it or a browser spells it, then </${element}>; to change the node, edit its ADF and write the HTML again: ${foundAt(html, read.at)}`, html, read.at, place)
+}
+
+// Every way the dialect spells the element, so a refusal names the one meant.
+function spellings(element: 'div' | 'span'): string {
+  const classes = [...classesOfElement(element), ...(element === 'div' ? [mediaGroupClass, panelClass] : [])].sort().map((name) => `"${name}"`)
+  const last = classes.pop()
+  const opens = last === undefined ? [] : [`opens with class=${classes.length === 0 ? last : `${classes.join(', ')} or ${last}`}`]
+  const others = [...opens, ...(element === 'span' ? [`holds ${colourAttributeOn(element)} alone`] : [])]
+  const final = others.pop()
+  return `is a carry element, holding class="adf-carry" and then data-adf alone${others.map((other) => `, ${other}`).join('')}${final === undefined ? '' : `, or ${final}`}`
 }
 
 function heldNode(json: string, levels: number, html: string, jsonAt: number): Read<AdfNode> {
