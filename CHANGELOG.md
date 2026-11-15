@@ -11,8 +11,8 @@
   heading's alignment as `style="text-align:…"`, where `0.3.1` wrote the carry element, and `htmlToAdf` reads them
   back. The carry element `0.3.1` wrote for them still reads.
 - `adfToHtml` writes a paragraph's or heading's indentation as `data-indent-level="2"`, where `0.3.1` wrote the carry
-  element, and `htmlToAdf` reads it back. `htmlToAdf` also reads `<details open="">`, as a browser writes an expand its
-  user opened, as the same expand.
+  element, and `htmlToAdf` reads it back. The carry element `0.3.1` wrote for it still reads.
+- `htmlToAdf` reads an expand's `<details class="adf-expand" open="">`, as a browser writes one its user opened, as the same expand.
 - `adfToHtml` writes a panel as `<div class="adf-panel">`, an expand and a nested expand as `<details>` with the
   title in a `<summary>`, a task list as `<ul class="adf-task-list">` of items each a checkbox then its text, and a
   decision list as `<ul class="adf-decision-list">`, where `0.3.1` wrote the carry element, and `htmlToAdf` reads

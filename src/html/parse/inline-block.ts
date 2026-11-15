@@ -10,9 +10,8 @@ import { success } from '../../result.ts'
 // `own`: the attributes the element itself writes, such as a heading's level.
 export function readInlineBlock(html: string, tag: StartTag, type: string, vocabulary: AttributeVocabulary, own: AdfAttributes, place: Place): ReadNode {
   const written = Object.keys(own)
-  // Only a paragraph or heading takes an alignment or an indentation, as the attribute that spells it.
-  const aligned = type === 'paragraph' || type === 'heading'
-  const held = aligned ? readTextBlockAttributes(tag.attributes, tag.name, vocabulary, written) : readUnmarked(tag, vocabulary, written)
+  const marked = type === 'paragraph' || type === 'heading'
+  const held = marked ? readTextBlockAttributes(tag.attributes, tag.name, vocabulary, written) : readUnmarked(tag, vocabulary, written)
   if (held.fault !== undefined) return refused(held.fault.code, held.fault.message, html, tag.start, place)
   const inline = readInline(html, tag.end, place)
   if (!inline.ok) return inline
