@@ -1202,8 +1202,9 @@ an edge.
 
 A round judges whitespace at a line edge by its leaf's marks, the marks of the leaf across the hard
 break, and whether a hard break lies between. That it drops what the passes would is held by the
-property test against its reference counts (`runsSharedWithNext`), which found three things a
-round owes: it judges all its leaves before it changes any, since `trimPass` judges a leaf by its
+property test against its reference counts (`runsSharedWithNext`); on about one random line in
+100 000 the passes themselves part from that reference, and the replay parts with them. The test
+found three things a round owes: it judges all its leaves before it changes any, since `trimPass` judges a leaf by its
 neighbour as that stood before the pass, even where the neighbour goes in the same pass; it also
 judges the edge whitespace of a leaf holding more than whitespace, such as `'x '`; and it reads
 the pass's line merged, as `trimPass` merges before it judges. No round merges again: a leaf that
