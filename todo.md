@@ -63,7 +63,7 @@ The gap to close in `docs/decisions.md`: the class is "which output the audience
 
 A browser serializes a `<details>` its user opened as `<details open="">`, so a document read from a browser's DOM refuses at the expand, naming the attribute.
 
-The gap to close in `docs/decisions.md`: the class is browser-set DOM state, which is not a difference of the innerHTML algorithm, so §`htmlToAdf` also reads the dialect as a browser serializes it, which lists every difference that algorithm leaves, does not decide it.
+The gap to close in `docs/decisions.md`: the difference is browser-set DOM state, which is not a difference of the innerHTML algorithm, so §`htmlToAdf` also reads the dialect as a browser serializes it, which lists every difference that algorithm leaves, does not decide it.
 
 Recommendation: read `open=""` as the same expand and drop the state, since ADF's `expand` has no open state and the state is the viewer's, not the document's. The entry then names `open` as one more difference a browser leaves.
 
