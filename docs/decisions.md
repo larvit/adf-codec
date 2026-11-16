@@ -1494,15 +1494,17 @@ lines, before they wrote their own; the last four did not.
 Checked 2026-11-17 on the maintainer's Jira Cloud test site, by writing each spelling as wiki
 markup through its v2 API and reading back the ADF it became, and the reverse. Jira reads
 `\\` inside a cell as a `hardBreak`, `[~accountid:<id>]` as a `mention`, `+x+` as `underline`,
-`alt=text` as the image's `alt`, a link's `|title` without error but drops the title, and a smiley
-as the `emoji` `spec/wiki.md` lists. It doesn't read `{note}`, `{info}`, `{tip}` or `{warning}`: they
-stay text. A panel is `{panel:bgColor=<colour>}`, which Jira reads and writes, one colour a type:
-`info`, `note`, `success`, `warning` and `error`. Jira writes `tip` with an empty colour and reads
-that back as `info`, so `tip` rides the carry. That overturns the panel's `{note}` pick, and
-`spec/wiki.md` follows Jira. Jira differs from the spec where the spec keeps its own reading:
-`[~name]` reads as a `mention` with `id` `unknown`, `??x??` as `em` prefixed by `— `, header cell
-text carries `strong`, `{noformat}` has no `language`, and an unknown `{code:<language>}` reads
-`java`.
+`alt=text` as the image's `alt`, and a smiley as the `emoji` `spec/wiki.md` lists. It accepts a
+link's `|title` and drops it. It doesn't read `{note}`, `{info}`, `{tip}` or `{warning}`: they stay
+text. A panel is `{panel:bgColor=<colour>}`, which Jira reads and writes, with one colour per type:
+`error`, `info`, `note`, `success` and `warning`. Jira writes `tip` with an empty colour and reads
+that back as `info`, so `tip` rides the carry. That overturns the writer panel's `{note}` pick, and
+`spec/wiki.md` follows Jira there.
+
+Where Jira's reading differs, the spec keeps its own, since the writers' output must read back
+deep-equal and Jira's reading doesn't: `[~name]` reads as a `mention` with `id` `unknown`, `??x??` as
+`em` prefixed by `— `, a link's `|title` is dropped, header cell text carries `strong`, `{noformat}`
+has no `language`, and an unknown `{code:<language>}` reads `java`.
 
 ## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 
