@@ -1478,10 +1478,8 @@ to three between it and `jiraWikiMarkupToAdf`, short of the five of seven that s
 
 ## Jira wiki markup spellings the help leaves open are a writer panel's picks
 
-2026-11-16, a writer panel. Goal 11. Valid while a live Jira site renders each pick. The picks the
-help doesn't show at all, `{note}`, a link's title, an image's `alt`, `\\` inside a cell,
-`[~accountid:<id>]` and `+x+` as underline, wait for the maintainer's check on a live site. Lands
-with `spec/wiki.md`.
+2026-11-16, a writer panel. Goal 11. Valid while a live Jira site renders each pick. Lands with
+`spec/wiki.md`.
 
 Atlassian's text formatting notation help is the source for every spelling it shows. Nine
 spellings it leaves open went to seven fresh-context readers, seated as wiki-markup authors. Each
@@ -1492,6 +1490,19 @@ cell's two paragraphs as `\\`. Six picked `{noformat}` over `{code:none}` for a 
 language, five `[text|url|title]` over dropping the title, and five `alt=text` over `alt="text"`.
 The first three readers saw a few of the first question's candidates among the brief's opening
 lines, before they wrote their own; the last four did not.
+
+Checked 2026-11-17 on the maintainer's Jira Cloud test site, by writing each spelling as wiki
+markup through its v2 API and reading back the ADF it became, and the reverse. Jira reads
+`\\` inside a cell as a `hardBreak`, `[~accountid:<id>]` as a `mention`, `+x+` as `underline`,
+`alt=text` as the image's `alt`, a link's `|title` without error but drops the title, and a smiley
+as the `emoji` `spec/wiki.md` lists. It doesn't read `{note}`, `{info}`, `{tip}` or `{warning}`: they
+stay text. A panel is `{panel:bgColor=<colour>}`, which Jira reads and writes, one colour a type:
+`info`, `note`, `success`, `warning` and `error`. Jira writes `tip` with an empty colour and reads
+that back as `info`, so `tip` rides the carry. That overturns the panel's `{note}` pick, and
+`spec/wiki.md` follows Jira. Jira differs from the spec where the spec keeps its own reading:
+`[~name]` reads as a `mention` with `id` `unknown`, `??x??` as `em` prefixed by `— `, header cell
+text carries `strong`, `{noformat}` has no `language`, and an unknown `{code:<language>}` reads
+`java`.
 
 ## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 
