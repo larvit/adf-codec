@@ -97,6 +97,7 @@ In `docs/decisions.md`:
 - Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its content
 - Jira wiki markup's writers are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option
 - Jira wiki markup spellings the help leaves open are a writer panel's picks
+- A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 - `htmlToAdf` reads any HTML, with no option and no second call
 
 ## 1. Nothing about any consumer in the library
