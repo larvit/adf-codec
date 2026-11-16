@@ -1449,7 +1449,7 @@ alt text.
 ## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its content
 
 2026-11-15, the maintainer. Goals 1, 7 and 11. Valid while Jira's renderer reads the `{adf}` macro.
-Lands with `todo.md` items 192 to 196.
+Lands with `todo.md` items 193 to 196.
 
 Wiki markup has no spelling for some nodes and marks, a layout among them. The lossless wiki
 writer wraps each such node's ADF JSON in Jira's own `{adf}` macro: `{adf:display=block}` for a
@@ -1495,7 +1495,7 @@ lines, before they wrote their own; the last four did not.
 
 ## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 
-2026-11-16, the implementer of item 192, pending the maintainer's confirmation. Goals 1, 6 and 11.
+2026-11-16, the implementer of the wiki spec, pending the maintainer's confirmation. Goals 1, 6 and 11.
 Valid while Jira's editor writes these defaults.
 
 Real Jira documents hold attributes that wiki markup can't spell: `order` 1 on every ordered list,
