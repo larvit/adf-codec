@@ -12,8 +12,7 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 192 | 0.4.0 |  | owner | **Spec each ADF node's and mark's Jira wiki spelling in `spec/wiki.md`, sourced from Atlassian's text formatting notation help, with the wiki calls' names a developer panel picks.** | 2 | 2 | 1 | 3 | 3 | 11 by 3 | 2.5 |
-| 193 | 0.4.0 | 192 | owner | **Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.** | 3 | 1 | 2 | 4 | 7 | 11 by 4 | 0.4 |
+| 193 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.** | 3 | 1 | 2 | 4 | 7 | 11 by 4 | 0.4 |
 | 194 | 0.4.0 | 193 | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 | 193 | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
@@ -46,19 +45,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 192. Spec each ADF node's and mark's Jira wiki spelling in `spec/wiki.md`, sourced from Atlassian's text formatting notation help, with the wiki calls' names a developer panel picks.
-
-Goal 11. The lossless writer carries what wiki markup cannot spell in Jira's `{adf}` macro, as
-`docs/decisions.md` records. First confirm on a real Jira site that the renderer reads that macro
-around ADF JSON; where it does not, ask before building the writers.
-
-The spec names, per node and mark, the lossless writer's spelling, the lossy writer's, and what the
-reader reads. A developer panel picks the names of the reader and both writers, and whether the
-lossy writer is a call or an option, under Goals 6.1 and 8. Its brief names the trap a wrong pick
-sets: an app that saves through the lossy writer loses form on every save, with no refusal. A writer
-panel of the wiki-markup authors in the README's `## Audience` settles each spelling Jira's help
-leaves open.
 
 ### 193. Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.
 
