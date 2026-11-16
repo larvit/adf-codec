@@ -1246,3 +1246,15 @@ Read most (opens and searches):
 - `spec/unicode/CaseFolding.txt` 3
 - `corpus/README.md` 2
 - `docker-runner.sh` 2
+
+## Reading cost, chunk 9b0fb8ad2f75, finished 2026-11-16T00:06:34Z
+
+190123 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 8
+- `README.md` 4
+- `AGENTS.md` 3
+- `todo.md` 2
+- `src/index.ts` 1
