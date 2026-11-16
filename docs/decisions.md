@@ -1504,7 +1504,8 @@ that back as `info`, so `tip` rides the carry. That overturns the writer panel's
 Where Jira's reading differs, the spec keeps its own, since the writers' output must read back
 deep-equal and Jira's reading doesn't: `[~name]` reads as a `mention` with `id` `unknown`, `??x??` as
 `em` prefixed by `— `, a link's `|title` is dropped, header cell text carries `strong`, `{noformat}`
-has no `language`, and an unknown `{code:<language>}` reads `java`.
+has no `language`, an unknown `{code:<language>}` reads `java`, a `bgColor` outside the five reads as
+the nearest-looking panel type, not `info`, and a backslash before `:` stays text.
 
 ## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 
