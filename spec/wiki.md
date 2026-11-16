@@ -37,31 +37,30 @@ string.
 | --- | --- | --- |
 | `blockquote` holding one paragraph | `bq. `, the paragraph | the same |
 | `blockquote`, any other | `{quote}`, a line feed, its blocks, a line feed, `{quote}` | the same |
-| `bulletList`, `orderedList` of `order` 1 or none, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` items as `* `; an `orderedList` reads `order` 1 |
-| `codeBlock` with a `language` named below, or none, holding one text node | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; with none, `{noformat}`, the text, `{noformat}` the same way | the same; `{code}` reads `language` `java`; `title`, `borderStyle` and the other panel parameters drop |
+| `bulletList`, `orderedList` of `order` 1, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` items as `* `; an `orderedList` reads `order` 1 |
+| `codeBlock` holding one text node, of `language` `""` or a name below in lowercase | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; for `""`, `{noformat}`, the text, `{noformat}` the same way | the same, reading a `{code:<language>}` name in lowercase and `{noformat}` as `language` `""`; `{code}` reads `java`; `title`, `borderStyle` and the other panel parameters drop |
 | `heading` | `h1. ` to `h6. ` by `level` | the same |
-| `mediaSingle` of `layout` `center` or none, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` holds none of `!`, `\|` and `,` | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
+| `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` holds none of `!`, `\|` and `,` | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
 | `panel` of `panelType` `info`, `note`, `tip` or `warning` | the macro of that name, a line feed, its blocks, a line feed, the macro | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` reads as `info` |
 | `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
-| `table` of plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph; reads `isNumberColumnEnabled` `false` and `layout` `default` |
+| `table` of `isNumberColumnEnabled` `false` and `layout` `default`, plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph; reads `isNumberColumnEnabled` `false` and `layout` `default` |
 | any other block node, including a `paragraph` holding no content or only whitespace, and a node of a type this version doesn't know | the carry | `{adf:display=block}` reads its node |
 
-A `codeBlock` named in the table has a `language` of `""`, none, or a name the help lists, compared
-ignoring case and written as the help spells it: ActionScript, Ada, AppleScript, bash, C, C#, C++,
-CSS, Erlang, Go, Groovy, Haskell, HTML, Java, JavaScript, JSON, Lua, Nyan, Objc, Perl, PHP, Python,
-R, Ruby, Scala, SQL, Swift, VisualBasic, XML and YAML. Any other `language`, and a text holding
-`{code}` or `{noformat}`, rides the carry.
+The names the help lists for a `codeBlock`: actionscript, ada, applescript, bash, c, c#, c++, css,
+erlang, go, groovy, haskell, html, java, javascript, json, lua, nyan, objc, perl, php, python, r,
+ruby, scala, sql, swift, visualbasic, xml and yaml. A `codeBlock` with any other `language`, none
+included, or a text holding `{code}` or `{noformat}`, rides the carry.
 
-A `mediaSingle` or `table` attribute other than the ones the table names rides the carry: so does a
-`width`, a merged cell and a colour.
+A value other than the one a table names, an absent attribute included, rides the carry: so does
+a `width`, a merged cell and a colour.
 
 ## Inline
 
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `hardBreak` | `\\` | the same |
-| `mention` holding `id` and an empty or no `accessLevel` | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
+| `mention` holding `id` and `accessLevel` `""`, and no other attribute | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
 | `text` | its text; a character wiki markup would read as markup where it stands takes a backslash, and a text no backslash protects, such as a URL Jira would link, rides the carry | `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
 | any other inline node | the carry | `{adf:display=inline}` reads its nodes; `:)` and `:(` read `emoji` `:slight_smile:` and `:slight_frown:` |
 
@@ -102,4 +101,5 @@ Each of these has no ADF counterpart, so the reader keeps the text where there i
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
 - `!name.ext!` reads as its text: no ADF node holds an attachment by name.
 - `---` and `--` read as `—` and `–`.
-- A smiley other than `:)` and `:(` reads as text: the help names no ADF `emoji` for it.
+- A smiley other than `:)` and `:(` reads as text: those two have an ADF name every emoji set
+  shares, and the rest wait for a writer panel to pick one.

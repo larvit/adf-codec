@@ -1501,9 +1501,9 @@ Valid while Jira's editor writes these defaults.
 Real Jira documents hold attributes that wiki markup can't spell: `order` 1 on every ordered list,
 `accessLevel` `""` on every mention, `isNumberColumnEnabled` `false` and `layout` `default` on
 every table, `layout` `center` on `mediaSingle`, `language` `""` on a code block. A plain spelling
-stands for exactly those values and the reader writes them, so a Jira-authored document writes as
-wiki markup, not as JSON. Any other value, `localId` and a mention's `text` among them, rides the
-carry: the lossless writer keeps each attribute (`docs/decisions.md` §Ids stay site-local), and the
+stands for exactly that one value and the reader writes it, so a Jira-authored document writes as
+wiki markup, not as JSON. Any other value, an absent attribute, `localId` and a mention's `text`
+among them, rides the carry, so the plain spelling reads back deep-equal: the lossless writer keeps each attribute (`docs/decisions.md` §Ids stay site-local), and the
 lossy writer drops it. `[~name]` reads as text, not as a mention with `id` `name`, since Jira Cloud
 names a user by account id and the writer would otherwise write a different account back.
 The maintainer is asked whether the lossless writer may drop a mention's `text` and any `localId`,
