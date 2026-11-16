@@ -42,7 +42,7 @@ string.
 | `codeBlock` holding one text node, of `language` `""` or a name below in lowercase | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; for `""`, `{noformat}`, the text, `{noformat}` the same way | the same, reading a `{code:<language>}` name in lowercase and `{noformat}` as `language` `""`; `{code}` reads `java`; `title`, `borderStyle` and the other panel parameters drop |
 | `heading` | `h1. ` to `h6. ` by `level` | the same |
 | `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` holds none of `!`, `\|` and `,` | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
-| `panel` of `panelType` `error`, `info`, `note`, `success` or `warning` | `{panel:bgColor=<colour>}`, a line feed, its blocks, a line feed, `{panel}`, the colour being `#ffebe6` for `error`, `#deebff` for `info`, `#eae6ff` for `note`, `#e3fcef` for `success` and `#fffae6` for `warning` | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` and any `bgColor` the five spellings leave out read as `info` |
+| `panel` of `panelType` `error`, `info`, `note`, `success` or `warning` | `{panel:bgColor=<colour>}`, a line feed, its blocks, a line feed, `{panel}`, the colour being `#ffebe6` for `error`, `#deebff` for `info`, `#eae6ff` for `note`, `#e3fcef` for `success` and `#fffae6` for `warning` | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` and any `bgColor` the five spellings leave out read as `info`, colours compared without case; the other parameters drop |
 | `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
 | `table` of `isNumberColumnEnabled` `false` and `layout` `default`, plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph, and a whitespace-only text rides the carry; reads `isNumberColumnEnabled` `false` and `layout` `default` |
@@ -102,8 +102,10 @@ The writers never write these, and the reader reads them as follows:
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
 - `!name.ext!` reads as its text: no ADF node holds an attachment by name.
 - `---` and `--` read as `—` and `–`.
-- A smiley reads as the `emoji` Jira reads it as. The `emoji`'s `text` is the character where its `id`
-  is a code point, else its `shortName`.
+- A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a
+  digit and whatever comes before it: `x:)` and `f(x)` read, `a:Pb` and `:)x` don't, and a backslash
+  before it stops it. The `emoji`'s `text` is the character where its `id` is a code point, else its
+  `shortName`.
 
   | Smiley | `shortName` | `id` |
   | --- | --- | --- |
