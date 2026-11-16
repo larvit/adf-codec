@@ -4,8 +4,9 @@ What `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and the Jira wiki markup read
 node and mark. Each table's middle column is what both writers write, and the last is what the
 reader reads; "The lossy writer" says where the lossy writer differs. The source is Atlassian's
 "Text Formatting Notation Help", which Jira serves at `/secure/WikiRendererHelpAction.jspa?section=all`.
-A spelling the help doesn't show is a writer panel's pick, per `docs/decisions.md` §Jira wiki
-markup spellings the help leaves open are a writer panel's picks. The written form is contract
+A spelling the help doesn't show is what a live Jira site reads and writes, else a writer panel's
+pick, per `docs/decisions.md` §Jira wiki markup spellings the help leaves open are a writer panel's
+picks. The written form is contract
 (`docs/decisions.md` §The formats are API).
 
 ## The carry
@@ -41,7 +42,7 @@ string.
 | `codeBlock` holding one text node, of `language` `""` or a name below in lowercase | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; for `""`, `{noformat}`, the text, `{noformat}` the same way | the same, reading a `{code:<language>}` name in lowercase and `{noformat}` as `language` `""`; `{code}` reads `java`; `title`, `borderStyle` and the other panel parameters drop |
 | `heading` | `h1. ` to `h6. ` by `level` | the same |
 | `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` holds none of `!`, `\|` and `,` | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
-| `panel` of `panelType` `info`, `note`, `success`, `warning` or `error` | `{panel:bgColor=<colour>}`, a line feed, its blocks, a line feed, `{panel}`, the colour being `#deebff`, `#eae6ff`, `#e3fcef`, `#fffae6` or `#ffebe6` in that order | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` and any `bgColor` the five spellings leave out read as `info` |
+| `panel` of `panelType` `error`, `info`, `note`, `success` or `warning` | `{panel:bgColor=<colour>}`, a line feed, its blocks, a line feed, `{panel}`, the colour being `#ffebe6` for `error`, `#deebff` for `info`, `#eae6ff` for `note`, `#e3fcef` for `success` and `#fffae6` for `warning` | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` and any `bgColor` the five spellings leave out read as `info` |
 | `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
 | `table` of `isNumberColumnEnabled` `false` and `layout` `default`, plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph, and a whitespace-only text rides the carry; reads `isNumberColumnEnabled` `false` and `layout` `default` |
@@ -62,7 +63,7 @@ a `width`, a merged cell and a colour.
 | `hardBreak` | `\\` | the same |
 | `mention` holding `id` and `accessLevel` `""`, and no other attribute | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
 | `text` | its text; a character wiki markup would read as markup where it stands takes a backslash, and a text no backslash protects, such as a backslash itself or a URL Jira would link, rides the carry | `\\` reads as a `hardBreak` before `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
-| any other inline node | the carry | `{adf:display=inline}` reads its nodes; a smiley in the table under "What only the reader reads" reads as that `emoji` |
+| any other inline node | the carry | `{adf:display=inline}` reads its nodes |
 
 ## Marks
 
@@ -85,7 +86,7 @@ says `adfToPlainText` does, in wiki markup:
 
 - An attribute with no spelling drops. A node whose type has none is its text, or its blocks where
   it holds some.
-- A `panel` of type `tip` is `{panel}`. An `expand` is its title as a `*strong*` paragraph, then
+- A `panel` of another type is `{panel}`. An `expand` is its title as a `*strong*` paragraph, then
   its body. A task item is `* `, then `☑ ` or `☐ ` and its text. A `status`, `date` and `emoji` are
   the text they show, and a `mention` that rides is its `text`.
 - A `table` cell holding several blocks has them parted by `\\`; a `codeBlock` with a language the
@@ -96,13 +97,13 @@ says `adfToPlainText` does, in wiki markup:
 
 ## What only the reader reads
 
-Each of these has no ADF counterpart, so the reader keeps the text where there is some:
+The writers never write these, and the reader reads them as follows:
 
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
 - `!name.ext!` reads as its text: no ADF node holds an attachment by name.
 - `---` and `--` read as `—` and `–`.
-- A smiley reads as the `emoji` Jira reads it as. `text` is the character where `id` is a code point,
-  else the `shortName`.
+- A smiley reads as the `emoji` Jira reads it as. The `emoji`'s `text` is the character where its `id`
+  is a code point, else its `shortName`.
 
   | Smiley | `shortName` | `id` |
   | --- | --- | --- |
