@@ -1,33 +1,32 @@
 # Jira wiki markup
 
-The wiki markup the lossless writer writes, the lossy writer writes and the reader reads, per node
-and mark. Its source is Atlassian's "Text Formatting Notation Help", which every Jira site serves at
-`/secure/WikiRendererHelpAction.jspa?section=all`; a spelling the help does not show is settled in
-`docs/decisions.md` §Jira wiki markup spellings the help leaves open are a writer panel's picks. The
-carry is in `docs/decisions.md` §Jira wiki markup carries what it cannot spell in Jira's `{adf}`
-macro, and a lossy writer keeps only its content. The written form is contract
+What `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and the Jira wiki markup reader do with each ADF
+node and mark. Each table's middle column is what both writers write, and the last is what the
+reader reads; "The lossy writer" says where the lossy writer differs. The source is Atlassian's
+"Text Formatting Notation Help", which Jira serves at `/secure/WikiRendererHelpAction.jspa?section=all`.
+A spelling the help doesn't show is a writer panel's pick, per `docs/decisions.md` §Jira wiki
+markup spellings the help leaves open are a writer panel's picks. The written form is contract
 (`docs/decisions.md` §The formats are API).
 
 ## The carry
 
-The lossless writer spells a node or mark wiki markup has no spelling for as Jira's own `{adf}`
-macro around ADF JSON:
+Wiki markup has no spelling for some nodes, marks and attributes. The lossless writer writes each
+such node as Jira's own `{adf}` macro around the node's ADF JSON, per `docs/decisions.md` §Jira wiki
+markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its
+content:
 
-- A block node: `{adf:display=block}`, a line feed, the node's JSON, a line feed, `{adf}`.
-- An inline node, or a run of inline nodes under a mark wiki markup cannot spell:
-  `{adf:display=inline}`, the JSON of the node, or the array of the run's nodes, `{adf}`.
+- A block node: `{adf:display=block}`, a line feed, the JSON, a line feed, `{adf}`.
+- An inline node, or the run of inline nodes under a mark with no spelling, as an array:
+  `{adf:display=inline}`, the JSON, `{adf}`.
 
-The JSON is compact, and a `{` inside a string is `\u007b`, so the closing `{adf}` stands nowhere
-else. A node rides the carry where its type, an attribute or a mark has no spelling in the tables
-below, or where its content holds a node that does. The carry holds the nearest block or inline node
-that wiki markup can hold in its parent: a `listItem` and a `tableRow` cannot stand alone, so their
-list or table rides it.
+The JSON is compact with its keys sorted, as `spec/flavour.md` writes the markdown carry's, and a
+`{` inside a string is `{`, so the closing `{adf}` is the only one the text holds.
 
-The lossy writer writes no `{adf}`. Where the lossless writer carries a node, the lossy writer keeps
-what a reader of the rendered document sees, as `adfToPortableMarkdown` does (README §Portable
-markdown): the node's text, link targets and titles, its blocks where it holds some, and nothing for
-a `placeholder`. A mark the marks table does not spell drops, keeping its text. The lossy writer
-also writes a table cell's blocks parted by `\\`.
+A node rides the carry when it, one of its attributes or one of its marks has no spelling below. It
+also rides when it holds a block or inline node that rides, except that a node that rides inside a
+paragraph stands on its own there, in the paragraph's text. A block that rides inside a list item or
+a table cell makes the list or the table ride instead, since wiki markup can't hold a block macro
+there. Any `localId` rides, since `docs/decisions.md` §Ids stay site-local keeps ids in attributes.
 
 ## Blocks
 
@@ -36,47 +35,71 @@ string.
 
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
-| `paragraph` | its inline content | the same; a line feed inside it is a `hardBreak`, as Jira renders it |
-| `heading`, `level` 1 to 6 | `h1. ` to `h6. ` | the same |
-| `blockquote` of one paragraph | `bq. `, the paragraph | the same |
+| `blockquote` holding one paragraph | `bq. `, the paragraph | the same |
 | `blockquote`, any other | `{quote}`, a line feed, its blocks, a line feed, `{quote}` | the same |
-| `bulletList`, `orderedList` | `* ` and `# `, one more mark per level, mixed as `#* ` and `*# `; an item holds a paragraph, then lists | also `- ` items, as `* ` |
-| `codeBlock` with a `language` the help lists, one text node | `{code:java}`, a line feed, its text, a line feed, `{code}` | `{code}` reads `language` `java`, the help's default |
-| `codeBlock` with no `language`, one text node | `{noformat}`, a line feed, its text, a line feed, `{noformat}` | the same |
-| `panel` of `panelType` `info`, `note`, `tip`, `warning` | `{info}`, `{note}`, `{tip}`, `{warning}`, a line feed, its blocks, a line feed, the same macro | the same; a `title` parameter reads as the panel's first paragraph in `strong` |
+| `bulletList`, `orderedList` of `order` 1 or none, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` items as `* `; an `orderedList` reads `order` 1 |
+| `codeBlock` with a `language` named below, or none, holding one text node | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; with none, `{noformat}`, the text, `{noformat}` the same way | the same; `{code}` reads `language` `java`; `title`, `borderStyle` and the other panel parameters drop |
+| `heading` | `h1. ` to `h6. ` by `level` | the same |
+| `mediaSingle` of `layout` `center` or none, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` holds none of `!`, `\|` and `,` | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
+| `panel` of `panelType` `info`, `note`, `tip` or `warning` | the macro of that name, a line feed, its blocks, a line feed, the macro | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` reads as `info` |
+| `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
-| `table`, each cell one paragraph, a header row only first | `\|\|head\|\|`, then `\|cell\|` rows | the same |
-| `mediaSingle`, centered, uncaptioned, holding an external `media` | `!url!`; `!url\|alt=text!` where it holds an `alt` with none of `!`, `\|`, `,` | the same |
-| any other block node, a node of a type this version does not know | the carry | `{adf:display=block}` reads its node |
+| `table` of plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph; reads `isNumberColumnEnabled` `false` and `layout` `default` |
+| any other block node, including a `paragraph` holding no content or only whitespace, and a node of a type this version doesn't know | the carry | `{adf:display=block}` reads its node |
+
+A `codeBlock` named in the table has a `language` of `""`, none, or a name the help lists, compared
+ignoring case and written as the help spells it: ActionScript, Ada, AppleScript, bash, C, C#, C++,
+CSS, Erlang, Go, Groovy, Haskell, HTML, Java, JavaScript, JSON, Lua, Nyan, Objc, Perl, PHP, Python,
+R, Ruby, Scala, SQL, Swift, VisualBasic, XML and YAML. Any other `language`, and a text holding
+`{code}` or `{noformat}`, rides the carry.
+
+A `mediaSingle` or `table` attribute other than the ones the table names rides the carry: so does a
+`width`, a merged cell and a colour.
 
 ## Inline
 
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
-| `text` | its text, a character wiki markup would read as markup where it stands taking a backslash; where a backslash cannot protect it, the run rides the inline carry | `\X` reads X |
 | `hardBreak` | `\\` | the same |
-| `mention` holding an `id` and no other attribute | `[~accountid:5b10ac8d82e05b22cc7d4ef5]` | the same; `[~name]` reads `id` `name` |
-| any other inline node | the inline carry | `{adf:display=inline}` reads its nodes; `:)` and `:(` read `emoji` `:slight_smile:` and `:slight_frown:` |
+| `mention` holding `id` and an empty or no `accessLevel` | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
+| `text` | its text; a character wiki markup would read as markup where it stands takes a backslash, and a text no backslash protects, such as a URL Jira would link, rides the carry | `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
+| any other inline node | the carry | `{adf:display=inline}` reads its nodes; `:)` and `:(` read `emoji` `:slight_smile:` and `:slight_frown:` |
 
 ## Marks
 
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
-| `strong`, `em`, `strike`, `underline`, `code` | `*x*`, `_x_`, `-x-`, `+x+`, `{{x}}` | the same; `??x??` reads `em` |
+| `code`, `em`, `strike`, `strong`, `underline` | `{{x}}`, `_x_`, `-x-`, `*x*`, `+x+` | the same; `??x??` reads `em` |
+| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the text is the `href` | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
-| `textColor` | `{color:#336699}x{color}` | the same; `{color:red}` reads `#ff0000` |
-| `link` holding `href`, and `title` | `[text\|url]`, `[text\|url\|title]`; `[url]` where the text is the url | the same; `[#anchor]` and `[^name.ext]` read as targets `#anchor` and `^name.ext` |
-| any other mark | the inline carry around the marked run | `{adf:display=inline}` reads its run |
+| `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
+| any other mark | the carry around the marked run | `{adf:display=inline}` reads its run |
 
-A mark wiki markup spells opens and closes beside a character that bounds it. A run whose edge
-touches a word character, or whose delimiters the reader would read another way, rides the inline
-carry.
+A mark's delimiters sit beside whitespace, punctuation or the line's edge, and the run's first and
+last characters are not whitespace. A run where either fails rides the carry.
+
+## The lossy writer
+
+The lossy writer writes no `{adf}`. It writes the plain spellings above, and for what the lossless
+writer carries it keeps the content, as `docs/decisions.md` §Plain text is blocks a blank line apart
+says `adfToPlainText` does, in wiki markup:
+
+- An attribute with no spelling drops. A node whose type has none is its text, or its blocks where
+  it holds some.
+- A `panel` of another type is `{panel}`. An `expand` is its title as a `*strong*` paragraph, then
+  its body. A task item is `* `, then `☑ ` or `☐ ` and its text. A `status`, `date` and `emoji` are
+  the text they show, and a `mention` that rides is its `text`.
+- A `table` cell holding several blocks has them parted by `\\`; a `codeBlock` with a language the
+  help doesn't list is `{noformat}`, and one whose text holds `{code}` or `{noformat}` is a
+  paragraph of its lines parted by `\\`.
+- A stored `media` is its `alt`, else `[image]`.
+- A mark with no spelling drops, keeping its text.
 
 ## What only the reader reads
 
-- `{anchor:name}` reads as nothing: no ADF node holds a bookmark.
-- `{panel}` reads as a `panel` of `panelType` `info`, as the table says of a title; its colours and
-  border drop.
-- `!name.ext!` reads as text: no ADF node holds an attachment by name.
-- `---` and `--` read as `—` and `–`; `[file:///c:/temp/foo.txt]` reads as a `link`.
-- A smiley other than `:)` and `:(` reads as text.
+Each of these has no ADF counterpart, so the reader keeps the text where there is some:
+
+- `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
+- `!name.ext!` reads as its text: no ADF node holds an attachment by name.
+- `---` and `--` read as `—` and `–`.
+- A smiley other than `:)` and `:(` reads as text: the help names no ADF `emoji` for it.

@@ -1469,25 +1469,45 @@ refusal. Lands with `todo.md` items 193 to 196.
 Seven fresh-context readers, seated as the bot, the viewer/editor app and the LLM pipeline, were
 told the trap: an app saving through the lossy writer loses form on every save, with nothing
 refused. All seven picked `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` as two calls over one
-call with `{ lossy: true }`, and over `adfToPortableWiki`, which reads as the safe choice. The
-reader's name is not settled in this entry: the seats split four to three between
-`jiraWikiMarkupToAdf` and `jiraWikiToAdf`, short of five of seven.
+call with `{ lossy: true }`, and over `adfToPortableWiki`, which sounds like the safe choice to a
+reader who hasn't seen the trap.
+
+The reader's name is the maintainer's to pick before item 195: the readers split four to three
+between `jiraWikiMarkupToAdf` and `jiraWikiToAdf`, short of the five of seven that settle it
+(`AGENTS.md` §7). The pick lands in this entry.
 
 ## Jira wiki markup spellings the help leaves open are a writer panel's picks
 
-2026-11-16, a writer panel. Goal 11. Valid while a live Jira site renders each pick; the ones its
-help does not show, `{note}`, a link's title, an image's `alt`, `\\` inside a cell and
-`[~accountid:…]`, wait for the maintainer's check there. Lands with `spec/wiki.md`.
+2026-11-16, a writer panel. Goal 11. Valid while a live Jira site renders each pick. The picks the
+help doesn't show at all, `{note}`, a link's title, an image's `alt`, `\\` inside a cell,
+`[~accountid:<id>]` and `+x+` as underline, wait for the maintainer's check on a live site. Lands
+with `spec/wiki.md`.
 
-Atlassian's text formatting notation help is the source for every spelling it shows. For the nine
-it leaves open, seven fresh-context readers, seated as wiki-markup authors, each wrote their own
-spelling before picking among shuffled candidates, with no rationale and nothing saying what is
-implemented. Seven agreed on a one-paragraph blockquote as `bq. `, any other as `{quote}`, a note
-panel as `{note}`, underline as `+x+`, a mention as `[~accountid:5b10ac8d82e05b22cc7d4ef5]` and a
+Atlassian's text formatting notation help is the source for every spelling it shows. Nine
+spellings it leaves open went to seven fresh-context readers, seated as wiki-markup authors. Each
+wrote their own spelling before picking among shuffled candidates, with no rationale and nothing
+saying what is implemented. Seven agreed on a one-paragraph blockquote as `bq. `, any other as
+`{quote}`, a note panel as `{note}`, underline as `+x+`, a mention as `[~accountid:<id>]` and a
 cell's two paragraphs as `\\`. Six picked `{noformat}` over `{code:none}` for a code block with no
-language, five `[text|url|title]` over dropping the title, five `alt=text` over `alt="text"`. The
-first three seats read the brief's first 60 lines, which held a few of its first question's
-candidates; the last four read 55.
+language, five `[text|url|title]` over dropping the title, and five `alt=text` over `alt="text"`.
+The first three readers saw a few of the first question's candidates among the brief's opening
+lines, before they wrote their own; the last four did not.
+
+## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
+
+2026-11-16, the implementer of item 192, pending the maintainer's confirmation. Goals 1, 6 and 11.
+Valid while Jira's editor writes these defaults.
+
+Real Jira documents hold attributes that wiki markup can't spell: `order` 1 on every ordered list,
+`accessLevel` `""` on every mention, `isNumberColumnEnabled` `false` and `layout` `default` on
+every table, `layout` `center` on `mediaSingle`, `language` `""` on a code block. A plain spelling
+stands for exactly those values and the reader writes them, so a Jira-authored document writes as
+wiki markup, not as JSON. Any other value, `localId` and a mention's `text` among them, rides the
+carry: the lossless writer keeps each attribute (`docs/decisions.md` §Ids stay site-local), and the
+lossy writer drops it. `[~name]` reads as text, not as a mention with `id` `name`, since Jira Cloud
+names a user by account id and the writer would otherwise write a different account back.
+The maintainer is asked whether the lossless writer may drop a mention's `text` and any `localId`,
+which would let more of a real document stay plain.
 
 ## `htmlToAdf` reads any HTML, with no option and no second call
 
