@@ -44,8 +44,8 @@ string.
 | `panel` of `panelType` `info`, `note`, `tip` or `warning` | the macro of that name, a line feed, its blocks, a line feed, the macro | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` reads as `info` |
 | `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
-| `table` of `isNumberColumnEnabled` `false` and `layout` `default`, plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph; reads `isNumberColumnEnabled` `false` and `layout` `default` |
-| any other block node, including a `paragraph` holding no content or only whitespace, and a node of a type this version doesn't know | the carry | `{adf:display=block}` reads its node |
+| `table` of `isNumberColumnEnabled` `false` and `layout` `default`, plain rows, each cell holding one paragraph | per cell, `\|\|` for a `tableHeader` and `\|` for a `tableCell`, then its paragraph, the row closed by the last cell's delimiter; an empty paragraph as a space | the same; a space-only cell reads as an empty paragraph, and a whitespace-only text rides the carry; reads `isNumberColumnEnabled` `false` and `layout` `default` |
+| any other block node, including a `paragraph` holding no content or only whitespace outside a table cell, and a node of a type this version doesn't know | the carry | `{adf:display=block}` reads its node |
 
 The names the help lists for a `codeBlock`: actionscript, ada, applescript, bash, c, c#, c++, css,
 erlang, go, groovy, haskell, html, java, javascript, json, lua, nyan, objc, perl, php, python, r,
@@ -61,7 +61,7 @@ a `width`, a merged cell and a colour.
 | --- | --- | --- |
 | `hardBreak` | `\\` | the same |
 | `mention` holding `id` and `accessLevel` `""`, and no other attribute | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
-| `text` | its text; a character wiki markup would read as markup where it stands takes a backslash, and a text no backslash protects, such as a URL Jira would link, rides the carry | `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
+| `text` | its text; a character wiki markup would read as markup where it stands takes a backslash, and a text no backslash protects, such as a backslash itself or a URL Jira would link, rides the carry | `\\` reads as a `hardBreak` before `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
 | any other inline node | the carry | `{adf:display=inline}` reads its nodes; `:)` and `:(` read `emoji` `:slight_smile:` and `:slight_frown:` |
 
 ## Marks
@@ -69,7 +69,7 @@ a `width`, a merged cell and a colour.
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `code`, `em`, `strike`, `strong`, `underline` | `{{x}}`, `_x_`, `-x-`, `*x*`, `+x+` | the same; `??x??` reads `em` |
-| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the text is the `href` | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
+| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the text is the `href` and the link holds no `title` | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
 | `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
 | any other mark | the carry around the marked run | `{adf:display=inline}` reads its run |
