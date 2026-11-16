@@ -1457,6 +1457,38 @@ block node, `{adf:display=inline}` for an inline node or a marked run. The round
 Jira still renders the document. The lossy wiki writer ships beside it for consumers who want wiki
 markup alone: it drops the form of what wiki markup cannot spell and keeps its content.
 
+Confirmed 2026-11-16 on a live Jira Cloud site: a description holding `{adf:display=block}` around
+a `table` node's JSON rendered a table, and `{adf:display=inline}` around a `status` node's JSON
+rendered the status lozenge between its neighbouring words.
+
+## Jira wiki markup's writers are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option
+
+2026-11-16, a developer panel. Goals 6, 7 and 8. Valid while a lossy writer drops form with no
+refusal. Lands with `todo.md` items 193 to 196.
+
+Seven fresh-context readers, seated as the bot, the viewer/editor app and the LLM pipeline, were
+told the trap: an app saving through the lossy writer loses form on every save, with nothing
+refused. All seven picked `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` as two calls over one
+call with `{ lossy: true }`, and over `adfToPortableWiki`, which reads as the safe choice. The
+reader's name is not settled in this entry: the seats split four to three between
+`jiraWikiMarkupToAdf` and `jiraWikiToAdf`, short of five of seven.
+
+## Jira wiki markup spellings the help leaves open are a writer panel's picks
+
+2026-11-16, a writer panel. Goal 11. Valid while a live Jira site renders each pick; the ones its
+help does not show, `{note}`, a link's title, an image's `alt`, `\\` inside a cell and
+`[~accountid:…]`, wait for the maintainer's check there. Lands with `spec/wiki.md`.
+
+Atlassian's text formatting notation help is the source for every spelling it shows. For the nine
+it leaves open, seven fresh-context readers, seated as wiki-markup authors, each wrote their own
+spelling before picking among shuffled candidates, with no rationale and nothing saying what is
+implemented. Seven agreed on a one-paragraph blockquote as `bq. `, any other as `{quote}`, a note
+panel as `{note}`, underline as `+x+`, a mention as `[~accountid:5b10ac8d82e05b22cc7d4ef5]` and a
+cell's two paragraphs as `\\`. Six picked `{noformat}` over `{code:none}` for a code block with no
+language, five `[text|url|title]` over dropping the title, five `alt=text` over `alt="text"`. The
+first three seats read the brief's first 60 lines, which held a few of its first question's
+candidates; the last four read 55.
+
 ## `htmlToAdf` reads any HTML, with no option and no second call
 
 2026-11-15, a developer panel. Goals 6, 8 and 12. Valid while the dialect and foreign HTML read
