@@ -1472,9 +1472,9 @@ refused. All seven picked `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` as tw
 call with `{ lossy: true }`, and over `adfToPortableWiki`, which sounds like the safe choice to a
 reader who hasn't seen the trap.
 
-The reader's name is the maintainer's to pick before item 195: the readers split four to three
-between `jiraWikiMarkupToAdf` and `jiraWikiToAdf`, short of the five of seven that settle it
-(`AGENTS.md` §7). The pick lands in this entry.
+The reader is `jiraWikiToAdf`. The maintainer picked it on 2026-11-17, after the readers split four
+to three between it and `jiraWikiMarkupToAdf`, short of the five of seven that settle it
+(`AGENTS.md` §7).
 
 ## Jira wiki markup spellings the help leaves open are a writer panel's picks
 
@@ -1495,7 +1495,8 @@ lines, before they wrote their own; the last four did not.
 
 ## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 
-2026-11-16, the implementer of the wiki spec, pending the maintainer's confirmation. Goals 1, 6 and 11.
+2026-11-16, the implementer of the wiki spec; the maintainer confirmed the carry of `localId` and a
+mention's `text` on 2026-11-17. Goals 1, 6 and 11.
 Valid while Jira's editor writes these defaults.
 
 Real Jira documents hold attributes that wiki markup can't spell: `order` 1 on every ordered list,
@@ -1506,8 +1507,8 @@ wiki markup, not as JSON. Any other value, an absent attribute, `localId` and a 
 among them, rides the carry, so the plain spelling reads back deep-equal: the lossless writer keeps each attribute (`docs/decisions.md` §Ids stay site-local), and the
 lossy writer drops it. `[~name]` reads as text, not as a mention with `id` `name`, since Jira Cloud
 names a user by account id and the writer would otherwise write a different account back.
-The maintainer is asked whether the lossless writer may drop a mention's `text` and any `localId`,
-which would let more of a real document stay plain.
+The lossless writer drops no attribute, a mention's `text` and any `localId` included, since it
+would then no longer be lossless. A real document holding them writes those nodes as `{adf}` JSON.
 
 ## `htmlToAdf` reads any HTML, with no option and no second call
 
