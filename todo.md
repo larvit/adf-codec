@@ -61,7 +61,7 @@ lossless writer does, except where that writer would use the `{adf}` macro.
 A hand-written reader, as `htmlToAdf` is. Ships with the property that what the lossless writer of
 item 193 writes reads back deep-equal, and with refusals whose codes come from the closed list.
 
-The reader is `jiraWikiToAdf`, the maintainer's pick (`docs/decisions.md` §Jira wiki markup's writers
+The reader is `jiraWikiToAdf` (`docs/decisions.md` §Jira wiki markup's writers
 are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option).
 
 ### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
