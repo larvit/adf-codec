@@ -85,7 +85,7 @@ converts" asks.
 
 Reading HTML from emails, CMSs and editors is the most asked need on the Atlassian developer
 community. A developer panel picked `htmlToAdf` itself, with no option, as `docs/decisions.md`
-records.
+records. The maintainer placed it in 0.4.0 on 2026-11-16; it doesn't move to a later release.
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 
