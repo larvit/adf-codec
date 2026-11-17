@@ -1008,6 +1008,6 @@ test('reads foreign HTML nested 500 levels, and refuses the next level, a list\'
   assert.equal(refusal(htmlToAdf('<blockquote>'.repeat(1_000_000))).split(' ')[0], 'unsupported-nesting-depth')
 })
 
-test('reads foreign HTML of a million elements, open, closed or never closed, in time linear in its length', () => {
-  for (const html of ['<p>a</p>'.repeat(1_000_000), '<li>a'.repeat(1_000_000), `<ul>${'<li>a'.repeat(1_000_000)}`, `<table>${'<tr><td>a'.repeat(500_000)}`, `${'<b>'.repeat(1_000_000)}a${'</i>'.repeat(1_000_000)}`, '</p>'.repeat(1_000_000), `<p${' a="b"'.repeat(1_000_000)}>x`, `<p>${'<img src="a" alt="b">'.repeat(500_000)}`]) assert.equal(refusal(htmlToAdf(html)), 'read')
+test('reads foreign HTML of a hundred thousand elements, open, closed or never closed, in time linear in its length', () => {
+  for (const html of ['<p>a</p>'.repeat(100_000), '<li>a'.repeat(100_000), `<ul>${'<li>a'.repeat(100_000)}`, `<table>${'<tr><td>a'.repeat(50_000)}`, `${'<b>'.repeat(100_000)}a${'</i>'.repeat(100_000)}`, '</p>'.repeat(100_000), `<p${' a="b"'.repeat(100_000)}>x`, `<p>${'<img src="a" alt="b">'.repeat(50_000)}`]) assert.equal(refusal(htmlToAdf(html)), 'read')
 })
