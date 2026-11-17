@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 199`
+`Next ID = 200`
 
 ## Items
 
@@ -16,6 +16,7 @@
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
+| 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
@@ -100,6 +101,16 @@ Touches:
 
 - `README.md`: `## Main functionality`, `## Quick start`, `## Other ADF converters`, `## The calls`, `### The error shape` (small), `## The guarantees`, `## Everything exported`
 - `converter-comparison/compare.mjs`: lines 67-108 (small)
+
+### 199. Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.
+
+Item 198's product-owner review found that `escapedText` carries any text ending in `:` or `;` inside a line, since the next node's spelling may close a smiley. The closing delimiter of a mark group (`*` after `Environment:`) cannot, so a bold label comes out as `{adf}` JSON where plain `*Environment:*` reads the same. `atom` doesn't know the next spelled character; `groupSpelling` does.
+
+Touches:
+- `src/wiki/emit/inline-line.ts`: `atom`, `groupSpelling`
+- `src/wiki/emit/text-escaping.ts`: `escapedText`, `smileyStops`
+- `spec/wiki.md`: Inline
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` (small)
 
 ### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
 

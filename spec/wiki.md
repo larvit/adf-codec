@@ -66,14 +66,14 @@ a `width`, a merged cell and a colour.
 | --- | --- | --- |
 | `hardBreak` | `\\` | the same |
 | `mention` holding `id` and `accessLevel` `""`, and no other attribute, the `id` not empty and holding no whitespace or markup character | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
-| `text` | its text, escaped as below | `\\` reads as a `hardBreak` before `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
+| `text` | its text, escaped as below | `\\` reads as a `hardBreak` before `\X` reads `X`, except that Jira keeps the backslash before `:`, `;`, `.`, `,`, a letter, a digit or another backslash; a bare `http://` or `https://` address reads as a `link` |
 | any other inline node | the carry | `{adf:display=inline}` reads its node |
 
 A character takes a backslash where wiki markup would read it as markup. Here a line's edge counts
 as whitespace, and a node's edge inside the line as punctuation:
 
-- `[`, `]`, `{`, `}` and `|`, always, except that a `|` in a table cell rides the carry, since an
-  escaped one still ends the cell.
+- `[`, `]`, `{`, `}` and `|`, always. A text holding a `|` in a table cell rides the carry instead,
+  since an escaped `|` still ends the cell.
 - `*`, `+`, `-`, `^`, `_` and `~`, unless a letter or digit stands on both sides, or whitespace
   does.
 - `?` before another `?`, and `!` before anything but whitespace.
@@ -82,13 +82,19 @@ as whitespace, and a node's edge inside the line as punctuation:
   inside the line.
 - At a line's start, `#`, `*` and `-`.
 
-Jira keeps a backslash before `:`, `;`, a letter or a digit as text. So no backslash protects a
-backslash, a line feed or a carriage return; `http://` or `https://` in any case, which Jira would
-link; the `h` of `h1.` to `h6.` or the `b` of `bq.` at a line's start, in any case; `:D` and `:P`;
-or a `:` or `;` ending a node inside the line, where the next node's spelling may close a smiley. A
-text holding one rides the carry. So does a text that starts or ends its line with whitespace, and
-a text whose marks are those of the text before it, which the reader would join. A `hardBreak` or
-`mention` holding a mark rides too.
+Jira keeps a backslash before `:`, `;`, `.`, `,`, a letter, a digit or another backslash as text.
+So a backslash protects none of these, and a text holding one rides the carry:
+
+- a backslash, a line feed or a carriage return;
+- `http://` or `https://`, which Jira would link;
+- the `h` of `h1.` to `h6.` or the `b` of `bq.` at a line's start, in any case;
+- a smiley that reads and that no backslash before its `(` or closing `)` stops: `:D` and `:P`
+  where no letter or digit follows, and a `:` or `;` ending a node inside the line, where the next
+  node's spelling may close a smiley.
+
+A text that starts or ends its line with whitespace rides the carry too, and so does a text whose
+marks are those of the text before it, which the reader would join. A `hardBreak` or `mention`
+holding a mark rides as well.
 
 ## Marks
 
@@ -132,8 +138,8 @@ The writers never write these, and the reader reads them as follows:
 - `---` and `--` read as `—` and `–`.
 - A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a
   digit and whatever comes before it: `x:)` and `f(x)` read, `a:Pb` and `:)x` don't, and a backslash
-  before its `(` or its closing `)` stops it: `\(y)` and `:\)` read as text. The `emoji`'s `text` is the character where its `id` is a code point, else its
-  `shortName`.
+  before its `(` or its closing `)` stops it: `\(y)` and `:\)` read as text. The `emoji`'s `text`
+  is the character where its `id` is a code point, else its `shortName`.
 
   | Smiley | `shortName` | `id` |
   | --- | --- | --- |
