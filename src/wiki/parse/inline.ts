@@ -253,8 +253,12 @@ function bracketed(scan: Scan, at: number, held: string): number {
 // spec/wiki.md, What only the reader reads: a bare address, less the punctuation ending it.
 function bareAddress(scan: Scan, at: number): number {
   address.lastIndex = at
-  const href = scan.link === undefined ? address.exec(scan.wiki)?.[0].replace(/[.,;?]+$/, '') : undefined
-  if (href === undefined || href.endsWith('://')) return plainCharacter(scan, at)
+  const found = scan.link === undefined ? address.exec(scan.wiki)?.[0] : undefined
+  if (found === undefined) return plainCharacter(scan, at)
+  let end = found.length
+  while ('.,;?'.includes(found.charAt(end - 1))) end -= 1
+  const href = found.slice(0, end)
+  if (href.endsWith('://')) return plainCharacter(scan, at)
   push(scan, { marks: [{ attrs: { href }, type: 'link' }], node: undefined, text: href })
   return at + href.length
 }
