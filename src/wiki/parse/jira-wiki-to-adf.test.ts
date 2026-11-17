@@ -267,6 +267,9 @@ for (const { name, wiki } of roundTrips) {
 }
 
 const edgeCases: Case[] = [
+  { name: 'a table on each side of a list', reads: [node('table', { isNumberColumnEnabled: false, layout: 'default' }, node('tableRow', undefined, node('tableCell', undefined, paragraph(text('a'))))), node('bulletList', undefined, node('listItem', undefined, paragraph(text('b')))), node('table', { isNumberColumnEnabled: false, layout: 'default' }, node('tableRow', undefined, node('tableCell', undefined, paragraph(text('c')))))], wiki: '|a|\n* b\n|c|' },
+  { name: 'text after the macro closing a quote as a paragraph after the quote', reads: [node('blockquote', undefined, paragraph(text('a'))), paragraph(text('b'))], wiki: '{quote}\na\n{quote}b' },
+  { name: 'a backslash before a bar in a cell\'s link text', reads: [node('table', { isNumberColumnEnabled: false, layout: 'default' }, node('tableRow', undefined, node('tableCell', undefined, paragraph(text('a|b', { attrs: { href: 'http://c.d' }, type: 'link' })))))], wiki: '|[a\\|b|http://c.d]|' },
   { name: 'a backslash before a bar that ends a cell', reads: [{ attrs: { isNumberColumnEnabled: false, layout: 'default' }, content: [{ content: [{ content: [{ content: [{ text: 'a \\', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }, { content: [{ content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }], wiki: '|a \\| b|' },
   { name: 'a bar alone', reads: [{ content: [{ text: '|', type: 'text' }], type: 'paragraph' }], wiki: '|' },
   { name: 'a bar in a heading', reads: [{ attrs: { level: 1 }, content: [{ text: 'a|b', type: 'text' }], type: 'heading' }], wiki: 'h1. a|b' },
@@ -330,4 +333,8 @@ test(`refuses a list nesting past ${largestNesting} levels, naming its line`, ()
 
 test('refuses an inline {adf} macro that closes at the next line\'s start', () => {
   assert.equal(read('a {adf:display=inline}{"type":"status"}\n{adf}'), 'unsupported-node-shape at line 1, offset 0')
+})
+
+test('names the line of a refusal after empty lines', () => {
+  assert.equal(read('\n\n{adf}'), 'unsupported-node-shape at line 3, offset 2')
 })
