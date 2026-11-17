@@ -16,8 +16,7 @@
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
-| 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
-| 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
+| 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
@@ -32,7 +31,7 @@
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
-| 197 | 0.5.0 | 195 |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
+| 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
 | 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
 | 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
@@ -97,24 +96,6 @@ Touches:
 - `src/jira-wiki/emit/adf-to-jira-wiki.test.ts`
 - `src/index.ts`: lines 3-13 (small)
 - `package-tests/consumer.ts`: lines 1-17 (small)
-
-### 195. Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.
-
-A hand-written reader, as `htmlToAdf` is. Ships with the property that what the lossless writer of
-item 193 writes reads back deep-equal, and with refusals whose codes come from the closed list.
-
-The reader is `jiraWikiToAdf` (`docs/decisions.md` §Jira wiki markup's writers
-are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option).
-
-Touches:
-
-- `src/jira-wiki/parse/jira-wiki-to-adf.ts`
-- `src/jira-wiki/parse/jira-wiki-to-adf.test.ts`
-- `src/conformance/jira-wiki-property.test.ts`
-- `src/index.ts`: lines 3-13 (small)
-- `package-tests/consumer.ts`: lines 1-17 (small)
-- `.oxlintrc.json`: lines 6-48 (small)
-- `ci.sh`: lines 11-28 (small)
 
 ### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 
