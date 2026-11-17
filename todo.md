@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 198`
+`Next ID = 199`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 198 | 0.4.0 |  |  | **Check on the Jira test site that Jira reads each backslash escape and each inline carry `adfToLosslessJiraWiki` writes as `spec/wiki.md` says, and respell or carry what it reads otherwise.** | 2 | 2 | 2 | 4 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 193 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.** | 3 | 1 | 2 | 4 | 7 | 11 by 4 | 0.4 |
 | 194 | 0.4.0 | 193 | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 | 193 | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
@@ -29,7 +30,7 @@
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
-| 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
+| 197 | 0.5.0 | 195 |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
 | 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
 | 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
@@ -46,6 +47,19 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 198. Check on the Jira test site that Jira reads each backslash escape and each inline carry `adfToLosslessJiraWiki` writes as `spec/wiki.md` says, and respell or carry what it reads otherwise.
+
+Item 193's reviews left three questions the 2026-11-17 live check in `docs/decisions.md` §Jira wiki markup spellings the help leaves open are a writer panel's picks doesn't answer:
+
+- Whether Jira drops the backslash before `(`, `;`, `?`, `!`, `#`, and the `h` of `h1.` and the `b` of `bq.`. `(` is escaped often, as `(i)` is written `\(i)`.
+- Whether an inline `{adf}` carry whose JSON holds `|` survives inside a table cell, and whether a carried `\\` survives anywhere.
+- Smileys: the decision records that Jira keeps a backslash before `:` as text, so `:)` written as `\:)` shows a stray backslash in Jira. Where no escape Jira drops stops a smiley, carry the text in the `{adf}` macro instead.
+
+Touches:
+- `spec/wiki.md`: Inline
+- `src/wiki/emit/text-escaping.ts`: `escapes`, `opensSmiley`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` (small)
 
 ### 193. Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.
 
@@ -184,7 +198,7 @@ Topic 41858 asks for ADF as plain text. `adfToPlainText` now writes tables, imag
 
 ### 197. Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.
 
-Today `adfToLosslessJiraWiki` carries a heading as a block whenever one inline node in it rides, such as a `status`, since `spec/wiki.md` lets an inline carry stand on its own only inside a paragraph. A Jira user then sees no heading where the document has one. Extend the paragraph rule to headings in `spec/wiki.md` → The carry, and in `headingSpelling` in `src/wiki/emit/spelled-blocks.ts`; item 195's reader must read an inline carry inside a heading line.
+Today `adfToLosslessJiraWiki` carries a heading as a block whenever any inline node in it rides, such as a `status`, since `spec/wiki.md` lets an inline carry stand on its own only inside a paragraph. A Jira user then sees no heading where the document has one. Extend the paragraph rule to headings in `spec/wiki.md` → The carry, and in `headingSpelling` in `src/wiki/emit/spelled-blocks.ts`; item 195's reader must then read an inline carry inside a heading line too.
 
 ### 82. Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.
 

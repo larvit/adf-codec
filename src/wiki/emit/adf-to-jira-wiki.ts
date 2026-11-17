@@ -21,7 +21,7 @@ export function adfToLosslessJiraWiki(document: AdfDocument): Result<string> {
   })
 }
 
-// Every block a spelled block holds is spelled too, so only the document's own blocks ride. A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded).
+// Every block a spelled block holds is spelled too, so only the document's own blocks ride.
 function writeWiki(content: readonly AdfNode[]): Result<string> {
   const found = spelledBlocks(content)
   if (!found.ok) return found
@@ -39,6 +39,7 @@ function writeWiki(content: readonly AdfNode[]): Result<string> {
   return joinedWithin(pieces)
 }
 
+// A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded).
 function writeSpelled(root: AdfNode, spelled: ReadonlyMap<AdfNode, Spelling>, pieces: string[]): void {
   const pending: Pending[] = [{ node: root, prefix: '' }]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {

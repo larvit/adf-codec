@@ -11,7 +11,7 @@ import { parseJsonText } from '../json-text.ts'
 // JSON `carriedNesting` found within the levels its position leaves, the one value `carriedNode` reads.
 export type BoundedJson = { readonly bounded: JsonValue }
 
-// `carried` is the node, or the run of nodes, the carry holds; `spelled` is it as the carry holds it, `type` dropped where the format names it apart; `levels` the nesting its position leaves.
+// `carried`: the node, or the run of nodes, being carried; `spelled`: the JSON written for `carried`, its `type` dropped where the format names it apart; `levels` the nesting its position leaves.
 export function carriedJson(carried: AdfNode | readonly AdfNode[], spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
   const headroom = levels - nestingDepth(carried)
   if (!isJsonValue(spelled) || headroom < 0) return faulted(nestedPast(levels), path)

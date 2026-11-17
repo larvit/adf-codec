@@ -21,7 +21,7 @@ const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], [
 const spellableUrl = /^[^\s[\]{}|\\]+$/
 const spellableColour = /^#[0-9a-f]{6}$/i
 
-// spec/wiki.md, Inline and Marks: the nodes, each run of marked nodes, and the carry around what wiki markup cannot spell.
+// spec/wiki.md, Inline and Marks.
 export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<Line> {
   const atoms = nodes.map((node, index) => atom(node, nodes, index))
   const groups = markedGroups(atoms)
@@ -88,7 +88,6 @@ function hrefSpelling(node: AdfNode, nodes: readonly AdfNode[], index: number): 
   return sharesLink(nodes[index - 1]) || sharesLink(nodes[index + 1]) ? undefined : `[${href}]`
 }
 
-// `undefined` where wiki markup has no spelling for the mark.
 function markDelimiters(mark: AdfMark): Delimiters | undefined {
   const attrs = nodeAttrs(mark)
   const character = characterDelimiters.get(mark.type)
