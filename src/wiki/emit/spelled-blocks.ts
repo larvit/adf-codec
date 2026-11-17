@@ -94,7 +94,6 @@ function leafSpelling(node: AdfNode, path: ConvertErrorPath, inCell: boolean): R
 function paragraphSpelling(node: AdfNode, path: ConvertErrorPath, inCell: boolean): Result<Spelling | undefined> {
   if (!holdsExactly(node, {})) return success(undefined)
   if (node.content === undefined) return success({ blank: true, macros: 0, text: ' ' })
-  if (node.content.length === 0) return success(undefined)
   const line = inlineLine(node.content, path, inCell)
   if (!line.ok) return line
   return success({ blank: node.content.every((child) => child.type === 'text') && /^\s*$/u.test(node.content.map(({ text }) => text).join('')), macros: 0, text: line.value.line })

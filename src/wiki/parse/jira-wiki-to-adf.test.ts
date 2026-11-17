@@ -244,10 +244,6 @@ for (const { name, refusal, wiki } of refusals) {
   })
 }
 
-test('refuses what is not a string', () => {
-  const result = jiraWikiToAdf(JSON.parse('7'))
-  assert.equal(result.ok ? 'read' : result.error.code, 'not-a-string')
-})
 
 test(`reads a list nesting ${largestNesting} levels`, () => {
   const result = jiraWikiToAdf(`${'*'.repeat(largestNesting)} a`)
@@ -269,3 +265,69 @@ for (const { name, wiki } of roundTrips) {
     assert.equal(written.ok ? written.value : written.error.code, wiki)
   })
 }
+
+const edgeCases: Case[] = [
+  { name: 'a backslash before a bar that ends a cell', reads: [{ attrs: { isNumberColumnEnabled: false, layout: 'default' }, content: [{ content: [{ content: [{ content: [{ text: 'a \\', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }, { content: [{ content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }], wiki: '|a \\| b|' },
+  { name: 'a bar alone', reads: [{ content: [{ text: '|', type: 'text' }], type: 'paragraph' }], wiki: '|' },
+  { name: 'a bar in a heading', reads: [{ attrs: { level: 1 }, content: [{ text: 'a|b', type: 'text' }], type: 'heading' }], wiki: 'h1. a|b' },
+  { name: 'a bar in an item', reads: [{ content: [{ content: [{ content: [{ text: 'a|b', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }], wiki: '* a|b' },
+  { name: 'a bracket before a link', reads: [{ content: [{ text: '[a', type: 'text' }, { marks: [{ attrs: { href: 'http://c.d' }, type: 'link' }], text: 'b', type: 'text' }], type: 'paragraph' }], wiki: '[a[b|http://c.d]' },
+  { name: 'a cell ending in a mark, then a space', reads: [{ attrs: { isNumberColumnEnabled: false, layout: 'default' }, content: [{ content: [{ content: [{ content: [{ marks: [{ type: 'strong' }], text: 'a', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }], wiki: '|*a* |' },
+  { name: 'a closing code delimiter that opens nothing', reads: [{ content: [{ text: '}}a}}', type: 'text' }], type: 'paragraph' }], wiki: '}}a}}' },
+  { name: 'a code block on one line', reads: [{ attrs: { language: '' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }], wiki: '{noformat}x{noformat}' },
+  { name: 'a colour holding nothing', reads: [{ content: [{ text: '{color:red}{color}', type: 'text' }], type: 'paragraph' }], wiki: '{color:red}{color}' },
+  { name: 'a colour opened inside another, the first staying text', reads: [{ content: [{ text: '{color:red}a', type: 'text' }, { marks: [{ attrs: { color: '#0000ff' }, type: 'textColor' }], text: 'b', type: 'text' }], type: 'paragraph' }], wiki: '{color:red}a{color:blue}b{color}' },
+  { name: 'a dash run after a letter', reads: [{ content: [{ text: 'a-- b', type: 'text' }], type: 'paragraph' }], wiki: 'a-- b' },
+  { name: 'a dash run before a letter', reads: [{ content: [{ text: 'a --b', type: 'text' }], type: 'paragraph' }], wiki: 'a --b' },
+  { name: 'a delimiter after a letter outside the Basic Multilingual Plane', reads: [{ content: [{ text: '𝐀*b*', type: 'text' }], type: 'paragraph' }], wiki: '𝐀*b*' },
+  { name: 'a heading word inside a line', reads: [{ content: [{ text: 'x h1. y', type: 'text' }], type: 'paragraph' }], wiki: 'x h1. y' },
+  { name: 'a language in capitals between spaces', reads: [{ attrs: { language: 'python' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }], wiki: '{code: Python }\nx\n{code}' },
+  { name: 'a line after an item holding only an anchor', reads: [{ content: [{ content: [{ type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }, { content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], wiki: '* {anchor:a}\nb' },
+  { name: 'a link holding a bar in a cell', reads: [{ attrs: { isNumberColumnEnabled: false, layout: 'default' }, content: [{ content: [{ content: [{ content: [{ marks: [{ attrs: { href: 'http://b.c' }, type: 'link' }], text: 'a', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }], wiki: '|[a|http://b.c]|' },
+  { name: 'a link holding an empty title', reads: [{ content: [{ text: '[a|', type: 'text' }, { marks: [{ attrs: { href: 'http://b.c' }, type: 'link' }], text: 'http://b.c', type: 'text' }, { text: '|]', type: 'text' }], type: 'paragraph' }], wiki: '[a|http://b.c|]' },
+  { name: 'a list after a paragraph', reads: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }, { content: [{ content: [{ content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }], wiki: 'a\n* b' },
+  { name: 'a numbered list after a bullet list', reads: [{ content: [{ content: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }, { attrs: { order: 1 }, content: [{ content: [{ content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'orderedList' }], wiki: '* a\n# b' },
+  { name: 'a paragraph after a closed quote', reads: [{ content: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }], type: 'blockquote' }, { content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], wiki: '{quote}\na\n{quote}\nb' },
+  { name: 'a quote left open and empty', reads: [{ content: [{ type: 'paragraph' }], type: 'blockquote' }], wiki: '{quote}' },
+  { name: 'a rule after text', reads: [{ content: [{ text: 'a ----', type: 'text' }], type: 'paragraph' }], wiki: 'a ----' },
+  { name: 'a rule before text', reads: [{ content: [{ text: '---- a', type: 'text' }], type: 'paragraph' }], wiki: '---- a' },
+  { name: 'an address before a run of punctuation', reads: [{ content: [{ marks: [{ attrs: { href: 'http://a.b/c' }, type: 'link' }], text: 'http://a.b/c', type: 'text' }, { text: '.,;? d', type: 'text' }], type: 'paragraph' }], wiki: 'http://a.b/c.,;? d' },
+  { name: 'an address in a link text as text', reads: [{ content: [{ marks: [{ attrs: { href: 'http://c.d' }, type: 'link' }], text: 'see http://a.b', type: 'text' }], type: 'paragraph' }], wiki: '[see http://a.b|http://c.d]' },
+  { name: 'an image after text on its line', reads: [{ content: [{ text: 'x !', type: 'text' }, { marks: [{ attrs: { href: 'http://a.b/c.png' }, type: 'link' }], text: 'http://a.b/c.png', type: 'text' }, { text: '!', type: 'text' }], type: 'paragraph' }], wiki: 'x !http://a.b/c.png!' },
+  { name: 'an image before text on its line', reads: [{ content: [{ text: '!', type: 'text' }, { marks: [{ attrs: { href: 'http://a.b/c.png' }, type: 'link' }], text: 'http://a.b/c.png', type: 'text' }, { text: '! x', type: 'text' }], type: 'paragraph' }], wiki: '!http://a.b/c.png! x' },
+  { name: 'an image parameter between spaces, its value holding an equals sign', reads: [{ attrs: { layout: 'center' }, content: [{ attrs: { alt: 'x=y', type: 'external', url: 'http://a.b/c.png' }, type: 'media' }], type: 'mediaSingle' }], wiki: '!http://a.b/c.png| alt = x=y !' },
+  { name: 'an item after two spaces', reads: [{ content: [{ content: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }], wiki: '*  a' },
+  { name: 'an item holding only an anchor', reads: [{ content: [{ content: [{ type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }], wiki: '* {anchor:a}' },
+  { name: 'an opening code delimiter that closes nothing', reads: [{ content: [{ text: '{{a{{ b', type: 'text' }], type: 'paragraph' }], wiki: '{{a{{ b' },
+  { name: 'brackets holding three bars', reads: [{ content: [{ text: '[a|', type: 'text' }, { marks: [{ attrs: { href: 'http://b.c' }, type: 'link' }], text: 'http://b.c', type: 'text' }, { text: '|t|u]', type: 'text' }], type: 'paragraph' }], wiki: '[a|http://b.c|t|u]' },
+  { name: 'two delimiters holding nothing', reads: [{ content: [{ text: 'x ** a', type: 'text' }], type: 'paragraph' }], wiki: 'x ** a' },
+]
+
+for (const { name, reads, wiki } of edgeCases) {
+  test(`reads ${name}`, () => {
+    assert.deepEqual(read(wiki), reads)
+  })
+}
+
+test('refuses an {adf} macro left open, naming its line', () => {
+  assert.deepEqual(jiraWikiToAdf('a\nb\n{adf}'), { error: { code: 'unsupported-node-shape', message: 'an {adf} macro closes with {adf}: this one is left open', path: [], position: { line: 3, offset: 4 } }, ok: false })
+})
+
+test('refuses an {adf} macro holding no JSON, naming its line', () => {
+  assert.deepEqual(jiraWikiToAdf('a\n\n  {adf:display=block}x{adf}'), { error: { code: 'unsupported-node-shape', message: 'an {adf} macro holds one ADF node\'s JSON: this is no JSON', path: [], position: { line: 3, offset: 3 } }, ok: false })
+})
+
+test('refuses a number, naming what it wants', () => {
+  assert.deepEqual(jiraWikiToAdf(JSON.parse('5')), { error: { code: 'not-a-string', message: 'Jira wiki markup is a string: found a number', path: [], position: { line: 1, offset: 0 } }, ok: false })
+})
+
+test(`refuses a list nesting past ${largestNesting} levels, naming its line`, () => {
+  assert.deepEqual(jiraWikiToAdf(`a\n${'*'.repeat(largestNesting + 1)} b`), {
+    error: { code: 'unsupported-nesting-depth', message: 'lists nest deeper than 500 levels', path: [], position: { line: 2, offset: 2 } },
+    ok: false,
+  })
+})
+
+test('refuses an inline {adf} macro that closes at the next line\'s start', () => {
+  assert.equal(read('a {adf:display=inline}{"type":"status"}\n{adf}'), 'unsupported-node-shape at line 1, offset 0')
+})
