@@ -646,6 +646,58 @@ const lossyCases: [string, AdfNode[], string][] = [
   ['writes a marked text beside a letter as its text', [paragraph(text('un'), text('believ', bold), text('able'))], 'unbelievable'],
   ['writes the marks it can of a group where one cannot read', [paragraph(text('un'), text('believ', bold, { attrs: { href: 'https://x.se' }, type: 'link' }), text('able'))], 'un[believ|https://x.se]able'],
 ]
+const colour = (color: string): AdfMark => ({ attrs: { color }, type: 'textColor' })
+const link: AdfMark = { attrs: { href: 'https://x.se' }, type: 'link' }
+const checkedMarks: [string, AdfMark, string][] = [
+  ['code', { type: 'code' }, '{{a}}'],
+  ['em', { type: 'em' }, '_a_'],
+  ['strike', { type: 'strike' }, '-a-'],
+  ['strong', bold, '*a*'],
+  ['sub', { attrs: { type: 'sub' }, type: 'subsup' }, '~a~'],
+  ['sup', { attrs: { type: 'sup' }, type: 'subsup' }, '^a^'],
+  ['underline', { type: 'underline' }, '+a+'],
+]
+for (const [name, mark, spelled] of checkedMarks) {
+  test(`the lossy writer parts the whitespace at the edges of a ${name} text`, () => {
+    assert.equal(lossy(paragraph(text('x'), text(' a ', mark), text('y'))), `x ${spelled} y`)
+    assert.equal(lossy(paragraph(text('x'), text(' a', mark))), `x ${spelled}`)
+    assert.equal(lossy(paragraph(text('a ', mark), text('y'))), `${spelled} y`)
+  })
+}
+
+test('the lossy writer refuses a document nested past the limit by its message and the path of the first node past it', () => {
+  const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting - 1)))
+  assert.equal(result.ok ? 'written' : `${result.error.message} at /${result.error.path.join('/')}`, `the document nests deeper than the ${largestNesting} levels the writer carries at /${Array(largestNesting + 1).fill('content/0').join('/')}`)
+})
+
+const moreLossyCases: [string, AdfNode[], string][] = [
+  ['keeps a bq. inside a {quote}', [quote(quote(paragraph(text('c'))), paragraph(text('d')))], '{quote}\nbq. c\n\nd\n{quote}'],
+  ['writes a nested expand as its title in strong and then its body', [{ attrs: { title: 'Title' }, content: [paragraph(text('Body'))], type: 'nestedExpand' }], '*Title*\n\nBody'],
+  ['writes a panel by its type', [panel('error', paragraph(text('x')))], '{panel:bgColor=#ffebe6}\nx\n{panel}'],
+  ['joins the texts of a code block', [{ attrs: { language: 'java' }, content: [text('a'), text('b')], type: 'codeBlock' }], '{code:java}\nab\n{code}'],
+  ['encodes a ! in the address of an image that has an alt', [externalImage('https://x.se/a!b.png', 'alt')], '!https://x.se/a%21b.png|alt=alt!'],
+  ['drops the whitespace around the address of an image', [externalImage(' https://x.se/a.png ')], '!https://x.se/a.png!'],
+  ['ends an item at a block that shows nothing after a list', [list('bulletList', item(paragraph(text('a')), list('orderedList', item(paragraph(text('b')))), { type: 'rule' }))], '* a\n*# b'],
+  ['writes an item that shows nothing as an empty item', [list('bulletList', item({ type: 'rule' }))], '*  '],
+  ['writes what a table holds that is no row after it', [{ content: [{ content: [cell('tableCell', text('c'))], type: 'tableRow' }, code('java', 'x')], type: 'table' }], '|c|\n\n{code:java}\nx\n{code}'],
+  ['parts the lines of a code block in a cell, an empty one too', [table({}, [{ content: [code('java', 'a\n\nb')], type: 'tableCell' }])], String.raw`|a\\\\b|`],
+  ['writes no line for a blank paragraph in a cell', [table({}, [{ content: [paragraph(text('a')), paragraph(), paragraph(text('b'))], type: 'tableCell' }])], String.raw`|a\\b|`],
+  ['writes an image with no alt in a cell as its address', [table({}, [{ content: [{ attrs: { type: 'external', url: 'https://x.se/i.png' }, type: 'media' }], type: 'tableCell' }])], '|https://x.se/i.png|'],
+  ['writes an emoji with an id as its text', [paragraph({ attrs: { id: 'smile', shortName: ':smile:', text: '😄' }, type: 'emoji' })], '😄'],
+  ['drops a mark of another type holding an address', [paragraph(text('a', { attrs: { href: 'https://x.se' }, type: 'annotation' }))], 'a'],
+  ['drops a mark of another type holding a title', [paragraph(text('a', { attrs: { title: 'a|b' }, type: 'annotation' }))], 'a'],
+  ['drops a colour that is no hex code', [paragraph(text('a', colour('x#fff')), text(' b', colour('#ffff')), text(' c', colour('x#00ff00')), text(' d', colour('#00ff00ff')))], 'a b c d'],
+  ['parts the edges of a text with several checked marks', [paragraph(text('x'), text(' a ', bold, colour('#f00')), text('y'))], 'x *{color:#ff0000}a{color}* y'],
+  ['keeps the space of a marked text that is only whitespace', [paragraph(text('a'), text(' ', bold), text('b'))], 'a b'],
+  ['drops the whitespace a line starts and ends with', [paragraph(text('  a  '))], 'a'],
+  ['drops the links that hold only whitespace before the text', [paragraph(text(' ', link), text(' ', { attrs: { href: 'https://y.se' }, type: 'link' }), text('a'))], 'a'],
+]
+for (const [name, content, expected] of moreLossyCases) {
+  test(`the lossy writer ${name}`, () => {
+    assert.equal(lossy(...content), expected)
+  })
+}
+
 for (const [name, content, expected] of lossyCases) {
   test(`the lossy writer ${name}`, () => {
     assert.equal(lossy(...content), expected)

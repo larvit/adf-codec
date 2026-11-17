@@ -91,9 +91,6 @@ function block(node: AdfNode): AdfNode[] {
       return heading(node)
     case 'media':
       return [imageBlock(node)]
-    case 'mediaGroup':
-    case 'mediaSingle':
-      return content.flatMap((child) => (child.type === 'media' ? [imageBlock(child)] : block(child)))
     case 'panel':
       return panel(node)
     case 'rule':
@@ -181,10 +178,9 @@ function list(type: string, children: readonly AdfNode[]): AdfNode[] {
 
 // A task item keeps its state as a marker leading its text.
 function itemBlocks(item: AdfNode): AdfNode[] {
-  if (item.type !== 'listItem' && !taskTypes.includes(item.type)) return blocks([item])
+  if (!taskTypes.includes(item.type)) return blocks([item])
   const content = nodeContent(item)
-  const inner = blockNodeModel(item.type)?.contentModel === 'inline' ? [paragraph(inlines(content))] : blocks(content)
-  if (!taskTypes.includes(item.type)) return inner
+  const inner = item.type === 'taskItem' ? [paragraph(inlines(content))] : blocks(content)
   const marker = textNode(nodeAttrs(item)['state'] === 'DONE' ? '☑ ' : '☐ ', [])
   const [first, ...rest] = inner
   return first?.type === 'paragraph' ? [paragraph(inlines([marker, ...nodeContent(first)])), ...rest] : [paragraph([marker]), ...inner]
@@ -246,8 +242,6 @@ function lines(node: AdfNode): AdfNode[][] {
       return content.length === 0 ? [] : [[...content]]
     case 'media':
       return [[textNode(String(nodeAttrs(node)['alt'] ?? nodeAttrs(node)['url']), [])]]
-    case 'rule':
-      return []
     default:
       return content.flatMap(lines)
   }
@@ -265,7 +259,6 @@ function inlines(nodes: readonly AdfNode[]): AdfNode[] {
 
 function inlineNodes(node: AdfNode): AdfNode[] {
   const marks = cleanMarks(nodeMarks(node))
-  if (node.type === 'text') return textNodes(node.text ?? '', marks)
   if (node.type === 'hardBreak') return [hardBreak]
   const { alt, id } = nodeAttrs(node)
   if (node.type === 'mention' && typeof id === 'string' && spellableUrl.test(id)) return [{ attrs: { accessLevel: '', id }, type: 'mention' }]
