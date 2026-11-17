@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 204`
+`Next ID = 206`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 204 | 0.4.0 |  | question | **Decide whether `adfToHtml`'s HTML, changed outside a carry element or missing its final line feed, keeps its `data-*` attributes when `htmlToAdf` reads it; today it reads as other HTML and drops them without a refusal.** | 2 | 2 | 3 | 5 | 3 |  | 0.0 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
@@ -36,6 +37,7 @@
 | 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
 | 201 | 0.5.0 |  | decision | **Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.** | 2 | 1 | 2 | 3 | 2 | 12 by 3 | 3.3 |
 | 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
+| 205 | 0.5.0 |  |  | **Settle by a reader panel how an image of empty `alt` in foreign HTML reads, an email's 1×1 tracking pixel among them, and read it so.** | 2 | 2 | 2 | 4 | 2 | 12 by 2 | 2.2 |
 | 187 | 0.5.0 |  |  | **Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 3 | 6 by 2 | 1.8 |
 | 200 | 0.5.0 |  | decision | **Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.** | 2 | 2 | 2 | 4 | 4 | 12 by 3 | 1.6 |
 | 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.3 |
@@ -50,6 +52,28 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 204. Decide whether `adfToHtml`'s HTML, changed outside a carry element or missing its final line feed, keeps its `data-*` attributes when `htmlToAdf` reads it; today it reads as other HTML and drops them without a refusal.
+
+The gap: `docs/decisions.md` §`htmlToAdf` reads any HTML, with no option and no second call lets
+only a `data-adf` attribute or an `adf-` class claim the dialect. So `htmlToAdf(html.trimEnd())`
+on `adfToHtml`'s output, or the same HTML with one block an editor added, reads best effort and
+loses every `data-local-id`, `data-align`, `data-indent-level`, `data-colwidth`,
+`data-background-color` and `data-text-color` outside a claiming element, where `0.3.1` refused
+before the save. The viewer/editor persona relies on a refusal arriving before the save. Both the
+product-owner and the prose reviewer of item 137 raised it; the README, `spec/html.md` and
+`MIGRATION.md` state the loss and the check an app can make.
+
+Earlier entries of its class: §Foreign HTML reads best effort and is never refused, §`htmlToAdf`
+also reads the dialect as a browser serializes it.
+
+Candidate entry: "The dialect's `data-*` attributes claim it too: an element holding one reads only
+as the dialect, and HTML missing only its final line feed reads as the dialect." Instance it
+yields: `<p data-align="center">a</p>` in an email is `unsupported-node-shape` or a centred
+paragraph instead of a plain one, and a trimmed document reads whole.
+
+Recommendation: read HTML that misses only its final line feed as the dialect, and leave the claim
+rule as the developer panel picked it.
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
@@ -327,6 +351,14 @@ table from an email or a CMS loses its merged cells and its columns shift. Revis
 Technical principle "Prefer a standalone Python script over a shell script": `AGENTS.md` §3 teaches
 bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes. A wrong line range in
 `run.sh` mutates the wrong lines without failing, so the port tests how it reads diff hunks.
+
+### 205. Settle by a reader panel how an image of empty `alt` in foreign HTML reads, an email's 1×1 tracking pixel among them, and read it so.
+
+Today `<img src="https://example.com/open.gif" width="1" height="1" alt="">` beside other text
+reads as its URL, linked, and alone in its paragraph as a `mediaSingle`, by §An image reads as an
+image only alone in its paragraph. Most marketing email ends in one. `alt=""` marks an image as
+decoration in HTML (WHATWG HTML §4.8.4.4.4). The product-owner reviewer of item 137 asked whether
+the audience expects that reading (README goal 6).
 
 ### 187. Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 

@@ -36,6 +36,12 @@ for (const element of document.querySelectorAll('[data-text-color]')) element.st
 HTML from `adfToHtml`'s any more. An element with a `data-adf` attribute or an `adf-` class is
 still refused where it is not the HTML `adfToHtml` writes.
 
+HTML `adfToHtml` wrote is other HTML too once it is changed outside such an element, its final line
+feed trimmed included. Where `0.3.1` refused it, it now reads and loses each `data-*` attribute
+outside such an element, ids, alignment and colours among them. An app that saves what it reads can
+check first: `adfToHtml` of the document read equals the HTML handed in only where that HTML read
+as `adfToHtml`'s own.
+
 `portableMarkdownToAdf` reads more of GFM's pipe table:
 
 - A body row holding fewer cells than the header is padded with empty cells, where `0.3.1`
