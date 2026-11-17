@@ -121,6 +121,7 @@ test('writes a code block of language "" as a noformat macro', () => {
 test('writes a centred external image, with its alt where it holds one', () => {
   assert.equal(wiki(image({ type: 'external', url: 'https://example.com/a.png' })), '!https://example.com/a.png!')
   assert.equal(wiki(image({ alt: 'A cat', type: 'external', url: 'https://example.com/a.png' })), '!https://example.com/a.png|alt=A cat!')
+  assert.equal(wiki(image({ alt: 'A', type: 'external', url: 'https://example.com/a.png' })), '!https://example.com/a.png|alt=A!')
 })
 
 test('writes a panel of each of the five types with its colour', () => {
@@ -344,6 +345,7 @@ for (const [panelType, colour] of [['error', '#ffebe6'], ['info', '#deebff'], ['
 const external = { type: 'external', url: 'https://example.com/a.png' }
 const riddenBlocks: [string, AdfNode][] = [
   ['an image whose mediaSingle holds no media', { attrs: { layout: 'center' }, content: [paragraph(text('a'))], type: 'mediaSingle' }],
+  ['an image whose mediaSingle holds its caption first', { attrs: { layout: 'center' }, content: [{ content: [text('c')], type: 'caption' }, { attrs: external, type: 'media' }], type: 'mediaSingle' }],
   ['an image whose mediaSingle holds two media', { attrs: { layout: 'center' }, content: [{ attrs: external, type: 'media' }, { attrs: external, type: 'media' }], type: 'mediaSingle' }],
   ['an image whose media holds a width', image({ ...external, width: 10 })],
   ['an image of a stored file with a URL', image({ type: 'file', url: 'https://example.com/a.png' })],
@@ -358,13 +360,17 @@ const riddenBlocks: [string, AdfNode][] = [
   ['a code block holding another attribute', { attrs: { language: 'java', title: 'a' }, content: [text('x')], type: 'codeBlock' }],
   ['a blockquote holding no content', { type: 'blockquote' }],
   ['a list holding a paragraph', { content: [paragraph(text('a'))], type: 'bulletList' }],
+  ['a list holding a list item and a paragraph', { content: [item(paragraph(text('a'))), paragraph(text('b'))], type: 'bulletList' }],
+  ['a blockquote holding a list that holds a quote', { content: [list('bulletList', item(paragraph(text('a')), { content: [paragraph(text('b')), paragraph(text('c'))], type: 'blockquote' }))], type: 'blockquote' }],
   ['a list item holding a localId', list('bulletList', { attrs: { localId: 'i1' }, content: [paragraph(text('a'))], type: 'listItem' })],
   ['a list item opening with a list', list('bulletList', item(list('bulletList', item(paragraph(text('a'))))))],
   ['a panel holding another attribute', { attrs: { panelIcon: ':x:', panelType: 'info' }, content: [paragraph(text('a'))], type: 'panel' }],
   ['a table holding a paragraph', { attrs: plainTable, content: [paragraph(text('a'))], type: 'table' }],
+  ['a table holding a row and a paragraph', { attrs: plainTable, content: [{ content: [cell('tableCell', text('a'))], type: 'tableRow' }, paragraph(text('b'))], type: 'table' }],
   ['a table cell holding a code block', table(plainTable, [{ content: [code('java', 'x')], type: 'tableCell' }])],
   ['a table row holding a localId', { attrs: plainTable, content: [{ attrs: { localId: 'r1' }, content: [cell('tableCell', text('a'))], type: 'tableRow' }], type: 'table' }],
   ['a table row holding a paragraph', { attrs: plainTable, content: [{ content: [paragraph(text('a'))], type: 'tableRow' }], type: 'table' }],
+  ['a table row holding a cell and a paragraph', { attrs: plainTable, content: [{ content: [cell('tableCell', text('a')), paragraph(text('b'))], type: 'tableRow' }], type: 'table' }],
   ['a paragraph of whitespace texts', paragraph(text(' '), text(' ', { type: 'strong' }))],
 ]
 for (const [name, node] of riddenBlocks) {
