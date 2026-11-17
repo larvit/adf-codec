@@ -1,6 +1,6 @@
 import { backslashEscape, controlCharacterRange, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
 import { foldCase } from './case-folding.ts'
-import { holdsEntityReference, readEntityReference } from './entity-references.ts'
+import { holdsEntityReference, readEntityReference } from '../../entity-references.ts'
 
 export type InlineTarget = { definition: () => LinkDefinition; length: number }
 

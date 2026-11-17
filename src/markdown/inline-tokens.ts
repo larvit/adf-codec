@@ -5,7 +5,7 @@ import { backslashEscape, inlineHtmlConstruct, readBracketedAutolink, readEmailA
 import { backtickCloser, backtickRun } from './commonmark/backtick-runs.ts'
 import { claimDirectivePrefix } from './directive/syntax.ts'
 import { delimiterFlags, isWordCharacter, runLength } from './commonmark/emphasis-matching.ts'
-import { readEntityReference } from './commonmark/entity-references.ts'
+import { readEntityReference } from '../entity-references.ts'
 
 // `directive` and `html` carry no `width`: a directive reads by its own grammar, and the reader refuses HTML.
 export type InlineToken =

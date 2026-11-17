@@ -4,6 +4,7 @@ import test from 'node:test'
 import type { AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { ParseError, Result } from '../../result.ts'
 import { adfToHtml, htmlToAdf } from '../../index.ts'
+import { dialectHtmlToAdf } from './html-to-adf.ts'
 
 const ids = {
   item: '019ad5af-efd9-7f4e-a7c9-6aef16d4945f',
@@ -104,13 +105,13 @@ test('reads a line ending of CRLF as a line feed wherever the dialect has one, a
   assert.deepEqual(read(htmlToAdf(crlf(`${carry('div', bodied, '<p>Check the collation.</p>')}\n`))), document(bodied))
   assert.deepEqual(read(htmlToAdf(crlf(`${documentCarry}\n`))), { type: 'doc', version: 1 })
   assert.deepEqual(read(htmlToAdf('<hr data-style="a\r\nb">\n')), document({ attrs: { style: 'a\nb' }, type: 'rule' }))
-  for (const html of ['<p>a\r</p>\n', '<p>a</p>\r', '<p>a</p>\r\r\n', '<p>a\r\r\nb</p>\n']) assert.equal(refusal(htmlToAdf(html)).startsWith('unmappable-html'), true, JSON.stringify(html))
+  for (const html of ['<p>a\r</p>\n', '<p>a</p>\r', '<p>a</p>\r\r\n', '<p>a\r\r\nb</p>\n']) assert.equal(refusal(dialectHtmlToAdf(html)).startsWith('unmappable-html'), true, JSON.stringify(html))
 })
 
 test('places a refusal in HTML ending its lines in CRLF at the start of the line it stands on, counted in the HTML handed in', () => {
-  assert.equal(refusal(htmlToAdf('<p>a</p>\r\n<b>x</b>\r\n')), 'unmappable-html at /content/1 line 2 offset 10')
-  assert.equal(refusal(htmlToAdf('<p>a</p>\r\n<p>b</p>\r\n<p>c<b>d</b></p>\r\n')), 'unmappable-html at /content/2 line 3 offset 20')
-  assert.equal(refusal(htmlToAdf('<p>a</p>\r\n<p>b</p>')), 'unmappable-html at / line 2 offset 10')
+  assert.equal(refusal(dialectHtmlToAdf('<p>a</p>\r\n<b>x</b>\r\n')), 'unmappable-html at /content/1 line 2 offset 10')
+  assert.equal(refusal(dialectHtmlToAdf('<p>a</p>\r\n<p>b</p>\r\n<p>c<b>d</b></p>\r\n')), 'unmappable-html at /content/2 line 3 offset 20')
+  assert.equal(refusal(dialectHtmlToAdf('<p>a</p>\r\n<p>b</p>')), 'unmappable-html at / line 2 offset 10')
 })
 
 test('reads a carry element showing what a browser spells it as, in any mix with the spelling adfToHtml writes', () => {
@@ -208,7 +209,7 @@ test('reads a media group back from its spans', () => {
 
 test('refuses a figure, an image or a media group the writer does not write', () => {
   const figure = (inner: string, attributes = ' class="adf-media-single"'): string => `<figure${attributes}>${inner}</figure>\n`
-  const refused = (html: string, ...facts: readonly string[]): void => names(htmlToAdf(html), ...facts)
+  const refused = (html: string, ...facts: readonly string[]): void => names(dialectHtmlToAdf(html), ...facts)
   refused(figure('<img src="a">', ''), 'figure')
   refused(figure('<img src="a">', ' data-layout="wide" class="adf-media-single"'), 'figure')
   refused(figure('<img src="a">', ' class="adf-media-single" data-colour="red"'), 'data-colour')
@@ -249,7 +250,7 @@ test('reads underline, subscript, superscript and the two colours from their ele
 
 test('refuses a mark element the writer does not write', () => {
   for (const inner of ['<span style="color:red">x</span>', '<mark style="background-color:red">x</mark>', '<span data-background-color="red">x</span>', '<mark data-text-color="red">x</mark>', '<mark>x</mark>', '<span data-text-color="red" class="c">x</span>', '<span data-text-color="red" data-background-color="red">x</span>', '<u class="c">x</u>', '<sub data-text-color="red">x</sub>', '<span data-text-color="red"><span data-text-color="blue">x</span></span>']) {
-    assert.notEqual(refusal(htmlToAdf(`<p>${inner}</p>\n`)), 'read', inner)
+    assert.notEqual(refusal(dialectHtmlToAdf(`<p>${inner}</p>\n`)), 'read', inner)
   }
 })
 
@@ -268,7 +269,7 @@ test('reads a paragraph or heading with a data-align attribute as aligned', () =
   assert.deepEqual(read(htmlToAdf(`<p data-align="end" data-local-id="${ids.paragraph}"></p>\n`)), document({ attrs: { localId: ids.paragraph }, marks: [alignment('end')], type: 'paragraph' }))
   assert.deepEqual(read(htmlToAdf('<ul>\n<li><p data-align="center">x</p></li>\n</ul>\n')), document({ content: [item({ content: [text('x')], marks: [alignment('center')], type: 'paragraph' })], type: 'bulletList' }))
   for (const html of ['<p style="text-align:center">x</p>\n', '<p data-align="left">x</p>\n', '<p data-align="right">x</p>\n', '<p data-align="">x</p>\n', `<p data-local-id="${ids.paragraph}" data-align="center">x</p>\n`, '<p data-align="center" data-align="end">x</p>\n', '<figure class="adf-media-single" data-align="center"><img src="a"></figure>\n', '<blockquote data-align="center">\n<p>x</p>\n</blockquote>\n']) {
-    assert.notEqual(refusal(htmlToAdf(html)), 'read', html)
+    assert.notEqual(refusal(dialectHtmlToAdf(html)), 'read', html)
   }
 })
 
@@ -352,12 +353,12 @@ const tableRefusals: readonly (readonly [string, string])[] = [
 
 for (const [html, code] of tableRefusals) {
   test(`refuses a table not written as adfToHtml writes it: ${JSON.stringify(html)}`, () => {
-    assert.equal(refusal(htmlToAdf(html)).split(' ')[0], code)
+    assert.equal(refusal(dialectHtmlToAdf(html)).split(' ')[0], code)
   })
 }
 
 test('refuses a character between a list item\'s tag and its first block', () => {
-  assert.equal(refusal(htmlToAdf('<ul>\n<li>a<hr>\n</li>\n</ul>\n')).split(' ')[0], 'unmappable-html')
+  assert.equal(refusal(dialectHtmlToAdf('<ul>\n<li>a<hr>\n</li>\n</ul>\n')).split(' ')[0], 'unmappable-html')
 })
 
 test('counts a table and its rows each a level, and a cell none, as adfToHtml does', () => {
@@ -567,7 +568,7 @@ const refusals: Readonly<Record<string, readonly (readonly [string, string])[]>>
 }
 
 for (const [group, cases] of Object.entries(refusals)) {
-  for (const [html, expected] of cases) test(`${group}: ${JSON.stringify(html)}`, () => assert.equal(refusal(htmlToAdf(html)), expected))
+  for (const [html, expected] of cases) test(`${group}: ${JSON.stringify(html)}`, () => assert.equal(refusal(dialectHtmlToAdf(html)), expected))
 }
 
 const notStrings: Readonly<Record<string, unknown>> = { null: null, number: 5, object: {}, undefined: undefined }
@@ -580,7 +581,7 @@ for (const [kind, value] of Object.entries(notStrings)) {
 }
 
 test('refuses a tag of three million attributes, past what one pattern over them all holds, as a value', () => {
-  assert.equal(refusal(htmlToAdf(`<p${' a=""'.repeat(3_000_000)}>x</p>\n`)), 'unmappable-html at /content/0 line 1 offset 0')
+  assert.equal(refusal(dialectHtmlToAdf(`<p${' a=""'.repeat(3_000_000)}>x</p>\n`)), 'unmappable-html at /content/0 line 1 offset 0')
 })
 
 const messages: readonly (readonly [string, readonly string[]])[] = [
@@ -629,13 +630,13 @@ const messages: readonly (readonly [string, readonly string[]])[] = [
   ['<p><span class="adf-status">a&b</span></p>\n', ['text escapes & as &amp;', 'found "&b</span></p>\\n"']],
 ]
 
-for (const [html, facts] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => names(htmlToAdf(html), ...facts))
+for (const [html, facts] of messages) test(`names what it found where reading stopped, a character no one sees as its escape: ${JSON.stringify(html)}`, () => names(dialectHtmlToAdf(html), ...facts))
 
 test('reads blocks nested 500 levels, and refuses the next level, a list\'s items one level below it', () => {
   const quotes = (levels: number): string => `${'<blockquote>\n'.repeat(levels)}<p>x</p>${'\n</blockquote>'.repeat(levels)}\n`
   assert.equal(refusal(htmlToAdf(quotes(500))), 'read')
-  assert.equal(refusal(htmlToAdf(quotes(501))).startsWith(`unsupported-nesting-depth at /${'content/0/'.repeat(501)}content/0 line ${502}`), true)
-  names(htmlToAdf(quotes(501)), 'blocks', '500 levels')
+  assert.equal(refusal(dialectHtmlToAdf(quotes(501))).startsWith(`unsupported-nesting-depth at /${'content/0/'.repeat(501)}content/0 line ${502}`), true)
+  names(dialectHtmlToAdf(quotes(501)), 'blocks', '500 levels')
   const lists = (levels: number): string => `${'<ul>\n<li>x\n'.repeat(levels)}<hr>${'\n</li>\n</ul>'.repeat(levels)}\n`
   assert.equal(refusal(htmlToAdf(lists(500))), 'read')
   assert.equal(refusal(htmlToAdf(lists(501))).startsWith('unsupported-nesting-depth'), true)
@@ -772,7 +773,7 @@ const pinnedRefusals: readonly (readonly [string, string])[] = [
 
 for (const [html, expected] of pinnedRefusals) {
   test(`refuses with its code, path and message: ${JSON.stringify(html)}`, () => {
-    const result = htmlToAdf(html)
+    const result = dialectHtmlToAdf(html)
     assert.equal(result.ok ? 'read' : `${result.error.code} at /${result.error.path.join('/')}: ${result.error.message}`, expected)
   })
 }
@@ -823,7 +824,7 @@ test('reads an expand and a nested expand back from their details, the title fro
 })
 
 test('refuses an expand the writer does not write', () => {
-  const refused = (source: string): string => refusal(htmlToAdf(source))
+  const refused = (source: string): string => refusal(dialectHtmlToAdf(source))
   assert.equal(refused('<details class="adf-expand" open="x">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
   assert.equal(refused('<details class="adf-expand" open="" data-local-id="x1">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
   assert.equal(refused('<details class="adf-expand" open="" open="">\n<p>a</p>\n</details>\n'), 'unmappable-html at /content/0 line 1 offset 0')
@@ -867,4 +868,146 @@ test('refuses a task or decision list the writer does not write', () => {
   assert.equal(refused('<ul class="adf-task-list" data-extra="1"></ul>\n'), 'unsupported-node-shape at /content/0 line 1 offset 0')
   assert.equal(refused('<ul class="adf-decision-list">\n<li class="adf-decision">a</li>\n<li>b</li>\n</ul>\n'), 'unmappable-html at /content/0/content/1 line 3 offset 63')
   assert.equal(refused('<ul class="adf-task-list">\n</ul>\n'), 'unmappable-html at /content/0/content/0 line 2 offset 27')
+})
+
+function link(href: string, title?: string): AdfMark {
+  return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
+}
+
+function image(url: string, alt: string, ...rest: AdfNode[]): AdfNode {
+  return { attrs: { layout: 'center' }, content: [{ attrs: alt === '' ? { type: 'external', url } : { alt, type: 'external', url }, type: 'media' }, ...rest], type: 'mediaSingle' }
+}
+
+function list(type: 'bulletList' | 'orderedList', ...content: AdfNode[]): AdfNode {
+  return { content, type }
+}
+
+function table(...rows: AdfNode[][]): AdfNode {
+  return { content: rows.map((content) => ({ content, type: 'tableRow' })), type: 'table' }
+}
+
+function cell(type: 'tableCell' | 'tableHeader', ...content: AdfNode[]): AdfNode {
+  return { content, type }
+}
+
+const strong: AdfMark = { type: 'strong' }
+const em: AdfMark = { type: 'em' }
+const hardBreak: AdfNode = { type: 'hardBreak' }
+
+const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
+  'a container ADF has no node for as its children, its attributes dropped': ['<div align="center">text</div>', document(paragraph(text('text')))],
+  'containers inside each other as the blocks they hold': ['<html><body><main><section><h1 id="t">Title</h1><div><p class="lead">One</p><p>Two</p></div></section></main></body></html>', document(heading(1, text('Title')), paragraph(text('One')), paragraph(text('Two')))],
+  'text standing in no paragraph as a paragraph, parted where a block stands': ['one<div>two</div>three<p>four</p>five', document(paragraph(text('one')), paragraph(text('two')), paragraph(text('three')), paragraph(text('four')), paragraph(text('five')))],
+  'a script, a style, a comment, a doctype and a processing instruction as nothing': ['<!DOCTYPE html><?xml version="1.0"?><p>a<!-- <p>b</p> --></p><script>if (a < b) document.write("<p>c</p>")</script><STYLE type="text/css">p > a { color: red }</STYLE><!--[if mso]><p>d</p><![endif]-->', document(paragraph(text('a')))],
+  'an element a browser shows nothing of as nothing, with all it holds, and a <noscript> as its content': ['<head><title>T</title></head><p>a<template><b>b</b></template></p><p hidden>c<br></p><datalist><option>d</option></datalist><noscript><p>e</p></noscript>', document(paragraph(text('a')), paragraph(text('e')))],
+  'an unclosed comment, script or tag as the end of the HTML': ['<p>a</p><!-- b', document(paragraph(text('a')))],
+  'an unclosed script as the end of the HTML': ['<p>a</p><script>b', document(paragraph(text('a')))],
+  'an unclosed tag as the end of the HTML': ['<p>a</p><p class="b', document(paragraph(text('a')))],
+  'an unclosed declaration as the end of the HTML': ['<p>a</p><!DOCTYPE', document(paragraph(text('a')))],
+  'the marks of the elements a browser shows as bold, italic, struck, underlined, code, subscript and superscript': [
+    '<p><b>a</b><strong>b</strong> <i>c</i><em>d</em><cite>e</cite><dfn>f</dfn><var>g</var> <s>h</s><strike>i</strike><del>j</del> <u>k</u><ins>l</ins> <code>m</code><kbd>n</kbd><samp>o</samp><tt>p</tt> <sub>q</sub> <sup>r</sup></p>',
+    document(paragraph(text('ab', strong), text(' '), text('cdefg', em), text(' '), text('hij', { type: 'strike' }), text(' '), text('kl', { type: 'underline' }), text(' '), text('mnop', { type: 'code' }), text(' '), text('q', { attrs: { type: 'sub' }, type: 'subsup' }), text(' '), text('r', { attrs: { type: 'sup' }, type: 'subsup' }))),
+  ],
+  'marks one inside the other, the outermost first, each type once, and an element of no mark as its text': ['<p><b><i>a<b>b</b></i></b><span style="color:red">c</span><font color="red">d</font><sub><sup>e</sup></sub></p>', document(paragraph(text('ab', strong, em), text('cd'), text('e', { attrs: { type: 'sub' }, type: 'subsup' })))],
+  'a mark left open as marking the text to the end of its block': ['<p><b>a<i>b</p><p>c</p>', document(paragraph(text('a', strong), text('b', strong, em)), paragraph(text('c')))],
+  'a link from its href and title, and an anchor of no href as its text': ['<p><a href="https://example.com/a?b=1&amp;c=2" title="T" target="_blank" rel="noopener">x</a> <a name="n">y</a> <a href="z" title="">z</a></p>', document(paragraph(text('x', link('https://example.com/a?b=1&c=2', 'T')), text(' y '), text('z', link('z'))))],
+  'a link inside a link as the outer link': ['<p><a href="a">x<a href="b">y</a></a></p>', document(paragraph(text('xy', link('a'))))],
+  'character references as their characters, and an ampersand opening none as itself': ['<p title="a&amp;b">&lt;p&gt; &amp; &copy; &#169; &#xA9; &bogus; &amp;amp; AT&T</p>', document(paragraph(text('<p> & © © © &bogus; &amp; AT&T')))],
+  'white space as a browser shows it: runs as one space, none at the edges of a line': ['<p>\n  one\t\ttwo \n <b> three </b> <i> four</i>\n</p>\n\n<p> </p>\n', document(paragraph(text('one two '), text('three ', strong), text('four', em)))],
+  'a <br> as a hard break, the spaces beside it and a break ending the block dropped': ['<p>a <br> b<br/>c<BR><br></p><p><br></p>', document(paragraph(text('a'), hardBreak, text('b'), hardBreak, text('c')))],
+  'a block inside a paragraph or heading as a line of it': ['<h2>a<div>b</div>c</h2><p><span>d<address>e</address></span></p>', document(heading(2, text('a'), hardBreak, text('b'), hardBreak, text('c')), paragraph(text('d'), hardBreak, text('e')))],
+  'headings by their level, an <h7> as its text': ['<h1>a</h1><h6>b</h6><h7>c</h7><h3></h3>', document(heading(1, text('a')), heading(6, text('b')), paragraph(text('c')))],
+  'a paragraph ended by the block that follows it': ['<p>a<p>b<h2>c</h2><p>d<ul><li>e</ul>f</p>', document(paragraph(text('a')), paragraph(text('b')), heading(2, text('c')), paragraph(text('d')), list('bulletList', item(paragraph(text('e')))), paragraph(text('f')))],
+  'a heading or summary ended by the block that follows it': ['<h1>a<p>b</p>c</h1>', document(heading(1, text('a')), paragraph(text('b')), paragraph(text('c')))],
+  'an end tag closing no open element as nothing': ['<p>a</b></div></p></p>b', document(paragraph(text('a')), paragraph(text('b')))],
+  'a quote, its loose text as a paragraph, and an empty one as nothing': ['<blockquote cite="x">a<p>b</p></blockquote><blockquote> </blockquote>', document({ content: [paragraph(text('a')), paragraph(text('b'))], type: 'blockquote' })],
+  'lists, an item ended by the next, an ordered list\'s start as its order': [
+    '<ul class="x"><li>a<li><p>b</p><p>c</p></li></ul><ol start="3" type="a"><li>d</li></ol><ol start="x"><li>e</li><li></li></ol><ul></ul>',
+    document(list('bulletList', item(paragraph(text('a'))), item(paragraph(text('b')), paragraph(text('c')))), { attrs: { order: 3 }, content: [item(paragraph(text('d')))], type: 'orderedList' }, list('orderedList', item(paragraph(text('e'))), item(paragraph()))),
+  ],
+  'a list inside an item, the items of each ended inside their own list': ['<ul><li>a<ol><li>b<li>c</ol><li>d</ul>', document(list('bulletList', item(paragraph(text('a')), list('orderedList', item(paragraph(text('b'))), item(paragraph(text('c'))))), item(paragraph(text('d')))))],
+  'a list standing straight in a list, or text between two items, as part of the item before it, or an item of its own where none is': ['<ul><li>a</li><ul><li>b</li></ul>c</ul><ol>d<li>e</li></ol>', document(list('bulletList', item(paragraph(text('a')), list('bulletList', item(paragraph(text('b')))), paragraph(text('c')))), list('orderedList', item(paragraph(text('d'))), item(paragraph(text('e')))))],
+  'an item outside a list, a cell outside a table and a row outside one as their content': ['<li>a</li><td>b</td><tr><th>c</th></tr><summary>d</summary>', document(paragraph(text('a')), paragraph(text('b')), paragraph(text('c')), paragraph(text('d')))],
+  'a code block as its text, its language from its <code>, the line feed opening it dropped': ['<pre>\n<code class="hljs language-js other">if (a &lt; b) {\n  <span class="k">return</span>\n}</code></pre><pre class="x">a  b<br>c\n</pre><pre></pre><pre><code class="language-"><code class="language-py">x</code></code></pre>', document({ attrs: { language: 'js' }, content: [text('if (a < b) {\n  return\n}')], type: 'codeBlock' }, { content: [text('a  b\nc\n')], type: 'codeBlock' }, { type: 'codeBlock' }, { attrs: { language: 'py' }, content: [text('x')], type: 'codeBlock' })],
+  'a code block left open as holding the rest': ['<pre>a</p><p>b', document({ content: [text('ab')], type: 'codeBlock' })],
+  'a rule, ending the paragraph it stands in': ['<p>a<hr class="x">b</p><hr/>', document(paragraph(text('a')), { type: 'rule' }, paragraph(text('b')), { type: 'rule' })],
+  'a table, its sections and captions unwrapped, a row or cell ended by the next': [
+    '<table border="1"><caption>T</caption><colgroup><col width="10"></colgroup><thead><tr><th colspan="2">a<th>b<tbody><tr><td>c</td><td><p>d</p><p>e</p></td><tr><td></td></tr></tbody></table><table></table><table><tr></tr></table>',
+    document(table([cell('tableCell', paragraph(text('T')))], [cell('tableHeader', paragraph(text('a'))), cell('tableHeader', paragraph(text('b')))], [cell('tableCell', paragraph(text('c'))), cell('tableCell', paragraph(text('d')), paragraph(text('e')))], [cell('tableCell', paragraph())])),
+  ],
+  'cells standing straight in a table as a row of their own, and a block straight in a row as a cell': ['<table><td>a</td><th>b</th><tr><p>c</p><td>d</td></tr></table>', document(table([cell('tableCell', paragraph(text('a'))), cell('tableHeader', paragraph(text('b')))], [cell('tableCell', paragraph(text('c'))), cell('tableCell', paragraph(text('d')))]))],
+  'a table inside a cell, the end tags inside it closing nothing around it, and no mark reaching into a cell': ['<table><tr><td><b>a<table><tr><td>b</td></tr></td></tr></p></table>c</b></td></tr></table>', document(table([cell('tableCell', paragraph(text('a', strong)), table([cell('tableCell', paragraph(text('b')))]), paragraph(text('c', strong)))]))],
+  'a <details> as an expand titled by its summary, a nestedExpand inside another, an empty one holding an empty paragraph': [
+    '<details open><summary>The <b>title</b><br>here</summary>a<p>b</p><details><summary>In</summary></details><details><p>c</p><summary>d</summary></details></details><details></details>',
+    document({ attrs: { title: 'The title here' }, content: [paragraph(text('a')), paragraph(text('b')), { attrs: { title: 'In' }, content: [paragraph()], type: 'nestedExpand' }, { attrs: { title: 'd' }, content: [paragraph(text('c'))], type: 'nestedExpand' }], type: 'expand' }, { content: [paragraph()], type: 'expand' }),
+  ],
+  'a summary ended by the block that follows it, and a second summary as its text': ['<details><summary>a<p>b</p></summary><summary>c</summary></details>', document({ attrs: { title: 'a' }, content: [paragraph(text('b')), paragraph(text('c'))], type: 'expand' })],
+  'an image alone in its paragraph as the image, its title its caption, a link around it marking it': [
+    '<p><img src="https://example.com/a.png" alt="A" width="10"></p><p> <img alt="" title="Cap" src="b.png"> </p><a href="https://example.com/"><img src="c.png" alt="C"></a><p><a href="c.png"><img src="c.png"></a></p>',
+    document(image('https://example.com/a.png', 'A'), image('b.png', '', { content: [text('Cap')], type: 'caption' }), { attrs: { layout: 'center' }, content: [{ attrs: { alt: 'C', type: 'external', url: 'c.png' }, marks: [link('https://example.com/')], type: 'media' }], type: 'mediaSingle' }, { attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', url: 'c.png' }, marks: [link('c.png')], type: 'media' }], type: 'mediaSingle' }),
+  ],
+  'an image beside other content as its alt text, its URL where it has none, linked to the image': ['<p>See <img src="a.png" alt="the chart" title="T"> and <b><img src="b.png"></b></p><p><img src="c.png" alt="C"><br>d</p>', document(paragraph(text('See '), text('the chart', link('a.png', 'T')), text(' and '), text('b.png', strong, link('b.png'))), paragraph(text('C', link('c.png')), hardBreak, text('d')))],
+  'an image inside a link beside other content as the link\'s text, then (image) linked to the image unless the link reaches it': ['<p>Go <a href="x">to <img src="a.png" alt="A"> it</a>. <a href="b.png">w <img src="b.png" alt="B"></a></p>', document(paragraph(text('Go '), text('to A it', link('x')), text(' ('), text('image', link('a.png')), text('). '), text('w B', link('b.png'))))],
+  'two images in a paragraph as their alt texts': ['<p><img src="a.png" alt="A"><img src="b.png" alt="B"></p>', document(paragraph(text('A', link('a.png')), text('B', link('b.png'))))],
+  'an image of no src as its alt text, and as nothing without one': ['<p>a <img alt="b"><img></p>', document(paragraph(text('a b')))],
+  'an image alone in a heading or after an earlier line as its alt text': ['<h1><img src="a.png" alt="A"></h1><p>x<div><img src="b.png" alt="B"></div></p>', document(heading(1, text('A', link('a.png'))), paragraph(text('x'), hardBreak, text('B', link('b.png'))))],
+  'tag and attribute names in any case, attribute values quoted either way or not at all, the first of two attributes of a name': ['<P><A HREF=x title=\'a "b"\' href="y" disabled>z</A ></P >', document(paragraph(text('z', link('x', 'a "b"'))))],
+  'a < opening no tag as text': ['a < b, 1<2 and </> and <', document(paragraph(text('a < b, 1<2 and </> and <')))],
+  'an element of the dialect standing in foreign HTML as the dialect reads it': [
+    `<div><p>a <span class="adf-status" data-color="green">Done</span></p>${carry('div', { type: 'unknownBlock' }, '')}<blockquote><div class="adf-panel" data-panel-type="info">\n<p data-align="center">b</p>\n</div></blockquote></div>`,
+    document(paragraph(text('a '), { attrs: { color: 'green', text: 'Done' }, type: 'status' }), { type: 'unknownBlock' }, { content: [{ attrs: { panelType: 'info' }, content: [{ content: [text('b')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }], type: 'panel' }], type: 'blockquote' }),
+  ],
+  'an attribute of the dialect on an element not claiming it as dropped': ['<p data-align="left">a</p><table><tr><td colspan="0">b</td></tr></table>', document(paragraph(text('a')), table([cell('tableCell', paragraph(text('b')))]))],
+  'HTML that is nothing a reader sees as a document of no blocks': [' <!-- a -->\n<div> </div><p></p>', document()],
+}
+
+for (const [reading, [html, adf]] of Object.entries(foreign)) {
+  test(`reads foreign HTML best effort: ${reading}`, () => {
+    assert.deepEqual(read(htmlToAdf(html)), adf)
+    assert.deepEqual(read(htmlToAdf(html.replaceAll('\n', '\r\n'))), adf)
+    assert.equal(dialectHtmlToAdf(html).ok, false)
+  })
+}
+
+test('reads the dialect as the document written, whatever foreign HTML would make of it', () => {
+  assert.deepEqual(read(htmlToAdf('<p data-align="center">a</p>\n')), document({ content: [text('a')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }))
+  assert.deepEqual(read(htmlToAdf('<p> a  b </p>\n')), document(paragraph(text(' a  b '))))
+  assert.deepEqual(read(htmlToAdf('<p> a  b </p>')), document(paragraph(text('a b'))))
+})
+
+const claimedRefusals: readonly (readonly [string, string])[] = [
+  ['<div><span class="adf-nope">x</span></div>', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
+  ['<p>a</p>\n<p>b <a class="adf-mention" href="x">c</a></p>', 'unmappable-html at /content/1/content/1 line 2 offset 9'],
+  [`<div>\n${carry('div', { type: 'unknownBlock' }, 'edited')}</div>`, 'unmappable-html at /content/0 line 2 offset 6'],
+  ['<ul><li>a</li><li><div class="adf-panel">\n<p>b<b>c</b></p>\n</div></li></ul>', 'unmappable-html at /content/0/content/1/content/0/content/0 line 2 offset 42'],
+  ['<p>a</p><section data-adf="x">b</section>', 'unmappable-html at /content/1/content/0 line 1 offset 0'],
+  ['<p>a <i class="x adf-y">b</i></p>', 'unmappable-html at /content/0/content/1 line 1 offset 0'],
+  ['<p>a</p><div class="adf-panel"', 'read'],
+  ['<p hidden><span class="adf-status">x</span></p><script><span class="adf-status">x</span></script><pre><span class="adf-status">x</span></pre>', 'read'],
+]
+
+for (const [html, expected] of claimedRefusals) test(`reads an element claiming the dialect only as the dialect: ${JSON.stringify(html)}`, () => assert.equal(refusal(htmlToAdf(html)), expected))
+
+test('names the element claiming the dialect that is none of its elements', () => {
+  names(htmlToAdf('<section class="adf-box">a</section>'), '<section>', 'data-adf', 'adf- class', 'found "<section class=\\"adf-box\\""')
+})
+
+test('reads foreign HTML nested 500 levels, and refuses the next level, a list\'s items and a table\'s cells one level below it', () => {
+  const nestedIn = (opener: string, closer: string, levels: number): string => `${opener.repeat(levels)}<p>a</p>${closer.repeat(levels)}`
+  assert.equal(refusal(htmlToAdf(nestedIn('<blockquote>', '</blockquote>', 500))), 'read')
+  assert.equal(refusal(htmlToAdf(nestedIn('<blockquote>', '</blockquote>', 501))), `unsupported-nesting-depth at /${'content/0/'.repeat(500)}content/0 line 1 offset 0`)
+  names(htmlToAdf(nestedIn('<blockquote>', '</blockquote>', 501)), 'blocks', '500 levels')
+  assert.equal(refusal(htmlToAdf(nestedIn('<ul><li>', '</li></ul>', 500))), 'read')
+  assert.equal(refusal(htmlToAdf(nestedIn('<ul><li>', '</li></ul>', 501))).split(' ')[0], 'unsupported-nesting-depth')
+  assert.equal(refusal(htmlToAdf(nestedIn('<table><tr><td>', '</td></tr></table>', 250))), 'read')
+  assert.equal(refusal(htmlToAdf(nestedIn('<table><td>', '</td></table>', 250))), 'read')
+  assert.equal(refusal(htmlToAdf(nestedIn('<table><tr><td>', '</td></tr></table>', 251))).split(' ')[0], 'unsupported-nesting-depth')
+  assert.equal(refusal(htmlToAdf(nestedIn('<table><td>', '</td></table>', 251))).split(' ')[0], 'unsupported-nesting-depth')
+  assert.equal(refusal(htmlToAdf(nestedIn('<details>', '</details>', 501))).split(' ')[0], 'unsupported-nesting-depth')
+  assert.equal(refusal(htmlToAdf(`${'<div><span><b>'.repeat(100_000)}a`)), 'read')
+  assert.equal(refusal(htmlToAdf('<blockquote>'.repeat(1_000_000))).split(' ')[0], 'unsupported-nesting-depth')
+})
+
+test('reads foreign HTML of a million elements, open, closed or never closed, in time linear in its length', () => {
+  for (const html of ['<p>a</p>'.repeat(1_000_000), '<li>a'.repeat(1_000_000), `<ul>${'<li>a'.repeat(1_000_000)}`, `<table>${'<tr><td>a'.repeat(500_000)}`, `${'<b>'.repeat(1_000_000)}a${'</i>'.repeat(1_000_000)}`, '</p>'.repeat(1_000_000), `<p${' a="b"'.repeat(1_000_000)}>x`, `<p>${'<img src="a" alt="b">'.repeat(500_000)}`]) assert.equal(refusal(htmlToAdf(html)), 'read')
 })
