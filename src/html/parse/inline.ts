@@ -16,7 +16,7 @@ export function readInline(html: string, index: number, place: Place): Result<{ 
   let at = index
   while (at < html.length) {
     const nodePlace = { index: nodes.length, parent: place }
-    const read = html.startsWith('<', at) ? readTagged(html, at, nodePlace) : readText(html, at, [], nodePlace)
+    const read = html.startsWith('<', at) ? readInlineElement(html, at, nodePlace) : readText(html, at, [], nodePlace)
     if (read === undefined) break
     if (!read.ok) return read
     nodes.push(read.value.node)
@@ -26,7 +26,7 @@ export function readInline(html: string, index: number, place: Place): Result<{ 
 }
 
 // `undefined` where the tag at `index` opens no inline node.
-function readTagged(html: string, index: number, place: Place): ReadNode | undefined {
+export function readInlineElement(html: string, index: number, place: Place): ReadNode | undefined {
   const tag = readStartTag(html, index)
   if (tag?.name === 'br' && tag.attributes.length === 0) return success({ end: tag.end, node: { type: 'hardBreak' } })
   const element = tag === undefined ? undefined : readNodeElement(html, tag, place)

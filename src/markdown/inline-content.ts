@@ -12,7 +12,7 @@ import { failure, faulted, success, type ConvertErrorPath, type Result } from '.
 import { flavourClaims } from './flavour.ts'
 import { highlightDelimiter, inlineSource, readInlineToken } from './inline-tokens.ts'
 import { identicalMarks, mergeAdjacentText, nodeAttrs, nodeMarks } from '../adf/document.ts'
-import { imageAside } from './image-aside.ts'
+import { imageAside } from '../adf/image-aside.ts'
 import { inlineNodeModel, takesMark } from '../adf/inline-nodes.ts'
 import { joinsWhenRead, textBreakName, textBreakSpelling } from './adjacent-text.ts'
 import { labelLimit, normalizeLabel, readInlineTarget, readLabel, targetMemo } from './commonmark/link-syntax.ts'
