@@ -341,7 +341,7 @@ function withLinkTitles(nodes: readonly AdfNode[]): AdfNode[] {
 
 function hasUnspellableTitle(mark: AdfMark): boolean {
   const { title } = nodeAttrs(mark)
-  return mark.type === 'link' && typeof title === 'string' && !spellableLinkTitle.test(title)
+  return typeof title === 'string' && !spellableLinkTitle.test(title)
 }
 
 function titleSuffix(link: AdfMark): AdfNode {

@@ -670,6 +670,11 @@ test('the lossy writer refuses a document nested past the limit by its message a
   assert.equal(result.ok ? 'written' : `${result.error.message} at /${result.error.path.join('/')}`, `the document nests deeper than the ${largestNesting} levels the writer carries at /${Array(largestNesting + 1).fill('content/0').join('/')}`)
 })
 
+test('the lossy writer names the first of two nodes nested past the limit', () => {
+  const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting - 1), nestedIn((inner) => quote(inner), largestNesting - 1)))
+  assert.equal(result.ok ? 'written' : result.error.path.slice(0, 2).join('/'), 'content/0')
+})
+
 const moreLossyCases: [string, AdfNode[], string][] = [
   ['keeps a bq. inside a {quote}', [quote(quote(paragraph(text('c'))), paragraph(text('d')))], '{quote}\nbq. c\n\nd\n{quote}'],
   ['writes a nested expand as its title in strong and then its body', [{ attrs: { title: 'Title' }, content: [paragraph(text('Body'))], type: 'nestedExpand' }], '*Title*\n\nBody'],
