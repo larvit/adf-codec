@@ -22,8 +22,8 @@ const spellableUrl = /^[^\s[\]{}|\\]+$/
 const spellableColour = /^#[0-9a-f]{6}$/i
 
 // spec/wiki.md, Inline and Marks.
-export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<Line> {
-  const atoms = nodes.map((node, index) => atom(node, nodes, index))
+export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, inCell: boolean): Result<Line> {
+  const atoms = nodes.map((node, index) => atom(node, nodes, index, inCell))
   const groups = markedGroups(atoms)
   let line = ''
   let carried = false
@@ -34,7 +34,7 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath): R
     const after = following?.marks.length === 0 ? following.spelled?.text : undefined
     const written = groupSpelling(atoms.slice(first, last + 1), lastCharacter(line), after === undefined ? undefined : firstCharacter(after))
     if (written === undefined) {
-      const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
+      const carry = inlineCarry(nodes.slice(first, last + 1), path, first)
       if (!carry.ok) return carry
       line += carry.value
       carried = true
@@ -43,7 +43,7 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath): R
   return success({ carried, line })
 }
 
-function atom(node: AdfNode, nodes: readonly AdfNode[], index: number): Atom {
+function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: boolean): Atom {
   const { text } = node
   if (node.type !== 'text' || text === undefined) {
     const leaf = leafSpelling(node)
@@ -56,7 +56,7 @@ function atom(node: AdfNode, nodes: readonly AdfNode[], index: number): Atom {
   if (!isSpellableText(node) || joinsPrevious || spelled === undefined) return { marks, spelled: undefined }
   const href = hrefSpelling(node, nodes, index)
   if (href !== undefined) return { marks: marks.slice(0, -1), spelled: { marks: spelled.slice(0, -1), text: href } }
-  const escaped = escapedText(text, index === 0, index === nodes.length - 1)
+  const escaped = escapedText(text, index === 0, index === nodes.length - 1, inCell)
   return { marks, spelled: escaped === undefined ? undefined : { marks: spelled, text: escaped } }
 }
 

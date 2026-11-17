@@ -9,7 +9,7 @@ import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 // `blank`: a paragraph holding no content or only whitespace, which only a table cell holds; `macros`: the `{quote}` and `{panel}` the block writes, which can't nest in their own kind; `text`: the block's spelling, where no container composes it.
 export type Spelling = { blank: boolean; macros: number; text: string | undefined }
 
-type Step = { exit: boolean; node: AdfNode; path: ConvertErrorPath }
+type Step = { exit: boolean; inCell: boolean; node: AdfNode; path: ConvertErrorPath }
 
 const quoteMacro = 1
 const panelMacro = 2
@@ -21,18 +21,18 @@ const spellableImageUrl = /^[^\s!|\\[\]{}]+$/
 // spec/wiki.md, Blocks: each block wiki markup spells, found after its children, since a block rides where one it holds does. A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded).
 export function spelledBlocks(content: readonly AdfNode[]): Result<Map<AdfNode, Spelling>> {
   const spelled = new Map<AdfNode, Spelling>()
-  const pending: Step[] = content.map((node, index) => ({ exit: false, node, path: ['content', index] })).reverse()
+  const pending: Step[] = content.map((node, index) => ({ exit: false, inCell: false, node, path: ['content', index] })).reverse()
   for (let step = pending.pop(); step !== undefined; step = pending.pop()) {
-    const { exit, node, path } = step
+    const { exit, inCell, node, path } = step
     if (exit) {
       const spelling = containerSpelling(node, spelled)
       if (spelling !== undefined) spelled.set(node, spelling)
     } else if (containerHolds(node)) {
-      pending.push({ exit: true, node, path })
-      const children = nodeContent(node).map((child, index): Step => ({ exit: false, node: child, path: [...path, 'content', index] }))
+      pending.push({ exit: true, inCell, node, path })
+      const children = nodeContent(node).map((child, index): Step => ({ exit: false, inCell: node.type === 'tableCell' || node.type === 'tableHeader', node: child, path: [...path, 'content', index] }))
       for (const child of children.reverse()) pending.push(child)
     } else {
-      const spelling = leafSpelling(node, path)
+      const spelling = leafSpelling(node, path, inCell)
       if (!spelling.ok) return spelling
       if (spelling.value !== undefined) spelled.set(node, spelling.value)
     }
@@ -84,16 +84,16 @@ function containerSpelling(node: AdfNode, spelled: ReadonlyMap<AdfNode, Spelling
   return { blank: false, macros, text: undefined }
 }
 
-function leafSpelling(node: AdfNode, path: ConvertErrorPath): Result<Spelling | undefined> {
-  if (node.type === 'paragraph') return paragraphSpelling(node, path)
+function leafSpelling(node: AdfNode, path: ConvertErrorPath, inCell: boolean): Result<Spelling | undefined> {
+  if (node.type === 'paragraph') return paragraphSpelling(node, path, inCell)
   if (node.type === 'heading') return headingSpelling(node, path)
   return success(spelledText(simpleLeafText(node)))
 }
 
-function paragraphSpelling(node: AdfNode, path: ConvertErrorPath): Result<Spelling | undefined> {
+function paragraphSpelling(node: AdfNode, path: ConvertErrorPath, inCell: boolean): Result<Spelling | undefined> {
   if (!holdsExactly(node, {})) return success(undefined)
   if (node.content === undefined) return success({ blank: true, macros: 0, text: ' ' })
-  const line = inlineLine(node.content, path)
+  const line = inlineLine(node.content, path, inCell)
   if (!line.ok) return line
   return success({ blank: node.content.every((child) => child.type === 'text') && /^\s*$/u.test(node.content.map(({ text }) => text).join('')), macros: 0, text: line.value.line })
 }
@@ -101,7 +101,7 @@ function paragraphSpelling(node: AdfNode, path: ConvertErrorPath): Result<Spelli
 function headingSpelling(node: AdfNode, path: ConvertErrorPath): Result<Spelling | undefined> {
   const { level } = nodeAttrs(node)
   if (!holdsOnlyAttributes(node, ['level']) || !isHeadingLevel(level) || node.content === undefined) return success(undefined)
-  const line = inlineLine(node.content, path)
+  const line = inlineLine(node.content, path, false)
   if (!line.ok) return line
   return success(line.value.carried ? undefined : spelledText(`h${level}. ${line.value.line}`))
 }
