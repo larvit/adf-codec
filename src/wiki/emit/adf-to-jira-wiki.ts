@@ -9,7 +9,7 @@ import { spelledBlocks, type Spelling } from './spelled-blocks.ts'
 // `prefix`: the markers of the lists holding the block, one character per level.
 type Pending = string | { node: AdfNode; prefix: string }
 
-const listMarkers: Readonly<Record<string, string>> = { bulletList: '*', orderedList: '#' }
+const listMarkers: ReadonlyMap<string, string> = new Map([['bulletList', '*'], ['orderedList', '#']])
 
 export function adfToLosslessJiraWiki(document: AdfDocument): Result<string> {
   return withinEngineLimits(() => {
@@ -51,7 +51,7 @@ function blockPieces(node: AdfNode, prefix: string, spelled: ReadonlyMap<AdfNode
   const text = spelled.get(node)?.text
   if (text !== undefined) return [text]
   const content = nodeContent(node)
-  const marker = listMarkers[node.type]
+  const marker = listMarkers.get(node.type)
   if (marker !== undefined) return listPieces(content, `${prefix}${marker}`)
   if (node.type === 'table') return tablePieces(content)
   const [only] = content

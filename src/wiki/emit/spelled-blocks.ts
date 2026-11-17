@@ -29,7 +29,8 @@ export function spelledBlocks(content: readonly AdfNode[]): Result<Map<AdfNode, 
       if (spelling !== undefined) spelled.set(node, spelling)
     } else if (containerHolds(node)) {
       pending.push({ exit: true, node, path })
-      for (const [index, child] of nodeContent(node).entries()) pending.push({ exit: false, node: child, path: [...path, 'content', index] })
+      const children = nodeContent(node).map((child, index): Step => ({ exit: false, node: child, path: [...path, 'content', index] }))
+      for (const child of children.reverse()) pending.push(child)
     } else {
       const spelling = leafSpelling(node, path)
       if (!spelling.ok) return spelling

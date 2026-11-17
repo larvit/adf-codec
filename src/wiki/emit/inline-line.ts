@@ -17,7 +17,7 @@ type SpelledMark = { delimiters: Delimiters; mark: AdfMark }
 
 type Token = { checked: boolean; kind: 'atom' | 'close' | 'open'; text: string }
 
-const characterDelimiters: Readonly<Record<string, string>> = { em: '_', strike: '-', strong: '*', underline: '+' }
+const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], ['strike', '-'], ['strong', '*'], ['underline', '+']])
 const spellableUrl = /^[^\s[\]{}|\\]+$/
 const spellableColour = /^#[0-9a-f]{6}$/i
 
@@ -32,7 +32,7 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath): R
     // A group that opens with a delimiter or a carry opens with punctuation, which reads as the line's edge does.
     const following = next === undefined ? undefined : atoms[next.first]
     const after = following?.marks.length === 0 ? following.spelled?.text : undefined
-    const written = groupSpelling(atoms.slice(first, last + 1), line.at(-1), after?.[0])
+    const written = groupSpelling(atoms.slice(first, last + 1), lastCharacter(line), after === undefined ? undefined : firstCharacter(after))
     if (written === undefined) {
       const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
       if (!carry.ok) return carry
@@ -91,7 +91,7 @@ function hrefSpelling(node: AdfNode, nodes: readonly AdfNode[], index: number): 
 // `undefined` where wiki markup has no spelling for the mark.
 function markDelimiters(mark: AdfMark): Delimiters | undefined {
   const attrs = nodeAttrs(mark)
-  const character = characterDelimiters[mark.type]
+  const character = characterDelimiters.get(mark.type)
   if (character !== undefined) return mark.attrs === undefined ? { checked: true, close: character, open: character } : undefined
   if (mark.type === 'code') return mark.attrs === undefined ? { checked: true, close: '}}', open: '{{' } : undefined
   if (mark.type === 'subsup') {
@@ -147,7 +147,7 @@ function groupSpelling(atoms: readonly Atom[], before: string | undefined, after
     open = marks
   }
   for (const mark of open.slice().reverse()) tokens.push(delimiterToken(mark, 'close'))
-  return tokens.every((token, index) => delimiterReads(token, tokens[index - 1]?.text.at(-1) ?? before, tokens[index + 1]?.text[0] ?? after)) ? tokens.map(({ text }) => text).join('') : undefined
+  return tokens.every((token, index) => delimiterReads(token, lastCharacter(tokens[index - 1]?.text ?? '') ?? before, firstCharacter(tokens[index + 1]?.text ?? '') ?? after)) ? tokens.map(({ text }) => text).join('') : undefined
 }
 
 function delimiterToken({ delimiters: { checked, close, open } }: SpelledMark, kind: 'close' | 'open'): Token {
@@ -160,4 +160,14 @@ function delimiterReads({ checked, kind }: Token, before: string | undefined, af
   const outside = kind === 'open' ? before : after
   const inside = kind === 'open' ? after : before
   return (outside === undefined || !/[\p{L}\p{N}]/u.test(outside)) && inside !== undefined && !/\s/u.test(inside)
+}
+
+// Whole code points, so a letter outside the Basic Multilingual Plane reads as a letter.
+function firstCharacter(text: string): string | undefined {
+  const point = text.codePointAt(0)
+  return point === undefined ? undefined : String.fromCodePoint(point)
+}
+
+function lastCharacter(text: string): string | undefined {
+  return /.$/su.exec(text)?.[0]
 }
