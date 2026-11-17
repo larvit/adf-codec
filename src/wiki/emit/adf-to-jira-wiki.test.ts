@@ -333,7 +333,18 @@ test('escapes a smiley the node edge cuts, unless the line ends there', () => {
 test('carries a text holding a pipe in a table cell, where a backslash would end the cell', () => {
   assert.equal(wiki(table(plainTable, [cell('tableCell', text('a|b')), cell('tableCell', text('c'))])), `|${inline('{"text":"a|b","type":"text"}')}|c|`)
   assert.equal(wiki(table(plainTable, [cell('tableCell', text('x', { attrs: { href: 'https://example.com' }, type: 'link' }), text('|'))])), `|[x|https://example.com]${inline('{"text":"|","type":"text"}')}|`)
+  assert.equal(wiki(table(plainTable, [cell('tableHeader', text('a|b'))])), `||${inline('{"text":"a|b","type":"text"}')}||`)
   assert.equal(line('a|b'), 'a\\|b')
+  assert.equal(wiki(list('bulletList', item(paragraph(text('a|b'))))), '* a\\|b')
+  assert.equal(wiki({ attrs: { level: 1 }, content: [text('a|b')], type: 'heading' }), 'h1. a\\|b')
+})
+
+test('names the path of the node in a run whose carry is refused', () => {
+  const background = { attrs: { color: '#ffff00' }, type: 'backgroundColor' }
+  let value: AdfAttributes[string] = 1
+  for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
+  const deep = { attrs: { a: value }, marks: [background], type: 'unknownInline' }
+  assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph(text('a', background), deep)))), 'unsupported-nesting-depth at /content/0/content/1')
 })
 
 test('refuses a heading holding a carry past 500 levels', () => {
