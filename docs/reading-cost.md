@@ -1258,3 +1258,20 @@ Read most (opens and searches):
 - `AGENTS.md` 3
 - `todo.md` 2
 - `src/index.ts` 1
+
+## Reading cost, chunk 1fb1b988e9fa, finished 2026-11-17T01:46:15Z
+
+266246 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/wiki.md` 8
+- `src/adf/document.ts` 7
+- `src/wiki/emit/inline-line.ts` 5
+- `ci.sh` 4
+- `docs/decisions.md` 4
+- `src/adf/carried-json.ts` 4
+- `src/html/emit/adf-to-html.test.ts` 4
+- `README.md` 3
+- `package.json` 3
+- `src/wiki/emit/text-escaping.ts` 3

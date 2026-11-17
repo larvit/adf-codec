@@ -1453,7 +1453,7 @@ alt text.
 
 Wiki markup has no spelling for some nodes and marks, a layout among them. The lossless wiki
 writer wraps each such node's ADF JSON in Jira's own `{adf}` macro: `{adf:display=block}` for a
-block node, `{adf:display=inline}` for an inline node or a marked run. The round-trip holds, and
+block node, `{adf:display=inline}` for an inline node or each node of a marked run. The round-trip holds, and
 Jira still renders the document. The lossy wiki writer ships beside it for consumers who want wiki
 markup alone: it drops the form of what wiki markup cannot spell and keeps its content.
 
@@ -1506,6 +1506,16 @@ deep-equal and Jira's reading doesn't: `[~name]` reads as a `mention` with `id` 
 `em` prefixed by `— `, a link's `|title` is dropped, header cell text carries `strong`, `{noformat}`
 has no `language`, an unknown `{code:<language>}` reads `java`, a `bgColor` outside the five reads as
 the nearest-looking panel type, not `info`, and a backslash before `:` stays text.
+
+Checked again 2026-11-17 for the lossless writer's backslashes and inline carries. Jira drops the
+backslash before `(`, `)`, `?`, `!`, `#`, `[`, `]`, `{`, `}`, `*`, `+`, `-`, `^`, `_` and `~`, and
+keeps it as text before `:`, `;`, `.`, `,`, a letter, a digit and another backslash. So a backslash
+before a smiley's `(`, or its closing `)`, stops it (`:\)` reads as the text `:)`), while `:D`, `:P`,
+a `:` or `;` ending a node inside a line, and the `h` of `h1.` and the `b` of `bq.` at a line's start
+ride the carry. An escaped `|` still ends a table cell, so a text holding `|` rides the carry there;
+`|`, `\\`, `\"` and `\n` inside a carry's JSON survive in a cell and in a paragraph. A
+`{adf:display=inline}` holding an array shows "Invalid ADF Macro", where one holding a node renders
+it, so a run of nodes is one macro per node.
 
 ## A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 

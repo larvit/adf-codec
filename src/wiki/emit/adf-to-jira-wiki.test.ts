@@ -200,12 +200,21 @@ test('escapes a character wiki markup would read as markup where it stands', () 
   assert.equal(line('a [b] {c} | d'), 'a \\[b\\] \\{c\\} \\| d')
   assert.equal(line('# not a list'), '\\# not a list')
   assert.equal(line('- not a list'), '\\- not a list')
-  assert.equal(line('h1. not a heading'), '\\h1. not a heading')
-  assert.equal(line('bq. not a quote'), '\\bq. not a quote')
   assert.equal(line('a -- b'), 'a \\-\\- b')
   assert.equal(line('what?? ok'), 'what\\?? ok')
   assert.equal(line('Wow!!'), 'Wow\\!!')
-  assert.equal(line('Wow! (y) f(x) x:)'), 'Wow! \\(y) f\\(x) x\\:)')
+  assert.equal(line('Wow! (y) f(x) x:)'), 'Wow! \\(y) f\\(x) x:\\)')
+  assert.equal(line('a :( b ;) c'), 'a :\\( b ;\\) c')
+})
+
+test('carries a text no backslash stops a smiley or a line-start word in', () => {
+  const carried = (value: string): string => inline(`{"text":${JSON.stringify(value)},"type":"text"}`)
+  assert.equal(line('h1. not a heading'), carried('h1. not a heading'))
+  assert.equal(line('Bq. not a quote'), carried('Bq. not a quote'))
+  assert.equal(line('a :D b'), carried('a :D b'))
+  assert.equal(line('a :P'), carried('a :P'))
+  assert.equal(wiki(paragraph(text('a :'), { attrs: { accessLevel: '', id: '5b10' }, type: 'mention' })), `${inline('{"text":"a :","type":"text"}')}[~accountid:5b10]`)
+  assert.equal(line('a ;'), 'a ;')
 })
 
 test('leaves a character that reads as itself where it stands', () => {
@@ -252,9 +261,11 @@ test('carries a run whose delimiters would not read', () => {
   assert.equal(wiki(paragraph(text('a '), text(' b', { type: 'em' }))), `a ${inline('{"marks":[{"type":"em"}],"text":" b","type":"text"}')}`)
 })
 
-test('carries the run of nodes under a mark with no spelling as an array', () => {
+test('carries each node under a mark with no spelling in a macro of its own', () => {
   const background = { attrs: { color: '#ffff00' }, type: 'backgroundColor' }
-  assert.equal(wiki(paragraph(text('a', background), text('b', background, { type: 'strong' }))), inline('[{"marks":[{"attrs":{"color":"#ffff00"},"type":"backgroundColor"}],"text":"a","type":"text"},{"marks":[{"attrs":{"color":"#ffff00"},"type":"backgroundColor"},{"type":"strong"}],"text":"b","type":"text"}]'))
+  const first = inline('{"marks":[{"attrs":{"color":"#ffff00"},"type":"backgroundColor"}],"text":"a","type":"text"}')
+  const second = inline('{"marks":[{"attrs":{"color":"#ffff00"},"type":"backgroundColor"},{"type":"strong"}],"text":"b","type":"text"}')
+  assert.equal(wiki(paragraph(text('a', background), text('b', background, { type: 'strong' }))), first + second)
 })
 
 test('carries a mark no spelling stands for, and two marks of one type', () => {
@@ -317,6 +328,12 @@ test('closes an inner mark where the next node leaves it', () => {
 test('escapes a smiley the node edge cuts, unless the line ends there', () => {
   assert.equal(wiki(paragraph(text('a ('), { attrs: { accessLevel: '', id: '5b10' }, type: 'mention' })), 'a \\([~accountid:5b10]')
   assert.equal(line('a ('), 'a (')
+})
+
+test('carries a text holding a pipe in a table cell, where a backslash would end the cell', () => {
+  assert.equal(wiki(table(plainTable, [cell('tableCell', text('a|b')), cell('tableCell', text('c'))])), `|${inline('{"text":"a|b","type":"text"}')}|c|`)
+  assert.equal(wiki(table(plainTable, [cell('tableCell', text('x', { attrs: { href: 'https://example.com' }, type: 'link' }), text('|'))])), `|[x|https://example.com]${inline('{"text":"|","type":"text"}')}|`)
+  assert.equal(line('a|b'), 'a\\|b')
 })
 
 test('refuses a heading holding a carry past 500 levels', () => {

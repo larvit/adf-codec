@@ -17,8 +17,8 @@ markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer 
 content:
 
 - A block node: `{adf:display=block}`, a line feed, the JSON, a line feed, `{adf}`.
-- An inline node, or the run of inline nodes under a mark with no spelling, as an array:
-  `{adf:display=inline}`, the JSON, `{adf}`.
+- An inline node: `{adf:display=inline}`, the node's JSON, `{adf}`. The run of inline nodes under a
+  mark with no spelling is one such macro per node, since Jira reads a node and never an array there.
 
 The JSON is compact with its keys sorted, as `spec/flavour.md` writes the markdown carry's, and a
 `{` inside a string is `\u007b`, so the closing `{adf}` is the only one the text holds. A document
@@ -67,24 +67,28 @@ a `width`, a merged cell and a colour.
 | `hardBreak` | `\\` | the same |
 | `mention` holding `id` and `accessLevel` `""`, and no other attribute, the `id` not empty and holding no whitespace or markup character | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
 | `text` | its text, escaped as below | `\\` reads as a `hardBreak` before `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
-| any other inline node | the carry | `{adf:display=inline}` reads its nodes |
+| any other inline node | the carry | `{adf:display=inline}` reads its node |
 
 A character takes a backslash where wiki markup would read it as markup. Here a line's edge counts
 as whitespace, and a node's edge inside the line as punctuation:
 
-- `[`, `]`, `{`, `}` and `|`, always.
+- `[`, `]`, `{`, `}` and `|`, always, except that a `|` in a table cell rides the carry, since an
+  escaped one still ends the cell.
 - `*`, `+`, `-`, `^`, `_` and `~`, unless a letter or digit stands on both sides, or whitespace
   does.
 - `?` before another `?`, and `!` before anything but whitespace.
-- The first character of a smiley listed under What only the reader reads, where no letter or digit
-  follows the smiley, or where the node's edge cuts it inside the line.
-- At a line's start, `#`, `*` and `-`, and the `h` of `h1.` to `h6.` and the `b` of `bq.`, in any
-  case.
+- The `(` of a smiley listed under What only the reader reads, or the closing `)` of one that starts
+  with `:` or `;`, where no letter or digit follows the smiley, or where the node's edge cuts it
+  inside the line.
+- At a line's start, `#`, `*` and `-`.
 
-No backslash protects a backslash, a line feed, a carriage return, or `http://` or `https://` in any
-case, which Jira would link, so a text holding one rides the carry. So does a text that starts or
-ends its line with whitespace, and a text whose marks are those of the text before it, which the
-reader would join. A `hardBreak` or `mention` holding a mark rides too.
+Jira keeps a backslash before `:`, `;`, a letter or a digit as text. So no backslash protects a
+backslash, a line feed or a carriage return; `http://` or `https://` in any case, which Jira would
+link; the `h` of `h1.` to `h6.` or the `b` of `bq.` at a line's start, in any case; `:D` and `:P`;
+or a `:` or `;` ending a node inside the line, where the next node's spelling may close a smiley. A
+text holding one rides the carry. So does a text that starts or ends its line with whitespace, and
+a text whose marks are those of the text before it, which the reader would join. A `hardBreak` or
+`mention` holding a mark rides too.
 
 ## Marks
 
@@ -94,7 +98,7 @@ reader would join. A `hardBreak` or `mention` holding a mark rides too.
 | `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`, and the `href` doesn't start with `~`; an `href` that is empty or holds whitespace or a markup character rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
 | `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
-| any other mark | the carry around the marked run | `{adf:display=inline}` reads its run |
+| any other mark | the carry of each node of the marked run | `{adf:display=inline}` reads its node |
 
 Marks nest in the order the node's array holds them, outermost first, and a run of nodes sharing
 their outermost mark shares its delimiters. The delimiters of `code`, `em`, `strike`, `strong`,
@@ -128,7 +132,7 @@ The writers never write these, and the reader reads them as follows:
 - `---` and `--` read as `—` and `–`.
 - A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a
   digit and whatever comes before it: `x:)` and `f(x)` read, `a:Pb` and `:)x` don't, and a backslash
-  before it stops it. The `emoji`'s `text` is the character where its `id` is a code point, else its
+  before its `(` or its closing `)` stops it: `\(y)` and `:\)` read as text. The `emoji`'s `text` is the character where its `id` is a code point, else its
   `shortName`.
 
   | Smiley | `shortName` | `id` |
