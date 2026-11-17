@@ -207,7 +207,7 @@ test('escapes a character wiki markup would read as markup where it stands', () 
   assert.equal(line('a :( b ;) c'), 'a :\\( b ;\\) c')
 })
 
-test('carries a text no backslash stops a smiley or a line-start word in', () => {
+test('carries a text whose smiley or line-start word no backslash stops', () => {
   const carried = (value: string): string => inline(`{"text":${JSON.stringify(value)},"type":"text"}`)
   assert.equal(line('h1. not a heading'), carried('h1. not a heading'))
   assert.equal(line('Bq. not a quote'), carried('Bq. not a quote'))
@@ -330,7 +330,7 @@ test('escapes a smiley the node edge cuts, unless the line ends there', () => {
   assert.equal(line('a ('), 'a (')
 })
 
-test('carries a text holding a pipe in a table cell, where a backslash would end the cell', () => {
+test('carries a text holding a pipe in a table cell, where an escaped pipe still ends the cell', () => {
   assert.equal(wiki(table(plainTable, [cell('tableCell', text('a|b')), cell('tableCell', text('c'))])), `|${inline('{"text":"a|b","type":"text"}')}|c|`)
   assert.equal(wiki(table(plainTable, [cell('tableCell', text('x', { attrs: { href: 'https://example.com' }, type: 'link' }), text('|'))])), `|[x|https://example.com]${inline('{"text":"|","type":"text"}')}|`)
   assert.equal(wiki(table(plainTable, [cell('tableHeader', text('a|b'))])), `||${inline('{"text":"a|b","type":"text"}')}||`)
