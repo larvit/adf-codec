@@ -977,6 +977,7 @@ const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
   'a space after an inline node of the dialect as kept': ['<p>a<span class="adf-status" data-color="yellow">S</span> b</p>', document(paragraph(text('a'), { attrs: { color: 'yellow', text: 'S' }, type: 'status' }, text(' b')))],
   'the end tag of a row or a table inside a cell as the end of the cell too': ['<table><tr><td>a</tr><td>b</td></tr></table><table><tr><td>c</table>d', document(table([cell('tableCell', paragraph(text('a')))], [cell('tableCell', paragraph(text('b')))]), table([cell('tableCell', paragraph(text('c')))]), paragraph(text('d')))],
   'an attribute spelled without quotes as its whole value, and one without a value as empty': ['<a title href=url>x</a>', document(paragraph(text('x', link('url'))))],
+  'attributes parted by any run of white space, or by none after a quoted value': ['<a  href="u"\n\ttitle=\'t\'class="c">x</a>', document(paragraph(text('x', link('u', 't'))))],
   'an end tag the HTML ends inside as an end tag': ['<b>a</b', document(paragraph(text('a', strong)))],
   'the text of a <style> as nothing, a start tag it leaves open included': ['<p>a<style>b<i</style>c</p>', document(paragraph(text('ac')))],
   'an image inside a mark in a link as the link text, its (image) after the link': ['<a href="u"><b><img src="i" alt="x"></b> y</a>', document(paragraph(text('x', link('u'), strong), text(' y', link('u')), text(' ('), text('image', link('i')), text(')')))],
