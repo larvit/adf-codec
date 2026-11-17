@@ -7,11 +7,7 @@ const alwaysEscaped = '[]{}|'
 const delimiters = '*+-^_~'
 const lineStartMarkers = '#*-'
 const lineStartWords = /^(?:bq|h[1-6])\./i
-const smileysByOpener = new Map<string, { characters: string[]; parenthesised: boolean }[]>()
-for (const smiley of smileys) {
-  const opener = smiley.charAt(0)
-  smileysByOpener.set(opener, [...(smileysByOpener.get(opener) ?? []), { characters: Array.from(smiley), parenthesised: /[()]/.test(smiley) }])
-}
+const smileyCharacters = smileys.map((smiley) => ({ characters: Array.from(smiley), parenthesised: /[()]/.test(smiley) }))
 const unprotectable = /[\\\r\n]|https?:\/\//i
 
 // spec/wiki.md, Inline: `undefined` where no backslash protects the text, so it rides the carry. `inCell`: the text stands in a table cell, where an escaped `|` still ends the cell.
@@ -43,7 +39,8 @@ function escapes(character: string, characters: readonly string[], index: number
 function smileyStops(characters: readonly string[], end: Side): Set<number> | undefined {
   const stops = new Set<number>()
   for (const [index, character] of characters.entries()) {
-    for (const { characters: spelled, parenthesised } of smileysByOpener.get(character) ?? []) {
+    for (const { characters: spelled, parenthesised } of smileyCharacters) {
+      if (spelled[0] !== character) continue
       const held = characters.slice(index, index + spelled.length)
       if (held.some((heldCharacter, offset) => heldCharacter !== spelled[offset])) continue
       const cut = held.length < spelled.length

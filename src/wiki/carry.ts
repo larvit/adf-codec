@@ -9,11 +9,11 @@ export function blockCarry(node: AdfNode, path: ConvertErrorPath): Result<string
   return json.ok ? success(`{adf:display=block}\n${closingMacroEscaped(json.value.json)}\n{adf}`) : json
 }
 
-// One macro per node, since Jira reads a node and never an array inside `{adf:display=inline}`; `first` is `nodes[0]`'s index in the content of the node at `path`.
-export function inlineCarry(nodes: readonly AdfNode[], path: ConvertErrorPath, first: number): Result<string> {
+// One macro per node, since Jira reads a node and never an array inside `{adf:display=inline}`.
+export function inlineCarry(nodes: readonly AdfNode[], path: ConvertErrorPath): Result<string> {
   let macros = ''
-  for (const [index, node] of nodes.entries()) {
-    const json = carriedJson(node, node, 'compact', [...path, 'content', first + index], largestNesting)
+  for (const node of nodes) {
+    const json = carriedJson(node, node, 'compact', path, largestNesting)
     if (!json.ok) return json
     macros += `{adf:display=inline}${closingMacroEscaped(json.value.json)}{adf}`
   }
