@@ -133,8 +133,8 @@ const rawTextElements: ReadonlySet<string> = new Set(['script', 'style'])
 const startTagName = /<([a-zA-Z][^\t\n\f\r />]*)/y
 const tableParts: ReadonlySet<string> = new Set(['table', 'td', 'th', 'tr'])
 const tagEnd = /[\t\n\f\r /]*>/y
-// WHATWG HTML §13.1.2: the elements holding no content and taking no end tag.
-const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
+// The elements holding no content and taking no end tag: WHATWG HTML §13.1.2, and §13.2.6.4 for the obsolete `<basefont>` and `<param>`.
+const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'basefont', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'])
 const whitespace = /[\t\n\f\r ]+/g
 
 // Reads any HTML best effort (docs/decisions.md, Foreign HTML reads best effort and is never refused). It refuses only an element claiming the dialect that `readBlock` or `readInlineElement` refuses, and nesting past `largestNesting`.
@@ -155,7 +155,7 @@ export function readForeignHtml(html: string, readBlock: DialectBlockReader): Re
 // Where reading goes on after the markup at `index`; a `<` opening no markup is text.
 function readMarkup(reading: Reading, index: number): Result<number, ParseError> {
   const { html } = reading
-  if (html.startsWith('<!--', index)) return success(after(html, '-->', index + 4))
+  if (html.startsWith('<!--', index)) return success(after(html, '-->', index + 2))
   if (html.startsWith('<!', index) || html.startsWith('<?', index)) return success(after(html, '>', index + 2))
   endTag.lastIndex = index
   const ended = endTag.exec(html)
@@ -276,7 +276,7 @@ function afterRawText(html: string, name: string, from: number): number {
   return found === null ? html.length : after(html, '>', found.index)
 }
 
-// A code block's text is its element's text: only a `<br>` and the language class of a `<code>` read from the tags inside it.
+// A code block's text is its element's text: only a `<br>` and the language class of a `<code>` read from the start tags inside it, and the end tag of a block around it ends it.
 function readInPre(reading: Reading, pre: Frame, { attributes, end, name }: Tag): number {
   if (name === 'br') reading.code.push('\n')
   const language = name === 'code' ? languageOf(attributes) : undefined
@@ -329,7 +329,7 @@ function closeThrough(reading: Reading, index: number): void {
 function closeNamed(reading: Reading, name: string): void {
   const found = nearest(reading, name)
   const floor = tableParts.has(name) ? nearest(reading, 'table') : (reading.barriers.at(-1) ?? 1)
-  if (topOf(reading).kind === 'pre' && name !== 'pre') return
+  if (topOf(reading).kind === 'pre' && !isBlock(name)) return
   if (found >= Math.max(floor, 1)) closeThrough(reading, found)
 }
 
