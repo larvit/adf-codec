@@ -1275,3 +1275,20 @@ Read most (opens and searches):
 - `README.md` 3
 - `package.json` 3
 - `src/wiki/emit/text-escaping.ts` 3
+
+## Reading cost, chunk a99a9b3f7a6e, finished 2026-11-17T02:39:35Z
+
+126816 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/wiki.md` 9
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 9
+- `docs/decisions.md` 5
+- `src/wiki/emit/spelled-blocks.ts` 3
+- `ci.sh` 2
+- `docker-runner.sh` 2
+- `src/adf/carried-json.ts` 2
+- `src/wiki/emit/inline-line.ts` 2
+- `src/wiki/spellings.ts` 2
+- `CHANGELOG.md` 1

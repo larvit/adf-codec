@@ -1549,3 +1549,31 @@ element sorts as §Foreign HTML reads best effort and is never refused says.
 A panel of three developers, one each for the bot, the viewer/editor app and the LLM pipeline, all
 picked this over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`. None of them knows
 up front whether HTML is foreign, so a flag or a second name makes them guess.
+
+## The wiki reader refuses only a broken `{adf}` macro and markup past the engine's limits, and reads every other string
+
+2026-11-17, the implementer of `jiraWikiToAdf`; the maintainer has not yet confirmed the readings
+below that differ from Jira's. Goals 1, 6 and 11.
+Valid while `spec/wiki.md` §What only the reader reads lists them.
+
+Wiki markup has no syntax error: Jira shows markup it can't read as text, and so does the reader.
+Two inputs can't read as text without losing content, and are refused at the line they start on,
+with the path `[]`, since no node exists yet:
+
+- An `{adf}` macro left open, or holding anything but one ADF node's JSON, is
+  `unsupported-node-shape`: the text is no node, as a carry fence holding bad JSON is in markdown.
+  An inline macro closes on its line, since a line feed ends its paragraph.
+- List markers past 500, or carried JSON nested past it, are `unsupported-nesting-depth`
+  (§Nothing recurses unbounded).
+
+The reader is simpler than Jira in three places, each a string the writers never write:
+
+- `{code}`, `{noformat}`, `{panel}` and `{quote}` open and close a block only at a line's start.
+  Jira also reads them inside a line.
+- An image reads only alone on its line, as its `mediaSingle` is a block. Inside a line it is text.
+- A delimiter reads by the rule the writer escapes by (`spec/wiki.md` §Marks), so every string the
+  writer writes reads back, where Jira's own rule differs at an edge such as `x^2^`.
+
+A block macro left open holds the rest of the markup, as Jira renders it. An image address holds
+`://`, since Jira reads any other as an attachment's name, so the writer carries an image whose
+`url` has none.

@@ -45,7 +45,7 @@ string.
 | `bulletList`, `orderedList` of `order` 1, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` items as `* `; an `orderedList` reads `order` 1 |
 | `codeBlock` holding one text node, of `language` `""` or a name below in lowercase | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; for `""`, `{noformat}`, the text, `{noformat}` the same way | the same, reading a `{code:<language>}` name in lowercase and `{noformat}` as `language` `""`; `{code}` reads `java`; `title`, `borderStyle` and the other panel parameters drop |
 | `heading` | `h1. ` to `h6. ` by `level` | the same |
-| `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` isn't empty, holds no markup character, `!`, `,`, line feed or carriage return, and doesn't start or end with whitespace; a `url` that is empty or holds whitespace, `!` or a markup character rides the carry | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
+| `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` isn't empty, holds no markup character, `!`, `,`, line feed or carriage return, and doesn't start or end with whitespace; a `url` that holds no `://`, or holds whitespace, `!` or a markup character, rides the carry | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
 | `panel` of `panelType` `error`, `info`, `note`, `success` or `warning` | `{panel:bgColor=<colour>}`, a line feed, its blocks, a line feed, `{panel}`, the colour being `#ffebe6` for `error`, `#deebff` for `info`, `#eae6ff` for `note`, `#e3fcef` for `success` and `#fffae6` for `warning` | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` and any `bgColor` the five spellings leave out read as `info`, colours compared without case; the other parameters drop |
 | `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
@@ -55,7 +55,7 @@ string.
 The names the help lists for a `codeBlock`: actionscript, ada, applescript, bash, c, c#, c++, css,
 erlang, go, groovy, haskell, html, java, javascript, json, lua, nyan, objc, perl, php, python, r,
 ruby, scala, sql, swift, visualbasic, xml and yaml. A `codeBlock` with any other `language`, none
-included, or a text holding `{code}` or `{noformat}`, rides the carry.
+included, or a text that is empty or holds `{code}` or `{noformat}`, rides the carry.
 
 A value other than the one a table names, an absent attribute included, rides the carry: so does
 a `width`, a merged cell and a colour.
@@ -85,6 +85,7 @@ as whitespace, and a node's edge inside the line as punctuation:
 Jira keeps a backslash before `:`, `;`, `.`, `,`, a letter, a digit or another backslash as text.
 So a backslash protects none of these, and a text holding one rides the carry:
 
+- no character at all;
 - a backslash, a line feed or a carriage return;
 - `http://` or `https://`, which Jira would link;
 - the `h` of `h1.` to `h6.` or the `b` of `bq.` at a line's start, in any case;
@@ -134,7 +135,12 @@ says `adfToPlainText` does, in wiki markup:
 The writers never write these, and the reader reads them as follows:
 
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
-- `!name.ext!` reads as its text: no ADF node holds an attachment by name.
+- `!name.ext!`, an address holding no `://`, reads as its text: no ADF node holds an attachment by
+  name. So does an image that shares its line with anything else.
+- `{code}`, `{noformat}`, `{panel}` and `{quote}` open and close a block only at a line's start,
+  and read as text inside a line. One left open holds the rest of the markup.
+- An `{adf}` macro left open, or holding anything but one ADF node's JSON, is refused as
+  `unsupported-node-shape`. An inline one closes on its line.
 - `---` and `--` read as `—` and `–`.
 - A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a
   digit and whatever comes before it: `x:)` and `f(x)` read, `a:Pb` and `:)x` don't, and a backslash

@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 200`
+`Next ID = 201`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
@@ -46,6 +47,17 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 200. Carry a link whose `href` Jira shows as text, and read `[x]` and `[a|x]` with such an address as text.
+
+Item 195's probes of Jira found that it shows `[x]` and `[a|x]` as text where `x` is no address it links, such as a bare word. The lossless writer writes a `link` with such an `href` as `[a|x]`, so the link is lost when Jira renders the markup, and `jiraWikiToAdf` reads both as a `link`, unlike Jira. Probe which addresses Jira links (a scheme, `#anchor`, `mailto:`, a path), record the list in `spec/wiki.md`, carry every other `href`, and read the same strings as text.
+
+Touches:
+- `src/wiki/spellings.ts`: `spellableUrl`
+- `src/wiki/emit/inline-line.ts`: the link spelling
+- `src/wiki/parse/inline.ts`: `bracketed`, `closeLink`
+- `spec/wiki.md`: Marks
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`, `src/wiki/parse/jira-wiki-to-adf.test.ts` (small)
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
