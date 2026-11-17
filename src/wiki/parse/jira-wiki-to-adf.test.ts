@@ -345,5 +345,5 @@ test('names the line of a refusal after empty lines', () => {
 })
 
 test('reads the carry of a document holding no content key, whatever whitespace surrounds it', () => {
-  for (const around of ['\n', '\r\n', ' ']) assert.deepEqual(jiraWikiToAdf(`${around}{adf:display=block}\n{"type":"doc","version":1}\n{adf}${around}`), { ok: true, value: { type: 'doc', version: 1 } })
+  for (const around of ['\n', '\r\n', ' ']) assert.deepEqual(jiraWikiToAdf(`${around}{adf:display=block}${around}{"type":"doc","version":1}${around}{adf}${around}`), { ok: true, value: { type: 'doc', version: 1 } })
 })
