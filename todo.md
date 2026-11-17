@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 200`
+`Next ID = 203`
 
 ## Items
 
@@ -16,7 +16,7 @@
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
-| 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 4 | 1 | 2 | 5 | 6 | 12 by 6 | 1.1 |
+| 137 | 0.4.0 |  | owner | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 4 | 1 | 2 | 5 | 6 | 12 by 6 | 1.1 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -28,12 +28,15 @@
 | 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
+| 202 | 0.5.0 |  |  | **Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 | 195 |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
 | 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
+| 201 | 0.5.0 |  | decision | **Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.** | 2 | 1 | 2 | 3 | 2 | 12 by 3 | 3.3 |
 | 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
 | 187 | 0.5.0 |  |  | **Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 3 | 6 by 2 | 1.8 |
+| 200 | 0.5.0 |  | decision | **Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.** | 2 | 2 | 2 | 4 | 4 | 12 by 3 | 1.6 |
 | 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.3 |
 | 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 0.9 |
 | 74 | 0.5.0 |  | owner | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 3 | 2 | 4 | 7 | 4 |  | 0.0 |
@@ -274,6 +277,12 @@ its link, so `imageAlt`, `resolvedPieces` and `directiveMarkPieces` no longer fi
 hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
 Found by the principles audit of item 99, 2026-10-14.
 
+### 202. Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.
+
+`assertReadsBack` in `src/conformance/adf-property.test.ts` expects the written HTML to equal the
+edited HTML. `PROPERTY_RUNS=40000` finds `<pre data-local-id="< a"><code>a</code></pre>`, which
+reads as a browser's spelling and writes back with `&lt;`. The gate's seed does not reach it.
+
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
 Topic 41858 asks for ADF as plain text. `adfToPlainText` now writes tables, images, cards, extensions and expand titles, so the answer names what it writes. Post it only after 0.4.0 publishes (§Posts announcing a release wait for its publish). The post is the maintainer's (the maintainer, 2026-10-28). It sits in 0.5.0 because the post can only go out after 0.4.0 publishes, so no chunk of 0.4.0 can finish it.
@@ -299,6 +308,12 @@ The scoring run at fa8600f (PR #162) averaged 5.88 overall, under the 7.0 floor;
 
 Keep every output byte-identical: the round-trip properties and the CommonMark suite must pass unchanged.
 
+### 201. Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.
+
+`readForeignHtml` (`src/html/parse/foreign.ts`) drops every attribute of a `<td>` and `<th>`, so a
+table from an email or a CMS loses its merged cells and its columns shift. Revise
+`docs/decisions.md` §Foreign HTML reads best effort and is never refused with it.
+
 ### 58. Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.
 
 Technical principle "Prefer a standalone Python script over a shell script": `AGENTS.md` §3 teaches
@@ -308,6 +323,13 @@ bash footguns (`&&` chaining under `||`, `tee /dev/stderr`) the port removes. A 
 ### 187. Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.
 
 The reader panel of §The HTML dialect expected a `blockTaskItem` as an `<li>` of two `<p>` and a nested task list as an inner `<ul>`. The writer panel's spellings left both on the carry, since a task item holds inline content alone. A writer panel settles the two spellings (AGENTS.md §7); the item takes it and writes the HTML both ways.
+
+### 200. Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.
+
+`readForeignHtml` (`src/html/parse/foreign.ts`) places a node where the HTML places it: a
+`<table>` in a `<blockquote>`, a `<pre>` in a table header, an image in a list item. Jira's editor
+refuses some of those documents. `spec/html.md` → "Other HTML" states today's reading in its last
+paragraph. Which reading each misplaced node takes is a reader panel's pick.
 
 ### 34. Read emphasis flanking by the whole character beside an astral symbol.
 

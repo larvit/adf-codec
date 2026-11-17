@@ -164,7 +164,7 @@ language, and none is empty beside another, since a text node holds text. The gr
 ## Foreign HTML reads best effort and is never refused
 
 2026-08-23, the sort 2026-09-20, best effort 2026-11-15, the maintainer. Goals 7 and 12. Valid while
-ADF holds no node for a bare container, a comment or a script. Lands with `todo.md` item 137.
+ADF holds no node for a bare container, a comment or a script.
 
 HTML from emails, CMSs and editors guarantees nothing, so no foreign element is refused. Each reads
 one of two ways:
@@ -179,6 +179,23 @@ one of two ways:
 content. A `style` attribute is not read at `0.4.0`: the `textColor` and `backgroundColor` it could
 reach cost more than they buy.
 The three markdown readers share one parser, so they take the same set.
+
+Which element reads which way follows how a browser shows it, by the HTML standard's rendering
+section (WHATWG HTML §15.3), so no source gets a case of its own:
+
+- §15.3.1's hidden elements and an element holding `hidden` drop whole. `<noscript>` is read, since
+  a reader without scripts sees it.
+- §15.3.3's blocks, and the other elements §15.3 shows as blocks, part the text around them.
+- §15.3.4's phrasing elements give the marks: `<cite>` is `em`, `<kbd>` is `code`.
+- An end tag §13.1.2.4 makes optional may be missing: an item, row, cell or paragraph ends at the
+  next one's start tag.
+- White space collapses as CSS Text §4.1 shows it.
+- A character reference reads by the table CommonMark shares, `src/entity-references.ts`.
+
+An image reads as §An image reads as an image only alone in its paragraph says. Nesting past 500
+levels is `unsupported-nesting-depth`, as everywhere (§Nothing recurses unbounded). A node stands
+where the HTML places it, also where Atlassian's schema forbids it, as in the markdown readers;
+`todo.md` item 200 weighs holding it to the schema, and `todo.md` item 201 reading a cell's spans.
 
 ## Names stay text
 
@@ -543,7 +560,8 @@ One more difference is DOM state, not the algorithm's: a `<details>` its user op
 after its other attributes. `htmlToAdf` reads it as the same expand (the maintainer, 2026-11-15),
 since ADF's `expand` holds no open state and the state is the viewer's.
 
-Other HTML stays refused, a lone `\r` among it. A refusal's position counts the HTML as handed in.
+Other HTML reads as §`htmlToAdf` reads any HTML, with no option and no second call says. A refusal's
+position counts the HTML as handed in.
 
 ## No runtime dependencies
 
@@ -1538,13 +1556,17 @@ In a real Jira document, each mention and each node holding a `localId` therefor
 ## `htmlToAdf` reads any HTML, with no option and no second call
 
 2026-11-15, a developer panel. Goals 6, 8 and 12. Valid while the dialect and foreign HTML read
-without ambiguity in one reader. Lands with `todo.md` item 137, which ends "Other HTML stays
-refused" in §`htmlToAdf` also reads the dialect as a browser serializes it.
+without ambiguity in one reader.
 
 HTML from an email, a CMS or an editor will read through `htmlToAdf(html)`. An element that claims
 the dialect, by a `data-adf` attribute or an `adf-` class, reads only as the dialect, and stays
 refused where that reading fails, so an edited carry element is still `unmappable-html`. Every other
 element sorts as §Foreign HTML reads best effort and is never refused says.
+
+The whole HTML reads as the dialect first, and as foreign HTML only where that reading is refused,
+so `htmlToAdf(adfToHtml(doc))` is untouched. No other attribute of the dialect claims it: in foreign
+HTML `<p data-align="center">` is a paragraph, its alignment dropped. All that an element claiming
+the dialect holds reads as the dialect too.
 
 A panel of three developers, one each for the bot, the viewer/editor app and the LLM pipeline, all
 picked this over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`. None of them knows
