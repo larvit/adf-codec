@@ -6,13 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 202`
+`Next ID = 203`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
+| 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
@@ -66,6 +67,13 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: the entry named above
+
+### 202. Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.
+
+Item 195's chunk ran `./ci.sh` eight times at a load average of 15 to 20, and the Bun leg failed four of them, only on two markdown tests the chunk didn't touch: `joins a mark run's segments as a walk rather than as one call's arguments` (3.9 s when it passes, 13 to 17 s on Node) and `reduces a line alike dropping every run a pass may or the first alone`. GitHub's gate passed each time. Shrink the two inputs to the smallest that still fails on the quadratic walk each guards against, or give the tests their own timeout.
+
+Touches:
+- the two tests named above, under `src/markdown/`
 
 ### 200. Carry a link whose `href` Jira shows as text, and read `[x]` and `[a|x]` with such an address as text.
 
