@@ -24,7 +24,7 @@ type Reading = { containers: Container[]; levels: Level[]; paragraph: AdfNode[] 
 
 const codeMacro = /\{(code|noformat)(?::([^}\n]*))?\}/y
 const codeEdge = /\r?\n|/y
-const documentCarry = '{adf:display=block}\n{"type":"doc","version":1}\n{adf}'
+const documentCarry = /^\s*\{adf:display=block\}\s*\{"type":"doc","version":1\}\s*\{adf\}\s*$/
 const image = /^!([^\s!|]+)(?:\|([^!]*))?!$/
 const itemMarker = /^([*#]+|-) +/
 const lineSpace = /[^\S\n]*/y
@@ -39,7 +39,7 @@ export function jiraWikiToAdf(wiki: string): Result<AdfDocument, ParseError> {
 
 function readWiki(wiki: string): Result<AdfDocument> {
   if (typeof wiki !== 'string') return notAString(wiki, 'Jira wiki markup')
-  if (wiki.trim() === documentCarry) return success({ type: 'doc', version: 1 })
+  if (documentCarry.test(wiki)) return success({ type: 'doc', version: 1 })
   const root: Container = { content: [], kind: 'document' }
   const reading: Reading = { containers: [root], levels: [], paragraph: undefined, rows: undefined, wiki }
   let at = 0
