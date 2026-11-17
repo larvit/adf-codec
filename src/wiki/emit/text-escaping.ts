@@ -35,7 +35,7 @@ function escapes(character: string, characters: readonly string[], index: number
   return character === '!' && after !== 'space'
 }
 
-// A smiley reads wherever no letter or digit follows it; one the node's edge cuts may close in the next node's spelling. `undefined` where a smiley reads that no backslash stops: Jira keeps one before `:`, `;` and a letter, so only a `(` or a closing `)` takes it.
+// A smiley reads wherever no letter or digit follows it; one the node's edge cuts may close in the next node's spelling. Returns the indexes to put a backslash before: only a `(` or a closing `)` takes one, since Jira keeps a backslash before `:`, `;` and a letter. `undefined` where a smiley reads that no such backslash stops.
 function smileyStops(characters: readonly string[], end: Side): Set<number> | undefined {
   const stops = new Set<number>()
   for (const [index, character] of characters.entries()) {
