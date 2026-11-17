@@ -34,7 +34,7 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, in
     const after = following?.marks.length === 0 ? following.spelled?.text : undefined
     const written = groupSpelling(atoms.slice(first, last + 1), lastCharacter(line), after === undefined ? undefined : firstCharacter(after))
     if (written === undefined) {
-      const carry = inlineCarry(nodes.slice(first, last + 1), path, first)
+      const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
       if (!carry.ok) return carry
       line += carry.value
       carried = true

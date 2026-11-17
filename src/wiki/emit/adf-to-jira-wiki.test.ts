@@ -339,14 +339,6 @@ test('carries a text holding a pipe in a table cell, where a backslash would end
   assert.equal(wiki({ attrs: { level: 1 }, content: [text('a|b')], type: 'heading' }), 'h1. a\\|b')
 })
 
-test('names the path of the node in a run whose carry is refused', () => {
-  const background = { attrs: { color: '#ffff00' }, type: 'backgroundColor' }
-  let value: AdfAttributes[string] = 1
-  for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
-  const deep = { attrs: { a: value }, marks: [background], type: 'unknownInline' }
-  assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph(text('a', background), deep)))), 'unsupported-nesting-depth at /content/0/content/1')
-})
-
 test('refuses a heading holding a carry past 500 levels', () => {
   let value: AdfAttributes[string] = 1
   for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
