@@ -1449,7 +1449,7 @@ alt text.
 ## Jira wiki markup carries what it cannot spell in Jira's `{adf}` macro, and a lossy writer keeps only its content
 
 2026-11-15, the maintainer. Goals 1, 7 and 11. Valid while Jira's renderer reads the `{adf}` macro.
-`adfToLosslessJiraWiki` has landed; the rest lands with `todo.md` items 194 to 196.
+`adfToLosslessJiraWiki` and `adfToLossyJiraWiki` have landed; the rest lands with `todo.md` items 195 and 196.
 
 Wiki markup has no spelling for some nodes and marks, a layout among them. The lossless wiki
 writer wraps each such node's ADF JSON in Jira's own `{adf}` macro: `{adf:display=block}` for a
@@ -1466,7 +1466,7 @@ rendered the status lozenge between its neighbouring words.
 ## Jira wiki markup's writers are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option
 
 2026-11-16, a developer panel. Goals 6, 7 and 8. Valid while a lossy writer drops form with no
-refusal. `adfToLosslessJiraWiki` has landed; the rest lands with `todo.md` items 194 to 196.
+refusal. `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` have landed; the rest lands with `todo.md` items 195 and 196.
 
 Seven fresh-context readers, seated as the bot, the viewer/editor app and the LLM pipeline, were
 told the trap: an app saving through the lossy writer loses form on every save, with nothing
@@ -1477,6 +1477,22 @@ reader who hasn't seen the trap.
 The reader is `jiraWikiToAdf`. The maintainer picked it on 2026-11-17, after the readers split four
 to three between it and `jiraWikiMarkupToAdf`, short of the five of seven that settle a name
 (`AGENTS.md` §7).
+
+## The lossy wiki writer reduces the document, then writes it as the lossless writer does
+
+2026-11-17, the implementer. Goals 1 and 7. Valid while the lossless writer's spellings are
+the wiki markup the library writes.
+
+`adfToLossyJiraWiki` first reduces the document to the nodes and marks wiki markup spells, then
+writes that as the lossless writer does, so the two never disagree on a spelling. The reduction
+keeps every text's words in document order, and a link's or image's title, since a title counts as
+content. Where wiki markup holds a block no better, it follows the block it can't sit in, as
+`adfToPlainText` does with its blocks. Choices `spec/wiki.md` §The lossy writer lists beyond the
+carry's own: a `panel` of another type is `info`, since its colour is form; a mention is its `id`
+where that fits, else its `text`; text no backslash protects is written as it stands, since a
+backslash dropped would drop a character. The reduction recurses a few frames per level, so the
+lossy writer refuses a document nested past 500 levels, which the lossless writer's iterative walk
+doesn't.
 
 ## Jira wiki markup spellings the help leaves open are a writer panel's picks
 

@@ -3,7 +3,7 @@ export type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from './adf/documen
 export type { ConvertError, ConvertErrorCode, ConvertErrorPath, ParseError, Result, SourcePosition } from './result.ts'
 export type { JsonValue } from './json-value.ts'
 export { adfToHtml } from './html/emit/adf-to-html.ts'
-export { adfToLosslessJiraWiki } from './wiki/emit/adf-to-jira-wiki.ts'
+export { adfToLosslessJiraWiki, adfToLossyJiraWiki } from './wiki/emit/adf-to-jira-wiki.ts'
 export { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
 export { adfToPlainText } from './plain-text/adf-to-plain-text.ts'
 export { adfToPortableMarkdown } from './markdown/portable/adf-to-portable-markdown.ts'

@@ -116,18 +116,33 @@ of one type.
 
 The lossy writer writes no `{adf}`. It writes the plain spellings above, and for what the lossless
 writer carries it keeps the content, as `docs/decisions.md` §Plain text is blocks a blank line apart
-says `adfToPlainText` does, in wiki markup:
+says `adfToPlainText` does, in wiki markup. It refuses a document nested past 500 levels, where the
+lossless writer doesn't:
 
-- An attribute with no spelling drops. A node whose type has none is its text, or its blocks where
-  it holds some.
-- A `panel` of another type is `{panel}`. An `expand` is its title as a `*strong*` paragraph, then
-  its body. A task item is `* `, then `☑ ` or `☐ ` and its text. A `status`, `date` and `emoji` are
-  the text they show, and a `mention` that rides is its `text`.
-- A `table` cell holding several blocks has them parted by `\\`; a `codeBlock` with a language the
-  help doesn't list is `{noformat}`, and one whose text holds `{code}` or `{noformat}` is a
-  paragraph of its lines parted by `\\`.
-- A stored `media` is its `alt`, else `[image]`.
-- A mark with no spelling drops, keeping its text.
+- An attribute with no spelling drops. A node whose type has none is its text, then its blocks where
+  it holds some. A block with no text or blocks, and a paragraph of whitespace alone, drop.
+- A `panel` of another type is an `info` panel. A `panel` or a `blockquote` that wiki markup would
+  write inside one of its kind stands as its blocks there. An `expand` is its title as a `*strong*`
+  paragraph, then its body. A `taskList` is a bullet list, and a task item is `☑ ` or `☐ `, then its
+  text.
+- A `listItem` or a table cell holding several blocks has them parted by `\\`, a list after its text
+  as a list; a block after a list starts an item of its own. What a list or a table holds that is no
+  item, row or cell is an item, or follows the table, as its blocks.
+- A `codeBlock` with a language the help doesn't list is `{noformat}`, and one whose text holds `{code}`
+  or `{noformat}` is a paragraph of its lines parted by `\\`.
+- A stored `media` is its `alt`, else `[image]`. An external one of an address the image spelling
+  can't hold has its characters percent-encoded, and its `alt` drops where that spelling can't hold it.
+  A caption is a paragraph after the image.
+- A `status`, `date` and `emoji` are the text they show. A `mention` is `[~accountid:<id>]` where its
+  `id` fits, else its `text`. A line feed in a text is `\\`, and a carriage return drops.
+- A mark with no spelling drops, keeping its text, as does a second mark of one type on a node. A
+  `textColor` of three hex digits is written as six. A link's `href` has its whitespace and `[`, `]`,
+  `{`, `}`, `|` and `\` percent-encoded, and a `title` the link spelling can't hold follows the link's
+  text in parentheses.
+- Whitespace at the edge of a line or of a text a delimiter marks stands outside the delimiter, and
+  a run whose delimiters wouldn't read, such as `*` beside a letter, drops those marks.
+- Text no backslash protects is written as it stands: a backslash, `http://`, a smiley, and a `|` in a
+  cell, where the lossless writer carries it.
 
 ## What only the reader reads
 

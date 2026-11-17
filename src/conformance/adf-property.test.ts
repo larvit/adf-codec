@@ -5,6 +5,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../adf/document.ts'
 import { adfDocument, blockTaskItemChildren, propertyRuns, propertyTimeout } from './property-harness.ts'
 import { adfToHtml } from '../html/emit/adf-to-html.ts'
+import { adfToLossyJiraWiki } from '../wiki/emit/adf-to-jira-wiki.ts'
 import { adfToLosslessMarkdown } from '../markdown/emit/adf-to-markdown.ts'
 import { adfToPlainText } from '../plain-text/adf-to-plain-text.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
@@ -171,6 +172,26 @@ test('a generated document writes plain text showing every text node\'s text in 
         const at = page.indexOf(shown, from)
         assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(shown)} is not shown after ${from}`)
         from = at + shown.length
+      }
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+test('a generated document writes lossy Jira wiki markup holding no carry, and showing the letters and digits between whitespace of every text node in document order', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(adfDocument, (document) => {
+      const written = adfToLossyJiraWiki(document)
+      assert.ok(written.ok, written.ok ? '' : `${written.error.code}: ${written.error.message}`)
+      assert.ok(!written.value.includes('{adf'), `writing ${JSON.stringify(document)}`)
+      const page = written.value.replaceAll(/[^\p{L}\p{N}]/gu, '')
+      let from = 0
+      for (const text of documentTexts(document.content ?? [])) {
+        for (const word of text.split(/\s+/u).map((piece) => piece.replaceAll(/[^\p{L}\p{N}]/gu, ''))) {
+          const at = page.indexOf(word, from)
+          assert.ok(at >= 0, `writing ${JSON.stringify(document)}: ${JSON.stringify(word)} is not shown after ${from}`)
+          from = at + word.length
+        }
       }
     }),
     propertyRuns(gateRuns),
