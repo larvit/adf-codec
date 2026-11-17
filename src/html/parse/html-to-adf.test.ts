@@ -577,6 +577,8 @@ for (const [kind, value] of Object.entries(notStrings)) {
   test(`refuses a value that is not a string as not-a-string: ${kind}`, () => {
     // @ts-expect-error -- a caller without types can pass anything.
     assert.equal(refusal(htmlToAdf(value)), 'not-a-string at / line 1 offset 0')
+    // @ts-expect-error -- a caller without types can pass anything.
+    names(htmlToAdf(value), 'HTML is a string')
   })
 }
 
@@ -960,7 +962,7 @@ const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
   'an attribute of the dialect on an element not claiming it as dropped': ['<p data-align="left">a</p><table><tr><td colspan="0">b</td></tr></table>', document(paragraph(text('a')), table([cell('tableCell', paragraph(text('b')))]))],
   'HTML that is nothing a reader sees as a document of no blocks': [' <!-- a -->\n<div> </div><p></p>', document()],
   'a comment ending where a browser ends it, <!--> and <!---> each a whole comment': ['a<!-->b-->c<!--->d', document(paragraph(text('ab-->cd')))],
-  'an end tag inside a cell as nothing where its element opened outside the table': ['<div>a<table><tr><td><i>b</i></div>c</td></tr></table>d</div>e', document(paragraph(text('a')), table([cell('tableCell', paragraph(text('b', em), text('c')))]), paragraph(text('d')), paragraph(text('e')))],
+  'an end tag inside a cell as nothing where its element opened outside the table': ['<div>a<table><tr><td><i>b</i><i>c</i></div>d</td></tr></table>e</div>f', document(paragraph(text('a')), table([cell('tableCell', paragraph(text('bc', em), text('d')))]), paragraph(text('e')), paragraph(text('f')))],
   'an end tag between a table and its first row as nothing': ['<div><table></div><tr><td>a</td></tr></table>b</div>c', document(table([cell('tableCell', paragraph(text('a')))]), paragraph(text('b')), paragraph(text('c')))],
   'an end tag inside a table in a cell as nothing where its element opened in the outer cell': ['<table><tr><td><div>a<table><tr><td>b</div>c</td></tr></table>d</div>e</td></tr></table>', document(table([cell('tableCell', paragraph(text('a')), table([cell('tableCell', paragraph(text('bc')))]), paragraph(text('d')), paragraph(text('e')))]))],
   'the end tag of a mark inside a <pre> as no end of the code block': ['<b>x<pre>a</b>b</pre>', document(paragraph(text('x', strong)), { content: [text('ab')], type: 'codeBlock' })],
@@ -973,6 +975,12 @@ const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
   'an image in a link leading to it as the link text alone, unless its title is another than the link holds': ['<p><a href="i" title="t"><img src="i" alt="x" title="t"> y</a></p><p><a href="i" title="t"><img src="i" alt="x"> y</a></p><p><a href="i" title="t"><img src="i" alt="x" title="u"> y</a></p><p><a href="i"><img src="i" alt="x" title="u"> y</a></p>', document(paragraph(text('x y', link('i', 't'))), paragraph(text('x y', link('i', 't'))), paragraph(text('x y', link('i', 't')), text(' ('), text('image', link('i', 'u')), text(')')), paragraph(text('x y', link('i')), text(' ('), text('image', link('i', 'u')), text(')')))],
   'an image alone in its line inside a link holding blocks as the linked image, with no (image) after it': ['<a href="u"><img src="i" alt="x"><p>y</p></a>', document({ attrs: { layout: 'center' }, content: [{ attrs: { alt: 'x', type: 'external', url: 'i' }, marks: [link('u')], type: 'media' }], type: 'mediaSingle' }, paragraph(text('y', link('u'))))],
   'a space after an inline node of the dialect as kept': ['<p>a<span class="adf-status" data-color="yellow">S</span> b</p>', document(paragraph(text('a'), { attrs: { color: 'yellow', text: 'S' }, type: 'status' }, text(' b')))],
+  'the end tag of a row or a table inside a cell as the end of the cell too': ['<table><tr><td>a</tr><td>b</td></tr></table><table><tr><td>c</table>d', document(table([cell('tableCell', paragraph(text('a')))], [cell('tableCell', paragraph(text('b')))]), table([cell('tableCell', paragraph(text('c')))]), paragraph(text('d')))],
+  'an attribute spelled without quotes as its whole value, and one without a value as empty': ['<a title href=url>x</a>', document(paragraph(text('x', link('url'))))],
+  'an end tag the HTML ends inside as an end tag': ['<b>a</b', document(paragraph(text('a', strong)))],
+  'the text of a <style> as nothing, a start tag it leaves open included': ['<p>a<style>b<i</style>c</p>', document(paragraph(text('ac')))],
+  'an image inside a mark in a link as the link text, its (image) after the link': ['<a href="u"><b><img src="i" alt="x"></b> y</a>', document(paragraph(text('x', link('u'), strong), text(' y', link('u')), text(' ('), text('image', link('i')), text(')')))],
+  'the (image) of an image sharing its line as kept where a later image in the link stands alone': ['<a href="i"><img src="j" alt="x"> t<p><img src="i" alt="y"></p>z</a>', document(paragraph(text('x t', link('i'))), { attrs: { layout: 'center' }, content: [{ attrs: { alt: 'y', type: 'external', url: 'i' }, marks: [link('i')], type: 'media' }], type: 'mediaSingle' }, paragraph(text('z', link('i')), text(' ('), text('image', link('j')), text(')')))],
   'a block of the dialect as the end of the paragraph it starts in': ['<p>x<details class="adf-expand">\n<p>a</p>\n</details>', document(paragraph(text('x')), { content: [paragraph(text('a'))], type: 'expand' })],
 }
 
@@ -1003,6 +1011,7 @@ test('reads the dialect as the document written, whatever foreign HTML would mak
 })
 
 const claimedRefusals: readonly (readonly [string, string])[] = [
+  ['<p>a</p><p>b</p><details class="adf-expand" data-x="1">\n<p>c</p>\n</details>', 'unsupported-node-shape at /content/2 line 1 offset 0'],
   ['<div><span class="adf-nope">x</span></div>', 'unmappable-html at /content/0/content/0 line 1 offset 0'],
   ['<p>a</p>\n<p>b <a class="adf-mention" href="x">c</a></p>', 'unmappable-html at /content/1/content/1 line 2 offset 9'],
   [`<div>\n${carry('div', { type: 'unknownBlock' }, 'edited')}</div>`, 'unmappable-html at /content/0 line 2 offset 6'],
