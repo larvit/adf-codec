@@ -26,7 +26,7 @@ type TextPiece = { marks: AdfMark[]; text: string }
 type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: TextPiece | undefined; start: number; wiki: string }
 
 const address = /https?:\/\/[^\s)'"<>!|[\]{}\\]*/y
-const anchorMacro = /\{anchor(?::[^}\n]*)?\}/y
+const anchorMacro = /\{anchor(?::[^{}\n]*)?\}/y
 const characterMarks: ReadonlyMap<string, AdfMark> = new Map([
   ['*', { type: 'strong' }],
   ['+', { type: 'underline' }],
@@ -34,7 +34,7 @@ const characterMarks: ReadonlyMap<string, AdfMark> = new Map([
   ['_', { type: 'em' }],
   ['~', { attrs: { type: 'sub' }, type: 'subsup' }],
 ])
-const colourMacro = /\{color(?::([^}\n]*))?\}/y
+const colourMacro = /\{color(?::([^{}\n]*))?\}/y
 const keepsBackslash = /[\p{L}\p{N}\s:;.,]/u
 const plain = /[^\n\\*_\-+^~{}?[|:;(h]+/y
 const space = /\s/u
@@ -150,7 +150,7 @@ function closeLink(scan: Scan, link: Link): number {
   return link.end
 }
 
-// spec/wiki.md, What only the reader reads: `--` and `---` between whitespace or the line's edges are dashes, and no run of hyphens strikes.
+// spec/wiki.md, What only the reader reads: no longer run of hyphens is a dash, and none strikes.
 function dash(scan: Scan, at: number): number {
   const { end, wiki } = scan
   let after = at + 1
@@ -179,7 +179,7 @@ function smiley(scan: Scan, at: number): number {
   for (const spelled of smileys) {
     const emoji = smileyEmoji[spelled]
     const next = pointAt(scan, at + spelled.length)
-    if (emoji === undefined || !scan.wiki.startsWith(spelled, at) || at + spelled.length > scan.end || (next !== undefined && word.test(next))) continue
+    if (emoji === undefined || !scan.wiki.startsWith(spelled, at) || (next !== undefined && word.test(next))) continue
     const { id, shortName } = emoji
     const text = /^[0-9a-f]+$/.test(id) ? String.fromCodePoint(Number.parseInt(id, 16)) : shortName
     push(scan, { node: { attrs: { id, shortName, text }, type: 'emoji' } })
@@ -228,7 +228,7 @@ function bracket(scan: Scan, at: number): number {
     if (character === '\\') close += 1
     else if (character === '|') bars.push(close)
   }
-  if (close >= end || bars.length > 2) return plainCharacter(scan, at)
+  if (close >= end) return plainCharacter(scan, at)
   const [first, second] = bars
   if (first === undefined) return bracketed(scan, at, wiki.slice(at + 1, close))
   const href = wiki.slice(first + 1, second ?? close)

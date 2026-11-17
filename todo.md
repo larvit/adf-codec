@@ -6,12 +6,13 @@
 
 `Bar = 0.1`
 
-`Next ID = 201`
+`Next ID = 202`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
@@ -47,6 +48,24 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 201. Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.
+
+Item 195 made these choices without the maintainer, and `docs/decisions.md` §The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string records them. Each is a string the writers never write. Confirm each, or say what it reads to instead:
+
+- A broken `{adf}` macro is refused as `unsupported-node-shape`, with the path `[]`, where it could read as text.
+- `{code}`, `{noformat}`, `{panel}` and `{quote}` after anything else on a line read as text, where Jira reads them inside a line.
+- An image that shares its line reads as text, where Jira shows it inline.
+- An `{adf}` macro inside a line that closes on a later line is refused.
+- A delimiter reads by the rule the writer escapes by, where Jira's own rule differs at an edge such as `x^2^`.
+- `-- ` at a line's start reads as an en dash and text, where Jira reads a nested bullet.
+- A list line of up to 500 markers reads, and the writers refuse the document past 250 levels of list as `unsupported-nesting-depth`.
+
+Touches:
+- `src/wiki/parse/jira-wiki-to-adf.ts`: `readMacro`, `readItem`, `readLine`
+- `src/wiki/parse/inline.ts`: `delimiter`, `dash`
+- `spec/wiki.md`: `## What only the reader reads`
+- `docs/decisions.md`: the entry named above
 
 ### 200. Carry a link whose `href` Jira shows as text, and read `[x]` and `[a|x]` with such an address as text.
 

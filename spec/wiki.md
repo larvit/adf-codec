@@ -1,6 +1,6 @@
 # Jira wiki markup
 
-What `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and the Jira wiki markup reader do with each ADF
+What `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and the reader, `jiraWikiToAdf`, do with each ADF
 node and mark. Each table's middle column is what both writers write, and the last is what the
 reader reads; "The lossy writer" says where the lossy writer differs. The source is Atlassian's
 "Text Formatting Notation Help", which Jira serves at `/secure/WikiRendererHelpAction.jspa?section=all`.
@@ -55,7 +55,7 @@ string.
 The names the help lists for a `codeBlock`: actionscript, ada, applescript, bash, c, c#, c++, css,
 erlang, go, groovy, haskell, html, java, javascript, json, lua, nyan, objc, perl, php, python, r,
 ruby, scala, sql, swift, visualbasic, xml and yaml. A `codeBlock` with any other `language`, none
-included, or a text that is empty or holds `{code}` or `{noformat}`, rides the carry.
+included, or a text that is empty or holds a carriage return, `{code}` or `{noformat}`, rides the carry.
 
 A value other than the one a table names, an absent attribute included, rides the carry: so does
 a `width`, a merged cell and a colour.
@@ -83,9 +83,8 @@ as whitespace, and a node's edge inside the line as punctuation:
 - At a line's start, `#`, `*` and `-`.
 
 Jira keeps a backslash before `:`, `;`, `.`, `,`, a letter, a digit or another backslash as text.
-So a backslash protects none of these, and a text holding one rides the carry:
+So a backslash protects none of these, and a text holding one, or no character at all, rides the carry:
 
-- no character at all;
 - a backslash, a line feed or a carriage return;
 - `http://` or `https://`, which Jira would link;
 - the `h` of `h1.` to `h6.` or the `b` of `bq.` at a line's start, in any case;
@@ -135,13 +134,22 @@ says `adfToPlainText` does, in wiki markup:
 The writers never write these, and the reader reads them as follows:
 
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
-- `!name.ext!`, an address holding no `://`, reads as its text: no ADF node holds an attachment by
-  name. So does an image that shares its line with anything else.
-- `{code}`, `{noformat}`, `{panel}` and `{quote}` open and close a block only at a line's start,
-  and read as text inside a line. One left open holds the rest of the markup.
+- An address standing bare, `http://` or `https://` first, reads as its text linked to it, less a
+  `.`, `,`, `;` or `?` ending it.
+- `!name.ext!`, whose address holds no `://`, reads as text: no ADF node holds an attachment by
+  name. So does an image that shares its line with anything else, its address read as a bare one.
+- `{code}`, `{noformat}`, `{panel}` and `{quote}` open a block at a line's start or right after
+  another of them, and read as text after anything else on a line. `{panel}` and `{quote}` close
+  one in the same places, `{code}` and `{noformat}` wherever the closing macro stands. One left
+  open holds the rest of the markup.
 - An `{adf}` macro left open, or holding anything but one ADF node's JSON, is refused as
-  `unsupported-node-shape`. An inline one closes on its line.
-- `---` and `--` read as `—` and `–`.
+  `unsupported-node-shape`. So is one inside a line that closes on a later line.
+- In a `{code}` or `{noformat}` text, a carriage return before a line feed reads as nothing, so
+  markup whose lines end in both reads as markup whose lines end in a line feed.
+- `---` and `--` with whitespace or the line's edge on each side read as `—` and `–`. So `-- ` at
+  a line's start is no nested bullet.
+- `h1.` to `h6.` and `bq.` read with a space after the dot or none, and in lower case alone, as
+  Jira reads them.
 - A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a
   digit and whatever comes before it: `x:)` and `f(x)` read, `a:Pb` and `:)x` don't, and a backslash
   before its `(` or its closing `)` stops it: `\(y)` and `:\)` read as text. The `emoji`'s `text`

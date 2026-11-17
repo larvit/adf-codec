@@ -118,7 +118,7 @@ function codeText(node: AdfNode): string | undefined {
   const [text, ...others] = nodeContent(node)
   const code = text?.text
   if (!holdsOnlyAttributes(node, ['language']) || typeof language !== 'string' || text === undefined || code === undefined || others.length > 0 || !isUnmarkedSpellableText(text)) return undefined
-  if (code === '' || code.includes('{code}') || code.includes('{noformat}')) return undefined
+  if (code === '' || code.includes('\r') || code.includes('{code}') || code.includes('{noformat}')) return undefined
   if (language === '') return `{noformat}\n${code}\n{noformat}`
   return codeLanguages.includes(language) ? `{code:${language}}\n${code}\n{code}` : undefined
 }

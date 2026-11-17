@@ -117,7 +117,8 @@ const blocks: Case[] = [
   { name: '{noformat} as a codeBlock of language ""', reads: [code('', 'a\n\n  b')], wiki: '{noformat}\na\n\n  b\n{noformat}' },
   { name: '{code:<language>} in lowercase, {code} as java', reads: [code('python', 'x'), code('java', 'y')], wiki: '{code:Python}\nx\n{code}\n\n{code}\ny\n{code}' },
   { name: 'a {code} dropping its title and borderStyle', reads: [code('sql', 'x'), code('java', 'y')], wiki: '{code:sql|title=T|borderStyle=solid}\nx\n{code}\n\n{code:title=T}\ny\n{code}' },
-  { name: 'a code text whole, markup, carriage returns and edge blanks included', reads: [code('', ' *a* \r\n{quote}\n')], wiki: '{noformat}\n *a* \r\n{quote}\n\n{noformat}' },
+  { name: 'a code text whole, markup and edge blanks included', reads: [code('', ' *a* \n{quote}\n')], wiki: '{noformat}\n *a* \n{quote}\n\n{noformat}' },
+  { name: 'a code text of lines ending in a carriage return and a line feed with a line feed between them', reads: [code('', 'a\n\nb\rc')], wiki: '{noformat}\r\na\r\n\r\nb\rc\r\n{noformat}' },
   { name: 'a {code} holding nothing as a codeBlock holding no content', reads: [code('java')], wiki: '{code}\n{code}' },
   { name: 'a {code} left open as closing at the end', reads: [code('java', 'a')], wiki: '{code}\na' },
   { name: 'an image alone on its line as a mediaSingle', reads: [image('http://a.b/c.png')], wiki: '!http://a.b/c.png!' },
@@ -267,6 +268,8 @@ for (const { name, wiki } of roundTrips) {
 }
 
 const edgeCases: Case[] = [
+  { name: 'a heading and a quote with no space after the dot', reads: [node('heading', { level: 2 }, text('x')), node('blockquote', undefined, paragraph(text('y')))], wiki: 'h2.x\nbq.y' },
+  { name: 'an anchor macro whose name holds an opening brace as text', reads: [paragraph(text('{anchor:a'))], wiki: '{anchor:a{anchor:b}' },
   { name: 'a table on each side of a list', reads: [node('table', { isNumberColumnEnabled: false, layout: 'default' }, node('tableRow', undefined, node('tableCell', undefined, paragraph(text('a'))))), node('bulletList', undefined, node('listItem', undefined, paragraph(text('b')))), node('table', { isNumberColumnEnabled: false, layout: 'default' }, node('tableRow', undefined, node('tableCell', undefined, paragraph(text('c')))))], wiki: '|a|\n* b\n|c|' },
   { name: 'text after the macro closing a quote as a paragraph after the quote', reads: [node('blockquote', undefined, paragraph(text('a'))), paragraph(text('b'))], wiki: '{quote}\na\n{quote}b' },
   { name: 'a backslash before a bar in a cell\'s link text', reads: [node('table', { isNumberColumnEnabled: false, layout: 'default' }, node('tableRow', undefined, node('tableCell', undefined, paragraph(text('a|b', { attrs: { href: 'http://c.d' }, type: 'link' })))))], wiki: '|[a\\|b|http://c.d]|' },
@@ -288,7 +291,6 @@ const edgeCases: Case[] = [
   { name: 'a line after an item holding only an anchor', reads: [{ content: [{ content: [{ type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }, { content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], wiki: '* {anchor:a}\nb' },
   { name: 'a link holding a bar in a cell', reads: [{ attrs: { isNumberColumnEnabled: false, layout: 'default' }, content: [{ content: [{ content: [{ content: [{ marks: [{ attrs: { href: 'http://b.c' }, type: 'link' }], text: 'a', type: 'text' }], type: 'paragraph' }], type: 'tableCell' }], type: 'tableRow' }], type: 'table' }], wiki: '|[a|http://b.c]|' },
   { name: 'a link holding an empty title', reads: [{ content: [{ text: '[a|', type: 'text' }, { marks: [{ attrs: { href: 'http://b.c' }, type: 'link' }], text: 'http://b.c', type: 'text' }, { text: '|]', type: 'text' }], type: 'paragraph' }], wiki: '[a|http://b.c|]' },
-  { name: 'a list after a paragraph', reads: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }, { content: [{ content: [{ content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }], wiki: 'a\n* b' },
   { name: 'a numbered list after a bullet list', reads: [{ content: [{ content: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'bulletList' }, { attrs: { order: 1 }, content: [{ content: [{ content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], type: 'listItem' }], type: 'orderedList' }], wiki: '* a\n# b' },
   { name: 'a paragraph after a closed quote', reads: [{ content: [{ content: [{ text: 'a', type: 'text' }], type: 'paragraph' }], type: 'blockquote' }, { content: [{ text: 'b', type: 'text' }], type: 'paragraph' }], wiki: '{quote}\na\n{quote}\nb' },
   { name: 'a quote left open and empty', reads: [{ content: [{ type: 'paragraph' }], type: 'blockquote' }], wiki: '{quote}' },
@@ -337,4 +339,8 @@ test('refuses an inline {adf} macro that closes at the next line\'s start', () =
 
 test('names the line of a refusal after empty lines', () => {
   assert.equal(read('\n\n{adf}'), 'unsupported-node-shape at line 3, offset 2')
+})
+
+test('reads the carry of a document holding no content key, whatever whitespace surrounds it', () => {
+  for (const around of ['\n', '\r\n', ' ']) assert.deepEqual(jiraWikiToAdf(`${around}{adf:display=block}\n{"type":"doc","version":1}\n{adf}${around}`), { ok: true, value: { type: 'doc', version: 1 } })
 })

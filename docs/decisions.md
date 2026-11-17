@@ -1550,30 +1550,33 @@ A panel of three developers, one each for the bot, the viewer/editor app and the
 picked this over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`. None of them knows
 up front whether HTML is foreign, so a flag or a second name makes them guess.
 
-## The wiki reader refuses only a broken `{adf}` macro and markup past the engine's limits, and reads every other string
+## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string
 
-2026-11-17, the implementer of `jiraWikiToAdf`; the maintainer has not yet confirmed the readings
-below that differ from Jira's. Goals 1, 6 and 11.
-Valid while `spec/wiki.md` §What only the reader reads lists them.
+2026-11-17, the implementer of `jiraWikiToAdf`. Goals 1, 6 and 11. Plan item 201 asks the
+maintainer to confirm the readings below that differ from Jira's.
+Valid while `jiraWikiToAdf` returns a `Result`.
 
 Wiki markup has no syntax error: Jira shows markup it can't read as text, and so does the reader.
-Two inputs can't read as text without losing content, and are refused at the line they start on,
+Three inputs can't read as text without losing content. Each is refused at the line it starts on,
 with the path `[]`, since no node exists yet:
 
 - An `{adf}` macro left open, or holding anything but one ADF node's JSON, is
-  `unsupported-node-shape`: the text is no node, as a carry fence holding bad JSON is in markdown.
-  An inline macro closes on its line, since a line feed ends its paragraph.
-- List markers past 500, or carried JSON nested past it, are `unsupported-nesting-depth`
-  (§Nothing recurses unbounded).
+  `unsupported-node-shape`: its text is no node. A carry fence holding bad JSON is refused the
+  same way in markdown. So is a macro inside a line that closes on a later line: the writers
+  write such a macro on one line.
+- A list line of more than 500 markers, or carried JSON nested past 500 levels, is
+  `unsupported-nesting-depth` (§Nothing recurses unbounded).
+- Markup that reads past the engine's limits is `engine-limit`.
 
-The reader is simpler than Jira in three places, each a string the writers never write:
+The reader differs from Jira in four places, each a string the writers never write. `spec/wiki.md`
+§What only the reader reads states each reading:
 
-- `{code}`, `{noformat}`, `{panel}` and `{quote}` open and close a block only at a line's start.
-  Jira also reads them inside a line.
-- An image reads only alone on its line, as its `mediaSingle` is a block. Inside a line it is text.
+- A block macro after anything else on a line is text. Jira reads one inside a line.
+- An image is a block, so one that shares its line is text. Jira shows it inline.
 - A delimiter reads by the rule the writer escapes by (`spec/wiki.md` §Marks), so every string the
-  writer writes reads back, where Jira's own rule differs at an edge such as `x^2^`.
+  writer writes reads back. Jira's own rule differs at an edge such as `x^2^`.
+- `-- ` at a line's start is an en dash. Jira reads a nested bullet.
 
-A block macro left open holds the rest of the markup, as Jira renders it. An image address holds
-`://`, since Jira reads any other as an attachment's name, so the writer carries an image whose
-`url` has none.
+The reader follows Jira in two places a reader could take either way. A block macro left open
+holds the rest of the markup. An image address holds `://`, since Jira reads any other as an
+attachment's name, so the writer carries an image whose `url` has none.
