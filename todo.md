@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 203`
+`Next ID = 204`
 
 ## Items
 
@@ -29,6 +29,7 @@
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 202 | 0.5.0 |  |  | **Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
+| 203 | 0.5.0 |  |  | **Keep `reduces a line alike dropping every run a pass may or the first alone` and `joins a mark run's segments as a walk rather than as one call's arguments` inside Bun's five-second test limit on a slow machine.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 | 195 |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -282,6 +283,13 @@ Found by the principles audit of item 99, 2026-10-14.
 `assertReadsBack` in `src/conformance/adf-property.test.ts` expects the written HTML to equal the
 edited HTML. `PROPERTY_RUNS=40000` finds `<pre data-local-id="< a"><code>a</code></pre>`, which
 reads as a browser's spelling and writes back with `&lt;`. The gate's seed does not reach it.
+
+### 203. Keep `reduces a line alike dropping every run a pass may or the first alone` and `joins a mark run's segments as a walk rather than as one call's arguments` inside Bun's five-second test limit on a slow machine.
+
+On `main` at 6720bea, `bun test src/` in `oven/bun:1.4.4-alpine` on the maintainer's machine times
+both out, at 6.7 s and 6.5 s, so `./ci.sh` stops at the Bun leg there. GitHub's runner passes them.
+The tests are in `src/markdown/portable/inline-reduction.test.ts` and
+`src/markdown/emit/inline-nodes.test.ts`.
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
