@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `adfToLosslessJiraWiki`, which writes ADF as Jira wiki markup and carries each node or mark wiki markup cannot spell in Jira's `{adf}` macro, so nothing is lost.
 - **Breaking:** `commonMarkToAdf`, `losslessMarkdownToAdf` and `portableMarkdownToAdf` match a link reference to its definition under Unicode case folding, where `0.3.1` lowercased the label. `[ẞ]` with `[SS]: /url` reads as a link, and where two definitions' labels fold together, the first wins. `ı` and `I` stay two labels.
 - `adfToPortableMarkdown` writes a line of whitespace-only text nodes beside a hard break, every other one linked, in time linear in the number of nodes, where `0.3.1` took time quadratic in it.
 - `adfToPortableMarkdown` writes a line of code spans alternating with emphasized spaces in time linear in its length, where `0.3.1` took time quadratic in it.
