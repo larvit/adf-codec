@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 198 | 0.4.0 |  |  | **Check on the Jira test site that Jira reads each backslash escape and each inline carry `adfToLosslessJiraWiki` writes as `spec/wiki.md` says, and respell or carry what it reads otherwise.** | 2 | 2 | 2 | 4 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
@@ -47,19 +46,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 198. Check on the Jira test site that Jira reads each backslash escape and each inline carry `adfToLosslessJiraWiki` writes as `spec/wiki.md` says, and respell or carry what it reads otherwise.
-
-Item 193's reviews left three questions the 2026-11-17 live check in `docs/decisions.md` §Jira wiki markup spellings the help leaves open are a writer panel's picks doesn't answer:
-
-- Whether Jira drops the backslash before `(`, `;`, `?`, `!`, `#`, and the `h` of `h1.` and the `b` of `bq.`. `(` is escaped often, as `(i)` is written `\(i)`.
-- Whether an inline `{adf}` carry whose JSON holds `|` survives inside a table cell, and whether a carried `\\` survives anywhere.
-- Smileys: the decision records that Jira keeps a backslash before `:` as text, so `:)` written as `\:)` shows a stray backslash in Jira. Where no escape Jira drops stops a smiley, carry the text in the `{adf}` macro instead.
-
-Touches:
-- `spec/wiki.md`: Inline
-- `src/wiki/emit/text-escaping.ts`: `escapes`, `opensSmiley`
-- `src/wiki/emit/adf-to-jira-wiki.test.ts` (small)
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
