@@ -29,8 +29,9 @@ export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath): R
   let carried = false
   for (const [position, { first, last }] of groups.entries()) {
     const next = groups[position + 1]
+    // A group that opens with a delimiter or a carry opens with punctuation, which reads as the line's edge does.
     const following = next === undefined ? undefined : atoms[next.first]
-    const after = following === undefined ? undefined : following.marks.length > 0 ? '{' : (following.spelled?.text ?? '{')
+    const after = following?.marks.length === 0 ? following.spelled?.text : undefined
     const written = groupSpelling(atoms.slice(first, last + 1), line.at(-1), after?.[0])
     if (written === undefined) {
       const carry = inlineCarry(nodes.slice(first, last + 1), [...path, 'content', first])
@@ -71,7 +72,7 @@ function spelledMarks(marks: readonly AdfMark[]): SpelledMark[] | undefined {
 }
 
 function leafSpelling(node: AdfNode): string | undefined {
-  if (node.type === 'hardBreak') return holdsOnlyAttributes(node, []) && node.content === undefined ? '\\\\' : undefined
+  if (node.type === 'hardBreak') return holdsOnlyAttributes(node, []) ? '\\\\' : undefined
   if (node.type !== 'mention' || !holdsOnlyAttributes(node, ['accessLevel', 'id'])) return undefined
   const { accessLevel, id } = nodeAttrs(node)
   return accessLevel === '' && typeof id === 'string' && spellableUrl.test(id) ? `[~accountid:${id}]` : undefined
@@ -113,12 +114,13 @@ function linkDelimiters(attrs: Readonly<Record<string, unknown>>): Delimiters | 
 
 // Runs of nodes sharing at least their outermost mark, each spelled or carried as a whole.
 function markedGroups(atoms: readonly Atom[]): { first: number; last: number }[] {
-  const groups: { first: number; last: number }[] = []
-  for (const [index, current] of atoms.entries()) {
+  const groups: { first: number; last: number; marks: readonly AdfMark[] }[] = []
+  for (const [index, { marks }] of atoms.entries()) {
     const group = groups.at(-1)
-    const previous = atoms[index - 1]
-    if (group !== undefined && previous !== undefined && sharedMarks(previous.marks, current.marks) > 0) group.last = index
-    else groups.push({ first: index, last: index })
+    if (group !== undefined && sharedMarks(group.marks, marks) > 0) {
+      group.last = index
+      group.marks = marks
+    } else groups.push({ first: index, last: index, marks })
   }
   return groups
 }

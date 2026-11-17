@@ -17,7 +17,7 @@ export function adfToLosslessJiraWiki(document: AdfDocument): Result<string> {
     if (!read.ok) return read
     const content = writableContent(read.value)
     if (!content.ok) return content
-    return content.value === undefined ? blockCarry(read.value, [], 0) : writeWiki(content.value)
+    return content.value === undefined ? blockCarry(read.value, []) : writeWiki(content.value)
   })
 }
 
@@ -31,7 +31,7 @@ function writeWiki(content: readonly AdfNode[]): Result<string> {
     if (index > 0) pieces.push('\n\n')
     const spelling = spelled.get(node)
     if (spelling === undefined || spelling.blank) {
-      const carry = blockCarry(node, ['content', index], 0)
+      const carry = blockCarry(node, ['content', index])
       if (!carry.ok) return carry
       pieces.push(carry.value)
     } else writeSpelled(node, spelled, pieces)

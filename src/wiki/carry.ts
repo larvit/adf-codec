@@ -3,9 +3,9 @@ import { carriedJson } from '../adf/carried-json.ts'
 import { largestNesting } from '../nesting.ts'
 import { success, type ConvertErrorPath, type Result } from '../result.ts'
 
-// spec/wiki.md, The carry: `depth` is the nesting of the block list holding the node.
-export function blockCarry(node: AdfNode, path: ConvertErrorPath, depth: number): Result<string> {
-  const json = carriedJson(node, node, 'compact', path, largestNesting - depth)
+// spec/wiki.md, The carry. Only the document's own blocks ride, so a block carry has every level.
+export function blockCarry(node: AdfNode, path: ConvertErrorPath): Result<string> {
+  const json = carriedJson(node, node, 'compact', path, largestNesting)
   return json.ok ? success(`{adf:display=block}\n${closingMacroEscaped(json.value.json)}\n{adf}`) : json
 }
 

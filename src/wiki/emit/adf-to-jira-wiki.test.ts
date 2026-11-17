@@ -327,3 +327,157 @@ test('refuses a heading holding a carry past 500 levels', () => {
   for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
   assert.equal(refusal(adfToLosslessJiraWiki(document({ attrs: { level: 1 }, content: [{ attrs: { a: value }, type: 'unknownInline' }], type: 'heading' }))), 'unsupported-nesting-depth at /content/0/content/0')
 })
+
+// spec/wiki.md, Blocks: the names the help lists for a `codeBlock`.
+for (const language of ['actionscript', 'ada', 'applescript', 'bash', 'c', 'c#', 'c++', 'css', 'erlang', 'go', 'groovy', 'haskell', 'html', 'java', 'javascript', 'json', 'lua', 'nyan', 'objc', 'perl', 'php', 'python', 'r', 'ruby', 'scala', 'sql', 'swift', 'visualbasic', 'xml', 'yaml']) {
+  test(`writes a code block of language ${language} as a code macro`, () => {
+    assert.equal(wiki(code(language, 'x')), `{code:${language}}\nx\n{code}`)
+  })
+}
+
+for (const [panelType, colour] of [['error', '#ffebe6'], ['info', '#deebff'], ['note', '#eae6ff'], ['success', '#e3fcef'], ['warning', '#fffae6']]) {
+  test(`writes a panel of type ${panelType} with bgColor ${colour}`, () => {
+    assert.equal(wiki(panel(String(panelType), paragraph(text('x')))), `{panel:bgColor=${colour}}\nx\n{panel}`)
+  })
+}
+
+const external = { type: 'external', url: 'https://example.com/a.png' }
+const riddenBlocks: [string, AdfNode][] = [
+  ['an image whose mediaSingle holds no media', { attrs: { layout: 'center' }, content: [paragraph(text('a'))], type: 'mediaSingle' }],
+  ['an image whose mediaSingle holds two media', { attrs: { layout: 'center' }, content: [{ attrs: external, type: 'media' }, { attrs: external, type: 'media' }], type: 'mediaSingle' }],
+  ['an image whose media holds a width', image({ ...external, width: 10 })],
+  ['an image of a stored file with a URL', image({ type: 'file', url: 'https://example.com/a.png' })],
+  ['an image whose URL is no string', image({ type: 'external', url: 5 })],
+  ['an image whose alt is no string', image({ ...external, alt: 5 })],
+  ['an image whose alt ends in whitespace', image({ ...external, alt: 'A cat ' })],
+  ['a media group of layout center', { attrs: { layout: 'center' }, content: [{ attrs: external, type: 'media' }], type: 'mediaGroup' }],
+  ['a code block whose language is no string', { attrs: { language: 5 }, content: [text('x')], type: 'codeBlock' }],
+  ['a code block of no content', { attrs: { language: 'java' }, type: 'codeBlock' }],
+  ['a code block of two texts', { attrs: { language: 'java' }, content: [text('x'), text('y', { type: 'strong' })], type: 'codeBlock' }],
+  ['a code block of a marked text', { attrs: { language: 'java' }, content: [text('x', { type: 'strong' })], type: 'codeBlock' }],
+  ['a code block holding another attribute', { attrs: { language: 'java', title: 'a' }, content: [text('x')], type: 'codeBlock' }],
+  ['a blockquote holding no content', { type: 'blockquote' }],
+  ['a list holding a paragraph', { content: [paragraph(text('a'))], type: 'bulletList' }],
+  ['a list item holding a localId', list('bulletList', { attrs: { localId: 'i1' }, content: [paragraph(text('a'))], type: 'listItem' })],
+  ['a list item opening with a list', list('bulletList', item(list('bulletList', item(paragraph(text('a'))))))],
+  ['a panel holding another attribute', { attrs: { panelIcon: ':x:', panelType: 'info' }, content: [paragraph(text('a'))], type: 'panel' }],
+  ['a table holding a paragraph', { attrs: plainTable, content: [paragraph(text('a'))], type: 'table' }],
+  ['a table cell holding a code block', table(plainTable, [{ content: [code('java', 'x')], type: 'tableCell' }])],
+  ['a table row holding a localId', { attrs: plainTable, content: [{ attrs: { localId: 'r1' }, content: [cell('tableCell', text('a'))], type: 'tableRow' }], type: 'table' }],
+  ['a table row holding a paragraph', { attrs: plainTable, content: [{ content: [paragraph(text('a'))], type: 'tableRow' }], type: 'table' }],
+  ['a paragraph of whitespace texts', paragraph(text(' '), text(' ', { type: 'strong' }))],
+]
+for (const [name, node] of riddenBlocks) {
+  test(`carries ${name}`, () => {
+    assert.equal(wiki(node), block(JSON.stringify(sortedKeys(node))))
+  })
+}
+
+function sortedKeys(node: AdfNode): unknown {
+  return JSON.parse(JSON.stringify(node), (_, value: unknown) => (value !== null && typeof value === 'object' && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => (left < right ? -1 : 1))) : value))
+}
+
+test('writes a paragraph holding whitespace beside another node inline, carrying each', () => {
+  assert.equal(wiki(paragraph(text(' '), { attrs: { text: 'A' }, type: 'status' })), `${inline('{"text":" ","type":"text"}')}${inline('{"attrs":{"text":"A"},"type":"status"}')}`)
+})
+
+test('writes the blocks after a block that rides', () => {
+  assert.equal(wiki({ type: 'unknownBlock' }, paragraph(text('b'))), `${block('{"type":"unknownBlock"}')}\n\nb`)
+})
+
+test('writes a blockquote of one block other than a paragraph as a quote macro', () => {
+  assert.equal(wiki(quote(code('java', 'x'))), '{quote}\n{code:java}\nx\n{code}\n{quote}')
+})
+
+test('writes a list inside a quote macro from its first marker', () => {
+  assert.equal(wiki(quote(list('bulletList', item(paragraph(text('a')))), paragraph(text('b')))), '{quote}\n* a\n\nb\n{quote}')
+})
+
+test('writes a bullet list nested in a bullet list one marker deeper', () => {
+  assert.equal(wiki(list('bulletList', item(paragraph(text('a')), list('bulletList', item(paragraph(text('b'))))))), '* a\n** b')
+})
+
+test('writes an empty paragraph in a header cell as a space', () => {
+  assert.equal(wiki(table(plainTable, [cell('tableHeader', text('H')), cell('tableHeader')])), '||H|| ||')
+})
+
+test('carries a text that whitespace ends at the line end, or that holds http://', () => {
+  assert.equal(wiki(paragraph(text('a', { type: 'strong' }), text('b '))), `*a*${inline('{"text":"b ","type":"text"}')}`)
+  assert.equal(line('see http://example.com'), inline('{"text":"see http://example.com","type":"text"}'))
+})
+
+test('escapes a delimiter between punctuation, and one a node edge meets inside the line', () => {
+  assert.equal(line('a "-" b'), 'a "\\-" b')
+  assert.equal(wiki(paragraph({ type: 'hardBreak' }, text('_a'))), '\\\\\\_a')
+})
+
+test('leaves h1. and bq. that stand after a line start', () => {
+  assert.equal(line('see h1. and bq. here'), 'see h1. and bq. here')
+})
+
+test('carries a run whose closing delimiter meets a letter after it', () => {
+  assert.equal(wiki(paragraph(text('a '), text('b', { type: 'strong' }), text('c'))), `a ${inline('{"marks":[{"type":"strong"}],"text":"b","type":"text"}')}c`)
+})
+
+test('writes a run that a marked run or a carry follows', () => {
+  assert.equal(wiki(paragraph(text('a '), text('b', { type: 'strong' }), text('c', { type: 'em' }))), 'a *b*_c_')
+  assert.equal(wiki(paragraph(text('a '), text('b', { type: 'strong' }), { attrs: { text: 'A' }, type: 'status' })), `a *b*${inline('{"attrs":{"text":"A"},"type":"status"}')}`)
+})
+
+test('closes inner marks innermost first where the next node leaves them', () => {
+  assert.equal(wiki(paragraph(text('a', { type: 'strong' }, { type: 'em' }, { type: 'underline' }), text(' b', { type: 'strong' }))), '*_+a+_ b*')
+})
+
+test('writes a link and a colour mid-word, whose delimiters read anywhere', () => {
+  assert.equal(wiki(paragraph(text('a'), text('b', { attrs: { href: 'https://example.com' }, type: 'link' }), text('c'))), 'a[b|https://example.com]c')
+  assert.equal(wiki(paragraph(text('a'), text('b', { attrs: { href: 'https://example.com', title: 'T' }, type: 'link' }), text('c'))), 'a[b|https://example.com|T]c')
+  assert.equal(wiki(paragraph(text('a'), text('b', { attrs: { color: '#ff0000' }, type: 'textColor' }), text('c'))), 'a{color:#ff0000}b{color}c')
+})
+
+test('carries a code or subsup run mid-word, whose delimiters read only beside punctuation', () => {
+  assert.equal(wiki(paragraph(text('a '), text('b', { type: 'code' }), text('c'))).includes('{adf:display=inline}'), true)
+  assert.equal(wiki(paragraph(text('a '), text('b', { attrs: { type: 'sup' }, type: 'subsup' }), text('c'))).includes('{adf:display=inline}'), true)
+})
+
+test('writes a link whose text is its href, holding a title, with its text', () => {
+  assert.equal(wiki(paragraph(text('mailto:a@example.com', { attrs: { href: 'mailto:a@example.com', title: 'T' }, type: 'link' }))), '[mailto:a@example.com|mailto:a@example.com|T]')
+})
+
+test('writes a link whose href starts with ~ with its text, since [~x] names a user', () => {
+  assert.equal(wiki(paragraph(text('a '), text('~x', { attrs: { href: '~x' }, type: 'link' }))), 'a [\\~x|~x]')
+})
+
+const riddenMarks: [string, AdfMark][] = [
+  ['a colour followed by more', { attrs: { color: '#ff0000x' }, type: 'textColor' }],
+  ['a colour led by more', { attrs: { color: 'x#ff0000' }, type: 'textColor' }],
+  ['a colour holding another attribute', { attrs: { color: '#ff0000', x: 1 }, type: 'textColor' }],
+  ['a subsup holding another attribute', { attrs: { type: 'sub', x: 1 }, type: 'subsup' }],
+  ['a mark of another type holding an href', { attrs: { href: 'https://example.com' }, type: 'fancyLink' }],
+  ['a link whose href is no string', { attrs: { href: 5 }, type: 'link' }],
+  ['a link holding another attribute', { attrs: { href: 'https://example.com', x: 1 }, type: 'link' }],
+  ['a link whose title is no string', { attrs: { href: 'https://example.com', title: 5 }, type: 'link' }],
+  ['a link whose title ends in whitespace', { attrs: { href: 'https://example.com', title: 'T ' }, type: 'link' }],
+]
+for (const [name, mark] of riddenMarks) {
+  test(`carries the run of ${name}`, () => {
+    assert.equal(marked(mark), `a ${inline(JSON.stringify({ marks: [sortedKeys({ ...mark, type: mark.type })], text: 'b', type: 'text' }))} c`)
+  })
+}
+
+const riddenInlines: [string, AdfNode][] = [
+  ['a node of another type holding an id and accessLevel ""', { attrs: { accessLevel: '', id: '5b10' }, type: 'unknownInline' }],
+  ['a mention of another accessLevel', { attrs: { accessLevel: 'CONTAINER', id: '5b10' }, type: 'mention' }],
+  ['a mention whose id is no string', { attrs: { accessLevel: '', id: 5 }, type: 'mention' }],
+]
+for (const [name, node] of riddenInlines) {
+  test(`carries ${name}`, () => {
+    assert.equal(wiki(paragraph(node)), inline(JSON.stringify(sortedKeys(node))))
+  })
+}
+
+test('refuses a carry past 500 levels by its path in a list', () => {
+  let value: AdfAttributes[string] = 1
+  for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
+  const deep: AdfNode = { attrs: { a: value }, type: 'unknownInline' }
+  assert.equal(refusal(adfToLosslessJiraWiki(document(list('bulletList', item(paragraph(deep)))))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
+})
