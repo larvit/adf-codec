@@ -11,9 +11,9 @@ import { parseJsonText } from '../json-text.ts'
 // JSON `carriedNesting` found within the levels its position leaves, the one value `carriedNode` reads.
 export type BoundedJson = { readonly bounded: JsonValue }
 
-// `spelled` is the node as the carry holds it, `type` dropped where the format names it apart; `levels` the nesting its position leaves.
-export function carriedJson(node: AdfNode, spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
-  const headroom = levels - nestingDepth(node)
+// `carried` is the node, or the run of nodes, the carry holds; `spelled` is it as the carry holds it, `type` dropped where the format names it apart; `levels` the nesting its position leaves.
+export function carriedJson(carried: AdfNode | readonly AdfNode[], spelled: object, spelling: JsonSpelling, path: ConvertErrorPath, levels: number): Result<{ headroom: number; json: string }> {
+  const headroom = levels - nestingDepth(carried)
   if (!isJsonValue(spelled) || headroom < 0) return faulted(nestedPast(levels), path)
   // Two-space JSON indents each value by its depth, so a short compact value can spell past the bound: join only up to it.
   const json = joinedWithin(canonicalJsonPieces(spelled, spelling))
