@@ -334,7 +334,10 @@ test(`refuses a list nesting past ${largestNesting} levels, naming its line`, ()
 })
 
 test('refuses an inline {adf} macro that closes at the next line\'s start', () => {
-  assert.equal(read('a {adf:display=inline}{"type":"status"}\n{adf}'), 'unsupported-node-shape at line 1, offset 0')
+  assert.deepEqual(jiraWikiToAdf('a {adf:display=inline}{"type":"status"}\n{adf}'), {
+    error: { code: 'unsupported-node-shape', message: 'an {adf} macro inside a line closes on that line: this one closes on a later line', path: [], position: { line: 1, offset: 0 } },
+    ok: false,
+  })
 })
 
 test('names the line of a refusal after empty lines', () => {
