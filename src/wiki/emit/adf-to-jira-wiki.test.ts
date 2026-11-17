@@ -275,6 +275,7 @@ test('refuses a carry whose JSON nests past 500 levels', () => {
   for (let level = 0; level < largestNesting - 2; level += 1) value = [value]
   assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph({ attrs: { a: value }, type: 'unknownInline' })))), 'written')
   assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph({ attrs: { a: [value] }, type: 'unknownInline' })))), 'unsupported-nesting-depth at /content/0/content/0')
+  assert.equal(refusal(adfToLosslessJiraWiki(document(paragraph({ attrs: { a: [value] }, type: 'unknownInline' }), paragraph({ attrs: { a: [value] }, type: 'unknownInline' })))), 'unsupported-nesting-depth at /content/0/content/0')
   assert.equal(refusal(adfToLosslessJiraWiki(document({ attrs: { a: value }, type: 'unknownBlock' }))), 'written')
   assert.equal(refusal(adfToLosslessJiraWiki(document({ attrs: { a: [value] }, type: 'unknownBlock' }))), 'unsupported-nesting-depth at /content/0')
 })
@@ -488,8 +489,9 @@ test('refuses a carry past 500 levels in a list by the path of the first', () =>
   assert.equal(refusal(adfToLosslessJiraWiki(document(list('bulletList', item(paragraph(deep)), item(paragraph(deep)))))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
 })
 
-test('carries a text holding no text', () => {
+test('carries a text holding no text apart from its marked neighbour', () => {
   assert.equal(wiki(paragraph(text('a'), { type: 'text' })), `a${inline('{"type":"text"}')}`)
+  assert.equal(wiki(paragraph(text('a', { type: 'strong' }), { marks: [{ type: 'strong' }], type: 'text' })), `*a*${inline('{"marks":[{"type":"strong"}],"type":"text"}')}`)
 })
 
 test('carries two inline nodes that each ride as two carries', () => {
