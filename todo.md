@@ -13,9 +13,8 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 198 | 0.4.0 |  |  | **Check on the Jira test site that Jira reads each backslash escape and each inline carry `adfToLosslessJiraWiki` writes as `spec/wiki.md` says, and respell or carry what it reads otherwise.** | 2 | 2 | 2 | 4 | 3 | 6 by 3, 11 by 2 | 4.4 |
-| 193 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.** | 3 | 1 | 2 | 4 | 7 | 11 by 4 | 0.4 |
-| 194 | 0.4.0 | 193 | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
-| 195 | 0.4.0 | 193 | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
+| 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
+| 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
 | 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
@@ -60,22 +59,6 @@ Touches:
 - `spec/wiki.md`: Inline
 - `src/wiki/emit/text-escaping.ts`: `escapes`, `opensSmiley`
 - `src/wiki/emit/adf-to-jira-wiki.test.ts` (small)
-
-### 193. Write ADF as Jira wiki markup, carrying in Jira's `{adf}` macro each node and mark wiki markup cannot spell.
-
-The lossless wiki writer, as `spec/wiki.md` spells each node. Ships with a fixture per node and
-mark; item 195's reader adds the round-trip property.
-
-Touches:
-
-- `src/jira-wiki/emit/adf-to-jira-wiki.ts`
-- `src/jira-wiki/emit/adf-to-jira-wiki.test.ts`
-- `src/adf/carried-json.ts`: `carriedJson` (small)
-- `src/canonical-json.ts`: `JsonSpelling`, `canonicalJsonPieces` (small)
-- `src/index.ts`: lines 3-13 (small)
-- `package-tests/consumer.ts`: lines 1-17 (small)
-- `.oxlintrc.json`: lines 6-48 (small)
-- `ci.sh`: lines 11-28 (small)
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
