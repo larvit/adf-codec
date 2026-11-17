@@ -1558,7 +1558,7 @@ In a real Jira document, each mention and each node holding a `localId` therefor
 2026-11-15, a developer panel. Goals 6, 8 and 12. Valid while the dialect and foreign HTML read
 without ambiguity in one reader.
 
-HTML from an email, a CMS or an editor will read through `htmlToAdf(html)`. An element that claims
+HTML from an email, a CMS or an editor reads through `htmlToAdf(html)`. An element that claims
 the dialect, by a `data-adf` attribute or an `adf-` class, reads only as the dialect, and stays
 refused where that reading fails, so an edited carry element is still `unmappable-html`. Every other
 element sorts as §Foreign HTML reads best effort and is never refused says.

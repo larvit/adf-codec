@@ -26,7 +26,7 @@ type Frame = {
   attrs: AdfAttributes
   content: AdfNode[]
   depth: number
-  // The nearest open element under this one holding content of its own; `undefined` where this one does.
+  // The nearest open element around this one holding content of its own; `undefined` where this one does.
   holder: Frame | undefined
   // The image a paragraph holds alone so far.
   image: AdfNode | undefined
@@ -64,7 +64,7 @@ type Reading = {
 type Tag = { attributes: Attributes; end: number; name: string }
 
 const attribute = /[\t\n\f\r /]*([^\t\n\f\r />][^\t\n\f\r />=]*)(?:[\t\n\f\r ]*=[\t\n\f\r ]*(?:"([^"]*)"|'([^']*)'|([^\t\n\f\r >]*)))?/y
-// WHATWG HTML §15.3.3, §15.3.7, §15.3.10 and §15.3.13: what a browser shows as a block, less what `mapped` reads as a node.
+// WHATWG HTML §15.3.3, §15.3.7, §15.3.10 and §15.3.13: what a browser shows as a block, less what `mappedNode` reads as a node.
 const blockElements: ReadonlySet<string> = new Set([
   'address',
   'article',
@@ -131,13 +131,13 @@ const markElements: ReadonlyMap<string, AdfMark> = new Map<string, AdfMark>([
 // WHATWG HTML §13.1.2: the elements whose text holds no tag.
 const rawTextElements: ReadonlySet<string> = new Set(['script', 'style'])
 const startTagName = /<([a-zA-Z][^\t\n\f\r />]*)/y
+const tableParts: ReadonlySet<string> = new Set(['table', 'td', 'th', 'tr'])
 const tagEnd = /[\t\n\f\r /]*>/y
 // WHATWG HTML §13.1.2: the elements holding no content and taking no end tag.
-const tableParts: ReadonlySet<string> = new Set(['table', 'td', 'th', 'tr'])
 const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
 const whitespace = /[\t\n\f\r ]+/g
 
-// Reads any HTML best effort (docs/decisions.md, Foreign HTML reads best effort and is never refused): only an element claiming the dialect, read by `readBlock` or `readInlineElement`, a nesting past the largest and an engine limit refuse.
+// Reads any HTML best effort (docs/decisions.md, Foreign HTML reads best effort and is never refused). It refuses only an element claiming the dialect that `readBlock` or `readInlineElement` refuses, and nesting past `largestNesting`.
 export function readForeignHtml(html: string, readBlock: DialectBlockReader): Result<AdfDocument, ParseError> {
   const root: Frame = { asides: [], attrs: {}, content: [], depth: 0, holder: undefined, image: undefined, kind: 'blocks', lastItem: undefined, link: undefined, marks: [], name: '', place: undefined, type: 'doc' }
   const reading: Reading = { barriers: [], code: [], frames: [root], html, imageNodes: new Set(), images: [], line: [], open: new Map(), readBlock, root }
@@ -264,7 +264,7 @@ function readElement(reading: Reading, index: number, tag: Tag): Result<number, 
   return opened(reading, tag)
 }
 
-// An element handing its content to the holder under it, or dropping it.
+// An element handing its content to the holder around it, or dropping it.
 function frame(kind: 'hidden' | 'inline' | 'unwrap', name: string, top: Frame, marks: AdfMark[] = top.marks): Frame {
   return { ...top, asides: [], attrs: {}, content: [], holder: top.holder ?? top, image: undefined, kind, lastItem: undefined, marks, name, type: '' }
 }
@@ -303,7 +303,7 @@ function readDialect(reading: Reading, index: number, name: string): Result<numb
   endParagraph(reading)
   const holder = holderOf(reading)
   const block = reading.readBlock(html, index, { index: holder.content.length, parent: holder.place }, holder.depth)
-  if (block === undefined) return refused('unmappable-html', `<${name}> claims the dialect, by data-adf or an adf- class, and is no element of the dialect: ${foundAt(html, index)}`, html, index, inline)
+  if (block === undefined) return refused('unmappable-html', `<${name}> holds data-adf or an adf- class, which mark an element adfToHtml writes, and adfToHtml writes no <${name}>: ${foundAt(html, index)}`, html, index, inline)
   if (block.ok) put(holder, block.value.node)
   return block.ok ? success(block.value.end) : block
 }
@@ -325,7 +325,7 @@ function closeThrough(reading: Reading, index: number): void {
   while (reading.frames.length > index) close(reading)
 }
 
-// Closes the nearest open element of this name, unless a table opened inside it, or a cell where the name is no part of a table.
+// Closes the nearest open element of this name. An end tag never closes through a table opened inside that element, and one naming no part of a table never through a cell either.
 function closeNamed(reading: Reading, name: string): void {
   const found = nearest(reading, name)
   const floor = tableParts.has(name) ? nearest(reading, 'table') : (reading.barriers.at(-1) ?? 1)

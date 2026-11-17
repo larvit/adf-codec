@@ -76,7 +76,7 @@ function edited(html: string, [at, removed, piece]: readonly [number, number, st
   return tokens.join('')
 }
 
-// Without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read.
+// Read as the dialect and without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read.
 function assertReadsBack(html: string): void {
   const read = dialectHtmlToAdf(html)
   if (read.ok && !html.includes('class="adf-carry"')) assert.equal(written(read.value, html), html, `reading ${JSON.stringify(html)}`)

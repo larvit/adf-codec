@@ -67,7 +67,7 @@ const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
 const headCloser = '\n</thead>\n</table>'
 const headToBody = '</thead>\n<tbody>\n'
 
-// Reads what `adfToHtml` writes, as it or a browser spells it, as the document written, and any other HTML best effort.
+// Reads what `adfToHtml` writes, in its spelling or a browser's, back to the document written; reads any other HTML best effort.
 export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
   return readHtml(html, (lines) => {
     const dialect = readDialect(lines)
@@ -128,7 +128,7 @@ function readDialectBlock(html: string, index: number, place: Place, depth: numb
   return readBlockAt(html, index, place, { closer: '', content: [], depth, kind: 'blocks', node: { type: 'doc' }, place: place.parent })
 }
 
-// The block at `index`, a child of `parent`, with all it holds. A stack rather than recursion: only this loop opens and closes containers.
+// The block at `start`, a child of `parent`, with all it holds. A stack rather than recursion: only this loop opens and closes containers.
 function readBlockAt(html: string, start: number, at: Place, parent: Open): ReadNode {
   const opened: Open[] = []
   let open: Open = parent

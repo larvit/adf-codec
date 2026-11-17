@@ -900,7 +900,7 @@ const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
   'text standing in no paragraph as a paragraph, parted where a block stands': ['one<div>two</div>three<p>four</p>five', document(paragraph(text('one')), paragraph(text('two')), paragraph(text('three')), paragraph(text('four')), paragraph(text('five')))],
   'a script, a style, a comment, a doctype and a processing instruction as nothing': ['<!DOCTYPE html><?xml version="1.0"?><p>a<!-- <p>b</p> --></p><script>if (a < b) document.write("<p>c</p>")</script><STYLE type="text/css">p > a { color: red }</STYLE><!--[if mso]><p>d</p><![endif]-->', document(paragraph(text('a')))],
   'an element a browser shows nothing of as nothing, with all it holds, and a <noscript> as its content': ['<head><title>T</title></head><p>a<template><b>b</b></template></p><p hidden>c<br></p><datalist><option>d</option></datalist><noscript><p>e</p></noscript>', document(paragraph(text('a')), paragraph(text('e')))],
-  'an unclosed comment, script or tag as the end of the HTML': ['<p>a</p><!-- b', document(paragraph(text('a')))],
+  'an unclosed comment as the end of the HTML': ['<p>a</p><!-- b', document(paragraph(text('a')))],
   'an unclosed script as the end of the HTML': ['<p>a</p><script>b', document(paragraph(text('a')))],
   'an unclosed tag as the end of the HTML': ['<p>a</p><p class="b', document(paragraph(text('a')))],
   'an unclosed declaration as the end of the HTML': ['<p>a</p><!DOCTYPE', document(paragraph(text('a')))],
@@ -918,7 +918,7 @@ const foreign: Readonly<Record<string, readonly [string, AdfDocument]>> = {
   'a block inside a paragraph or heading as a line of it': ['<h2>a<div>b</div>c</h2><p><span>d<address>e</address></span></p>', document(heading(2, text('a'), hardBreak, text('b'), hardBreak, text('c')), paragraph(text('d'), hardBreak, text('e')))],
   'headings by their level, an <h7> as its text': ['<h1>a</h1><h6>b</h6><h7>c</h7><h3></h3>', document(heading(1, text('a')), heading(6, text('b')), paragraph(text('c')))],
   'a paragraph ended by the block that follows it': ['<p>a<p>b<h2>c</h2><p>d<ul><li>e</ul>f</p>', document(paragraph(text('a')), paragraph(text('b')), heading(2, text('c')), paragraph(text('d')), list('bulletList', item(paragraph(text('e')))), paragraph(text('f')))],
-  'a heading or summary ended by the block that follows it': ['<h1>a<p>b</p>c</h1>', document(heading(1, text('a')), paragraph(text('b')), paragraph(text('c')))],
+  'a heading ended by the block that follows it': ['<h1>a<p>b</p>c</h1>', document(heading(1, text('a')), paragraph(text('b')), paragraph(text('c')))],
   'an end tag closing no open element as nothing': ['<p>a</b></div></p></p>b', document(paragraph(text('a')), paragraph(text('b')))],
   'a quote, its loose text as a paragraph, and an empty one as nothing': ['<blockquote cite="x">a<p>b</p></blockquote><blockquote> </blockquote>', document({ content: [paragraph(text('a')), paragraph(text('b'))], type: 'blockquote' })],
   'lists, an item ended by the next, an ordered list\'s start as its order': [
