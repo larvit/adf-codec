@@ -969,6 +969,18 @@ for (const [reading, [html, adf]] of Object.entries(foreign)) {
   })
 }
 
+for (const name of ['address', 'article', 'aside', 'body', 'caption', 'center', 'colgroup', 'dd', 'dialog', 'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'header', 'hgroup', 'html', 'legend', 'listing', 'main', 'menu', 'nav', 'optgroup', 'option', 'plaintext', 'search', 'section', 'tbody', 'tfoot', 'thead', 'xmp']) {
+  test(`reads foreign HTML parting the text around <${name}>, which a browser shows as a block`, () => {
+    assert.deepEqual(read(htmlToAdf(`a<${name}>b</${name}>c`)), document(paragraph(text('a')), paragraph(text('b')), paragraph(text('c'))))
+  })
+}
+
+for (const name of ['datalist', 'head', 'noembed', 'noframes', 'rp', 'script', 'style', 'template', 'title']) {
+  test(`reads foreign HTML dropping <${name}>, which a browser shows nothing of, with all it holds`, () => {
+    assert.deepEqual(read(htmlToAdf(`<p>a<${name}>b<i>c</i></${name}>d</p>`)), document(paragraph(text('ad'))))
+  })
+}
+
 test('reads the dialect as the document written, whatever foreign HTML would make of it', () => {
   assert.deepEqual(read(htmlToAdf('<p data-align="center">a</p>\n')), document({ content: [text('a')], marks: [{ attrs: { align: 'center' }, type: 'alignment' }], type: 'paragraph' }))
   assert.deepEqual(read(htmlToAdf('<p> a  b </p>\n')), document(paragraph(text(' a  b '))))
