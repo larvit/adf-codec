@@ -6,7 +6,7 @@ import { inlineLine } from './inline-line.ts'
 import { isHeadingLevel } from '../../adf/block-nodes.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
-// `blank`: a paragraph holding no content or only whitespace, which only a table cell holds, written as a space; `macros`: the `{quote}` and `{panel}` the block writes, which can't nest in their own kind; `text`: the block's spelling, where no container composes it.
+// `blank`: a paragraph holding no content or only whitespace, which only a table cell holds; `macros`: the `{quote}` and `{panel}` the block writes, which can't nest in their own kind; `text`: the block's spelling, where no container composes it.
 export type Spelling = { blank: boolean; macros: number; text: string | undefined }
 
 type Step = { exit: boolean; node: AdfNode; path: ConvertErrorPath }
@@ -18,7 +18,7 @@ const lists = ['bulletList', 'orderedList']
 const spellableAlt = /^[^\s!|,\\[\]{}](?:[^!|,\\[\]{}\r\n]*[^\s!|,\\[\]{}])?$/
 const spellableImageUrl = /^[^\s!|\\[\]{}]+$/
 
-// spec/wiki.md, Blocks: each block wiki markup spells, found after its children, since a block holding one that rides rides too. A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded).
+// spec/wiki.md, Blocks: each block wiki markup spells, found after its children, since a block rides where one it holds does. A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded).
 export function spelledBlocks(content: readonly AdfNode[]): Result<Map<AdfNode, Spelling>> {
   const spelled = new Map<AdfNode, Spelling>()
   const pending: Step[] = content.map((node, index) => ({ exit: false, node, path: ['content', index] })).reverse()

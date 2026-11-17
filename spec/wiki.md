@@ -28,13 +28,14 @@ A node rides the carry when it, one of its attributes or one of its marks has no
 also rides when it holds a block or inline node that rides, except that a node that rides inside a
 paragraph stands on its own there, in the paragraph's text. A block that rides inside a list item or
 a table cell makes the list or the table ride instead, since wiki markup can't hold a block macro
-there. A `{quote}` holding another `{quote}` at any depth rides, as does a `panel` holding another
-`panel`, since a macro can't nest in its own kind. Any `localId` rides, since `docs/decisions.md`
+there. A `blockquote` written as `{quote}` that holds another at any depth rides, as does a `panel`
+holding another `panel` at any depth, since a macro can't nest in its own kind. Any `localId` rides, since `docs/decisions.md`
 §Ids stay site-local keeps ids in attributes.
 
 ## Blocks
 
-Blocks are parted by one blank line. A document whose `content` is an empty array is the empty
+Below, a markup character is a backslash, a bracket, a brace or `|`. Blocks are parted by one blank
+line. A document whose `content` is an empty array is the empty
 string.
 
 | ADF | Wiki markup | Reader |
@@ -44,7 +45,7 @@ string.
 | `bulletList`, `orderedList` of `order` 1, its items each a paragraph then lists | `* ` and `# `, one more character per level, nested lists mixed as `#* ` and `*# ` | the same, and `- ` items as `* `; an `orderedList` reads `order` 1 |
 | `codeBlock` holding one text node, of `language` `""` or a name below in lowercase | `{code:<language>}`, a line feed, the text, a line feed, `{code}`; for `""`, `{noformat}`, the text, `{noformat}` the same way | the same, reading a `{code:<language>}` name in lowercase and `{noformat}` as `language` `""`; `{code}` reads `java`; `title`, `borderStyle` and the other panel parameters drop |
 | `heading` | `h1. ` to `h6. ` by `level` | the same |
-| `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` holds none of `!`, `\|`, `,`, a backslash, a bracket, a brace or a line feed, and doesn't start or end with whitespace; a `url` holding whitespace or one of `!`, `\|`, a backslash, a bracket or a brace rides the carry | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
+| `mediaSingle` of `layout` `center`, holding one external `media` and no caption | `!<url>!`, or `!<url>\|alt=<alt>!` where `alt` isn't empty, holds no markup character, `!`, `,`, line feed or carriage return, and doesn't start or end with whitespace; a `url` that is empty or holds whitespace, `!` or a markup character rides the carry | the same, reading `layout` `center`; `thumbnail`, `align` and the other parameters drop |
 | `panel` of `panelType` `error`, `info`, `note`, `success` or `warning` | `{panel:bgColor=<colour>}`, a line feed, its blocks, a line feed, `{panel}`, the colour being `#ffebe6` for `error`, `#deebff` for `info`, `#eae6ff` for `note`, `#e3fcef` for `success` and `#fffae6` for `warning` | the same; a `title` parameter reads as the panel's first paragraph in `strong`; `{panel}` and any `bgColor` the five spellings leave out read as `info`, colours compared without case; the other parameters drop |
 | `paragraph` holding content | its inline content | the same; a line feed in it reads as a `hardBreak`, as Jira renders it |
 | `rule` | `----` | the same |
@@ -64,40 +65,42 @@ a `width`, a merged cell and a colour.
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `hardBreak` | `\\` | the same |
-| `mention` holding `id` and `accessLevel` `""`, and no other attribute, the `id` holding no whitespace, backslash, bracket, brace or `\|` | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
+| `mention` holding `id` and `accessLevel` `""`, and no other attribute, the `id` not empty and holding no whitespace or markup character | `[~accountid:<id>]` | the same, reading `accessLevel` `""`; `[~name]` reads as text, since Jira Cloud names a user by account id |
 | `text` | its text, escaped as below | `\\` reads as a `hardBreak` before `\X` reads `X`; a bare `http://` or `https://` address reads as a `link` |
 | any other inline node | the carry | `{adf:display=inline}` reads its nodes |
 
-A character takes a backslash where wiki markup would read it as markup:
+A character takes a backslash where wiki markup would read it as markup. Here a line's edge counts
+as whitespace, and a node's edge inside the line as punctuation:
 
 - `[`, `]`, `{`, `}` and `|`, always.
 - `*`, `+`, `-`, `^`, `_` and `~`, unless a letter or digit stands on both sides, or whitespace
-  does. A line's edge counts as whitespace, and a node's edge inside the line as punctuation.
+  does.
 - `?` before another `?`, and `!` before anything but whitespace.
-- The first character of a smiley in the help's list, where no letter or digit follows the smiley,
-  or where the node's edge cuts it inside the line.
+- The first character of a smiley listed under What only the reader reads, where no letter or digit
+  follows the smiley, or where the node's edge cuts it inside the line.
 - At a line's start, `#`, `*` and `-`, and the `h` of `h1.` to `h6.` and the `b` of `bq.`, in any
   case.
 
-A text rides the carry where no backslash protects it: where it holds a backslash, a line feed, or
-`http://` or `https://`, which Jira would link, or where whitespace starts or ends the line. So does a
-text whose marks are those of the text before it, which the reader would join, and a `hardBreak` or
-`mention` holding a mark.
+No backslash protects a backslash, a line feed, a carriage return, or `http://` or `https://` in any
+case, which Jira would link, so a text holding one rides the carry. So does a text that starts or
+ends its line with whitespace, and a text whose marks are those of the text before it, which the
+reader would join. A `hardBreak` or `mention` holding a mark rides too.
 
 ## Marks
 
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `code`, `em`, `strike`, `strong`, `underline` | `{{x}}`, `_x_`, `-x-`, `*x*`, `+x+` | the same; `??x??` reads `em` |
-| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the text is the `href`, the link marks neither neighbour and holds no `title`, and the `href` doesn't start with `~`; an `href` holding whitespace, a backslash, a bracket, a brace or `\|`, or a `title` holding a line feed, a backslash, a bracket, a brace or `\|` or starting or ending with whitespace, rides the carry | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
+| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`, and the `href` doesn't start with `~`; an `href` that is empty or holds whitespace or a markup character rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
 | `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
 | any other mark | the carry around the marked run | `{adf:display=inline}` reads its run |
 
 Marks nest in the order the node's array holds them, outermost first, and a run of nodes sharing
-their outermost mark shares its delimiters. A mark's character delimiters sit beside whitespace,
-punctuation or the line's edge, and the run's first and last characters are not whitespace. A run
-where either fails rides the carry whole, as does a node holding two marks of one type.
+their outermost mark shares its delimiters. The delimiters of `code`, `em`, `strike`, `strong`,
+`subsup` and `underline` each need whitespace, punctuation or the line's edge outside them, and no
+whitespace inside them. A run where one fails rides the carry whole, as does a node holding two marks
+of one type.
 
 ## The lossy writer
 
