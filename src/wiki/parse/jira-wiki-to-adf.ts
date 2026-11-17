@@ -26,6 +26,7 @@ const codeMacro = /\{(code|noformat)(?::([^}\n]*))?\}/y
 const documentCarry = '{adf:display=block}\n{"type":"doc","version":1}\n{adf}'
 const image = /^!([^\s!|]+)(?:\|([^!]*))?!$/
 const itemMarker = /^([*#]+|-) +/
+const lineSpace = /[^\S\n]*/y
 const lineWord = /^(?:bq|h([1-6]))\.\s*/
 const panelMacro = /\{panel(?::([^}\n]*))?\}/y
 const quoteMacro = '{quote}'
@@ -41,13 +42,12 @@ function readWiki(wiki: string): Result<AdfDocument> {
   const root: Container = { content: [], kind: 'document' }
   const reading: Reading = { containers: [root], levels: [], paragraph: undefined, rows: undefined, wiki }
   let at = 0
+  let next = 0
   while (at < wiki.length) {
-    const feed = wiki.indexOf('\n', at)
-    const next = feed === -1 ? wiki.length : feed + 1
-    const held = wiki.slice(at, next)
-    const start = at + held.length - held.trimStart().length
-    const text = held.trim()
-    const read = text === '' ? closeBlocks(reading, next) : readLine(reading, { end: start + text.length, next, start, text })
+    if (at >= next) next = (wiki.indexOf('\n', at) + 1) || wiki.length
+    lineSpace.lastIndex = at
+    const start = at + (lineSpace.exec(wiki)?.[0].length ?? 0)
+    const read = readMacro(reading, start) ?? readRest(reading, start, next)
     if (typeof read !== 'number') return { error: { ...read.fault, path: [], position: lineStart(wiki, start) }, ok: false }
     at = read
   }
@@ -55,11 +55,15 @@ function readWiki(wiki: string): Result<AdfDocument> {
   return success({ content: root.content, type: 'doc', version: 1 })
 }
 
+// A line is cut out once, however many macros open it: `readMacro` reads by index, and every other reader ends its line.
+function readRest(reading: Reading, start: number, next: number): Fault | number {
+  const text = reading.wiki.slice(start, next).trim()
+  return text === '' ? closeBlocks(reading, next) : readLine(reading, { end: start + text.length, next, start, text })
+}
+
 // spec/wiki.md, Blocks: reads the block or the line at `line.start`, and returns where reading goes on.
 function readLine(reading: Reading, line: Line): Fault | number {
   const { next, start, text } = line
-  const macro = readMacro(reading, line)
-  if (macro !== undefined) return macro
   const worded = lineWord.exec(text)
   if (worded !== null) return readWordedLine(reading, line, start + worded[0].length, worded[1])
   if (/^-{4,}$/.test(text)) return pushBlock(reading, { type: 'rule' }, next)
@@ -75,16 +79,16 @@ function readLine(reading: Reading, line: Line): Fault | number {
 }
 
 // A macro opens and closes a block only at its line's start, and reads as text anywhere else; `undefined` where none stands there.
-function readMacro(reading: Reading, { start, text }: Line): Fault | number | undefined {
+function readMacro(reading: Reading, start: number): Fault | number | undefined {
   const { containers, wiki } = reading
-  if (!text.startsWith('{')) return undefined
+  if (!wiki.startsWith('{', start)) return undefined
   const carried = readAdfMacro(wiki, start, wiki.length)
   if (carried?.fault !== undefined) return { fault: carried.fault }
   if (carried !== undefined) return carried.value.inline ? undefined : pushBlock(reading, carried.value.node, carried.value.end)
   codeMacro.lastIndex = start
   const code = codeMacro.exec(wiki)
   if (code !== null) return readCode(reading, codeMacro.lastIndex, code[1] ?? '', code[2])
-  if (text.startsWith(quoteMacro)) {
+  if (wiki.startsWith(quoteMacro, start)) {
     const open = containers.findIndex(({ kind }) => kind === 'quote')
     if (open === -1) openContainer(reading, 'quote', { type: 'blockquote' })
     else closeContainers(reading, open)
