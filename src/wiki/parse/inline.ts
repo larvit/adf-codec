@@ -12,15 +12,18 @@ export type InlineRead = { end: number; fault?: undefined; nodes: AdfNode[] } | 
 type Link = { close: number; end: number; floor: number }
 
 // An opening delimiter no closer has met: `at` is where its content starts, and `piece` holds its characters, which stay text unless it closes.
-type Opened = { at: number; key: string; mark: AdfMark; piece: Piece }
+type Opened = { at: number; key: string; mark: AdfMark; piece: TextPiece }
 
-// `marks`: outermost first; `node`: a node no mark reaches and no text joins.
-type Piece = { marks: AdfMark[]; node: AdfNode | undefined; text: string }
+// `node`: a node no mark reaches and no text joins.
+type Piece = TextPiece | { node: AdfNode }
 
 type Role = 'close' | 'either' | 'open'
 
+// `marks`: outermost first.
+type TextPiece = { marks: AdfMark[]; text: string }
+
 // `run`: the piece the next plain character joins.
-type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: Piece | undefined; start: number; wiki: string }
+type Scan = { end: number; inCell: boolean; link: Link | undefined; opened: Opened[]; pieces: Piece[]; run: TextPiece | undefined; start: number; wiki: string }
 
 const address = /https?:\/\/[^\s)'"<>!|[\]{}\\]*/y
 const anchorMacro = /\{anchor(?::[^}\n]*)?\}/y
@@ -44,7 +47,7 @@ export function readInline(wiki: string, start: number, end: number, inCell: boo
   let at = start
   while (at < end) {
     if (scan.link?.close === at) at = closeLink(scan, scan.link)
-    else if (inCell && scan.link === undefined && wiki.charAt(at) === '|') break
+    else if (inCell && wiki.charAt(at) === '|') break
     else {
       const next = readPiece(scan, at)
       if (typeof next !== 'number') return next
@@ -95,11 +98,11 @@ function plainCharacter(scan: Scan, at: number): number {
 }
 
 function literal(scan: Scan, text: string): void {
-  if (scan.run === undefined) scan.run = push(scan, { marks: [], node: undefined, text })
+  if (scan.run === undefined) scan.run = push(scan, { marks: [], text })
   else scan.run.text += text
 }
 
-function push(scan: Scan, piece: Piece): Piece {
+function push<Pushed extends Piece>(scan: Scan, piece: Pushed): Pushed {
   scan.pieces.push(piece)
   scan.run = undefined
   return piece
@@ -122,14 +125,14 @@ function delimiter(scan: Scan, at: number, spelled: string, key: string, mark: A
 function open(scan: Scan, at: number, spelled: string, key: string, mark: AdfMark): void {
   const older = openedIndex(scan, key)
   if (older !== -1) scan.opened.splice(older, 1)
-  scan.opened.push({ at, key, mark, piece: push(scan, { marks: [], node: undefined, text: spelled }) })
+  scan.opened.push({ at, key, mark, piece: push(scan, { marks: [], text: spelled }) })
 }
 
 function close(scan: Scan, { mark, piece }: Opened, opener: number): void {
   piece.text = ''
   for (let index = scan.pieces.length - 1; scan.pieces[index] !== piece && index >= 0; index -= 1) {
     const marked = scan.pieces[index]
-    if (marked !== undefined && marked.node === undefined) marked.marks.unshift(mark)
+    if (marked !== undefined && 'marks' in marked) marked.marks.unshift(mark)
   }
   scan.opened.length = opener
   scan.run = undefined
@@ -164,7 +167,7 @@ function dash(scan: Scan, at: number): number {
 function escape(scan: Scan, at: number): number {
   const next = pointAt(scan, at + 1)
   if (next === '\\') {
-    push(scan, { marks: [], node: { type: 'hardBreak' }, text: '' })
+    push(scan, { node: { type: 'hardBreak' } })
     return at + 2
   }
   if (next === undefined || keepsBackslash.test(next) || (next === '|' && scan.inCell && scan.link === undefined)) return plainCharacter(scan, at)
@@ -179,7 +182,7 @@ function smiley(scan: Scan, at: number): number {
     if (emoji === undefined || !scan.wiki.startsWith(spelled, at) || at + spelled.length > scan.end || (next !== undefined && word.test(next))) continue
     const { id, shortName } = emoji
     const text = /^[0-9a-f]+$/.test(id) ? String.fromCodePoint(Number.parseInt(id, 16)) : shortName
-    push(scan, { marks: [], node: { attrs: { id, shortName, text }, type: 'emoji' }, text: '' })
+    push(scan, { node: { attrs: { id, shortName, text }, type: 'emoji' } })
     return at + spelled.length
   }
   return plainCharacter(scan, at)
@@ -190,7 +193,7 @@ function brace(scan: Scan, at: number): number | { fault: ConvertFault } {
   const macro = readAdfMacro(wiki, at, end)
   if (macro?.fault !== undefined) return { fault: macro.fault }
   if (macro !== undefined) {
-    push(scan, { marks: [], node: macro.value.node, text: '' })
+    push(scan, { node: macro.value.node })
     return macro.value.end
   }
   if (wiki.startsWith('{{', at)) return delimiter(scan, at, '{{', '{{', { type: 'code' }, 'open')
@@ -225,7 +228,7 @@ function bracket(scan: Scan, at: number): number {
     if (character === '\\') close += 1
     else if (character === '|') bars.push(close)
   }
-  if (close >= end || scan.link !== undefined || bars.length > 2) return plainCharacter(scan, at)
+  if (close >= end || bars.length > 2) return plainCharacter(scan, at)
   const [first, second] = bars
   if (first === undefined) return bracketed(scan, at, wiki.slice(at + 1, close))
   const href = wiki.slice(first + 1, second ?? close)
@@ -233,10 +236,10 @@ function bracket(scan: Scan, at: number): number {
   if (!spellableUrl.test(href) || (title !== undefined && !spellableTitle.test(title))) return plainCharacter(scan, at)
   const mark: AdfMark = { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
   if (first === at + 1) {
-    push(scan, { marks: [mark], node: undefined, text: href })
+    push(scan, { marks: [mark], text: href })
     return close + 1
   }
-  scan.opened.push({ at: at + 1, key: 'link', mark, piece: push(scan, { marks: [], node: undefined, text: '' }) })
+  scan.opened.push({ at: at + 1, key: 'link', mark, piece: push(scan, { marks: [], text: '' }) })
   scan.link = { close: first, end: close + 1, floor: scan.opened.length - 1 }
   return at + 1
 }
@@ -244,8 +247,8 @@ function bracket(scan: Scan, at: number): number {
 // `[~accountid:<id>]` and `[<href>]`.
 function bracketed(scan: Scan, at: number, held: string): number {
   const id = held.startsWith('~accountid:') ? held.slice('~accountid:'.length) : undefined
-  if (id !== undefined && spellableUrl.test(id)) push(scan, { marks: [], node: { attrs: { accessLevel: '', id }, type: 'mention' }, text: '' })
-  else if (!held.startsWith('~') && spellableUrl.test(held)) push(scan, { marks: [{ attrs: { href: held }, type: 'link' }], node: undefined, text: held })
+  if (id !== undefined && spellableUrl.test(id)) push(scan, { node: { attrs: { accessLevel: '', id }, type: 'mention' } })
+  else if (!held.startsWith('~') && spellableUrl.test(held)) push(scan, { marks: [{ attrs: { href: held }, type: 'link' }], text: held })
   else return plainCharacter(scan, at)
   return at + held.length + 2
 }
@@ -259,23 +262,22 @@ function bareAddress(scan: Scan, at: number): number {
   while ('.,;?'.includes(found.charAt(end - 1))) end -= 1
   const href = found.slice(0, end)
   if (href.endsWith('://')) return plainCharacter(scan, at)
-  push(scan, { marks: [{ attrs: { href }, type: 'link' }], node: undefined, text: href })
+  push(scan, { marks: [{ attrs: { href }, type: 'link' }], text: href })
   return at + href.length
 }
 
 function nodesOf(pieces: readonly Piece[]): AdfNode[] {
   const nodes: AdfNode[] = []
   let previous: { marks: readonly AdfMark[]; node: AdfNode } | undefined
-  for (const { marks, node, text } of pieces) {
-    if (node !== undefined) {
-      nodes.push(node)
+  for (const piece of pieces) {
+    if ('node' in piece) {
+      nodes.push(piece.node)
       previous = undefined
-    } else if (text !== '') {
-      if (previous !== undefined && identicalMarks(previous.marks, marks)) previous.node.text = `${previous.node.text ?? ''}${text}`
-      else {
-        previous = { marks, node: marks.length === 0 ? { text, type: 'text' } : { marks: marks.map(copied), text, type: 'text' } }
-        nodes.push(previous.node)
-      }
+    } else if (previous !== undefined && identicalMarks(previous.marks, piece.marks)) previous.node.text = `${previous.node.text ?? ''}${piece.text}`
+    else if (piece.text !== '') {
+      const { marks, text } = piece
+      previous = { marks, node: marks.length === 0 ? { text, type: 'text' } : { marks: marks.map(copied), text, type: 'text' } }
+      nodes.push(previous.node)
     }
   }
   return nodes
