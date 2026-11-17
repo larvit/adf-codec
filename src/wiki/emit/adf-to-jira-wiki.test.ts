@@ -344,6 +344,7 @@ for (const [panelType, colour] of [['error', '#ffebe6'], ['info', '#deebff'], ['
 
 const external = { type: 'external', url: 'https://example.com/a.png' }
 const riddenBlocks: [string, AdfNode][] = [
+  ['an image whose mediaSingle holds no content', { attrs: { layout: 'center' }, type: 'mediaSingle' }],
   ['an image whose mediaSingle holds no media', { attrs: { layout: 'center' }, content: [paragraph(text('a'))], type: 'mediaSingle' }],
   ['an image whose mediaSingle holds its caption first', { attrs: { layout: 'center' }, content: [{ content: [text('c')], type: 'caption' }, { attrs: external, type: 'media' }], type: 'mediaSingle' }],
   ['an image whose mediaSingle holds two media', { attrs: { layout: 'center' }, content: [{ attrs: external, type: 'media' }, { attrs: external, type: 'media' }], type: 'mediaSingle' }],
@@ -361,9 +362,10 @@ const riddenBlocks: [string, AdfNode][] = [
   ['a blockquote holding no content', { type: 'blockquote' }],
   ['a list holding a paragraph', { content: [paragraph(text('a'))], type: 'bulletList' }],
   ['a list holding a list item and a paragraph', { content: [item(paragraph(text('a'))), paragraph(text('b'))], type: 'bulletList' }],
-  ['a blockquote holding a list that holds a quote', { content: [list('bulletList', item(paragraph(text('a')), { content: [paragraph(text('b')), paragraph(text('c'))], type: 'blockquote' }))], type: 'blockquote' }],
+  ['a blockquote holding a panel that holds a quote', quote(panel('info', quote(paragraph(text('a')), paragraph(text('b')))))],
   ['a list item holding a localId', list('bulletList', { attrs: { localId: 'i1' }, content: [paragraph(text('a'))], type: 'listItem' })],
   ['a list item opening with a list', list('bulletList', item(list('bulletList', item(paragraph(text('a'))))))],
+  ['a panel whose panelType is an array', { attrs: { panelType: ['info'] }, content: [paragraph(text('a'))], type: 'panel' }],
   ['a panel holding another attribute', { attrs: { panelIcon: ':x:', panelType: 'info' }, content: [paragraph(text('a'))], type: 'panel' }],
   ['a table holding a paragraph', { attrs: plainTable, content: [paragraph(text('a'))], type: 'table' }],
   ['a table holding a row and a paragraph', { attrs: plainTable, content: [{ content: [cell('tableCell', text('a'))], type: 'tableRow' }, paragraph(text('b'))], type: 'table' }],
@@ -456,7 +458,10 @@ test('writes a link whose href starts with ~ with its text, since [~x] names a u
 const riddenMarks: [string, AdfMark][] = [
   ['a colour followed by more', { attrs: { color: '#ff0000x' }, type: 'textColor' }],
   ['a colour led by more', { attrs: { color: 'x#ff0000' }, type: 'textColor' }],
+  ['a colour held in an array', { attrs: { color: ['#ff0000'] }, type: 'textColor' }],
   ['a colour holding another attribute', { attrs: { color: '#ff0000', x: 1 }, type: 'textColor' }],
+  ['a mark of type __proto__', { type: '__proto__' }],
+  ['a mark of type toString', { type: 'toString' }],
   ['a subsup holding another attribute', { attrs: { type: 'sub', x: 1 }, type: 'subsup' }],
   ['a mark of another type holding an href', { attrs: { href: 'https://example.com' }, type: 'fancyLink' }],
   ['a link whose href is no string', { attrs: { href: 5 }, type: 'link' }],
@@ -481,9 +486,29 @@ for (const [name, node] of riddenInlines) {
   })
 }
 
-test('refuses a carry past 500 levels by its path in a list', () => {
+test('refuses a carry past 500 levels in a list by the path of the first', () => {
   let value: AdfAttributes[string] = 1
   for (let level = 0; level < largestNesting - 1; level += 1) value = [value]
   const deep: AdfNode = { attrs: { a: value }, type: 'unknownInline' }
-  assert.equal(refusal(adfToLosslessJiraWiki(document(list('bulletList', item(paragraph(deep)))))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
+  assert.equal(refusal(adfToLosslessJiraWiki(document(list('bulletList', item(paragraph(deep)), item(paragraph(deep)))))), 'unsupported-nesting-depth at /content/0/content/0/content/0/content/0')
+})
+
+test('carries a text holding no text', () => {
+  assert.equal(wiki(paragraph(text('a'), { type: 'text' })), `a${inline('{"type":"text"}')}`)
+})
+
+test('carries two inline nodes that each ride as two carries', () => {
+  const first: AdfNode = { attrs: { a: 1 }, type: 'unknownInline' }
+  const second: AdfNode = { attrs: { a: 2 }, type: 'unknownInline' }
+  assert.equal(wiki(paragraph(first, second)), `${inline(JSON.stringify(first))}${inline(JSON.stringify(second))}`)
+})
+
+test('reads a letter outside the Basic Multilingual Plane beside a delimiter as a letter', () => {
+  const strong = text('x', { type: 'strong' })
+  assert.equal(wiki(paragraph(text('\u{20000}'), strong)), `\u{20000}${inline(JSON.stringify(strong))}`)
+  assert.equal(wiki(paragraph(strong, text('\u{20000}'))), `${inline(JSON.stringify(strong))}\u{20000}`)
+})
+
+test('writes a delimiter followed by whitespace at a line start as itself', () => {
+  assert.equal(line('+ a'), '+ a')
 })
