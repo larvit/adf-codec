@@ -364,9 +364,11 @@ const riddenBlocks: [string, AdfNode][] = [
   ['a blockquote holding no content', { type: 'blockquote' }],
   ['a code block holding another attribute', { attrs: { language: 'java', title: 'a' }, content: [text('x')], type: 'codeBlock' }],
   ['a code block of a marked text', { attrs: { language: 'java' }, content: [text('x', { type: 'strong' })], type: 'codeBlock' }],
+  ['a code block of an empty text', { attrs: { language: 'java' }, content: [text('')], type: 'codeBlock' }],
   ['a code block of no content', { attrs: { language: 'java' }, type: 'codeBlock' }],
   ['a code block of two texts', { attrs: { language: 'java' }, content: [text('x'), text('y', { type: 'strong' })], type: 'codeBlock' }],
   ['a code block whose language is no string', { attrs: { language: 5 }, content: [text('x')], type: 'codeBlock' }],
+  ['a heading holding an empty content', { attrs: { level: 1 }, content: [], type: 'heading' }],
   ['a list holding a list item and a paragraph', { content: [item(paragraph(text('a'))), paragraph(text('b'))], type: 'bulletList' }],
   ['a list holding a paragraph', { content: [paragraph(text('a'))], type: 'bulletList' }],
   ['a list item holding a localId', list('bulletList', { attrs: { localId: 'i1' }, content: [paragraph(text('a'))], type: 'listItem' })],
@@ -381,7 +383,9 @@ const riddenBlocks: [string, AdfNode][] = [
   ['a table row holding a cell and a paragraph', { attrs: plainTable, content: [{ content: [cell('tableCell', text('a')), paragraph(text('b'))], type: 'tableRow' }], type: 'table' }],
   ['a table row holding a localId', { attrs: plainTable, content: [{ attrs: { localId: 'r1' }, content: [cell('tableCell', text('a'))], type: 'tableRow' }], type: 'table' }],
   ['a table row holding a paragraph', { attrs: plainTable, content: [{ content: [paragraph(text('a'))], type: 'tableRow' }], type: 'table' }],
+  ['a table whose cell holds a paragraph of an empty content', table(plainTable, [{ content: [{ content: [], type: 'paragraph' }], type: 'tableCell' }])],
   ['an image of a stored file with a URL', image({ type: 'file', url: 'https://example.com/a.png' })],
+  ['an image whose URL holds no ://', image({ type: 'external', url: 'a.png' })],
   ['an image whose URL is no string', image({ type: 'external', url: 5 })],
   ['an image whose alt ends in whitespace', image({ ...external, alt: 'A cat ' })],
   ['an image whose alt is no string', image({ ...external, alt: 5 })],
@@ -501,6 +505,10 @@ for (const [name, node] of riddenInlines) {
     assert.equal(wiki(paragraph(node)), inline(JSON.stringify(sortedKeys(node))))
   })
 }
+
+test('carries a text holding nothing', () => {
+  assert.equal(wiki(paragraph(text('a'), text('', { type: 'strong' }))), `a${inline('{"marks":[{"type":"strong"}],"text":"","type":"text"}')}`)
+})
 
 test('refuses a carry past 500 levels in a list by the path of the first', () => {
   let value: AdfAttributes[string] = 1

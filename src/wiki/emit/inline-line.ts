@@ -2,6 +2,7 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import { escapedText } from './text-escaping.ts'
 import { holdsOnlyAttributes, identicalMark, identicalMarks, isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
 import { inlineCarry } from '../carry.ts'
+import { spellableColour, spellableTitle, spellableUrl } from '../spellings.ts'
 import { success, type ConvertErrorPath, type Result } from '../../result.ts'
 
 // `carried`: whether any node of the line rides the carry.
@@ -18,8 +19,6 @@ type SpelledMark = { delimiters: Delimiters; mark: AdfMark }
 type Token = { checked: boolean; kind: 'atom' | 'close' | 'open'; text: string }
 
 const characterDelimiters: ReadonlyMap<string, string> = new Map([['em', '_'], ['strike', '-'], ['strong', '*'], ['underline', '+']])
-const spellableUrl = /^[^\s[\]{}|\\]+$/
-const spellableColour = /^#[0-9a-f]{6}$/i
 
 // spec/wiki.md, Inline and Marks.
 export function inlineLine(nodes: readonly AdfNode[], path: ConvertErrorPath, inCell: boolean): Result<Line> {
@@ -53,7 +52,7 @@ function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: b
   const spelled = spelledMarks(marks)
   const previous = nodes[index - 1]
   const joinsPrevious = previous?.type === 'text' && identicalMarks(nodeMarks(previous), marks)
-  if (!isSpellableText(node) || joinsPrevious || spelled === undefined) return { marks, spelled: undefined }
+  if (!isSpellableText(node) || text === '' || joinsPrevious || spelled === undefined) return { marks, spelled: undefined }
   const href = hrefSpelling(node, nodes, index)
   if (href !== undefined) return { marks: marks.slice(0, -1), spelled: { marks: spelled.slice(0, -1), text: href } }
   const escaped = escapedText(text, index === 0, index === nodes.length - 1, inCell)
@@ -108,7 +107,7 @@ function linkDelimiters(attrs: Readonly<Record<string, unknown>>): Delimiters | 
   const { href, title, ...others } = attrs
   if (Object.keys(others).length > 0 || typeof href !== 'string' || !spellableUrl.test(href)) return undefined
   if (title === undefined) return { checked: false, close: `|${href}]`, open: '[' }
-  return typeof title === 'string' && /^[^\s[\]{}|\\](?:[^[\]{}|\\\r\n]*[^\s[\]{}|\\])?$/.test(title) ? { checked: false, close: `|${href}|${title}]`, open: '[' } : undefined
+  return typeof title === 'string' && spellableTitle.test(title) ? { checked: false, close: `|${href}|${title}]`, open: '[' } : undefined
 }
 
 // Runs of nodes sharing at least their outermost mark, each spelled or carried as a whole.
