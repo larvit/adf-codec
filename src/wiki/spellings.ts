@@ -67,3 +67,10 @@ export const smileys: readonly string[] = [
   ':P',
   ';)',
 ]
+
+// spec/wiki.md, Blocks, Inline and Marks: what a bracket, a `|` or a delimiter can hold without a markup character.
+export const spellableAlt = /^[^\s!|,\\[\]{}](?:[^!|,\\[\]{}\r\n]*[^\s!|,\\[\]{}])?$/
+export const spellableColour = /^#[0-9a-f]{6}$/i
+export const spellableImageUrl = /^[^\s!|\\[\]{}]+$/
+export const spellableLinkTitle = /^[^\s[\]{}|\\](?:[^[\]{}|\\\r\n]*[^\s[\]{}|\\])?$/
+export const spellableUrl = /^[^\s[\]{}|\\]+$/

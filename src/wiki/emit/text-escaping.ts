@@ -10,16 +10,19 @@ const lineStartWords = /^(?:bq|h[1-6])\./i
 const smileyCharacters = smileys.map((smiley) => ({ characters: Array.from(smiley), parenthesised: /[()]/.test(smiley) }))
 const unprotectable = /[\\\r\n]|https?:\/\//i
 
-// spec/wiki.md, Inline: `undefined` where no backslash protects the text, so it rides the carry. `inCell`: the text stands in a table cell, where an escaped `|` still ends the cell.
-export function escapedText(text: string, lineStart: boolean, lineEnd: boolean, inCell: boolean): string | undefined {
-  if (unprotectable.test(text) || (inCell && text.includes('|'))) return undefined
-  if ((lineStart && /^\s/u.test(text)) || (lineEnd && /\s$/u.test(text))) return undefined
+// spec/wiki.md, Inline: `undefined` where no backslash protects the text, so it rides the carry. `inCell`: the text stands in a table cell, where an escaped `|` still ends the cell. `lossy`: spec/wiki.md, The lossy writer: the text a backslash doesn't protect is written as it stands.
+export function escapedText(text: string, lineStart: boolean, lineEnd: boolean, inCell: boolean, lossy: boolean): string | undefined {
+  if (!lossy && ridesCarry(text, lineStart, lineEnd, inCell)) return undefined
   const characters = Array.from(text)
-  if (lineStart && lineStartWords.test(text)) return undefined
   const edges: { end: Side; start: Side } = { end: lineEnd ? 'space' : 'punctuation', start: lineStart ? 'space' : 'punctuation' }
-  const stops = smileyStops(characters, edges.end)
+  const stops = smileyStops(characters, edges.end, lossy)
   if (stops === undefined) return undefined
   return characters.map((character, index) => (stops.has(index) || escapes(character, characters, index, edges, lineStart) ? `\\${character}` : character)).join('')
+}
+
+function ridesCarry(text: string, lineStart: boolean, lineEnd: boolean, inCell: boolean): boolean {
+  if (unprotectable.test(text) || (inCell && text.includes('|'))) return true
+  return (lineStart && (/^\s/u.test(text) || lineStartWords.test(text))) || (lineEnd && /\s$/u.test(text))
 }
 
 function escapes(character: string, characters: readonly string[], index: number, edges: { end: Side; start: Side }, lineStart: boolean): boolean {
@@ -35,8 +38,8 @@ function escapes(character: string, characters: readonly string[], index: number
   return character === '!' && after !== 'space'
 }
 
-// A smiley reads wherever no letter or digit follows it; one the node's edge cuts may close in the next node's spelling. Returns the indexes to put a backslash before: only a `(` or a closing `)` takes one, since Jira keeps a backslash before `:`, `;` and a letter. `undefined` where a smiley reads that no such backslash stops.
-function smileyStops(characters: readonly string[], end: Side): Set<number> | undefined {
+// A smiley reads wherever no letter or digit follows it; one the node's edge cuts may close in the next node's spelling. Returns the indexes to put a backslash before: only a `(` or a closing `)` takes one, since Jira keeps a backslash before `:`, `;` and a letter. `undefined` where a smiley reads that no such backslash stops, unless `lossy`, which leaves it be.
+function smileyStops(characters: readonly string[], end: Side, lossy: boolean): Set<number> | undefined {
   const stops = new Set<number>()
   for (const [index, character] of characters.entries()) {
     for (const { characters: spelled, parenthesised } of smileyCharacters) {
@@ -48,7 +51,7 @@ function smileyStops(characters: readonly string[], end: Side): Set<number> | un
       if (cut ? end === 'space' : (next === undefined ? end : side(next)) === 'word') continue
       if (character === '(') stops.add(index)
       else if (!cut && parenthesised) stops.add(index + spelled.length - 1)
-      else return undefined
+      else if (!lossy) return undefined
     }
   }
   return stops

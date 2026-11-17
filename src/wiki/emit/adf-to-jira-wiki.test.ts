@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
-import { adfToLosslessJiraWiki } from '../../index.ts'
+import { adfToLosslessJiraWiki, adfToLossyJiraWiki } from '../../index.ts'
 import { largestNesting } from '../../nesting.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
@@ -529,3 +529,182 @@ test('reads a letter outside the Basic Multilingual Plane beside a delimiter as 
 test('writes a delimiter followed by whitespace at a line start as itself', () => {
   assert.equal(line('+ a'), '+ a')
 })
+
+function lossy(...content: AdfNode[]): string {
+  const result = adfToLossyJiraWiki(document(...content))
+  return result.ok ? result.value : `${result.error.code}: ${result.error.message}`
+}
+
+const bold: AdfMark = { type: 'strong' }
+const externalImage = (url: string, alt?: string): AdfNode => image(alt === undefined ? { type: 'external', url } : { alt, type: 'external', url })
+const stored = (alt?: string): AdfNode => image(alt === undefined ? { collection: 'c', id: 'i', type: 'file' } : { alt, collection: 'c', id: 'i', type: 'file' })
+const task = (state: string, value: string): AdfNode => ({ attrs: { localId: 'l', state }, content: [text(value)], type: 'taskItem' })
+const mention = (attrs: AdfAttributes): AdfNode => ({ attrs, type: 'mention' })
+const spelledDocument = [
+  { attrs: { level: 1 }, content: [text('T')], type: 'heading' },
+  paragraph(text('a '), text('b', bold), text(' c', { attrs: { href: 'https://x.se' }, type: 'link' })),
+  list('bulletList', item(paragraph(text('one')), list('orderedList', item(paragraph(text('two')))))),
+  table(plainTable, [cell('tableHeader', text('h')), cell('tableCell', text('c'))]),
+  code('java', 'x'),
+  quote(paragraph(text('q'))),
+  { type: 'rule' },
+  panel('info', paragraph(text('p'))),
+]
+
+test('writes the lossless spelling of a document that carries nothing', () => {
+  assert.equal(lossy(...spelledDocument), wiki(...spelledDocument))
+})
+
+test('writes a document holding no content key as the empty string', () => {
+  const result = adfToLossyJiraWiki({ type: 'doc', version: 1 })
+  assert.equal(result.ok ? result.value : result.error.code, '')
+})
+
+test('refuses what the lossless writer refuses', () => {
+  assert.equal(refusal(adfToLossyJiraWiki({ content: [], type: 'doc', version: 2 })), 'unsupported-document-version at /')
+  assert.equal(refusal(adfToLossyJiraWiki(JSON.parse('{"type":"doc"}'))), 'not-an-adf-document at /')
+})
+
+function nestedIn(wrap: (inner: AdfNode) => AdfNode, levels: number): AdfNode {
+  let node = paragraph(text('x'))
+  for (let level = 0; level < levels; level += 1) node = wrap(node)
+  return node
+}
+
+const nestings: [string, (inner: AdfNode) => AdfNode, number][] = [
+  ['blockquote', (inner) => quote(inner), 1],
+  ['panel', (inner) => panel('info', inner), 1],
+  ['expand', (inner) => ({ content: [inner], type: 'expand' }), 1],
+  ['unknown block', (inner) => ({ content: [inner], type: 'unknownBlock' }), 1],
+  ['bullet list', (inner) => list('bulletList', item(paragraph(text('x')), inner)), 2],
+]
+for (const [name, wrap, perWrap] of nestings) {
+  test(`the lossy writer writes ${name}s nested to 500 levels and refuses 501`, () => {
+    const levels = (largestNesting - 2) / perWrap
+    assert.equal(refusal(adfToLossyJiraWiki(document(nestedIn(wrap, levels)))), 'written')
+    assert.equal(refusal(adfToLossyJiraWiki(document(nestedIn(wrap, levels + 1)))).split(' at ')[0], 'unsupported-nesting-depth')
+  })
+}
+
+const lossyCases: [string, AdfNode[], string][] = [
+  ['keeps the blocks of a node of an unknown type', [{ content: [paragraph(text('inner'))], type: 'unknownBlock' }], 'inner'],
+  ['keeps the text of a block with no content', [{ attrs: { text: 'Ext' }, type: 'extension' }], 'Ext'],
+  ['keeps the text of an unknown block of text', [{ text: 'Own', type: 'unknownBlock' }], 'Own'],
+  ['drops a block with nothing to show', [paragraph(text('a')), { type: 'unknownBlock' }], 'a'],
+  ['keeps the inline content of an unknown block as a paragraph', [{ content: [text('a '), text('b', bold)], type: 'decisionItem' }], 'a *b*'],
+  ['groups an inline node standing among blocks into a paragraph', [text('a'), { type: 'status', attrs: { text: 'S' } }, paragraph(text('b'))], 'aS\n\nb'],
+  ['drops the attributes with no spelling of a heading and a paragraph', [{ attrs: { level: 2, localId: 'x' }, content: [text('T')], type: 'heading' }, { attrs: { localId: 'y' }, content: [text('p')], type: 'paragraph' }], 'h2. T\n\np'],
+  ['reads a heading of another level as a paragraph', [{ attrs: { level: 9 }, content: [text('T')], type: 'heading' }], 'T'],
+  ['drops a heading holding no text', [{ attrs: { level: 1 }, content: [text(' ')], type: 'heading' }, paragraph(text('a'))], 'a'],
+  ['drops a blank paragraph outside a cell', [paragraph(text('a')), paragraph(), paragraph(text(' ')), paragraph(text('b'))], 'a\n\nb'],
+  ['drops the order of an ordered list', [{ attrs: { order: 3 }, content: [item(paragraph(text('a')))], type: 'orderedList' }], '# a'],
+  ['drops an empty list and an empty blockquote', [list('bulletList'), quote(paragraph()), paragraph(text('a'))], 'a'],
+  ['drops a table of no rows, a row of no cells and a node that is no row or cell', [{ content: [], type: 'table' }, { content: [{ content: [], type: 'tableRow' }, { content: [], type: 'caption' }], type: 'table' }], ''],
+  ['keeps what a table or a row cannot hold after the table', [{ content: [{ content: [cell('tableCell', text('c')), paragraph(text('stray'))], type: 'tableRow' }, paragraph(text('loose'))], type: 'table' }], '|c|\n\nstray\n\nloose'],
+  ['writes a panel of another type as an info panel', [panel('custom', paragraph(text('x')))], '{panel:bgColor=#deebff}\nx\n{panel}'],
+  ['drops a panel holding no block', [panel('info', paragraph())], ''],
+  ['writes a panel in a panel as its blocks', [panel('info', paragraph(text('a')), panel('error', paragraph(text('b'))))], '{panel:bgColor=#deebff}\na\n\nb\n{panel}'],
+  ['writes a blockquote in a blockquote as its blocks', [quote(paragraph(text('a')), paragraph(text('b')), quote(paragraph(text('c')), paragraph(text('d'))))], '{quote}\na\n\nb\n\nc\n\nd\n{quote}'],
+  ['writes an expand as its title in strong and then its body', [{ attrs: { title: 'Title' }, content: [paragraph(text('Body'))], type: 'expand' }], '*Title*\n\nBody'],
+  ['writes an expand with no title as its body', [{ content: [paragraph(text('Body'))], type: 'nestedExpand' }], 'Body'],
+  ['writes a task list as a bullet list led by its states', [{ content: [task('TODO', 'a'), task('DONE', 'b')], type: 'taskList' }], '* ☐ a\n* ☑ b'],
+  ['nests a task list under the task before it', [{ content: [task('TODO', 'a'), { content: [task('DONE', 'b')], type: 'taskList' }], type: 'taskList' }], '* ☐ a\n** ☑ b'],
+  ['writes a block task item and one with no text as its marker', [{ content: [{ content: [paragraph(text('a'))], type: 'blockTaskItem' }, { content: [{ type: 'codeBlock', content: [text('c')] }], type: 'blockTaskItem' }, { type: 'taskItem' }], type: 'taskList' }], '* ☐ a\n* ☐ \\\\c\n* ☐'],
+  ['keeps what a list holds that is no item as an item', [{ content: [text('a'), paragraph(text('b'))], type: 'bulletList' }], '* a\n* b'],
+  ['writes a decision list as a paragraph per item', [{ content: [{ content: [text('Decided')], type: 'decisionItem' }, { content: [text('Next')], type: 'decisionItem' }], type: 'decisionList' }], 'Decided\n\nNext'],
+  ['keeps an item\'s other blocks in its paragraph, parted by line breaks', [list('bulletList', item(paragraph(text('a')), paragraph(text('b')), code('java', 'c')))], '* a\\\\b\\\\c'],
+  ['opens an item that opens with a list with an empty paragraph', [list('bulletList', item(list('orderedList', item(paragraph(text('a'))))))], '*  \n*# a'],
+  ['writes two lists of one kind an item holds as one', [list('bulletList', item(paragraph(text('a')), list('orderedList', item(paragraph(text('b')))), list('orderedList', item(paragraph(text('c'))))))], '* a\n*# b\n*# c'],
+  ['starts an item of its own for a block after a list an item holds', [list('bulletList', item(paragraph(text('a')), list('orderedList', item(paragraph(text('b')))), paragraph(text('c')), paragraph(text('d'))))], '* a\n*# b\n* c\\\\d'],
+  ['parts the blocks of a table cell by line breaks', [table({}, [{ content: [paragraph(text('a')), list('bulletList', item(paragraph(text('b')))), { type: 'rule' }, quote(paragraph(text('c'))), externalImage('https://x.se/i.png', 'A')], type: 'tableCell' }])], '|a\\\\b\\\\c\\\\A|'],
+  ['writes an empty table cell as a space', [table({ layout: 'wide', width: 700 }, [{ attrs: { colspan: 2 }, content: [{ type: 'paragraph' }], type: 'tableHeader' }])], '|| ||'],
+  ['writes a code block of a language the help lists, in lowercase', [code('JAVA', 'x')], '{code:java}\nx\n{code}'],
+  ['writes a code block of another language or none as {noformat}', [code('cobol', 'x'), code(undefined, 'y')], '{noformat}\nx\n{noformat}\n\n{noformat}\ny\n{noformat}'],
+  ['writes the lines of a code block holding {code} as a paragraph parted by line breaks', [code('java', 'a\n{code}\n\nb')], String.raw`a\\\{code\}\\\\b`],
+  ['drops an empty code block', [{ type: 'codeBlock' }, paragraph(text('a'))], 'a'],
+  ['writes a stored image as its alt, else [image]', [stored('A cat'), stored()], 'A cat\n\n\\[image\\]'],
+  ['writes an external image of an address with no spelling by its encoded address', [externalImage('https://x.se/a b!.png')], '!https://x.se/a%20b%21.png!'],
+  ['writes an external image with no address as its alt', [externalImage(' ', 'Gone')], 'Gone'],
+  ['keeps the alt of an image that holds a spelling for it, and drops one that holds none', [externalImage('https://x.se/a.png', ' a  alt '), externalImage('https://x.se/b.png', 'a,b')], '!https://x.se/a.png|alt=a  alt!\n\n!https://x.se/b.png!'],
+  ['keeps the caption of an image as a paragraph', [{ attrs: { layout: 'wide', width: 100 }, content: [{ attrs: { type: 'external', url: 'https://x.se/a.png', width: 1 }, type: 'media' }, { content: [text('Cap')], type: 'caption' }], type: 'mediaSingle' }], '!https://x.se/a.png!\n\nCap'],
+  ['writes a media group and a media on its own as their images', [{ content: [{ attrs: { alt: 'A', type: 'file' }, type: 'media' }], type: 'mediaGroup' }, { attrs: { type: 'external', url: 'https://x.se/a.png' }, type: 'media' }], 'A\n\n!https://x.se/a.png!'],
+  ['writes what a status, a date and an emoji show', [paragraph(text('a '), { attrs: { color: 'blue', text: 'In progress' }, type: 'status' }, text(' '), { attrs: { timestamp: '1700000000000' }, type: 'date' }, text(' '), { attrs: { shortName: ':smile:', text: '😄' }, type: 'emoji' })], 'a In progress 2023-11-14 😄'],
+  ['writes an inline node that shows nothing as nothing', [paragraph(text('a'), { type: 'inlineCard' }, text('b'))], 'ab'],
+  ['keeps what a node of text and content holds, in order', [paragraph(text('a'), { attrs: { title: 'T' }, content: [paragraph(text('b'))], type: 'expand' })], 'aTb'],
+  ['keeps the content of an unknown inline node', [paragraph(text('a'), { content: [text('b')], type: 'unknownInline' })], 'ab'],
+  ['writes a mention by its id, and one whose id has no spelling by its text', [paragraph(mention({ accessLevel: 'CONTAINER', id: 'abc', text: '@Anna' }), text(' '), mention({ id: 'a b', text: '@Bo' }))], '[~accountid:abc] @Bo'],
+  ['writes an inline media as its alt, else [image]', [paragraph({ attrs: { alt: 'A', type: 'file' }, type: 'mediaInline' }, text(' '), { attrs: { type: 'file' }, type: 'mediaInline' })], 'A \\[image\\]'],
+  ['drops a mark with no spelling and the attributes of one that has', [paragraph(text('a '), text('b', { attrs: { color: '#fff' }, type: 'backgroundColor' }, { attrs: { x: 1 }, type: 'em' }), text(' c', { type: 'annotation' }))], 'a _b_ c'],
+  ['drops the second mark of one type and one a mention holds', [paragraph(text('a', bold, { type: 'em' }, bold), text(' '), { marks: [bold], type: 'hardBreak' })], '*_a_* \\\\'],
+  ['writes a colour as the hex code Jira reads', [paragraph(text('a', { attrs: { color: '#f00' }, type: 'textColor' }), text(' '), text('b', { attrs: { color: '#00FF00' }, type: 'textColor' }), text(' '), text('c', { attrs: { color: 'red' }, type: 'textColor' }), text(' '), text('d', { attrs: { type: 'sup' }, type: 'subsup' }), text(' '), text('e', { attrs: { type: 'x' }, type: 'subsup' }))], '{color:#ff0000}a{color} {color:#00FF00}b{color} c ^d^ e'],
+  ['writes a link by its address with the characters it cannot hold encoded, and drops one with no address', [paragraph(text('a', { attrs: { href: 'https://x.se/a b|c' }, type: 'link' }), text(' '), text('b', { attrs: { href: ' ' }, type: 'link' }), text(' '), text('c', { attrs: { href: 'https://x.se', title: 'T' }, type: 'link' }), text(' '), text('d', { attrs: { href: 'https://x.se', title: '  ' }, type: 'link' }))], '[a|https://x.se/a%20b%7Cc] b [c|https://x.se|T] [d|https://x.se]'],
+  ['keeps a link title wiki markup cannot spell after the link, one run of text at a time', [paragraph(text('a', { attrs: { href: 'https://x.se', title: 'a|b' }, type: 'link' }), text('b', { attrs: { href: 'https://x.se', title: 'a|b' }, type: 'link' }, bold), text(' c'))], '[ab|https://x.se] (a\\|b) c'],
+  ['keeps a link title after the last text', [paragraph(text('a', { attrs: { href: 'https://x.se', title: 'a|b' }, type: 'link' }))], '[a|https://x.se] (a\\|b)'],
+  ['writes a text as it stands where no backslash protects it', [paragraph(text('a\\b see http://x.se :D')), paragraph(text('h1. x')), table(plainTable, [cell('tableCell', text('a|b'))])], 'a\\b see http://x.se :D\n\nh1. x\n\n|a\\|b|'],
+  ['writes a line feed in a text as a hard break and drops a carriage return', [paragraph(text('a\r\nb\n\nc'))], 'a\\\\b\\\\\\\\c'],
+  ['drops the whitespace at the edges of a line and of a marked text', [paragraph(text(' ', bold), text(' a ', bold), text(' b'), text(' ')), paragraph(text('x', bold), text(' y'))], '*a*  b\n\n*x* y'],
+  ['writes a marked text beside a letter as its text', [paragraph(text('un'), text('believ', bold), text('able'))], 'unbelievable'],
+  ['writes the marks it can of a group where one cannot read', [paragraph(text('un'), text('believ', bold, { attrs: { href: 'https://x.se' }, type: 'link' }), text('able'))], 'un[believ|https://x.se]able'],
+]
+const colour = (color: string): AdfMark => ({ attrs: { color }, type: 'textColor' })
+const link: AdfMark = { attrs: { href: 'https://x.se' }, type: 'link' }
+const checkedMarks: [string, AdfMark, string][] = [
+  ['code', { type: 'code' }, '{{a}}'],
+  ['em', { type: 'em' }, '_a_'],
+  ['strike', { type: 'strike' }, '-a-'],
+  ['strong', bold, '*a*'],
+  ['sub', { attrs: { type: 'sub' }, type: 'subsup' }, '~a~'],
+  ['sup', { attrs: { type: 'sup' }, type: 'subsup' }, '^a^'],
+  ['underline', { type: 'underline' }, '+a+'],
+]
+for (const [name, mark, spelled] of checkedMarks) {
+  test(`the lossy writer parts the whitespace at the edges of a ${name} text`, () => {
+    assert.equal(lossy(paragraph(text('x'), text(' a ', mark), text('y'))), `x ${spelled} y`)
+    assert.equal(lossy(paragraph(text('x'), text(' a', mark))), `x ${spelled}`)
+    assert.equal(lossy(paragraph(text('a ', mark), text('y'))), `${spelled} y`)
+  })
+}
+
+test('the lossy writer refuses a document nested past the limit by its message and the path of the first node past it', () => {
+  const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting - 1)))
+  assert.equal(result.ok ? 'written' : `${result.error.message} at /${result.error.path.join('/')}`, `the document nests deeper than the ${largestNesting} levels the writer carries at /${Array(largestNesting + 1).fill('content/0').join('/')}`)
+})
+
+test('the lossy writer names the first of two nodes nested past the limit', () => {
+  const result = adfToLossyJiraWiki(document(nestedIn((inner) => quote(inner), largestNesting - 1), nestedIn((inner) => quote(inner), largestNesting - 1)))
+  assert.equal(result.ok ? 'written' : result.error.path.slice(0, 2).join('/'), 'content/0')
+})
+
+const moreLossyCases: [string, AdfNode[], string][] = [
+  ['keeps a bq. inside a {quote}', [quote(quote(paragraph(text('c'))), paragraph(text('d')))], '{quote}\nbq. c\n\nd\n{quote}'],
+  ['writes a nested expand as its title in strong and then its body', [{ attrs: { title: 'Title' }, content: [paragraph(text('Body'))], type: 'nestedExpand' }], '*Title*\n\nBody'],
+  ['writes a panel by its type', [panel('error', paragraph(text('x')))], '{panel:bgColor=#ffebe6}\nx\n{panel}'],
+  ['joins the texts of a code block', [{ attrs: { language: 'java' }, content: [text('a'), text('b')], type: 'codeBlock' }], '{code:java}\nab\n{code}'],
+  ['encodes a ! in the address of an image that has an alt', [externalImage('https://x.se/a!b.png', 'alt')], '!https://x.se/a%21b.png|alt=alt!'],
+  ['drops the whitespace around the address of an image', [externalImage(' https://x.se/a.png ')], '!https://x.se/a.png!'],
+  ['ends an item at a block that shows nothing after a list', [list('bulletList', item(paragraph(text('a')), list('orderedList', item(paragraph(text('b')))), { type: 'rule' }))], '* a\n*# b'],
+  ['writes an item that shows nothing as an empty item', [list('bulletList', item({ type: 'rule' }))], '*  '],
+  ['writes what a table holds that is no row after it', [{ content: [{ content: [cell('tableCell', text('c'))], type: 'tableRow' }, code('java', 'x')], type: 'table' }], '|c|\n\n{code:java}\nx\n{code}'],
+  ['parts the lines of a code block in a cell, an empty one too', [table({}, [{ content: [code('java', 'a\n\nb')], type: 'tableCell' }])], String.raw`|a\\\\b|`],
+  ['writes no line for a blank paragraph in a cell', [table({}, [{ content: [paragraph(text('a')), paragraph(), paragraph(text('b'))], type: 'tableCell' }])], String.raw`|a\\b|`],
+  ['writes an image with no alt in a cell as its address', [table({}, [{ content: [{ attrs: { type: 'external', url: 'https://x.se/i.png' }, type: 'media' }], type: 'tableCell' }])], '|https://x.se/i.png|'],
+  ['writes an emoji with an id as its text', [paragraph({ attrs: { id: 'smile', shortName: ':smile:', text: '😄' }, type: 'emoji' })], '😄'],
+  ['drops a mark of another type holding an address', [paragraph(text('a', { attrs: { href: 'https://x.se' }, type: 'annotation' }))], 'a'],
+  ['drops a mark of another type holding a title', [paragraph(text('a', { attrs: { title: 'a|b' }, type: 'annotation' }))], 'a'],
+  ['drops a colour that is no hex code', [paragraph(text('a', colour('x#fff')), text(' b', colour('#ffff')), text(' c', colour('x#00ff00')), text(' d', colour('#00ff00ff')))], 'a b c d'],
+  ['parts the edges of a text with several checked marks', [paragraph(text('x'), text(' a ', bold, colour('#f00')), text('y'))], 'x *{color:#ff0000}a{color}* y'],
+  ['keeps the space of a marked text that is only whitespace', [paragraph(text('a'), text(' ', bold), text('b'))], 'a b'],
+  ['drops the whitespace a line starts and ends with', [paragraph(text('  a  '))], 'a'],
+  ['drops the links that hold only whitespace before the text', [paragraph(text(' ', link), text(' ', { attrs: { href: 'https://y.se' }, type: 'link' }), text('a'))], 'a'],
+]
+for (const [name, content, expected] of moreLossyCases) {
+  test(`the lossy writer ${name}`, () => {
+    assert.equal(lossy(...content), expected)
+  })
+}
+
+for (const [name, content, expected] of lossyCases) {
+  test(`the lossy writer ${name}`, () => {
+    assert.equal(lossy(...content), expected)
+  })
+}

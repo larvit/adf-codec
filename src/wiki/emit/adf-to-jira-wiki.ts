@@ -2,6 +2,7 @@ import type { AdfDocument, AdfNode } from '../../adf/document.ts'
 import type { Result } from '../../result.ts'
 import { blockCarry } from '../carry.ts'
 import { joinedWithin, withinEngineLimits } from '../../length-bound.ts'
+import { lossyForm } from './lossy-form.ts'
 import { nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
 import { panelColours } from '../spellings.ts'
 import { spelledBlocks, type Spelling } from './spelled-blocks.ts'
@@ -17,13 +18,25 @@ export function adfToLosslessJiraWiki(document: AdfDocument): Result<string> {
     if (!read.ok) return read
     const content = writableContent(read.value)
     if (!content.ok) return content
-    return content.value === undefined ? blockCarry(read.value, []) : writeWiki(content.value)
+    return content.value === undefined ? blockCarry(read.value, []) : writeWiki(content.value, false)
+  })
+}
+
+// spec/wiki.md, The lossy writer: the lossless writer's spellings over a document reduced to the nodes wiki markup spells.
+export function adfToLossyJiraWiki(document: AdfDocument): Result<string> {
+  return withinEngineLimits(() => {
+    const read = readAdfDocument(document)
+    if (!read.ok) return read
+    const content = writableContent(read.value)
+    if (!content.ok) return content
+    const reduced = lossyForm(content.value ?? [])
+    return reduced.ok ? writeWiki(reduced.value, true) : reduced
   })
 }
 
 // Every block a spelled block holds is spelled too, so only the document's own blocks ride.
-function writeWiki(content: readonly AdfNode[]): Result<string> {
-  const found = spelledBlocks(content)
+function writeWiki(content: readonly AdfNode[], lossy: boolean): Result<string> {
+  const found = spelledBlocks(content, lossy)
   if (!found.ok) return found
   const spelled = found.value
   const pieces: string[] = []

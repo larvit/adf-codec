@@ -1,9 +1,11 @@
-import { adfToHtml, adfToLosslessMarkdown, adfToPortableMarkdown, commonMarkToAdf, htmlToAdf, losslessMarkdownToAdf, portableMarkdownToAdf, readAdfDocument, type AdfDocument, type ConvertErrorCode, type ParseError, type Result } from '@larvit/adf-codec'
+import { adfToHtml, adfToLosslessJiraWiki, adfToLosslessMarkdown, adfToLossyJiraWiki, adfToPortableMarkdown, commonMarkToAdf, htmlToAdf, losslessMarkdownToAdf, portableMarkdownToAdf, readAdfDocument, type AdfDocument, type ConvertErrorCode, type ParseError, type Result } from '@larvit/adf-codec'
 
 const document: AdfDocument = { content: [{ content: [{ text: 'x', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 }
 
 const emitted: Result<string> = adfToLosslessMarkdown(document)
 const htmlEmitted: Result<string> = adfToHtml(document)
+const losslessWikiEmitted: Result<string> = adfToLosslessJiraWiki(document)
+const lossyWikiEmitted: Result<string> = adfToLossyJiraWiki(document)
 const parsed: Result<AdfDocument, ParseError> = losslessMarkdownToAdf('x\n')
 const portableEmitted: Result<string> = adfToPortableMarkdown(document)
 const portableParsed: Result<AdfDocument, ParseError> = portableMarkdownToAdf('x\n')
@@ -13,4 +15,4 @@ const htmlParsed: Result<AdfDocument, ParseError> = htmlToAdf('<p>x</p>\n')
 const code: ConvertErrorCode | undefined = emitted.ok ? undefined : emitted.error.code
 const line: number | undefined = parsed.ok ? undefined : parsed.error.position.line
 
-export const surface = { code, commonMarkParsed, htmlEmitted, htmlParsed, line, portableEmitted, portableParsed, read }
+export const surface = { code, commonMarkParsed, htmlEmitted, htmlParsed, line, losslessWikiEmitted, lossyWikiEmitted, portableEmitted, portableParsed, read }

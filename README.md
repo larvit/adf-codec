@@ -315,7 +315,7 @@ cell adds it. This package's figure is the current source's.
 
 | Package | Converts | ADF to markdown to ADF | A node type it does not know | Formats | Direct runtime dependencies | Minified and gzipped, the whole package with its dependencies |
 | --- | --- | --- | --- | --- | --- | --- |
-| `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 | 71 kB |
+| `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in | 0 | 80 kB |
 | `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB, or 211 kB with `@atlaskit/editor-json-transformer` |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 | 99 kB |
 | `@nthings.dev/adf4j-wasm` 1.0.2 | ADF to markdown | – | replaced by the text `[Unsupported: futureThing]` | GitHub Flavored Markdown, from WebAssembly | 0 | 0.9 kB, plus 7.5 kB of JavaScript it loads and a WebAssembly module of 6.9 MB |
@@ -815,7 +815,7 @@ Serves [Goals](#goals) 8.
 | Host APIs | none: pure ECMAScript, no DOM, no `node:` import |
 | Module format | ESM only, one entrypoint |
 | Registry | public npm, `@larvit/adf-codec` |
-| Size | 71 kB minified and gzipped, the whole package bundled with its dependencies; 161 kB tarball, 601 kB unpacked |
+| Size | 80 kB minified and gzipped, the whole package bundled with its dependencies; 177 kB tarball, 661 kB unpacked |
 | Types | built JavaScript with `.d.ts` beside it |
 
 Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine),
