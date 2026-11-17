@@ -106,7 +106,7 @@ function headingSpelling(node: AdfNode, path: ConvertErrorPath): Result<Spelling
 }
 
 function simpleLeafText(node: AdfNode): string | undefined {
-  if (node.type === 'rule') return holdsExactly(node, {}) && node.content === undefined ? '----' : undefined
+  if (node.type === 'rule') return holdsExactly(node, {}) ? '----' : undefined
   if (node.type === 'codeBlock') return codeText(node)
   return node.type === 'mediaSingle' && holdsExactly(node, { layout: 'center' }) ? imageText(nodeContent(node)) : undefined
 }
@@ -123,7 +123,7 @@ function codeText(node: AdfNode): string | undefined {
 
 function imageText(content: readonly AdfNode[]): string | undefined {
   const [media, ...others] = content
-  if (media?.type !== 'media' || others.length > 0 || media.content !== undefined || !holdsOnlyAttributes(media, ['alt', 'type', 'url'])) return undefined
+  if (media?.type !== 'media' || others.length > 0 || !holdsOnlyAttributes(media, ['alt', 'type', 'url'])) return undefined
   const { alt, type, url } = nodeAttrs(media)
   if (type !== 'external' || typeof url !== 'string' || !spellableImageUrl.test(url)) return undefined
   if (alt === undefined) return `!${url}!`
