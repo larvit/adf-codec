@@ -6,16 +6,18 @@
 
 `Bar = 0.1`
 
-`Next ID = 206`
+`Next ID = 209`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 204 | 0.4.0 |  | question | **Decide whether `adfToHtml`'s HTML, changed outside a carry element or missing its final line feed, keeps its `data-*` attributes when `htmlToAdf` reads it; today it reads as other HTML and drops them without a refusal.** | 2 | 2 | 3 | 5 | 3 |  | 0.0 |
+| 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
+| 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
-| 195 | 0.4.0 |  | owner | **Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.** | 4 | 1 | 2 | 5 | 8 | 11 by 5 | 0.3 |
-| 196 | 0.4.0 | 194, 195 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
+| 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
 | 137 | 0.4.0 |  | owner | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 4 | 1 | 2 | 5 | 6 | 12 by 6 | 1.1 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
@@ -29,17 +31,16 @@
 | 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
-| 202 | 0.5.0 |  |  | **Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
-| 203 | 0.5.0 |  |  | **Keep `reduces a line alike dropping every run a pass may or the first alone` and `joins a mark run's segments as a walk rather than as one call's arguments` inside Bun's five-second test limit on a slow machine.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
+| 208 | 0.5.0 |  |  | **Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
-| 197 | 0.5.0 | 195 |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
+| 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
 | 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
-| 201 | 0.5.0 |  | decision | **Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.** | 2 | 1 | 2 | 3 | 2 | 12 by 3 | 3.3 |
+| 207 | 0.5.0 |  | decision | **Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.** | 2 | 1 | 2 | 3 | 2 | 12 by 3 | 3.3 |
 | 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
 | 205 | 0.5.0 |  |  | **Settle by a reader panel how an image of empty `alt` in foreign HTML reads, an email's 1×1 tracking pixel among them, and read it so.** | 2 | 2 | 2 | 4 | 2 | 12 by 2 | 2.2 |
 | 187 | 0.5.0 |  |  | **Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 3 | 6 by 2 | 1.8 |
-| 200 | 0.5.0 |  | decision | **Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.** | 2 | 2 | 2 | 4 | 4 | 12 by 3 | 1.6 |
+| 206 | 0.5.0 |  | decision | **Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.** | 2 | 2 | 2 | 4 | 4 | 12 by 3 | 1.6 |
 | 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.3 |
 | 34 | 0.5.0 |  |  | **Read emphasis flanking by the whole character beside an astral symbol.** | 2 | 1 | 2 | 3 | 3 | 4 by 1 | 0.9 |
 | 74 | 0.5.0 |  | owner | **Keep the release path publishing after npm retires bypass-2FA tokens.** | 3 | 2 | 4 | 7 | 4 |  | 0.0 |
@@ -52,6 +53,24 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
+
+### 201. Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.
+
+Item 195 made these choices without the maintainer, and `docs/decisions.md` §The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string records them. Each is a string the writers never write. Confirm each, or say what it reads to instead:
+
+- A broken `{adf}` macro is refused as `unsupported-node-shape`, with the path `[]`, where it could read as text.
+- `{code}`, `{noformat}`, `{panel}` and `{quote}` after anything else on a line read as text, where Jira reads them inside a line.
+- An image that shares its line reads as text, where Jira shows it inline.
+- An `{adf}` macro inside a line that closes on a later line is refused.
+- A delimiter reads by the rule the writer escapes by, where Jira's own rule differs at an edge such as `x^2^`.
+- `-- ` at a line's start reads as an en dash and text, where Jira reads a nested bullet.
+- A list line of up to 500 markers reads, and the writers refuse the document past 250 levels of list as `unsupported-nesting-depth`.
+
+Touches:
+- `src/wiki/parse/jira-wiki-to-adf.ts`: `readMacro`, `readItem`, `readLine`
+- `src/wiki/parse/inline.ts`: `delimiter`, `dash`
+- `spec/wiki.md`: `## What only the reader reads`
+- `docs/decisions.md`: the entry named above
 
 ### 204. Decide whether `adfToHtml`'s HTML, changed outside a carry element or missing its final line feed, keeps its `data-*` attributes when `htmlToAdf` reads it; today it reads as other HTML and drops them without a refusal.
 
@@ -75,6 +94,24 @@ paragraph instead of a plain one, and a trimmed document reads whole.
 Recommendation: read HTML that misses only its final line feed as the dialect, and leave the claim
 rule as the developer panel picked it.
 
+### 202. Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.
+
+Item 195's chunk ran `./ci.sh` eight times at a load average of 15 to 20, and the Bun leg failed four of them, only on two markdown tests the chunk didn't touch: `joins a mark run's segments as a walk rather than as one call's arguments` (3.9 s when it passes, 13 to 17 s on Node) and `reduces a line alike dropping every run a pass may or the first alone`. GitHub's gate passed each time. Shrink the two inputs to the smallest that still fails on the quadratic walk each guards against, or give the tests their own timeout.
+
+Touches:
+- the two tests named above, under `src/markdown/`
+
+### 200. Carry a link whose `href` Jira shows as text, and read `[x]` and `[a|x]` with such an address as text.
+
+Item 195's probes of Jira found that it shows `[x]` and `[a|x]` as text where `x` is no address it links, such as a bare word. The lossless writer writes a `link` with such an `href` as `[a|x]`, so the link is lost when Jira renders the markup, and `jiraWikiToAdf` reads both as a `link`, unlike Jira. Probe which addresses Jira links (a scheme, `#anchor`, `mailto:`, a path), record the list in `spec/wiki.md`, carry every other `href`, and read the same strings as text.
+
+Touches:
+- `src/wiki/spellings.ts`: `spellableUrl`
+- `src/wiki/emit/inline-line.ts`: the link spelling
+- `src/wiki/parse/inline.ts`: `bracketed`, `closeLink`
+- `spec/wiki.md`: Marks
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`, `src/wiki/parse/jira-wiki-to-adf.test.ts` (small)
+
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
 Goal 7. The maintainer asked for it beside the lossless writer, 2026-11-15. It spells as the
@@ -86,24 +123,6 @@ Touches:
 - `src/jira-wiki/emit/adf-to-jira-wiki.test.ts`
 - `src/index.ts`: lines 3-13 (small)
 - `package-tests/consumer.ts`: lines 1-17 (small)
-
-### 195. Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.
-
-A hand-written reader, as `htmlToAdf` is. Ships with the property that what the lossless writer of
-item 193 writes reads back deep-equal, and with refusals whose codes come from the closed list.
-
-The reader is `jiraWikiToAdf` (`docs/decisions.md` §Jira wiki markup's writers
-are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option).
-
-Touches:
-
-- `src/jira-wiki/parse/jira-wiki-to-adf.ts`
-- `src/jira-wiki/parse/jira-wiki-to-adf.test.ts`
-- `src/conformance/jira-wiki-property.test.ts`
-- `src/index.ts`: lines 3-13 (small)
-- `package-tests/consumer.ts`: lines 1-17 (small)
-- `.oxlintrc.json`: lines 6-48 (small)
-- `ci.sh`: lines 11-28 (small)
 
 ### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 
@@ -302,18 +321,11 @@ its link, so `imageAlt`, `resolvedPieces` and `directiveMarkPieces` no longer fi
 hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
 Found by the principles audit of item 99, 2026-10-14.
 
-### 202. Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.
+### 208. Make the two HTML edit properties hold where an edit puts a raw `<` in an attribute value, which the dialect reads and writes back as `&lt;`.
 
 `assertReadsBack` in `src/conformance/adf-property.test.ts` expects the written HTML to equal the
 edited HTML. `PROPERTY_RUNS=40000` finds `<pre data-local-id="< a"><code>a</code></pre>`, which
 reads as a browser's spelling and writes back with `&lt;`. The gate's seed does not reach it.
-
-### 203. Keep `reduces a line alike dropping every run a pass may or the first alone` and `joins a mark run's segments as a walk rather than as one call's arguments` inside Bun's five-second test limit on a slow machine.
-
-On `main` at 6720bea, `bun test src/` in `oven/bun:1.4.4-alpine` on the maintainer's machine times
-both out, at 6.7 s and 6.5 s, so `./ci.sh` stops at the Bun leg there. GitHub's runner passes them.
-The tests are in `src/markdown/portable/inline-reduction.test.ts` and
-`src/markdown/emit/inline-nodes.test.ts`.
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
@@ -340,7 +352,7 @@ The scoring run at fa8600f (PR #162) averaged 5.88 overall, under the 7.0 floor;
 
 Keep every output byte-identical: the round-trip properties and the CommonMark suite must pass unchanged.
 
-### 201. Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.
+### 207. Read `colspan` and `rowspan` on a cell of foreign HTML as the cell's spans.
 
 `readForeignHtml` (`src/html/parse/foreign.ts`) drops every attribute of a `<td>` and `<th>`, so a
 table from an email or a CMS loses its merged cells and its columns shift. Revise
@@ -364,7 +376,7 @@ the audience expects that reading (README goal 6).
 
 The reader panel of §The HTML dialect expected a `blockTaskItem` as an `<li>` of two `<p>` and a nested task list as an inner `<ul>`. The writer panel's spellings left both on the carry, since a task item holds inline content alone. A writer panel settles the two spellings (AGENTS.md §7); the item takes it and writes the HTML both ways.
 
-### 200. Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.
+### 206. Place each node foreign HTML reads where Atlassian's schema allows it, as in a table inside a quote read to blocks the quote can hold.
 
 `readForeignHtml` (`src/html/parse/foreign.ts`) places a node where the HTML places it: a
 `<table>` in a `<blockquote>`, a `<pre>` in a table header, an image in a list item. Jira's editor

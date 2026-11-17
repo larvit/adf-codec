@@ -6,7 +6,7 @@
     {
       "files": ["src/adf/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/markdown/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/markdown/**", "**/wiki/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     },
     {
@@ -49,6 +49,24 @@
       "files": ["src/markdown/parse/**"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "!../emit/spelling-questions.ts", "**/html/**", "**/portable/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
+      "files": ["src/wiki/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/markdown/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
+      "files": ["src/wiki/emit/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/html/**", "**/markdown/**", "**/parse/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
+      }
+    },
+    {
+      "files": ["src/wiki/parse/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/emit/**", "**/html/**", "**/markdown/**"], "message": "docs/decisions.md §The source parts by ADF and format" }] }]
       }
     }
   ],

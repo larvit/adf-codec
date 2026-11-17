@@ -16,7 +16,8 @@ const panelMacro = 2
 
 const lists = ['bulletList', 'orderedList']
 const spellableAlt = /^[^\s!|,\\[\]{}](?:[^!|,\\[\]{}\r\n]*[^\s!|,\\[\]{}])?$/
-const spellableImageUrl = /^[^\s!|\\[\]{}]+$/
+// Jira reads an address holding no `://` as an attachment's name.
+const spellableImageUrl = /^[^\s!|\\[\]{}]*:\/\/[^\s!|\\[\]{}]*$/
 
 // spec/wiki.md, Blocks: each block wiki markup spells, found after its children, since a block rides where one it holds does. A stack rather than recursion (docs/decisions.md §Nothing recurses unbounded).
 export function spelledBlocks(content: readonly AdfNode[]): Result<Map<AdfNode, Spelling>> {
@@ -117,7 +118,7 @@ function codeText(node: AdfNode): string | undefined {
   const [text, ...others] = nodeContent(node)
   const code = text?.text
   if (!holdsOnlyAttributes(node, ['language']) || typeof language !== 'string' || text === undefined || code === undefined || others.length > 0 || !isUnmarkedSpellableText(text)) return undefined
-  if (code.includes('{code}') || code.includes('{noformat}')) return undefined
+  if (code === '' || code.includes('\r') || code.includes('{code}') || code.includes('{noformat}')) return undefined
   if (language === '') return `{noformat}\n${code}\n{noformat}`
   return codeLanguages.includes(language) ? `{code:${language}}\n${code}\n{code}` : undefined
 }

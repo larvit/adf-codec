@@ -195,7 +195,7 @@ section (WHATWG HTML §15.3), so no source gets a case of its own:
 An image reads as §An image reads as an image only alone in its paragraph says. Nesting past 500
 levels is `unsupported-nesting-depth`, as everywhere (§Nothing recurses unbounded). A node stands
 where the HTML places it, also where Atlassian's schema forbids it, as in the markdown readers;
-`todo.md` item 200 weighs holding it to the schema, and `todo.md` item 201 reading a cell's spans.
+`todo.md` item 206 weighs holding it to the schema, and `todo.md` item 207 reading a cell's spans.
 
 ## Names stay text
 
@@ -1571,3 +1571,34 @@ the dialect holds reads as the dialect too.
 A panel of three developers, one each for the bot, the viewer/editor app and the LLM pipeline, all
 picked this over `htmlToAdf(html, { foreign: true })` and `anyHtmlToAdf(html)`. None of them knows
 up front whether HTML is foreign, so a flag or a second name makes them guess.
+
+## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string
+
+2026-11-17, the implementer of `jiraWikiToAdf`. Goals 1, 6 and 11. Plan item 201 asks the
+maintainer to confirm the readings below that differ from Jira's.
+Valid while `jiraWikiToAdf` returns a `Result`.
+
+Wiki markup has no syntax error: Jira shows markup it can't read as text, and so does the reader.
+Three inputs can't read as text without losing content. Each is refused at the line it starts on,
+with the path `[]`, since no node exists yet:
+
+- An `{adf}` macro left open, or holding anything but one ADF node's JSON, is
+  `unsupported-node-shape`: its text is no node. A carry fence holding bad JSON is refused the
+  same way in markdown. So is a macro inside a line that closes on a later line: the writers
+  write such a macro on one line.
+- A list line of more than 500 markers, or carried JSON nested past 500 levels, is
+  `unsupported-nesting-depth` (§Nothing recurses unbounded).
+- Markup that reads past the engine's limits is `engine-limit`.
+
+The reader differs from Jira in four places, each a string the writers never write. `spec/wiki.md`
+§What only the reader reads states each reading:
+
+- A block macro after anything else on a line is text. Jira reads one inside a line.
+- An image is a block, so one that shares its line is text. Jira shows it inline.
+- A delimiter reads by the rule the writer escapes by (`spec/wiki.md` §Marks), so every string the
+  writer writes reads back. Jira's own rule differs at an edge such as `x^2^`.
+- `-- ` at a line's start is an en dash. Jira reads a nested bullet.
+
+The reader follows Jira in two places a reader could take either way. A block macro left open
+holds the rest of the markup. An image address holds `://`, since Jira reads any other as an
+attachment's name, so the writer carries an image whose `url` has none.

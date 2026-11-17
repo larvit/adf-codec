@@ -10,6 +10,7 @@ leg "lint ($node_image)" in_image "$node_image" npm run lint
 # The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green. Each line names a probe file and an import its boundary refuses.
 boundary_probes="src/adf/boundary-probe.ts ../markdown/flavour.ts
 src/adf/boundary-probe-html.ts ../html/emit/adf-to-html.ts
+src/adf/boundary-probe-wiki.ts ../wiki/spellings.ts
 src/html/boundary-probe.ts ../markdown/flavour.ts
 src/html/parse/boundary-probe.ts ../emit/adf-to-html.ts
 src/html/parse/boundary-probe-markdown.ts ../../markdown/flavour.ts
@@ -25,7 +26,13 @@ src/markdown/emit/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
 src/markdown/emit/boundary-probe-parse.ts ../parse/blocks.ts
 src/markdown/parse/boundary-probe.ts ../emit/adf-to-markdown.ts
 src/markdown/parse/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
-src/markdown/parse/boundary-probe-portable.ts ../portable/conventions.ts"
+src/markdown/parse/boundary-probe-portable.ts ../portable/conventions.ts
+src/wiki/boundary-probe.ts ../markdown/flavour.ts
+src/wiki/boundary-probe-html.ts ../html/emit/adf-to-html.ts
+src/wiki/emit/boundary-probe.ts ../parse/inline.ts
+src/wiki/emit/boundary-probe-html.ts ../../html/emit/adf-to-html.ts
+src/wiki/parse/boundary-probe.ts ../emit/inline-line.ts
+src/wiki/parse/boundary-probe-markdown.ts ../../markdown/flavour.ts"
 
 boundaries_fire() {
   local allowed=src/markdown/parse/boundary-probe-allowed.ts lint_log probe probes target
