@@ -8,16 +8,17 @@ export type AdfMacro = { end: number; inline: boolean; node: AdfNode }
 
 const closer = '{adf}'
 const holder = 'an {adf} macro'
-const opener = /\{adf(?::([^}\n]*))?\}/y
+const opener = /\{adf(?::([^{}\n]*))?\}/y
 
-// spec/wiki.md, The carry: `undefined` where no `{adf}` macro opens at `at`. The macro closes before `end`.
+// spec/wiki.md, The carry: `undefined` where no `{adf}` macro opens at `at`. A macro closing past `end` is refused.
 export function readAdfMacro(wiki: string, at: number, end: number): Read<AdfMacro> | undefined {
   opener.lastIndex = at
   const opened = opener.exec(wiki)
   if (opened === null) return undefined
   const start = opener.lastIndex
   const close = wiki.indexOf(closer, start)
-  if (close === -1 || close + closer.length > end) return { fault: refusal('closes with {adf}: this one is left open') }
+  if (close === -1) return { fault: refusal('closes with {adf}: this one is left open') }
+  if (close + closer.length > end) return { fault: refusal('inside a line closes on that line: this one closes on a later line') }
   const value = carriedValue(wiki.slice(start, close), holder, refusal("holds one ADF node's JSON: this is no JSON"))
   if (value.fault !== undefined) return value
   const bounded = carriedNesting(value.value, largestNesting)

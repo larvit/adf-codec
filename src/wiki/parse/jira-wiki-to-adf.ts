@@ -23,6 +23,7 @@ type Line = { end: number; next: number; start: number; text: string }
 type Reading = { containers: Container[]; levels: Level[]; paragraph: AdfNode[] | undefined; rows: AdfNode[] | undefined; wiki: string }
 
 const codeMacro = /\{(code|noformat)(?::([^}\n]*))?\}/y
+const codeEdge = /\r?\n|/y
 const documentCarry = '{adf:display=block}\n{"type":"doc","version":1}\n{adf}'
 const image = /^!([^\s!|]+)(?:\|([^!]*))?!$/
 const itemMarker = /^([*#]+|-) +/
@@ -38,7 +39,7 @@ export function jiraWikiToAdf(wiki: string): Result<AdfDocument, ParseError> {
 
 function readWiki(wiki: string): Result<AdfDocument> {
   if (typeof wiki !== 'string') return notAString(wiki, 'Jira wiki markup')
-  if (wiki === documentCarry) return success({ type: 'doc', version: 1 })
+  if (wiki.trim() === documentCarry) return success({ type: 'doc', version: 1 })
   const root: Container = { content: [], kind: 'document' }
   const reading: Reading = { containers: [root], levels: [], paragraph: undefined, rows: undefined, wiki }
   let at = 0
@@ -78,7 +79,7 @@ function readLine(reading: Reading, line: Line): Fault | number {
   return readTextLine(reading, line)
 }
 
-// A macro opens and closes a block only at its line's start, and reads as text anywhere else; `undefined` where none stands there.
+// `undefined` where no block macro stands at `start`: a line's start, or the end of the macro before it.
 function readMacro(reading: Reading, start: number): Fault | number | undefined {
   const { containers, wiki } = reading
   if (!wiki.startsWith('{', start)) return undefined
@@ -103,14 +104,16 @@ function readMacro(reading: Reading, start: number): Fault | number | undefined 
   return panelMacro.lastIndex
 }
 
-// The text stands between the macros whole, less the line feed after the opening one and the line feed before the closing one.
+// The text stands between the macros whole, less the line ending after the opening one and the line ending before the closing one.
 function readCode(reading: Reading, from: number, name: string, held: string | undefined): number {
   const { wiki } = reading
   const closer = `{${name}}`
   const close = wiki.indexOf(closer, from)
   const end = close === -1 ? wiki.length : close
-  const start = from + (wiki.startsWith('\n', from) ? 1 : 0)
-  const text = wiki.slice(start, Math.max(start, end - (wiki.startsWith('\n', end - 1) ? 1 : 0)))
+  codeEdge.lastIndex = from
+  const start = from + (codeEdge.exec(wiki)?.[0].length ?? 0)
+  const ending = wiki.startsWith('\r\n', end - 2) ? 2 : wiki.startsWith('\n', end - 1) ? 1 : 0
+  const text = wiki.slice(start, Math.max(start, end - ending)).replaceAll('\r\n', '\n')
   const [first = ''] = (held ?? '').split('|')
   const language = name === 'noformat' ? '' : first === '' || first.includes('=') ? 'java' : first.trim().toLowerCase()
   return pushBlock(reading, { attrs: { language }, ...(text === '' ? {} : { content: [{ text, type: 'text' }] }), type: 'codeBlock' }, close === -1 ? wiki.length : close + closer.length)
@@ -250,7 +253,7 @@ function blocksOf({ containers }: Reading): AdfNode[] | undefined {
   return containers.at(-1)?.content
 }
 
-// `key=value` parameters, a parameter holding no `=` under the key it is.
+// `key=value` parameters; one holding no `=` is its own key and value.
 function parameters(held: string, separator: string): Map<string, string> {
   const read = new Map<string, string>()
   for (const parameter of held.split(separator)) {

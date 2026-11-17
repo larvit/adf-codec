@@ -365,6 +365,7 @@ const riddenBlocks: [string, AdfNode][] = [
   ['a code block holding another attribute', { attrs: { language: 'java', title: 'a' }, content: [text('x')], type: 'codeBlock' }],
   ['a code block of a marked text', { attrs: { language: 'java' }, content: [text('x', { type: 'strong' })], type: 'codeBlock' }],
   ['a code block of an empty text', { attrs: { language: 'java' }, content: [text('')], type: 'codeBlock' }],
+  ['a code block whose text holds a carriage return', { attrs: { language: 'java' }, content: [text('a\r\nb')], type: 'codeBlock' }],
   ['a code block of no content', { attrs: { language: 'java' }, type: 'codeBlock' }],
   ['a code block of two texts', { attrs: { language: 'java' }, content: [text('x'), text('y', { type: 'strong' })], type: 'codeBlock' }],
   ['a code block whose language is no string', { attrs: { language: 5 }, content: [text('x')], type: 'codeBlock' }],
