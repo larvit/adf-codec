@@ -205,9 +205,11 @@ function readRow(reading: Reading, { end, next, start }: Line): Fault | number |
 // A cell's text ends before the whitespace its closing `|` follows.
 function trimmedEnd(nodes: AdfNode[]): AdfNode[] {
   const last = nodes.at(-1)
-  if (last?.type !== 'text' || last.text === undefined || last.attrs !== undefined) return nodes
+  if (last?.type !== 'text' || last.text === undefined) return nodes
   const text = last.text.trimEnd()
-  return text === '' ? nodes.slice(0, -1) : [...nodes.slice(0, -1), { ...last, text }]
+  const trimmed = nodes.slice(0, -1)
+  if (text !== '') trimmed.push({ ...last, text })
+  return trimmed
 }
 
 function media(url: string, held: string | undefined): AdfNode {
