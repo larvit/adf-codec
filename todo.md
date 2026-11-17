@@ -66,10 +66,28 @@ Touches:
 The lossless wiki writer, as `spec/wiki.md` spells each node. Ships with a fixture per node and
 mark; item 195's reader adds the round-trip property.
 
+Touches:
+
+- `src/jira-wiki/emit/adf-to-jira-wiki.ts`
+- `src/jira-wiki/emit/adf-to-jira-wiki.test.ts`
+- `src/adf/carried-json.ts`: `carriedJson` (small)
+- `src/canonical-json.ts`: `JsonSpelling`, `canonicalJsonPieces` (small)
+- `src/index.ts`: lines 3-13 (small)
+- `package-tests/consumer.ts`: lines 1-17 (small)
+- `.oxlintrc.json`: lines 6-48 (small)
+- `ci.sh`: lines 11-28 (small)
+
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
 Goal 7. The maintainer asked for it beside the lossless writer, 2026-11-15. It spells as the
 lossless writer does, except where that writer would use the `{adf}` macro.
+
+Touches:
+
+- `src/jira-wiki/emit/adf-to-jira-wiki.ts`
+- `src/jira-wiki/emit/adf-to-jira-wiki.test.ts`
+- `src/index.ts`: lines 3-13 (small)
+- `package-tests/consumer.ts`: lines 1-17 (small)
 
 ### 195. Read Jira wiki markup into ADF, `{adf}` macros included, as `spec/wiki.md` says.
 
@@ -79,17 +97,44 @@ item 193 writes reads back deep-equal, and with refusals whose codes come from t
 The reader is `jiraWikiToAdf` (`docs/decisions.md` §Jira wiki markup's writers
 are `adfToLosslessJiraWiki` and `adfToLossyJiraWiki`, two calls with no option).
 
+Touches:
+
+- `src/jira-wiki/parse/jira-wiki-to-adf.ts`
+- `src/jira-wiki/parse/jira-wiki-to-adf.test.ts`
+- `src/conformance/jira-wiki-property.test.ts`
+- `src/index.ts`: lines 3-13 (small)
+- `package-tests/consumer.ts`: lines 1-17 (small)
+- `.oxlintrc.json`: lines 6-48 (small)
+- `ci.sh`: lines 11-28 (small)
+
 ### 196. Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 
 A Quick start section per direction, the calls table and the guarantees. The comparison tables
 gain a row, as the decision "The comparison tables list every ADF converter that starts and
 converts" asks.
 
+Touches:
+
+- `README.md`: `## Main functionality`, `## Quick start`, `## Other ADF converters`, `## The calls`, `### The error shape` (small), `## The guarantees`, `## Everything exported`
+- `converter-comparison/compare.mjs`: lines 67-108 (small)
+
 ### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
 
 Reading HTML from emails, CMSs and editors is the most asked need on the Atlassian developer
 community. A developer panel picked `htmlToAdf` itself, with no option, as `docs/decisions.md`
 records. The maintainer placed it in 0.4.0 on 2026-11-16; it doesn't move to a later release.
+
+Touches:
+
+- `src/html/parse/html-to-adf.ts`
+- `src/html/parse/inline.ts`
+- `src/html/parse/inline-block.ts`
+- `src/html/parse/source.ts`
+- `src/html/parse/node-element.ts`
+- `src/html/parse/carry-element.ts`
+- `src/html/parse/html-to-adf.test.ts`
+- `spec/html.md`: `## Reading`
+- `README.md`: `## HTML` (small), `## The calls` (small), `## The errors` (small)
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 
@@ -102,6 +147,38 @@ first failing reader stops the test and the failure never names the reader. Writ
 "No loops or branches in a test body; parametrize the cases". Found by the principles audit of the
 release review of 0.3.0, 2026-11-08.
 
+Touches:
+
+- `src/conformance/adf-schema.test.ts`
+- `src/conformance/commonmark-spec.test.ts`
+- `src/conformance/corpus.test.ts`
+- `src/conformance/adf-property.test.ts`
+- `src/conformance/flavour.test.ts`
+- `src/conformance/markdown-property.test.ts`
+- `src/html/parse/html-to-adf.test.ts`
+- `src/html/emit/adf-to-html.test.ts`
+- `src/markdown/emit/limits.test.ts`
+- `src/markdown/emit/unspellable-runs.test.ts`
+- `src/markdown/emit/inline-line.test.ts`
+- `src/markdown/emit/block-text.test.ts`
+- `src/markdown/emit/adf-to-markdown.test.ts`
+- `src/markdown/parse/markdown-to-adf.test.ts`
+- `src/markdown/parse/blocks.test.ts`
+- `src/markdown/portable/portable-markdown-to-adf.test.ts`
+- `src/markdown/portable/adf-to-portable-markdown.test.ts`
+- `src/markdown/portable/inline-reduction.test.ts`
+- `src/markdown/portable/task-ids.test.ts`
+- `src/markdown/portable/editor-normal.test.ts`
+- `src/markdown/inline-tokens.test.ts`
+- `src/markdown/commonmark/link-syntax.test.ts`
+- `src/markdown/commonmark/entity-references.test.ts`
+- `src/markdown/commonmark/case-folding.test.ts`
+- `src/adf/document.test.ts`
+- `src/plain-text/adf-to-plain-text.test.ts`
+- `src/json-text.test.ts`
+- `src/result.test.ts`
+- `src/canonical-json.test.ts`
+
 ### 107. Spell the block carry's JSON so its length stays linear in the node's JSON.
 
 The block carry indents two spaces a level, so about 1 MB of deeply nested arrays in a carried
@@ -109,6 +186,22 @@ node's JSON spells past V8's longest string, which the writers refuse as `unsupp
 the inline carry's compact JSON would fit. docs/decisions.md §The code list calls a refusal no
 spelling recovers from a gap in the flavour. Respelling the carry changes the format (§The formats
 are API). Found by the README-goals audit of item 83, 2026-10-11.
+
+Touches:
+
+- `src/canonical-json.ts`: `JsonSpelling`, `canonicalJsonPieces`, `objectMembers`, `schedule`, `spellsCanonicalJson` (small)
+- `src/markdown/opaque-carry.ts`: `carriedBlock`, `readCarriedJson`
+- `src/adf/carried-json.ts`: `carriedJson` (small)
+- `src/canonical-json.test.ts`
+- `src/markdown/parse/markdown-to-adf.test.ts`: lines 450-500
+- `src/conformance/markdown-property.test.ts`: lines 183-200
+- `spec/flavour.md`: `## The opaque carry`
+- `corpus/round-trip/opaque-carry/unknown-block.md`
+- `corpus/round-trip/opaque-carry/unknown-type-spelling.md`
+- `corpus/round-trip/opaque-carry/carry-in-wrappers.md`
+- `corpus/round-trip/opaque-carry/code-block-children.md`
+- `corpus/errors/carry-fence-type.md`
+- `corpus/errors/carry-fence-type-spellable.md`
 
 ### 170. Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.
 
@@ -123,6 +216,15 @@ image the gate already pulls. No leg needs an account or a network beyond the in
 
 Once the leg holds, the README may say the package bundles with those four; it says nothing about
 Forge's runtime, which no leg tests.
+
+Touches:
+
+- `ci.sh`: lines 108-113 (small)
+- `bundle-size/package.json`
+- `bundle-size/package-lock.json`
+- `package-tests/bundle-round-trip.mjs`
+- `package-tests/bundle-entry.js`
+- `README.md`: `## The package` (small)
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
