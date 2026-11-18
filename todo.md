@@ -65,14 +65,15 @@ Touches:
 - `src/wiki/parse/jira-wiki-to-adf.ts`: `readMacro`, `readItem`, `readLine`
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
-- `docs/decisions.md`: the entry named above
+- `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
 
 ### 202. Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.
 
 Item 195's chunk ran `./ci.sh` eight times at a load average of 15 to 20, and the Bun leg failed four of them, only on two markdown tests the chunk didn't touch: `joins a mark run's segments as a walk rather than as one call's arguments` (3.9 s when it passes, 13 to 17 s on Node) and `reduces a line alike dropping every run a pass may or the first alone`. GitHub's gate passed each time. Shrink the two inputs to the smallest that still fails on the quadratic walk each guards against, or give the tests their own timeout.
 
 Touches:
-- the two tests named above, under `src/markdown/`
+- `src/markdown/emit/inline-nodes.test.ts`
+- `src/markdown/portable/inline-reduction.test.ts`
 
 ### 200. Carry a link whose `href` Jira shows as text, and read `[x]` and `[a|x]` with such an address as text.
 
@@ -80,10 +81,11 @@ Item 195's probes of Jira found that it shows `[x]` and `[a|x]` as text where `x
 
 Touches:
 - `src/wiki/spellings.ts`: `spellableUrl`
-- `src/wiki/emit/inline-line.ts`: the link spelling
+- `src/wiki/emit/inline-line.ts`: `hrefSpelling`, `linkDelimiters`
 - `src/wiki/parse/inline.ts`: `bracketed`, `closeLink`
-- `spec/wiki.md`: Marks
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`, `src/wiki/parse/jira-wiki-to-adf.test.ts` (small)
+- `spec/wiki.md`: `## Marks`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`
+- `src/wiki/parse/jira-wiki-to-adf.test.ts`
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
@@ -115,8 +117,8 @@ Item 198's product-owner review found that `escapedText` carries any text ending
 Touches:
 - `src/wiki/emit/inline-line.ts`: `atom`, `groupSpelling`
 - `src/wiki/emit/text-escaping.ts`: `escapedText`, `smileyStops`
-- `spec/wiki.md`: Inline
-- `src/wiki/emit/adf-to-jira-wiki.test.ts` (small)
+- `spec/wiki.md`: `## Inline`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`
 
 ### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
 
