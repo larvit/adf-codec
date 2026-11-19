@@ -471,7 +471,8 @@ Ping !adf:mention[@Mikael]{id=5b10a2} — !adf:status[In review]{color=yellow} �
 
 | ADF | Directive |
 | --- | --- |
-| `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` carrying `localId`, marks or a value CommonMark cannot spell | the same node in directive form, `!adf:paragraph {localId=…}` |
+| `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` carrying `localId` | the CommonMark spelling with a marker: `!adf:{localId=…}` on the line above, after a list item's marker, or at the end of a heading's line and of the last line of a quote's or list item's first paragraph |
+| the same nodes carrying marks or a value neither CommonMark nor a marker spells | the same node in directive form, `!adf:paragraph {marks=…}` |
 | `border` | an inline directive mark around a `mediaInline`, the one inline node that takes it |
 | `caption`, `media`, `mediaGroup`, `mediaSingle` | the media family; an image CommonMark cannot spell, a stored file, a caption |
 | `date`, `emoji`, `inlineCard`, `mediaInline`, `mention`, `status` | inline leaves; `emoji`, `mention` and `status` spell their `text` in the `[content]` slot |
@@ -661,7 +662,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 
 | Code | Fires when | What you can do |
 | --- | --- | --- |
-| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
+| `malformed-directive` | an `!adf:` the grammar cannot read — a prefix completing no directive, an unclosed container, `[content]` or `{attrs}`, a closer with no container of its name open, a leaf given a body, `{attrs}` out of order or duplicated, an `!adf:{…}` marker with no block right below it or two on one block, invalid JSON in an opaque carry | write the spelling the message names, or keep it literal: escape the prefix — `\!adf:`, block and inline alike — or, for a code fence whose info string opens `adf:`, drop the info string and wrap the fence in `!adf:codeBlock {language="adf:…"}` |
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, a delimiter row whose cell count differs from the header's, a body row holding more cells than the header, or short rows whose padding would add more cells than the table holds; in `losslessMarkdownToAdf` also a body row holding fewer cells, an alignment colon, and a header or delimiter row not opening with a pipe | add a `---` row of the header's cell count under the header and give no body row more cells; for `losslessMarkdownToAdf`, also give every row the header's count, open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, write one `\|` of its delimiter row as `\\|` |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
@@ -699,7 +700,9 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
     hard break, a mention, a code span or, for `border`, text;
   - writes a link whose text holds something besides hard breaks, but no node that takes a link,
     such as `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
-  - writes as a directive a node or mark the lossless flavour spells as CommonMark;
+  - writes as a directive a node or mark the lossless flavour spells as CommonMark, other than the
+    directive `0.3` wrote for a block holding a `localId`;
+  - puts an `!adf:{…}` marker where its block carries none, or gives it a key but `localId`;
   - puts `!adf:textBreak{}` where it parts nothing, or `!adf:doc` anywhere but as the whole
     document;
   - carries a node the writers' cause below names, such as an inline card a link marks.

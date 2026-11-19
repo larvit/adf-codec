@@ -198,6 +198,24 @@ one escape. Not CommonMark's generic-directives proposal: its `:::` claims a for
 its fence-length discipline ties a container's opener to its own body, where closing from the
 opener nests by itself and leaf versus container falls out of the node's content model.
 
+## A CommonMark block's `localId` rides an `!adf:{…}` marker beside its spelling
+
+2026-11-19, the maintainer and a writer panel. Goals 1, 5 and 6. Valid while Jira gives every
+block a `localId`.
+
+Jira gives every heading, paragraph, list and list item a `localId`. Written as directives, a Jira
+description read as mostly `!adf:` lines, and a `- x` typed into a directive list nested rather
+than added an item. The id rides the nameless attribute block `!adf:{localId=…}` instead, beside
+the block's CommonMark spelling; the maintainer chose the nameless form. A writer panel of seven
+readers seated from README §Audience settled three placements: the line above a blockquote, 5 of 7,
+the line above a code block, 5 of 7, and a rule's line above a blank line, 7 of 7. It split 4 to 3
+on the paragraph, the heading and the list, and the maintainer picked: the line above a paragraph,
+the end of the last line for one opening a quote or list item, the end of a heading's line, the line
+above a list, and each item's id after its marker. Only `localId` rides a marker. A block holding
+anything else, or an id with no unambiguous place, keeps its directive, a list whole. The
+directives 0.3 wrote for these blocks still read. The grammar: `spec/flavour.md` §The CommonMark
+blocks.
+
 ## CommonMark is a subset
 
 2026-08-23, the maintainer. Goal 5. Valid while prose rarely writes the shapes the carve-outs claim.
