@@ -251,7 +251,7 @@ function readNestedDirective(text: string, index: number, depth: number, codeSpa
 
 function readClaimedDirective(text: string, index: number, depth: number, codeSpanCloser: CodeSpanCloser): Read<DirectiveSpan> {
   const name = inlineDirectiveName(text, index)
-  if (name === undefined) return { fault: malformedDirective(prefixFault) }
+  if (name === undefined) return { fault: malformedDirective(text.startsWith(markerOpener, index) ? markerFault : prefixFault) }
   if (depth > largestNesting) {
     return { fault: { code: 'unsupported-nesting-depth', message: `the input nests inline directives deeper than the ${largestNesting} levels the parser carries` } }
   }
