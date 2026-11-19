@@ -123,15 +123,15 @@ code fence or opaque carry is content.
 
 **Block leaf**: `!adf:name arg {attrs}` — the same opener with no closer, `arg` reading as above.
 
-**Marker**: `!adf:{localId=…}`, nameless, carries the `localId` of a block CommonMark spells, beside
-that spelling: alone on the line above the block, right after a list item's marker, or one space
-after the text ending a paragraph's or heading's last line (The CommonMark blocks).
-
 Which of the two a node takes is its content model, never the spelling: a model taking content is
 written as an opener–closer pair and one taking none as a leaf, so a leaf given a body and a
 container missing its closer are each a named error. A node holding no content whose model takes
 some is an empty pair. A spelled node's content model is contract in consequence — changing one is
 MAJOR (`docs/decisions.md` §The formats are API).
+
+**Marker**: `!adf:{localId=…}`, nameless, carries the `localId` of a block CommonMark spells, beside
+that spelling: alone on the line above the block, right after a list item's marker, or one space
+after the text ending a paragraph's or heading's last line (The CommonMark blocks).
 
 Canonical spacing is the only spacing input reads: one space parts the name, `arg` and `{attrs}`,
 and one parts each attribute pair, with no padding inside the braces. Trailing whitespace on a
@@ -263,8 +263,8 @@ paragraph's text.
 An empty paragraph or heading holding a `localId` takes the directive form, and so does a list, whole,
 one of whose items holds a `localId` beside no first paragraph or opens with a block whose marker
 would take the item's first line. A marker anywhere else, holding another key or a value outside
-its canonical spelling, standing above no block of its container, or a blank line apart from it
-where none is written, is a named error, and so is a block carrying two.
+its canonical spelling, standing above no block of its container, or parted from its block by other
+lines than these, is a named error, and so is a block carrying two.
 
 - `blockquote`, `bulletList`, `listItem` — containers, block body. Attributes: `localId` (string).
 - `codeBlock` — container, body one fenced code block per text node, each fence's info string the
