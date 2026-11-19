@@ -177,6 +177,14 @@ test('refuses a marker whose blank line does not match its block', () => {
   refused('!adf:{localId=p}\n\nPart.\n', 'malformed-directive', { line: 1, offset: 0 }, 'right above')
   refused('!adf:{localId=r}\n---\n', 'malformed-directive', { line: 1, offset: 0 }, 'blank line')
   refused('!adf:{localId=l}\n2. a\n', 'malformed-directive', { line: 1, offset: 0 }, 'blank line')
+  refused('!adf:{localId=a}\n[x]: y\n---\n', 'malformed-directive', { line: 1, offset: 0 }, 'blank line')
+  refused('!adf:{localId=a}\n[x]: y\nPart.\n', 'malformed-directive', { line: 1, offset: 0 }, 'right above')
+})
+
+test('names a marker standing inline in the wrong place', () => {
+  refused('a !adf:{localId=a}\nb\n', 'malformed-directive', { line: 1, offset: 0 }, 'marker', 'end of a paragraph')
+  refused('[a !adf:{localId=a}](u)\n', 'malformed-directive', { line: 1, offset: 0 }, 'marker', 'end of a paragraph')
+  refused('*a !adf:{localId=a}*\n', 'malformed-directive', { line: 1, offset: 0 }, 'marker', 'end of a paragraph')
 })
 
 test('refuses a marker line above a block that takes its id another way or has none', () => {
@@ -197,7 +205,7 @@ test('names a trailing marker standing where the id takes the line above, or on 
   refused('> Part  !adf:{localId=p}\n', 'malformed-directive', { line: 1, offset: 0 }, 'one space')
   refused('> Part\t !adf:{localId=p}\n', 'malformed-directive', { line: 1, offset: 0 }, 'one space')
   refused('> ![a](/u) !adf:{localId=p}\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'mediaSingle', 'directive')
-  refused('## Part\t!adf:{localId=h}\n', 'malformed-directive', { line: 1, offset: 0 }, 'completes no directive')
+  refused('## Part\t!adf:{localId=h}\n', 'malformed-directive', { line: 1, offset: 0 }, 'marker')
 })
 
 test('reads a trailing marker before the link reference definitions and the setext underline of its paragraph', () => {

@@ -611,9 +611,18 @@ function takeParagraph(walk: Walk): Extract<Block, { kind: 'fault' }> | Paragrap
   const trailed = walk.claims.directives ? readTrailingMarker(lines) : undefined
   const text = readLinkDefinitions(walk.definitions, trailed?.text ?? lines)
   if (text === '' && trailed !== undefined) return { fault: malformedDirective(`an ${markerOpener}…} marker ends a paragraph holding no text once its link reference definitions are read; ${directiveEscape}`), kind: 'fault', position: leaf.position }
-  if (text === '') return undefined
+  if (text === '') return partMarker(walk)
   const kept = leaf.lines[leaf.lines.length - text.split('\n').length]
   return { kind: 'paragraph', position: kept?.position ?? leaf.position, ...trailedText(text, trailed) }
+}
+
+// Definitions between a marker line and its block are no blank line: the fault stands after the marker, which reads it first.
+function partMarker(walk: Walk): undefined {
+  const previous = currentBlocks(walk).at(-1)
+  if (previous?.kind !== 'marker' || previous.placement !== 'line') return undefined
+  const fault = malformedDirective(`only a blank line, never a link reference definition, parts an ${markerOpener}…} marker from the rule or list below it, and no line parts it from any other block; ${directiveEscape}`)
+  currentBlocks(walk).push({ fault, kind: 'fault', position: previous.position })
+  return undefined
 }
 
 // A block holding no marker has no `trailing` key.
