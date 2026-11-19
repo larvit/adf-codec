@@ -1,5 +1,5 @@
 import type { Claims, Flavour } from '../flavour.ts'
-import type { ConvertFault, SourcePosition } from '../../result.ts'
+import type { ConvertFault, Read, SourcePosition } from '../../result.ts'
 import type { DirectiveAttributes, DirectiveLine } from '../directive/syntax.ts'
 import type { LinkDefinition } from '../commonmark/link-syntax.ts'
 import {
@@ -22,8 +22,9 @@ import {
 } from '../commonmark/grammar.ts'
 import { barePipeCells, isDelimiterRow, isPipeAlignment, malformedPipeTable, pipeCells } from '../pipe-table-syntax.ts'
 import { blockDirectiveForm } from '../directive/block.ts'
-import { directiveEscape, malformedDirective, readDirectiveLine, spellDirectiveCloser } from '../directive/syntax.ts'
+import { directiveEscape, malformedDirective, markerOpener, readDirectiveLine, spellDirectiveCloser } from '../directive/syntax.ts'
 import { flavourClaims } from '../flavour.ts'
+import { readItemMarker, readTrailingMarker, type TrailingMarker } from '../directive/id-marker.ts'
 import { readLinkDefinitions } from '../commonmark/link-reference-definitions.ts'
 
 export type Block = { position: SourcePosition } & (
@@ -34,8 +35,10 @@ export type Block = { position: SourcePosition } & (
   | { delimiter: string; items: Block[][]; kind: 'bulletList' }
   | { delimiter: string; items: Block[][]; kind: 'orderedList'; start: number }
   | { kind: 'code'; language: string; text: string }
-  | { kind: 'heading'; level: number; text: string }
-  | { kind: 'paragraph'; text: string }
+  | { kind: 'heading'; level: number; text: string; trailing?: Read<DirectiveAttributes> }
+  // item: right after a list item's marker; line: alone on the line above its block.
+  | { attributes: DirectiveAttributes; kind: 'marker'; placement: 'item' | 'line' }
+  | { kind: 'paragraph'; text: string; trailing?: Read<DirectiveAttributes> }
   | { kind: 'rule' }
   | { kind: 'table'; rows: string[][] }
 )
@@ -43,6 +46,10 @@ export type Block = { position: SourcePosition } & (
 export type ParsedBlocks = { blocks: Block[]; definitions: Map<string, LinkDefinition> }
 
 export type DirectiveBlock = Extract<Block, { kind: 'directive' }>
+
+export type MarkerBlock = Extract<Block, { kind: 'marker' }>
+
+type ParagraphBlock = Extract<Block, { kind: 'paragraph' }>
 
 type ListBlock = Extract<Block, { items: Block[][] }>
 
@@ -216,7 +223,7 @@ function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: n
     if (!opened) closeContainers(walk, depth)
     opened = true
     openContainer(walk, start)
-    rest = start.rest
+    rest = start.kind === 'item' && walk.claims.directives ? afterItemMarker(walk, start.rest) : start.rest
   }
   return { opened, rest }
 }
@@ -275,6 +282,13 @@ function openContainer(walk: Walk, start: ContainerStart): void {
   walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
 }
 
+function afterItemMarker(walk: Walk, line: Line): Line {
+  const marker = line.spaces === 0 ? readItemMarker(line.text) : undefined
+  if (marker === undefined) return line
+  currentBlocks(walk).push({ attributes: marker.attributes, kind: 'marker', placement: 'item', position: walk.position })
+  return { column: line.column + marker.rest, spaces: 0, text: line.text.slice(marker.rest) }
+}
+
 // An empty item closes at the blank line after it, yet the next item continues its list unless endList ended it.
 function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
   if (!start.fresh) return start.list
@@ -309,6 +323,7 @@ function closeContainers(walk: Walk, depth: number): void {
 
 function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
   if (directive.kind === 'closer') closeDirective(walk, directive.name)
+  else if (directive.kind === 'marker') currentBlocks(walk).push({ attributes: directive.attributes, kind: 'marker', placement: 'line', position: walk.position })
   else openDirective(walk, directive)
 }
 
@@ -476,7 +491,7 @@ function readLineBlock(walk: Walk, opener: string): boolean {
   if (level !== undefined) {
     const paragraph = takeParagraph(walk)
     if (paragraph !== undefined) {
-      currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? { kind: 'heading', level, position: paragraph.position, text: paragraph.text })
+      currentBlocks(walk).push(paragraph.kind === 'fault' ? paragraph : (bareTableFault(paragraph, walk.claims) ?? { ...paragraph, kind: 'heading', level }))
       return true
     }
   }
@@ -488,7 +503,8 @@ function readLineBlock(walk: Walk, opener: string): boolean {
   const heading = atxHeading(opener)
   if (heading === undefined) return false
   closeLeaf(walk)
-  currentBlocks(walk).push({ kind: 'heading', level: heading.level, position: walk.position, text: heading.text })
+  const trailed = walk.claims.directives ? readTrailingMarker(heading.text) : undefined
+  currentBlocks(walk).push({ kind: 'heading', level: heading.level, position: walk.position, ...trailedText(trailed?.text ?? heading.text, trailed) })
   return true
 }
 
@@ -508,7 +524,7 @@ function closeLeaf(walk: Walk): void {
   if (leaf.kind === 'paragraph') {
     const paragraph = takeParagraph(walk)
     if (paragraph === undefined) endList(walk)
-    else currentBlocks(walk).push(bareTableFault(paragraph, walk.claims) ?? paragraph)
+    else currentBlocks(walk).push(paragraph.kind === 'fault' ? paragraph : (bareTableFault(paragraph, walk.claims) ?? paragraph))
     return
   }
   walk.leaf = undefined
@@ -565,7 +581,7 @@ function pipeTableBlock(rows: readonly [string[], ...string[][]], position: Sour
 }
 
 // spec/flavour.md, Tables: GFM's table without the leading pipes, which no line of it claims.
-function bareTableFault(paragraph: Extract<Block, { kind: 'paragraph' }>, claims: Claims): Block | undefined {
+function bareTableFault(paragraph: ParagraphBlock, claims: Claims): Block | undefined {
   if (claims.pipeTables !== 'flavour') return undefined
   let header: string[] | undefined
   for (const line of paragraph.text.split('\n')) {
@@ -586,15 +602,23 @@ function faultedBlock(message: string, position: SourcePosition): Block {
   return { fault: malformedPipeTable(message), kind: 'fault', position }
 }
 
-// The definitions a paragraph gives up are whole lines, so what is left starts at one this held.
-function takeParagraph(walk: Walk): Extract<Block, { kind: 'paragraph' }> | undefined {
+// The definitions a paragraph gives up are whole lines, so what is left starts at one this held. A trailing marker is read first: its id is no definition's destination.
+function takeParagraph(walk: Walk): Extract<Block, { kind: 'fault' }> | ParagraphBlock | undefined {
   const leaf = walk.leaf
   if (leaf?.kind !== 'paragraph') return undefined
   walk.leaf = undefined
-  const text = readLinkDefinitions(walk.definitions, leaf.lines.map((line) => line.text).join('\n'))
+  const lines = leaf.lines.map((line) => line.text).join('\n')
+  const trailed = walk.claims.directives ? readTrailingMarker(lines) : undefined
+  const text = readLinkDefinitions(walk.definitions, trailed?.text ?? lines)
+  if (text === '' && trailed !== undefined) return { fault: malformedDirective(`an ${markerOpener}…} marker ends a paragraph holding no text once its link reference definitions are read; ${directiveEscape}`), kind: 'fault', position: leaf.position }
   if (text === '') return undefined
   const kept = leaf.lines[leaf.lines.length - text.split('\n').length]
-  return { kind: 'paragraph', position: kept?.position ?? leaf.position, text }
+  return { kind: 'paragraph', position: kept?.position ?? leaf.position, ...trailedText(text, trailed) }
+}
+
+// No trailing key where no marker trails, so a block reads as it did before markers.
+function trailedText(text: string, trailed: TrailingMarker | undefined): { text: string; trailing?: Read<DirectiveAttributes> } {
+  return trailed === undefined ? { text } : { text, trailing: trailed.attributes }
 }
 
 function currentBlocks(walk: Walk): Block[] {

@@ -1,0 +1,55 @@
+import type { ConvertErrorPath, Read, Result } from '../../result.ts'
+import type { DirectiveAttributes } from './syntax.ts'
+import { directivePrefix, malformedDirective, markerOpener, pairFault, readAttributes, spellAttributes, spellStringAttribute } from './syntax.ts'
+import { failure, success } from '../../result.ts'
+
+// spec/flavour.md, The CommonMark blocks: text is what the line keeps once the marker after it is read.
+export type TrailingMarker = { attributes: Read<DirectiveAttributes>; text: string }
+
+export const idKey = 'localId'
+
+const blankToEnd = /[ \t]*$/y
+const trailingOpener = ` ${markerOpener}`
+
+export function spellIdAttributes(id: string | undefined): string {
+  return spellAttributes(id === undefined ? [] : [[idKey, spellStringAttribute(id)]])
+}
+
+export function spellIdMarker(id: string): string {
+  return `${directivePrefix}${spellIdAttributes(id)}`
+}
+
+// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; one at the start would trail nothing.
+export function readTrailingMarker(text: string): TrailingMarker | undefined {
+  for (let start = text.lastIndexOf(trailingOpener); start > 0; start = text.lastIndexOf(trailingOpener, start - 1)) {
+    const read = readAttributes(text, start + trailingOpener.length - 1, pairFault)
+    if (read.fault !== undefined) continue
+    blankToEnd.lastIndex = read.value.end
+    if (!blankToEnd.test(text)) continue
+    const kept = text.slice(0, start)
+    const parted = kept.endsWith(' ') || kept.endsWith('\t')
+    return { attributes: parted ? { fault: malformedDirective(`one space parts an ${markerOpener}…} marker from the text before it: this one is parted by more`) } : { value: read.value.attributes }, text: kept }
+  }
+  return undefined
+}
+
+// The marker after a list item's marker, and the rest of the line after the one space following it; `undefined` where none stands there.
+export function readItemMarker(text: string): { attributes: DirectiveAttributes; rest: number } | undefined {
+  if (!text.startsWith(markerOpener)) return undefined
+  const read = readAttributes(text, directivePrefix.length, pairFault)
+  if (read.fault !== undefined || text.charAt(read.value.end) !== ' ') return undefined
+  const next = text.charAt(read.value.end + 1)
+  return next === '' || next === ' ' || next === '\t' ? undefined : { attributes: read.value.attributes, rest: read.value.end + 1 }
+}
+
+export function readMarkerId(attributes: DirectiveAttributes, type: string, path: ConvertErrorPath): Result<string> {
+  const spelled = attributes.get(idKey)
+  if (spelled === undefined || attributes.size !== 1) {
+    let other = 'nothing'
+    for (const key of attributes.keys()) if (key !== idKey) other = key
+    return failure('unsupported-node-shape', `an ${markerOpener}…} marker carries ${idKey} alone: this one on a ${type} carries ${other}; write the ${type} as its directive to carry more`, path)
+  }
+  const spelling = spellStringAttribute(spelled.decoded)
+  if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${idKey} attribute as ${idKey}=${spelling}`, path)
+  return success(spelled.decoded)
+}

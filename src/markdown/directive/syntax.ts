@@ -24,6 +24,7 @@ export type DirectiveAttributes = ReadonlyMap<string, DirectiveValue>
 
 export type DirectiveLine =
   | { argument: string | undefined; attributes: DirectiveAttributes; kind: 'opener'; name: string }
+  | { attributes: DirectiveAttributes; kind: 'marker' }
   | { kind: 'closer'; name: string }
 
 // spans keys index content, so the two travel together: separate them and every offset is wrong.
@@ -39,13 +40,16 @@ type DirectiveContent = { end: number; spans: NestedSpans }
 
 export const directivePrefix = '!adf:'
 
+// spec/flavour.md, The CommonMark blocks: the nameless attribute block carrying an id beside a CommonMark spelling.
+export const markerOpener = `${directivePrefix}{`
+
 const claimedPrefix: unique symbol = Symbol('claimed prefix')
 const bareTokenSource = '[A-Za-z0-9_-]+'
 const bareRun = new RegExp(bareTokenSource, 'y')
 const bareToken = new RegExp(`^${bareTokenSource}$`)
 const directiveName = /[a-z][A-Za-z0-9]*/y
 const inlineDirectiveOpener = new RegExp(`${directivePrefix}[a-z][A-Za-z0-9]*[[{]`, 'y')
-const lineEnd = /^[ \t]*$/
+export const lineEnd = /^[ \t]*$/
 // A quoted value spells these as \uXXXX: CommonMark binds a code span, entity, HTML tag or pipe cell before a directive.
 const reservedSource = '[&<`|]'
 const quotedEscapes = new RegExp(reservedSource, 'g')
@@ -61,8 +65,9 @@ export const directiveEscape = `\\${directivePrefix} keeps the prefix literal`
 const closerFault = `a closer carries nothing after its name: this one does; ${directiveEscape}`
 const emptyFault = 'an empty {attrs} is omitted unless the { itself claims the directive: this one spells {}'
 const openerFault = `a directive opener reads a name, one bare argument and {attrs}, one space apart: this one does not; ${directiveEscape}`
+const markerFault = `an ${markerOpener}…} marker stands alone on its line, after a list item's marker or at the end of a paragraph's or heading's last line: this one does not; ${directiveEscape}`
 const orderFault = 'the {attrs} keys read in alphabetical order'
-const pairFault = `${attributePairCause}; ${directiveEscape}`
+export const pairFault = `${attributePairCause}; ${directiveEscape}`
 const prefixFault = `an unescaped ${directivePrefix} completes no directive; ${directiveEscape}`
 
 export function attributeValue(text: string, kind: AttributeKind): AttributeReading {
@@ -102,7 +107,9 @@ export function malformedDirective(message: string): ConvertFault {
 
 export function readDirectiveLine(line: string): Read<DirectiveLine> | undefined {
   if (!claimsDirectivePrefix(line, 0)) return undefined
-  return line.charAt(directivePrefix.length) === '/' ? readCloserLine(line) : readOpenerLine(line)
+  const form = line.charAt(directivePrefix.length)
+  if (form === '{') return readMarkerLine(line)
+  return form === '/' ? readCloserLine(line) : readOpenerLine(line)
 }
 
 export function readInlineDirective(inline: InlineSource, prefix: ClaimedPrefix): Read<DirectiveSpan> {
@@ -202,6 +209,12 @@ function readCloserLine(line: string): Read<DirectiveLine> | undefined {
   const name = readDirectiveName(line, start)
   if (name === undefined) return undefined
   return lineEnd.test(line.slice(start + name.length)) ? { value: { kind: 'closer', name } } : { fault: malformedDirective(closerFault) }
+}
+
+function readMarkerLine(line: string): Read<DirectiveLine> {
+  const read = readAttributes(line, directivePrefix.length, pairFault)
+  if (read.fault !== undefined) return read
+  return lineEnd.test(line.slice(read.value.end)) ? { value: { attributes: read.value.attributes, kind: 'marker' } } : { fault: malformedDirective(markerFault) }
 }
 
 function readOpenerLine(line: string): Read<DirectiveLine> | undefined {
