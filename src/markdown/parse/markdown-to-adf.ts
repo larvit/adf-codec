@@ -32,7 +32,7 @@ export type FlavourBlockReaders = {
 export type FlavourReading = Extract<Reading, { flavour: 'portable' }>
 
 // trailing: the container's first paragraph ends its last line with its id, the line above it being the container's.
-type Opening = 'line' | 'trailing'
+type Opening = 'trailing'
 
 export type ReadAs = { flavour: 'commonmark' | 'lossless' } | { blocks: FlavourBlockReaders; flavour: 'portable' }
 
@@ -66,7 +66,7 @@ function readMarkdown(markdown: string, readAs: ReadAs): Result<AdfDocument> {
   return content.ok ? success({ content: content.value, type: 'doc', version: 1 }) : content
 }
 
-export function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number, opening: Opening = 'line'): Result<AdfNode[]> {
+export function readBlocks(blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number, opening?: Opening): Result<AdfNode[]> {
   if (depth > largestNesting) return tooDeep(path)
   const content: AdfNode[] = []
   let marker: MarkerBlock | undefined
@@ -272,7 +272,7 @@ function inlineBodyNode(node: AdfNode, blocks: readonly Block[], reading: Readin
   return positioned(contentNode(node, only.text, reading, path, 'paragraph'), only.position)
 }
 
-export function containerNode(node: AdfNode, blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number, opening: Opening = 'line'): Result<AdfNode> {
+export function containerNode(node: AdfNode, blocks: readonly Block[], reading: Reading, path: ConvertErrorPath, depth: number, opening?: Opening): Result<AdfNode> {
   const content = readBlocks(blocks, reading, path, depth + 1, opening)
   if (!content.ok) return content
   return success(withContent(node, content.value))
