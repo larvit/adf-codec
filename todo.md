@@ -19,7 +19,6 @@
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
-| 203 | 0.4.0 |  |  | **Write a paragraph's, heading's, list's and list item's `localId` as a trailing `!adf:{…}` on its CommonMark spelling, keeping the directive only where that spelling has no unambiguous place for it.** | 4 | 2 | 3 | 7 | 7 | 6 by 7 | 0.7 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -139,28 +138,6 @@ Touches:
 - `src/html/parse/html-to-adf.test.ts`
 - `spec/html.md`: `## Reading`
 - `README.md`: `## HTML` (small), `## The calls` (small), `## The errors` (small)
-
-### 203. Write a paragraph's, heading's, list's and list item's `localId` as a trailing `!adf:{…}` on its CommonMark spelling, keeping the directive only where that spelling has no unambiguous place for it.
-
-Source: issue 185. Jira gives every block a `localId`, and `adfToLosslessMarkdown` writes each such block as a directive (`spec/flavour.md` §The CommonMark blocks), so a Jira description reads mostly as `!adf:` lines. A reader adding `- x` before `!adf:/bulletList` gets a nested list, not a third item (goal 6). An evaluation on the project's rung found the problem real, the fix inside goal 5, and a lossless option or an end-of-document id table out (decisions: each call names its flavour; the round-trip is the product).
-
-Open until the maintainer answers (file a `question` item if they leave any open), each with its nearest decision:
-1. Answered by the maintainer: the attribute-only form is nameless, `!adf:{…}`. The writer panel picks 2 to 5.
-2. On a multi-line paragraph, does the block sit on the first or the last line? A trailing hard break `\` ends the first line. (Only the hard break holds a raw newline)
-3. Where do a list's own attributes go, so that they do not collide with an empty paragraph holding an id? (Empty markdown is a document of no blocks)
-4. How does a list item's id sit beside its paragraph's id: an `item=` key or a second block? What does an item whose first block is not a paragraph take?
-5. Do blockquote, rule, code block and block marks join, or stay directives? (A block's marks are named)
-6. The 0.3.x directive form stays readable (precedent: the 0.4.0 entries where the carry element 0.3.1 wrote still reads); `spec/flavour.md` §Block nodes "parses only in the form the emitter picks" is revised for it. Needs a `MIGRATION.md` entry.
-A writer panel (AGENTS.md §7) picks the spelling from the options those answers leave.
-
-Touches:
-
-- `src/markdown/emit/adf-to-markdown.ts`: `tryParagraph`, `tryHeading`, `tryList`
-- `src/adf/document.ts`: `holdsOnlyAttributes`
-- `src/markdown/directive/block.ts`
-- `spec/flavour.md`: `## Directives`, `## Block nodes`
-- `docs/decisions.md`: `` ## Directives under `!adf:` ``
-- `MIGRATION.md`
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 
