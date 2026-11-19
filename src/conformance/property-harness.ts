@@ -28,7 +28,7 @@ export const propertyTimeout = 600000
 const depthIdentifier = fc.createDepthIdentifier()
 const emptyCell: AdfNode = { content: [{ type: 'paragraph' }], type: 'tableCell' }
 const flatCommonMarkShapeWeight = 4
-export const markdownPieces = fc.constantFrom(...'aZ09 \t\n\r\0!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉日ー한𠀀', '==', '[!NOTE]', '[x]', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`)
+export const markdownPieces = fc.constantFrom(...'aZ09 \t\n\r\0!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~é\xa0🎉日ー한𠀀', '==', '[!NOTE]', '[x]', 'ab:', 'http://', directivePrefix, `${directivePrefix}a[`, `${directivePrefix}a{`, `${directivePrefix}{localId=a}`)
 const nestingCommonMarkShapeWeight = 21
 const spelledTypes = new Set(['text', ...Object.keys(blockNodes), ...Object.keys(inlineNodes), ...Object.keys(markAttributes)])
 
@@ -92,12 +92,25 @@ function withoutEmptyKeys<T extends AdfMark | AdfNode>(held: T): T {
   return kept
 }
 
+// Jira gives every block an id, which the lossless writer carries in a marker beside the block's CommonMark spelling.
+const localId = fc.oneof({ arbitrary: fc.stringMatching(/^[0-9a-f-]{1,12}$/), weight: 3 }, { arbitrary: textOf(0), weight: 1 })
+
+function occasionallyIdentified(arbitrary: Arbitrary<AdfNode>): Arbitrary<AdfNode> {
+  return fc.tuple(arbitrary, fc.option(localId, { freq: 2, nil: undefined })).map(([held, id]) => (id === undefined ? held : { ...held, attrs: { ...held.attrs, localId: id } }))
+}
+
 function occasionallyApart(arbitrary: Arbitrary<AdfNode[]>): Arbitrary<AdfNode[]> {
   return fc.tuple(arbitrary, fc.nat({ max: 5 })).map(([nodes, roll]) => (roll === 0 ? nodes : mergeAdjacentText(nodes, joinsWhenRead)))
 }
 
 function externalImage({ alt, link, url }: { alt: string | undefined; link: LinkDefinition | undefined; url: string }): AdfNode {
   return centeredImage([externalMedia(alt ?? '', url, link === undefined ? undefined : toLinkAttrs(link))])
+}
+
+function codeBlock(language: string | undefined, lines: readonly string[]): AdfNode {
+  const content = lines.map((line): AdfNode => ({ text: line, type: 'text' }))
+  const held: AdfNode = language === undefined ? { type: 'codeBlock' } : { attrs: { language }, type: 'codeBlock' }
+  return content.length === 0 ? held : { ...held, content }
 }
 
 function pipeTable({ body, header }: { body: AdfNode[][]; header: AdfNode[] }): AdfNode {
@@ -165,12 +178,14 @@ const positions = fc.letrec<Positions>((tie) => {
   )
   const cell = (type: string) => paragraph.map((held): AdfNode => ({ content: [held], type }))
   const listItems = fc.array(
-    occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'listItem' }))),
+    occasionallyIdentified(occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'listItem' })))),
     { depthIdentifier, maxLength: 3, minLength: 1 },
   )
   const flatCommonMarkShapes = [
-    occasionallyEmpty(fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' }))),
-    paragraph,
+    occasionallyIdentified(occasionallyEmpty(fc.record({ content: inlineContent, level: fc.integer({ max: 6, min: 1 }) }).map(({ content, level }): AdfNode => ({ attrs: { level }, content, type: 'heading' })))),
+    occasionallyIdentified(paragraph),
+    occasionallyIdentified(fc.record({ language: fc.option(text, { nil: undefined }), lines: fc.array(text, { maxLength: 2 }) }).map(({ language, lines }): AdfNode => codeBlock(language, lines))),
+    occasionallyIdentified(fc.constant<AdfNode>({ type: 'rule' })),
     fc.record({ body: fc.array(fc.array(cell('tableCell'), { maxLength: 3 }), { maxLength: 2 }), header: fc.array(cell('tableHeader'), { maxLength: 3, minLength: 1 }) }).map(pipeTable),
     fc.record({ alt: fc.option(text, { nil: undefined }), link: fc.option(fc.record({ destination: text, title: text }, { requiredKeys: ['destination'] }), { nil: undefined }), url: text }).map(externalImage),
   ]
@@ -178,15 +193,17 @@ const positions = fc.letrec<Positions>((tie) => {
     occasionallyEmpty(fc.record({ content, state: fc.constantFrom('DONE', 'TODO') }).map(({ content: held, state }): AdfNode => ({ attrs: { state }, content: held, type })))
   const taskItem = fc.oneof({ arbitrary: task('taskItem', inlineContent), weight: 3 }, { arbitrary: task('blockTaskItem', blockContent), weight: 1 })
   const nestingCommonMarkShapes = [
-    occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'blockquote' }))),
+    occasionallyIdentified(occasionallyEmpty(blockContent.map((content): AdfNode => ({ content, type: 'blockquote' })))),
     fc.array(fc.oneof({ arbitrary: taskItem, weight: 3 }, { arbitrary: tie('block'), weight: 1 }), { depthIdentifier, maxLength: 3, minLength: 1 }).map((content): AdfNode => ({ content, type: 'taskList' })),
-    listItems.map((content): AdfNode => ({ content, type: 'bulletList' })),
-    fc
-      .record({
-        content: listItems,
-        order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 8 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 2 }, { arbitrary: fc.constant(-0), weight: 1 }),
-      })
-      .map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
+    occasionallyIdentified(listItems.map((content): AdfNode => ({ content, type: 'bulletList' }))),
+    occasionallyIdentified(
+      fc
+        .record({
+          content: listItems,
+          order: fc.oneof({ arbitrary: fc.integer({ max: 3, min: 0 }), weight: 8 }, { arbitrary: fc.integer({ max: 999999999, min: 0 }), weight: 2 }, { arbitrary: fc.constant(-0), weight: 1 }),
+        })
+        .map(({ content, order }): AdfNode => ({ attrs: { order }, content, type: 'orderedList' })),
+    ),
   ]
   const flatBlocks = [...weighted(leafBlocks, 2), ...weighted(flatCommonMarkShapes, flatCommonMarkShapeWeight)]
   return {
