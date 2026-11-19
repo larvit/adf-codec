@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 204`
+`Next ID = 205`
 
 ## Items
 
@@ -31,6 +31,7 @@
 | 76 | 0.5.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.5.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 118 | 0.5.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
+| 204 | 0.5.0 |  |  | **Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -318,6 +319,10 @@ its link, so `imageAlt`, `resolvedPieces` and `directiveMarkPieces` no longer fi
 `portableLink` (`src/markdown/portable/inline-reduction.ts`) repeats `oneLine`'s replacements by
 hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
 Found by the principles audit of item 99, 2026-10-14.
+
+### 204. Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.
+
+`assertReadsBack` in `src/conformance/adf-property.test.ts` compares the HTML written after a read with the HTML read, softened through `escapedInAttributes` for a raw `<` or `>` inside a quoted attribute value, which `htmlToAdf` reads on purpose as a browser spelling and `adfToHtml` writes back as `&lt;` or `&gt;`. Item 203's generators hit it: an edited `<pre><code class="language-<aaa">` reads as language `<aaa` and writes `language-&lt;aaa`. Decide whether the byte check should hold for such HTML (then the writer must keep the raw spelling, against `docs/decisions.md` §HTML writes a URL as the ADF holds it) or whether the softening stays and is recorded as a decision.
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
