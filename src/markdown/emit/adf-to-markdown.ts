@@ -331,15 +331,20 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   const items = nodeContent(node)
   const start = listStart(node, items.length)
   if (start === undefined || items.length === 0) return undefined
-  const walked: WalkedItem[] = []
-  let headroom = Number.POSITIVE_INFINITY
-  for (const [offset, item] of items.entries()) {
+  // Every item is checked before any is walked: a list giving way to its directive walks them again.
+  const marked: { id: MarkedId; node: AdfNode }[] = []
+  for (const item of items) {
     const itemId = item.type === 'listItem' ? markedId(item, [], writing.flavour) : undefined
     if (itemId === undefined) return undefined
-    const walk = walkBlocks(nodeContent(item), [...path, 'content', offset], depth + 1, writing)
+    marked.push({ id: itemId, node: item })
+  }
+  const walked: WalkedItem[] = []
+  let headroom = Number.POSITIVE_INFINITY
+  for (const [offset, item] of marked.entries()) {
+    const walk = walkBlocks(nodeContent(item.node), [...path, 'content', offset], depth + 1, writing)
     if (!walk.ok) return walk
     headroom = Math.min(headroom, walk.value.headroom)
-    walked.push({ id: itemId, node: item, walk: walk.value })
+    walked.push({ ...item, walk: walk.value })
   }
   const inners = walked.map((item) => {
     const inner = joinBlocks(item.walk.blocks, 'list-item')
