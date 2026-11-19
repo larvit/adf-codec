@@ -47,6 +47,8 @@ test('refuses a node whose carry nests too deep ahead of a later node in its lin
   const refused = adfToLosslessMarkdown(document(paragraph({ attrs: { id }, type: 'mention' }, twiceStrong)))
   assert.equal(code(refused), 'unsupported-nesting-depth')
   assert.deepEqual(path(refused), ['content', 0, 'content', 0])
+  const listed = adfToLosslessMarkdown(document({ content: [{ content: [paragraph({ attrs: { id }, type: 'mention' })], type: 'listItem' }], type: 'bulletList' }))
+  assert.deepEqual(path(listed), ['content', 0, 'content', 0, 'content', 0, 'content', 0])
 })
 
 test('refuses a carried run at the node whose carry nests too deep, among the run\'s own nodes', () => {
