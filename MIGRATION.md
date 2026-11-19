@@ -33,6 +33,19 @@ for (const element of document.querySelectorAll('[data-text-color]')) element.st
 
 `htmlToAdf` still reads the HTML `0.3.1` wrote.
 
+`adfToLosslessMarkdown` writes a paragraph, heading, quote, list, list item, code block or rule
+whose one attribute CommonMark can't spell is `localId` in its CommonMark spelling, the id in an
+`!adf:{localId=…}` marker, where `0.3.1` wrote its directive:
+
+| `0.3.1` | `0.4.0` |
+| --- | --- |
+| `!adf:heading {level=2 localId=h1}`, `Background`, `!adf:/heading` | `## Background !adf:{localId=h1}` |
+| `!adf:paragraph {localId=p1}`, `Text`, `!adf:/paragraph` | `!adf:{localId=p1}` above `Text` |
+| `!adf:bulletList {localId=l1}`, `!adf:listItem {localId=i1}`, … | `!adf:{localId=l1}` above `- !adf:{localId=i1} Item !adf:{localId=p1}` |
+
+`losslessMarkdownToAdf` still reads the directives `0.3.1` wrote. Code that searches stored lossless
+markdown for these directives, or a test pinning its text, needs the new spelling.
+
 `portableMarkdownToAdf` reads more of GFM's pipe table:
 
 - A body row holding fewer cells than the header is padded with empty cells, where `0.3.1`

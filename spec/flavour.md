@@ -89,9 +89,9 @@ the leaf that parts two text nodes (Inline nodes). Every fence info string openi
 reserved for the block carry (The opaque carry).
 
 **Claiming**: an unescaped `!adf:` claims wherever it stands. What follows picks the form: `/name`
-closes a container, and a name picks by what follows it in turn — a space or the line's end a block
-line, `[` or `{` an inline directive. A `!adf:` completing none of the three is a named error, and
-`\!adf:` is the literal, block and inline alike. A construct CommonMark binds first — a code span,
+closes a container, `{` opens a marker, and a name picks by what follows it in turn — a space or
+the line's end a block line, `[` or `{` an inline directive. A `!adf:` completing none of the four
+is a named error, and `\!adf:` is the literal, block and inline alike. A construct CommonMark binds first — a code span,
 an autolink URI, a link destination or title — holds its `!adf:` as content; a directive's
 `[content]`, which binds ahead of bracket matching, does not. A claimed block line also ends a lazy
 continuation: the blockquote or list item whose paragraph CommonMark would fold it into closes
@@ -122,6 +122,10 @@ follow code-fence indentation (up to three spaces relative to their container); 
 code fence or opaque carry is content.
 
 **Block leaf**: `!adf:name arg {attrs}` — the same opener with no closer, `arg` reading as above.
+
+**Marker**: `!adf:{localId=…}`, nameless, carries the `localId` of a block CommonMark spells, beside
+that spelling: alone on the line above the block, right after a list item's marker, or one space
+after the text ending a paragraph's or heading's last line (The CommonMark blocks).
 
 Which of the two a node takes is its content model, never the spelling: a model taking content is
 written as an opener–closer pair and one taking none as a leaf, so a leaf given a body and a
@@ -201,7 +205,8 @@ The directive name is always the ADF node type. A container's body is the node's
 has none. Every directive parses in any position — `losslessMarkdownToAdf` builds exactly what is
 written; validity against ADF's content models stays the author's business (`docs/decisions.md` §No
 schema validation). It parses only in the form the emitter picks, though: a directive spelling a
-node the emitter would have written as CommonMark is a named error.
+node the emitter would have written as CommonMark is a named error. The form 0.3 wrote still reads:
+the directive of a CommonMark block holding a `localId`, or of a list an item of which holds one.
 
 Each section lists attributes as `name (type)`. A parenthesized value set documents what real
 payloads hold; the type stays string and any value round-trips verbatim. Values map to attrs by
@@ -231,9 +236,35 @@ markdown input the same mismatch is a named error.
 ### The CommonMark blocks
 
 CommonMark spells `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`,
-`paragraph` and `rule`, and keeps that spelling wherever it holds what the node carries. What it
-cannot — `localId` (string) on any of them, marks, and the values below — takes the directive
-form.
+`paragraph` and `rule`, and keeps that spelling wherever it holds what the node carries, a
+`localId` riding a marker (Directives). What neither holds — marks, any other attribute, and the
+values below — takes the directive form.
+
+Each marker holds `localId` alone, its value spelled as any attribute's is. A paragraph's stands
+alone on the line right above it, inside its container's prefix or indentation; the paragraph
+opening a quote or a list item spelled in CommonMark ends its last line with its marker instead, one
+space after its text, since the line above is the container's. A heading's ends its line, one space
+after its text: `## Background !adf:{localId=h1}`. A blockquote's, a code block's and a list's
+stands alone on the line right above it. A rule's stands above a blank line, as does a list's whose
+marker cannot interrupt a paragraph (Canonical form): CommonMark reads a line of text above either
+as part of it. A list item's stands right after its list marker, one space before its first
+paragraph's text.
+
+````
+!adf:{localId=l1}
+- !adf:{localId=i1} First item !adf:{localId=p1}
+- !adf:{localId=i2} Second item
+  !adf:{localId=l2}
+  - Nested item
+
+> Quoted text !adf:{localId=p3}
+````
+
+An empty paragraph or heading holding a `localId` takes the directive form, and so does a list, whole,
+one of whose items holds a `localId` beside no first paragraph or opens with a block whose marker
+would take the item's first line. A marker anywhere else, holding another key or a value outside
+its canonical spelling, standing above no block of its container, or a blank line apart from it
+where none is written, is a named error, and so is a block carrying two.
 
 - `blockquote`, `bulletList`, `listItem` — containers, block body. Attributes: `localId` (string).
 - `codeBlock` — container, body one fenced code block per text node, each fence's info string the

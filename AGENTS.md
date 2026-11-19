@@ -24,6 +24,7 @@ In `docs/decisions.md`:
 - Foreign HTML reads best effort and is never refused
 - Names stay text
 - Directives under `!adf:`
+- A CommonMark block's `localId` rides an `!adf:{…}` marker beside its spelling
 - CommonMark is a subset
 - Tables
 - Links

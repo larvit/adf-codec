@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Breaking:** `adfToLosslessMarkdown` writes a paragraph, heading, quote, list, list item, code block or rule holding a `localId` in its CommonMark spelling, the id in an `!adf:{localId=…}` marker beside it, where `0.3.1` wrote the block as a directive, so a Jira document reads as markdown. `losslessMarkdownToAdf` still reads the directives `0.3.1` wrote.
 - Add `jiraWikiToAdf`, which reads Jira wiki markup into ADF, `{adf}` macros included, and refuses only a broken `{adf}` macro and markup past the nesting or engine limits.
 - Add `adfToLosslessJiraWiki`, which writes ADF as Jira wiki markup and carries each node or mark wiki markup cannot spell in Jira's `{adf}` macro, so nothing is lost.
 - **Breaking:** `commonMarkToAdf`, `losslessMarkdownToAdf` and `portableMarkdownToAdf` match a link reference to its definition under Unicode case folding, where `0.3.1` lowercased the label. `[ẞ]` with `[SS]: /url` reads as a link, and where two definitions' labels fold together, the first wins. `ı` and `I` stay two labels.
