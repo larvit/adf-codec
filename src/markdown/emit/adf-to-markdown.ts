@@ -169,7 +169,7 @@ const readableSpellings: ReadonlyMap<string, ReadableSpelling> = new Map<string,
   ['blockquote', {
     describe: () => 'each line behind `> `',
     spell: (node, path, depth, writing) => {
-      const id = markedId(node, [], writing.flavour)
+      const id = markedId(node)
       return id === undefined ? undefined : quotedBlocks(node, path, depth, writing, (body) => alertEscaped(body, writing), id)
     },
   }],
@@ -191,7 +191,7 @@ const readableSpellings: ReadonlyMap<string, ReadableSpelling> = new Map<string,
     spell: tryList,
   }],
   ['paragraph', { describe: () => 'its text alone', spell: (node, path, _depth, writing) => tryParagraph(node, path, writing.flavour) }],
-  ['rule', { describe: () => '`---`', spell: (node, _path, _depth, writing) => readableLines(tryRule(node, writing.flavour)) }],
+  ['rule', { describe: () => '`---`', spell: (node) => readableLines(tryRule(node)) }],
   ['table', { describe: () => 'a pipe table', spell: (node, path, _depth, writing) => readableText(tryPipeTable(node, path, writing.flavour)) }],
 ])
 
@@ -252,20 +252,21 @@ function alertEscaped(body: BlockText, writing: Writing): BlockText {
 }
 
 // Quote spellers call this directly, never through a wrapper: each frame a quote level adds lowers the depth the stack holds (docs/decisions.md §Nothing recurses unbounded).
-export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, bodyText: (body: BlockText) => BlockText, id: MarkedId = { id: undefined }): Result<EmittedBlock> {
+export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing, bodyText: (body: BlockText) => BlockText, id: MarkedId = {}): Result<EmittedBlock> {
   const inner = walkBlocks(nodeContent(node), path, depth + 1, writing)
   if (!inner.ok) return inner
   return success(commonMarkText(markedLines(id, quotedText(bodyText(joinBlocks(inner.value.blocks, 'quote'))), false), inner.value.headroom))
 }
 
 // The id a marker carries beside a CommonMark spelling holding the attributes `spelled` names; `undefined` where the node holds another attribute, or an id no marker carries.
-type MarkedId = { id: string | undefined }
+type MarkedId = { id?: string }
 
-function markedId(node: AdfNode, spelled: readonly string[], flavour: WrittenFlavour): MarkedId | undefined {
+// The portable reduction drops every id, so only the lossless writer meets one.
+function markedId(node: AdfNode, ...spelled: string[]): MarkedId | undefined {
   if (!holdsOnlyAttributes(node, [...spelled, idKey])) return undefined
   const id = nodeAttrs(node)[idKey]
-  if (id === undefined) return { id }
-  return typeof id === 'string' && flavour === 'lossless' ? { id } : undefined
+  if (id === undefined) return {}
+  return typeof id === 'string' ? { id } : undefined
 }
 
 // spec/flavour.md, The CommonMark blocks: the marker on the line above, a blank line parting it from lines CommonMark would otherwise read with it.
@@ -280,7 +281,7 @@ function trailingMarker(marked: MarkedId): string {
 }
 
 function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): BlockText | undefined {
-  const id = markedId(node, ['language'], flavour)
+  const id = markedId(node, 'language')
   if (id === undefined) return undefined
   const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims[flavour])
   if (slot.kind === 'attribute') return undefined
@@ -313,7 +314,7 @@ function fencedTexts(node: AdfNode): string[] | undefined {
 }
 
 function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
-  const id = markedId(node, ['level'], flavour)
+  const id = markedId(node, 'level')
   const level = nodeAttrs(node)['level']
   if (id === undefined || !isHeadingLevel(level)) return undefined
   const hashes = '#'.repeat(level)
@@ -326,7 +327,7 @@ function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavo
 
 function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: Writing): Result<EmittedBlock> | undefined {
   const ordered = node.type === 'orderedList'
-  const id = markedId(node, ordered ? ['order'] : [], writing.flavour)
+  const id = markedId(node, ...(ordered ? ['order'] : []))
   if (id === undefined) return undefined
   const items = nodeContent(node)
   const start = listStart(node, items.length)
@@ -334,7 +335,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   // Every item is checked before any is walked: a list giving way to its directive walks them again.
   const marked: { id: MarkedId; node: AdfNode }[] = []
   for (const item of items) {
-    const itemId = item.type === 'listItem' ? markedId(item, [], writing.flavour) : undefined
+    const itemId = item.type === 'listItem' ? markedId(item) : undefined
     if (itemId === undefined) return undefined
     marked.push({ id: itemId, node: item })
   }
@@ -362,11 +363,11 @@ function holdsItemMarker(item: WalkedItem): boolean {
   const [first] = item.walk.blocks
   if (first?.node.type === 'paragraph' && first.spelling === 'commonmark') return true
   if (item.id.id !== undefined) return false
-  return first === undefined || first.spelling === 'directive' || !opensWithMarker(first.text)
+  return first === undefined || !opensWithMarker(first.text)
 }
 
 function opensWithMarker(text: BlockText): boolean {
-  return text.first.character === '!' && text.first.text.startsWith(markerOpener)
+  return text.first.text.startsWith(markerOpener)
 }
 
 function markedList(id: MarkedId, list: Extract<EmittedBlock, { spelling: 'list' }>): EmittedBlock {
@@ -419,7 +420,7 @@ function tryListItemLines(inner: BlockText, marker: string, id: string | undefin
 
 function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavour): Result<EmittedBlock> | undefined {
   const content = nodeContent(node)
-  const id = markedId(node, [], flavour)
+  const id = markedId(node)
   if (content.length === 0 || id === undefined) return undefined
   const line = emitInlineLine(content, 'paragraph', path, flavour)
   if (!line.ok) return line
@@ -427,7 +428,7 @@ function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFla
   return success(id.id === undefined ? text : { ...text, trailing: blockText(`${line.value}${trailingMarker(id)}`) })
 }
 
-function tryRule(node: AdfNode, flavour: WrittenFlavour): BlockText | undefined {
-  const id = markedId(node, [], flavour)
+function tryRule(node: AdfNode): BlockText | undefined {
+  const id = markedId(node)
   return id === undefined ? undefined : markedLines(id, blockText('---'), true)
 }
