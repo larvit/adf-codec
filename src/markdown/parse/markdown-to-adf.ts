@@ -116,7 +116,7 @@ function markedNode(node: AdfNode, block: Exclude<Block, MarkerBlock>, line: Mar
   if (trailing.fault !== undefined) return positioned(faulted(trailing.fault, path), block.position)
   if (line !== undefined) return positioned(failure('malformed-directive', twoMarkers, path), block.position)
   if (block.kind === 'paragraph' && !trails) {
-    return positioned(failure('unsupported-node-shape', `a paragraph carries its ${markerOpener}…} marker on the line above it, unless it opens a quote or a list item: move this one there`, path), block.position)
+    return positioned(failure('unsupported-node-shape', `a paragraph carries its ${markerOpener}…} marker on the line above it, unless it opens a quote or a list item: move this one to the line above the paragraph`, path), block.position)
   }
   if (node.type !== block.kind) return positioned(failure('unsupported-node-shape', `this paragraph reads as a ${node.type}, whose id rides its directive: write the ${node.type} as its directive`, path), block.position)
   return identified(node, trailing.value, path, block.position)
@@ -130,12 +130,12 @@ function lineMarkedNode(node: AdfNode, block: Exclude<Block, MarkerBlock>, line:
   const gap = block.position.line - line.position.line
   if (gap !== (blankBelowMarker(block) ? 2 : 1)) {
     const placement = blankBelowMarker(block) ? `one blank line parts an ${markerOpener}…} marker from the ${node.type} below it, which CommonMark would otherwise read with the marker` : `an ${markerOpener}…} marker stands on the line right above its ${node.type}`
-    return positioned(failure('malformed-directive', `${placement}: this one stands ${gap} lines above it`, path), line.position)
+    return positioned(failure('malformed-directive', `${placement}: this one stands ${gap === 1 ? '1 line' : `${gap} lines`} above it`, path), line.position)
   }
   return identified(node, line.attributes, path, line.position)
 }
 
-// A text line above a rule makes a setext heading, and one above a list its marker cannot interrupt continues the line.
+// A text line above a rule makes a setext heading, and above a list whose marker cannot interrupt a paragraph it continues that paragraph.
 function blankBelowMarker(block: Exclude<Block, MarkerBlock>): boolean {
   if (block.kind === 'rule') return true
   if (block.kind !== 'bulletList' && block.kind !== 'orderedList') return false
@@ -297,7 +297,7 @@ function listItemNode(blocks: readonly Block[], reading: Reading, path: ConvertE
   const [first] = blocks
   if (first?.kind !== 'marker') return containerNode({ type: 'listItem' }, blocks, reading, path, depth, 'trailing')
   if (first.placement === 'line') {
-    return positioned(failure('unsupported-node-shape', `a list item's first line carries the item's own ${markerOpener}…} marker, right after its list marker: write the list as directives to give the block opening this item an id`, path), first.position)
+    return positioned(failure('unsupported-node-shape', `a list item's first line carries the item's own ${markerOpener}…} marker, right after its list marker: write the list as directives, or end a paragraph opening this item with a marker, to give the block opening this item an id`, path), first.position)
   }
   const item = containerNode({ type: 'listItem' }, blocks.slice(1), reading, path, depth, 'trailing')
   if (!item.ok) return item

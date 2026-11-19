@@ -208,13 +208,11 @@ description read as mostly `!adf:` lines, and a `- x` typed into a directive lis
 than added an item. The id rides the nameless attribute block `!adf:{localId=…}` instead, beside
 the block's CommonMark spelling; the maintainer chose the nameless form. A writer panel of seven
 readers seated from README §Audience settled three placements: the line above a blockquote, 5 of 7,
-the line above a code block, 5 of 7, and a rule's line above a blank line, 7 of 7. It split 4 to 3
-on the paragraph, the heading and the list, and the maintainer picked: the line above a paragraph,
-the end of the last line for one opening a quote or list item, the end of a heading's line, the line
-above a list, and each item's id after its marker. Only `localId` rides a marker. A block holding
-anything else, or an id with no unambiguous place, keeps its directive, a list whole. The
-directives 0.3 wrote for these blocks still read. The grammar: `spec/flavour.md` §The CommonMark
-blocks.
+the line above a code block, 5 of 7, and a rule's marker with a blank line between it and the rule,
+7 of 7. It split 4 to 3 on the paragraph, the heading and the list, and the maintainer picked the
+placements `spec/flavour.md` §The CommonMark blocks gives. Only `localId` rides a marker. A block
+holding anything else, or an id with no unambiguous place, keeps its directive. The directives 0.3
+wrote for these blocks still read.
 
 ## CommonMark is a subset
 

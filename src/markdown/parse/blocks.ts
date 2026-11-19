@@ -616,7 +616,7 @@ function takeParagraph(walk: Walk): Extract<Block, { kind: 'fault' }> | Paragrap
   return { kind: 'paragraph', position: kept?.position ?? leaf.position, ...trailedText(text, trailed) }
 }
 
-// No trailing key where no marker trails, so a block reads as it did before markers.
+// A block holding no marker has no `trailing` key.
 function trailedText(text: string, trailed: TrailingMarker | undefined): { text: string; trailing?: Read<DirectiveAttributes> } {
   return trailed === undefined ? { text } : { text, trailing: trailed.attributes }
 }
