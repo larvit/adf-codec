@@ -258,10 +258,9 @@ export function quotedBlocks(node: AdfNode, path: ConvertErrorPath, depth: numbe
   return success(commonMarkText(markedLines(id, quotedText(bodyText(joinBlocks(inner.value.blocks, 'quote'))), false), inner.value.headroom))
 }
 
-// The id a marker carries beside a CommonMark spelling holding the attributes `spelled` names; `undefined` where the node holds another attribute, or an id no marker carries.
 type MarkedId = { id?: string }
 
-// The portable reduction drops every id, so only the lossless writer meets one.
+// The id a marker holds beside a CommonMark spelling of the attributes `spelled` names; `undefined` where the node holds another attribute, or an id no marker holds. The portable reduction drops every id, so only the lossless writer meets one.
 function markedId(node: AdfNode, ...spelled: string[]): MarkedId | undefined {
   if (!holdsOnlyAttributes(node, [...spelled, idKey])) return undefined
   const id = nodeAttrs(node)[idKey]
@@ -358,7 +357,7 @@ function tryList(node: AdfNode, path: ConvertErrorPath, depth: number, writing: 
   return emitDirectiveBlock(node, ordered ? blockNodes.orderedList : blockNodes.bulletList, path, depth, () => success({ blocks: directiveItems(walked), headroom: headroom - 1 }))
 }
 
-// The line after an item's marker holds its own id, so an item whose first block takes the line above for its id, or whose id stands beside no paragraph, has no CommonMark spelling.
+// An item's id sits right after its list marker, before its first paragraph's text. An item has no CommonMark spelling when its first block would put its own marker on that line, or when it has an id and no first paragraph.
 function holdsItemMarker(item: WalkedItem): boolean {
   const [first] = item.walk.blocks
   if (first?.node.type === 'paragraph' && first.spelling === 'commonmark') return true

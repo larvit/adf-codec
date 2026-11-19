@@ -245,9 +245,9 @@ alone on the line right above it, inside its container's prefix or indentation; 
 opening a quote or a list item spelled in CommonMark ends its last line with its marker instead, one
 space after its text, since the line above is the container's. A heading's ends its line, one space
 after its text: `## Background !adf:{localId=h1}`. A blockquote's, a code block's and a list's
-stands alone on the line right above it. A rule's stands above a blank line, as does a list's whose
-marker cannot interrupt a paragraph (Canonical form): CommonMark reads a line of text above either
-as part of it. A list item's stands right after its list marker, one space before its first
+stands on the line right above it. A rule's has one blank line between the marker line and the rule,
+and so does a list's whose marker cannot interrupt a paragraph (Canonical form): CommonMark reads a
+line of text above either as part of it. A list item's stands right after its list marker, one space before its first
 paragraph's text.
 
 ````
@@ -260,9 +260,9 @@ paragraph's text.
 > Quoted text !adf:{localId=p3}
 ````
 
-An empty paragraph or heading holding a `localId` takes the directive form, and so does a list, whole,
-one of whose items holds a `localId` beside no first paragraph or opens with a block whose marker
-would take the item's first line. A marker anywhere else, holding another key or a value outside
+An empty paragraph or heading holding a `localId` takes the directive form. So does a list, whole,
+when one of its items holds a `localId` and has no first paragraph, and when one of its items opens
+with a block whose own marker would take the item's first line. A marker anywhere else, holding another key or a value outside
 its canonical spelling, standing above no block of its container, or parted from its block by other
 lines than these, is a named error, and so is a block carrying two.
 

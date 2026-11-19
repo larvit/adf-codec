@@ -173,13 +173,13 @@ test('names a marker with no block below it to carry its id', () => {
   assert.deepEqual(errorPath(losslessMarkdownToAdf('Part.\n\n> !adf:{localId=p}\n')), ['content', 1, 'content', 0])
 })
 
-test('names the blank line a marker and its block keep or leave out', () => {
+test('refuses a marker whose blank line does not match its block', () => {
   refused('!adf:{localId=p}\n\nPart.\n', 'malformed-directive', { line: 1, offset: 0 }, 'right above')
   refused('!adf:{localId=r}\n---\n', 'malformed-directive', { line: 1, offset: 0 }, 'blank line')
   refused('!adf:{localId=l}\n2. a\n', 'malformed-directive', { line: 1, offset: 0 }, 'blank line')
 })
 
-test('names the block a marker line stands above that carries its id another way, or not at all', () => {
+test('refuses a marker line above a block that takes its id another way or has none', () => {
   refused('!adf:{localId=h}\n# Part\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'heading', 'end of its line')
   refused('> !adf:{localId=p}\n> Part.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'end of its last line')
   refused('- !adf:{localId=p}\n  Part.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'list item')
@@ -200,7 +200,7 @@ test('names a trailing marker standing where the id takes the line above, or on 
   refused('## Part\t!adf:{localId=h}\n', 'malformed-directive', { line: 1, offset: 0 }, 'completes no directive')
 })
 
-test('reads a trailing marker ahead of the link reference definitions and the setext underline its paragraph holds', () => {
+test('reads a trailing marker before the link reference definitions and the setext underline of its paragraph', () => {
   refused('> [a]: /u !adf:{localId=p}\n', 'malformed-directive', { line: 1, offset: 0 }, 'link reference definitions')
   refused('[a]: /u !adf:{localId=h}\n===\n', 'malformed-directive', { line: 1, offset: 0 }, 'link reference definitions')
   assert.deepEqual(read(losslessMarkdownToAdf('Part !adf:{localId=h}\n===\n')), [node('heading', { level: 1, localId: 'h' }, text('Part'))])
@@ -217,18 +217,18 @@ test('names an item marker standing before no paragraph', () => {
 test('names a marker spelled outside its one canonical form', () => {
   refused('!adf:{localId="p"}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'localId=p')
   refused('!adf:{level=2}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'localId alone', 'level')
-  refused('!adf:{}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'localId alone', 'carries nothing')
+  refused('!adf:{}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'localId alone', 'no key')
   refused('- !adf:{localId=i style=x} Part\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'localId alone', 'style')
   refused('# Part !adf:{localId="h"}\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'localId=h')
   refused('!adf:{localId=p b=1}\nPart.\n', 'malformed-directive', { line: 1, offset: 0 }, 'alphabetical')
-  refused('!adf:{localId=p} Part.\n', 'malformed-directive', { line: 1, offset: 0 }, 'alone on its line')
-  refused('> !adf:{localId=p} Part.\n', 'malformed-directive', { line: 1, offset: 0 }, 'alone on its line')
-  for (const item of ['- !adf:{localId=i}Part\n', '- !adf:{localId=i}  Part\n', '- !adf:{localId=i} \tPart\n']) refused(item, 'malformed-directive', { line: 1, offset: 0 }, 'alone on its line')
+  refused('!adf:{localId=p} Part.\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
+  refused('> !adf:{localId=p} Part.\n', 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
+  for (const item of ['- !adf:{localId=i}Part\n', '- !adf:{localId=i}  Part\n', '- !adf:{localId=i} \tPart\n']) refused(item, 'malformed-directive', { line: 1, offset: 0 }, 'a line of its own')
   refused('- !adf:{localId=i Part\n', 'malformed-directive', { line: 1, offset: 0 }, 'key=value')
-  refused('!adf:{a=1 localId=p}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'carries a;')
+  refused('!adf:{a=1 localId=p}\nPart.\n', 'unsupported-node-shape', { line: 1, offset: 0 }, 'holds a;')
 })
 
-test('leaves a marker the text it is in the readers claiming no directive, and writes none there', () => {
+test('reads an `!adf:{…}` as text where the reader claims no directive, and the portable writer drops the ids', () => {
   assert.deepEqual(read(portableMarkdownToAdf('!adf:{localId=p}\nPart.\n')), [said(undefined, '!adf:{localId=p} Part.')])
   assert.deepEqual(read(commonMarkToAdf('- !adf:{localId=i} Part !adf:{localId=p}\n')), [node('bulletList', {}, node('listItem', {}, said(undefined, '!adf:{localId=i} Part !adf:{localId=p}')))])
   assert.equal(written(adfToPortableMarkdown(document(...jiraDescription))), [

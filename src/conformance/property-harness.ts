@@ -92,7 +92,6 @@ function withoutEmptyKeys<T extends AdfMark | AdfNode>(held: T): T {
   return kept
 }
 
-// Jira gives every block an id, which the lossless writer carries in a marker beside the block's CommonMark spelling.
 const localId = fc.oneof({ arbitrary: fc.stringMatching(/^[0-9a-f-]{1,12}$/), weight: 3 }, { arbitrary: textOf(0), weight: 1 })
 
 function occasionallyIdentified(arbitrary: Arbitrary<AdfNode>): Arbitrary<AdfNode> {

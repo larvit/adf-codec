@@ -19,7 +19,7 @@ export function spellIdMarker(id: string): string {
   return `${directivePrefix}${spellIdAttributes(id)}`
 }
 
-// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; one at the start would trail nothing.
+// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; an opener at index 0 has no text before it, so it is no trailing marker.
 export function readTrailingMarker(text: string): TrailingMarker | undefined {
   for (let start = text.lastIndexOf(trailingOpener); start > 0; start = text.lastIndexOf(trailingOpener, start - 1)) {
     const read = readAttributes(text, start + trailingOpener.length - 1, pairFault)
@@ -45,9 +45,8 @@ export function readItemMarker(text: string): { attributes: DirectiveAttributes;
 export function readMarkerId(attributes: DirectiveAttributes, type: string, path: ConvertErrorPath): Result<string> {
   const spelled = attributes.get(idKey)
   if (spelled === undefined || attributes.size !== 1) {
-    let other = 'nothing'
-    for (const key of attributes.keys()) if (key !== idKey) other = key
-    return failure('unsupported-node-shape', `an ${markerOpener}…} marker carries ${idKey} alone: this one on a ${type} carries ${other}; write the ${type} as its directive to carry more`, path)
+    const others = [...attributes.keys()].filter((key) => key !== idKey)
+    return failure('unsupported-node-shape', `an ${markerOpener}…} marker holds ${idKey} alone: this one on a ${type} holds ${others.length === 0 ? 'no key' : others.join(', ')}; write the ${type} as its directive to carry more`, path)
   }
   const spelling = spellStringAttribute(spelled.decoded)
   if (spelling !== spelled.spelling) return failure('unsupported-node-shape', `${type} spells its ${idKey} attribute as ${idKey}=${spelling}`, path)

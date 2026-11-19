@@ -472,7 +472,7 @@ Ping !adf:mention[@Mikael]{id=5b10a2} — !adf:status[In review]{color=yellow} �
 | ADF | Directive |
 | --- | --- |
 | `blockquote`, `bulletList`, `codeBlock`, `heading`, `listItem`, `orderedList`, `paragraph`, `rule` carrying `localId` | the CommonMark spelling with a marker: `!adf:{localId=…}` on the line above, after a list item's marker, or at the end of a heading's line and of the last line of a quote's or list item's first paragraph |
-| the same nodes carrying marks or a value neither CommonMark nor a marker spells | the same node in directive form, `!adf:paragraph {marks=…}` |
+| the same nodes carrying marks, another attribute or a value neither CommonMark nor a marker spells, an empty paragraph or heading carrying `localId`, and a list with an item whose `localId` has no first paragraph to sit beside | the same node in directive form, `!adf:paragraph {marks=…}` |
 | `border` | an inline directive mark around a `mediaInline`, the one inline node that takes it |
 | `caption`, `media`, `mediaGroup`, `mediaSingle` | the media family; an image CommonMark cannot spell, a stored file, a caption |
 | `date`, `emoji`, `inlineCard`, `mediaInline`, `mention`, `status` | inline leaves; `emoji`, `mention` and `status` spell their `text` in the `[content]` slot |
@@ -702,7 +702,7 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
     such as `[!adf:status[Done]{color=green}](/u)`: write the link around text beside them;
   - writes as a directive a node or mark the lossless flavour spells as CommonMark, other than the
     directive `0.3` wrote for a block holding a `localId`;
-  - puts an `!adf:{…}` marker where its block carries none, or gives it a key but `localId`;
+  - puts an `!adf:{…}` marker above or beside a block that takes its id another way, or gives it a key other than `localId`;
   - puts `!adf:textBreak{}` where it parts nothing, or `!adf:doc` anywhere but as the whole
     document;
   - carries a node the writers' cause below names, such as an inline card a link marks.
