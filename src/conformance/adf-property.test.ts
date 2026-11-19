@@ -76,13 +76,13 @@ function edited(html: string, [at, removed, piece]: readonly [number, number, st
   return tokens.join('')
 }
 
-// Without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read.
+// Without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read; a raw `<` or `>` in an attribute value is a browser's spelling of the entity adfToHtml writes (docs/decisions.md §`htmlToAdf` also reads the dialect as a browser serializes it).
 function assertReadsBack(html: string): void {
   const read = htmlToAdf(html)
   if (!read.ok) return
   const rewritten = adfToHtml(read.value)
   assert.ok(rewritten.ok, rewritten.ok ? '' : `${rewritten.error.code}: ${rewritten.error.message} — reading ${JSON.stringify(html)}`)
-  if (!html.includes('class="adf-carry"')) assert.equal(rewritten.value, html, `reading ${JSON.stringify(html)}`)
+  if (!html.includes('class="adf-carry"') && !/="[^"]*[<>]/.test(html)) assert.equal(rewritten.value, html, `reading ${JSON.stringify(html)}`)
   assert.deepEqual(htmlToAdf(rewritten.value), { ok: true, value: read.value }, `reading ${JSON.stringify(html)}`)
 }
 
