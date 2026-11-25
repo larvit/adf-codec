@@ -924,12 +924,11 @@ functions, and a branch floor that only ever moves upward. It sits below 100 bec
 `noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index
 compared against `undefined` — have a half no valid document reaches.
 
-The branch figure is repeatable: nine runs of one tree gave 98.84 each, three with the runner's
-default file parallelism, three with `--test-concurrency=1` and three on one CPU, with
-`emit/inline-line.ts` at 95.92 each time (2026-11-25). An earlier spread of 95.83 to 96.23 on that
-file (2026-09-21) did not recur, so a run that differs from the last on an unchanged tree is a
-defect to chase, not noise to absorb. The flag takes whole numbers, so the floor rises to the
-measured figure's integer part and no further: 99 once a run of the full suite reads 99.00 or more.
+A run on an unchanged tree reading a different branch figure than an earlier one is a defect to
+chase, not noise to absorb. The figure was 98.84 in nine runs of one tree (2026-11-25): three with
+the runner's default file parallelism, three with `--test-concurrency=1` and three on one CPU. The
+floor rises to the measured figure rounded down to a whole number: 99 once a run of the full suite
+reads 99.00 or more.
 
 ## The size ratchet
 
