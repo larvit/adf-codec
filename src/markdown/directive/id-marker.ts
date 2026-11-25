@@ -29,17 +29,17 @@ export function readTrailingMarker(text: string, claims: Claims): TrailingMarker
     blankToEnd.lastIndex = read.value.end
     if (!blankToEnd.test(text)) continue
     const kept = text.slice(0, start)
-    if (linksBefore(text, start, claims) !== linksBefore(kept, start, claims)) continue
+    if (linksRead(text, claims) !== linksRead(kept, claims)) continue
     const parted = kept.endsWith(' ') || kept.endsWith('\t')
     return { attributes: parted ? { fault: malformedDirective(`one space parts an ${markerOpener}…} marker from the text before it: this one is parted by more`) } : { value: read.value.attributes }, text: kept }
   }
   return undefined
 }
 
-// Where the reader takes each link opening before `end`, as one string to compare.
-function linksBefore(text: string, end: number, claims: Claims): string {
+// Where the reader takes each link opening, as one string to compare.
+function linksRead(text: string, claims: Claims): string {
   // A link reads the same in a heading and a paragraph.
-  return readLineBack(text, 'paragraph', claims).reading.links.filter((at) => at < end).join()
+  return readLineBack(text, 'paragraph', claims).reading.links.join()
 }
 
 // The marker after a list item's marker, and the rest of the line after the one space following it; `undefined` where none stands there.
