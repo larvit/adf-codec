@@ -21,7 +21,7 @@ import { largestNesting } from '../../nesting.ts'
 import { longestBacktickRun } from '../commonmark/backtick-runs.ts'
 import { slotFault, spellInlineDirectiveOpener, spellInlineLeafDirective } from '../directive/syntax.ts'
 import { spellInlineNodeAttributes } from '../directive/inline-spelling.ts'
-import { spellTextDirective } from '../directive/text.ts'
+import { loneSurrogates, spellTextDirective } from '../directive/text.ts'
 
 type EmittedLine = { line: string; openingLinkAsDirective: boolean; segments: InlineSegment[] }
 
@@ -322,12 +322,14 @@ function inlineDirectiveSegments(node: AdfNode, model: InlineNodeModel): InlineS
   return [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)]
 }
 
-// CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, so neither is written raw.
+const spelledApart = new RegExp(`(\\n+|\\0+|\\r|${loneSurrogates})`)
+
+// CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, and UTF-8 turns a lone surrogate into U+FFFD, so none is written raw.
 function textSegments(node: AdfNode, context: InlineContext): InlineSegment[] | undefined {
   if (!isSpellableText(node) || typeof node.text !== 'string' || node.text === '') return undefined
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
-  const parts = node.text.split(/(\n+|\0+|\r)/).filter((part) => part !== '')
-  return parts.map((part) => (part === '\r' ? syntax('&#13;') : /^[\n\0]/.test(part) ? textDirectiveSegment(part) : { escaping, text: part }))
+  const parts = node.text.split(spelledApart).filter((part) => part !== '')
+  return parts.map((part) => (part === '\r' ? syntax('&#13;') : spelledApart.test(part) ? textDirectiveSegment(part) : { escaping, text: part }))
 }
 
 function emitMarkedRun(nodes: readonly [RunNode, ...RunNode[]], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {

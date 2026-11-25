@@ -4,7 +4,7 @@ import test from 'node:test'
 import type { AdfAttributes, AdfDocument, AdfMark, AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
 import type { Result } from '../../result.ts'
-import { adfToLosslessMarkdown } from '../../index.ts'
+import { adfToLosslessMarkdown, losslessMarkdownToAdf } from '../../index.ts'
 import { describeCommonMarkSpelling } from './spelling-questions.ts'
 
 function document(...content: AdfNode[]): AdfDocument {
@@ -50,6 +50,21 @@ test('spells a code block language no info string holds as an attribute', () => 
   assert.equal(language('foo\\+bar'), '!adf:codeBlock {language="foo\\\\+bar"}\n```\n```\n!adf:/codeBlock\n')
   assert.equal(language('a\u0000b'), '!adf:codeBlock {language="a\\u0000b"}\n```\n```\n!adf:/codeBlock\n')
   assert.equal(language('a\tb'), '!adf:codeBlock {language="a\\tb"}\n```\n```\n!adf:/codeBlock\n')
+})
+
+test('spells a lone surrogate in text as a text directive, so the markdown survives a UTF-8 encode', () => {
+  const written = (value: string): string => markdown(adfToLosslessMarkdown(document(paragraph({ text: value, type: 'text' }))))
+  assert.equal(written('a\ud800b'), 'a!adf:text{text="\\ud800"}b\n')
+  assert.equal(written('a\udc00b'), 'a!adf:text{text="\\udc00"}b\n')
+  assert.equal(written('a\ud800\ud800\udc00\udc00b'), 'a!adf:text{text="\\ud800"}\ud800\udc00!adf:text{text="\\udc00"}b\n')
+  assert.equal(written('\udc00\ud800'), '!adf:text{text="\\udc00\\ud800"}\n')
+  assert.equal(written('a\u{1f389}b'), 'a\u{1f389}b\n')
+  for (const value of ['a\ud800b', 'a\udc00b', '\ud800\ud800\udc00\udc00', '\udc00\ud800', 'a\0\ud800\0b']) {
+    const text = written(value)
+    assert.equal(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/.test(text), false)
+    const read = losslessMarkdownToAdf(text)
+    assert.deepEqual(read.ok ? read.value : read.error, document(paragraph({ text: value, type: 'text' })))
+  }
 })
 
 test('alternates the marker between adjacent lists of a kind, the marker change being what parts them', () => {
