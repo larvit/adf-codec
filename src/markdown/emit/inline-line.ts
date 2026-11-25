@@ -12,7 +12,7 @@ import { escapeUnbalanced, spellDestination, spellLinkTarget } from '../commonma
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { flavourClaims } from '../flavour.ts'
 import { highlightDelimiter } from '../inline-tokens.ts'
-import { holdsNullCharacter, trimTrailingSpace } from '../commonmark/grammar.ts'
+import { holdsLoneSurrogate, holdsNullCharacter, loneSurrogates, trimTrailingSpace } from '../commonmark/grammar.ts'
 import { inlineNodeModel, takenMarkTypes } from '../../adf/inline-nodes.ts'
 import { inlineRuns } from './inline-runs.ts'
 import { isSpellableText, nodeAttrs, nodeMarks } from '../../adf/document.ts'
@@ -93,7 +93,7 @@ export function tryPipeCell(nodes: readonly AdfNode[], path: ConvertErrorPath, f
 }
 
 export function tryImageLine(alt: string | undefined, url: string, flavour: WrittenFlavour, link?: LinkDefinition): string | undefined {
-  if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt))) return undefined
+  if (alt !== undefined && (/^[ \t]|[ \t]$|[\n\r]/.test(alt) || holdsNullCharacter(alt) || holdsSurrogateToCarry(alt, flavour))) return undefined
   const destination = spellDestination(url)
   if (destination === undefined) return undefined
   const description: InlineSegment[] = alt === undefined ? [] : [{ escaping: 'bracketed', text: alt }]
@@ -322,12 +322,22 @@ function inlineDirectiveSegments(node: AdfNode, model: InlineNodeModel): InlineS
   return [syntax(spellInlineDirectiveOpener(node.type)), ...content, syntax(`]${attributes}`)]
 }
 
-// CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, so neither is written raw.
+const rawBreaks = '\\n+|\\0+|\\r'
+// The portable flavour writes no directive, so it keeps a lone surrogate raw.
+const spelledApart: Record<WrittenFlavour, RegExp> = { lossless: new RegExp(`(${rawBreaks}|${loneSurrogates})`), portable: new RegExp(`(${rawBreaks})`) }
+
+// A flavour with directives spells a lone surrogate in text and carries it elsewhere.
+export function holdsSurrogateToCarry(text: string, flavour: WrittenFlavour): boolean {
+  return flavourClaims[flavour].directives && holdsLoneSurrogate(text)
+}
+
+// CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, and UTF-8 cannot encode a lone surrogate, so the lossless flavour writes none raw.
 function textSegments(node: AdfNode, context: InlineContext): InlineSegment[] | undefined {
   if (!isSpellableText(node) || typeof node.text !== 'string' || node.text === '') return undefined
   const escaping: InlineEscaping = context.bracketed ? 'bracketed' : 'backslash'
-  const parts = node.text.split(/(\n+|\0+|\r)/).filter((part) => part !== '')
-  return parts.map((part) => (part === '\r' ? syntax('&#13;') : /^[\n\0]/.test(part) ? textDirectiveSegment(part) : { escaping, text: part }))
+  const apart = spelledApart[context.flavour]
+  const parts = node.text.split(apart).filter((part) => part !== '')
+  return parts.map((part) => (part === '\r' ? syntax('&#13;') : apart.test(part) ? textDirectiveSegment(part) : { escaping, text: part }))
 }
 
 function emitMarkedRun(nodes: readonly [RunNode, ...RunNode[]], mark: AdfMark, depth: number, index: number, context: InlineContext): Result<Emission> {
@@ -337,7 +347,7 @@ function emitMarkedRun(nodes: readonly [RunNode, ...RunNode[]], mark: AdfMark, d
   const attributes = spelling === undefined ? undefined : spellMarkAttributes(mark, spelling)
   if (spelling === undefined || attributes === undefined) return carriedRun(range, context)
   if (spelling.kind === 'code') {
-    const spans = codeSpans(nodes)
+    const spans = codeSpans(nodes, context.flavour)
     return spans === undefined ? carriedRun(range, context) : success({ segments: [syntax(spans)] })
   }
   if (spelling.kind === 'emphasis') return emitEmphasis(nodes, spelling.spelling, depth, { ...range, mark }, context)
@@ -368,11 +378,11 @@ function emitHighlight(nodes: readonly RunNode[], depth: number, run: MarkRun, c
 }
 
 // Each node its own span: CommonMark reads two adjacent text nodes in one span back as one.
-function codeSpans(nodes: readonly RunNode[]): string | undefined {
+function codeSpans(nodes: readonly RunNode[], flavour: WrittenFlavour): string | undefined {
   const spans: string[] = []
   for (const { node, outer } of nodes) {
     const { text } = node
-    if (!isSpellableText(node) || nodeMarks(node).length !== outer || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text)) return undefined
+    if (!isSpellableText(node) || nodeMarks(node).length !== outer || typeof text !== 'string' || text === '' || /[\n\r]/.test(text) || holdsNullCharacter(text) || holdsSurrogateToCarry(text, flavour)) return undefined
     const fence = '`'.repeat(longestBacktickRun(text) + 1)
     spans.push(`${fence}${needsPadding(text) ? ` ${text} ` : text}${fence}`)
   }

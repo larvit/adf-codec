@@ -76,7 +76,7 @@ function edited(html: string, [at, removed, piece]: readonly [number, number, st
   return tokens.join('')
 }
 
-// A raw `<` or `>` inside a quoted attribute value, which a browser's serializer may leave, and adfToHtml writes as an entity.
+// A raw `<` or `>` inside a quoted attribute value, which a browser's serializer may leave, and adfToHtml writes as an entity (docs/decisions.md §`htmlToAdf` also reads the dialect as a browser serializes it).
 function escapedInAttributes(html: string): string {
   return html.replace(/<[a-z][^\s>/]*(?:\s+[^\s=>/]+(?:="[^"]*")?)*\s*\/?>/g, (tag) => tag.replace(/="[^"]*"/g, (value) => value.replaceAll('<', '&lt;').replaceAll('>', '&gt;')))
 }

@@ -826,10 +826,7 @@ Read most (opens and searches):
 Read most (opens and searches):
 
 - `src/markdown/emit/unspellable-runs.ts` 9
-<<<<<<< HEAD
-=======
 - `src/markdown/emit/unspellable-runs.test.ts` 7
->>>>>>> origin/main
 - `src/markdown/emit/inline-line.ts` 5
 - `docs/decisions.md` 4
 - `README.md` 3
@@ -838,10 +835,7 @@ Read most (opens and searches):
 - `src/markdown/portable/inline-reduction.ts` 3
 - `todo.md` 3
 - `src/conformance/property-harness.ts` 2
-<<<<<<< HEAD
 - `src/markdown/emit/line-escaping.ts` 2
-=======
->>>>>>> origin/main
 
 ## Reading cost, chunk 3292be52e286, finished 2026-11-09T04:52:49Z
 
@@ -885,10 +879,7 @@ Read most (opens and searches):
 
 - `src/markdown/emit/unspellable-runs.ts` 5
 - `todo.md` 5
-<<<<<<< HEAD
-=======
 - `src/markdown/emit/unspellable-runs.test.ts` 4
->>>>>>> origin/main
 - `README.md` 2
 - `ci.sh` 2
 - `docs/decisions.md` 2
@@ -960,7 +951,6 @@ Read most (opens and searches):
 - `AGENTS.md` 1
 - `README.md` 1
 - `publish.sh` 1
-<<<<<<< HEAD
 
 ## Reading cost, chunk 0f735d84286c, finished 2026-11-09T08:35:21Z
 
@@ -978,8 +968,6 @@ Read most (opens and searches):
 - `src/markdown/portable/adf-to-portable-markdown.test.ts` 2
 - `MIGRATION.md` 1
 - `ci.sh` 1
-=======
->>>>>>> origin/main
 
 ## Reading cost, chunk a624aacf239f, finished 2026-11-09T10:24:02Z
 
