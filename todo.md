@@ -18,7 +18,6 @@
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 31 | 0.4.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 11.7 |
-| 57 | 0.4.0 |  |  | **Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 11.7 |
 | 38 | 0.4.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
 | 76 | 0.4.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
@@ -123,16 +122,6 @@ Touches:
 
 - `package.json`: `test` (small)
 - `ci.sh`: `node_tests` (small)
-
-### 57. Make each `ci.sh` leg build what it reads, so one leg run alone tests the current tree.
-
-Technical principle "Compose, do not entangle": Deno, Bun and the tests read the install leg's
-`node_modules`, the floor and consumer legs the pack leg's, and the browser leg whatever `dist/` the
-build leg left, so a leg run alone can pass on stale output.
-
-Touches:
-
-- `ci.sh`: lines 93-122
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
