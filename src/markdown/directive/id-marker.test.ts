@@ -264,4 +264,5 @@ test('reads no trailing marker from inside a link destination, and reads one sta
   assert.deepEqual(read(losslessMarkdownToAdf(`> ${inside} !adf:{localId=p}`)), [node('blockquote', {}, node('paragraph', { localId: 'p' }, linked('u !adf:{localId="'), text('"}')))])
   assert.deepEqual(read(losslessMarkdownToAdf('# [a](<u>) !adf:{localId=h}')), [node('heading', { level: 1, localId: 'h' }, linked('u'))])
   assert.deepEqual(read(losslessMarkdownToAdf('# Title !adf:{localId=h}')), [node('heading', { level: 1, localId: 'h' }, text('Title'))])
+  assert.deepEqual(read(losslessMarkdownToAdf('# Title !adf:{localId="[a](b)"}')), [node('heading', { level: 1, localId: '[a](b)' }, text('Title'))])
 })
