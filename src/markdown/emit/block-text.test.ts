@@ -4,7 +4,7 @@ import test from 'node:test'
 
 import { blockText, holdsBlankLine, joinedText, opensWithThematicBreak, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
 import { holdsOnlyRuleCharacters, isBlankLine, isThematicBreak } from '../commonmark/grammar.ts'
-import { propertyRuns } from '../../conformance/property-harness.ts'
+import { propertyRuns, propertyTimeout } from '../../conformance/property-harness.ts'
 
 const { tree } = fc.letrec<{ tree: BlockText }>((tie) => ({
   tree: fc.oneof(
@@ -16,7 +16,7 @@ const { tree } = fc.letrec<{ tree: BlockText }>((tie) => ({
   ),
 }))
 
-test('measures a block text as the text it writes', () => {
+test('measures a block text as the text it writes', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(tree, (text) => {
       const written = writtenText(text)

@@ -5,10 +5,10 @@ import test from 'node:test'
 import type { AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import { emitInlineLine, linePass, takeFallback, withheldMarkFallbacks } from './inline-line.ts'
-import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
+import { lineContainer, markedLine, propertyRuns, propertyTimeout } from '../../conformance/property-harness.ts'
 import { success, type Result } from '../../result.ts'
 
-test('spells a line alike taking every fallback a pass finds or the first alone', () => {
+test('spells a line alike taking every fallback a pass finds or the first alone', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(markedLine, lineContainer, (nodes, container) => {
       assert.deepEqual(emitInlineLine(nodes, container, [], 'lossless'), firstFallbackLine(nodes, container))
