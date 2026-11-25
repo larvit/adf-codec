@@ -1261,12 +1261,16 @@ test('names the content slot no lone plain text node reads back from', () => {
   refused(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
   refused(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
   refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n'), 'unsupported-node-shape', 'null character', '!adf:carry')
+  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\ud800"}]{color=yellow}\n'), 'unsupported-node-shape', 'status content slot holds a lone surrogate', '!adf:carry')
   refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
 })
 
 test('reads the characters CommonMark rewrites from their spellings', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('a&#13;b!adf:text{text="\\u0000\\u0000"}\n')), [paragraph('a\rb\u0000\u0000')])
   refused(losslessMarkdownToAdf('!adf:text{text="\\u0000a"}\n'), 'unsupported-node-shape', 'one run of null characters')
+  assert.deepEqual(content(losslessMarkdownToAdf('a!adf:text{text="\\udc00\\ud800"}b\n')), [paragraph('a\udc00\ud800b')])
+  refused(losslessMarkdownToAdf('!adf:text{text="\u{10000}"}\n'), 'unsupported-node-shape', 'one run of lone surrogates')
+  refused(losslessMarkdownToAdf('!adf:text{text="\\ud800\\u0000"}\n'), 'unsupported-node-shape', 'one run of lone surrogates')
 })
 
 test('reads the whitespace the reserved text directive carries', () => {
@@ -1277,7 +1281,7 @@ test('reads the whitespace the reserved text directive carries', () => {
 })
 
 test('names the text directive spelling no whitespace run reads back from', () => {
-  const named = ['one run of spaces and tabs, one run of newlines, or one run of null characters']
+  const named = ['one run of spaces and tabs, one run of newlines, one run of null characters, or one run of lone surrogates']
   refused(losslessMarkdownToAdf('!adf:text{text=hi}\n'), 'unsupported-node-shape', ...named)
   refused(losslessMarkdownToAdf('!adf:text{text=" \\n"}\n'), 'unsupported-node-shape', ...named)
   refused(losslessMarkdownToAdf('!adf:text{text=""}\n'), 'unsupported-node-shape', ...named)

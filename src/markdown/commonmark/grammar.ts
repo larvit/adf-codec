@@ -31,6 +31,11 @@ const controlCharacter = new RegExp(`[${controlCharacterRange}]`)
 const htmlTag = new RegExp(htmlTagSource, 'y')
 const nullCharacter = new RegExp(nullCharacterSource)
 const nullCharacters = new RegExp(nullCharacterSource, 'g')
+
+// A high surrogate no low one follows, or a low one no high one precedes: UTF-8 encodes a pair, so a pair isn't lone.
+const loneSurrogateSource = '[\\ud800-\\udbff](?![\\udc00-\\udfff])|(?<![\\ud800-\\udbff])[\\udc00-\\udfff]'
+export const loneSurrogates = `(?:${loneSurrogateSource})+`
+const loneSurrogate = new RegExp(loneSurrogateSource)
 const tagName = new RegExp(`^</?(${tagNameSource})[\\s\\S]*$`)
 // The opener's own match ends with the terminator where the construct is complete on its own (`<!-->`).
 const inlineHtmlConstructs = [
@@ -136,6 +141,11 @@ export function infoStringCarries(text: string): boolean {
 
 export function holdsNullCharacter(text: string): boolean {
   return nullCharacter.test(text)
+}
+
+// UTF-8 cannot encode one: stored as UTF-8, it reads back as U+FFFD.
+export function holdsLoneSurrogate(text: string): boolean {
+  return loneSurrogate.test(text)
 }
 
 export function replaceNullCharacters(text: string): string {
