@@ -5,7 +5,7 @@ import { blockDirectiveForm, documentSpelling } from '../directive/block.ts'
 import { blockNodeModel, blockNodes, isHeadingLevel } from '../../adf/block-nodes.ts'
 import { blockText, emptyLine, holdsBlankLine, joinedText, opensWithThematicBreak, prefixedText, quotedText, writtenText, type BlockText } from './block-text.ts'
 import { carriedBlock } from '../opaque-carry.ts'
-import { emitInlineLine } from './inline-line.ts'
+import { emitInlineLine, holdsSurrogateToCarry } from './inline-line.ts'
 import { failure, success, type ConvertErrorPath, type Result } from '../../result.ts'
 import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
@@ -289,14 +289,14 @@ function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): BlockText | undef
   if (id === undefined) return undefined
   const slot = languageSlot(nodeAttrs(node)['language'], flavourClaims[flavour])
   if (slot.kind === 'attribute') return undefined
-  const [only, ...others] = fencedTexts(node) ?? []
+  const [only, ...others] = fencedTexts(node, flavour) ?? []
   if (only === undefined || others.length > 0) return undefined
   return markedLines(id, blockText(fencedCodeBlock(slot.kind === 'fence' ? slot.info : '', only)), false)
 }
 
 // spec/flavour.md, The CommonMark blocks: one fence per text node, the language on each; with no fence to carry it, the attribute does.
 function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertErrorPath, depth: number): Result<EmittedBlock> {
-  const texts = fencedTexts(node)
+  const texts = fencedTexts(node, 'lossless')
   if (texts === undefined) return carriedFence(carriedBlock(node, path, depth))
   const slot: LanguageSlot = texts.length === 0 ? { kind: 'attribute' } : languageSlot(nodeAttrs(node)['language'], flavourClaims.lossless)
   const opener = spellBlockDirectiveOpener(node, model, path, slot.kind === 'attribute' ? [] : ['language'])
@@ -307,11 +307,11 @@ function emitCodeDirective(node: AdfNode, model: BlockNodeModel, path: ConvertEr
 }
 
 // The text of each fence, or `undefined` where a child holds what no fence keeps, so the block carry takes the node.
-function fencedTexts(node: AdfNode): string[] | undefined {
+function fencedTexts(node: AdfNode, flavour: WrittenFlavour): string[] | undefined {
   if (node.content === undefined) return ['']
   const texts: string[] = []
   for (const child of node.content) {
-    if (!isUnmarkedSpellableText(child) || typeof child.text !== 'string' || child.text === '' || /\r/.test(child.text) || holdsNullCharacter(child.text)) return undefined
+    if (!isUnmarkedSpellableText(child) || typeof child.text !== 'string' || child.text === '' || /\r/.test(child.text) || holdsNullCharacter(child.text) || holdsSurrogateToCarry(child.text, flavour)) return undefined
     texts.push(child.text)
   }
   return texts

@@ -3,7 +3,7 @@ import type { CodeSpanCloser } from '../commonmark/backtick-runs.ts'
 import type { ConvertFault, Read } from '../../result.ts'
 import type { InlineSource } from '../inline-tokens.ts'
 import type { JsonValue } from '../../json-value.ts'
-import { backslashEscape, holdsNullCharacter } from '../commonmark/grammar.ts'
+import { backslashEscape, holdsLoneSurrogate, holdsNullCharacter } from '../commonmark/grammar.ts'
 import { backtickRun } from '../commonmark/backtick-runs.ts'
 import { isNumberList } from '../../adf/attribute-vocabulary.ts'
 import { largestNesting } from '../../nesting.ts'
@@ -128,7 +128,8 @@ export function readSoleStringAttribute(span: DirectiveSpan, key: string): Read<
 // The emitter carries a node whose slot this refuses.
 export function slotFault(type: string, text: string): ConvertFault | undefined {
   if (/[\n\r]/.test(text)) return unsupportedNodeShape(`the ${type} content slot holds a line ending, and an inline directive never spans lines: replace it with a space, or write the node as !adf:carry`)
-  return holdsNullCharacter(text) ? unsupportedNodeShape(`the ${type} content slot holds a null character: write the node as !adf:carry`) : undefined
+  if (holdsNullCharacter(text)) return unsupportedNodeShape(`the ${type} content slot holds a null character: write the node as !adf:carry`)
+  return holdsLoneSurrogate(text) ? unsupportedNodeShape(`the ${type} content slot holds a lone surrogate: write the node as !adf:carry`) : undefined
 }
 
 export function spellAttributes(pairs: readonly (readonly [string, string])[]): string {
