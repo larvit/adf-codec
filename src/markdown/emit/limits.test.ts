@@ -83,7 +83,7 @@ test('refuses a carry whose JSON would run past V8\'s longest string, on every e
   assert.equal(pastTheBound(result), true)
 })
 
-test('refuses a quote whose prefixed lines would pass V8\'s longest string', () => {
+test('refuses a quote whose prefixed lines would pass V8\'s longest string', { timeout: 60000 }, () => {
   const code = nearlyHalfTheBound()
   assert.equal(pastTheBound(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), true)
 })
@@ -93,12 +93,12 @@ function codeBlockOf(textLength: number): AdfNode {
   return { attrs: {}, content: [{ text: `${'a'.repeat(textLength - 1)}\n`, type: 'text' }], type: 'codeBlock' }
 }
 
-test('refuses markdown one character past V8\'s longest string', () => {
+test('refuses markdown one character past V8\'s longest string', { timeout: 60000 }, () => {
   const code = codeBlockOf(268_435_390)
   assert.equal(pastTheBound(adfToLosslessMarkdown(document(code, code))), true)
 })
 
-test('writes markdown exactly as long as V8\'s longest string', () => {
+test('writes markdown exactly as long as V8\'s longest string', { timeout: 60000 }, () => {
   const code = codeBlockOf(178_956_908)
   const written = adfToLosslessMarkdown(document(code, code, code))
   assert.equal(written.ok && written.value.length, 536870888)
