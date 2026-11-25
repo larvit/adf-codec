@@ -16,7 +16,6 @@
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
-| 204 | 0.4.0 |  |  | **Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 206 | 0.4.0 |  | defect | **Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.** | 3 | 1 | 2 | 4 | 4 | 1 by 2 | 5.2 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
@@ -103,14 +102,6 @@ Touches:
 - `src/markdown/inline-content.ts`
 - `src/markdown/portable/task-ids.ts`: `mintTaskIds`
 - `src/markdown/emit/inline-line.ts`: `takeFallback`, `settledLine`, `lineSegments`
-
-### 204. Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.
-
-`assertReadsBack` in `src/conformance/adf-property.test.ts` compares the HTML written after a read with the HTML read, softened through `escapedInAttributes` for a raw `<` or `>` inside a quoted attribute value, which `htmlToAdf` reads on purpose as a browser spelling and `adfToHtml` writes back as `&lt;` or `&gt;`. Item 203's generators hit it: an edited `<pre><code class="language-<aaa">` reads as language `<aaa` and writes `language-&lt;aaa`. Decide whether the byte check should hold for such HTML (then the writer must keep the raw spelling, against `docs/decisions.md` §HTML writes a URL as the ADF holds it) or whether the softening stays and is recorded as a decision.
-
-Touches:
-
-- `src/conformance/adf-property.test.ts`: `escapedInAttributes`, `assertReadsBack`
 
 ### 206. Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.
 
