@@ -3,7 +3,7 @@ import type { ConvertFault } from '../../result.ts'
 import { colourNames } from './colour-names.ts'
 import { identicalMarks } from '../../adf/document.ts'
 import { readAdfMacro } from './adf-macro.ts'
-import { smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl } from '../spellings.ts'
+import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl } from '../spellings.ts'
 
 // `end`: where the reading stopped, a cell's closing `|` or the line's end.
 export type InlineRead = { end: number; fault?: undefined; nodes: AdfNode[] } | { fault: ConvertFault }
@@ -233,7 +233,7 @@ function bracket(scan: Scan, at: number): number {
   if (first === undefined) return bracketed(scan, at, wiki.slice(at + 1, close))
   const href = wiki.slice(first + 1, second ?? close)
   const title = second === undefined ? undefined : wiki.slice(second + 1, close)
-  if (!spellableUrl.test(href) || (title !== undefined && !spellableTitle.test(title))) return plainCharacter(scan, at)
+  if (!linkedAddress(href) || (title !== undefined && !spellableTitle.test(title))) return plainCharacter(scan, at)
   const mark: AdfMark = { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
   if (first === at + 1) {
     push(scan, { marks: [mark], text: href })
@@ -248,7 +248,7 @@ function bracket(scan: Scan, at: number): number {
 function bracketed(scan: Scan, at: number, held: string): number {
   const id = held.startsWith('~accountid:') ? held.slice('~accountid:'.length) : undefined
   if (id !== undefined && spellableUrl.test(id)) push(scan, { node: { attrs: { accessLevel: '', id }, type: 'mention' } })
-  else if (!held.startsWith('~') && spellableUrl.test(held)) push(scan, { marks: [{ attrs: { href: held }, type: 'link' }], text: held })
+  else if (linkedAddress(held)) push(scan, { marks: [{ attrs: { href: held }, type: 'link' }], text: held })
   else return plainCharacter(scan, at)
   return at + held.length + 2
 }

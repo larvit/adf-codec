@@ -48,6 +48,22 @@ export const spellableTitle = /^[^\s[\]{}|\\](?:[^[\]{}|\\\r\n]*[^\s[\]{}|\\])?$
 
 export const spellableUrl = /^[^\s[\]{}|\\]+$/
 
+// spec/wiki.md, Marks: the schemes Jira links beside `://`, and those it links beside a bare `:` too.
+const schemesAfterColon: ReadonlySet<string> = new Set([
+  'callto', 'cvs', 'facetime', 'feed', 'git', 'irc', 'irc6', 'itms', 'magnet', 'mailto', 'mvn', 'news', 'nntp', 'notes', 'rdp', 'sip', 'sips', 'skype', 'slack', 'ssh', 'svn', 'tel', 'telnet', 'urn', 'vnc', 'whatsapp', 'xmpp',
+])
+const schemesAfterSlashes: ReadonlySet<string> = new Set(['file', 'ftp', 'ftps', 'gopher', 'hipchat', 'http', 'https', 'sftp', 'smb', ...schemesAfterColon])
+
+// spec/wiki.md, Marks: the addresses Jira links, in `[<address>]` and `[<text>|<address>]`. It shows any other as text.
+export function linkedAddress(address: string): boolean {
+  if (!spellableUrl.test(address) || (address.match(/#/g)?.length ?? 0) > 1 || /%(?![0-9a-f]{2})|\^./i.test(address)) return false
+  if (address.startsWith('/') || address.startsWith('#')) return address !== '//'
+  const [, scheme = '', rest = ''] = /^([^:]+):(.*)$/.exec(address) ?? []
+  const lowered = scheme.toLowerCase()
+  if (rest.startsWith('//')) return rest.length > 2 && schemesAfterSlashes.has(lowered)
+  return schemesAfterColon.has(lowered) && rest !== '' && !rest.startsWith('#')
+}
+
 // spec/wiki.md, What only the reader reads: each smiley Jira reads as an emoji, with the emoji's id and shortName.
 export const smileyEmoji: Readonly<Record<string, { id: string; shortName: string }>> = {
   '(!)': { id: 'atlassian-warning', shortName: ':warning:' },
