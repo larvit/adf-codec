@@ -8,9 +8,10 @@ installed() {
   in_image "$node_image" npm ci
 }
 
+# tsc leaves the output of a deleted or renamed source in place.
 built() {
   installed &&
-  in_image "$node_image" npm run build
+  in_image "$node_image" sh -c 'rm -rf dist && npm run build'
 }
 
 packed() {
@@ -37,7 +38,6 @@ needs() {
   "$@"
 }
 
-leg "install ($node_image)" installed
 leg "typecheck ($node_image)" needs installed in_image "$node_image" npm run typecheck
 leg "lint ($node_image)" needs installed in_image "$node_image" npm run lint
 
@@ -141,12 +141,9 @@ leg "corpus-gathering tests ($node_image)" in_image "$node_image" node --test co
 leg "feature table tests ($node_image)" in_image "$node_image" node --test feature-table/
 in_image_memory=1g leg "release tooling tests ($node_image)" in_image "$node_image" node --test release-tooling/
 
-leg "build ($node_image)" built
 leg "feature table is current ($node_image)" needs built in_image "$node_image" node feature-table/build.mjs --check
-leg "install the bundle size tool ($node_image)" bundle_size_installed
 leg "bundle size tests ($node_image)" needs bundle_size_installed in_image "$node_image" node --test bundle-size/
 leg "README's size figures are current ($node_image)" needs bundle_size_measurable in_image "$node_image" node bundle-size/run.mjs --check
-leg "pack and install the tarball ($node_image)" packed
 leg "typecheck the consumer ($node_image)" needs packed in_image "$node_image" npx tsc -p package-tests
 leg "round-trip on the engines floor ($floor_image)" needs packed in_image "$floor_image" node package-tests/node-floor.js
 
