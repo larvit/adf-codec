@@ -11,7 +11,7 @@ import { fencedCodeBlock } from '../commonmark/backtick-runs.ts'
 import { flavourClaims } from '../flavour.ts'
 import { holdsNullCharacter, markerInterruptsParagraph } from '../commonmark/grammar.ts'
 import { holdsOnlyAttributes, isUnmarkedSpellableText, nodeAttrs, nodeContent, readAdfDocument, writableContent } from '../../adf/document.ts'
-import { idKey, spellIdAttributes, spellIdMarker } from '../directive/id-marker.ts'
+import { idKey, readTrailingMarker, spellIdAttributes, spellIdMarker } from '../directive/id-marker.ts'
 import { languageSlot, type LanguageSlot } from '../code-language.ts'
 import { largestNesting } from '../../nesting.ts'
 import { markerOpener, spellDirectiveCloser, spellDirectiveOpener } from '../directive/syntax.ts'
@@ -279,6 +279,11 @@ function trailingMarker(marked: MarkedId): string {
   return marked.id === undefined ? '' : ` ${spellIdMarker(marked.id)}`
 }
 
+// Text such as `[a](<u` takes the marker into a link destination, so the id then rides the block's directive form.
+function holdsMarker(line: string, marked: MarkedId, flavour: WrittenFlavour): boolean {
+  return marked.id === undefined || readTrailingMarker(`${line}${trailingMarker(marked)}`, flavourClaims[flavour])?.text === line
+}
+
 function tryCodeBlock(node: AdfNode, flavour: WrittenFlavour): BlockText | undefined {
   const id = markedId(node, 'language')
   if (id === undefined) return undefined
@@ -321,6 +326,7 @@ function tryHeading(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFlavo
   if (content.length === 0) return id.id === undefined ? success(commonMarkText(blockText(hashes))) : undefined
   const line = emitInlineLine(content, 'heading', path, flavour)
   if (!line.ok) return line
+  if (!holdsMarker(line.value, id, flavour)) return undefined
   return success(commonMarkText(blockText(`${hashes} ${line.value}${trailingMarker(id)}`)))
 }
 
@@ -423,6 +429,7 @@ function tryParagraph(node: AdfNode, path: ConvertErrorPath, flavour: WrittenFla
   if (content.length === 0 || id === undefined) return undefined
   const line = emitInlineLine(content, 'paragraph', path, flavour)
   if (!line.ok) return line
+  if (!holdsMarker(line.value, id, flavour)) return undefined
   const text = commonMarkText(markedLines(id, blockText(line.value), false))
   return success(id.id === undefined ? text : { ...text, trailing: blockText(`${line.value}${trailingMarker(id)}`) })
 }
