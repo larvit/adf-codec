@@ -13,13 +13,11 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 42 | 0.4.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 15.6 |
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 38 | 0.4.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
 | 76 | 0.4.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
-| 118 | 0.4.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 204 | 0.4.0 |  |  | **Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
@@ -65,18 +63,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
-
-### 42. Trim a text leaf's trailing blanks in linear time.
-
-`portable/inline-reduction.ts`'s `leafEdges` finds the trail with an unanchored `/[ \t]*$/`,
-quadratic in a run of blanks inside one leaf: a paragraph of `a`, 80 000 spaces, `b` takes 6.5 s in
-`adfToPortableMarkdown`. Scan backward, as the expand title's trim does. `edgeWhitespace`, in the
-same file, counts a leaf's lead and trail by index.
-
-Touches:
-
-- `src/markdown/portable/inline-reduction.ts`: `leafEdges` (small), `edgeWhitespace` (small)
-- `src/markdown/portable/inline-reduction.test.ts`
 
 ### 191. Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.
 
@@ -149,17 +135,6 @@ Touches:
 - `src/markdown/inline-content.ts`
 - `src/markdown/portable/task-ids.ts`: `mintTaskIds`
 - `src/markdown/emit/inline-line.ts`: `takeFallback`, `settledLine`, `lineSegments`
-
-### 118. Spell a portable link's title through `oneLine`.
-
-`portableLink` (`src/markdown/portable/inline-reduction.ts`) repeats `oneLine`'s replacements by
-hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
-Found by the principles audit of item 99, 2026-10-14.
-
-Touches:
-
-- `src/markdown/portable/inline-reduction.ts`: `portableLink` (small)
-- `src/markdown/portable/inline-reduction.test.ts`
 
 ### 204. Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.
 

@@ -8,7 +8,7 @@ import type { PortableLineFallback } from '../emit/inline-line.ts'
 import type { RunGrouping, RunNode } from '../emit/inline-runs.ts'
 import { inlineRuns } from '../emit/inline-runs.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
-import { portableJudgement, portableLeaves, reduceInline, trimmedEdges, trimmedEdgesPass, trimmingRuns, trimPass, withoutFallback } from './inline-reduction.ts'
+import { portableJudgement, portableLeaves, portableLink, reduceInline, trimmedEdges, trimmedEdgesPass, trimmingRuns, trimPass, withoutFallback } from './inline-reduction.ts'
 import { success, type Result } from '../../result.ts'
 
 test('reduces a line alike dropping every run a pass may or the first alone', () => {
@@ -161,6 +161,17 @@ test('trims a line whose link run crosses a leaf holding no text as a leaf a pas
   const mention: AdfNode = { attrs: { id: 'a' }, type: 'mention' }
   const line = [marked(' ', link), marked(' '), { type: 'hardBreak' }, marked(' ', link), mention, marked(' '), { type: 'hardBreak' }, marked(' x', link)]
   assert.deepEqual(trimmedEdges(line, 'spanned'), [mention, { type: 'hardBreak' }, marked('x', link)])
+})
+
+test('trims the spaces and tabs a leaf holds at both ends, and moves them out of a mark mid-line', () => {
+  const blanks = ' \t '
+  assert.deepEqual(trimmedEdges([marked(`${blanks}a${blanks}`, { type: 'strong' })], 'spanned'), [marked('a', { type: 'strong' })])
+  assert.deepEqual(trimmedEdges([marked('a'), marked(`${blanks}b`, { type: 'strong' }), marked('c')], 'spanned'), [marked(`a${blanks}`), marked('b', { type: 'strong' }), marked('c')])
+})
+
+test('spells a link title on one line, dropping a carriage return and a null and turning a newline into a space', () => {
+  const titled = portableLink({ attrs: { href: 'u', title: 'a\r\0b\nc' }, type: 'link' }, 'paragraph')
+  assert.deepEqual(titled, { attrs: { href: 'u', title: 'ab c' }, type: 'link' })
 })
 
 function alternatingBlanks(blanks: number, first: AdfNode, second: AdfNode): AdfNode[] {

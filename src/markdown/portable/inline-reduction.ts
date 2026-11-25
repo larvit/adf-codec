@@ -11,7 +11,7 @@ import { inlineRuns, insideRun, type RunNode } from '../emit/inline-runs.ts'
 import { isEmphasis } from '../mark-spellings.ts'
 import { joinsWhenEditorNormal, sourceIndex, type SourceIndexes } from './editor-normal.ts'
 import { largestNesting } from '../../nesting.ts'
-import { partsShownText, shownImage, shownLink, shownNote, shownText, shownUrl } from '../../adf/shown-text.ts'
+import { oneLine, partsShownText, shownImage, shownLink, shownNote, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, settledLine, type LineJudgement, type PortableLineFallback } from '../emit/inline-line.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
@@ -144,7 +144,7 @@ function portableMarks(marks: readonly AdfMark[], container: LineContainer, text
 export function portableLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
   const attrs = nodeAttrs(mark)
   const held = attrs['href']
-  const title = typeof attrs['title'] === 'string' ? attrs['title'].replace(/[\r\0]/g, '').replace(/\n/g, ' ') : undefined
+  const title = typeof attrs['title'] === 'string' ? oneLine(attrs['title']) : undefined
   if (typeof held !== 'string') return undefined
   const href = writableHref(container === 'table-cell' ? held.replaceAll('|', '%7C') : held)
   return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
@@ -328,8 +328,9 @@ function leafEdges(leaf: AdfNode, before: Beside, after: Beside): AdfNode[] | un
   const marks = nodeMarks(leaf)
   const text = leaf.text
   if (text === undefined || marks.some((mark) => mark.type === 'code')) return undefined
-  const lead = text.slice(0, text.search(/[^ \t]|$/))
-  const trail = text.slice(text.search(/[ \t]*$/))
+  const blanks = edgeWhitespace(text)
+  const lead = text.slice(0, blanks.lead)
+  const trail = text.slice(text.length - blanks.trail)
   const leading = edgeOutcome(marks, before, lead.length)
   const trailing = edgeOutcome(marks, after, trail.length)
   if (leading.kind === 'keep' && trailing.kind === 'keep' && leading.depth === marks.length && trailing.depth === marks.length) return undefined
