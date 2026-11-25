@@ -56,7 +56,7 @@ type LineAttempt = { fallback: Fallback; line?: undefined; segments?: undefined 
 // What one grouping writes, or the fallback it needs and the line that fallback's indexes name.
 export type LineJudgement<Line, LineFallback, Written> = { fallback: LineFallback; kind: 'fallback'; line: Line } | { kind: 'written'; written: Written }
 
-type LineFallbacks = { carried: Set<number>; flavour: WrittenFlavour; openingLinkAsDirective: boolean }
+type LineFallbacks = { readonly carried: ReadonlySet<number>; readonly flavour: WrittenFlavour; readonly openingLinkAsDirective: boolean }
 
 // docs/decisions.md §After 32 passes, a line carries or drops every em, strike and strong mark.
 const readBackPasses = 32
@@ -109,10 +109,7 @@ function emitLine(nodes: readonly AdfNode[], container: LineContainer, path: Con
     giveUpEmphasis: (fallbacks) => carryEveryEmphasis(fallbacks, nodes),
     judge: (fallbacks, grouping) => writerJudgement(nodes, container, path, fallbacks, grouping),
     spansEachPass: false,
-    take: (fallbacks, fallback) => {
-      const taken = takeFallback(fallbacks, fallback, path)
-      return taken.ok ? success(fallbacks) : taken
-    },
+    take: (fallbacks, fallback) => takeFallback(fallbacks, fallback, path),
   })
 }
 
@@ -151,8 +148,9 @@ export function linePass(nodes: readonly AdfNode[], container: LineContainer, pa
 }
 
 function carryEveryEmphasis(fallbacks: LineFallbacks, nodes: readonly AdfNode[]): LineFallbacks {
-  for (const [index, node] of nodes.entries()) if (nodeMarks(node).some(isEmphasis)) fallbacks.carried.add(index)
-  return fallbacks
+  const carried = new Set(fallbacks.carried)
+  for (const [index, node] of nodes.entries()) if (nodeMarks(node).some(isEmphasis)) carried.add(index)
+  return { ...fallbacks, carried }
 }
 
 // Seeds the withheld-mark carries once per line, so the run at each mark depth does not rescan every node's marks.
@@ -175,16 +173,15 @@ function carries(node: AdfNode, carried: ReadonlySet<number>, index: number): bo
   return typeof slot === 'string' && slotFault(node.type, slot) !== undefined
 }
 
-export function takeFallback(fallbacks: LineFallbacks, fallback: Fallback, path: ConvertErrorPath): Result<null> {
+export function takeFallback(fallbacks: LineFallbacks, fallback: Fallback, path: ConvertErrorPath): Result<LineFallbacks> {
   if (fallback === 'opening-link') {
     if (fallbacks.openingLinkAsDirective) return failure('unsupported-node-shape', 'an opening link spelled as a directive still reads as a link definition, so the line has no spelling left', path)
-    fallbacks.openingLinkAsDirective = true
-    return success(null)
+    return success({ ...fallbacks, openingLinkAsDirective: true })
   }
-  const before = fallbacks.carried.size
-  for (const range of fallback) for (let index = range.first; index <= range.last; index += 1) fallbacks.carried.add(index)
-  if (fallbacks.carried.size === before) return failure('unsupported-node-shape', 'a carry took no inline node the line had not carried, so the line has no spelling left', path)
-  return success(null)
+  const carried = new Set(fallbacks.carried)
+  for (const range of fallback) for (let index = range.first; index <= range.last; index += 1) carried.add(index)
+  if (carried.size === fallbacks.carried.size) return failure('unsupported-node-shape', 'a carry took no inline node the line had not carried, so the line has no spelling left', path)
+  return success({ ...fallbacks, carried })
 }
 
 function lineSegments(nodes: readonly AdfNode[], container: LineContainer, path: ConvertErrorPath, { carried, flavour, openingLinkAsDirective }: LineFallbacks, grouping: RunGrouping): Result<Emission> {

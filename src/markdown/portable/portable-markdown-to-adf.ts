@@ -23,10 +23,7 @@ const portableBlockReaders: FlavourBlockReaders = { bulletList: bulletBlocks, qu
 export function portableMarkdownToAdf(markdown: string): Result<AdfDocument, ParseError> {
   const read = readDocument(markdown, { blocks: portableBlockReaders, flavour: 'portable' })
   if (!read.ok) return read
-  const minted = withinEngineLimits(() => {
-    mintTaskIds(read.value, markdown)
-    return read
-  })
+  const minted = withinEngineLimits(() => success(mintTaskIds(read.value, markdown)))
   return positioned(minted, { line: 1, offset: 0 })
 }
 
