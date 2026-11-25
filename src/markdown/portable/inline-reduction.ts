@@ -13,6 +13,7 @@ import { joinsWhenEditorNormal, sourceIndex, type SourceIndexes } from './editor
 import { largestNesting } from '../../nesting.ts'
 import { oneLine, partsShownText, shownImage, shownLink, shownNote, shownText, shownUrl } from '../../adf/shown-text.ts'
 import { portableLineFallback, settledLine, type LineJudgement, type PortableLineFallback } from '../emit/inline-line.ts'
+import { replaceLoneSurrogates } from '../commonmark/grammar.ts'
 import { spellDestination } from '../commonmark/link-syntax.ts'
 
 // What stands beside a leaf's edge: whether a line edge does, and how many runs hold the leaf and its neighbour both.
@@ -113,7 +114,7 @@ function lineBreak(container: LineContainer): AdfNode {
 
 function textLeaves(value: unknown, marks: readonly AdfMark[], container: LineContainer, note?: ShownNote): AdfNode[] {
   if (typeof value !== 'string') return note === undefined ? [] : noteLeaves(note, container)
-  const text = value.replace(/[\r\u0000]/g, '')
+  const text = replaceLoneSurrogates(value, '').replace(/[\r\u0000]/g, '')
   const kept = portableMarks(marks, container, text)
   const leaves: AdfNode[] = []
   for (const [index, line] of text.split('\n').entries()) {
@@ -141,18 +142,23 @@ function portableMarks(marks: readonly AdfMark[], container: LineContainer, text
   return kept.filter((mark) => !code || codeTextMarkTypes.includes(mark.type)).sort((first, second) => rank(first) - rank(second))
 }
 
+// The lone surrogates go first: a character dropped from between two would pair them.
+export function writableLine(text: string): string {
+  return oneLine(replaceLoneSurrogates(text, ''))
+}
+
 export function portableLink(mark: AdfMark, container: LineContainer): AdfMark | undefined {
   const attrs = nodeAttrs(mark)
   const held = attrs['href']
-  const title = typeof attrs['title'] === 'string' ? oneLine(attrs['title']) : undefined
+  const title = typeof attrs['title'] === 'string' ? writableLine(attrs['title']) : undefined
   if (typeof held !== 'string') return undefined
   const href = writableHref(container === 'table-cell' ? held.replaceAll('|', '%7C') : held)
   return { attrs: title === undefined ? { href } : { href, title }, type: 'link' }
 }
 
-// spec/flavour.md, Links: the characters no destination spelling holds, then an ampersand an entity reference would read.
+// spec/flavour.md, Links: a lone surrogate as the U+FFFD a URL's UTF-8 holds, then the characters no destination spelling holds, then an ampersand an entity reference would read.
 export function writableHref(href: string): string {
-  let written = href
+  let written = replaceLoneSurrogates(href, '%EF%BF%BD')
   for (const unwritable of [/[\u0000-\u001f\u007f\\<>]/g, /&/g]) {
     if (spellDestination(written) !== undefined) return written
     written = written.replace(unwritable, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`)

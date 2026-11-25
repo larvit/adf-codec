@@ -1407,3 +1407,16 @@ Read most (opens and searches):
 - `ci.sh` 1
 - `package.json` 1
 - `src/conformance/property-harness.ts` 1
+
+## Reading cost, chunk b1d0572e4bcb, finished 2026-11-25T23:33:06Z
+
+76109 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `ci.sh` 7
+- `src/markdown/portable/inline-reduction.test.ts` 3
+- `src/conformance/property-harness.ts` 2
+- `src/json-text.test.ts` 1
+- `src/markdown/emit/inline-line.test.ts` 1
+- `src/markdown/emit/inline-nodes.test.ts` 1

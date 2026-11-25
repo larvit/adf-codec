@@ -6,7 +6,7 @@ import { emptyKeys, nodeAttrs, nodeMarks } from '../adf/document.ts'
 import { escapeUnbalanced, spellLinkTarget } from './commonmark/link-syntax.ts'
 import { holdsDirectivePrefix, spellAttributes, spellVocabulary } from './directive/syntax.ts'
 import { holdsEntityReference } from './commonmark/entity-references.ts'
-import { isAutolink } from './commonmark/grammar.ts'
+import { holdsLoneSurrogate, isAutolink } from './commonmark/grammar.ts'
 import { isMarkType, linkAttrs, linkMarkFrom, markAttributes, type LinkAttrs } from '../adf/mark-attributes.ts'
 import { spellEmptyKeys } from './directive/empty-keys.ts'
 import { vocabularyPairs } from '../adf/attribute-vocabulary.ts'
@@ -71,7 +71,7 @@ export function commonMarkLink(attrs: AdfAttributes, href: string, nodes: readon
   if (Object.keys(attrs).some((key) => key !== 'href' && key !== 'title')) return undefined
   const title = attrs['title']
   const autolinkHolds = !bracketed || (!href.includes('`') && !holdsDirectivePrefix(href) && escapeUnbalanced(href, '[', ']') === href)
-  if (isBareLink(nodes, href, marksInside) && autolinkHolds && title === undefined && isAutolink(href) && !holdsEntityReference(href)) return { form: 'autolink' }
+  if (isBareLink(nodes, href, marksInside) && autolinkHolds && title === undefined && isAutolink(href) && !holdsLoneSurrogate(href) && !holdsEntityReference(href)) return { form: 'autolink' }
   const target = spellLinkTarget(href, typeof title === 'string' ? title : undefined, escapes)
   return target === undefined ? undefined : { form: 'inline', target }
 }

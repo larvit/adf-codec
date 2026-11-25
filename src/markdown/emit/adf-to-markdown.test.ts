@@ -85,10 +85,41 @@ test('carries a lone surrogate no text directive spells', () => {
   survivesUtf8(document({ attrs: { layout: 'center' }, content: [{ attrs: { alt: 'a\ud800', type: 'external', url: 'https://example.com/a.png' }, type: 'media' }], type: 'mediaSingle' }))
 })
 
-test('writes a lone surrogate in portable markdown as the text holds it', () => {
-  const portable = adfToPortableMarkdown(document(paragraph({ text: 'a\ud800b', type: 'text' })))
-  assert.equal(portable.ok ? portable.value : portable.error.code, 'a\ud800b\n')
-})
+const linked = (attrs: Record<string, string>): AdfDocument => document(paragraph({ marks: [{ attrs, type: 'link' }], text: 'x', type: 'text' }))
+const image = (attrs: Record<string, string>, marks: AdfNode['marks'] = []): AdfDocument =>
+  document({ attrs: { layout: 'center' }, content: [{ attrs: { type: 'external', ...attrs }, marks, type: 'media' }], type: 'mediaSingle' })
+
+const surrogateOutsideText: Record<string, AdfDocument> = {
+  'a code block language': document({ attrs: { language: 'a\ud800' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }),
+  'a link href': linked({ href: 'https://example.com/\ud800' }),
+  'a link href that is its own text': document(paragraph({ marks: [{ attrs: { href: 'https://example.com/\ud800' }, type: 'link' }], text: 'https://example.com/\ud800', type: 'text' })),
+  'a link title': linked({ href: 'https://example.com/', title: 'a\udc00b' }),
+  'a linked image href': image({ url: 'https://example.com/a.png' }, [{ attrs: { href: 'https://example.com/\ud800' }, type: 'link' }]),
+  'a linked image title': image({ url: 'https://example.com/a.png' }, [{ attrs: { href: 'https://example.com/', title: '\ud800' }, type: 'link' }]),
+  'an image url': image({ url: 'https://example.com/\ud800.png' }),
+}
+
+for (const [place, doc] of Object.entries(surrogateOutsideText)) {
+  test(`writes no lone surrogate raw in ${place}`, () => {
+    survivesUtf8(doc)
+  })
+}
+
+const portableWithoutSurrogate: Record<string, [AdfDocument, string]> = {
+  'a code block': [document({ content: [{ text: 'a\udc00b', type: 'text' }], type: 'codeBlock' }), '```\nab\n```\n'],
+  'a code block language': [document({ attrs: { language: 'a\ud800' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }), '```\nx\n```\n'],
+  'a link href': [linked({ href: 'https://example.com/\ud800' }), '[x](https://example.com/%EF%BF%BD)\n'],
+  'a link title': [linked({ href: 'https://example.com/', title: 'a\udc00b' }), '[x](https://example.com/ "ab")\n'],
+  'an image alt text': [image({ alt: 'a\ud800', url: 'https://example.com/a.png' }), '![a](https://example.com/a.png)\n'],
+  'an image url': [image({ url: 'https://example.com/\ud800.png' }), '![](https://example.com/%EF%BF%BD.png)\n'],
+  text: [document(paragraph({ text: 'a\ud800b\u{1f389}', type: 'text' })), 'ab\u{1f389}\n'],
+}
+
+for (const [place, [doc, written]] of Object.entries(portableWithoutSurrogate)) {
+  test(`writes no lone surrogate in portable markdown in ${place}`, () => {
+    assert.equal(markdown(adfToPortableMarkdown(doc)), written)
+  })
+}
 
 test('alternates the marker between adjacent lists of a kind, the marker change being what parts them', () => {
   const list: AdfNode = { content: [{ content: [paragraph({ text: 'x', type: 'text' })], type: 'listItem' }], type: 'bulletList' }

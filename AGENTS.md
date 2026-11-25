@@ -40,6 +40,7 @@ In `docs/decisions.md`:
 - The portable flavour's spellings
 - The portable reader refuses what GFM's reading would drop
 - The portable reader reads what GFM's reading keeps
+- Portable markdown drops a lone surrogate, and writes one in an address as `%EF%BF%BD`
 - The HTML dialect
 - `htmlToAdf` also reads the dialect as a browser serializes it
 - No runtime dependencies
