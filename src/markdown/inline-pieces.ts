@@ -60,7 +60,7 @@ export type InlineReading = {
 
 type ReadingEntry = { at: number; closer: number; kind: 'emphasis'; width: number } | { at: number; kind: 'codeSpans' | 'links' }
 
-// What one content is read under. `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
+// `container` is `undefined` inside a directive's content slot, the emitter's `bracketed`.
 export type Scan = {
   readonly claims: Claims
   readonly container: LineContainer | undefined
@@ -91,7 +91,7 @@ export function record({ reading }: SharedScan, entry: ReadingEntry): void {
   else reading[entry.kind].push(entry.at)
 }
 
-// The content whole: each (image) stands as its nodes, and the text around it joins it.
+// The content whole: each (image) stands as its nodes, which join the text beside them.
 export function contentNodes(items: readonly Resolved[]): Inline[] {
   return mergeReadText(items.flatMap((item): Inline[] => (isImageAside(item) ? item.nodes : [item])))
 }
@@ -281,7 +281,6 @@ function pairedHighlights(pieces: readonly Piece[], items: readonly Resolved[][]
   return paired
 }
 
-// Runs after the emphasis marks are on: a paired delimiter gives up its text, which an unpaired one keeps under those marks.
 function highlightedBetween(items: readonly Resolved[][], paired: readonly HighlightPair[]): Resolved[][] {
   const marked = items.slice()
   for (const { closer, opener } of paired) {

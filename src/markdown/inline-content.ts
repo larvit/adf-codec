@@ -33,7 +33,7 @@ type Scanned = { image?: AdfNode; items: Resolved[]; openingSpellableLink: boole
 // Where a token stands: `pending` is the text before it that no piece holds yet.
 type Reach = { brackets: BracketStack; index: number; inline: InlineSource; pending: string; pieces: readonly Piece[] }
 
-// What a token leaves: the scan goes on at `end`, `pieces` follow those before `from`, and `pending` is the text no piece holds yet.
+// What a token leaves: the scan goes on at `end`, the pieces from `from` on give way to `pieces`, and `pending` is the text no piece holds yet.
 type Taken = { end: number; from?: number; opensSpellableLink?: boolean; pending?: string; pieces: Piece[] }
 
 const hreflessLink = 'the link mark spells its href: this one spells none'
@@ -61,7 +61,7 @@ function outermost(source: string, container: LineContainer, claims: Claims, sha
   return { claims, container, inLink: false, offset: 0, shared: { ...shared, targets: targetMemo(source) }, source, spans: noSpans }
 }
 
-// The pieces, the pending text and the bracket stack change here alone, by what each token leaves.
+// The pieces and the pending text change here alone, by what each token leaves.
 function scanInline(scan: Scan): Result<Scanned> {
   const brackets = bracketStack()
   const inline = inlineSource(scan.source)
@@ -71,7 +71,7 @@ function scanInline(scan: Scan): Result<Scanned> {
   let pending = ''
   while (index < scan.source.length) {
     const token = readInlineToken(inline, index, scan.claims)
-    // Only a line ending drops the spaces before it: CommonMark keeps those before a backslash hard break.
+    // A line ending drops the spaces before it; CommonMark keeps those before a backslash hard break.
     if (!isText(token)) for (const piece of textPieces(pending, token.kind === 'line-ending')) pieces.push(piece)
     const taken = takeToken(scan, { brackets, index, inline, pending, pieces }, token)
     if (!taken.ok) return taken

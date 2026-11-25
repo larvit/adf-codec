@@ -25,13 +25,13 @@ test('reports no spellable opening link where the line opens with text', () => {
   assert.equal(text.ok && text.value.openingSpellableLink, false)
 })
 
+// A node as its text or `type{attrs}[content]`, then `<its marks>`.
 function spelled(node: AdfNode): string {
   const marks = (node.marks ?? []).map((mark) => (mark.type === 'link' ? ['link', mark.attrs?.['href'], mark.attrs?.['title']].filter((part) => part !== undefined).join(':') : mark.type))
   const held = node.type === 'text' ? (node.text ?? '') : `${node.type}${JSON.stringify(node.attrs ?? {})}[${(node.content ?? []).map(spelled).join(' ')}]`
   return marks.length === 0 ? held : `${held}<${marks.join(', ')}>`
 }
 
-// Each node as its text or `type{attrs}[content]`, then `<its marks>`; a paragraph's lone image leads its nodes.
 function reading(source: string): string[] {
   const read = parseInlineContent(source, new Map([['ref', { destination: '/r', title: 't' }]]), [], 'paragraph', 'lossless')
   if (!read.ok) return [read.error.message]

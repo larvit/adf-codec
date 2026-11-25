@@ -93,7 +93,7 @@ type BlockTree = {
   append: (block: Block) => void
   // A directive among the containers closed is unclosed, so a fault takes its place.
   close: (depth: number) => void
-  // The directive at `depth` closes by its closer, and every container inside it as `close` closes it.
+  // The directive at `depth` closes by its closer; the containers inside it close as `close` closes them.
   closeDirective: (depth: number) => void
   containers: Pick<ContainerStack, 'directiveDepth' | 'edges' | 'open' | 'quoteEdges'>
   // A paragraph holding only link reference definitions leaves no block, yet ends the list before it as any block does.
@@ -235,7 +235,7 @@ function continuedList(previous: Block | undefined, list: ListBlock, ended: Read
   return isList(previous) && !ended.has(previous) && continuesList(previous, list) ? previous : undefined
 }
 
-// Each function handed the open leaf returns the leaf open after it.
+// Returns the leaf open after this line.
 function readLine(tree: BlockTree, leaf: OpenLeaf | undefined, line: Line, at: LineContext): OpenLeaf | undefined {
   const matched = matchContainers(tree.containers, leaf, line)
   // CommonMark: no container opens inside an open code or HTML block.
