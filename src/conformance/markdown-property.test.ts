@@ -513,7 +513,7 @@ const destinationPieces = fc.constantFrom(...'ab 9"\'()[]{}=!:#', ' !adf:{localI
 const bracketedDestination = fc.tuple(fc.constantFrom('u', 'v'), fc.array(destinationPieces, { maxLength: 6 }), fc.constantFrom('x', 'y')).map(([first, middle, last]) => `${first}${middle.join('')}${last}`)
 const afterLink = fc.constantFrom('', '"}', ')"}', '}', ' text')
 
-test('an angle-bracket link destination holds its spaces, quotes and marker openers, and a marker after the link still reads', { timeout: propertyTimeout }, () => {
+test('an angle-bracket link destination holds its spaces, quotes and marker openers, and a marker after the link gives the heading its id', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(bracketedDestination, afterLink, fc.constantFrom('', ' !adf:{localId=h}'), (destination, after, marker) => {
       const input = `# [a](<${destination}>)${after}${marker}`
@@ -522,6 +522,23 @@ test('an angle-bracket link destination holds its spaces, quotes and marker open
       const [heading] = parsed.value.content ?? []
       assert.equal(heading?.attrs?.localId, marker === '' ? undefined : 'h', `reading ${JSON.stringify(input)}`)
       assert.deepEqual(heading?.content?.[0]?.marks, [{ attrs: { href: destination }, type: 'link' }], `reading ${JSON.stringify(input)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})
+
+const linkOpeningText = fc.array(fc.constantFrom('u', ' ', '"', "'", '>', ')', '!adf:{localId="', 'x'), { maxLength: 6, minLength: 1 }).map((parts) => `[a](<${parts.join('')}`)
+
+test('text opening a link destination keeps its block id through a write and a read', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(linkOpeningText, fc.constantFrom('>)', '>)"', '>', 'h', '"}', ')'), fc.boolean(), (held, id, quoted) => {
+      const paragraph = { attrs: { localId: id }, content: [{ text: held, type: 'text' }], type: 'paragraph' }
+      const block = quoted ? { content: [paragraph], type: 'blockquote' } : { attrs: { level: 2, localId: id }, content: [{ text: held, type: 'text' }], type: 'heading' }
+      const written = adfToLosslessMarkdown({ content: [block], type: 'doc', version: 1 })
+      assert.ok(written.ok)
+      const read = losslessMarkdownToAdf(written.value)
+      assert.ok(read.ok, read.ok ? '' : `${read.error.code}: ${read.error.message} — reading ${JSON.stringify(written.value)}`)
+      assert.deepEqual(read.value.content, [block], `reading ${JSON.stringify(written.value)}`)
     }),
     propertyRuns(gateRuns),
   )

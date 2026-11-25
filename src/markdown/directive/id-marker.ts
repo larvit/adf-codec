@@ -21,7 +21,7 @@ export function spellIdMarker(id: string): string {
   return `${directivePrefix}${spellIdAttributes(id)}`
 }
 
-// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; an opener at index 0 has no text before it, so it is no trailing marker. An opener inside a link destination, which the text before it does not read as a link, is no marker either.
+// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; an opener at index 0 has no text before it, so it is no trailing marker. An opener is no marker either where cutting the line there changes which links it reads, as when it stands inside a link destination.
 export function readTrailingMarker(text: string, claims: Claims): TrailingMarker | undefined {
   for (let start = text.lastIndexOf(trailingOpener); start > 0; start = text.lastIndexOf(trailingOpener, start - 1)) {
     const read = readAttributes(text, start + trailingOpener.length - 1, pairFault)
@@ -36,7 +36,7 @@ export function readTrailingMarker(text: string, claims: Claims): TrailingMarker
   return undefined
 }
 
-// Where the reader takes each link opening, as one string to compare.
+// The offset of the `[` of each link or image the reader takes, as one string to compare.
 function linksRead(text: string, claims: Claims): string {
   // A link reads the same in a heading and a paragraph.
   return readLineBack(text, 'paragraph', claims).reading.links.join()
