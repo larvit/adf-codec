@@ -1,6 +1,7 @@
 import type { ConvertErrorPath, Result } from '../../result.ts'
 import type { Flavour } from '../flavour.ts'
-import type { InlineContent, LinkDefinitions } from '../inline-content.ts'
+import type { InlineContent } from '../inline-content.ts'
+import type { LinkDefinitions } from '../inline-pieces.ts'
 import type { LineContainer } from '../line-container.ts'
 import { failure, success } from '../../result.ts'
 import { openingLinkTakesDirective } from '../emit/spelling-questions.ts'

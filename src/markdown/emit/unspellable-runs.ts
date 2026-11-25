@@ -1,6 +1,6 @@
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { DelimiterRole, MarkRun, PlacedSegment } from './line-escaping.ts'
-import type { InlineReading } from '../inline-content.ts'
+import type { InlineReading } from '../inline-pieces.ts'
 import { delimiterFlags, isWordCharacter } from '../commonmark/emphasis-matching.ts'
 import { highlightFlanking } from '../inline-tokens.ts'
 import { identicalMark, nodeMarks } from '../../adf/document.ts'
