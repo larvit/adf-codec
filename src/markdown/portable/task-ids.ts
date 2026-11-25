@@ -3,26 +3,25 @@ import { blockNodeModel } from '../../adf/block-nodes.ts'
 
 const taskTypes = new Set(['blockTaskItem', 'taskItem', 'taskList'])
 
-type Level = { minted: AdfNode[]; next: number; node?: AdfNode; source: readonly AdfNode[] }
+type Level = { minted: AdfNode[]; node?: AdfNode; source: Iterator<AdfNode> }
 
 // A task node takes its number before the nodes it holds, so an id follows from the node's place in the document.
 export function mintTaskIds(document: AdfDocument, markdown: string): AdfDocument {
   const seed = hash128(markdown).join(' ')
-  const root: Level = { minted: [], next: 0, source: document.content ?? [] }
+  const root: Level = { minted: [], source: (document.content ?? []).values() }
   const open = [root]
   let count = 0
   for (let level = open.at(-1); level !== undefined; level = open.at(-1)) {
-    const node = level.source[level.next]
-    level.next += 1
-    if (node === undefined) {
-      if (level.next <= level.source.length) continue
+    const step = level.source.next()
+    if (step.done === true) {
       open.pop()
       if (level.node !== undefined) open.at(-1)?.minted.push({ ...level.node, content: level.minted })
       continue
     }
+    const node = step.value
     if (taskTypes.has(node.type)) count += 1
     const minted = taskTypes.has(node.type) ? { ...node, attrs: { ...node.attrs, localId: uuidV4(hash128(`${seed} ${count}`)) } } : node
-    if (node.content !== undefined && blockNodeModel(node.type)?.contentModel === 'block') open.push({ minted: [], next: 0, node: minted, source: node.content })
+    if (node.content !== undefined && blockNodeModel(node.type)?.contentModel === 'block') open.push({ minted: [], node: minted, source: node.content.values() })
     else level.minted.push(minted)
   }
   return document.content === undefined ? document : { ...document, content: root.minted }
