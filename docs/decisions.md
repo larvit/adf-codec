@@ -1230,11 +1230,12 @@ an edge.
 
 A round judges whitespace at a line edge by its leaf's marks, the marks of the leaf across the hard
 break, and whether a hard break lies between. That it drops what the passes would is held by the
-property test against the passes alone, `trimPass` on `trimmingRuns`' counts. A reference that
-counted a stripping run to its last holder, blank or not, parted from the passes on about one random
-line in 100 000: a blank end leaf of the run dropped at a line edge, and a hard break then joined
-the run to a later holder, so the blank beside it stayed inside. `trimmingRuns` is the trim's
-counting, which stops a run at its last non-blank holder, so the property holds the replay to it. The test
+property test against the passes alone, `trimPass` on `trimmingRuns`' counts. An earlier
+reference counted a stripping run to its last holder, blank or not. It disagreed with the passes on
+about one random line in 100 000: the passes dropped the run's blank end leaf at a line edge, and
+a hard break then joined the run to a later holder, so the reference kept a blank inside the run
+that the passes had already taken out. The passes are the trim's behaviour, so the property holds
+the replay to them. The test
 found three things a round owes: it judges all its leaves before it changes any, since `trimPass` judges a leaf by its
 neighbour as that stood before the pass, even where the neighbour goes in the same pass; it also
 judges the edge whitespace of a leaf holding more than whitespace, such as `'x '`; and it reads
