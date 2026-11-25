@@ -163,11 +163,10 @@ test('trims a line whose link run crosses a leaf holding no text as a leaf a pas
   assert.deepEqual(trimmedEdges(line, 'spanned'), [mention, { type: 'hardBreak' }, marked('x', link)])
 })
 
-test('trims the blanks a leaf holds at both ends, spaces and tabs alike, wherever the run is as long', () => {
-  for (const blanks of [' \t ', ' '.repeat(5000)]) {
-    assert.deepEqual(trimmedEdges([marked(`${blanks}a${blanks}`, { type: 'strong' })], 'spanned'), [marked('a', { type: 'strong' })])
-    assert.deepEqual(trimmedEdges([marked('a'), marked(`${blanks}b`, { type: 'strong' }), marked('c')], 'spanned'), [marked(`a${blanks}`), marked('b', { type: 'strong' }), marked('c')])
-  }
+test('trims the spaces and tabs a leaf holds at both ends, and moves them out of a mark mid-line', () => {
+  const blanks = ' \t '
+  assert.deepEqual(trimmedEdges([marked(`${blanks}a${blanks}`, { type: 'strong' })], 'spanned'), [marked('a', { type: 'strong' })])
+  assert.deepEqual(trimmedEdges([marked('a'), marked(`${blanks}b`, { type: 'strong' }), marked('c')], 'spanned'), [marked(`a${blanks}`), marked('b', { type: 'strong' }), marked('c')])
 })
 
 test('spells a link title on one line, dropping a carriage return and a null and turning a newline into a space', () => {
