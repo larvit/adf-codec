@@ -16,7 +16,6 @@
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 38 | 0.4.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
-| 76 | 0.4.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 204 | 0.4.0 |  |  | **Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
@@ -91,26 +90,6 @@ Touches:
 - `src/markdown/emit/inline-line.ts`: `emitLeaf`, `textSegments`
 - `src/markdown/emit/adf-to-markdown.test.ts`
 - `spec/flavour.md`: `## Canonical form` (small)
-
-### 76. State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.
-
-Technical principle DRY: the set is written in `tsconfig.build.json`'s `exclude`, `.oxlintrc.json`'s
-`ignorePatterns` and the `test` script's two `--test-coverage-exclude` flags, and §The size ratchet
-assumes they agree. A helper added to one list lints test code under the shipped ceiling, or drops
-shipped code from coverage, silently. Derive the others from one, or assert in a test that
-they agree. Found by the technical-principles audit, 2026-10-04.
-
-`mutation-tests/run.sh`'s pathspec restates the test files and test helpers, and
-`mutation-tests/stryker.config.mjs`'s `testFiles` the test files, so a helper missing from the
-pathspec has its mutants read as survivors. Found by the architecture review of item 152, 2026-10-28.
-
-Touches:
-
-- `tsconfig.build.json`: `exclude` (small)
-- `.oxlintrc.json`: `ignorePatterns` (small)
-- `package.json`: `test` (small)
-- `mutation-tests/run.sh`: lines 8-8
-- `mutation-tests/stryker.config.mjs`: lines 6-6
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
