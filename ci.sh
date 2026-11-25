@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 source ./docker-runner.sh
 
-# A leg builds what it reads, so one run alone tests the current tree: each prerequisite below rebuilds from the sources, and `needs` runs it first.
+# A leg builds what it reads, through `needs` and the prerequisites below, so a leg run on its own tests the current tree.
 installed() {
   in_image "$node_image" npm ci
 }
@@ -26,7 +26,7 @@ bundle_size_installed() {
   in_image "$node_image" npm ci --no-audit --no-fund --prefix bundle-size
 }
 
-bundle_size_measurable() {
+built_and_bundle_size_installed() {
   built &&
   bundle_size_installed
 }
@@ -143,7 +143,7 @@ in_image_memory=1g leg "release tooling tests ($node_image)" in_image "$node_ima
 
 leg "feature table is current ($node_image)" needs built in_image "$node_image" node feature-table/build.mjs --check
 leg "bundle size tests ($node_image)" needs bundle_size_installed in_image "$node_image" node --test bundle-size/
-leg "README's size figures are current ($node_image)" needs bundle_size_measurable in_image "$node_image" node bundle-size/run.mjs --check
+leg "README's size figures are current ($node_image)" needs built_and_bundle_size_installed in_image "$node_image" node bundle-size/run.mjs --check
 leg "typecheck the consumer ($node_image)" needs packed in_image "$node_image" npx tsc -p package-tests
 leg "round-trip on the engines floor ($floor_image)" needs packed in_image "$floor_image" node package-tests/node-floor.js
 
