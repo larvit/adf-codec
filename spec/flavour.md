@@ -271,7 +271,7 @@ lines than these, is a named error, and so is a block carrying two.
   language and its content the node's text; a node holding no `content` key is one empty fence.
   Attributes: `hideLineNumbers` (boolean), `language` (string), `localId` (string), `uniqueId`
   (string), `wrap` (boolean). A language no info string carries back — empty, opening the reserved
-  `adf:`, or holding a backtick, a backslash, a control character, edge whitespace or an entity
+  `adf:`, or holding a backtick, a backslash, a control character, a lone surrogate, edge whitespace or an entity
   reference — rides the `language` attribute instead and the fences carry no info string, and so
   does a language beside `content=empty`, which has no fence; writing it in the slot that rule
   leaves empty, or in both, is a named error, and so are fences whose info strings differ and an
@@ -564,7 +564,7 @@ inline directives, content required, holding a node that takes the mark. `link` 
 markdown spelling wherever CommonMark holds it — `<url>` for a bare autolink-shaped text, else
 `[text](url "title")` — and is the inline directive `!adf:link[text]{attrs}` only where CommonMark
 does not: an attribute besides `href` and `title`, an `href` or `title` no canonical escape spells
-(a control character, a backslash, an entity reference, an angle bracket beside a space or opening a
+(a control character, a lone surrogate, a backslash, an entity reference, an angle bracket beside a space or opening a
 bare destination, a newline in the title), or a link opening a paragraph whose markdown spelling
 would read as a link reference definition. Every such spelling carries an `href`: a directive link
 CommonMark could spell is a named error, and so is one spelling none. No link wraps a link at any

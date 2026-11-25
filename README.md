@@ -546,7 +546,7 @@ saving what this pair read replaces mentions, attachments and macros with text.
   read back wrong after 32 tries drops every `em`, `strike` and `strong` at once. Code text keeps
   no mark but `code` and `link`.
 - A newline in text is a hard break and in an expand's title a space, edge whitespace outside a
-  link or code span, or beside a hard break a link crosses, is trimmed, carriage returns and null characters are removed, and an empty
+  link or code span, or beside a hard break a link crosses, is trimmed, carriage returns, null characters and lone surrogates are removed, a lone surrogate in a link's or an image's address is `%EF%BF%BD`, and an empty
   paragraph drops.
 - A text node's `content` drops: Atlassian's schema forbids it, so no rendered document shows it.
 - Adjacent lists of a kind alternate markers, `- ` and `* `, `1.` and `1)`, since CommonMark

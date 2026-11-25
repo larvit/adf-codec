@@ -1,4 +1,4 @@
-import { backslashEscape, controlCharacterRange, decodeTextEscapes, holdsControlCharacter, holdsNullCharacter } from './grammar.ts'
+import { backslashEscape, controlCharacterRange, decodeTextEscapes, holdsControlCharacter, holdsLoneSurrogate, holdsNullCharacter } from './grammar.ts'
 import { foldCase } from './case-folding.ts'
 import { holdsEntityReference, readEntityReference } from './entity-references.ts'
 
@@ -137,7 +137,7 @@ export function skipLinkWhitespace(text: string, offset: number): number {
 }
 
 export function spellDestination(href: string): string | undefined {
-  if (holdsControlCharacter(href) || href.includes('\\') || holdsEntityReference(href)) return undefined
+  if (holdsControlCharacter(href) || holdsLoneSurrogate(href) || href.includes('\\') || holdsEntityReference(href)) return undefined
   if (href.includes(' ')) return /[<>]/.test(href) ? undefined : `<${href}>`
   return href.startsWith('<') ? undefined : escapeUnbalanced(href, '(', ')')
 }
@@ -164,7 +164,7 @@ export function escapeUnbalanced(spelling: string, opener: string, closer: strin
 }
 
 function spellTitle(title: string, escapes: TitleEscapes): string | undefined {
-  if (/[\n\r]/.test(title) || holdsNullCharacter(title)) return undefined
+  if (/[\n\r]/.test(title) || holdsNullCharacter(title) || holdsLoneSurrogate(title)) return undefined
   if (escapes === 'lossless') return title.includes('\\') || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
   let spelled = ''
   for (let index = 0; index < title.length; index += 1) {
