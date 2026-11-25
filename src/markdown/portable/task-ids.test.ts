@@ -31,3 +31,13 @@ test('mints each task node a UUID v4 in document order, unique and the same ever
   assert.deepEqual(taskIds(mintTaskIds(unminted(), '- [ ] a\n')), ids)
   assert.equal(taskIds(mintTaskIds(unminted(), '- [ ] b\n')).some((id) => ids.includes(id)), false)
 })
+
+test('numbers the task nodes alone, so a block between two task lists moves no id', () => {
+  const list = (): AdfNode => ({ content: [{ attrs: { state: 'TODO' }, type: 'taskItem' }], type: 'taskList' })
+  const paragraph: AdfNode = { content: [{ text: 'a', type: 'text' }], type: 'paragraph' }
+  assert.deepEqual(taskIds(mintTaskIds(tasks(list(), paragraph, list()), 'x')), taskIds(mintTaskIds(tasks(list(), list()), 'x')))
+})
+
+test('returns a document without content as it is', () => {
+  assert.deepEqual(mintTaskIds({ type: 'doc', version: 1 }, ''), { type: 'doc', version: 1 })
+})
