@@ -937,7 +937,10 @@ principle. Valid while no measure picks out what readers find hard better than a
 
 `.oxlintrc.json` holds one size rule. It also holds the import boundaries §The source parts by ADF
 and format draws. The size rule, over the files `tsconfig.build.json` builds, is a per-function line
-ceiling, set at that set's worst and moving only downward. It covers the built files alone, since
+ceiling, set at that set's worst and moving only downward. `tsconfig.build.json`'s `exclude` is the one
+list of the files the package does not ship; `src/conformance/unshipped-files.test.ts` fails where
+`.oxlintrc.json`, the `test` script's coverage exclusions or the mutation run's pathspec and test files
+differ from it. It covers the built files alone, since
 one ceiling over the tests too would have to be their worst, loosening the guard over the shipped
 code. It guards against drift and never drives a refactor, so no cyclomatic rule and no second size
 rule join it: neither measure picked out what nine readers found hard (the comprehension panel,

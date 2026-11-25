@@ -1292,3 +1292,49 @@ Read most (opens and searches):
 - `src/wiki/emit/inline-line.ts` 2
 - `src/wiki/spellings.ts` 2
 - `CHANGELOG.md` 1
+
+## Reading cost, chunk 66072141ef50, finished 2026-11-25T21:49:24Z
+
+74831 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `ci.sh` 4
+- `docker-runner.sh` 2
+- `package.json` 2
+- `.gitignore` 1
+- `README.md` 1
+- `browser-tests/convert-corpus.js` 1
+- `browser-tests/run.js` 1
+- `bundle-size/figures.mjs` 1
+- `bundle-size/run.mjs` 1
+- `docs/decisions.md` 1
+
+## Reading cost, chunk 18f35910c0bd, finished 2026-11-25T21:54:11Z
+
+104963 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/conformance/markdown-property.test.ts` 15
+- `src/markdown/inline-content.ts` 9
+- `src/markdown/parse/blocks.ts` 5
+- `src/markdown/directive/id-marker.test.ts` 4
+- `docker-runner.sh` 3
+- `.oxlintrc.json` 2
+- `ci.sh` 2
+- `src/conformance/property-harness.ts` 2
+- `package.json` 1
+- `src/markdown/commonmark/link-syntax.ts` 1
+
+## Reading cost, chunk 23f41f616b03, finished 2026-11-25T21:57:41Z
+
+72869 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docker-runner.sh` 3
+- `docs/decisions.md` 3
+- `ci.sh` 2
+- `.gitignore` 1
+- `package.json` 1
