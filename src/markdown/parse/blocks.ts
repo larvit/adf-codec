@@ -86,36 +86,44 @@ type ContainerStack = {
   quoteEdges: readonly number[]
 }
 
-type Walk = ParsedBlocks & {
-  claims: Claims
-  endedLists: Set<ListBlock>
-  leaf: OpenLeaf | undefined
-  leafOpeners: Map<Block[], Map<string, LeafOpener>>
-  position: SourcePosition
-  stack: ContainerStack
+type OpenParagraph = Extract<OpenLeaf, { kind: 'paragraph' }>
+
+// `append` and `last` address the blocks of the innermost open container.
+type BlockTree = {
+  append: (block: Block) => void
+  // A directive among the containers closed is unclosed, so a fault takes its place.
+  close: (depth: number) => void
+  // The directive at `depth` closes by its closer, and every container inside it as `close` closes it.
+  closeDirective: (depth: number) => void
+  containers: Pick<ContainerStack, 'directiveDepth' | 'edges' | 'open' | 'quoteEdges'>
+  // A paragraph holding only link reference definitions leaves no block, yet ends the list before it as any block does.
+  endList: () => void
+  faultLeafOpener: (name: string, fault: ConvertFault, position: SourcePosition) => void
+  last: () => Block | undefined
+  openContainer: (start: ContainerStart, position: SourcePosition) => void
+  openDirective: (block: DirectiveBlock) => void
+  parsed: ParsedBlocks
+  // The paragraph's text after the link reference definitions it opens with.
+  takeDefinitions: (paragraph: string) => string
 }
+
+type LineContext = { claims: Claims; position: SourcePosition }
 
 const indentedCodeColumns = 4
 const largestOpenerIndentation = 3
 const tabStop = 4
 
 export function parseBlocks(markdown: string, flavour: Flavour): ParsedBlocks {
-  const walk: Walk = {
-    blocks: [],
-    claims: flavourClaims[flavour],
-    definitions: new Map(),
-    endedLists: new Set(),
-    leaf: undefined,
-    leafOpeners: new Map(),
-    position: { line: 1, offset: 0 },
-    stack: containerStack(),
-  }
+  const claims = flavourClaims[flavour]
+  const tree = blockTree()
+  let leaf: OpenLeaf | undefined
+  let position: SourcePosition = { line: 1, offset: 0 }
   for (const line of sourceLines(markdown)) {
-    walk.position = line.position
-    readLine(walk, { column: 0, spaces: 0, text: line.text })
+    position = line.position
+    leaf = readLine(tree, leaf, { column: 0, spaces: 0, text: line.text }, { claims, position })
   }
-  closeContainers(walk, 0)
-  return { blocks: walk.blocks, definitions: walk.definitions }
+  closeContainers(tree, leaf, 0, { claims, position })
+  return tree.parsed
 }
 
 function containerStack(): ContainerStack {
@@ -151,23 +159,92 @@ function containerStack(): ContainerStack {
   }
 }
 
-function readLine(walk: Walk, line: Line): void {
-  const matched = matchContainers(walk, line)
-  // CommonMark: no container opens inside an open code or HTML block.
-  if (matched.depth === walk.stack.open.length && swallowsLines(walk.leaf)) {
-    readBlockLine(walk, matched.rest)
-    return
-  }
-  const paragraphOpen = matched.depth === walk.stack.open.length && walk.leaf?.kind === 'paragraph'
-  const opened = openContainers(walk, matched.rest, paragraphOpen, matched.depth)
-  if (!opened.opened && matched.depth < walk.stack.open.length) {
-    if (continuesLazily(walk, opened.rest)) {
-      appendParagraph(walk, lineText(opened.rest))
-      return
+function blockTree(): BlockTree {
+  const parsed: ParsedBlocks = { blocks: [], definitions: new Map() }
+  const endedLists = new Set<ListBlock>()
+  const leafOpeners = leafOpenerLedger()
+  const stack = containerStack()
+  const current = (): Block[] => stack.open.at(-1)?.blocks ?? parsed.blocks
+  const close = (depth: number): void => {
+    for (const container of stack.drop(depth)) {
+      if (container.kind === 'directive') container.parent[container.index] = unclosedDirective(container)
     }
-    closeContainers(walk, matched.depth)
   }
-  readBlockLine(walk, opened.rest)
+  return {
+    append: (block) => void current().push(block),
+    close,
+    closeDirective: (depth) => {
+      close(depth + 1)
+      stack.drop(depth)
+    },
+    containers: stack,
+    endList: () => {
+      const previous = current().at(-1)
+      if (isList(previous)) endedLists.add(previous)
+    },
+    faultLeafOpener: (name, fault, position) => {
+      const held = current()
+      const opener = leafOpeners.take(held, name)
+      if (opener === undefined) held.push({ fault, kind: 'fault', position })
+      else held[opener.index] = { fault, kind: 'fault', position: opener.position }
+    },
+    last: () => current().at(-1),
+    openContainer: (start, position) => {
+      if (start.kind === 'blockquote') {
+        const blockquote: EdgeContainer = { blocks: [], kind: 'blockquote', position }
+        current().push(blockquote)
+        return stack.push(blockquote)
+      }
+      const list = start.fresh ? (continuedList(current().at(-1), start.list, endedLists) ?? start.list) : start.list
+      if (start.fresh && list === start.list) current().push(list)
+      const held: Block[] = []
+      list.items.push(held)
+      stack.push({ blocks: held, indentation: start.indentation, kind: 'item', list })
+    },
+    openDirective: (block) => {
+      const parent = current()
+      const index = parent.push(block) - 1
+      if (block.blocks === undefined) leafOpeners.record(parent, block.name, { index, position: block.position })
+      else stack.push({ blocks: block.blocks, index, kind: 'directive', name: block.name, parent, position: block.position })
+    },
+    parsed,
+    takeDefinitions: (paragraph) => readLinkDefinitions(parsed.definitions, paragraph),
+  }
+}
+
+// A leaf directive's opener, by the blocks holding it and its name, until a closer faults it.
+function leafOpenerLedger(): { record: (parent: Block[], name: string, opener: LeafOpener) => void; take: (parent: Block[], name: string) => LeafOpener | undefined } {
+  const openers = new Map<Block[], Map<string, LeafOpener>>()
+  return {
+    record: (parent, name, opener) => void entryOf(openers, parent, () => new Map<string, LeafOpener>()).set(name, opener),
+    take: (parent, name) => {
+      const opener = openers.get(parent)?.get(name)
+      openers.get(parent)?.delete(name)
+      return opener
+    },
+  }
+}
+
+function unclosedDirective(container: OpenDirective): Block {
+  const fault = malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it; ${directiveEscape}`)
+  return { fault, kind: 'fault', position: container.position }
+}
+
+// An empty item closes at the blank line after it, yet the next item continues its list unless that list ended.
+function continuedList(previous: Block | undefined, list: ListBlock, ended: ReadonlySet<ListBlock>): ListBlock | undefined {
+  return isList(previous) && !ended.has(previous) && continuesList(previous, list) ? previous : undefined
+}
+
+// Each function handed the open leaf returns the leaf open after it.
+function readLine(tree: BlockTree, leaf: OpenLeaf | undefined, line: Line, at: LineContext): OpenLeaf | undefined {
+  const matched = matchContainers(tree.containers, leaf, line)
+  // CommonMark: no container opens inside an open code or HTML block.
+  if (matched.depth === tree.containers.open.length && swallowsLines(leaf)) return readBlockLine(tree, leaf, matched.rest, at)
+  const paragraphOpen = matched.depth === tree.containers.open.length && leaf?.kind === 'paragraph'
+  const opened = openContainers(tree, leaf, matched.rest, paragraphOpen, matched.depth, at)
+  if (opened.opened || matched.depth === tree.containers.open.length) return readBlockLine(tree, opened.leaf, opened.rest, at)
+  if (continuesLazily(leaf, opened.rest, at.claims)) return appendParagraph(leaf, lineText(opened.rest), at.position)
+  return readBlockLine(tree, closeContainers(tree, leaf, matched.depth, at), opened.rest, at)
 }
 
 function swallowsLines(leaf: OpenLeaf | undefined): boolean {
@@ -175,31 +252,31 @@ function swallowsLines(leaf: OpenLeaf | undefined): boolean {
 }
 
 // A directive container has no continuation marker, so every line continues it.
-function matchContainers(walk: Walk, line: Line): { depth: number; rest: Line } {
-  if (isBlankLine(line.text)) return matchBlankLine(walk, line, 0, 0)
+function matchContainers(containers: BlockTree['containers'], leaf: OpenLeaf | undefined, line: Line): { depth: number; rest: Line } {
+  if (isBlankLine(line.text)) return matchBlankLine(containers, leaf, line, 0, 0)
   let quotesPassed = 0
   let rest = line
-  for (const [index, { container, depth }] of walk.stack.edges.entries()) {
+  for (const [index, { container, depth }] of containers.edges.entries()) {
     const next = continuesContainer(container, rest)
     if (next === undefined) return { depth, rest }
     rest = next
     if (container.kind !== 'blockquote') continue
     quotesPassed += 1
-    if (isBlankLine(rest.text)) return matchBlankLine(walk, rest, index + 1, quotesPassed)
+    if (isBlankLine(rest.text)) return matchBlankLine(containers, leaf, rest, index + 1, quotesPassed)
   }
-  return { depth: walk.stack.open.length, rest }
+  return { depth: containers.open.length, rest }
 }
 
 // A blank line continues every list item up to the next blockquote, so it is matched in one step rather than one per item.
 // A list item begins with at most one blank line: an empty one gives the second up. Only the innermost item is empty:
 // opening a container inside an item gives it a block.
-function matchBlankLine(walk: Walk, line: Line, from: number, quotesPassed: number): { depth: number; rest: Line } {
-  const { edges, quoteEdges } = walk.stack
+function matchBlankLine(containers: BlockTree['containers'], leaf: OpenLeaf | undefined, line: Line, from: number, quotesPassed: number): { depth: number; rest: Line } {
+  const { edges, quoteEdges } = containers
   const last = edges.length - 1
   const innermost = edges[last]?.container
-  const emptyItem = last >= from && innermost?.kind === 'item' && innermost.blocks.length === 0 && walk.leaf === undefined
+  const emptyItem = last >= from && innermost?.kind === 'item' && innermost.blocks.length === 0 && leaf === undefined
   const stop = Math.min(quoteEdges[quotesPassed] ?? edges.length, emptyItem ? last : edges.length)
-  return { depth: edges[stop]?.depth ?? walk.stack.open.length, rest: stop === from ? line : { column: line.column, spaces: 0, text: '' } }
+  return { depth: edges[stop]?.depth ?? containers.open.length, rest: stop === from ? line : { column: line.column, spaces: 0, text: '' } }
 }
 
 function continuesContainer(container: EdgeContainer, line: Line): Line | undefined {
@@ -212,20 +289,21 @@ function blockquoteRest(opener: Line): Line | undefined {
   return removeColumns({ column: opener.column + 1, spaces: 0, text: opener.text.slice(1) }, 1)
 }
 
-function openContainers(walk: Walk, line: Line, paragraphOpen: boolean, depth: number): { opened: boolean; rest: Line } {
-  const unmatched = walk.stack.open[depth]
+function openContainers(tree: BlockTree, leaf: OpenLeaf | undefined, line: Line, paragraphOpen: boolean, depth: number, at: LineContext): { leaf: OpenLeaf | undefined; opened: boolean; rest: Line } {
+  const unmatched = tree.containers.open[depth]
   const tail = thematicBreakTail(lineText(line))
+  let open = leaf
   let opened = false
   let rest = line
   while (leadingColumns(rest) < indentedCodeColumns) {
-    const start = containerStart(rest, tail, opened ? false : paragraphOpen, opened ? undefined : unmatched, walk.position)
+    const start = containerStart(rest, tail, opened ? false : paragraphOpen, opened ? undefined : unmatched, at.position)
     if (start === undefined) break
-    if (!opened) closeContainers(walk, depth)
+    if (!opened) open = closeContainers(tree, leaf, depth, at)
     opened = true
-    openContainer(walk, start)
-    rest = start.kind === 'item' && walk.claims.directives ? afterItemMarker(walk, start.rest) : start.rest
+    tree.openContainer(start, at.position)
+    rest = start.kind === 'item' && at.claims.directives ? afterItemMarker(tree, start.rest, at.position) : start.rest
   }
-  return { opened, rest }
+  return { leaf: open, opened, rest }
 }
 
 function containerStart(
@@ -269,115 +347,47 @@ function continuesList(list: ListBlock, next: ListBlock): boolean {
   return list.kind === next.kind && list.delimiter === next.delimiter
 }
 
-function openContainer(walk: Walk, start: ContainerStart): void {
-  const blocks: Block[] = []
-  if (start.kind === 'blockquote') {
-    const blockquote: EdgeContainer = { blocks, kind: 'blockquote', position: walk.position }
-    currentBlocks(walk).push(blockquote)
-    walk.stack.push(blockquote)
-    return
-  }
-  const list = openedList(walk, start)
-  list.items.push(blocks)
-  walk.stack.push({ blocks, indentation: start.indentation, kind: 'item', list })
-}
-
-function afterItemMarker(walk: Walk, line: Line): Line {
+function afterItemMarker(tree: BlockTree, line: Line, position: SourcePosition): Line {
   const marker = line.spaces === 0 ? readItemMarker(line.text) : undefined
   if (marker === undefined) return line
-  currentBlocks(walk).push({ attributes: marker.attributes, kind: 'marker', placement: 'item', position: walk.position })
+  tree.append({ attributes: marker.attributes, kind: 'marker', placement: 'item', position })
   return { column: line.column + marker.rest, spaces: 0, text: line.text.slice(marker.rest) }
-}
-
-// An empty item closes at the blank line after it, yet the next item continues its list unless endList ended it.
-function openedList(walk: Walk, start: Extract<ContainerStart, { kind: 'item' }>): ListBlock {
-  if (!start.fresh) return start.list
-  const blocks = currentBlocks(walk)
-  const previous = blocks.at(-1)
-  if (isList(previous) && !walk.endedLists.has(previous) && continuesList(previous, start.list)) return previous
-  blocks.push(start.list)
-  return start.list
-}
-
-// A paragraph holding only link reference definitions leaves no block, yet ends the list before it as any block does.
-function endList(walk: Walk): void {
-  const previous = currentBlocks(walk).at(-1)
-  if (isList(previous)) walk.endedLists.add(previous)
 }
 
 function isList(block: Block | undefined): block is ListBlock {
   return block?.kind === 'bulletList' || block?.kind === 'orderedList'
 }
 
-function closeContainers(walk: Walk, depth: number): void {
-  closeLeaf(walk)
-  for (const container of walk.stack.drop(depth)) {
-    if (container.kind !== 'directive') continue
-    container.parent[container.index] = {
-      fault: malformedDirective(`the ${container.name} container is unclosed: no ${spellDirectiveCloser(container.name)} follows inside the block holding it; ${directiveEscape}`),
-      kind: 'fault',
-      position: container.position,
-    }
+function closeContainers(tree: BlockTree, leaf: OpenLeaf | undefined, depth: number, at: LineContext): undefined {
+  closeLeaf(tree, leaf, at)
+  tree.close(depth)
+  return undefined
+}
+
+function applyDirectiveLine(tree: BlockTree, directive: DirectiveLine, position: SourcePosition): void {
+  if (directive.kind === 'closer') closeDirective(tree, directive.name, position)
+  else if (directive.kind === 'marker') tree.append({ attributes: directive.attributes, kind: 'marker', placement: 'line', position })
+  else {
+    const { name } = directive
+    tree.openDirective({ argument: directive.argument, attributes: directive.attributes, blocks: blockDirectiveForm(name) === 'container' ? [] : undefined, kind: 'directive', name, position })
   }
 }
 
-function applyDirectiveLine(walk: Walk, directive: DirectiveLine): void {
-  if (directive.kind === 'closer') closeDirective(walk, directive.name)
-  else if (directive.kind === 'marker') currentBlocks(walk).push({ attributes: directive.attributes, kind: 'marker', placement: 'line', position: walk.position })
-  else openDirective(walk, directive)
-}
-
-function openDirective(walk: Walk, directive: Extract<DirectiveLine, { kind: 'opener' }>): void {
-  const { name } = directive
-  const block: DirectiveBlock = {
-    argument: directive.argument,
-    attributes: directive.attributes,
-    blocks: blockDirectiveForm(name) === 'container' ? [] : undefined,
-    kind: 'directive',
-    name,
-    position: walk.position,
-  }
-  const parent = currentBlocks(walk)
-  const index = parent.push(block) - 1
-  const { position } = block
-  if (block.blocks === undefined) {
-    entryOf(walk.leafOpeners, parent, () => new Map<string, LeafOpener>()).set(name, { index, position })
-    return
-  }
-  walk.stack.push({ blocks: block.blocks, index, kind: 'directive', name, parent, position })
-}
-
-function closeDirective(walk: Walk, name: string): void {
+function closeDirective(tree: BlockTree, name: string, position: SourcePosition): void {
   const closer = spellDirectiveCloser(name)
   if (blockDirectiveForm(name) === 'leaf') {
-    faultLeafOpener(walk, name, malformedDirective(`${name} takes no body, so no ${closer} closes it; ${directiveEscape}`))
+    tree.faultLeafOpener(name, malformedDirective(`${name} takes no body, so no ${closer} closes it; ${directiveEscape}`), position)
     return
   }
-  const depth = openDirectiveDepth(walk, name)
-  if (depth === undefined) {
-    pushFault(walk, malformedDirective(`the closer ${closer} closes no ${name} container open where it stands; ${directiveEscape}`))
-    return
-  }
-  closeContainers(walk, depth + 1)
-  walk.stack.drop(depth)
+  const depth = openDirectiveDepth(tree.containers, name)
+  if (depth === undefined) tree.append({ fault: malformedDirective(`the closer ${closer} closes no ${name} container open where it stands; ${directiveEscape}`), kind: 'fault', position })
+  else tree.closeDirective(depth)
 }
 
 // A closer crosses no list item or blockquote edge.
-function openDirectiveDepth(walk: Walk, name: string): number | undefined {
-  const depth = walk.stack.directiveDepth(name)
-  return depth === undefined || depth < (walk.stack.edges.at(-1)?.depth ?? -1) ? undefined : depth
-}
-
-function faultLeafOpener(walk: Walk, name: string, fault: ConvertFault): void {
-  const blocks = currentBlocks(walk)
-  const openers = walk.leafOpeners.get(blocks)
-  const opener = openers?.get(name)
-  if (openers === undefined || opener === undefined) {
-    pushFault(walk, fault)
-    return
-  }
-  openers.delete(name)
-  blocks[opener.index] = { fault, kind: 'fault', position: opener.position }
+function openDirectiveDepth(containers: BlockTree['containers'], name: string): number | undefined {
+  const depth = containers.directiveDepth(name)
+  return depth === undefined || depth < (containers.edges.at(-1)?.depth ?? -1) ? undefined : depth
 }
 
 function entryOf<K, V>(map: Map<K, V>, key: K, create: () => V): V {
@@ -388,16 +398,12 @@ function entryOf<K, V>(map: Map<K, V>, key: K, create: () => V): V {
   return created
 }
 
-function pushFault(walk: Walk, fault: ConvertFault): void {
-  currentBlocks(walk).push({ fault, kind: 'fault', position: walk.position })
-}
-
 // A claimed line ends the lazy continuation CommonMark would fold it into (spec/flavour.md).
-function continuesLazily(walk: Walk, line: Line): boolean {
-  if (walk.leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
+function continuesLazily(leaf: OpenLeaf | undefined, line: Line, claims: Claims): boolean {
+  if (leaf?.kind !== 'paragraph' || isBlankLine(line.text)) return false
   if (leadingColumns(line) >= indentedCodeColumns) return true
   const opener = lineText(removeColumns(line, largestOpenerIndentation))
-  return !opensBlock(walk.claims, opener)
+  return !opensBlock(claims, opener)
 }
 
 // Whether the line opens a block other than a paragraph, a setext underline or indented code.
@@ -406,38 +412,27 @@ function opensBlock(claims: Claims, opener: string): boolean {
   return atxHeading(opener) !== undefined || openingCodeFence(opener) !== undefined || openingHtmlBlock(opener, true) !== undefined
 }
 
-function readBlockLine(walk: Walk, line: Line): void {
-  const leaf = walk.leaf
+function readBlockLine(tree: BlockTree, leaf: OpenLeaf | undefined, line: Line, at: LineContext): OpenLeaf | undefined {
   if (leaf?.kind === 'fenced-code') {
-    if (closingCodeFence(lineText(removeColumns(line, largestOpenerIndentation)), leaf.marker)) closeLeaf(walk)
-    else leaf.lines.push(lineText(removeColumns(line, leaf.indentation)))
-    return
+    if (closingCodeFence(lineText(removeColumns(line, largestOpenerIndentation)), leaf.marker)) return closeLeaf(tree, leaf, at)
+    leaf.lines.push(lineText(removeColumns(line, leaf.indentation)))
+    return leaf
   }
-  if (leaf?.kind === 'html') {
-    if (leaf.closer === undefined ? isBlankLine(line.text) : leaf.closer.test(lineText(line))) closeLeaf(walk)
-    return
-  }
+  if (leaf?.kind === 'html') return (leaf.closer === undefined ? isBlankLine(line.text) : leaf.closer.test(lineText(line))) ? closeLeaf(tree, leaf, at) : leaf
   if (leaf?.kind === 'pipe-table') {
-    const cells = leadingColumns(line) < indentedCodeColumns ? pipeTableRow(walk.claims, lineText(removeColumns(line, largestOpenerIndentation))) : undefined
+    const cells = leadingColumns(line) < indentedCodeColumns ? pipeTableRow(at.claims, lineText(removeColumns(line, largestOpenerIndentation))) : undefined
     if (cells !== undefined) {
       leaf.rows.push(cells)
-      return
+      return leaf
     }
-    closeLeaf(walk)
   }
-  if (leaf?.kind === 'indented-code') {
-    if (readIndentedCodeLine(leaf, line)) return
-    closeLeaf(walk)
+  if (leaf?.kind === 'indented-code' && readIndentedCodeLine(leaf, line)) return leaf
+  const open = leaf?.kind === 'paragraph' ? leaf : closeLeaf(tree, leaf, at)
+  if (isBlankLine(line.text)) return closeLeaf(tree, open, at)
+  if (open === undefined && leadingColumns(line) >= indentedCodeColumns) {
+    return { held: [], kind: 'indented-code', lines: [lineText(removeColumns(line, indentedCodeColumns))], position: at.position }
   }
-  if (isBlankLine(line.text)) {
-    closeLeaf(walk)
-    return
-  }
-  if (walk.leaf === undefined && leadingColumns(line) >= indentedCodeColumns) {
-    walk.leaf = { held: [], kind: 'indented-code', lines: [lineText(removeColumns(line, indentedCodeColumns))], position: walk.position }
-    return
-  }
-  openLeaf(walk, line)
+  return openLeaf(tree, open, line, at)
 }
 
 function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>, line: Line): boolean {
@@ -452,101 +447,93 @@ function readIndentedCodeLine(leaf: Extract<OpenLeaf, { kind: 'indented-code' }>
   return true
 }
 
-function openLeaf(walk: Walk, line: Line): void {
+function openLeaf(tree: BlockTree, leaf: OpenParagraph | undefined, line: Line, at: LineContext): OpenLeaf | undefined {
+  const { claims, position } = at
   const opener = lineText(removeColumns(line, largestOpenerIndentation))
-  const directive = walk.claims.directives ? readDirectiveLine(opener) : undefined
+  const directive = claims.directives ? readDirectiveLine(opener) : undefined
   if (directive !== undefined) {
-    closeLeaf(walk)
-    if (directive.fault === undefined) applyDirectiveLine(walk, directive.value)
-    else pushFault(walk, directive.fault)
-    return
+    closeLeaf(tree, leaf, at)
+    if (directive.fault === undefined) applyDirectiveLine(tree, directive.value, position)
+    else tree.append({ fault: directive.fault, kind: 'fault', position })
+    return undefined
   }
-  if (leadingColumns(line) < indentedCodeColumns && openGfmTable(walk, opener)) return
-  const cells = walk.claims.pipeTables === false ? undefined : pipeCells(opener)
+  const table = leadingColumns(line) < indentedCodeColumns ? gfmTable(tree, leaf, opener, at) : undefined
+  if (table !== undefined) return table
+  const cells = claims.pipeTables === false ? undefined : pipeCells(opener)
   if (cells !== undefined) {
-    closeLeaf(walk)
-    walk.leaf = { kind: 'pipe-table', position: walk.position, rows: [cells] }
-    return
+    closeLeaf(tree, leaf, at)
+    return { kind: 'pipe-table', position, rows: [cells] }
   }
-  if (readLineBlock(walk, opener)) return
+  const underline = readSetextUnderline(tree, leaf, opener, claims)
+  if (underline.read || readLineBlock(tree, underline.leaf, opener, at)) return undefined
   const fence = openingCodeFence(opener)
   if (fence !== undefined) {
-    closeLeaf(walk)
-    walk.leaf = { indentation: leadingColumns(line), info: fence.info, kind: 'fenced-code', lines: [], marker: fence.marker, position: walk.position }
-    return
+    closeLeaf(tree, underline.leaf, at)
+    return { indentation: leadingColumns(line), info: fence.info, kind: 'fenced-code', lines: [], marker: fence.marker, position }
   }
-  const html = openingHtmlBlock(opener, walk.leaf?.kind === 'paragraph')
-  if (html === undefined) {
-    appendParagraph(walk, lineText(line))
-    return
-  }
-  closeLeaf(walk)
-  walk.leaf = { closer: html.closer, construct: html.construct, kind: 'html', position: walk.position }
-  if (html.closer?.test(lineText(line)) === true) closeLeaf(walk)
+  const html = openingHtmlBlock(opener, underline.leaf !== undefined)
+  if (html === undefined) return appendParagraph(underline.leaf, lineText(line), position)
+  closeLeaf(tree, underline.leaf, at)
+  const block: OpenLeaf = { closer: html.closer, construct: html.construct, kind: 'html', position }
+  return html.closer?.test(lineText(line)) === true ? closeLeaf(tree, block, at) : block
 }
 
 // A setext underline over a paragraph the definitions emptied is no heading: it opens the next block.
-function readLineBlock(walk: Walk, opener: string): boolean {
-  const level = walk.leaf?.kind === 'paragraph' ? setextHeadingLevel(opener) : undefined
-  if (level !== undefined) {
-    const paragraph = takeParagraph(walk)
-    if (paragraph !== undefined) {
-      currentBlocks(walk).push(paragraph.kind === 'fault' ? paragraph : (bareTableFault(paragraph, walk.claims) ?? { ...paragraph, kind: 'heading', level }))
-      return true
-    }
-  }
+function readSetextUnderline(tree: BlockTree, leaf: OpenParagraph | undefined, opener: string, claims: Claims): { leaf: OpenParagraph | undefined; read: boolean } {
+  if (leaf === undefined) return { leaf, read: false }
+  const level = setextHeadingLevel(opener)
+  if (level === undefined) return { leaf, read: false }
+  const paragraph = takeParagraph(tree, leaf, claims)
+  if (paragraph === undefined) return { leaf: undefined, read: false }
+  tree.append(paragraph.kind === 'fault' ? paragraph : (bareTableFault(paragraph, claims) ?? { ...paragraph, kind: 'heading', level }))
+  return { leaf: undefined, read: true }
+}
+
+function readLineBlock(tree: BlockTree, leaf: OpenParagraph | undefined, opener: string, at: LineContext): boolean {
+  const { claims, position } = at
   if (isThematicBreak(opener)) {
-    closeLeaf(walk)
-    currentBlocks(walk).push({ kind: 'rule', position: walk.position })
+    closeLeaf(tree, leaf, at)
+    tree.append({ kind: 'rule', position })
     return true
   }
   const heading = atxHeading(opener)
   if (heading === undefined) return false
-  closeLeaf(walk)
-  const trailed = walk.claims.directives ? readTrailingMarker(heading.text, walk.claims) : undefined
-  currentBlocks(walk).push({ kind: 'heading', level: heading.level, position: walk.position, ...trailedText(trailed?.text ?? heading.text, trailed) })
+  closeLeaf(tree, leaf, at)
+  const trailed = claims.directives ? readTrailingMarker(heading.text, claims) : undefined
+  tree.append({ kind: 'heading', level: heading.level, position, ...trailedText(trailed?.text ?? heading.text, trailed) })
   return true
 }
 
-function appendParagraph(walk: Walk, line: string): void {
-  const leaf = walk.leaf
+function appendParagraph(leaf: OpenLeaf | undefined, line: string, position: SourcePosition): OpenLeaf {
   const text = line.replace(/^[ \t]+/, '')
-  if (leaf?.kind !== 'paragraph') {
-    walk.leaf = { kind: 'paragraph', lines: [{ position: walk.position, text }], position: walk.position }
-    return
-  }
-  leaf.lines.push({ position: walk.position, text })
+  if (leaf?.kind !== 'paragraph') return { kind: 'paragraph', lines: [{ position, text }], position }
+  leaf.lines.push({ position, text })
+  return leaf
 }
 
-function closeLeaf(walk: Walk): void {
-  const leaf = walk.leaf
-  if (leaf === undefined) return
-  if (leaf.kind === 'paragraph') {
-    const paragraph = takeParagraph(walk)
-    if (paragraph === undefined) endList(walk)
-    else currentBlocks(walk).push(paragraph.kind === 'fault' ? paragraph : (bareTableFault(paragraph, walk.claims) ?? paragraph))
-    return
-  }
-  walk.leaf = undefined
+function closeLeaf(tree: BlockTree, leaf: OpenLeaf | undefined, { claims }: LineContext): undefined {
+  if (leaf === undefined) return undefined
   const { position } = leaf
-  if (leaf.kind === 'html') currentBlocks(walk).push({ construct: leaf.construct, kind: 'html', position })
-  else if (leaf.kind === 'pipe-table') currentBlocks(walk).push(pipeTableBlock(leaf.rows, position, walk.claims))
-  else currentBlocks(walk).push({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', position, text: leaf.lines.join('\n') })
+  if (leaf.kind === 'paragraph') {
+    const paragraph = takeParagraph(tree, leaf, claims)
+    if (paragraph === undefined) tree.endList()
+    else tree.append(paragraph.kind === 'fault' ? paragraph : (bareTableFault(paragraph, claims) ?? paragraph))
+  } else if (leaf.kind === 'html') tree.append({ construct: leaf.construct, kind: 'html', position })
+  else if (leaf.kind === 'pipe-table') tree.append(pipeTableBlock(leaf.rows, position, claims))
+  else tree.append({ kind: 'code', language: leaf.kind === 'fenced-code' ? decodeTextEscapes(leaf.info) : '', position, text: leaf.lines.join('\n') })
+  return undefined
 }
 
 // GFM, Tables: a paragraph's last line heads a table where a delimiter row of its cell count follows.
-function openGfmTable(walk: Walk, opener: string): boolean {
-  const paragraph = walk.leaf
-  if (walk.claims.pipeTables !== 'gfm' || paragraph?.kind !== 'paragraph') return false
+function gfmTable(tree: BlockTree, paragraph: OpenParagraph | undefined, opener: string, at: LineContext): OpenLeaf | undefined {
+  if (at.claims.pipeTables !== 'gfm' || paragraph === undefined) return undefined
   const delimiter = pipeCells(opener) ?? barePipeCells(opener)
   const last = paragraph.lines.at(-1)
   const header = last === undefined ? undefined : barePipeCells(last.text)
-  if (last === undefined || delimiter === undefined || header?.length !== delimiter.length || !isDelimiterRow(delimiter)) return false
+  if (last === undefined || delimiter === undefined || header?.length !== delimiter.length || !isDelimiterRow(delimiter)) return undefined
   const [first, ...earlier] = paragraph.lines.slice(0, -1)
-  walk.leaf = first === undefined ? undefined : { ...paragraph, lines: [first, ...earlier] }
-  closeLeaf(walk)
-  walk.leaf = { kind: 'pipe-table', position: last.position, rows: [header, delimiter] }
-  return true
+  closeLeaf(tree, first === undefined ? undefined : { ...paragraph, lines: [first, ...earlier] }, at)
+  return { kind: 'pipe-table', position: last.position, rows: [header, delimiter] }
 }
 
 // GFM, Tables: a row without its leading `|` continues the table until a blank line or a line opening another block, and a line holding no `|` is one cell.
@@ -603,36 +590,31 @@ function faultedBlock(message: string, position: SourcePosition): Block {
 }
 
 // The definitions a paragraph gives up are whole lines, so what is left starts at one this held. A trailing marker is read first: its id is no definition's destination.
-function takeParagraph(walk: Walk): Extract<Block, { kind: 'fault' }> | ParagraphBlock | undefined {
-  const leaf = walk.leaf
-  if (leaf?.kind !== 'paragraph') return undefined
-  walk.leaf = undefined
+function takeParagraph(tree: BlockTree, leaf: OpenParagraph, claims: Claims): Extract<Block, { kind: 'fault' }> | ParagraphBlock | undefined {
   const lines = leaf.lines.map((line) => line.text).join('\n')
-  const trailed = walk.claims.directives ? readTrailingMarker(lines, walk.claims) : undefined
-  const text = readLinkDefinitions(walk.definitions, trailed?.text ?? lines)
+  const trailed = claims.directives ? readTrailingMarker(lines, claims) : undefined
+  const text = tree.takeDefinitions(trailed?.text ?? lines)
   if (text === '' && trailed !== undefined) return { fault: malformedDirective(`an ${markerOpener}…} marker ends a paragraph holding no text once its link reference definitions are read; ${directiveEscape}`), kind: 'fault', position: leaf.position }
-  if (text === '') return partMarker(walk)
+  if (text === '') return partMarker(tree)
   const kept = leaf.lines[leaf.lines.length - text.split('\n').length]
   return { kind: 'paragraph', position: kept?.position ?? leaf.position, ...trailedText(text, trailed) }
 }
 
 // Definitions between a marker line and its block are no blank line: the fault stands after the marker, which reads it first.
-function partMarker(walk: Walk): undefined {
-  const previous = currentBlocks(walk).at(-1)
+function partMarker(tree: BlockTree): undefined {
+  const previous = tree.last()
   if (previous?.kind !== 'marker' || previous.placement !== 'line') return undefined
   const fault = malformedDirective(`only a blank line, never a link reference definition, parts an ${markerOpener}…} marker from the rule or list below it, and no line parts it from any other block; ${directiveEscape}`)
-  currentBlocks(walk).push({ fault, kind: 'fault', position: previous.position })
+  tree.append({ fault, kind: 'fault', position: previous.position })
   return undefined
 }
+
 
 // A block holding no marker has no `trailing` key.
 function trailedText(text: string, trailed: TrailingMarker | undefined): { text: string; trailing?: Read<DirectiveAttributes> } {
   return trailed === undefined ? { text } : { text, trailing: trailed.attributes }
 }
 
-function currentBlocks(walk: Walk): Block[] {
-  return walk.stack.open.at(-1)?.blocks ?? walk.blocks
-}
 
 function* sourceLines(markdown: string): Generator<{ position: SourcePosition; text: string }> {
   let line = 1
