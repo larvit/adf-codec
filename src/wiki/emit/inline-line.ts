@@ -77,7 +77,7 @@ function leafSpelling(node: AdfNode): string | undefined {
   return accessLevel === '' && typeof id === 'string' && spellableUrl.test(id) ? `[~accountid:${id}]` : undefined
 }
 
-// `[<href>]`: the text is the href of the link that is its innermost mark, a link marking no node beside it.
+// `[<href>]`: the text is the href of the link that is its innermost mark, a link marking no node beside it; `spelledMarks` has already refused an `href` that is no address.
 function hrefSpelling(node: AdfNode, text: string, nodes: readonly AdfNode[], index: number): string | undefined {
   const link = nodeMarks(node).at(-1)
   if (link?.type !== 'link') return undefined
