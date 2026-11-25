@@ -151,11 +151,13 @@ Touches:
 
 ### 207. Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.
 
-Item 200's probes of Jira (a Jira Cloud site, 2026-11-25) found that Jira stores a linked `href` with `"` as `%22`, `<` as `%3C`, `>` as `%3E`, `` ` `` as `%60` and a final `^` as `%5E`; and that it links a path or anchor holding `^:` (the `^` stored as `%5E`), which `linkedAddress` in `src/wiki/spellings.ts` reads as text. `jiraWikiToAdf` keeps the `href` as written, so `[a|/a"b]` reads as `href` `/a"b` where Jira stores `/a%22b`, and the lossless writer writes a `link` whose `href` holds one of these characters as a bracket that Jira stores differently. Decide, by `docs/decisions.md` §A wiki link's address is one Jira links, whether the reader should write the escape and the writer should carry such an `href`, then make both agree with Jira, and record the list in `spec/wiki.md` §Marks.
+Item 200's probes of a Jira Cloud site (2026-11-25) found two things `linkedAddress` in `src/wiki/spellings.ts` doesn't model. Jira stores a linked `href` with `"` as `%22`, `<` as `%3C`, `>` as `%3E`, `` ` `` as `%60` and a final `^` as `%5E`. And it links a path or anchor holding `^:`, which `linkedAddress` reads as text, and a bare `http://x/^y`, which it stores as `http://x/%5Ey`.
+
+`jiraWikiToAdf` keeps the `href` as written, so `[a|/a"b]` reads as `href` `/a"b` where Jira stores `/a%22b`. The lossless writer writes a `link` whose `href` holds one of these characters as a bracket that Jira stores differently. Decide, by `docs/decisions.md` §A wiki link's address is one that Jira links, whether the reader should convert these characters to their escapes and the writer should carry such an `href`. Then make both agree with Jira, and list the characters in `spec/wiki.md` §Marks.
 
 Touches:
 - `src/wiki/spellings.ts`: `linkedAddress`
-- `src/wiki/parse/inline.ts`: `bracket`, `bracketed`
+- `src/wiki/parse/inline.ts`: `bracket`, `bracketed`, `bareAddress`
 - `src/wiki/emit/inline-line.ts`: `linkDelimiters`
 - `spec/wiki.md`: `## Marks`
 - `src/wiki/emit/adf-to-jira-wiki.test.ts`

@@ -101,7 +101,7 @@ In `docs/decisions.md`:
 - A plain wiki spelling stands for the attributes Jira's editor writes, and any other attribute rides the carry
 - `htmlToAdf` reads any HTML, with no option and no second call
 - The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string
-- A wiki link's address is one Jira links, and any other `href` rides the carry
+- A wiki link's address is one that Jira links, and any other `href` rides the carry
 
 ## 1. Nothing about any consumer in the library
 
