@@ -1360,3 +1360,50 @@ Read most (opens and searches):
 - `package.json` 2
 - `src/conformance/flavour.test.ts` 1
 - `tsconfig.build.json` 1
+
+## Reading cost, chunk 0cb132ea5e67, finished 2026-11-25T22:41:38Z
+
+96242 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `spec/flavour.md` 8
+- `src/markdown/emit/inline-line.ts` 6
+- `src/markdown/directive/syntax.ts` 4
+- `src/markdown/emit/adf-to-markdown.test.ts` 4
+- `MIGRATION.md` 3
+- `CHANGELOG.md` 2
+- `README.md` 2
+- `ci.sh` 2
+- `src/markdown/directive/text.ts` 2
+- `src/markdown/parse/markdown-to-adf.test.ts` 2
+
+## Reading cost, chunk 33e5ef141fc0, finished 2026-11-25T22:50:56Z
+
+70171 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/conformance/adf-property.test.ts` 5
+- `spec/html.md` 3
+- `docs/decisions.md` 2
+- `ci.sh` 1
+- `package.json` 1
+- `src/html/emit/adf-to-html.test.ts` 1
+
+## Reading cost, chunk 1b5bd7718d91, finished 2026-11-25T22:55:01Z
+
+100281 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `docs/decisions.md` 9
+- `src/markdown/portable/inline-reduction.test.ts` 7
+- `src/markdown/portable/inline-reduction.ts` 6
+- `spec/flavour.md` 3
+- `docker-runner.sh` 2
+- `CHANGELOG.md` 1
+- `README.md` 1
+- `ci.sh` 1
+- `package.json` 1
+- `src/conformance/property-harness.ts` 1

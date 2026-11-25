@@ -8,7 +8,7 @@ import type { Result } from './result.ts'
 import { adfToHtml } from './html/emit/adf-to-html.ts'
 import { adfToLosslessMarkdown } from './markdown/emit/adf-to-markdown.ts'
 import { htmlToAdf } from './html/parse/html-to-adf.ts'
-import { jsonValue, propertyRuns } from './conformance/property-harness.ts'
+import { jsonValue, propertyRuns, propertyTimeout } from './conformance/property-harness.ts'
 import { losslessMarkdownToAdf } from './markdown/parse/markdown-to-adf.ts'
 import { parseJsonText } from './json-text.ts'
 import { serializeCanonicalJson } from './canonical-json.ts'
@@ -65,7 +65,7 @@ test('reads a value nested far past the call stack without recursing', () => {
   assert.ok(parseJsonText(`${'{"a":'.repeat(depth)}1${'}'.repeat(depth)}`).value !== undefined)
 })
 
-test('reads back every value the canonical serializer writes', () => {
+test('reads back every value the canonical serializer writes', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(jsonValue, fc.constantFrom<JsonSpelling>('compact', 'two-space'), (value, spelling) => {
       assert.deepEqual(parseJsonText(serializeCanonicalJson(value, spelling)), { value })
@@ -74,7 +74,7 @@ test('reads back every value the canonical serializer writes', () => {
   )
 })
 
-test('accepts exactly the text JSON.parse accepts', () => {
+test('accepts exactly the text JSON.parse accepts', { timeout: propertyTimeout }, () => {
   const jsonish = fc.string({ maxLength: 12, unit: fc.constantFrom(...'{}[],:"\\ \n-+.0123456789eEtruefalsn/bu\u0001x') })
   fc.assert(
     fc.property(jsonish, (text) => {

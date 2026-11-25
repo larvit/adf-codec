@@ -6,11 +6,11 @@ import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { PortableLineFallback } from '../emit/inline-line.ts'
 import type { RunGrouping } from '../emit/inline-runs.ts'
-import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
+import { lineContainer, markedLine, propertyRuns, propertyTimeout } from '../../conformance/property-harness.ts'
 import { portableJudgement, portableLeaves, portableLink, reduceInline, trimmedEdges, trimmedEdgesPass, trimmingRuns, trimPass, withoutFallback } from './inline-reduction.ts'
 import { success, type Result } from '../../result.ts'
 
-test('reduces a line alike dropping every run a pass may or the first alone', () => {
+test('reduces a line alike dropping every run a pass may or the first alone', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(markedLine, lineContainer, (nodes, container) => {
       assert.deepEqual(reduceInline(nodes, container, { depth: 0, path: [], sources: new Map() }), firstRunLine(nodes, container))
@@ -76,7 +76,7 @@ const trimLine = fc.oneof(
 )
 
 for (const grouping of groupings) {
-  test(`trims a ${grouping} line as the passes alone trim it, in no more passes`, () => {
+  test(`trims a ${grouping} line as the passes alone trim it, in no more passes`, { timeout: propertyTimeout }, () => {
     fc.assert(
       fc.property(trimLine, (line) => {
         const peeled = trimmedWith(line, (leaves) => trimPass(leaves, (held) => trimmingRuns(held, grouping)))
