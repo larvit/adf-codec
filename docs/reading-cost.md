@@ -1326,3 +1326,37 @@ Read most (opens and searches):
 - `ci.sh` 2
 - `.gitignore` 1
 - `package.json` 1
+
+## Reading cost, chunk 8483e842cb92, finished 2026-11-25T22:03:48Z
+
+73310 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/portable/inline-reduction.ts` 9
+- `README.md` 3
+- `src/markdown/portable/inline-reduction.test.ts` 3
+- `ci.sh` 2
+- `docker-runner.sh` 2
+- `src/adf/shown-text.ts` 2
+- `.gitignore` 1
+- `package.json` 1
+- `src/markdown/line-container.ts` 1
+- `src/markdown/portable/adf-to-portable-markdown.ts` 1
+
+## Reading cost, chunk ee2aa03c88b3, finished 2026-11-25T22:19:04Z
+
+70737 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `.github/workflows/ci.yml` 2
+- `.oxlintrc.json` 2
+- `ci.sh` 2
+- `docker-runner.sh` 2
+- `docs/decisions.md` 2
+- `mutation-tests/run.sh` 2
+- `mutation-tests/stryker.config.mjs` 2
+- `package.json` 2
+- `src/conformance/flavour.test.ts` 1
+- `tsconfig.build.json` 1

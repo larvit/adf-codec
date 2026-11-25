@@ -76,7 +76,7 @@ function edited(html: string, [at, removed, piece]: readonly [number, number, st
   return tokens.join('')
 }
 
-// A raw `<` or `>` inside a quoted attribute value, which a browser's serializer may leave, and adfToHtml writes as an entity.
+// A raw `<` or `>` inside a quoted attribute value, which a browser's serializer may leave, and adfToHtml writes as an entity (docs/decisions.md §`htmlToAdf` also reads the dialect as a browser serializes it).
 function escapedInAttributes(html: string): string {
   return html.replace(/<[a-z][^\s>/]*(?:\s+[^\s=>/]+(?:="[^"]*")?)*\s*\/?>/g, (tag) => tag.replace(/="[^"]*"/g, (value) => value.replaceAll('<', '&lt;').replaceAll('>', '&gt;')))
 }
@@ -219,6 +219,14 @@ test('HTML of the dialect\'s own elements, edited, reads only if adfToHtml write
     }),
     propertyRuns(gateRuns),
   )
+})
+
+test('a raw < or > in an attribute value reads as the entity adfToHtml writes', () => {
+  const read = htmlToAdf('<pre><code class="language-<aaa">x</code></pre>\n')
+  assert.ok(read.ok)
+  const written = adfToHtml(read.value)
+  assert.ok(written.ok)
+  assert.equal(written.value, '<pre><code class="language-&lt;aaa">x</code></pre>\n')
 })
 
 test('a generated document writes the portable markdown its editor-normal form writes', { timeout: propertyTimeout }, () => {

@@ -555,6 +555,10 @@ a carry element shows too. These are every difference the algorithm leaves betwe
 and `adfToHtml`'s, checked against Firefox's own `innerHTML` in the browser leg, and they hold for
 every element the dialect writes, later ones included.
 
+`adfToHtml` keeps writing `&lt;` and `&gt;` in an attribute value, so HTML read with a raw one
+writes back as the entity, and the HTML property's byte check compares against the entity spelling
+(2026-11-25). Writing the raw spelling back would drop the escape the dialect spells for every value.
+
 One more difference is DOM state, not the algorithm's: a `<details>` its user opened carries `open=""`
 after its other attributes. `htmlToAdf` reads it as the same expand (the maintainer, 2026-11-15),
 since ADF's `expand` holds no open state and the state is the viewer's.
