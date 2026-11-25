@@ -328,19 +328,19 @@ function leafEdges(leaf: AdfNode, before: Beside, after: Beside): AdfNode[] | un
   const marks = nodeMarks(leaf)
   const text = leaf.text
   if (text === undefined || marks.some((mark) => mark.type === 'code')) return undefined
-  const edges = edgeWhitespace(text)
-  const lead = text.slice(0, edges.lead)
-  const trail = text.slice(text.length - edges.trail)
+  const blanks = edgeWhitespace(text)
+  const lead = text.slice(0, blanks.lead)
+  const trail = text.slice(text.length - blanks.trail)
   const leading = edgeOutcome(marks, before, lead.length)
   const trailing = edgeOutcome(marks, after, trail.length)
   if (leading.kind === 'keep' && trailing.kind === 'keep' && leading.depth === marks.length && trailing.depth === marks.length) return undefined
   if (lead === text) return leading.kind === 'drop' || trailing.kind === 'drop' ? [] : [textLeaf(text, marks.slice(0, Math.min(leading.depth, trailing.depth)))]
-  const kept: AdfNode[] = []
-  if (lead !== '' && leading.kind === 'keep') kept.push(textLeaf(lead, marks.slice(0, leading.depth)))
+  const edges: AdfNode[] = []
+  if (lead !== '' && leading.kind === 'keep') edges.push(textLeaf(lead, marks.slice(0, leading.depth)))
   const core = text.slice(lead.length, text.length - trail.length)
-  if (core !== '') kept.push(textLeaf(core, marks))
-  if (trail !== '' && trailing.kind === 'keep') kept.push(textLeaf(trail, marks.slice(0, trailing.depth)))
-  return kept
+  if (core !== '') edges.push(textLeaf(core, marks))
+  if (trail !== '' && trailing.kind === 'keep') edges.push(textLeaf(trail, marks.slice(0, trailing.depth)))
+  return edges
 }
 
 // Text not marked `code` holds every run over it, so the runs it shares are its outermost marks.
