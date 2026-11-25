@@ -529,14 +529,15 @@ Shipped !adf:emoji[🎉]{shortName=":tada:"} on !adf:date{timestamp=175608000000
 ```
 
 **Text CommonMark cannot hold plainly.** A carriage return in text is `&#13;`, which CommonMark
-reads back as the character. Three things are spelled `!adf:text{text="…"}`: a newline inside a text
-node; a null character, which CommonMark reads as U+FFFD; and a space or tab where CommonMark strips
-or refuses one — a block's inline content edges, either side of a line break, an em, strong or
-strike spelling's inner edges, a pipe cell's edges. The reserved key carries the node's text,
-escaped by the attribute grammar and never literal: pipe cells trim and pad. The emitter wraps the
-run alone and leaves the rest plain text, which the spelled run joins on reading. Input reads that
-spelling alone: the value is one run of spaces and tabs, one run of newlines, or one run of null
-characters, and anything else — a mixed run, or text CommonMark carries plainly — is a named error.
+reads back as the character. Four things are spelled `!adf:text{text="…"}`: a newline inside a text
+node; a null character, which CommonMark reads as U+FFFD; a lone surrogate, which UTF-8 stores as
+U+FFFD; and a space or tab where CommonMark strips or refuses one — a block's inline content edges,
+either side of a line break, an em, strong or strike spelling's inner edges, a pipe cell's edges. The
+reserved key carries the node's text, escaped by the attribute grammar and never literal: pipe cells
+trim and pad. The emitter wraps the run alone and leaves the rest plain text, which the spelled run
+joins on reading. Input reads that spelling alone: the value is one run of spaces and tabs, one run
+of newlines, one run of null characters, or one run of lone surrogates, and anything else — a mixed
+run, or text CommonMark carries plainly — is a named error.
 
 ```
 !adf:text{text="  "}Two leading spaces held, and one text node split!adf:text{text="\n"}over two lines.

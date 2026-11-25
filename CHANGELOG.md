@@ -63,6 +63,7 @@
   enumerable keys alone, so an inherited or non-enumerable key drops. A document of more than
   10,000,000 JSON values returns `unsupported-node-shape`.
 - The README states the package's minified and gzipped size, its tarball and its unpacked size, and gives each compared converter's minified and gzipped size in a column of the comparison table. The release fails where the package's stated size is more than a tenth off the build's.
+- `adfToLosslessMarkdown` writes a lone surrogate in text as `!adf:text{text="\ud800"}`, where `0.3.1` wrote it raw, so markdown stored as UTF-8 no longer reads back U+FFFD. `losslessMarkdownToAdf` reads that spelling.
 
 ## 0.3.1
 
