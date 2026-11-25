@@ -41,8 +41,9 @@ test('the coverage report leaves out exactly the unshipped files', () => {
   assert.deepEqual(excluded.sort(), unshipped)
 })
 
-test('the mutation run mutates no unshipped file, and its pathspec reads each as git matches it', () => {
+test('the mutation run leaves out exactly the unshipped files, spelled as a git pathspec', () => {
   const pathspec = [...read('mutation-tests/run.sh').matchAll(/':!([^']+)'/g)].map(match => String(match[1]))
+  // A pathspec's `*` crosses `/`, so it spells `src/**/*.test.ts` as `src/*.test.ts`.
   assert.deepEqual(pathspec.sort(), unshipped.map(glob => glob.replace('**/', '')))
 })
 
