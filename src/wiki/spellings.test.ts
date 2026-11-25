@@ -1,21 +1,21 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { linkedAddress } from './spellings.ts'
+import { linkedAddress, wellFormedAddress } from './spellings.ts'
 
 const schemesAfterColon = ['callto', 'cvs', 'facetime', 'feed', 'git', 'irc', 'irc6', 'itms', 'magnet', 'mailto', 'mvn', 'news', 'nntp', 'notes', 'rdp', 'sip', 'sips', 'skype', 'slack', 'ssh', 'svn', 'tel', 'telnet', 'urn', 'vnc', 'whatsapp', 'xmpp']
 const schemesAfterSlashesOnly = ['file', 'ftp', 'ftps', 'gopher', 'hipchat', 'http', 'https', 'sftp', 'smb']
 const schemesJiraShowsAsText = ['about', 'afp', 'blob', 'cid', 'data', 'fax', 'geo', 'imap', 'ircs', 'javascript', 'ldap', 'maps', 'nfs', 'rtsp', 'sms', 'steam', 'vscode', 'webcal', 'ws', 'wss']
 
 for (const scheme of schemesAfterColon) {
-  test(`links ${scheme}: and ${scheme}:// before something`, () => {
+  test(`links ${scheme}:x and ${scheme}://x`, () => {
     assert.equal(linkedAddress(`${scheme}:x`), true)
     assert.equal(linkedAddress(`${scheme}://x`), true)
   })
 }
 
 for (const scheme of schemesAfterSlashesOnly) {
-  test(`links ${scheme}:// but not ${scheme}: before something`, () => {
+  test(`links ${scheme}://x but not ${scheme}:x`, () => {
     assert.equal(linkedAddress(`${scheme}://x`), true)
     assert.equal(linkedAddress(`${scheme}:x`), false)
   })
@@ -41,5 +41,17 @@ const text = ['', 'word', 'x.com', 'www.x.com', 'a@b.c', 'foo/bar', '../p', './p
 for (const address of text) {
   test(`shows ${JSON.stringify(address)} as text`, () => {
     assert.equal(linkedAddress(address), false)
+  })
+}
+
+for (const address of ['http://x/a%41', '/a#b', '/a^b']) {
+  test(`${address} is well formed`, () => {
+    assert.equal(wellFormedAddress(address), true)
+  })
+}
+
+for (const address of ['http://x/a%', 'http://x/a%4', 'http://x/a%zz', '/a#b#c']) {
+  test(`${address} is not well formed`, () => {
+    assert.equal(wellFormedAddress(address), false)
   })
 }

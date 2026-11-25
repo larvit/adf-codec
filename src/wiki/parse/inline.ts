@@ -3,7 +3,7 @@ import type { ConvertFault } from '../../result.ts'
 import { colourNames } from './colour-names.ts'
 import { identicalMarks } from '../../adf/document.ts'
 import { readAdfMacro } from './adf-macro.ts'
-import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl } from '../spellings.ts'
+import { linkedAddress, smileyEmoji, smileys, spellableColour, spellableTitle, spellableUrl, wellFormedAddress } from '../spellings.ts'
 
 // `end`: where the reading stopped, a cell's closing `|` or the line's end.
 export type InlineRead = { end: number; fault?: undefined; nodes: AdfNode[] } | { fault: ConvertFault }
@@ -261,7 +261,7 @@ function bareAddress(scan: Scan, at: number): number {
   let end = found.length
   while ('.,;?'.includes(found.charAt(end - 1))) end -= 1
   const href = found.slice(0, end)
-  if (href.endsWith('://')) return plainCharacter(scan, at)
+  if (href.endsWith('://') || !wellFormedAddress(href)) return plainCharacter(scan, at)
   push(scan, { marks: [{ attrs: { href }, type: 'link' }], text: href })
   return at + href.length
 }
