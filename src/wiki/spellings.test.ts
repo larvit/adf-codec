@@ -36,7 +36,7 @@ for (const address of linked) {
   })
 }
 
-const text = ['', 'word', 'x.com', 'www.x.com', 'a@b.c', 'foo/bar', '../p', './p', '?q', 'x#y', '~user', '^att.png', 'SCRUM-1', 'a:b', '1:2', 'x:', 'x://y', 's3://b/k', 'git+ssh://h/p', 'mailto:', 'tel:', 'http:', 'http://', 'mailto://', 'tel://', 'ssh://', 'mailto:#', 'mailto:#a', 'ssh:#', '//', '/#a#b', '#a#b', '/a##', 'http://x/a#b#c', '/%', '/a%', '/a%2', '/a%zz', '#%2g', 'http://x/a%41%', '/^x', '/a^b', '#a^^', 'http://x/^y', 'mailto:a^b', 'a b', '/a b', 'http://x y', 'a|b', '[x', 'a\\b', 'a{b', 'a}b']
+const text = ['', 'word', 'x.com', 'www.x.com', 'a@b.c', 'foo/bar', '../p', './p', '?q', 'x#y', '~user', '^att.png', 'SCRUM-1', 'a:b', '1:2', 'x:', ':mailto:x', 'sshx', 'telx', 'x://y', 's3://b/k', 'git+ssh://h/p', 'mailto:', 'tel:', 'http:', 'http://', 'mailto://', 'tel://', 'ssh://', 'mailto:#', 'mailto:#a', 'ssh:#', '//', '/#a#b', '#a#b', '/a##', 'http://x/a#b#c', '/%', '/a%', '/a%2', '/a%zz', '#%2g', 'http://x/a%41%', '/^x', '/a^b', '#a^^', 'http://x/^y', 'mailto:a^b', 'a b', '/a b', 'http://x y', 'a|b', '[x', 'a\\b', 'a{b', 'a}b']
 
 for (const address of text) {
   test(`shows ${JSON.stringify(address)} as text`, () => {

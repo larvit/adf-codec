@@ -58,8 +58,10 @@ const schemesAfterSlashes: ReadonlySet<string> = new Set(['file', 'ftp', 'ftps',
 export function linkedAddress(address: string): boolean {
   if (!spellableUrl.test(address) || (address.match(/#/g)?.length ?? 0) > 1 || /%(?![0-9a-f]{2})|\^./i.test(address)) return false
   if (address.startsWith('/') || address.startsWith('#')) return address !== '//'
-  const [, scheme = '', rest = ''] = /^([^:]+):(.*)$/.exec(address) ?? []
-  const lowered = scheme.toLowerCase()
+  const colon = address.indexOf(':')
+  if (colon === -1) return false
+  const lowered = address.slice(0, colon).toLowerCase()
+  const rest = address.slice(colon + 1)
   if (rest.startsWith('//')) return rest.length > 2 && schemesAfterSlashes.has(lowered)
   return schemesAfterColon.has(lowered) && rest !== '' && !rest.startsWith('#')
 }
