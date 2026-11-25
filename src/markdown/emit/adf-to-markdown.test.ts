@@ -110,6 +110,7 @@ const portableWithoutSurrogate: Record<string, [AdfDocument, string]> = {
   'a code block language': [document({ attrs: { language: 'a\ud800' }, content: [{ text: 'x', type: 'text' }], type: 'codeBlock' }), '```\nx\n```\n'],
   'a link href': [linked({ href: 'https://example.com/\ud800' }), '[x](https://example.com/%EF%BF%BD)\n'],
   'a link title': [linked({ href: 'https://example.com/', title: 'a\udc00b' }), '[x](https://example.com/ "ab")\n'],
+  'an expand title': [document({ attrs: { title: ' \t\ud800 a\udc00b' }, type: 'expand' }), '> [!NOTE]- ab\n'],
   'an image alt text': [image({ alt: 'a\ud800', url: 'https://example.com/a.png' }), '![a](https://example.com/a.png)\n'],
   'an image url': [image({ url: 'https://example.com/\ud800.png' }), '![](https://example.com/%EF%BF%BD.png)\n'],
   text: [document(paragraph({ text: 'a\ud800b\u{1f389}', type: 'text' })), 'ab\u{1f389}\n'],
