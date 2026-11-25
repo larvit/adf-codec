@@ -924,6 +924,12 @@ functions, and a branch floor that only ever moves upward. It sits below 100 bec
 `noUncheckedIndexedAccess` and ADF's optional keys force — `?? []`, `?? {}`, `?.`, an index
 compared against `undefined` — have a half no valid document reaches.
 
+A run on an unchanged tree reading a different branch figure than an earlier one is a defect to
+chase, not noise to absorb. The figure was 98.84 in nine runs of one tree (2026-11-25): three with
+the runner's default file parallelism, three with `--test-concurrency=1` and three on one CPU. The
+floor rises to the measured figure rounded down to a whole number: 99 once a run of the full suite
+reads 99.00 or more.
+
 ## The size ratchet
 
 2026-09-20, the maintainer; the import boundaries, 2026-10-22, the maintainer. KISS, a technical
