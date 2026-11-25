@@ -1,6 +1,6 @@
 export default {
   coverageAnalysis: 'perTest',
-  ignorePatterns: ['/browser-tests', '/converter-comparison', '/dist', '/mutation-tests', '/package-tests'],
+  ignorePatterns: ['/browser-tests', '/converter-comparison', '/dist', '/package-tests'],
   jsonReporter: { fileName: '/tmp/mutation-report.json' },
   reporters: ['clear-text', 'json', 'progress-append-only'],
   tap: { testFiles: ['src/**/*.test.ts'] },
