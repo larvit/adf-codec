@@ -6,7 +6,7 @@
 
 `Bar = 0.1`
 
-`Next ID = 207`
+`Next ID = 208`
 
 ## Items
 
@@ -19,6 +19,7 @@
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 199 | 0.4.0 |  |  | **Spell a text ending in `:` or `;` inside a line plainly where the next spelled character cannot close a smiley, as in `*Environment:* Chrome`.** | 2 | 1 | 1 | 2 | 3 | 6 by 2, 11 by 2 | 3.5 |
+| 207 | 0.4.0 | 200 |  | **Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.** | 2 | 2 | 2 | 4 | 3 | 11 by 3, 6 by 1 | 3.4 |
 | 172 | 0.4.0 |  | principle | **Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.** | 3 | 1 | 1 | 3 | 8 | code health by 2 | 0.5 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
@@ -147,6 +148,18 @@ Touches:
 - `src/wiki/emit/text-escaping.ts`: `escapedText`, `smileyStops`
 - `spec/wiki.md`: `## Inline`
 - `src/wiki/emit/adf-to-jira-wiki.test.ts`
+
+### 207. Read and write a wiki link's `href` as Jira does where Jira percent-escapes it, so the reader's `href` equals the one Jira stores.
+
+Item 200's probes of Jira (a Jira Cloud site, 2026-11-25) found that Jira stores a linked `href` with `"` as `%22`, `<` as `%3C`, `>` as `%3E`, `` ` `` as `%60` and a final `^` as `%5E`; and that it links a path or anchor holding `^:` (the `^` stored as `%5E`), which `linkedAddress` in `src/wiki/spellings.ts` reads as text. `jiraWikiToAdf` keeps the `href` as written, so `[a|/a"b]` reads as `href` `/a"b` where Jira stores `/a%22b`, and the lossless writer writes a `link` whose `href` holds one of these characters as a bracket that Jira stores differently. Decide, by `docs/decisions.md` §A wiki link's address is one Jira links, whether the reader should write the escape and the writer should carry such an `href`, then make both agree with Jira, and record the list in `spec/wiki.md` §Marks.
+
+Touches:
+- `src/wiki/spellings.ts`: `linkedAddress`
+- `src/wiki/parse/inline.ts`: `bracket`, `bracketed`
+- `src/wiki/emit/inline-line.ts`: `linkDelimiters`
+- `spec/wiki.md`: `## Marks`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`
+- `src/wiki/parse/jira-wiki-to-adf.test.ts`
 
 ### 172. Build one test per reader or case in place of a loop inside a test body, in the 26 test files that loop.
 

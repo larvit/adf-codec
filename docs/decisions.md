@@ -1615,3 +1615,19 @@ The reader differs from Jira in four places, each a string the writers never wri
 The reader follows Jira in two places a reader could take either way. A block macro left open
 holds the rest of the markup. An image address holds `://`, since Jira reads any other as an
 attachment's name, so the writer carries an image whose `url` has none.
+
+## A wiki link's address is one Jira links, and any other `href` rides the carry
+
+2026-11-25, the implementer of item 200. Goals 1 and 11.
+Valid while Jira links these addresses.
+
+Jira shows `[x]` and `[a|x]` as text, brackets included, where `x` is no address it links, such as a
+bare word, `x.com`, `javascript:alert(1)` or `^name.ext`. `spec/wiki.md` §Marks lists the addresses it
+links, from probes on a Jira Cloud site of IANA's registered schemes, sixty more, and every one- and
+two-character path and anchor. The reader reads a bracket by that list, and the lossless writer
+writes a `link` as a bracket only where its `href` is on it, so an `href` that Jira would show as text
+rides the carry, and every string either writes reads back.
+
+A scheme neither IANA nor the sixty names list, and that Jira links, reads as text here and rides the
+carry. That costs a carry, never content. Jira also writes a linked `href`'s `"`, `<`, `>`, `` ` ``
+and final `^` as percent escapes, which neither side models yet (item 207).

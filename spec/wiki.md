@@ -101,10 +101,27 @@ holding a mark rides as well.
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `code`, `em`, `strike`, `strong`, `underline` | `{{x}}`, `_x_`, `-x-`, `*x*`, `+x+` | the same; `??x??` reads `em` |
-| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`, and the `href` doesn't start with `~`; an `href` that is empty or holds whitespace or a markup character rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same; `[#anchor]` and `[^name.ext]` read as `href` `#anchor` and `^name.ext` |
+| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`; an `href` that is no address Jira links, or holds whitespace or a markup character, rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same; `[#anchor]` reads as `href` `#anchor`; `[x]` and `[a\|x]` where `x` is no address Jira links read as text, as `[^name.ext]` and `[~name]` do |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
 | `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
 | any other mark | the carry of each node of the marked run | `{adf:display=inline}` reads its node |
+
+Jira links an address that is one of these, and shows `[x]` and `[a|x]` as text for any other `x`,
+brackets included. The probes ran on a Jira Cloud site on 2026-11-25, over the URI schemes IANA
+registers, sixty more, and every path and anchor of one or two characters from twenty-three
+punctuation characters:
+
+- `/` or `#` then anything, except the string `//`.
+- A scheme, its case ignored, then `://` and at least one character: `file`, `ftp`, `ftps`,
+  `gopher`, `hipchat`, `http`, `https`, `sftp`, `smb` and the schemes of the next item.
+- A scheme, its case ignored, then `:` and at least one character other than a leading `#`:
+  `callto`, `cvs`, `facetime`, `feed`, `git`, `irc`, `irc6`, `itms`, `magnet`, `mailto`, `mvn`,
+  `news`, `nntp`, `notes`, `rdp`, `sip`, `sips`, `skype`, `slack`, `ssh`, `svn`, `tel`, `telnet`,
+  `urn`, `vnc`, `whatsapp` and `xmpp`.
+- No address holds a second `#`, a `%` not followed by two hexadecimal digits, or a `^` before its
+  last character.
+
+A scheme outside these, such as `javascript`, `data`, `ws` and `ldap`, is text.
 
 Marks nest in the order the node's array holds them, outermost first, and a run of nodes sharing
 their outermost mark shares its delimiters. The delimiters of `code`, `em`, `strike`, `strong`,

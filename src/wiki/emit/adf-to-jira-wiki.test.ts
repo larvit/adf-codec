@@ -468,12 +468,13 @@ test('carries a code or subsup run mid-word, whose delimiters read only beside w
   assert.equal(wiki(paragraph(text('a '), text('b', { attrs: { type: 'sup' }, type: 'subsup' }), text('c'))).includes('{adf:display=inline}'), true)
 })
 
-test('writes a link whose text is its href, holding a title, with its text', () => {
-  assert.equal(wiki(paragraph(text('mailto:a@example.com', { attrs: { href: 'mailto:a@example.com', title: 'T' }, type: 'link' }))), '[mailto:a@example.com|mailto:a@example.com|T]')
+test('carries a link whose text is its href when Jira shows the href as text', () => {
+  const link = { attrs: { href: 'word' }, type: 'link' }
+  assert.equal(wiki(paragraph(text('word', link))), inline('{"marks":[{"attrs":{"href":"word"},"type":"link"}],"text":"word","type":"text"}'))
 })
 
-test('writes a link whose href starts with ~ with its text, since [~x] names a user', () => {
-  assert.equal(wiki(paragraph(text('a '), text('~x', { attrs: { href: '~x' }, type: 'link' }))), 'a [\\~x|~x]')
+test('writes a link whose text is its href, holding a title, with its text', () => {
+  assert.equal(wiki(paragraph(text('mailto:a@example.com', { attrs: { href: 'mailto:a@example.com', title: 'T' }, type: 'link' }))), '[mailto:a@example.com|mailto:a@example.com|T]')
 })
 
 const riddenMarks: [string, AdfMark][] = [
@@ -483,6 +484,13 @@ const riddenMarks: [string, AdfMark][] = [
   ['a colour of more then a hex code', { attrs: { color: 'x#ff0000' }, type: 'textColor' }],
   ['a link holding another attribute', { attrs: { href: 'https://example.com', x: 1 }, type: 'link' }],
   ['a link whose href is no string', { attrs: { href: 5 }, type: 'link' }],
+  ['a link whose href is a bare word', { attrs: { href: 'word' }, type: 'link' }],
+  ['a link whose href is a scheme Jira shows as text', { attrs: { href: 'javascript:alert(1)' }, type: 'link' }],
+  ['a link whose href is a scheme with nothing after it', { attrs: { href: 'http://' }, type: 'link' }],
+  ['a link whose href holds an incomplete percent escape', { attrs: { href: '/a%2' }, type: 'link' }],
+  ['a link whose href holds two #', { attrs: { href: '#a#b' }, type: 'link' }],
+  ['a link whose href holds a ^ before its end', { attrs: { href: '/a^b' }, type: 'link' }],
+  ['a link whose href starts with ~', { attrs: { href: '~x' }, type: 'link' }],
   ['a link whose title ends in whitespace', { attrs: { href: 'https://example.com', title: 'T ' }, type: 'link' }],
   ['a link whose title is no string', { attrs: { href: 'https://example.com', title: 5 }, type: 'link' }],
   ['a mark of another type holding an href', { attrs: { href: 'https://example.com' }, type: 'fancyLink' }],
