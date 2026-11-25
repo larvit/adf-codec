@@ -5,8 +5,7 @@ import test from 'node:test'
 import type { AdfMark, AdfNode } from '../../adf/document.ts'
 import type { LineContainer } from '../line-container.ts'
 import type { PortableLineFallback } from '../emit/inline-line.ts'
-import type { RunGrouping, RunNode } from '../emit/inline-runs.ts'
-import { inlineRuns } from '../emit/inline-runs.ts'
+import type { RunGrouping } from '../emit/inline-runs.ts'
 import { lineContainer, markedLine, propertyRuns } from '../../conformance/property-harness.ts'
 import { portableJudgement, portableLeaves, portableLink, reduceInline, trimmedEdges, trimmedEdgesPass, trimmingRuns, trimPass, withoutFallback } from './inline-reduction.ts'
 import { success, type Result } from '../../result.ts'
@@ -77,10 +76,10 @@ const trimLine = fc.oneof(
 )
 
 for (const grouping of groupings) {
-  test(`trims a ${grouping} line as the reference counts trim it, in no more passes`, () => {
+  test(`trims a ${grouping} line as the passes alone trim it, in no more passes`, () => {
     fc.assert(
       fc.property(trimLine, (line) => {
-        const peeled = trimmedWith(line, (leaves) => trimPass(leaves, (held) => runsSharedWithNext(held, grouping)))
+        const peeled = trimmedWith(line, (leaves) => trimPass(leaves, (held) => trimmingRuns(held, grouping)))
         const trimmed = trimmedWith(line, (leaves) => trimmedEdgesPass(leaves, grouping))
         assert.deepEqual(trimmedEdges(line, grouping), peeled.line)
         assert.ok(trimmed.passes <= peeled.passes, `${trimmed.passes} passes against ${peeled.passes}`)
@@ -163,6 +162,18 @@ test('trims a line whose link run crosses a leaf holding no text as a leaf a pas
   assert.deepEqual(trimmedEdges(line, 'spanned'), [mention, { type: 'hardBreak' }, marked('x', link)])
 })
 
+test('trims a line whose strong link run ends in blanks before two hard breaks as the passes alone do', () => {
+  const held = [link, { type: 'strong' } as const]
+  const line = [marked('x ', ...held, { type: 'backgroundColor' }), marked(' ', ...held), marked(' '), { type: 'hardBreak' }, marked(' ', ...held), marked(' '), { type: 'hardBreak' }]
+  assert.deepEqual(trimmedEdges(line, 'spanned'), [marked('x', ...held, { type: 'backgroundColor' })])
+})
+
+test('trims a line whose strong run crosses a code span and ends in blanks before a hard break as the passes alone do', () => {
+  const strong: AdfMark = { type: 'strong' }
+  const line = [marked('x ', strong), marked(' ', { type: 'code' }), marked(' ', strong), { type: 'hardBreak' }, marked(' '), marked('x ', strong), marked(' ')]
+  assert.deepEqual(trimmedEdges(line, 'spanned'), [marked('x', strong), { text: ' ', type: 'text' }, marked(' ', { type: 'code' }), { type: 'hardBreak' }, marked('x', strong)])
+})
+
 test('trims the spaces and tabs a leaf holds at both ends, and moves them out of a mark mid-line', () => {
   const blanks = ' \t '
   assert.deepEqual(trimmedEdges([marked(`${blanks}a${blanks}`, { type: 'strong' })], 'spanned'), [marked('a', { type: 'strong' })])
@@ -206,21 +217,6 @@ function trimmedWith(leaves: readonly AdfNode[], pass: (leaves: readonly AdfNode
     const step = pass(current)
     if (step.settled) return { line: step.line, passes }
     current = step.line
-  }
-}
-
-// The reference counts: every run reaches its last leaf holding its mark, so the trim peels a run's blank end leaves one pass each.
-function runsSharedWithNext(leaves: readonly AdfNode[], grouping: RunGrouping): number[] {
-  const shared = leaves.map(() => 0)
-  countSharedRuns(leaves.map((node) => ({ carried: false, node, outer: 0 })), 0, grouping, shared)
-  return shared
-}
-
-function countSharedRuns(nodes: readonly RunNode[], firstIndex: number, grouping: RunGrouping, shared: number[]): void {
-  for (const run of inlineRuns(nodes, firstIndex, grouping)) {
-    if (run.kind === 'plain') continue
-    for (let index = run.index; index < run.index + run.nodes.length - 1; index += 1) shared[index] = (shared[index] ?? 0) + 1
-    countSharedRuns(run.nodes, run.index, grouping, shared)
   }
 }
 
