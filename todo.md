@@ -18,7 +18,6 @@
 | 38 | 0.4.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
 | 76 | 0.4.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
-| 118 | 0.4.0 |  |  | **Spell a portable link's title through `oneLine`.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 204 | 0.4.0 |  |  | **Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
@@ -136,17 +135,6 @@ Touches:
 - `src/markdown/inline-content.ts`
 - `src/markdown/portable/task-ids.ts`: `mintTaskIds`
 - `src/markdown/emit/inline-line.ts`: `takeFallback`, `settledLine`, `lineSegments`
-
-### 118. Spell a portable link's title through `oneLine`.
-
-`portableLink` (`src/markdown/portable/inline-reduction.ts`) repeats `oneLine`'s replacements by
-hand, so a change to what a portable line drops would miss link titles. Technical principle: DRY.
-Found by the principles audit of item 99, 2026-10-14.
-
-Touches:
-
-- `src/markdown/portable/inline-reduction.ts`: `portableLink` (small)
-- `src/markdown/portable/inline-reduction.test.ts`
 
 ### 204. Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.
 
