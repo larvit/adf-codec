@@ -503,7 +503,7 @@ function readLineBlock(walk: Walk, opener: string): boolean {
   const heading = atxHeading(opener)
   if (heading === undefined) return false
   closeLeaf(walk)
-  const trailed = walk.claims.directives ? readTrailingMarker(heading.text) : undefined
+  const trailed = walk.claims.directives ? readTrailingMarker(heading.text, 'heading', walk.claims) : undefined
   currentBlocks(walk).push({ kind: 'heading', level: heading.level, position: walk.position, ...trailedText(trailed?.text ?? heading.text, trailed) })
   return true
 }
@@ -608,7 +608,7 @@ function takeParagraph(walk: Walk): Extract<Block, { kind: 'fault' }> | Paragrap
   if (leaf?.kind !== 'paragraph') return undefined
   walk.leaf = undefined
   const lines = leaf.lines.map((line) => line.text).join('\n')
-  const trailed = walk.claims.directives ? readTrailingMarker(lines) : undefined
+  const trailed = walk.claims.directives ? readTrailingMarker(lines, 'paragraph', walk.claims) : undefined
   const text = readLinkDefinitions(walk.definitions, trailed?.text ?? lines)
   if (text === '' && trailed !== undefined) return { fault: malformedDirective(`an ${markerOpener}…} marker ends a paragraph holding no text once its link reference definitions are read; ${directiveEscape}`), kind: 'fault', position: leaf.position }
   if (text === '') return partMarker(walk)

@@ -255,3 +255,13 @@ test('reads an `!adf:{…}` as text where the reader claims no directive, and th
     '',
   ].join('\n'))
 })
+
+test('reads no trailing marker from inside a link destination, and reads one standing after the link', () => {
+  const linked = (href: string): AdfNode => text('a', { attrs: { href }, type: 'link' })
+  const inside = '[a](<u !adf:{localId=">)"}'
+  assert.deepEqual(read(losslessMarkdownToAdf(inside)), [node('paragraph', {}, linked('u !adf:{localId="'), text('"}'))])
+  assert.deepEqual(read(losslessMarkdownToAdf(`# ${inside}`)), [node('heading', { level: 1 }, linked('u !adf:{localId="'), text('"}'))])
+  assert.deepEqual(read(losslessMarkdownToAdf(`> ${inside} !adf:{localId=p}`)), [node('blockquote', {}, node('paragraph', { localId: 'p' }, linked('u !adf:{localId="'), text('"}')))])
+  assert.deepEqual(read(losslessMarkdownToAdf('# [a](<u>) !adf:{localId=h}')), [node('heading', { level: 1, localId: 'h' }, linked('u'))])
+  assert.deepEqual(read(losslessMarkdownToAdf('# Title !adf:{localId=h}')), [node('heading', { level: 1, localId: 'h' }, text('Title'))])
+})
