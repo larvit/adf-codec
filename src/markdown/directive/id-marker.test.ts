@@ -256,7 +256,7 @@ test('reads an `!adf:{…}` as text where the reader claims no directive, and th
   ].join('\n'))
 })
 
-test('reads no trailing marker from inside a link destination, and reads one standing after the link', () => {
+test('reads no trailing marker from inside a link destination, and reads one standing after a link or holding a link in its id', () => {
   const linked = (href: string): AdfNode => text('a', { attrs: { href }, type: 'link' })
   const inside = '[a](<u !adf:{localId=">)"}'
   assert.deepEqual(read(losslessMarkdownToAdf(inside)), [node('paragraph', {}, linked('u !adf:{localId="'), text('"}'))])
@@ -265,4 +265,15 @@ test('reads no trailing marker from inside a link destination, and reads one sta
   assert.deepEqual(read(losslessMarkdownToAdf('# [a](<u>) !adf:{localId=h}')), [node('heading', { level: 1, localId: 'h' }, linked('u'))])
   assert.deepEqual(read(losslessMarkdownToAdf('# Title !adf:{localId=h}')), [node('heading', { level: 1, localId: 'h' }, text('Title'))])
   assert.deepEqual(read(losslessMarkdownToAdf('# Title !adf:{localId="[a](b)"}')), [node('heading', { level: 1, localId: '[a](b)' }, text('Title'))])
+})
+
+test('writes an id after text that would join its marker to a link as the directive form, which reads back', () => {
+  const held = '[a](<u'
+  const heading = node('heading', { level: 2, localId: '>)' }, text(held))
+  const quoted = node('blockquote', {}, node('paragraph', { localId: '>)' }, text(held)))
+  const listed = node('bulletList', {}, node('listItem', {}, node('paragraph', { localId: '>)' }, text(held))))
+  for (const block of [heading, quoted, listed]) {
+    const markdown = written(adfToLosslessMarkdown(document(block)))
+    assert.deepEqual(read(losslessMarkdownToAdf(markdown)), [block], markdown)
+  }
 })
