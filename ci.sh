@@ -3,9 +3,43 @@ set -euo pipefail
 cd "$(dirname "$0")"
 source ./docker-runner.sh
 
-leg "install ($node_image)" in_image "$node_image" npm ci
-leg "typecheck ($node_image)" in_image "$node_image" npm run typecheck
-leg "lint ($node_image)" in_image "$node_image" npm run lint
+# A leg builds what it reads, so one run alone tests the current tree: each prerequisite below rebuilds from the sources, and `needs` runs it first.
+installed() {
+  in_image "$node_image" npm ci
+}
+
+built() {
+  installed &&
+  in_image "$node_image" npm run build
+}
+
+packed() {
+  built &&
+  in_image "$node_image" sh -c 'set -e
+    rm -rf package-tests/node_modules
+    npm pack --pack-destination /tmp
+    npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz'
+}
+
+bundle_size_installed() {
+  in_image "$node_image" npm ci --no-audit --no-fund --prefix bundle-size
+}
+
+bundle_size_measurable() {
+  built &&
+  bundle_size_installed
+}
+
+needs() {
+  local prerequisite=$1 &&
+  shift &&
+  leg "needs: ${prerequisite//_/ } ($node_image)" "$prerequisite" &&
+  "$@"
+}
+
+leg "install ($node_image)" installed
+leg "typecheck ($node_image)" needs installed in_image "$node_image" npm run typecheck
+leg "lint ($node_image)" needs installed in_image "$node_image" npm run lint
 
 # The boundaries pass by finding nothing, so probe that each still fires: oxlint bumps automerge on green. Each line names a probe file and an import its boundary refuses.
 boundary_probes="src/adf/boundary-probe.ts ../markdown/flavour.ts
@@ -54,7 +88,7 @@ boundaries_fire() {
   rm -f "$allowed" $probes "$lint_log"
 }
 
-leg "import boundaries fire ($node_image)" boundaries_fire
+leg "import boundaries fire ($node_image)" needs installed boundaries_fire
 
 interrupt_stops_container() {
   local pid ready status=0 waited=0
@@ -94,29 +128,26 @@ node_tests() {
   in_image "$node_image" npm test 2>&1 | tee "$test_log"
 }
 
-leg "tests ($node_image)" node_tests
+leg "tests ($node_image)" needs installed node_tests
 if grep -q 'ℹ tests 0' "$test_log"; then
   echo 'the gate ran zero tests — failing instead of a vacuous green'
   exit 1
 fi
 rm -f "$test_log"
 
-leg "tests ($deno_image)" in_image "$deno_image" deno test --allow-env=PROPERTY_RUNS --allow-read --no-check src/
-leg "tests ($bun_image)" in_image "$bun_image" bun test src/
+leg "tests ($deno_image)" needs installed in_image "$deno_image" deno test --allow-env=PROPERTY_RUNS --allow-read --no-check src/
+leg "tests ($bun_image)" needs installed in_image "$bun_image" bun test src/
 leg "corpus-gathering tests ($node_image)" in_image "$node_image" node --test corpus-gathering/
 leg "feature table tests ($node_image)" in_image "$node_image" node --test feature-table/
 in_image_memory=1g leg "release tooling tests ($node_image)" in_image "$node_image" node --test release-tooling/
 
-leg "build ($node_image)" in_image "$node_image" npm run build
-leg "feature table is current ($node_image)" in_image "$node_image" node feature-table/build.mjs --check
-leg "install the bundle size tool ($node_image)" in_image "$node_image" npm ci --no-audit --no-fund --prefix bundle-size
-leg "bundle size tests ($node_image)" in_image "$node_image" node --test bundle-size/
-leg "README's size figures are current ($node_image)" in_image "$node_image" node bundle-size/run.mjs --check
-leg "pack and install the tarball ($node_image)" in_image "$node_image" sh -c 'set -e
-  rm -rf package-tests/node_modules
-  npm pack --pack-destination /tmp
-  npm install --no-audit --no-fund --no-package-lock --no-save --offline --prefix package-tests /tmp/*.tgz'
-leg "typecheck the consumer ($node_image)" in_image "$node_image" npx tsc -p package-tests
-leg "round-trip on the engines floor ($floor_image)" in_image "$floor_image" node package-tests/node-floor.js
+leg "build ($node_image)" built
+leg "feature table is current ($node_image)" needs built in_image "$node_image" node feature-table/build.mjs --check
+leg "install the bundle size tool ($node_image)" bundle_size_installed
+leg "bundle size tests ($node_image)" needs bundle_size_installed in_image "$node_image" node --test bundle-size/
+leg "README's size figures are current ($node_image)" needs bundle_size_measurable in_image "$node_image" node bundle-size/run.mjs --check
+leg "pack and install the tarball ($node_image)" packed
+leg "typecheck the consumer ($node_image)" needs packed in_image "$node_image" npx tsc -p package-tests
+leg "round-trip on the engines floor ($floor_image)" needs packed in_image "$floor_image" node package-tests/node-floor.js
 
-leg "browser ($firefox_image)" with_firefox in_image "$node_image" node browser-tests/run.js
+leg "browser ($firefox_image)" needs built with_firefox in_image "$node_image" node browser-tests/run.js
