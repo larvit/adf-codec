@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 205 | 0.4.0 |  | defect | **Read no trailing `!adf:{…}` marker from inside a link destination, so `[a](<u !adf:{localId=">)"}` reads as a link followed by the text `"}`.** | 2 | 2 | 2 | 4 | 2 | 1 by 3, 6 by 2 | 18.0 |
 | 42 | 0.4.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 15.6 |
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
@@ -67,16 +66,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
-
-### 205. Read no trailing `!adf:{…}` marker from inside a link destination, so `[a](<u !adf:{localId=">)"}` reads as a link followed by the text `"}`.
-
-Source: CodeRabbit's review of PR 198, which posted after the merge. `readTrailingMarker` in `src/markdown/directive/id-marker.ts` doesn't check whether its ` !adf:{` opener lies inside a link destination. A heading or paragraph ending in `[a](<u !adf:{localId=">)"}` reads, in CommonMark, as a link whose destination is `u !adf:{localId="` followed by the text `"}`; the reader takes `localId=">)"` as a marker, hands `[a](<u` to inline parsing and assigns the id `>)`. Check the opener against the link binding inline parsing applies, keep `# Title !adf:{localId=h}` taking its marker, and add a property or test whose generator writes angle-bracket link destinations holding spaces, quotes and `!adf:{`. Why review missed it: neither the stability round nor the property generators produce an angle-bracket destination holding the opener.
-
-Touches:
-
-- `src/markdown/directive/id-marker.ts`: `readTrailingMarker`
-- `src/markdown/directive/id-marker.test.ts`
-- `src/conformance/property-harness.ts`
 
 ### 42. Trim a text leaf's trailing blanks in linear time.
 
