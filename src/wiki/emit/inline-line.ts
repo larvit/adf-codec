@@ -53,7 +53,7 @@ function atom(node: AdfNode, nodes: readonly AdfNode[], index: number, inCell: b
   const previous = nodes[index - 1]
   const joinsPrevious = previous?.type === 'text' && identicalMarks(nodeMarks(previous), marks)
   if (!isSpellableText(node) || text === '' || joinsPrevious || spelled === undefined) return { marks, spelled: undefined }
-  const href = hrefSpelling(node, nodes, index)
+  const href = hrefSpelling(node, text, nodes, index)
   if (href !== undefined) return { marks: marks.slice(0, -1), spelled: { marks: spelled.slice(0, -1), text: href } }
   const escaped = escapedText(text, index === 0, index === nodes.length - 1, inCell)
   return { marks, spelled: escaped === undefined ? undefined : { marks: spelled, text: escaped } }
@@ -78,13 +78,13 @@ function leafSpelling(node: AdfNode): string | undefined {
 }
 
 // `[<href>]`: the text is the href of the link that is its innermost mark, a link marking no node beside it.
-function hrefSpelling(node: AdfNode, nodes: readonly AdfNode[], index: number): string | undefined {
+function hrefSpelling(node: AdfNode, text: string, nodes: readonly AdfNode[], index: number): string | undefined {
   const link = nodeMarks(node).at(-1)
   if (link?.type !== 'link') return undefined
   const { href, ...others } = nodeAttrs(link)
-  if (typeof href !== 'string' || href !== node.text || Object.keys(others).length > 0) return undefined
+  if (href !== text || Object.keys(others).length > 0) return undefined
   const sharesLink = (neighbour: AdfNode | undefined): boolean => neighbour !== undefined && nodeMarks(neighbour).some((mark) => identicalMark(mark, link))
-  return sharesLink(nodes[index - 1]) || sharesLink(nodes[index + 1]) ? undefined : `[${href}]`
+  return sharesLink(nodes[index - 1]) || sharesLink(nodes[index + 1]) ? undefined : `[${text}]`
 }
 
 function markDelimiters(mark: AdfMark): Delimiters | undefined {
