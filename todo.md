@@ -16,7 +16,6 @@
 | 42 | 0.4.0 |  | defect | **Trim a text leaf's trailing blanks in linear time.** | 1 | 1 | 2 | 2 | 2 | 9 by 3 | 15.6 |
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
-| 31 | 0.4.0 |  |  | **Make the branch-coverage figure repeat across runs of an unchanged tree.** | 2 | 1 | 1 | 2 | 3 | code health by 3 | 11.7 |
 | 38 | 0.4.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
 | 76 | 0.4.0 |  |  | **State the files the package does not ship once, so the build, the lint ceiling, the coverage exclusions and the mutation run cannot drift apart.** | 1 | 1 | 1 | 1 | 2 | code health by 2 | 10.4 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
@@ -95,22 +94,6 @@ Item 195's chunk ran `./ci.sh` eight times at a load average of 15 to 20, and th
 Touches:
 - `src/markdown/emit/inline-nodes.test.ts`
 - `src/markdown/portable/inline-reduction.test.ts`
-
-### 31. Make the branch-coverage figure repeat across runs of an unchanged tree.
-
-Three Node test legs over one unchanged tree reported `emit/inline-line.ts` at 95.83%, 96.23% and
-96.23%, and the total at 98.80%, 98.84% and 98.84% (2026-09-21). `--experimental-test-coverage`
-counts branches off V8's own coverage, which the runner's parallel files and V8's optimization make
-run-dependent, so the number the floor is read against is not the code's alone. The floor of 98
-holds today on 0.8 points of slack and `docs/decisions.md` §The coverage floors says it only ever
-moves upward, so the first raise to the measured figure reddens a run that changed nothing. Make the
-measurement repeatable, or state the number the floor may be raised to and why it is not the
-measured one.
-
-Touches:
-
-- `package.json`: `test` (small)
-- `ci.sh`: `node_tests` (small)
 
 ### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
 
