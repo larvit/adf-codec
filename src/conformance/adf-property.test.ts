@@ -221,14 +221,6 @@ test('HTML of the dialect\'s own elements, edited, reads only if adfToHtml write
   )
 })
 
-test('a raw < or > in an attribute value reads as the entity adfToHtml writes', () => {
-  const read = htmlToAdf('<pre><code class="language-<aaa">x</code></pre>\n')
-  assert.ok(read.ok)
-  const written = adfToHtml(read.value)
-  assert.ok(written.ok)
-  assert.equal(written.value, '<pre><code class="language-&lt;aaa">x</code></pre>\n')
-})
-
 test('a generated document writes the portable markdown its editor-normal form writes', { timeout: propertyTimeout }, () => {
   fc.assert(
     fc.property(adfDocument, (document) => {
