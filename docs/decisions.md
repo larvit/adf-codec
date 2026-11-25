@@ -555,9 +555,10 @@ a carry element shows too. These are every difference the algorithm leaves betwe
 and `adfToHtml`'s, checked against Firefox's own `innerHTML` in the browser leg, and they hold for
 every element the dialect writes, later ones included.
 
-`adfToHtml` keeps writing `&lt;` and `&gt;` in an attribute value, so HTML read with a raw one
-writes back as the entity, and the HTML property's byte check compares against the entity spelling
-(2026-11-25). Writing the raw spelling back would drop the escape the dialect spells for every value.
+Item 204 (2026-11-25), goal 4: `adfToHtml` keeps writing `&lt;` and `&gt;` in an attribute value, as
+`spec/html.md` §Escaping says and as the algorithm does today. So HTML read with a raw
+`<` or `>` there writes back with the entity, and `assertReadsBack`, the HTML property's byte check,
+compares against that spelling. Writing the raw one back would leave the algorithm for one old spelling.
 
 One more difference is DOM state, not the algorithm's: a `<details>` its user opened carries `open=""`
 after its other attributes. `htmlToAdf` reads it as the same expand (the maintainer, 2026-11-15),
