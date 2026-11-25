@@ -162,13 +162,13 @@ test('trims a line whose link run crosses a leaf holding no text as a leaf a pas
   assert.deepEqual(trimmedEdges(line, 'spanned'), [mention, { type: 'hardBreak' }, marked('x', link)])
 })
 
-test('trims a line whose strong link run ends in blanks before two hard breaks as the passes alone do', () => {
+test('trims a line whose strong link run ends in blanks before two hard breaks to its first text alone', () => {
   const held = [link, { type: 'strong' } as const]
   const line = [marked('x ', ...held, { type: 'backgroundColor' }), marked(' ', ...held), marked(' '), { type: 'hardBreak' }, marked(' ', ...held), marked(' '), { type: 'hardBreak' }]
   assert.deepEqual(trimmedEdges(line, 'spanned'), [marked('x', ...held, { type: 'backgroundColor' })])
 })
 
-test('trims a line whose strong run crosses a code span and ends in blanks before a hard break as the passes alone do', () => {
+test('trims a line whose strong run crosses a code span and ends in blanks before a hard break to blanks outside the run', () => {
   const strong: AdfMark = { type: 'strong' }
   const line = [marked('x ', strong), marked(' ', { type: 'code' }), marked(' ', strong), { type: 'hardBreak' }, marked(' '), marked('x ', strong), marked(' ')]
   assert.deepEqual(trimmedEdges(line, 'spanned'), [marked('x', strong), { text: ' ', type: 'text' }, marked(' ', { type: 'code' }), { type: 'hardBreak' }, marked('x', strong)])
