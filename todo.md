@@ -15,7 +15,6 @@
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 191 | 0.4.0 |  | defect | **Make the edge trim and the reference of its property test agree on a line whose strong link run ends in blanks before two hard breaks.** | 2 | 1 | 2 | 3 | 2 | code health by 3 | 15.6 |
 | 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
-| 38 | 0.4.0 |  | defect | **Spell a lone surrogate in a text node so it survives a UTF-8 encode.** | 1 | 1 | 2 | 2 | 2 | 1 by 2 | 10.4 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 204 | 0.4.0 |  |  | **Check the HTML property's exact read-back on HTML holding a raw `<` or `>` in an attribute value, without `escapedInAttributes` softening it.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 206 | 0.4.0 |  | defect | **Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.** | 3 | 1 | 2 | 4 | 4 | 1 by 2 | 5.2 |
@@ -80,17 +79,6 @@ Item 195's chunk ran `./ci.sh` eight times at a load average of 15 to 20, and th
 Touches:
 - `src/markdown/emit/inline-nodes.test.ts`
 - `src/markdown/portable/inline-reduction.test.ts`
-
-### 38. Spell a lone surrogate in a text node so it survives a UTF-8 encode.
-
-`adfToLosslessMarkdown` emits it verbatim, so markdown stored as UTF-8 reads back U+FFFD; attribute
-values already escape it.
-
-Touches:
-
-- `src/markdown/emit/inline-line.ts`: `emitLeaf`, `textSegments`
-- `src/markdown/emit/adf-to-markdown.test.ts`
-- `spec/flavour.md`: `## Canonical form` (small)
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
