@@ -1261,6 +1261,7 @@ test('names the content slot no lone plain text node reads back from', () => {
   refused(losslessMarkdownToAdf('!adf:status[a&#10;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
   refused(losslessMarkdownToAdf('!adf:status[a&#13;b]{color=yellow}\n'), 'unsupported-node-shape', ...spans)
   refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\u0000"}]{color=yellow}\n'), 'unsupported-node-shape', 'null character', '!adf:carry')
+  refused(losslessMarkdownToAdf('!adf:status[!adf:text{text="\\ud800"}]{color=yellow}\n'), 'unsupported-node-shape', 'status content slot holds a lone surrogate', '!adf:carry')
   refused(losslessMarkdownToAdf('Part !adf:mention{id=b1c2 text=A}.\n'), 'unsupported-node-shape', 'mention', 'content slot')
 })
 
