@@ -13,7 +13,6 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 202 | 0.4.0 |  |  | **Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.** | 1 | 1 | 1 | 1 | 1 | code health by 2 | 12.5 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 206 | 0.4.0 |  | defect | **Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.** | 3 | 1 | 2 | 4 | 4 | 1 by 2 | 5.2 |
 | 200 | 0.4.0 |  |  | **Carry a link whose `href` Jira shows as text, and read `[x]` and `[a\|x]` with such an address as text.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
@@ -60,14 +59,6 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
-
-### 202. Keep every test under Bun's 5 s limit on a loaded machine, so the local gate fails only on a defect.
-
-Item 195's chunk ran `./ci.sh` eight times at a load average of 15 to 20, and the Bun leg failed four of them, only on two markdown tests the chunk didn't touch: `joins a mark run's segments as a walk rather than as one call's arguments` (3.9 s when it passes, 13 to 17 s on Node) and `reduces a line alike dropping every run a pass may or the first alone`. GitHub's gate passed each time. Shrink the two inputs to the smallest that still fails on the quadratic walk each guards against, or give the tests their own timeout.
-
-Touches:
-- `src/markdown/emit/inline-nodes.test.ts`
-- `src/markdown/portable/inline-reduction.test.ts`
 
 ### 56. Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.
 
