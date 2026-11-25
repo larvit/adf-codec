@@ -11,7 +11,6 @@ import { linkMark, toLinkAttrs } from './mark-spellings.ts'
 import { nodeAttrs } from '../adf/document.ts'
 import { textBreakSpelling } from './adjacent-text.ts'
 
-// CommonMark's bracket stack.
 export type BracketStack = {
   // What the `]` at `index` makes of the innermost open bracket, which it closes: `undefined` where the `]` stays text.
   close: (scan: Scan, pieces: readonly Piece[], index: number) => Result<Closed> | undefined

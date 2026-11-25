@@ -20,7 +20,7 @@ function tasks(...content: AdfNode[]): AdfDocument {
   return { content, type: 'doc', version: 1 }
 }
 
-test('mints each task node a UUID v4 in document order, unique and the same every run, in a document of its own', () => {
+test('mints each task node a UUID v4 in document order, unique and the same every run, leaving the document it was handed as it was', () => {
   const unminted = (): AdfDocument => tasks({ content: [{ attrs: { state: 'TODO' }, type: 'taskItem' }, { content: [{ attrs: { state: 'DONE' }, type: 'blockTaskItem' }], type: 'taskList' }], type: 'taskList' })
   const source = unminted()
   const ids = taskIds(mintTaskIds(source, '- [ ] a\n'))
