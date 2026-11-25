@@ -508,3 +508,21 @@ test('generated task lists read as portable markdown refuse, or build block task
     propertyRuns(gateRuns),
   )
 })
+
+const destinationPieces = fc.constantFrom(...'ab 9"\'()[]{}=!:#', ' !adf:{localId="', `${directivePrefix}{localId=a}`, directivePrefix)
+const bracketedDestination = fc.tuple(fc.constantFrom('u', 'v'), fc.array(destinationPieces, { maxLength: 6 }), fc.constantFrom('x', 'y')).map(([first, middle, last]) => `${first}${middle.join('')}${last}`)
+const afterLink = fc.constantFrom('', '"}', ')"}', '}', ' text')
+
+test('an angle-bracket link destination holds its spaces, quotes and marker openers, and a marker after the link still reads', { timeout: propertyTimeout }, () => {
+  fc.assert(
+    fc.property(bracketedDestination, afterLink, fc.constantFrom('', ' !adf:{localId=h}'), (destination, after, marker) => {
+      const input = `# [a](<${destination}>)${after}${marker}`
+      const parsed = losslessMarkdownToAdf(input)
+      assert.ok(parsed.ok, parsed.ok ? '' : `${parsed.error.code}: ${parsed.error.message} — reading ${JSON.stringify(input)}`)
+      const [heading] = parsed.value.content ?? []
+      assert.equal(heading?.attrs?.localId, marker === '' ? undefined : 'h', `reading ${JSON.stringify(input)}`)
+      assert.deepEqual(heading?.content?.[0]?.marks, [{ attrs: { href: destination }, type: 'link' }], `reading ${JSON.stringify(input)}`)
+    }),
+    propertyRuns(gateRuns),
+  )
+})

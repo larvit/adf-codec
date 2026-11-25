@@ -1,7 +1,10 @@
 import type { ConvertErrorPath, Read, Result } from '../../result.ts'
+import type { Claims } from '../flavour.ts'
 import type { DirectiveAttributes } from './syntax.ts'
+import type { LineContainer } from '../line-container.ts'
 import { directivePrefix, malformedDirective, markerOpener, pairFault, readAttributes, spellAttributes, spellStringAttribute } from './syntax.ts'
 import { failure, success } from '../../result.ts'
+import { readLineBack } from '../inline-content.ts'
 
 // spec/flavour.md, The CommonMark blocks: text is what the line keeps once the marker after it is read.
 export type TrailingMarker = { attributes: Read<DirectiveAttributes>; text: string }
@@ -19,18 +22,24 @@ export function spellIdMarker(id: string): string {
   return `${directivePrefix}${spellIdAttributes(id)}`
 }
 
-// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; an opener at index 0 has no text before it, so it is no trailing marker.
-export function readTrailingMarker(text: string): TrailingMarker | undefined {
+// A quoted id may hold the opener, so the marker is the last opener whose attributes end the text; an opener at index 0 has no text before it, so it is no trailing marker. An opener inside a link destination, which the text before it does not read as a link, is no marker either.
+export function readTrailingMarker(text: string, container: LineContainer, claims: Claims): TrailingMarker | undefined {
   for (let start = text.lastIndexOf(trailingOpener); start > 0; start = text.lastIndexOf(trailingOpener, start - 1)) {
     const read = readAttributes(text, start + trailingOpener.length - 1, pairFault)
     if (read.fault !== undefined) continue
     blankToEnd.lastIndex = read.value.end
     if (!blankToEnd.test(text)) continue
     const kept = text.slice(0, start)
+    if (linksBefore(text, start, container, claims) !== linksBefore(kept, start, container, claims)) continue
     const parted = kept.endsWith(' ') || kept.endsWith('\t')
     return { attributes: parted ? { fault: malformedDirective(`one space parts an ${markerOpener}…} marker from the text before it: this one is parted by more`) } : { value: read.value.attributes }, text: kept }
   }
   return undefined
+}
+
+// Where the reader takes each link opening before `end`, as one string to compare.
+function linksBefore(text: string, end: number, container: LineContainer, claims: Claims): string {
+  return readLineBack(text, container, claims).reading.links.filter((at) => at < end).join()
 }
 
 // The marker after a list item's marker, and the rest of the line after the one space following it; `undefined` where none stands there.
