@@ -387,7 +387,7 @@ cell adds it. This package's figure is the current source's.
 
 | Package | Converts | ADF written and read back | A node type it does not know | Formats | Direct runtime dependencies | Minified and gzipped, the whole package with its dependencies |
 | --- | --- | --- | --- | --- | --- | --- |
-| `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; its own HTML in; Jira wiki markup: lossless, lossy | 0 | 86 kB |
+| `@larvit/adf-codec` | both ways | the same document | kept | markdown: lossless, portable; CommonMark in; HTML out; any HTML in; Jira wiki markup: lossless, lossy | 0 | 93 kB |
 | `@atlaskit/editor-markdown-transformer` 6.3.1 | markdown to ADF, through `@atlaskit/editor-json-transformer` 10.0.0; ADF to markdown throws "This is not implemented yet" | – | – | markdown | 5 | 177 kB, or 211 kB with `@atlaskit/editor-json-transformer` |
 | `@atlaskit/editor-wikimarkup-transformer` 12.2.3 | both ways, reading through `@atlaskit/editor-json-transformer` 10.0.0 | a different document: the mention's `id` gains `accountid:` and its `text` comes back empty, the status comes back as bold coloured text, the marks in the other order | throws | Jira wiki markup | 4 | 188 kB, or 188.5 kB with `@atlaskit/editor-json-transformer` |
 | `@faulander/md2adf` 1.0.0 | both ways | a different document: the status is gone, the mention's `id` becomes its text and the panel a quote | dropped with its text | markdown | 2 | 99 kB |
@@ -461,7 +461,7 @@ Each call's name says which format it reads or writes:
 | `adfToPlainText` | writes text with no markup: blocks a blank line apart; list items under `• ` or `1.`, a task item under `☑ ` or `☐ `, nesting indented; a link's address and title in parentheses after its text; a hard break a line feed; a mention, emoji, date and status as the text they show; a table as a line per row, cells apart by ` \| `; an image as its alt text, then its address in parentheses, the address alone with no alt text, and `[image]` with neither; a card as its address, or its name then its address in parentheses; an extension as its text; an expand's title above its body | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `adfToPortableMarkdown` | writes markdown GitHub, GitLab and Obsidian render; drops what they cannot show, and writes no directive | `engine-limit`, `not-an-adf-document`, `unsupported-document-version`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `commonMarkToAdf` | reads strict CommonMark as its spec says: a directive, a pipe table, `~~`, `==` and an `adf:` fence read as text and code | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
-| `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; refuses any other HTML, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
+| `htmlToAdf` | reads the HTML `adfToHtml` writes, also as a browser's `innerHTML` or a form post spells it, a carry element from its `data-adf`; reads any other HTML best effort, and refuses in it only blocks nested past 500 levels and an element with a `data-adf` attribute or a class starting `adf-` that is not written as `adfToHtml` writes it, an edit to what a carry element shows included | `engine-limit`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `jiraWikiToAdf` | reads Jira wiki markup as Jira renders it, and an `{adf}` macro as the node it holds; refuses a broken `{adf}` macro and input past the nesting or engine limits, and reads any other string | `engine-limit`, `not-a-string`, `unsupported-nesting-depth`, `unsupported-node-shape` |
 | `losslessMarkdownToAdf` | reads the lossless flavour, markdown `adfToLosslessMarkdown` wrote, edited or not | every code in [The errors](#the-errors) except `not-an-adf-document` and `unsupported-document-version` |
 | `portableMarkdownToAdf` | reads CommonMark, GFM's pipe tables and `~~`, alerts and task markers, Obsidian's callouts and `==`; a directive and an `adf:` fence read as text and code | `engine-limit`, `malformed-pipe-table`, `not-a-string`, `unmappable-html`, `unsupported-nesting-depth`, `unsupported-node-shape` |
@@ -704,10 +704,28 @@ content. No stylesheet ships. The complete dialect:
 `htmlToAdf` reads that HTML back. It reads a carry element's node from its `data-adf`, and what the
 element shows must be what `adfToHtml` shows for that node: an edit there would be lost, so it is
 refused. It reads the HTML as a browser's `innerHTML` writes it too, and as a form post sends it: a raw `"` in text, `&nbsp;` for a no-break space, a raw `<` or `>` in an attribute value,
-`\r\n` for a line feed, and `open=""` on an expand's `<details>`, which reads as the same expand. Other HTML is refused as `unmappable-html`: another element, attribute or
-escape, such as `<b>`, `<br/>` or `&#39;`, a lone `\r`, and HTML missing its final line feed.
-A few causes, such as a `data-*` attribute its element does not take, are `unsupported-node-shape`
-instead, and nesting past 500 levels is `unsupported-nesting-depth`. [Either
+`\r\n` for a line feed, and `open=""` on an expand's `<details>`, which reads as the same expand.
+
+Any other HTML, from an email, a CMS or an editor, reads best effort. It is refused only for blocks
+nested past 500 levels, as `unsupported-nesting-depth`, and for an element that claims the dialect,
+below. Paragraphs,
+headings, quotes, lists, code blocks, rules, tables, `<details>`, links, images, line breaks and
+the bold, italic, struck, underlined, code, subscript and superscript elements read as their nodes
+and marks. A container ADF has no node for, such as `<div>`, reads as what it holds. A `<script>`,
+a `<style>`, a comment and every attribute but those naming a link, an image, a list's start or a
+code block's language are dropped. [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md#other-html)
+lists every element.
+
+HTML `adfToHtml` wrote reads this way too once it is changed outside a carry element, its final line
+feed trimmed included. It then loses each `data-*` attribute outside an element that claims the
+dialect, ids, alignment and colours among them, and nothing is refused. Pass the HTML whole. To learn
+before a save whether it read as `adfToHtml`'s own, write the document read with `adfToHtml` and
+compare: only that reading gives back the HTML handed in.
+
+In such HTML, an element holding a `data-adf` attribute or a class starting `adf-` claims the
+dialect. It reads only as `adfToHtml` writes it, and is `unmappable-html` otherwise.
+A few causes there, such as a `data-*` attribute its element does not take, are `unsupported-node-shape`
+instead. [Either
 direction](#either-direction) lists every cause of both.
 
 ## The errors
@@ -757,7 +775,7 @@ Which reader raises which code: [The calls](#the-calls). Codes every direction r
 | `malformed-pipe-table` | a pipe row that is no pipe table — a missing `---` delimiter row, a delimiter row whose cell count differs from the header's, a body row holding more cells than the header, or short rows whose padding would add more cells than the table holds; in `losslessMarkdownToAdf` also a body row holding fewer cells, an alignment colon, and a header or delimiter row not opening with a pipe | add a `---` row of the header's cell count under the header and give no body row more cells; for `losslessMarkdownToAdf`, also give every row the header's count, open every row with a pipe and drop the colons. To keep the lines literal text, escape the leading pipe of every one — escaping a single row leaves the next to open a fresh table and fail the same way — or, for a table without leading pipes, write one `\|` of its delimiter row as `\\|` |
 | `not-a-string` | the value handed in is not a string, such as `null`, a number or a `String` object | pass the input as a string, `String(value)` for a `String` object; the message names the value's type |
 | `unknown-directive-name` | a directive whose name is no node or mark this version spells | check the name in [`spec/flavour.md`](https://github.com/larvit/adf-codec/blob/main/spec/flavour.md), or escape the prefix as `\!adf:`; the spelling itself is well formed, so a later minor may give the name meaning |
-| `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds HTML `adfToHtml` does not write, in a browser's spelling or its own, such as an edit to what a carry element shows, unless a code under [Either direction](#either-direction) names the cause | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the HTML as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it |
+| `unmappable-html` | the markdown holds raw HTML, a comment and a processing instruction among them; the HTML handed to `htmlToAdf` holds an element that claims the dialect, by a `data-adf` attribute or a class starting `adf-`, and is not written as `adfToHtml` writes it, in a browser's spelling or its own, such as an edit to what a carry element shows, unless a code under [Either direction](#either-direction) names the cause | remove the construct, or write what it holds as markdown; for `htmlToAdf`, write the element as [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) spells it, or, where it is not `adfToHtml`'s, remove its `data-adf` attribute and `adf-` classes, and it reads as other HTML |
 
 ### Emitting
 
@@ -799,8 +817,8 @@ Every call can raise `engine-limit`, and every conversion `unsupported-nesting-d
   - carries a node the writers' cause below names, such as an inline card a link marks.
 - **Reading, in `htmlToAdf`.** Fix what the message names;
   [`spec/html.md`](https://github.com/larvit/adf-codec/blob/main/spec/html.md) lists each element's
-  attributes. The HTML:
-  - holds a `data-*` attribute its element does not take, such as `data-level` on `<h1>`, or one
+  attributes. An element that claims the dialect, or one inside it:
+  - holds a `data-*` attribute its element does not take, such as `data-extra` on `<ul class="adf-task-list">`, or one
     holding a value outside its attribute's kind or not written as compact JSON, such as
     `data-wrap="yes"`;
   - holds a carry element whose `data-adf` holds JSON that is no ADF node, is not written compact
@@ -936,7 +954,7 @@ Serves [Goals](#goals) 8.
 | Host APIs | none: pure ECMAScript, no DOM, no `node:` import |
 | Module format | ESM only, one entrypoint |
 | Registry | public npm, `@larvit/adf-codec` |
-| Size | 86 kB minified and gzipped, the whole package bundled with its dependencies; 187 kB tarball, 695 kB unpacked |
+| Size | 93 kB minified and gzipped, the whole package bundled with its dependencies; 205 kB tarball, 765 kB unpacked |
 | Types | built JavaScript with `.d.ts` beside it |
 
 Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/docs/decisions.md#any-es2022-engine),
@@ -964,7 +982,7 @@ Contract: [`docs/decisions.md`](https://github.com/larvit/adf-codec/blob/main/do
 | `adfToPlainText` | function | ADF to text with no markup |
 | `adfToPortableMarkdown` | function | ADF to portable markdown, lossy |
 | `commonMarkToAdf` | function | strict CommonMark to ADF |
-| `htmlToAdf` | function | `adfToHtml`'s HTML, read back to ADF |
+| `htmlToAdf` | function | `adfToHtml`'s HTML, read back to ADF, and any other HTML, read best effort |
 | `jiraWikiToAdf` | function | Jira wiki markup to ADF |
 | `losslessMarkdownToAdf` | function | the lossless flavour to ADF |
 | `portableMarkdownToAdf` | function | portable markdown to ADF |

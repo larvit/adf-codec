@@ -916,7 +916,7 @@ Read most (opens and searches):
 - `docker-runner.sh` 2
 - `package.json` 2
 - `src/adf/document.test.ts` 2
-- `src/markdown/commonmark/entity-references.ts` 2
+- `src/entity-references.ts` 2
 - `src/markdown/parse/markdown-to-adf.test.ts` 2
 - `src/result.test.ts` 2
 - `README.md` 1

@@ -20,6 +20,7 @@ import { readCarry } from './carry-element.ts'
 import { readCarryAttributes } from '../carry-attributes.ts'
 import { readDataAttributes, readDataAttributesAfter } from '../data-attributes.ts'
 import { readFigure, readMediaGroup } from './media-block.ts'
+import { readForeignHtml } from './foreign.ts'
 import { readImageAttributes } from '../image-element.ts'
 import { readInline } from './inline.ts'
 import { readLanguageClass } from '../language-class.ts'
@@ -66,24 +67,34 @@ const formRefusals: Readonly<Record<FirstParagraphForm, string>> = {
 const headCloser = '\n</thead>\n</table>'
 const headToBody = '</thead>\n<tbody>\n'
 
-// Reads back what `adfToHtml` writes, as it or a browser spells it.
+// Reads what `adfToHtml` writes, in its spelling or a browser's, back to the document written; reads any other HTML best effort.
 export function htmlToAdf(html: string): Result<AdfDocument, ParseError> {
+	return readHtml(html, (lines) => {
+		const dialect = readDialect(lines)
+		return dialect.ok ? dialect : readForeignHtml(lines, readDialectBlock)
+	})
+}
+
+// Reads only what `adfToHtml` writes, as it or a browser spells it: the reading every element claiming the dialect takes.
+export function dialectHtmlToAdf(html: string): Result<AdfDocument, ParseError> {
+	return readHtml(html, readDialect)
+}
+
+// A form post ends each line in `\r\n`, which reads as the line feed `adfToHtml` writes.
+function readHtml(html: string, reader: (lines: string) => Result<AdfDocument, ParseError>): Result<AdfDocument, ParseError> {
 	return positioned(
-		withinEngineLimits(() => readHtml(html)),
+		withinEngineLimits((): Result<AdfDocument> => {
+			if (typeof html !== 'string') return notAString(html, 'HTML')
+			const read = reader(html.replaceAll('\r\n', '\n'))
+			return read.ok ? read : { error: { ...read.error, position: positionIn(html, read.error.position) }, ok: false }
+		}),
 		{ line: 1, offset: 0 },
 	)
 }
 
-// A form post ends each line in `\r\n`, which reads as the line feed `adfToHtml` writes.
-function readHtml(html: string): Result<AdfDocument> {
-	if (typeof html !== 'string') return notAString(html, 'HTML')
-	const read = readLineFeeds(html.replaceAll('\r\n', '\n'))
-	return read.ok ? read : { error: { ...read.error, position: positionIn(html, read.error.position) }, ok: false }
-}
-
-function readLineFeeds(html: string): Result<AdfDocument, ParseError> {
+function readDialect(html: string): Result<AdfDocument, ParseError> {
 	if (html === '') return success({ content: [], type: 'doc', version: 1 })
-	return readDocumentCarry(html) ?? readBlocks(html)
+	return readDocumentCarry(html) ?? readDocument(html)
 }
 
 // The carry of a document holding no content key stands alone, as the whole HTML; `undefined` where the HTML opens with no such carry.
@@ -96,14 +107,34 @@ function readDocumentCarry(html: string): Result<AdfDocument, ParseError> | unde
 	return end === html.length - 1 && html.endsWith('\n') ? success({ type: 'doc', version: 1 }) : partedRefusal(html, end, undefined)
 }
 
-// A stack rather than recursion: only this loop opens and closes containers.
-function readBlocks(html: string): Result<AdfDocument, ParseError> {
+function readDocument(html: string): Result<AdfDocument, ParseError> {
 	const root: Open = { closer: '', content: [], depth: 0, kind: 'blocks', node: { type: 'doc' }, place: undefined }
-	const opened: Open[] = []
-	let open: Open = root
 	let index = 0
 	for (;;) {
-		const place = { index: open.content.length, parent: open.place }
+		const block = readBlockAt(html, index, { index: root.content.length, parent: undefined }, root)
+		if (!block.ok) return block
+		index = block.value.end
+		root.content.push(block.value.node)
+		if (index === html.length - 1 && html.endsWith('\n')) return success({ content: root.content, type: 'doc', version: 1 })
+		if (!html.startsWith('\n', index)) return partedRefusal(html, index, undefined)
+		index += 1
+	}
+}
+
+// The dialect's block an element of foreign HTML claims to be; `undefined` where its name opens no block of the dialect.
+function readDialectBlock(html: string, index: number, place: Place, depth: number): ReadNode | undefined {
+	const tag = readStartTag(html, index)
+	if (tag === undefined || !blockReaders.has(tag.name)) return undefined
+	return readBlockAt(html, index, place, { closer: '', content: [], depth, kind: 'blocks', node: { type: 'doc' }, place: place.parent })
+}
+
+// The block at `start`, a child of `parent`, with all it holds. A stack rather than recursion: only this loop opens and closes containers.
+function readBlockAt(html: string, start: number, at: Place, parent: Open): ReadNode {
+	const opened: Open[] = []
+	let open: Open = parent
+	let index = start
+	for (;;) {
+		const place = open === parent ? at : { index: open.content.length, parent: open.place }
 		if (open.depth > largestNesting) return refused('unsupported-nesting-depth', `blocks nest deeper than ${largestNesting} levels`, html, index, place)
 		const step = readStep(html, index, place, open)
 		if (!step.ok) return step
@@ -114,17 +145,18 @@ function readBlocks(html: string): Result<AdfDocument, ParseError> {
 			open = step.value.open
 			continue
 		}
+		if (open === parent) return success({ end: index, node: step.value.node })
 		open.content.push(step.value.node)
-		while (open !== root && html.startsWith(closerOf(open), index)) {
+		while (open !== parent && html.startsWith(closerOf(open), index)) {
 			index += closerOf(open).length
 			const closed: AdfNode = { ...open.node, content: open.content }
 			const closedPlace = open.place
-			open = opened.pop() ?? root
+			open = opened.pop() ?? parent
 			if (open.kind === 'rows' && open.content.length === 0 && isHeaderRow(closed) !== (open.section === 'head')) return firstRowRefusal(html, index, closedPlace)
+			if (open === parent) return success({ end: index, node: closed })
 			open.content.push(closed)
 		}
 		if (open.kind === 'row') continue
-		if (open === root && index === html.length - 1 && html.endsWith('\n')) return success({ content: root.content, type: 'doc', version: 1 })
 		if (!html.startsWith('\n', index)) return partedRefusal(html, index, open.place)
 		index += 1
 	}

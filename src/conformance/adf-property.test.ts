@@ -10,7 +10,7 @@ import { adfToLossyJiraWiki } from '../wiki/emit/adf-to-jira-wiki.ts'
 import { adfToPlainText } from '../plain-text/adf-to-plain-text.ts'
 import { adfToPortableMarkdown, reduceToPortable } from '../markdown/portable/adf-to-portable-markdown.ts'
 import { centeredImage, externalMedia } from '../adf/plain-image.ts'
-import { htmlToAdf } from '../html/parse/html-to-adf.ts'
+import { dialectHtmlToAdf, htmlToAdf } from '../html/parse/html-to-adf.ts'
 import { losslessMarkdownToAdf } from '../markdown/parse/markdown-to-adf.ts'
 import { portableMarkdownToAdf } from '../markdown/portable/portable-markdown-to-adf.ts'
 import { toEditorNormal } from '../markdown/portable/editor-normal.ts'
@@ -82,14 +82,19 @@ function escapedInAttributes(html: string): string {
 	return html.replace(/<[a-z][^\s>/]*(?:\s+[^\s=>/]+(?:="[^"]*")?)*\s*\/?>/g, (tag) => tag.replace(/="[^"]*"/g, (value) => value.replaceAll('<', '&lt;').replaceAll('>', '&gt;')))
 }
 
-// Without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read.
+// Read as the dialect and without a carry element, HTML spells the document it reads one way, so writing that document gives back the very HTML read.
 function assertReadsBack(html: string): void {
-	const read = htmlToAdf(html)
-	if (!read.ok) return
-	const rewritten = adfToHtml(read.value)
-	assert.ok(rewritten.ok, rewritten.ok ? '' : `${rewritten.error.code}: ${rewritten.error.message} — reading ${JSON.stringify(html)}`)
-	if (!html.includes('class="adf-carry"')) assert.equal(rewritten.value, escapedInAttributes(html), `reading ${JSON.stringify(html)}`)
-	assert.deepEqual(htmlToAdf(rewritten.value), { ok: true, value: read.value }, `reading ${JSON.stringify(html)}`)
+	const read = dialectHtmlToAdf(html)
+	if (read.ok && !html.includes('class="adf-carry"')) assert.equal(written(read.value, html), escapedInAttributes(html), `reading ${JSON.stringify(html)}`)
+	const anyRead = htmlToAdf(html)
+	if (read.ok) assert.deepEqual(anyRead, read, `reading ${JSON.stringify(html)}`)
+	if (anyRead.ok) assert.deepEqual(htmlToAdf(written(anyRead.value, html)), anyRead, `reading ${JSON.stringify(html)}`)
+}
+
+function written(document: AdfDocument, from: string): string {
+	const html = adfToHtml(document)
+	assert.ok(html.ok, html.ok ? '' : `${html.error.code}: ${html.error.message} — reading ${JSON.stringify(from)}`)
+	return html.value
 }
 
 // Every text node's text in document order.

@@ -31,7 +31,16 @@ for (const element of document.querySelectorAll('[data-background-color]')) elem
 for (const element of document.querySelectorAll('[data-text-color]')) element.style.color = element.dataset.textColor
 ```
 
-`htmlToAdf` still reads the HTML `0.3.1` wrote.
+`htmlToAdf` still reads the HTML `0.3.1` wrote. Other HTML, which `0.3.1` refused as
+`unmappable-html`, reads best effort and returns a document, so that refusal doesn't tell foreign
+HTML from `adfToHtml`'s any more. An element with a `data-adf` attribute or an `adf-` class is
+still refused where it is not the HTML `adfToHtml` writes.
+
+HTML `adfToHtml` wrote is other HTML too once it is changed outside such an element, its final line
+feed trimmed included. Where `0.3.1` refused it, it now reads and loses each `data-*` attribute
+outside such an element, ids, alignment and colours among them. An app that saves what it reads can
+check first: `adfToHtml` of the document read equals the HTML handed in only where that HTML read
+as `adfToHtml`'s own.
 
 `adfToLosslessMarkdown` writes a paragraph, heading, quote, list, list item, code block or rule
 whose only attribute beyond CommonMark's is `localId` in its CommonMark spelling, with the id in an
