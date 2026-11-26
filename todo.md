@@ -6,13 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 210`
+`Next ID = 211`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
+| 210 | 0.4.0 |  | principle | **Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.** | 1 | 1 | 1 | 1 | 1 | code health by 1 | 6.2 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
 | 196 | 0.4.0 | 194 | owner | **Document the wiki calls in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.** | 1 | 2 | 1 | 2 | 2 | 3 by 2, 11 by 1 | 3.6 |
 | 209 | 0.4.0 |  |  | **End a bare wiki address where Jira ends it, linking through `)`, `'` and `!` as Jira does.** | 2 | 2 | 2 | 4 | 2 | 11 by 2 | 2.2 |
@@ -56,6 +57,21 @@ Touches:
 - `src/wiki/parse/inline.ts`: `delimiter`, `dash`
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
+
+### 210. Build each deep value by a helper and one test per case in place of the four loops inside test bodies of the two Jira wiki test files.
+
+Item 172 parametrized every other test file and left these two to the chunk of item 207, which
+held them then. Three tests of `src/wiki/emit/adf-to-jira-wiki.test.ts` build a deep value with
+`for (let level = 0; …) value = [value]`: give the file one nesting helper, as
+`src/markdown/emit/limits.test.ts` has in `wrapped`. One test of
+`src/wiki/parse/jira-wiki-to-adf.test.ts` runs `for (const around of ['\n', '\r\n', ' '])`: build
+one test per case at the top level. Technical principle: "No loops or branches in a test body;
+parametrize the cases".
+
+Touches:
+
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`: `lines 320-570` (small)
+- `src/wiki/parse/jira-wiki-to-adf.test.ts`: `lines 350-365` (small)
 
 ### 194. Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.
 
