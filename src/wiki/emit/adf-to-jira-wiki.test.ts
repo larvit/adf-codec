@@ -228,6 +228,7 @@ test('spells a text ending in `:` or `;` plainly, since no smiley continues with
   assert.equal(wiki(paragraph(text('Note:'), text('important', strong))), 'Note:*important*')
   assert.equal(wiki(paragraph(text('Steps:'), { type: 'hardBreak' }, text('b'))), 'Steps:\\\\b')
   assert.equal(wiki(paragraph(text('a :'), mention)), 'a :[~accountid:5b10]')
+  assert.equal(wiki(paragraph(text('a :'), text(')'))), `a :${inline('{"text":")","type":"text"}')}`)
   assert.equal(wiki(paragraph(text('a:', { attrs: { color: '#ff0000' }, type: 'textColor' }), text(' b'))), '{color:#ff0000}a:{color} b')
   assert.equal(wiki(paragraph(text('a:', { attrs: { href: 'https://example.com' }, type: 'link' }), text(' b'))), '[a:|https://example.com] b')
   assert.equal(wiki(paragraph(text('a (', strong), mention)), '*a \\(*[~accountid:5b10]')
