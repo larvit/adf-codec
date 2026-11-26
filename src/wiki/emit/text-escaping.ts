@@ -35,7 +35,7 @@ function escapes(character: string, characters: readonly string[], index: number
   return character === '!' && after !== 'space'
 }
 
-// A smiley reads wherever no letter or digit follows it; one the node's edge cuts may close in the next node's spelling. Returns the indexes to put a backslash before: only a `(` or a closing `)` takes one, since Jira keeps a backslash before `:`, `;` and a letter. `undefined` where a smiley reads that no such backslash stops.
+// A smiley reads wherever no letter or digit follows it. One the node's edge cuts reads only if the next node's spelling continues it; that opens with a delimiter, a backslash, `[` or `{`, which no smiley starting with `:` or `;` continues with, so only a cut `(` takes a backslash. Returns the indexes to put a backslash before: only a `(` or a closing `)` takes one, since Jira keeps a backslash before `:`, `;` and a letter. `undefined` where a smiley reads that no such backslash stops.
 function smileyStops(characters: readonly string[], end: Side): Set<number> | undefined {
   const stops = new Set<number>()
   for (const [index, character] of characters.entries()) {
@@ -45,7 +45,7 @@ function smileyStops(characters: readonly string[], end: Side): Set<number> | un
       if (held.some((heldCharacter, offset) => heldCharacter !== spelled[offset])) continue
       const cut = held.length < spelled.length
       const next = characters[index + spelled.length]
-      if (cut ? end === 'space' : (next === undefined ? end : side(next)) === 'word') continue
+      if (cut ? character !== '(' || end === 'space' : (next === undefined ? end : side(next)) === 'word') continue
       if (character === '(') stops.add(index)
       else if (!cut && parenthesised) stops.add(index + spelled.length - 1)
       else return undefined
