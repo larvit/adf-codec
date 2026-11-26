@@ -61,7 +61,15 @@ const schemesAfterSlashes: ReadonlySet<string> = new Set(['file', 'ftp', 'ftps',
 
 // spec/wiki.md, Marks: Jira shows an address with a second `#`, or a `%` not followed by two hex digits, as text, bare or bracketed.
 export function wellFormedAddress(address: string): boolean {
-  return (address.match(/#/g)?.length ?? 0) <= 1 && !/%(?![0-9a-f]{2})/i.test(address)
+  return wellFormedFrom(address) === 0
+}
+
+// The first index from which the rest of `address` is well formed: a suffix of a well-formed address is well formed.
+export function wellFormedFrom(address: string): number {
+  let from = 0
+  for (const bad of address.matchAll(/%(?![0-9a-f]{2})/gi)) from = bad.index + 1
+  const lastHash = address.lastIndexOf('#')
+  return Math.max(from, lastHash > 0 ? address.lastIndexOf('#', lastHash - 1) + 1 : 0)
 }
 
 // spec/wiki.md, Marks: the addresses the reader takes as a link in `[<address>]` and `[<text>|<address>]`, and the writer too where `storedHref` leaves one as it is.

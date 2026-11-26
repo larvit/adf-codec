@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { linkedAddress, storedHref, wellFormedAddress } from './spellings.ts'
+import { linkedAddress, storedHref, wellFormedAddress, wellFormedFrom } from './spellings.ts'
 
 const schemesAfterColon = ['callto', 'cvs', 'facetime', 'feed', 'git', 'irc', 'irc6', 'itms', 'magnet', 'mailto', 'mvn', 'news', 'nntp', 'notes', 'rdp', 'sip', 'sips', 'skype', 'slack', 'ssh', 'svn', 'tel', 'telnet', 'urn', 'vnc', 'whatsapp', 'xmpp']
 const schemesAfterSlashesOnly = ['file', 'ftp', 'ftps', 'gopher', 'hipchat', 'http', 'https', 'sftp', 'smb']
@@ -53,6 +53,12 @@ for (const address of ['http://x/a%41', '/a#b', '/a^b']) {
 for (const address of ['http://x/a%', 'http://x/a%4', 'http://x/a%zz', '/a#b#c']) {
   test(`${address} is not well formed`, () => {
     assert.equal(wellFormedAddress(address), false)
+  })
+}
+
+for (const [address, from] of [['http://x/a#b', 0], ['a#b#c#d', 4], ['a%zz#b', 2], ['a%4b%', 5], ['a#b%4#c', 4], ['%', 1]] as const) {
+  test(`${address} is well formed from ${from}`, () => {
+    assert.equal(wellFormedFrom(address), from)
   })
 }
 
