@@ -15,7 +15,6 @@
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
 | 107 | 0.4.0 |  | question | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
 | 211 | 0.4.0 |  |  | **Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
-| 170 | 0.4.0 |  | owner | **Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.** | 3 | 1 | 1 | 3 | 5 |  | 0.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -97,29 +96,6 @@ Touches:
 - `src/wiki/emit/inline-line.ts`: `leafSpelling`, `inlineLine`
 - `spec/wiki.md`: `## Inline`
 - `src/wiki/emit/adf-to-jira-wiki.test.ts`
-
-### 170. Bundle the packed tarball with webpack, esbuild, Rollup and Bun in the gate, failing on any bundler warning, and run each bundle's round-trip in Node.
-
-Consumers bundle the package, Forge apps with webpack among them, and one reported a "Critical
-dependency" warning from another converter. Nothing in the gate bundles it today. Install the
-tarball as `package-tests` does, bundle an entry file that round-trips one document through
-`adfToLosslessMarkdown` and `losslessMarkdownToAdf`, and run each bundle in Node. A warning fails the
-leg as an error does: webpack's "Critical dependency" is a warning. The bundlers live in
-`bundle-size/`'s package, beside esbuild, as Stryker lives in its own (§Stryker in its own package), with
-pinned versions. Bun builds from the
-image the gate already pulls. No leg needs an account or a network beyond the install.
-
-Once the leg holds, the README may say the package bundles with those four; it says nothing about
-Forge's runtime, which no leg tests.
-
-Touches:
-
-- `ci.sh`: lines 108-113 (small)
-- `bundle-size/package.json`
-- `bundle-size/package-lock.json`
-- `package-tests/bundle-round-trip.mjs`
-- `package-tests/bundle-entry.js`
-- `README.md`: `## The package` (small)
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
