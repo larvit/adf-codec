@@ -1487,3 +1487,15 @@ Read most (opens and searches):
 - `docker-runner.sh` 1
 - `package.json` 1
 - `src/wiki/spellings.ts` 1
+
+## Reading cost, chunk f9c83fec8da8, finished 2026-11-26T01:37:44Z
+
+109836 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/markdown/parse/blocks.ts` 11
+- `docs/score-anchors.md` 4
+- `src/markdown/inline-content.ts` 4
+- `src/markdown/emit/inline-line.ts` 2
+- `src/markdown/portable/task-ids.ts` 2
