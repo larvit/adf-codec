@@ -13,12 +13,12 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 214 | 0.4.0 |  | defect | **Refuse a carried node whose string values would abort the engine in `JSON.stringify`, as output past the longest string, before spelling any of them.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
+| 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 213 | 0.4.0 |  |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
 | 178 | 0.5.0 |  | owner | **Reach the comprehension floor: move the reasoning behind the emitter's fallback and escape loops into the code that runs them, so each reads on its own.** | 3 | 1 | 2 | 4 | 7 | code health by 8 | 3.7 |
-| 137 | 0.5.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 58 | 0.5.0 |  |  | **Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.** | 4 | 2 | 2 | 6 | 6 | code health by 3 | 2.6 |
 | 187 | 0.5.0 |  |  | **Write a `blockTaskItem` and a nested task list as HTML in `adfToHtml` and read them back in `htmlToAdf`, in place of the carry element.** | 2 | 2 | 2 | 4 | 3 | 6 by 2 | 1.8 |
 | 9 | 0.5.0 |  |  | **Ship an online sandbox: a web page with two textboxes converting between ADF and markdown on the library's browser build.** | 3 | 2 | 1 | 4 | 6 | 3 by 6 | 1.3 |
@@ -47,6 +47,26 @@ Touches:
 - `src/html/emit/adf-to-html.ts`: `writeHtml` (small)
 - `src/canonical-json.test.ts`
 - `src/markdown/emit/limits.test.ts`
+
+### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
+
+Reading HTML from emails, CMSs and editors is the most asked need on the Atlassian developer
+community. A developer panel picked `htmlToAdf` itself, with no option, as `docs/decisions.md`
+records. The maintainer moved it from 0.4.0 to 0.5.0 on 2026-11-25.
+
+The maintainer moved it back into 0.4.0 on 2026-11-26, since the unmerged branch `item-137` already holds most of the work: a foreign HTML reader in `src/html/parse/foreign.ts`, its tests, and the spec, README, migration and decision text, reviewed through the security, product-owner and prose passes. The item keeps that branch's work, merges `main` into it and ships it. That settles the feasibility question this item raised.
+
+Touches:
+
+- `src/html/parse/html-to-adf.ts`
+- `src/html/parse/inline.ts`
+- `src/html/parse/inline-block.ts`
+- `src/html/parse/source.ts`
+- `src/html/parse/node-element.ts`
+- `src/html/parse/carry-element.ts`
+- `src/html/parse/html-to-adf.test.ts`
+- `spec/html.md`: `## Reading`
+- `README.md`: `## HTML` (small), `## The calls` (small), `## The errors` (small)
 
 ### 213. Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.
 
@@ -90,28 +110,6 @@ The scoring run at fa8600f (PR #162) averaged 5.88 overall, under the 7.0 floor;
 - `src/markdown/emit/adf-to-markdown.ts:138` `spellingMemo`: keep its take, ask and depth rebasing in one type.
 
 Keep every output byte-identical: the round-trip properties and the CommonMark suite must pass unchanged.
-
-### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
-
-Reading HTML from emails, CMSs and editors is the most asked need on the Atlassian developer
-community. A developer panel picked `htmlToAdf` itself, with no option, as `docs/decisions.md`
-records. The maintainer moved it from 0.4.0 to 0.5.0 on 2026-11-25.
-
-Before building further, evaluate whether the item is feasible at all or should be abandoned, and
-ask the maintainer to decide. The unmerged branch `item-137` holds an attempt to judge by. Abandoning it
-also calls for decisions on item 138, which it blocks, README goal 12 and the two decisions that cite it.
-
-Touches:
-
-- `src/html/parse/html-to-adf.ts`
-- `src/html/parse/inline.ts`
-- `src/html/parse/inline-block.ts`
-- `src/html/parse/source.ts`
-- `src/html/parse/node-element.ts`
-- `src/html/parse/carry-element.ts`
-- `src/html/parse/html-to-adf.test.ts`
-- `spec/html.md`: `## Reading`
-- `README.md`: `## HTML` (small), `## The calls` (small), `## The errors` (small)
 
 ### 58. Port `ci.sh`, `publish.sh`, `docker-runner.sh` and `mutation-tests/run.sh` to standalone Python scripts.
 
