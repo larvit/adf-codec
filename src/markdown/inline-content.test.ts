@@ -4,7 +4,7 @@ import test from 'node:test'
 import type { AdfNode } from '../adf/document.ts'
 import type { Result } from '../result.ts'
 import type { InlineContent, OutermostContent } from './inline-content.ts'
-import { parseInlineContent } from './inline-content.ts'
+import { parseInlineContent, spellableLink } from './inline-content.ts'
 
 function read(source: string): Result<OutermostContent> {
   return parseInlineContent(source, new Map(), [], 'paragraph', 'lossless')
@@ -32,8 +32,8 @@ function spelled(node: AdfNode): string {
   return marks.length === 0 ? held : `${held}<${marks.join(', ')}>`
 }
 
-function reading(source: string): string[] {
-  const read = parseInlineContent(source, new Map([['ref', { destination: '/r', title: 't' }]]), [], 'paragraph', 'lossless')
+function reading(source: string, flavour: 'lossless' | 'portable' = 'lossless'): string[] {
+  const read = parseInlineContent(source, new Map([['ref', { destination: '/r', title: 't' }]]), [], 'paragraph', flavour)
   if (!read.ok) return [read.error.message]
   const { image, nodes: held, openingSpellableLink } = read.value
   return [...(openingSpellableLink ? ['opens with a spellable link'] : []), ...(image === undefined ? [] : [spelled(image)]), ...held.map(spelled)]
@@ -69,4 +69,13 @@ test('reads an image among links, marks and directives as its alt text, with (im
     ['[!adf:textBreak{}](h)', ['delete !adf:textBreak{} here: it stands only between two runs of text with the same formatting, which would otherwise read as one']],
   ]
   for (const [source, expected] of readings) assert.deepEqual(reading(source), expected, source)
+})
+
+test('refuses a spellable link directive that does not open its paragraph', () => {
+  assert.deepEqual(reading('a !adf:link[b]{href="/k"}'), [spellableLink])
+})
+
+test('highlights the (image) of a link between portable highlight delimiters', () => {
+  assert.deepEqual(reading('==[![](i)]()==', 'portable'), [' (<backgroundColor>', 'image<backgroundColor, link:i>', ')<backgroundColor>'])
+  assert.deepEqual(reading('==[![a](i)](h)x==', 'portable'), ['a<backgroundColor, link:h>', ' (<backgroundColor>', 'image<backgroundColor, link:i>', ')x<backgroundColor>'])
 })
