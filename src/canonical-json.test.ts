@@ -127,6 +127,17 @@ test('yields a key that, with what is spelled, passes the bound unspelled', () =
   assert.ok(length > longestOutput)
 })
 
+test('spells a string whose spelling is exactly as long as the bound', () => {
+  const { last, length } = lengthAndLast('a'.repeat(longestOutput - 2))
+  assert.equal(last?.length, longestOutput)
+  assert.equal(length, longestOutput)
+})
+
+test('counts what is spelled before a string, so one that would pass the bound by a character is not spelled', () => {
+  const { last } = lengthAndLast(['a'.repeat(longestOutput - 2)])
+  assert.equal(last, '""')
+})
+
 test('holds a text to no spelling of a string that passes the bound', () => {
   assert.ok(!spellsCanonicalJson('a'.repeat(longestOutput - 1), 'compact', ''))
 })
