@@ -1516,3 +1516,46 @@ Read most (opens and searches):
 - `CHANGELOG.md` 1
 - `README.md` 1
 - `src/wiki/spellings.test.ts` 1
+
+## Reading cost, chunk a09851ee172d, finished 2026-11-26T02:23:07Z
+
+108264 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/conformance/adf-schema.test.ts` 2
+- `docs/score-anchors.md` 1
+
+## Reading cost, chunk 3576d3cde5a0, finished 2026-11-26T02:34:32Z
+
+296936 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 14
+- `docs/decisions.md` 9
+- `spec/wiki.md` 9
+- `src/wiki/emit/lossy-form.ts` 8
+- `src/conformance/adf-property.test.ts` 7
+- `src/adf/document.ts` 6
+- `README.md` 5
+- `CHANGELOG.md` 3
+- `ci.sh` 3
+- `package-tests/consumer.ts` 3
+
+## Reading cost, chunk 49aa729644a8, finished 2026-11-26T02:49:02Z
+
+100752 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `README.md` 3
+- `docs/decisions.md` 3
+- `spec/wiki.md` 3
+- `src/wiki/parse/inline.ts` 3
+- `src/wiki/parse/jira-wiki-to-adf.test.ts` 3
+- `CHANGELOG.md` 2
+- `.gitignore` 1
+- `src/wiki/emit/inline-line.ts` 1
+- `src/wiki/spellings.ts` 1
+- `todo.md` 1
