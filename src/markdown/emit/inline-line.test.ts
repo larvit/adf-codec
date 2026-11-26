@@ -38,6 +38,12 @@ test('carries the range it is handed on its first call, leaving the fallbacks it
   assert.deepEqual([...fallbacks.carried], [])
 })
 
+test('refuses a carry of a range the line already carried', () => {
+  const taken = takeFallback(withheldMarkFallbacks([{ text: 'a', type: 'text' }], 'lossless'), [{ first: 0, last: 0 }], [])
+  const again = taken.ok ? takeFallback(taken.value, [{ first: 0, last: 0 }], []) : taken
+  assert.equal(again.ok ? undefined : again.error.code, 'unsupported-node-shape')
+})
+
 // Writes the spanned line where it reads back, else the parted line taking only the first fallback each pass finds, with no cap.
 function firstFallbackLine(nodes: readonly AdfNode[], container: LineContainer): Result<string> {
   let fallbacks = withheldMarkFallbacks(nodes, 'lossless')
