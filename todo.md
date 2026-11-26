@@ -12,7 +12,6 @@
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 211 | 0.4.0 |  |  | **Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.** | 2 | 2 | 2 | 4 | 3 | 11 by 4, 6 by 2 | 5.1 |
 | 212 | 0.4.0 |  |  | **Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.** | 2 | 2 | 2 | 4 | 3 | 11 by 3 | 2.5 |
 | 213 | 0.4.0 |  |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 107 | 0.4.0 |  | decision | **Spell the block carry's JSON so its length stays linear in the node's JSON.** | 3 | 1 | 3 | 5 | 5 |  | 0.0 |
@@ -35,15 +34,6 @@
 - 0.2.1 renamed to 0.3.0
 
 ## Details
-
-### 211. Spell a hard break the lossless wiki writer writes so Jira reads it as a break, where text or a spelling starting with `{` or an escaped character follows.
-
-Probed on the live test site on 2026-11-26 while answering item 194's review: Jira reads `\\` as a line break only where the next character isn't `{`, and shows `a\\\_a` (what the lossless writer writes for a text, a hard break and the text `_a`) as `a`, three backslashes and `_a`, with no break. The same holds for `a\\{color:red}…`, `a\\{anchor:x}…`, `a\\{{…}}` and a text `{` written `\{`. `\\{noformat}{noformat}` before a letter does read as a break. The lossless writer writes each of these right after a hard break, so Jira shows the break as backslashes, and `jiraWikiToAdf` reads the spelling back as a break, unlike Jira (see item 201). Find a spelling of the break or of what follows it that Jira reads, record it in `spec/wiki.md` and `docs/decisions.md`, and where none exists, carry the pair. Item 194's lossy writer shares the gap for a text that starts with a backslash run it writes between `{noformat}` right after a hard break (`docs/decisions.md`'s "Not handled").
-
-Touches:
-- `src/wiki/emit/inline-line.ts`: `leafSpelling`, `inlineLine`
-- `spec/wiki.md`: `## Inline`
-- `src/wiki/emit/adf-to-jira-wiki.test.ts`
 
 ### 212. Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.
 
