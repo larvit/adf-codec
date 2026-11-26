@@ -181,8 +181,8 @@ says `adfToPlainText` does, in wiki markup:
   exactly two, one before a character the writer escapes, and one that ends a text unless it ends the
   line outside a table cell. A `|` in a table cell is written between `{noformat}`, since an escaped
   one still ends the cell. A run of `*`, `_`, `-` or `+` marks around a `{noformat}` drops those marks.
-- A `hardBreak` right before a `{` or a backslash is `\\ `, a break and a space, since the writer carries
-  nothing and a space is form.
+- A `hardBreak` right before a `{` or a backslash is `\\ `, a break and a space. The writer never carries,
+  and the space adds no content.
 
 It refuses a document nested past 500 levels, each node counting one level. The lossless writer
 writes such a document.
@@ -192,6 +192,7 @@ writes such a document.
 The writers never write these, and the reader reads them as follows:
 
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
+- `\\` before a `{` or a backslash reads as a `hardBreak`, where Jira shows the backslashes as text.
 - An address standing bare, `http://` or `https://` first, reads as its text linked to its `href` as
   Jira stores it. It ends at whitespace, `"`, `>`, `[`, `\`, `]`, a backtick, `{`, `|` or `}`. The link
   leaves out the run of `!`, `'`, `)`, `,`, `.`, `;` and `?` ending it, but keeps that run up to its
