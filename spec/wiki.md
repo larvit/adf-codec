@@ -101,7 +101,7 @@ holding a mark rides as well.
 | ADF | Wiki markup | Reader |
 | --- | --- | --- |
 | `code`, `em`, `strike`, `strong`, `underline` | `{{x}}`, `_x_`, `-x-`, `*x*`, `+x+` | the same; `??x??` reads `em` |
-| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`; an `href` that is no address of those below, or holds whitespace, a markup character, `"`, `<`, `>`, a backtick or `^`, rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same, the `href` as Jira stores it below; `[#anchor]` reads as `href` `#anchor`; `[x]`, `[a\|x]` and `[a\|x\|t]` where `x` is no address of those below read as text, as `[^name.ext]` and `[~name]` do |
+| `link` holding `href` | `[<text>\|<href>]`, with `\|<title>` after the `href` where it holds a `title`; `[<href>]` where the link is the text's last mark, the text is the `href`, the link marks neither neighbour and holds no `title`; an `href` that is no address of those below, or holds whitespace, a markup character, `"`, `<`, `>`, a backtick or `^`, rides the carry, as does a `title` that is empty, holds a markup character, a line feed or a carriage return, or starts or ends with whitespace | the same, the `href` holding the escapes below; `[#anchor]` reads as `href` `#anchor`; `[x]`, `[a\|x]` and `[a\|x\|t]` where `x` is no address of those below read as text, as `[^name.ext]` and `[~name]` do |
 | `subsup` | `^x^` for `sup`, `~x~` for `sub` | the same |
 | `textColor` | `{color:<hex>}x{color}` | the same; a CSS colour name reads as its hex code, so `red` as `#ff0000` |
 | any other mark | the carry of each node of the marked run | `{adf:display=inline}` reads its node |
@@ -121,15 +121,15 @@ whitespace and no `[`, `]`, `{`, `}`, `|` or `\`:
   `telnet`, `urn`, `vnc`, `whatsapp` and `xmpp`.
 
 No address of any kind holds a second `#` or a `%` not followed by two hexadecimal digits. A `^`
-makes Jira read an attachment embed, which the reader leaves as text, where it is followed by another
-character in an address of the second or third kind, or by a character and no `:` after it to the end
-in a path or anchor: `/a^b` and `#a^^` read as text, and `/a^:b`, `#a^b:c` and a final `^` read as a
-link. Jira shows a scheme outside these, such as `javascript`, `data`, `ws` and `ldap`, as text.
+followed by another character makes Jira read an attachment embed, which the reader leaves as text:
+in an address with a scheme always, and in a path or anchor where the text after some `^` is
+neither empty nor holds a `:`. So `/a^b` and `#a^^` read as text, and `/a^:b`, `#a^b:c` and `/a^`
+read as links. A bare address links whatever its `^`. Jira shows a scheme outside these, such as
+`javascript`, `data`, `ws` and `ldap`, as text.
 
 Jira stores a linked `href` with `"` as `%22`, `<` as `%3C`, `>` as `%3E`, a backtick as `%60` and
-every `^` as `%5E`, whether the address is bracketed or bare, and the reader reads that `href`; the
-text of `[x]` and of a bare address keeps the characters as written. The writer carries a link whose
-`href` holds one of these characters, since Jira would store another `href` than the one written.
+every `^` as `%5E`, whether the address is bracketed or bare. The reader reads that `href`, and the
+text of `[x]` and of a bare address keeps the characters as written.
 
 Marks nest in the order the node's array holds them, outermost first, and a run of nodes sharing
 their outermost mark shares its delimiters. The delimiters of `code`, `em`, `strike`, `strong`,
@@ -159,8 +159,9 @@ says `adfToPlainText` does, in wiki markup:
 The writers never write these, and the reader reads them as follows:
 
 - `{anchor:name}` reads as nothing, since no ADF node holds a bookmark.
-- An address standing bare, `http://` or `https://` first, reads as its text linked to it, less a
-  `.`, `,`, `;` or `?` ending it.
+- An address standing bare, `http://` or `https://` first, reads as its text linked to its `href` as
+  Jira stores it, less a `.`, `,`, `;` or `?` ending it. It ends at whitespace, `"`, `'`, a backtick,
+  `>`, `)`, `!`, `|`, `[`, `]`, `{`, `}` or `\`.
 - `!name.ext!`, whose address holds no `://`, reads as text: no ADF node holds an attachment by
   name. So does an image that shares its line with anything else, its address read as a bare one.
 - `{code}`, `{noformat}`, `{panel}` and `{quote}` open a block at a line's start or right after
