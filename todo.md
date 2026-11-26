@@ -6,13 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 215`
+`Next ID = 216`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 214 | 0.4.0 |  | defect | **Refuse a carried node whose string values would abort the engine in `JSON.stringify`, as output past the longest string, before spelling any of them.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
+| 215 | 0.4.0 | 214 | defect | **Return a result, never an engine abort, from the writers where one key or one link `href` is a string of 2^28 characters.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 213 | 0.4.0 |  |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
@@ -45,6 +46,21 @@ Touches:
 - `src/adf/carried-json.ts`: `carriedJson` (small)
 - `src/length-bound.ts`: `joinedWithin` (small)
 - `src/html/emit/adf-to-html.ts`: `writeHtml` (small)
+- `src/canonical-json.test.ts`
+- `src/markdown/emit/limits.test.ts`
+
+### 215. Return a result, never an engine abort, from the writers where one key or one link `href` is a string of 2^28 characters.
+
+Goal 1 promises a result, never a throw, yet two inputs under `longestOutput` end Node 26.13.1 (node:26.13.1-alpine3.24, 8 GB limit), and no `try` can catch either:
+
+1. `adfToLosslessMarkdown` on an `unknownBlock` whose `attrs` hold one key of 2^28 characters, `{ ['a'.repeat(2**28)]: 1 }`, ends with `FATAL ERROR: Zone Allocation failed - process out of memory`. Without the library, `JSON.stringify` of `Object.keys({ ['a'.repeat(2**28)]: 1 })[0]` aborts on its first call, and a key of 2^27 characters doesn't. A plain string of 2^28 characters aborts only on the second call. Item 214's check passes such a key, since it alone is under the bound; `canonicalJsonPieces` then spells it with `JSON.stringify`.
+2. `adfToLosslessMarkdown` on a paragraph whose text carries a `link` mark with an `href` of 2^28 characters ends with `FATAL ERROR: Ineffective mark-compacts near heap limit`. The likely cause is `escapeUnbalanced`, which builds the destination with `+=` one character at a time: 2^28 rope nodes, far past the heap.
+
+Measure first: the shortest key, and the shortest plain string after one earlier call, that `JSON.stringify` aborts on; whether a string the library escapes itself, joined from slices, spells both without an abort; and the peak heap of the link probe before and after `escapeUnbalanced` joins slices. Check the other per-character `+=` loops the same way: `spellTitle` and `foldCase` in `case-folding.ts`. Any limit the fix needs that no decision states is asked of the maintainer. Each test stays within the gate's memory.
+
+Touches:
+- `src/canonical-json.ts`: `canonicalJsonPieces` (small)
+- `src/markdown/commonmark/link-syntax.ts`: `escapeUnbalanced`, `spellTitle` (small)
 - `src/canonical-json.test.ts`
 - `src/markdown/emit/limits.test.ts`
 

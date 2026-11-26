@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { JsonValue } from './json-value.ts'
-import { serializeCanonicalJson, spellsCanonicalJson } from './canonical-json.ts'
+import { canonicalJsonPieces, serializeCanonicalJson, spellsCanonicalJson } from './canonical-json.ts'
+import { longestOutput } from './length-bound.ts'
 
 test('sorts object keys recursively', () => {
   const value = { b: 1, a: { d: 2, c: 3 } }
@@ -94,6 +95,40 @@ test('holds a text to the canonical spelling with each piece respelled', () => {
   const upper = (piece: string): string => piece.toUpperCase()
   assert.ok(spellsCanonicalJson({ a: 'b' }, 'compact', '{"A":"B"}', upper))
   assert.ok(!spellsCanonicalJson({ a: 'b' }, 'compact', '{"a":"b"}', upper))
+})
+
+// The second JSON.stringify of a 2^28-character string aborts Node, so no string is spelled that, with what is spelled, passes the bound.
+function lengthAndLast(value: JsonValue): { last: string | undefined; length: number } {
+  let last: string | undefined
+  let length = 0
+  for (const piece of canonicalJsonPieces(value, 'compact')) {
+    last = piece
+    length += piece.length
+  }
+  return { last, length }
+}
+
+test('yields a string that alone passes the bound unspelled, with its quotes counted', () => {
+  const { last, length } = lengthAndLast('a'.repeat(longestOutput - 1))
+  assert.equal(last, '""')
+  assert.ok(length > longestOutput)
+})
+
+test('yields the second of two strings that together pass the bound unspelled', () => {
+  const long = 'a'.repeat(2 ** 28)
+  const { last, length } = lengthAndLast({ first: long, second: long })
+  assert.equal(last, '""')
+  assert.ok(length > longestOutput)
+})
+
+test('yields a key that, with what is spelled, passes the bound unspelled', () => {
+  const { last, length } = lengthAndLast({ a: 'a'.repeat(2 ** 28), ['b'.repeat(2 ** 28 - 10)]: 0 })
+  assert.equal(last, '""')
+  assert.ok(length > longestOutput)
+})
+
+test('holds a text to no spelling of a string that passes the bound', () => {
+  assert.ok(!spellsCanonicalJson('a'.repeat(longestOutput - 1), 'compact', ''))
 })
 
 function nested(levels: number, wrap: (inner: JsonValue) => JsonValue): JsonValue {

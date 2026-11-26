@@ -1071,6 +1071,8 @@ CommonMark ask's spelling are held to the bound as they are built. V8 throws bui
 string past the bound, SpiderMonkey past its own longest string, and `withinEngineLimits` refuses
 both throws as the same `tooLong`, so every engine stops at the same block with the same answer.
 `joinedWithin` stops joining a carry's JSON at the bound, before the string is built.
+`canonicalJsonPieces` measures each string, a key too, before it spells it, and past the bound
+yields it unspelled: V8 aborts the process spelling the second of two 2^28-character strings.
 
 JavaScriptCore builds a joined block up to its own longest string, 2^31 − 1, before the check. Past
 that, JavaScriptCore throws `Out of memory`, which is `engine-limit` (§Which code a cause takes).
