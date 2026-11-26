@@ -69,8 +69,10 @@ function readLine(reading: Reading, line: Line): Fault | number {
   if (worded !== null) return readWordedLine(reading, line, start + worded[0].length, worded[1])
   if (/^-{4,}$/.test(text)) return pushBlock(reading, { type: 'rule' }, next)
   const marker = itemMarker.exec(text)
-  const markers = marker === null ? undefined : itemMarkers(reading.levels, marker[1] ?? '')
-  if (marker !== null && markers !== undefined) return readItem(reading, line, markers, start + marker[0].length)
+  if (marker !== null) {
+    const markers = itemMarkers(reading.levels, marker[1] ?? '')
+    if (markers !== undefined) return readItem(reading, line, markers, start + marker[0].length)
+  }
   if (text.startsWith('|')) {
     const row = readRow(reading, line)
     if (row !== undefined) return row
@@ -82,7 +84,7 @@ function readLine(reading: Reading, line: Line): Fault | number {
 
 // spec/wiki.md, Blocks: n dashes keep the open list's first n - 1 markers, padded with `*`, and end in a bullet, as Jira nests them; where no list is open, `--` and its longer runs are no marker.
 function itemMarkers(levels: readonly Level[], marker: string): string | undefined {
-  if (!marker.startsWith('-')) return marker
+  if (marker.charAt(0) !== '-') return marker
   if (marker.length > 1 && levels.length === 0) return undefined
   const kept = levels.slice(0, marker.length - 1).map((level) => level.marker).join('')
   return `${kept.padEnd(marker.length - 1, '*')}*`
