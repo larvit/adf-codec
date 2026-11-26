@@ -13,8 +13,7 @@
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 214 | 0.4.0 |  | defect | **Refuse a carried node whose string values would abort the engine in `JSON.stringify`, as output past the longest string, before spelling any of them.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
-| 212 | 0.4.0 |  |  | **Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.** | 2 | 2 | 2 | 4 | 3 | 11 by 3 | 2.5 |
-| 213 | 0.4.0 | 212 |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
+| 213 | 0.4.0 |  |  | **Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.** | 3 | 1 | 1 | 3 | 7 | code health by 4 | 1.8 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -48,18 +47,6 @@ Touches:
 - `src/html/emit/adf-to-html.ts`: `writeHtml` (small)
 - `src/canonical-json.test.ts`
 - `src/markdown/emit/limits.test.ts`
-
-### 212. Read `-- ` at a line start in the wiki reader as a nested bullet, as Jira does, and escape such a line start in the writers.
-
-`spec/wiki.md` §What only the reader reads reads `---` and `--` with whitespace or the line's edge on each side as `—` and `–`, so `-- ` at a line's start is no nested bullet, where Jira reads one. The maintainer confirmed on 2026-11-26 that the reader should read as Jira renders it (goal 11), so a bullet it is. Where a text starting with `-- ` is written, the writers escape the line start as they do a `- ` bullet, so every string either writes reads back. Update `docs/decisions.md` §The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string: drop the `-- ` line from its list of readings that differ from Jira's, and its `until` sentence.
-
-Touches:
-
-- `src/wiki/parse/jira-wiki-to-adf.ts`: `readItem`, `readLine`
-- `src/wiki/parse/inline.ts`: `dash` (small)
-- `src/wiki/emit/text-escaping.ts`
-- `spec/wiki.md`: `## What only the reader reads`
-- `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string `` (small)
 
 ### 213. Indent the TypeScript, JavaScript and shell source with hard tabs, as the tabs principle asks, and have `.editorconfig` and `AGENTS.md` say so.
 
