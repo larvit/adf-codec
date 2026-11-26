@@ -8,6 +8,7 @@ import { largestNesting } from '../../nesting.ts'
 import { portableMarkdownToAdf } from '../portable/portable-markdown-to-adf.ts'
 
 const em: AdfMark = { type: 'em' }
+const readers = [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]
 const strike: AdfMark = { type: 'strike' }
 const strong: AdfMark = { type: 'strong' }
 const underline: AdfMark = { type: 'underline' }
@@ -96,19 +97,34 @@ function table(...rows: AdfNode[]): AdfNode {
   return { content: rows, type: 'table' }
 }
 
-test('refuses a value that is not a string, in every reader, at the start of the input', () => {
+function revokedProxy(): object {
   const revoked = Proxy.revocable({}, {})
   revoked.revoke()
-  const found: [unknown, string][] = [[null, 'null'], [undefined, 'undefined'], [42, 'a number'], [10n, 'a bigint'], [['x'], 'an object'], [revoked.proxy, 'an object']]
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
-    for (const [value, described] of found) {
+  return revoked.proxy
+}
+
+const nonStrings: [string, unknown, string][] = [
+  ['null', null, 'null'],
+  ['undefined', undefined, 'undefined'],
+  ['a number', 42, 'a number'],
+  ['a bigint', 10n, 'a bigint'],
+  ['an array', ['x'], 'an object'],
+  ['a revoked proxy', revokedProxy(), 'an object'],
+]
+
+for (const read of readers) {
+  for (const [name, value, described] of nonStrings) {
+    test(`${read.name} refuses ${name}, which is not a string, at the start of the input`, () => {
       const result = Reflect.apply(read, undefined, [value])
       refused(result, 'not-a-string', 'a string', `found ${described}`)
       assert.deepEqual([path(result), position(result)], [[], { line: 1, offset: 0 }])
-    }
-    assert.notStrictEqual(position(Reflect.apply(read, undefined, [null])), position(Reflect.apply(read, undefined, [null])))
+    })
   }
-})
+
+  test(`${read.name} gives each refusal of a value that is not a string a position of its own`, () => {
+    assert.notStrictEqual(position(Reflect.apply(read, undefined, [null])), position(Reflect.apply(read, undefined, [null])))
+  })
+}
 
 const highlight: AdfMark = { attrs: { color: '#f8e6a0' }, type: 'backgroundColor' }
 
@@ -276,9 +292,9 @@ test('gives back the refusal an inline body holds, never the shape check above i
   refused(losslessMarkdownToAdf('!adf:caption\n- a\n!adf:/caption\n'), 'unsupported-node-shape', 'caption', 'one paragraph')
 })
 
-test('reads a change of bullet character or ordered delimiter as a second list, in every reader', () => {
-  const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+for (const read of readers) {
+  test(`reads a change of bullet character or ordered delimiter as a second list in ${read.name}`, () => {
+    const parted = [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))]
     assert.deepEqual(content(read('- a\n* b\n')), parted)
     assert.deepEqual(content(read('- a\n\n+ b\n')), parted)
     assert.deepEqual(content(read('- a\n-\n\n* b\n')), [bulletList(item(paragraph('a')), item()), bulletList(item(paragraph('b')))])
@@ -286,7 +302,10 @@ test('reads a change of bullet character or ordered delimiter as a second list, 
     assert.deepEqual(content(read('1. a\n1) b\n')), [orderedList(1, item(paragraph('a'))), orderedList(1, item(paragraph('b')))])
     assert.deepEqual(content(read('> - a\n> * b\n')), [quote(...parted)])
     assert.deepEqual(content(read('- - a\n  * b\n')), [bulletList(item(...parted))])
-  }
+  })
+}
+
+test('counts a second list of another bullet character in the path of the block after it', () => {
   assert.deepEqual(path(losslessMarkdownToAdf('- a\n\n* b\n\n| x |\n')), ['content', 2])
 })
 
@@ -468,9 +487,8 @@ test('names the node JSON an opaque carry restores alone', () => {
 test('refuses a carry holding an inline card a link marks, whether it stands alone, in a block or in a fence', () => {
   const card = { attrs: { url: 'https://e.com/r' }, marks: [{ attrs: { href: 'https://e.com/' }, type: 'link' }], type: 'inlineCard' }
   const json = JSON.stringify(card).replaceAll('"', '\\"')
-  for (const markdown of [`!adf:carry{json="${json}"}\n`, `\`\`\`adf:futureBlock\n${JSON.stringify({ content: [card] }, null, 2)}\n\`\`\`\n`]) {
-    refused(losslessMarkdownToAdf(markdown), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
-  }
+  refused(losslessMarkdownToAdf(`!adf:carry{json="${json}"}\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
+  refused(losslessMarkdownToAdf(`\`\`\`adf:futureBlock\n${JSON.stringify({ content: [card] }, null, 2)}\n\`\`\`\n`), 'unsupported-node-shape', 'every writer refuses', 'an inlineCard takes no link mark')
 })
 
 test('refuses a carry holding a shape every writer refuses, whether it stands alone, in a block or in a fence', () => {
@@ -736,14 +754,14 @@ test('reads a bullet list, the marker width setting the continuation', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('-\n\n  Part.\n')), [bulletList(item()), paragraph('Part.')])
 })
 
-test('ends a list at a link reference definition, in every reader', () => {
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+for (const read of readers) {
+  test(`ends a list at a link reference definition in ${read.name}`, () => {
     assert.deepEqual(content(read('- a\n\n[r]: /u\n\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
     assert.deepEqual(content(read('- a\n\n[r]: /u\n- b\n')), [bulletList(item(paragraph('a'))), bulletList(item(paragraph('b')))])
     assert.deepEqual(content(read('-\n\n[r]: /u\n\n- b\n')), [bulletList(item()), bulletList(item(paragraph('b')))])
     assert.deepEqual(content(read('- a\n\n  [r]: /u\n- b\n')), [bulletList(item(paragraph('a')), item(paragraph('b')))])
-  }
-})
+  })
+}
 
 test('reads an ordered list, its first marker the order attribute', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('9. Bolt M8\n10. Nut M8\n')), [orderedList(9, item(paragraph('Bolt M8')), item(paragraph('Nut M8')))])
@@ -881,21 +899,28 @@ test('reads a hard break from a trailing backslash and from two trailing spaces 
   assert.deepEqual(content(losslessMarkdownToAdf('> One\\\n> two.\n')), [quote({ content: [text('One'), hardBreak(), text('two.')], type: 'paragraph' })])
 })
 
-test('gives the hard break inside a mark spelling no marks, and reads a link of hard breaks as its destination, in every reader', () => {
-  const broken = (...marks: AdfMark[]): AdfNode[] => [{ content: [marked('a', ...marks), hardBreak(), marked('b', ...marks)], type: 'paragraph' }]
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+function broken(...marks: AdfMark[]): AdfNode[] {
+  return [{ content: [marked('a', ...marks), hardBreak(), marked('b', ...marks)], type: 'paragraph' }]
+}
+
+for (const read of readers) {
+  test(`gives the hard break inside a mark spelling no marks in ${read.name}`, () => {
     assert.deepEqual(content(read('*a  \nb*\n')), broken(em))
     assert.deepEqual(content(read('**a\\\nb**\n')), broken(strong))
     assert.deepEqual(content(read('[a\\\nb](/u)\n')), broken(link('/u')))
-  }
+  })
+
+  test(`reads a link of hard breaks as its destination in ${read.name}`, () => {
+    assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u')), hardBreak()], type: 'paragraph' }])
+    assert.deepEqual(content(read('a[\\\n]()b\n')), [{ content: [text('a'), hardBreak(), text('b')], type: 'paragraph' }])
+  })
+}
+
+test('gives the hard break inside a mark only the lossless flavour spells no marks', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('~~a\\\nb~~\n')), broken(strike))
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[a!adf:hardBreak{}b]\n')), broken(underline))
   const localId = '01a0431d-201e-7400-a175-9c04d3628f95'
   assert.deepEqual(content(losslessMarkdownToAdf(`_!adf:hardBreak{localId=${localId}}_\n`)), [{ content: [{ attrs: { localId }, type: 'hardBreak' }], type: 'paragraph' }])
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
-    assert.deepEqual(content(read('[\\\n](/u)\n')), [{ content: [marked('/u', link('/u')), hardBreak()], type: 'paragraph' }])
-    assert.deepEqual(content(read('a[\\\n]()b\n')), [{ content: [text('a'), hardBreak(), text('b')], type: 'paragraph' }])
-  }
 })
 
 test('gives an inline node no mark Atlassian\'s schema withholds from it', () => {
@@ -927,13 +952,17 @@ test('gives an inline node no mark Atlassian\'s schema withholds from it', () =>
   refused(losslessMarkdownToAdf('!adf:link[!adf:status[Done]{color=green}]{collection=c href="/u"}\n'), 'unsupported-node-shape', ...wrapsOnly('link'))
 })
 
-test('gives code text no mark but code, link and annotation', () => {
-  const code: AdfMark = { type: 'code' }
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+for (const read of readers) {
+  test(`gives code text no mark but code, link and annotation in ${read.name}`, () => {
+    const code: AdfMark = { type: 'code' }
     assert.deepEqual(content(read('**`npm ci`**\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
     assert.deepEqual(content(read('*run `npm ci`*\n')), [{ content: [marked('run ', em), marked('npm ci', code)], type: 'paragraph' }])
     assert.deepEqual(content(read('**[`npm ci`](/u)**\n')), [{ content: [marked('npm ci', link('/u'), code)], type: 'paragraph' }])
-  }
+  })
+}
+
+test('gives code text no mark but code where one flavour alone spells the mark', () => {
+  const code: AdfMark = { type: 'code' }
   assert.deepEqual(content(portableMarkdownToAdf('~~`npm ci`~~\n')), [{ content: [marked('npm ci', code)], type: 'paragraph' }])
   assert.deepEqual(content(losslessMarkdownToAdf('!adf:underline[run `npm ci`]\n')), [{ content: [marked('run ', underline), marked('npm ci', code)], type: 'paragraph' }])
   refused(losslessMarkdownToAdf('!adf:underline[`npm ci`]\n'), 'unsupported-node-shape', 'underline', 'write the underline mark around text beside them')
@@ -1080,7 +1109,7 @@ test('reads the reference links a definition resolves, and leaves the rest liter
   assert.deepEqual(content(losslessMarkdownToAdf('[][]\n')), [paragraph('[][]')])
 })
 
-for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+for (const read of readers) {
   test(`matches a reference to its definition under Unicode case folding in ${read.name}`, () => {
     assert.deepEqual(content(read('[ẞ]\n\n[SS]: /url\n')), [{ content: [marked('ẞ', link('/url'))], type: 'paragraph' }])
   })
@@ -1090,20 +1119,20 @@ for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAd
   })
 }
 
-test('leaves a link label past 999 characters literal, an escape counting as two, in every reader', () => {
-  const longest = `foo${' '.repeat(993)}bar`
-  const tooLong = `foo${' '.repeat(994)}bar`
-  const escaped = '\\*'.repeat(499)
-  const escapedTooLong = '\\*'.repeat(500)
-  for (const read of [commonMarkToAdf, losslessMarkdownToAdf, portableMarkdownToAdf]) {
+for (const read of readers) {
+  test(`leaves a link label past 999 characters literal, an escape counting as two, in ${read.name}`, () => {
+    const longest = `foo${' '.repeat(993)}bar`
+    const tooLong = `foo${' '.repeat(994)}bar`
+    const escaped = '\\*'.repeat(499)
+    const escapedTooLong = '\\*'.repeat(500)
     assert.deepEqual(content(read(`[a][${escaped}]\n\n[${escaped}]: /u\n`)), [{ content: [marked('a', link('/u'))], type: 'paragraph' }])
     assert.deepEqual(content(read(`[a][${escapedTooLong}]\n\n[${escapedTooLong}]: /u\n`)), [paragraph(`[a][${'*'.repeat(500)}]`), paragraph(`[${'*'.repeat(500)}]: /u`)])
     assert.deepEqual(content(read(`[${longest}]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
     assert.deepEqual(content(read(`[${longest}][]\n\n[foo bar]: /u\n`)), [{ content: [marked(longest, link('/u'))], type: 'paragraph' }])
     assert.deepEqual(content(read(`[${tooLong}]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}]`)])
     assert.deepEqual(content(read(`[${tooLong}][]\n\n[foo bar]: /u\n`)), [paragraph(`[${tooLong}][]`)])
-  }
-})
+  })
+}
 
 test('reads an autolink, the email form as the mailto link it means', () => {
   assert.deepEqual(content(losslessMarkdownToAdf('<https://example.com/>\n')), [
@@ -1362,9 +1391,12 @@ test('reads the text break only between two text nodes CommonMark joins, buildin
   assert.deepEqual(content(losslessMarkdownToAdf('==a!adf:textBreak{}b==\n')), [{ content: [text('==a'), text('b==')], type: 'paragraph' }])
   const parts = ['delete !adf:textBreak{} here', 'two runs of text with the same formatting']
   const carried = '!adf:carry{json="{\\"text\\":\\"b\\",\\"type\\":\\"text\\"}"}'
-  for (const markdown of ['!adf:textBreak{}a\n', 'a!adf:textBreak{}\n', 'a!adf:textBreak{}!adf:textBreak{}b\n', '**a**!adf:textBreak{}b\n', '[!adf:textBreak{}](/u)\n', `a!adf:textBreak{}${carried}\n`]) {
-    refused(losslessMarkdownToAdf(markdown), 'unsupported-node-shape', ...parts)
-  }
+  refused(losslessMarkdownToAdf('!adf:textBreak{}a\n'), 'unsupported-node-shape', ...parts)
+  refused(losslessMarkdownToAdf('a!adf:textBreak{}\n'), 'unsupported-node-shape', ...parts)
+  refused(losslessMarkdownToAdf('a!adf:textBreak{}!adf:textBreak{}b\n'), 'unsupported-node-shape', ...parts)
+  refused(losslessMarkdownToAdf('**a**!adf:textBreak{}b\n'), 'unsupported-node-shape', ...parts)
+  refused(losslessMarkdownToAdf('[!adf:textBreak{}](/u)\n'), 'unsupported-node-shape', ...parts)
+  refused(losslessMarkdownToAdf(`a!adf:textBreak{}${carried}\n`), 'unsupported-node-shape', ...parts)
   refused(losslessMarkdownToAdf('!adf:status[a!adf:textBreak{}b]\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'content slot')
   refused(losslessMarkdownToAdf('![a!adf:textBreak{}b](/i)\n'), 'unsupported-node-shape', 'delete !adf:textBreak{}', 'image description')
   refused(losslessMarkdownToAdf('a!adf:textBreak{x=y}b\n'), 'unsupported-node-shape', '!adf:textBreak{}', 'spells more')

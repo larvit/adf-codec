@@ -295,11 +295,13 @@ test('writes the items of a list nested in a list in a cell a space apart, witho
   assert.equal(plain(adfToPlainText(document(table(row(cell(nested), cell(line('y'))))))), '• p • q | y')
 })
 
-test('keeps a row on its line when the first block of a cell holds no text', () => {
-  const code = (value: string): AdfNode => ({ content: [text(value)], type: 'codeBlock' })
-  const leading: AdfNode[] = [paragraph(), paragraph({ type: 'hardBreak' }), { type: 'rule' }, code('\n')]
-  for (const first of leading) assert.equal(plain(adfToPlainText(document(table(row(cell(line('a')), cell(first, line('b'))), row(cell(first, line('c')), cell(line('d'))))))), 'a | b\nc | d')
-})
+const textlessBlocks: AdfNode[] = [paragraph(), paragraph({ type: 'hardBreak' }), { type: 'rule' }, { content: [text('\n')], type: 'codeBlock' }]
+
+for (const first of textlessBlocks) {
+  test(`keeps a row on its line when the first block of a cell is ${JSON.stringify(first)}`, () => {
+    assert.equal(plain(adfToPlainText(document(table(row(cell(line('a')), cell(first, line('b'))), row(cell(first, line('c')), cell(line('d'))))))), 'a | b\nc | d')
+  })
+}
 
 test('writes a blank line and a line feed ending a code fragment in a cell as one space each', () => {
   const code = (...fragments: string[]): AdfNode => ({ content: fragments.map((fragment) => text(fragment)), type: 'codeBlock' })
@@ -387,6 +389,12 @@ test('writes a code block\'s lines and a list item\'s continuation lines under t
   assert.equal(plain(adfToPlainText(document(bullets(item(code))))), '• a\n\n  b')
 })
 
+function deepList(levels: number, innermost: AdfNode): AdfNode {
+  let list = innermost
+  for (let level = 0; level < levels; level += 1) list = bullets(item(list))
+  return list
+}
+
 function deepQuote(levels: number): AdfNode {
   let node = line('x')
   for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
@@ -428,21 +436,16 @@ for (const cell of ['tableCell', 'tableHeader']) {
 }
 
 test('writes blocks nested 500 levels', () => {
-  let node = line('x')
-  for (let level = 0; level < largestNesting; level += 1) node = { content: [node], type: 'blockquote' }
-  assert.equal(plain(adfToPlainText(document(node))), 'x')
-  let list = line('x')
-  for (let level = 0; level < largestNesting; level += 1) list = bullets(item(list))
+  assert.equal(plain(adfToPlainText(document(deepQuote(largestNesting)))), 'x')
+  const list = deepList(largestNesting, line('x'))
   assert.equal(plain(adfToPlainText(document(list))), `${'• '.repeat(largestNesting)}x`)
   assert.equal(refusal(adfToPlainText(document(bullets(item(list))))), refusal(adfToHtml(document(bullets(item(list))))))
   assert.equal(refusal(adfToPlainText(document(bullets(item(list))))).startsWith('unsupported-nesting-depth at /content/0/content/0/content/0'), true)
 })
 
 test('refuses text past V8\'s longest string, which the indent of a deep list can add', () => {
-  let list: AdfNode = { content: [text('a\n'.repeat(400000))], type: 'codeBlock' }
-  for (let level = 0; level < 400; level += 1) list = bullets(item(list))
-  let tooDeep: AdfNode = line('x')
-  for (let level = 0; level <= largestNesting; level += 1) tooDeep = { content: [tooDeep], type: 'blockquote' }
+  const list = deepList(400, { content: [text('a\n'.repeat(400000))], type: 'codeBlock' })
+  const tooDeep = deepQuote(largestNesting + 1)
   const refused = adfToPlainText(document(list, list, tooDeep))
   assert.equal(!refused.ok && refused.error.code, 'unsupported-node-shape')
   assert.equal(!refused.ok && refused.error.message.includes('536870888'), true)

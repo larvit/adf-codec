@@ -5,6 +5,18 @@ import type { AdfNode } from '../../adf/document.ts'
 import type { JsonValue } from '../../json-value.ts'
 import { editorNormalForm, sourceIndex, toEditorNormal } from './editor-normal.ts'
 
+function firstChildren(outermost: AdfNode | undefined): AdfNode[] {
+  const nodes: AdfNode[] = []
+  for (let node = outermost; node !== undefined; node = node.content?.[0]) nodes.push(node)
+  return nodes
+}
+
+function nested<T>(levels: number, innermost: T, wrap: (inner: T) => T): T {
+  let node = innermost
+  for (let level = 0; level < levels; level += 1) node = wrap(node)
+  return node
+}
+
 test('merges adjacent text nodes carrying identical marks, at every level', () => {
   const content: AdfNode[] = [
     { text: 'a', type: 'text' },
@@ -63,15 +75,11 @@ test('reads an empty attrs object, marks array or content array as the absent ke
 
 test('normalizes blocks and mark attributes nesting far past the levels a recursive walk survives', () => {
   const levels = 100000
-  let node: AdfNode = { content: [], type: 'paragraph' }
-  for (let level = 0; level < levels; level += 1) node = { content: [node], type: 'blockquote' }
-  let normal = toEditorNormal({ content: [node], type: 'doc', version: 1 }).content?.[0]
-  let depth = 0
-  for (; normal?.content !== undefined; depth += 1) normal = normal.content[0]
-  assert.equal(depth, levels)
-  assert.deepEqual(normal, { type: 'paragraph' })
-  let deep: JsonValue = 1
-  for (let level = 0; level < 2 * levels; level += 1) deep = [deep]
+  const node = nested<AdfNode>(levels, { content: [], type: 'paragraph' }, (inner) => ({ content: [inner], type: 'blockquote' }))
+  const normal = firstChildren(toEditorNormal({ content: [node], type: 'doc', version: 1 }).content?.[0])
+  assert.equal(normal.length, levels + 1)
+  assert.deepEqual(normal.at(-1), { type: 'paragraph' })
+  const deep = nested<JsonValue>(2 * levels, 1, (inner) => [inner])
   const marks = [{ attrs: { deep }, type: 'textColor' }]
   const merged = toEditorNormal({ content: [{ content: [{ marks, text: 'a', type: 'text' }, { marks, text: 'b', type: 'text' }], type: 'paragraph' }], type: 'doc', version: 1 })
   assert.deepEqual(merged.content?.[0]?.content?.map((text) => text.text), ['ab'])

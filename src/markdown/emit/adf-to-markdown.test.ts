@@ -171,10 +171,13 @@ test('spells the code block whose language opens with the reserved info string p
 
 test('carries a code block holding a node no fence holds', () => {
   assert.equal(markdown(adfToLosslessMarkdown(document({ content: [paragraph()], type: 'codeBlock' }))), '```adf:codeBlock\n{\n  "content": [\n    {\n      "type": "paragraph"\n    }\n  ]\n}\n```\n')
-  for (const child of [{ attrs: {}, text: 'x', type: 'text' }, { content: [], text: 'x', type: 'text' }, { marks: [], text: 'x', type: 'text' }, { content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }]) {
-    assert.ok(markdown(adfToLosslessMarkdown(document({ content: [child], type: 'codeBlock' }))).startsWith('```adf:codeBlock\n'), JSON.stringify(child))
-  }
 })
+
+for (const child of [{ attrs: {}, text: 'x', type: 'text' }, { content: [], text: 'x', type: 'text' }, { marks: [], text: 'x', type: 'text' }, { content: [{ text: 'lost', type: 'text' }], text: 'x', type: 'text' }]) {
+  test(`carries a code block holding ${JSON.stringify(child)}`, () => {
+    assert.ok(markdown(adfToLosslessMarkdown(document({ content: [child], type: 'codeBlock' }))).startsWith('```adf:codeBlock\n'))
+  })
+}
 
 test('spells a list its own content shape cannot hold as a directive', () => {
   assert.equal(markdown(adfToLosslessMarkdown(document({ content: [paragraph()], type: 'bulletList' }))), '!adf:bulletList\n!adf:paragraph\n!adf:/paragraph\n!adf:/bulletList\n')
