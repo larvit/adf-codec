@@ -582,6 +582,16 @@ Ping !adf:mention[@Mikael]{id=5b10a2} â€” !adf:status[In review]{color=yellow} â
 - To keep a literal `!adf:` as text, escape it: `\!adf:`, block and inline alike. A code span and a
   code block hold `!adf:` as content.
 
+An image attached to a Jira issue is a `file` media, as Jira writes a pasted image. Its `id` is the
+attachment's media file id: the UUID in the URL that `GET /rest/api/3/attachment/content/{id}`
+redirects to. Jira reads an empty `collection`:
+
+```
+!adf:mediaSingle {layout=center}
+!adf:media {alt="screenshot.png" collection="" id=405dddec-b91a-4258-8780-8c4f5886f4d3 type=file}
+!adf:/mediaSingle
+```
+
 ## Portable markdown
 
 Serves [Goals](#goals) 7. Portable markdown is a second flavour of the same grammar.
