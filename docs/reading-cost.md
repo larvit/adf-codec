@@ -1586,3 +1586,35 @@ Read most (opens and searches):
 - `package.json` 2
 - `src/result.test.ts` 2
 - `src/wiki/emit/adf-to-jira-wiki.test.ts` 2
+
+## Reading cost, chunk 06ed6d195585, finished 2026-11-26T06:34:05Z
+
+57437 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `ci.sh` 4
+- `README.md` 3
+- `docs/decisions.md` 3
+- `.gitignore` 1
+- `.npmrc` 1
+- `CHANGELOG.md` 1
+- `bundle-size/figures.mjs` 1
+- `bundle-size/package.json` 1
+- `bundle-size/run.mjs` 1
+- `docker-runner.sh` 1
+
+## Reading cost, chunk d72d3c85f677, finished 2026-11-26T07:18:23Z
+
+104030 new input tokens before the first commit.
+
+Read most (opens and searches):
+
+- `src/wiki/emit/adf-to-jira-wiki.test.ts` 15
+- `spec/wiki.md` 6
+- `docs/decisions.md` 5
+- `src/wiki/emit/inline-line.ts` 4
+- `AGENTS.md` 2
+- `src/wiki/emit/text-escaping.ts` 2
+- `CHANGELOG.md` 1
+- `src/wiki/carry.ts` 1
