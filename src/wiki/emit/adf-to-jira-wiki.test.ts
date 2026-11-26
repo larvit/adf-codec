@@ -289,6 +289,7 @@ test('writes a link whose text is an address that Jira stores as its href, as th
   assert.equal(wiki(paragraph(text('http://x/a^', link('http://x/a%5E')))), '[http://x/a^]')
   assert.equal(wiki(paragraph(text('/a"b<', link('/a%22b%3C')))), '[/a"b<]')
   assert.equal(wiki(paragraph(text('/a^b', link('/a%5Eb')))), '[/a^b|/a%5Eb]')
+  assert.equal(wiki(paragraph(text('/a^', link('/b%5E')))), '[/a\\^|/b%5E]')
 })
 
 test('nests marks in the order the array holds, outermost first', () => {
