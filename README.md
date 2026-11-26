@@ -854,7 +854,6 @@ Serves [Goals](#goals) 1, 4, 5 and 11.
     shows the attachment and the mention;
   - `??x??` reads as `em`, where Jira shows it after a dash, and a panel `bgColor` outside the five
     the writers spell reads as `info`;
-  - `-- ` at a line's start reads as an en dash, where Jira reads a nested bullet;
   - a delimiter reads where the writers would leave it unescaped, which differs from Jira's reading
     at an edge such as `x^2^`;
   - a link address that Jira links and `spec/wiki.md` doesn't list reads as text.

@@ -1668,15 +1668,13 @@ with the path `[]`, since no node exists yet:
   `unsupported-nesting-depth` (§Nothing recurses unbounded).
 - Markup that reads past the engine's limits is `engine-limit`.
 
-The reader differs from Jira in five places, each a string the writers never write. `spec/wiki.md`
+The reader differs from Jira in four places, each a string the writers never write. `spec/wiki.md`
 §What only the reader reads states each reading:
 
 - A block macro after anything else on a line is text. Jira reads one inside a line.
 - An image is a block, so one that shares its line is text. Jira shows it inline.
 - A delimiter reads by the rule the writer escapes by (`spec/wiki.md` §Marks), so every string the
   writer writes reads back. Jira's own rule differs at an edge such as `x^2^`.
-- `-- ` at a line's start is an en dash. Jira reads a nested bullet. This works against goal 11
-  until plan item 212 reads it as Jira does.
 - An address Jira links and `spec/wiki.md` §Marks lacks reads as text. Jira links it.
 
 The reader follows Jira in two places a reader could take either way. A block macro left open
