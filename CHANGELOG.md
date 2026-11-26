@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The gate bundles the installed package with Bun, esbuild, Rollup and webpack, fails on any bundler warning, such as webpack's "Critical dependency", and round-trips a document through each bundle in Node. The README's package table names the four.
 - Document the Jira wiki calls `adfToLosslessJiraWiki`, `adfToLossyJiraWiki` and `jiraWikiToAdf` in the README, with a row comparing them with Atlassian's `WikiMarkupTransformer`.
 - Read a Jira wiki link's `href` as Jira stores it, with `"`, `<`, `>`, a backtick and `^` as percent escapes, and carry in an `{adf}` macro a link whose `href` holds one of them.
 - A lone surrogate no longer reaches markdown raw, where UTF-8 storage turned it into U+FFFD. `adfToLosslessMarkdown` writes a link, an image or a code block language holding one as its directive, its carry or its `language` attribute, so the document reads back equal. `adfToPortableMarkdown` drops one from text, a title and an alt text, and writes one in a link's or an image's address as `%EF%BF%BD`. A mention, emoji or extension key holding only lone surrogates, whitespace and null characters counts as empty in every format, and is written by its fallback.
