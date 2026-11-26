@@ -15,7 +15,6 @@
 | 215 | 0.4.0 |  | question | **Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 9.4 |
 | 218 | 0.4.0 |  | defect | **Return a result from `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` where one key of a carried node is a string of 2^28 characters.** | 2 | 1 | 2 | 3 | 2 | 1 by 3 | 15.6 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
-| 219 | 0.4.0 |  | owner | **Show in the README how lossless markdown spells an image attached to a Jira issue.** | 1 | 2 | 1 | 2 | 1 | 3 by 2 | 3.0 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
 | 82 | 0.5.0 |  |  | **Give the directive tests and fixtures random UUID v7 ids in place of `a-1`, `a`, `x` and `h`.** | 2 | 1 | 1 | 2 | 3 | code health by 1 | 3.9 |
@@ -91,13 +90,6 @@ Touches:
 - `src/html/parse/html-to-adf.test.ts`
 - `spec/html.md`: `## Reading`
 - `README.md`: `## HTML` (small), `## The calls` (small), `## The errors` (small)
-
-### 219. Show in the README how lossless markdown spells an image attached to a Jira issue.
-
-A consumer posting comments to Jira looked for a way to show an issue's attachment and didn't find one: the README never shows the `file` media spelling, which lives only in `spec/flavour.md`. They wrote `![alt](…/rest/api/3/attachment/content/<id>)` instead, an external image that shows only to a viewer signed in to the site. A probe of larvit.atlassian.net on 2026-11-26 confirmed that Jira stores `mediaSingle` > `media {type=file id=<media file id> collection=""}` and renders it as the attachment. The media file id is the UUID after `/file/` in the `Location` that `GET /rest/api/3/attachment/content/<attachment id>` redirects to. Resolving an attachment by name stays out of the library (AGENTS.md §1).
-
-Touches:
-- `README.md`: `### What directives spell` (small)
 
 ### 183. Answer developer-community topic 41858 once 0.4.0 is published.
 
