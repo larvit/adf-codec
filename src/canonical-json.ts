@@ -52,11 +52,34 @@ export function* canonicalJsonPieces(value: JsonValue, spelling: JsonSpelling): 
 			yield '""'
 			return
 		} else {
-			const spelled = Object.is(held, -0) ? '-0' : JSON.stringify(held)
-			length += spelled.length
-			yield spelled
+			for (const spelled of spelledScalar(held)) {
+				length += spelled.length
+				yield spelled
+			}
 		}
 	}
+}
+
+// JSON.stringify aborts V8, past any try, on a key of 2^28 characters, and on a string that long from its second call (Node 26.13.1), so a string past this length is spelled a slice at a time.
+const longestSpelledWhole = 2 ** 20
+
+function* spelledScalar(value: string | number | boolean | null): Generator<string> {
+	if (typeof value !== 'string' || value.length <= longestSpelledWhole) {
+		yield Object.is(value, -0) ? '-0' : JSON.stringify(value)
+		return
+	}
+	yield '"'
+	for (let start = 0; start < value.length; ) {
+		// End a slice before a high surrogate, so JSON.stringify sees it beside its low surrogate: a pair split across two slices would spell as two `\u` escapes.
+		const end = start + longestSpelledWhole - (isHighSurrogate(value.charCodeAt(start + longestSpelledWhole - 1)) ? 1 : 0)
+		yield JSON.stringify(value.slice(start, end)).slice(1, -1)
+		start = end
+	}
+	yield '"'
+}
+
+function isHighSurrogate(code: number): boolean {
+	return code >= 0xd800 && code <= 0xdbff
 }
 
 function objectMembers(value: { [key: string]: JsonValue }): Member[] {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { normalizeLabel, readDestination, readInlineTarget, targetMemo } from './link-syntax.ts'
+import { normalizeLabel, readDestination, readInlineTarget, spellDestination, spellLinkTarget, targetMemo } from './link-syntax.ts'
 
 // Every `](` of the text, read in order through one memo, as a reader closes its brackets.
 function targets(text: string): unknown[] {
@@ -55,4 +55,20 @@ test('a label folds under Unicode case folding after its whitespace collapses', 
 
 test('a dotless i and a capital I stay two labels', () => {
 	assert.notEqual(normalizeLabel('ı'), normalizeLabel('I'))
+})
+
+test('a destination escapes each parenthesis nothing balances, in ascending order', () => {
+	assert.equal(spellDestination('('.repeat(40_000)), '\\('.repeat(40_000))
+	assert.equal(spellDestination('a(b)c)d(e'), 'a(b)c\\)d\\(e')
+	assert.equal(spellDestination(')a(b(c'), '\\)a\\(b\\(c')
+})
+
+test('a portable title escapes each quote', () => {
+	assert.equal(spellLinkTarget('x', '"'.repeat(40_000), 'portable'), `x "${'\\"'.repeat(40_000)}"`)
+})
+
+test('spells a destination and a title of 2^28 characters', { timeout: 60000 }, () => {
+	const long = 'a'.repeat(2 ** 28)
+	assert.equal(spellDestination(long)?.length, 2 ** 28)
+	assert.equal(spellLinkTarget('x', long, 'portable')?.length, 2 ** 28 + 4)
 })

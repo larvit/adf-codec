@@ -6,13 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 218`
+`Next ID = 219`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 215 | 0.4.0 |  | defect | **Return a result, never an engine abort, from the writers where one key or one link `href` is a string of 2^28 characters.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 11.7 |
+| 215 | 0.4.0 |  | question | **Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.** | 2 | 2 | 2 | 4 | 3 | 1 by 3 | 9.4 |
+| 218 | 0.4.0 |  | defect | **Return a result from `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` where one key of a carried node is a string of 2^28 characters.** | 2 | 1 | 2 | 3 | 2 | 1 by 3 | 15.6 |
 | 137 | 0.4.0 |  | decision | **Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.** | 2 | 1 | 2 | 3 | 4 | 12 by 6 | 3.3 |
 | 183 | 0.5.0 |  |  | **Answer developer-community topic 41858 once 0.4.0 is published.** | 1 | 1 | 1 | 1 | 1 | 3 by 2, 6.2 by 2 | 5.8 |
 | 197 | 0.5.0 |  |  | **Write a heading holding a node wiki markup cannot spell as `h1.` to `h6.` with that node's inline carry, rather than carrying the whole heading.** | 2 | 1 | 1 | 2 | 3 | 6 by 3, 11 by 2 | 4.4 |
@@ -33,20 +34,42 @@
 
 ## Details
 
-### 215. Return a result, never an engine abort, from the writers where one key or one link `href` is a string of 2^28 characters.
+### 215. Return a result, never an engine abort, from the markdown writers where one line of text, a link `href` included, is 2^26 characters or longer.
 
-Goal 1 promises a result, never a throw, yet two inputs under `longestOutput` end Node 26.13.1 (node:26.13.1-alpine3.24, 8 GB limit), and no `try` can catch either:
+Goal 1 promises a result, never a throw, yet `adfToLosslessMarkdown` of one paragraph whose text, or whose link `href`, is 2^26 characters ends Node 26.13.1 (node:26.13.1-alpine3.24, in an 8 GB container) with `FATAL ERROR: Ineffective mark-compacts near heap limit`, which no `try` can catch. At 2^25 characters it writes: plain text in 14 s at a peak RSS of 1.6 GB, an `href` in 7 s at 1.3 GB.
 
-1. `adfToLosslessMarkdown` on an `unknownBlock` whose `attrs` hold one key of 2^28 characters, `{ ['a'.repeat(2**28)]: 1 }`, ends with `FATAL ERROR: Zone Allocation failed - process out of memory`. Without the library, `JSON.stringify` of `Object.keys({ ['a'.repeat(2**28)]: 1 })[0]` aborts on its first call, and a key of 2^27 characters doesn't. A plain string of 2^28 characters aborts only on the second call. Item 214's check passes such a key, since it alone is under the bound; `canonicalJsonPieces` then spells it with `JSON.stringify`.
-2. `adfToLosslessMarkdown` on a paragraph whose text carries a `link` mark with an `href` of 2^28 characters ends with `FATAL ERROR: Ineffective mark-compacts near heap limit`. The likely cause is `escapeUnbalanced`, which builds the destination with `+=` one character at a time: 2^28 rope nodes, far past the heap.
+The cost is per line, not per link. The writer reads each line back through the reader (`readBack` in `src/markdown/emit/line-escaping.ts`). `losslessMarkdownToAdf` of one plain line of 2^24 `a` peaks at 1.2 GB, about 70 bytes a character.
 
-Measure first: the shortest key, and the shortest plain string after one earlier call, that `JSON.stringify` aborts on; whether a string the library escapes itself, joined from slices, spells both without an abort; and the peak heap of the link probe before and after `escapeUnbalanced` joins slices. Check the other per-character `+=` loops the same way: `spellTitle` and `foldCase` in `case-folding.ts`. Any limit the fix needs that no decision states is asked of the maintainer. Each test stays within the gate's memory.
+Question for the maintainer. The gap: no decision states the longest line the writer reads back. §Output past V8's longest string is refused on every engine states only the longest output, `longestOutput` (2^29 − 24 characters). §Which code a cause takes gives a conversion the engine stops with a throw the code `engine-limit`, but V8 aborts on an exhausted heap without throwing, so no entry covers this case.
+
+Candidate entry for `docs/decisions.md`:
+
+> **The writer refuses a line longer than 2^25 characters before reading it back**
+>
+> Goal 1. The markdown writers refuse a line longer than 2^25 characters, before reading it back, as `unsupported-node-shape` at the path of the node holding the line. V8 aborts the process, past any `try`, on the heap that reading back a longer line takes: at about 70 bytes a character, a line of 2^26 characters needs about 4.7 GB, past V8's heap limit of about 2 GB. The code is `unsupported-node-shape`, not `engine-limit`: the library refuses a stated bound that no retry passes, and the engine doesn't throw anything (§Which code a cause takes).
+
+The instance it yields: `adfToLosslessMarkdown` of one paragraph of 2^26 `a` returns `unsupported-node-shape` at the paragraph's path, where today it ends Node 26.13.1.
+
+Rejected unless the maintainer picks it: cut the reader's memory per character until a 2^28-character line fits V8's heap limit, a rewrite of the inline scanner that needs a re-score.
+
+The scores assume the candidate. Each test stays within V8's heap limit.
 
 Touches:
-- `src/canonical-json.ts`: `canonicalJsonPieces` (small)
-- `src/markdown/commonmark/link-syntax.ts`: `escapeUnbalanced`, `spellTitle` (small)
-- `src/canonical-json.test.ts`
+
+- `src/length-bound.ts`: `longestOutput` (small)
+- `src/markdown/emit/inline-line.ts`: `emitLine` (small)
 - `src/markdown/emit/limits.test.ts`
+
+### 218. Return a result from `adfToLosslessJiraWiki` and `adfToLossyJiraWiki` where one key of a carried node is a string of 2^28 characters.
+
+Goal 1 and the failures-are-values rule (AGENTS.md §4) want a result, yet `adfToLosslessJiraWiki` of `{ type: 'doc', version: 1, content: [{ type: 'unknownBlock', attrs: { ['a'.repeat(2 ** 28)]: 1 } }] }` throws `RangeError: Maximum call stack size exceeded`, measured on node:26.13.1-alpine3.24. The throw comes out of `closingMacroEscaped` (`src/wiki/carry.ts:25`), from its `json.replace(/"(?:[^"\\]|\\.)*"/g, …)`, reached through `blockCarry` and `writeWiki`. `withinEngineLimits` lets it through, since it treats a stack overflow as a bug.
+
+Whether `adfToLossyJiraWiki` throws too is unmeasured. The item's first step is to measure it.
+
+Touches:
+
+- `src/wiki/carry.ts`: `closingMacroEscaped`
+- `src/wiki/emit/adf-to-jira-wiki.test.ts`
 
 ### 137. Read foreign HTML in `htmlToAdf` best effort, never refusing it, as `docs/decisions.md` §Foreign HTML reads best effort and is never refused states.
 

@@ -158,19 +158,32 @@ export function escapeUnbalanced(spelling: string, opener: string, closer: strin
 		if (character === closer && open.pop() === undefined) unbalanced.add(index)
 	}
 	for (const index of open) unbalanced.add(index)
-	let spelled = ''
-	for (let index = 0; index < spelling.length; index += 1) spelled += (unbalanced.has(index) ? '\\' : '') + spelling.charAt(index)
-	return spelled
+	// A closer is unbalanced only when no opener is open, so each leftover opener comes after each unbalanced closer: the Set iterates in ascending order, as `backslashedBefore` needs.
+	return backslashedBefore(spelling, unbalanced)
 }
 
 function spellTitle(title: string, escapes: TitleEscapes): string | undefined {
 	if (/[\n\r]/.test(title) || holdsNullCharacter(title) || holdsLoneSurrogate(title)) return undefined
 	if (escapes === 'lossless') return title.includes('\\') || holdsEntityReference(title) ? undefined : ` "${title.replaceAll('"', '\\"')}"`
-	let spelled = ''
+	return ` "${backslashedBefore(title, escapedTitleIndexes(title, escapes))}"`
+}
+
+function* escapedTitleIndexes(title: string, escapes: TitleEscapes): Generator<number> {
 	for (let index = 0; index < title.length; index += 1) {
 		const character = title.charAt(index)
 		const escaped = (character === '\\' && (backslashEscape(title, index) !== undefined || index === title.length - 1)) || character === '"' || (character === '&' && readEntityReference(title, index) !== undefined) || (character === '|' && escapes === 'portable-table-cell')
-		spelled += escaped ? `\\${character}` : character
+		if (escaped) yield index
 	}
-	return ` "${spelled}"`
+}
+
+// Appending a character at a time with `+=` makes one rope node per character, which ran Node 26.13.1 out of heap at 2^28 characters. `indexes` must ascend.
+function backslashedBefore(text: string, indexes: Iterable<number>): string {
+	const pieces: string[] = []
+	let from = 0
+	for (const index of indexes) {
+		pieces.push(text.slice(from, index), '\\')
+		from = index
+	}
+	pieces.push(text.slice(from))
+	return pieces.join('')
 }

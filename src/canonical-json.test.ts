@@ -128,7 +128,7 @@ test('yields a key unspelled where it and the string before it together pass the
 
 test('spells a string whose spelling is exactly as long as the bound', () => {
 	const { last, length } = lengthAndLast('a'.repeat(longestOutput - 2))
-	assert.equal(last?.length, longestOutput)
+	assert.equal(last, '"')
 	assert.equal(length, longestOutput)
 })
 
@@ -136,6 +136,28 @@ test('counts what is spelled before a string, so one that would pass the bound b
 	const { last } = lengthAndLast(['a'.repeat(longestOutput - 2)])
 	assert.equal(last, '""')
 })
+
+test('spells a key of 2^28 characters', () => {
+	assert.equal(lengthAndLast({ ['a'.repeat(2 ** 28)]: 1 }).length, 2 ** 28 + 6)
+})
+
+// In each text, the last code unit of the first slice (2^20 characters) is a surrogate or sits just before a pair.
+const sliceLength = 2 ** 20
+const cutsAt = 'a'.repeat(sliceLength - 1)
+const surrogateCuts: Record<string, string> = {
+	'a pair standing across the cut': `a${'\u{1F600}'.repeat(sliceLength)}`,
+	'a lone high surrogate at the cut': `${cutsAt}\ud83db`,
+	'a lone high surrogate at the cut, then a pair': `${cutsAt}\ud83d\ud83d\ude00b`,
+	'a lone low surrogate at the cut': `${cutsAt}\ude00b`,
+	'the lowest pair at the cut': `${cutsAt}\u{10000}b`,
+	'the highest pair at the cut': `${cutsAt}\u{10FFFF}b`,
+	'a private-use character before a pair at the cut': `${cutsAt}\ue000\u{1F600}`,
+}
+for (const [name, text] of Object.entries(surrogateCuts)) {
+	test(`spells a string longer than a slice as JSON.stringify spells it, with ${name}`, () => {
+		assert.equal(serializeCanonicalJson(text, 'compact'), JSON.stringify(text))
+	})
+}
 
 test('throws V8\'s error for a string past the bound, as on every engine', () => {
 	assert.throws(() => serializeCanonicalJson('a'.repeat(longestOutput - 1), 'compact'), new RangeError('Invalid string length'))

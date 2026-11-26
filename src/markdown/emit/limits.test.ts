@@ -95,6 +95,10 @@ test('refuses a carry whose two strings of 2^28 characters together pass V8\'s l
 	assert.equal(pastTheBound(adfToLosslessMarkdown(document({ attrs: { first: long, second: long }, type: 'unknownBlock' }))), true)
 })
 
+test('writes a carry holding one key of 2^28 characters', { timeout: 60000 }, () => {
+	assert.equal(adfToLosslessMarkdown(document({ attrs: { ['a'.repeat(2 ** 28)]: 1 }, type: 'unknownBlock' })).ok, true)
+})
+
 test('refuses a quote whose prefixed lines would pass V8\'s longest string', { timeout: 60000 }, () => {
 	const code = nearlyHalfTheBound()
 	assert.equal(pastTheBound(adfToLosslessMarkdown(document({ content: [code, code], type: 'blockquote' }))), true)
