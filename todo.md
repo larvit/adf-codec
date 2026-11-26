@@ -6,14 +6,14 @@
 
 `Bar = 0.1`
 
-`Next ID = 208`
+`Next ID = 209`
 
 ## Items
 
 | ID | Release | Blocked by | Exempt | Item | L | E | I | R | S | Moves | Score |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 201 | 0.4.0 |  | question | **Confirm or change the readings `jiraWikiToAdf` takes that differ from Jira's.** | 2 | 2 | 2 | 4 | 2 | 11 by 3, 6 by 2 | 5.7 |
-| 207 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 2 | 7.8 |
+| 208 | 0.4.0 |  |  | **Lower the reading cost of the files a chunk reads most before its first commit.** | 2 | 1 | 1 | 2 | 3 | code health by 2 | 7.8 |
 | 56 | 0.4.0 |  |  | **Give each piece of `blocks.ts`'s block-walk state and `inline-content.ts`'s `Scan` one owner that returns what it changes.** | 3 | 1 | 2 | 4 | 5 | code health by 5 | 7.8 |
 | 206 | 0.4.0 |  | defect | **Write no lone surrogate raw anywhere in lossless markdown, and decide what the portable flavour does with one.** | 3 | 1 | 2 | 4 | 4 | 1 by 2 | 5.2 |
 | 194 | 0.4.0 |  | owner | **Write ADF as Jira wiki markup alone, dropping the form and keeping the content of what wiki markup cannot spell.** | 2 | 2 | 2 | 4 | 4 | 11 by 2 | 1.1 |
@@ -61,7 +61,7 @@ Touches:
 - `spec/wiki.md`: `## What only the reader reads`
 - `docs/decisions.md`: `` ## The wiki reader refuses only a broken `{adf}` macro, nesting past 500 levels and output past the engine's limits, and reads every other string ``
 
-### 207. Lower the reading cost of the files a chunk reads most before its first commit.
+### 208. Lower the reading cost of the files a chunk reads most before its first commit.
 
 The last 5 chunks' median is 76109 new input tokens before their first commit, the 5 before them 74831 (`~/.claude/bin/reading-cost`, `docs/reading-cost.md`).
 
