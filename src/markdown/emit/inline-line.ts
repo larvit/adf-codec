@@ -323,7 +323,7 @@ function inlineDirectiveSegments(node: AdfNode, model: InlineNodeModel): InlineS
 }
 
 const rawBreaks = '\\n+|\\0+|\\r'
-// The portable reduction leaves none of these but a newline in the text it hands over.
+// The portable reduction hands over text holding none of these.
 const spelledApart = new RegExp(`(${rawBreaks}|${loneSurrogates})`)
 
 // CommonMark reads a raw carriage return as a line ending and a null character as U+FFFD, and UTF-8 cannot encode a lone surrogate, so the writer writes none raw.

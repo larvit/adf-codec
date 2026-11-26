@@ -185,7 +185,7 @@ test('spells a link title on one line, dropping a carriage return and a null and
   assert.deepEqual(titled, { attrs: { href: 'u', title: 'ab c' }, type: 'link' })
 })
 
-test('drops a lone surrogate from a link title, the two a dropped carriage return would pair included', () => {
+test('drops both lone surrogates from a link title where a carriage return stands between them', () => {
   const titled = portableLink({ attrs: { href: 'u', title: 'a\ud800\r\udc00b\u{1f389}' }, type: 'link' }, 'paragraph')
   assert.deepEqual(titled, { attrs: { href: 'u', title: 'ab\u{1f389}' }, type: 'link' })
 })
@@ -195,7 +195,7 @@ test('writes a lone surrogate in an href as the percent-encoded U+FFFD', () => {
   assert.deepEqual(linked, { attrs: { href: 'https://example.com/%EF%BF%BD?a=%EF%BF%BD\u{1f389}' }, type: 'link' })
 })
 
-test('drops a lone surrogate from text, the two a dropped null would pair included', () => {
+test('drops both lone surrogates from text where a null character stands between them', () => {
   const leaves = portableLeaves([marked('a\ud800\0\udc00b\u{1f389}')], 'paragraph', { depth: 0, path: [], sources: new Map() })
   assert.deepEqual(leaves, success([{ text: 'ab\u{1f389}', type: 'text' }]))
 })
