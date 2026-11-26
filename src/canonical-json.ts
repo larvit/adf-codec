@@ -1,5 +1,5 @@
 import type { JsonValue } from './json-value.ts'
-import { longestOutput } from './length-bound.ts'
+import { joinedWithin, longestOutput } from './length-bound.ts'
 
 // 'five-level' is the block carry's (docs/decisions.md §The block carry indents five levels in two spaces and writes deeper values compact): indenting every level makes the length quadratic in the nesting.
 export type JsonSpelling = 'compact' | 'five-level' | 'two-space'
@@ -11,7 +11,10 @@ type Member = { key: string | undefined; value: JsonValue }
 type Pending = string | { depth: number; value: JsonValue }
 
 export function serializeCanonicalJson(value: JsonValue, spelling: JsonSpelling): string {
-  return [...canonicalJsonPieces(value, spelling)].join('')
+  const joined = joinedWithin(canonicalJsonPieces(value, spelling))
+  // V8's own throw past its longest string, so every engine answers alike and `withinEngineLimits` refuses it as `tooLong`.
+  if (!joined.ok) throw new RangeError('Invalid string length')
+  return joined.value
 }
 
 // Stops at the first piece, passed through `respell`, that does not match `text`: built whole, the 'two-space' spelling of a short compact text can pass the engine's longest string.
@@ -40,7 +43,7 @@ export function* canonicalJsonPieces(value: JsonValue, spelling: JsonSpelling): 
     if (Array.isArray(held)) schedule(pending, '[', held.map((item) => ({ key: undefined, value: item })), ']', indent, depth)
     else if (held !== null && typeof held === 'object') schedule(pending, '{', objectMembers(held), '}', indent, depth)
     else if (typeof held === 'string' && length + held.length + 2 > longestOutput) {
-      // Spelling a string that passes the bound can abort the engine: yield it unspelled, with the two characters its quotes add, so every consumer sees the total pass the bound.
+      // JSON.stringify can abort V8 on a string this long, past any try: yield it raw, then the two characters its quotes add, so the pieces' total passes the bound and the caller refuses.
       yield held
       yield '""'
       return
@@ -58,7 +61,7 @@ function objectMembers(value: { [key: string]: JsonValue }): Member[] {
     .map((key) => ({ key, value: value[key] ?? null }))
 }
 
-// A key is scheduled as a string value, so it is measured before it is spelled, as every value is.
+// A key is scheduled as a string value, so it is measured before it is spelled, as every string value is.
 function schedule(pending: Pending[], open: string, members: readonly Member[], close: string, indent: string, depth: number): void {
   if (members.length === 0) {
     pending.push(`${open}${close}`)
