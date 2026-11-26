@@ -151,7 +151,7 @@ parenthesized value set reading `string`; fenced examples are skipped. Keep pros
 
 ## 4. Code rules
 
-- Two-space indent, English everywhere. Alphabetical order wherever order carries no meaning,
+- Tab indent, English everywhere. Alphabetical order wherever order carries no meaning,
   keyed on the name a line introduces: an import sorts on its first binding, type imports ahead of
   value imports, so moving or renaming a module reorders nothing.
 - No casts: `as`, `as unknown as`, non-null `!`. A boundary owes a reader validating the
