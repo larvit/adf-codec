@@ -1053,7 +1053,7 @@ for (const [html, expected] of claimedRefusals) test(`reads an element claiming 
 
 test('names the element claiming the dialect that is none of its elements', () => {
 	names(htmlToAdf('<section class="adf-box">a</section>'), '<section>', 'data-adf', 'adf- class', 'found "<section class=\\"adf-box\\""')
-	names(htmlToAdf('<ul><li class="adf-x">a</li></ul>'), 'adfToHtml writes no <li> holding either')
+	names(htmlToAdf('<ul><li class="adf-x">a</li></ul>'), 'adfToHtml writes no <li> that opens like this one')
 })
 
 test('reads foreign HTML nested 500 levels, and refuses the next level, a list\'s items and a table\'s cells one level below it', () => {
