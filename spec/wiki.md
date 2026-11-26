@@ -210,9 +210,9 @@ The writers never write these, and the reader reads them as follows:
 - In a `{code}` or `{noformat}` text, a carriage return before a line feed reads as nothing, so
   markup whose lines end in both reads as markup whose lines end in a line feed.
 - `---` and `--` with whitespace or the line's edge on each side read as `—` and `–`, except at a
-  line's start right after a list line: `-- ` there, or a longer run of dashes, nests a bullet as
-  Jira does. A run of n dashes keeps the list's first n − 1 markers, padded with `*`, and ends in
-  `*`, so `-- ` after `# a` reads as `#* `.
+  line's start while a list is open, a blank line closing it: `-- ` there, or a longer run of
+  dashes, nests a bullet as Jira does. A run of n dashes keeps the list's first n − 1 markers,
+  padded with `*`, and ends in `*`, so `-- ` after `# a` reads as `#* `.
 - `h1.` to `h6.` and `bq.` read with a space after the dot or none, and in lower case alone, as
   Jira reads them.
 - A smiley reads as the `emoji` Jira reads it as, wherever the next character is not a letter or a
